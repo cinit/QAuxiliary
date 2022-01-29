@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<lint>
+    <issue id="InvalidPackage">
+        <ignore regexp='^.*java.applet..*$' />
+        <ignore regexp='^.*java.awt..*$' />
+        <ignore regexp='^.*javax.script..*$' />
+        <ignore regexp='^.*javax.servlet..*$' />
+        <ignore regexp='^.*javax.swing..*$' />
+    </issue>
+</lint>
