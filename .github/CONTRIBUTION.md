@@ -4,7 +4,7 @@
 
 ## 分支约定
 
-不管是直接 Push 代码还是提交 Pull Request，都必须使 commit 指向 master 分支。
+不管是直接 Push 代码还是提交 Pull Request，都必须使 commit 指向 dev 分支。
 
 ## Commit 相关
 
