@@ -2,6 +2,10 @@
 
 [![license](https://img.shields.io/github/license/cinit/QAuxiliary.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
 [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest)
+[![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Channel&color=0088cc)](https://t.me/QAuxiliary)
+[![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Chat&color=0088cc)](https://t.me/QAuxiliaryChat)
+
+-----
 
 QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 
@@ -54,6 +58,8 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 ## 发行渠道说明
 
+<details>
+
 QAuxiliary 采用滚动更新方式发布新版本，我们总是推荐用户使用最新版 QAuxiliary，无论您的 QQ 或者 TIM 客户端是哪个版本。
 
 QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
@@ -74,14 +80,16 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 - 其中 major 为 主版本号，minor 为 次版本号，bugfix 为修正版本号；
 - 所有版本更新的`rev`为 commit 计数，`commit` 位都会是触发此次更新的Commit的hash的前7位。
 
-1. [QAuxiliary 频道](https://t.me/QAuxiliary) 将只发布 `推荐的CI` 版更新。
+1. [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=QAuxiliary频道&color=0088cc)](https://t.me/QAuxiliary) 将只发布 `推荐的CI` 版更新。
 
-2. [QAuxiliary_CI 频道](https://t.me/QAuxiliary_CI) 发布 `CI` 版更新。
+2. [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=QAuxiliary_CI频道&color=0088cc)](https://t.me/QAuxiliary_CI) 发布 `CI` 版更新。
 
-3. [Github Releases](https://github.com/cinit/QAuxiliary/releases/) 将只发布 `推荐的CI` 版更新。
+3. [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest) 将只发布 `推荐的CI` 版更新。
 
-4. [LSPosed 仓库](https://github.com/Xposed-Modules-Repo/io.github.qauxv/releases/)
-   将发布所有版本更新，其中`CI`版本更新将被标注为 Pre-release。
+4. ![](https://img.shields.io/badge/LSPosed-ClickMe-blue?link=https://github.com/Xposed-Modules-Repo/io.github.qauxv/releases/) 将发布所有版本更新，其中`CI`版本更新将被标注为 Pre-release。
+</details>
+
+-----
 
 ## 赞助
 
