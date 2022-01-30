@@ -8,12 +8,12 @@ abstract class ReplaceIcon : DefaultTask() {
     fun run() {
         val iconsDir = File(project.projectDir, "icons")
         val iconFileDirs = listOf(
-            File(iconsDir, "MiStyleIcons"),
-            File(iconsDir, "classic"),
-            //File(projectDir ,"ChineseNewYearIcons")
+//            File(iconsDir, "MiStyleIcons"),
+//            File(iconsDir, "classic"),
+            File(iconsDir, "ChineseNewYearIcons")
         )
         val fileCount = iconFileDirs.fold(0) { i: Int, file: File ->
-            i + file.listFiles()!!.size
+            i + (file.listFiles()?.size ?: 0)
         }
         var number = Random().nextInt(fileCount)
 

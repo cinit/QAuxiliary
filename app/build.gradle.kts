@@ -1,11 +1,13 @@
-import java.io.PrintStream
-import java.nio.file.Paths
+import java.util.UUID
 
 plugins {
     id("com.android.application")
     id("kotlin-android")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
 }
+
+val currentBuildUuid = UUID.randomUUID().toString()
+println("Current build ID is $currentBuildUuid")
 
 android {
     compileSdk = 31
@@ -18,6 +20,8 @@ android {
         versionCode = Common.getTimeStamp()
         // versionName = major.minor.bugfix.rev.commit
         versionName = "0.1.0" + (Common.getGitHeadRefsSuffix(rootProject))
+        buildConfigField("String", "BUILD_UUID", '"' + currentBuildUuid + '"')
+        buildConfigField("long", "BUILD_TIMESTAMP", System.currentTimeMillis().toString() + "L")
         multiDexEnabled = false
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -136,6 +140,7 @@ dependencies {
     implementation("com.google.code.gson:gson:2.8.9")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
+    implementation("com.github.kyuubiran:EzXHelper:0.6.1")
 }
 
 dependencies {
@@ -163,11 +168,12 @@ tasks.register("checkTargetNativeLibsDebug") {
             }
             val f = File(rootProject.projectDir, tmpPath)
             if (!f.exists()) {
-                throw IllegalStateException(" Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuildDebug' manually to force android gradle plugin to satisfy all required ABIs.")
+                throw IllegalStateException("Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuildDebug' manually to force android gradle plugin to satisfy all required ABIs.")
             }
         }
     }
 }
+
 tasks.register("checkTargetNativeLibsRelease") {
     dependsOn(":app:externalNativeBuildRelease")
     doLast {
