@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <CheckBox
+        android:id="@+id/checkBoxEnableCustomDeviceModel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="启用自定义机型" />
+
+    <LinearLayout
+        android:id="@+id/layoutCustomDeviceModelPreview"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="厂商:"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <EditText
+                android:id="@+id/editTextCustomDeviceManufacturer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="输入厂商,如 小米"
+                android:inputType="text" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="型号:"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <EditText
+                android:id="@+id/editTextCustomDeviceModel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="输入型号,如 小米10 Pro"
+                android:inputType="text" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="5dp"
+                android:layout_marginRight="5dp"
+                android:text="预览:" />
+
+            <TextView
+                android:id="@+id/textViewCustomDeviceManufacturerPreview"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginLeft="20dp"
+                android:text="Xiaomi"
+                android:textSize="16sp" />
+
+            <TextView
+                    android:id="@+id/textViewDeviceModelPreview"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginLeft="10dp"
+                    android:layout_marginRight="10dp"
+                    android:text="Mi 10 Pro"
+                    android:textSize="16sp"/>
+        </LinearLayout>
+
+        <TextView
+                android:layout_marginTop="10dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="警告: 使用自定义机型功能有潜在可能导致桌面(启动器)内QQ(TIM)的角标(右上角带数字的小红点)无法正常显示清除或其他问题, 强迫症请谨慎使用此功能!"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium"/>
+
+    </LinearLayout>
+</LinearLayout>

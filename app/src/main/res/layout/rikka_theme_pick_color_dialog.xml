@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="10dp">
+
+    <CheckBox
+        android:id="@+id/checkBoxEnableBorderColor"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="自定义已开启选项边框颜色" />
+
+    <LinearLayout
+        android:id="@+id/layoutBorderColorPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="颜色:"
+                android:textAppearance="@android:style/TextAppearance.Holo.Medium" />
+
+            <EditText
+                android:id="@+id/editTextBorderColor"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:ems="10"
+                android:hint="请输入十六进制颜色"
+                android:inputType="text" />
+        </LinearLayout>
+
+        <View
+            android:id="@+id/viewBorderColorPreview"
+            android:layout_width="match_parent"
+            android:layout_height="2dp"
+            tools:visibility="visible" />
+
+        <TextView
+            android:id="@+id/textViewBorderInvalidColor"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
+            android:text="该颜色无效!"
+            android:textColor="#FFFF4040" />
+    </LinearLayout>
+</LinearLayout>

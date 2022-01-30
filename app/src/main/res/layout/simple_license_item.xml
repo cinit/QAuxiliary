@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+              android:orientation="vertical"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="5dp">
+
+    <TextView android:id="@+id/sLicenseItem_title"
+              android:textSize="16sp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:padding="5dp"
+              android:textColor="?android:attr/textColorPrimary"
+              android:textIsSelectable="true"/>
+
+    <TextView android:id="@+id/sLicenseItem_licensePrev"
+              android:typeface="monospace"
+              android:textSize="14sp"
+              android:layout_width="match_parent"
+              android:layout_height="wrap_content"
+              android:layout_margin="5dp"
+              android:padding="5dp"
+              android:background="#30808080"
+              android:textColor="?android:attr/textColorPrimary"
+              android:textIsSelectable="true"/>
+
+</LinearLayout>

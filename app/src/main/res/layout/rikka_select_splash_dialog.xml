@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <CheckBox
+        android:id="@+id/checkBoxEnableCustomStartupPic"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="启用自定义启动图" />
+
+    <RelativeLayout
+        android:id="@+id/layoutSplashPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/selectSplash_editTextPicLocation"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:ems="10"
+            android:hint="图片路径..."
+            android:inputType="text" />
+    </RelativeLayout>
+</LinearLayout>

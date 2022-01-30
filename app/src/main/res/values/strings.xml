@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">QAuxiliary</string>
+    <string name="qqpurify_name">QQ净化</string>
+    <string name="xposeddescription">QQ辅助性功能增强 免费软件 请勿盗卖或用于非法用途 by cinit@github</string>
+    <string name="res_inject_success">Resources injection success</string>
+    <string name="xposed_not_activated">Xposed 未激活</string>
+    <string name="xposed_activated">Xposed 已激活</string>
+    <string name="edxposed_not_activated">EdXposed 未激活</string>
+    <string name="edxposed_activated">EdXposed 已激活</string>
+    <string name="taichi_yin_not_activated">太极·阴 未激活</string>
+    <string name="taichi_yin_activated">太极·阴 已激活</string>
+    <string name="taichi_yang_not_activated">太极·阳 未激活</string>
+    <string name="taichi_yang_activated">太极·阳 已激活</string>
+    <string name="PageTitle_home">首页</string>
+    <string name="PageTitle_dashboard">功能</string>
+    <string name="PageTitle_info">关于</string>
+    <string name="ModuleEffectiveVersion">模块生效版本</string>
+    <string name="announcement">公告</string>
+    <string name="github">Github</string>
+    <string name="BugCheck">故障排查</string>
+    <string name="ModuleVersion">模块版本</string>
+    <string name="ModuleVersion_tip">更新模块后需要重启手机方可生效</string>
+    <string name="ModuleSetting">模块设置</string>
+    <string name="ModuleSetting_tip_1">请在 QQ / TIM 内进行操作</string>
+    <string name="ModuleSetting_tip_2">QQ侧滑 > 设置 > QAuxiliary 即可进入模块设置</string>
+    <string name="ModuleSetting_tip_3">暂不支持 国际版</string>
+    <string name="qq">QQ</string>
+    <string name="tim">TIM</string>
+    <string name="qq_lite">QQ极速版</string>
+    <string name="tip">提示</string>
+    <string name="send_to_ipad">发送到我的iPad</string>
+</resources>

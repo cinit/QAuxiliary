@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <item type="id" name="item_showPicMd5"/>
+    <item type="id" name="rootBounceScrollView"/>
+    <item type="id" name="rootMainLayout"/>
+    <item type="id" name="rootMainList"/>
+    <item type="id" name="root_content_toolbarLayout" />
+    <item type="id" name="jefsRulesMainSwitch" />
+    <item type="id" name="jefsRulesTextView" />
+    <item type="id" name="jefsRulesEditText" />
+    <item type="id" name="jefsRulesDisplayLayout" />
+    <item type="id" name="jefsRulesEditLayout" />
+    <item type="id" name="jefsRulesEditButton" />
+    <item type="id" name="jefsRulesSaveButton" />
+    <item type="id" name="jefsRulesCancelButton" />
+    <item type="id" name="jefsRulesResetButton" />
+    <item type="id" name="ketalRecallImageView" />
+
+    <item name="mainV2_menuItem_toggleDesktopIcon" type="id" />
+    <item name="chat_words_count" type="id" />
+    <item name="setting2Activity_settingEntryItem" type="id" />
+</resources>

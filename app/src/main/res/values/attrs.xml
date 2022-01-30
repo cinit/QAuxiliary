@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <attr name="themeColor" format="color"/>
+
+    <string-array name="mainui_hide_menu_titles">
+        <item>版本更新</item>
+        <item>反馈</item>
+    </string-array>
+
+    <string-array name="mainui_tabs_titles">
+        <item>联系人</item>
+        <item>动态</item>
+        <item>隐藏所有</item>
+    </string-array>
+
+    <string-array name="mainui_tabs_values">
+        <item>2</item>
+        <item>3</item>
+        <item>-1</item>
+    </string-array>
+
+    <string-array name="mainui_tabs_num_titles">
+        <item>消息</item>
+        <item>联系人</item>
+        <item>动态</item>
+    </string-array>
+
+    <string-array name="mainui_tabs_num_values">
+        <item>32</item>
+        <item>33</item>
+        <item>34</item>
+    </string-array>
+
+    <string-array name="mainui_leba_entry_titles">
+        <item>好友动态</item>
+        <item>附近</item>
+        <item>兴趣部落</item>
+    </string-array>
+
+    <string-array name="mainui_leba_entry_values">
+        <item>动态</item>
+        <item>附近</item>
+        <item>com.tx.xingqubuluo.android</item>
+    </string-array>
+
+    <string-array name="mainui_conversation_pmi_titles">
+        <item>创建群聊</item>
+        <item>加好友/群</item>
+        <item>扫一扫</item>
+        <item>面对面快传</item>
+        <item>收付款</item>
+        <item>拍摄</item>
+        <item>隐藏所有</item>
+    </string-array>
+
+    <string-array name="manui_contacts_tabs_titles">
+        <item>设备</item>
+        <item>通讯录</item>
+        <item>公众号</item>
+    </string-array>
+
+    <string-array name="mainui_contacts_tabs_values">
+        <item>2</item>
+        <item>3</item>
+        <item>4</item>
+    </string-array>
+
+    <string-array name="sidebar_setting_list_titles">
+        <item>手机号码</item>
+        <item>帐号安全</item>
+        <item>QQ达人</item>
+        <item>消息通知</item>
+        <item>隐私</item>
+        <item>通用</item>
+        <item>辅助功能</item>
+        <item>聊天记录</item>
+        <item>联系人、隐私</item>
+        <item>帐号、设备安全</item>
+        <item>免流量特权</item>
+        <item>关于QQ与帮助</item>
+    </string-array>
+
+    <string-array name="chat_panel_icon_titles">
+        <item>热图</item>
+        <item>闪照</item>
+        <item>语音</item>
+        <item>相册</item>
+        <item>拍照</item>
+        <item>红包</item>
+        <item>送花</item>
+        <item>文件</item>
+        <item>表情</item>
+        <item>加号</item>
+        <item>机器人</item>
+        <item>厘米秀</item>
+        <item>热门图片</item>
+        <item>视频录制</item>
+        <item>视频文件</item>
+        <item>查看电脑</item>
+        <item>互动游戏</item>
+        <item>轻互动入口</item>
+        <item>戳一戳独立入口</item>
+        <item>短视频录制及拍照</item>
+    </string-array>
+</resources>

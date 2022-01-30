@@ -1,0 +1,186 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources xmlns:tools="http://schemas.android.com/tools">
+
+    <style name="AppThemeDummy" parent="@android:style/Theme.Holo"></style>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme.Def" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <!-- Customize your theme here. -->
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowNoTitle">true</item>
+    </style>
+
+    <!--    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog.Alert">-->
+    <!--        <item name="android:windowIsTranslucent">true</item>-->
+    <!--        <item name="android:windowNoTitle">true</item>-->
+    <!--    </style>-->
+
+    <style name="AppTheme.Blp" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_blp</item>
+        <item name="colorPrimaryDark">@color/theme_color_blp</item>
+        <item name="colorAccent">@color/theme_color_blp</item>
+        <item name="themeColor">@color/theme_color_blp</item>
+    </style>
+
+    <style name="AppTheme.Gol" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_gol</item>
+        <item name="colorPrimaryDark">@color/theme_color_gol</item>
+        <item name="colorAccent">@color/theme_color_gol</item>
+        <item name="themeColor">@color/theme_color_gol</item>
+    </style>
+
+    <style name="AppTheme.Cag" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_cag</item>
+        <item name="colorPrimaryDark">@color/theme_color_cag</item>
+        <item name="colorAccent">@color/theme_color_cag</item>
+        <item name="themeColor">@color/theme_color_cag</item>
+    </style>
+
+    <style name="AppTheme.Ftb" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_ftb</item>
+        <item name="colorPrimaryDark">@color/theme_color_ftb</item>
+        <item name="colorAccent">@color/theme_color_ftb</item>
+        <item name="themeColor">@color/theme_color_ftb</item>
+    </style>
+
+    <style name="AppTheme.Ghp" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_ghp</item>
+        <item name="colorPrimaryDark">@color/theme_color_ghp</item>
+        <item name="colorAccent">@color/theme_color_ghp</item>
+        <item name="themeColor">@color/theme_color_ghp</item>
+    </style>
+
+    <style name="AppTheme.Mar" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_mar</item>
+        <item name="colorPrimaryDark">@color/theme_color_mar</item>
+        <item name="colorAccent">@color/theme_color_mar</item>
+        <item name="themeColor">@color/theme_color_mar</item>
+    </style>
+
+    <style name="AppTheme.TPO" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_tpo</item>
+        <item name="colorPrimaryDark">@color/theme_color_tpo</item>
+        <item name="colorAccent">@color/theme_color_tpo</item>
+        <item name="themeColor">@color/theme_color_tpo</item>
+    </style>
+
+    <style name="AppTheme.Tlg" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_tlg</item>
+        <item name="colorPrimaryDark">@color/theme_color_tlg</item>
+        <item name="colorAccent">@color/theme_color_tlg</item>
+        <item name="themeColor">@color/theme_color_tlg</item>
+    </style>
+
+    <style name="AppTheme.Ryb" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_ryb</item>
+        <item name="colorPrimaryDark">@color/theme_color_ryb</item>
+        <item name="colorAccent">@color/theme_color_ryb</item>
+        <item name="themeColor">@color/theme_color_ryb</item>
+    </style>
+
+    <style name="AppTheme.Gap" parent="AppTheme.Def">
+        <item name="colorPrimary">@color/theme_color_gap</item>
+        <item name="colorPrimaryDark">@color/theme_color_gap</item>
+        <item name="colorAccent">@color/theme_color_gap</item>
+        <item name="themeColor">@color/theme_color_gap</item>
+    </style>
+
+    <style name="noDisplay" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="android:windowFrame">@null</item>
+        <!-- 设置是否可滑动 -->
+        <item name="android:windowIsFloating">true</item>
+        <!-- 设置是否透明 -->
+        <item name="android:windowIsTranslucent">true</item>
+        <!-- 无标题 -->
+        <item name="android:windowNoTitle">true</item>
+        <!-- 背景 -->
+        <item name="android:background">@null</item>
+        <!-- 窗口背景 -->
+        <item name="android:windowBackground">@android:color/transparent</item>
+        <!-- 是否变暗 -->
+        <item name="android:backgroundDimEnabled">false</item>
+        <!-- 点击空白部分activity不消失 -->
+        <item name="android:windowCloseOnTouchOutside">true</item>
+        <!-- 无标题 有的手机设置这行代码-->
+        <item name="windowNoTitle">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowAnimationStyle">@null</item>
+        <item name="android:windowDisablePreview">true</item>
+        <item name="android:windowNoDisplay">true</item>
+    </style>
+
+    <style name="MaterialDialogActivity" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:windowFrame">@null</item>
+        <item name="android:windowIsFloating">true</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:title">@null</item>
+        <item name="android:dialogTitle">@null</item>
+        <item name="android:windowCloseOnTouchOutside">true</item>
+    </style>
+
+    <style name="MaterialDialog" parent="Theme.MaterialComponents.DayNight.Dialog">
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="Theme.MaiTungTMDesign" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/themeColor</item>
+        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorOnPrimary">@color/firstTextColor</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/themeColor</item>
+        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorOnSecondary">@color/firstTextColor</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/backgroundColor</item>
+        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
+        <!-- Customize your theme here. -->
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="colorControlNormal">@color/firstTextColor</item>
+        <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
+    </style>
+
+    <style name="Theme.MaiTungTMDesignNight" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Primary brand color. -->
+        <item name="colorPrimary">@color/themeColor</item>
+        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorOnPrimary">@color/firstTextColor</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/themeColor</item>
+        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorOnSecondary">@color/firstTextColor</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/backgroundColor</item>
+        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
+        <!-- Customize your theme here. -->
+        <item name="android:windowActionBar">false</item>
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="colorControlNormal">@color/firstTextColor</item>
+        <!-- <item name="colorControlNormal">@color/whiteTextColor</item> -->
+    </style>
+
+    <style name="Toolbar" parent="Widget.MaterialComponents.Toolbar">
+        <item name="android:layout_width">match_parent</item>
+        <item name="colorControlNormal">@color/firstTextColor</item>
+        <!-- <item name="colorControlNormal">@color/whiteTextColor</item> -->
+        <item name="android:background">@color/backgroundColor</item>
+        <!-- <item name="android:background">@color/themeColor</item> -->
+        <item name="elevation">0dp</item>
+        <item name="android:paddingLeft">16dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:stateListAnimator">@null</item>
+        <item name="titleTextColor">@color/firstTextColor</item>
+    </style>
+
+</resources>

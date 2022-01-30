@@ -1,0 +1,104 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ QAuxiliary - An Xposed module for QQ/TIM
+  ~ Copyright (C) 2019-2022 qwq233@qwq2333.top
+  ~ https://github.com/cinit/QAuxiliary
+  ~
+  ~ This software is non-free but opensource software: you can redistribute it
+  ~ and/or modify it under the terms of the GNU Affero General Public License
+  ~ as published by the Free Software Foundation; either
+  ~ version 3 of the License, or any later version and our eula as published
+  ~ by ferredoxin.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ and eula along with this software.  If not, see
+  ~ <https://www.gnu.org/licenses/>
+  ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+  -->
+
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    package="io.github.qauxv">
+
+    <application
+        android:icon="@drawable/icon"
+        android:label="@string/app_name"
+        android:multiArch="true"
+        android:resizeableActivity="true"
+        android:theme="@style/AppThemeDummy"
+        tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
+        <activity
+            android:name="io.github.qauxv.activity.ConfigV2Activity"
+            android:exported="true"
+            android:icon="@drawable/icon"
+            android:theme="@style/Theme.MaiTungTMDesign">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
+            </intent-filter>
+        </activity>
+
+        <activity
+            android:name="io.github.qauxv.activity.ConfigActivity"
+            android:icon="@drawable/icon" />
+
+        <activity-alias
+            android:name=".activity.ConfigV2ActivityAlias"
+            android:icon="@drawable/icon"
+            android:label="@string/app_name"
+            android:targetActivity="io.github.qauxv.activity.ConfigV2Activity"
+            android:theme="@style/Theme.MaiTungTMDesign"
+            android:exported="true">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
+
+        <activity
+            android:name="me.ketal.ui.activity.QFileShareToIpadActivity"
+            android:icon="@drawable/icon"
+            android:exported="true"
+            android:enabled="false"
+            android:theme="@style/noDisplay" >
+            <intent-filter android:label="@string/send_to_ipad">
+                <action
+                    android:name="android.intent.action.SEND" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+                <data android:mimeType="video/*" />
+                <data android:mimeType="audio/*" />
+                <data android:mimeType="application/*" />
+                <data android:mimeType="text/*" />
+            </intent-filter>
+            <intent-filter android:label="@string/send_to_ipad">
+                <action
+                    android:name="android.intent.action.SEND_MULTIPLE" />
+                <category
+                    android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+
+        <meta-data
+            android:name="xposedmodule"
+            android:value="true" />
+        <meta-data
+            android:name="xposeddescription"
+            android:value="@string/xposeddescription" />
+        <meta-data
+            android:name="xposedminversion"
+            android:value="51" />
+        <meta-data
+            android:name="xposedscope"
+            android:resource="@array/xposedscope" />
+
+    </application>
+
+</manifest>

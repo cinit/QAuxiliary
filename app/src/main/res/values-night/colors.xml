@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- 原主题 -->
+
+    <color name="firstTextColor">#FFFFFFFF</color>
+    <color name="secondTextColor">#DEFFFFFF</color>
+    <color name="thirdTextColor">#99FFFFFF</color>
+    <color name="whiteTextColor">#FFFFFFFF</color>
+    <color name="themeColor">#FF82A8E7</color>
+    <color name="usableColor">#FF4CAF50</color>
+    <color name="unusableColor">#FFFF5252</color>
+    <color name="warnColor">#ffFFC107</color>
+    <color name="rippleColor">#14FFFFFF</color>
+    <color name="lineColor">#FF4F5355</color>
+    <color name="divideColor">#14FFFFFF</color>
+    <color name="nullColor">#00000000</color>
+    <color name="backgroundColor">#FF202124</color>
+
+    <!-- 蓝调限时主题 -->
+    <!--
+    <color name="firstTextColor">#FFFFFFFF</color>
+    <color name="secondTextColor">#DEFFFFFF</color>
+    <color name="thirdTextColor">#99FFFFFF</color>
+    <color name="whiteTextColor">#FFFFFFFF</color>
+    <color name="WhiteBackgroundColor">#FF303134</color>
+    <color name="themeColor">#FF202124</color>
+    <color name="themeIconColor">#FF82A8E7</color>
+    <color name="usableColor">#FF4CAF50</color>
+    <color name="unusableColor">#FFFF5252</color>
+    <color name="warnColor">#ffFFC107</color>
+    <color name="rippleColor">#14FFFFFF</color>
+    <color name="lineColor">#FF4F5355</color>
+    <color name="divideColor">#14FFFFFF</color>
+    <color name="nullColor">#00000000</color>
+    <color name="backgroundColor">#FF202124</color>
+    -->
+</resources>

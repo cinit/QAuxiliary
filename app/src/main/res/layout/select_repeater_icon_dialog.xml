@@ -1,0 +1,152 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp"
+        android:text="请输入图片文件路径(建议使用支持半透明的PNG格式图片)"
+        tools:ignore="RtlHardcoded" />
+
+    <EditText
+        android:id="@+id/selectRepeaterIcon_editTextIconLocation"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:ems="10"
+        android:hint="图片路径..."
+        android:inputType="text" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="5dp"
+        android:layout_marginRight="5dp">
+
+        <Button
+            android:id="@+id/selectRepeaterIcon_buttonLoadFile"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentLeft="true"
+            android:text="加载"
+            tools:ignore="RtlHardcoded" />
+
+        <Button
+            android:id="@+id/selectRepeaterIcon_buttonBrowseImg"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentRight="true"
+            android:text="浏览图库..."
+            tools:ignore="RtlHardcoded" />
+    </RelativeLayout>
+
+    <LinearLayout
+        android:id="@+id/selectRepeaterIcon_linearLayoutDpi"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/selectRepeaterIcon_checkBoxSpecifyDpi"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:checked="true"
+            android:text="图片DPI" />
+
+        <HorizontalScrollView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+            <RadioGroup
+                android:id="@+id/selectRepeaterIcon_RadioGroupDpiList"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:checkedButton="@id/selectRepeaterIcon_RadioButtonXhdpi"
+                android:orientation="horizontal"
+                android:visibility="visible">
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonXxxhdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="xxxhdpi" />
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonXxhdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="xxhdpi" />
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonXhdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="xhdpi" />
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonHdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="hdpi" />
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonMdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="mdpi" />
+
+                <RadioButton
+                    android:id="@+id/selectRepeaterIcon_RadioButtonLdpi"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="ldpi" />
+            </RadioGroup>
+        </HorizontalScrollView>
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/selectRepeaterIcon_textViewWarnMsg"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textColor="#FF2E2E"
+        android:visibility="gone" />
+
+    <RelativeLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="5dp">
+
+        <ImageView
+            android:id="@+id/selectRepeaterIcon_imageViewPreview"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="3dp"
+            android:layout_marginRight="3dp"
+            android:layout_toEndOf="@id/selectRepeaterIcon_tmp_textViewPreviewText"
+            android:layout_toRightOf="@id/selectRepeaterIcon_tmp_textViewPreviewText" />
+
+        <TextView
+            android:id="@+id/selectRepeaterIcon_tmp_textViewPreviewText"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentLeft="true"
+            android:text="预览:" />
+
+        <Button
+            android:id="@+id/selectRepeaterIcon_buttonRestoreDefaultIcon"
+            style="?android:attr/buttonBarButtonStyle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_alignParentEnd="true"
+            android:layout_alignParentRight="true"
+            android:text="恢复默认图片" />
+    </RelativeLayout>
+</LinearLayout>
