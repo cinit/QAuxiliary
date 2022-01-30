@@ -28,6 +28,7 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.github.qauxv.SyncUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -66,7 +67,7 @@ public class Toasts {
             context = HostInfo.getHostInfo().getApplication();
         }
         final Context ctx = context;
-        Utils.runOnUiThread(() -> {
+        SyncUtils.runOnUiThread(() -> {
             if (type == TYPE_PLAIN) {
                 Toast.makeText(ctx, text, duration).show();
             } else {

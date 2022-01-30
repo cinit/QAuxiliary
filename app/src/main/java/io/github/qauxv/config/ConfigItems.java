@@ -21,15 +21,13 @@
  */
 package io.github.qauxv.config;
 
-import static io.github.qauxv.util.Utils.QN_VERSION_CODE;
-
 import android.content.Context;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.ExfriendManager;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import io.github.qauxv.util.Toasts;
-import io.github.qauxv.util.Utils;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
@@ -179,13 +177,10 @@ public class ConfigItems {
 
     @MainProcess
     public static void removePreviousCacheIfNecessary() {
-        if (!Utils.__REMOVE_PREVIOUS_CACHE) {
-            return;
-        }
         ConfigManager cache = ConfigManager.getCache();
-        if (cache.getIntOrDefault(cache_qn_prev_version, -1) < Utils.QN_VERSION_CODE) {
+        if (cache.getIntOrDefault(cache_qn_prev_version, -1) < BuildConfig.VERSION_CODE) {
             cache.getFile().delete();
-            cache.putInt(cache_qn_prev_version, QN_VERSION_CODE);
+            cache.putInt(cache_qn_prev_version, BuildConfig.VERSION_CODE);
             try {
                 cache.save();
             } catch (IOException e) {

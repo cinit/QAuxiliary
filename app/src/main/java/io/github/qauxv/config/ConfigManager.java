@@ -24,7 +24,7 @@ package io.github.qauxv.config;
 import android.content.SharedPreferences;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.github.qauxv.util.Utils;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import java.io.File;
 import java.io.IOException;
 import java.util.Map;
@@ -76,7 +76,7 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
      */
     @Nullable
     public static ConfigManager forCurrentAccount() {
-        long uin = Utils.getLongAccountUin();
+        long uin = AppRuntimeHelper.getLongAccountUin();
         if (uin >= 10000) {
             return forAccount(uin);
         }

@@ -22,7 +22,6 @@
 package io.github.qauxv.ui;
 
 import static io.github.qauxv.util.Initiator.load;
-import static io.github.qauxv.util.Utils.strcmp;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -104,7 +103,7 @@ public class CustomDialog {
                     if (tmpb == null) {
                         m_DialogUtil_a = tmpa;
                     } else {
-                        m_DialogUtil_a = (strcmp(tmpa.getName(), tmpb.getName()) > 0) ? tmpb : tmpa;
+                        m_DialogUtil_a = (Reflex.strcmp(tmpa.getName(), tmpb.getName()) > 0) ? tmpb : tmpa;
                     }
                 }
             }

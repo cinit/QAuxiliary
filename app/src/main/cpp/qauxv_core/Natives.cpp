@@ -430,18 +430,13 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }
-    jclass clazz = env->FindClass("io/github/qauxv/util/Utils");
-    if (!clazz) {
-        __android_log_print(ANDROID_LOG_ERROR, "QAuxv","cannot get class: Utils");
-        return -1;
-    }
     JNINativeMethod lMethods[1];
     jclass appInterface = env->FindClass("mqq/app/AppRuntime");
     if (appInterface == nullptr) {
         env->ExceptionClear();
         __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");
     } else {
-        clazz = env->FindClass("cc/ioctl/hook/CardMsgHook");
+        jclass clazz = env->FindClass("cc/ioctl/hook/CardMsgHook");
         lMethods[0].name = "ntSendCardMsg";
         lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/String;)Z";
         lMethods[0].fnPtr = (void *) &handleSendCardMsg;

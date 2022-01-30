@@ -32,7 +32,6 @@ import cc.ioctl.util.Reflex;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Utils;
 import io.github.qauxv.util.data.ContactDescriptor;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -54,7 +53,7 @@ public class FaceImpl implements InvocationHandler {
     private final Object mFaceDecoder;
 
     private FaceImpl() throws Throwable {
-        Object qqAppInterface = Utils.getAppRuntime();
+        Object qqAppInterface = AppRuntimeHelper.getAppRuntime();
         class_FaceDecoder = load("com/tencent/mobileqq/util/FaceDecoder");
         if (class_FaceDecoder == null) {
             class_FaceDecoder = load("com/tencent/mobileqq/app/face/FaceDecoder");

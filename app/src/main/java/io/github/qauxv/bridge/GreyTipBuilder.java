@@ -28,7 +28,6 @@ import android.os.Bundle;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Utils;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
@@ -79,7 +78,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
                 DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
-            callMethod(messageRecord, "init", Utils.getAccount(), uin, fromUin, msg.toString(),
+            callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);
             setObjectField(messageRecord, "msgUid", msgUid);
             setObjectField(messageRecord, "shmsgseq", shmsgseq);
@@ -102,7 +101,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
                 DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
-            callMethod(messageRecord, "init", Utils.getAccount(), uin, fromUin, msg.toString(),
+            callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);
             setObjectField(messageRecord, "isread", true);
             if (items != null) {

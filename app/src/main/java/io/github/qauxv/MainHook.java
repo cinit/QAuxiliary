@@ -32,6 +32,7 @@ import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.hook.BaseDelayableHook;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
@@ -41,7 +42,6 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
-import io.github.qauxv.util.Utils;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -90,15 +90,6 @@ public class MainHook {
         }
     }
 
-    /**
-     * dummy method, for development and test only
-     */
-    public static void onAppStartupForMain() {
-        if (!Utils.isAlphaVersion()) {
-            return;
-        }
-    }
-
     public void performHook(Context ctx, Object step) {
         SyncUtils.initBroadcast(ctx);
         try {
@@ -119,12 +110,12 @@ public class MainHook {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     // fix error in :video, and QZone启动失败
-                    Utils.$access$set$sAppRuntimeInit(true);
+                    AppRuntimeHelper.$access$set$sAppRuntimeInit(true);
                 }
             });
         } catch (Throwable e) {
             Log.e("NewRuntime/E hook failed: " + e);
-            Utils.$access$set$sAppRuntimeInit(true);
+            AppRuntimeHelper.$access$set$sAppRuntimeInit(true);
         }
         HideVmStack.setHideEnabled(!new File(ctx.getFilesDir(), "qn_disable_hide_vm_stack").exists());
         injectLifecycleForProcess(ctx);
@@ -162,7 +153,6 @@ public class MainHook {
                         dir = Reflex.getFirstNSFByType(param.thisObject, director);
                     }
                     InjectDelayableHooks.step(dir);
-                    onAppStartupForMain();
                     third_stage_inited = true;
                 }
             });

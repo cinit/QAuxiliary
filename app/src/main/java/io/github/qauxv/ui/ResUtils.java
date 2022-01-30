@@ -23,7 +23,7 @@ package io.github.qauxv.ui;
 
 import static io.github.qauxv.util.Initiator._ThemeUtil;
 import static io.github.qauxv.util.Initiator.load;
-import static io.github.qauxv.util.Utils.getAppRuntime;
+import static io.github.qauxv.bridge.AppRuntimeHelper.getAppRuntime;
 
 import android.content.Context;
 import android.content.res.Configuration;

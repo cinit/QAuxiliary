@@ -23,6 +23,7 @@ package io.github.qauxv.util;
 
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.activity.EulaActivity;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.util.data.UserStatusConst;
@@ -63,7 +64,7 @@ public class LicenseStatus {
 
     public static void setUserCurrentStatus() {
         new Thread(() -> {
-            int currentStatus = TransactionHelper.getUserStatus(Utils.getLongAccountUin());
+            int currentStatus = TransactionHelper.getUserStatus(AppRuntimeHelper.getLongAccountUin());
             // 如果获取不到就放弃更新状态
             if (currentStatus == UserStatusConst.notExist) {
                 return;

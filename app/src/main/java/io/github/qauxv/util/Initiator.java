@@ -21,7 +21,7 @@
  */
 package io.github.qauxv.util;
 
-import static io.github.qauxv.util.Utils.PACKAGE_NAME_QQ;
+import static cc.ioctl.util.HostInfo.PACKAGE_NAME_QQ;
 
 import android.os.Parcelable;
 import me.singleneuron.qn_kernel.data.HostInfo;

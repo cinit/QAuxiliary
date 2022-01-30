@@ -23,8 +23,8 @@ package io.github.qauxv.bridge;
 
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator.load;
-import static io.github.qauxv.util.Utils.getQQAppInterface;
-import static io.github.qauxv.util.Utils.getTroopManager;
+import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
+import static io.github.qauxv.bridge.ManagerHelper.getTroopManager;
 
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XposedHelpers;

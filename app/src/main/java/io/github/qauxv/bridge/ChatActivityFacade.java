@@ -24,8 +24,8 @@ package io.github.qauxv.bridge;
 import static io.github.qauxv.util.Initiator._BaseSessionInfo;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
-import static io.github.qauxv.util.Utils.getQQAppInterface;
-import static io.github.qauxv.util.Utils.getShort$Name;
+import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
+import static cc.ioctl.util.Reflex.getShortClassName;
 
 import android.content.Context;
 import android.os.Parcelable;
@@ -236,7 +236,7 @@ public class ChatActivityFacade {
         String msgText;
         Class[] argt = null;
         Method m = null;
-        switch (getShort$Name(msg)) {
+        switch (getShortClassName(msg)) {
             case "MessageForText":
             case "MessageForFoldMsg":
             case "MessageForLongTextMsg":
@@ -310,7 +310,7 @@ public class ChatActivityFacade {
                 break;
             default:
                 Toasts.error(HostInfo.getHostInfo().getApplication(),
-                    "Unsupported msg type: " + getShort$Name(msg));
+                    "Unsupported msg type: " + getShortClassName(msg));
         }
     }
 }

@@ -25,9 +25,9 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
-import io.github.qauxv.util.Utils;
 
 public class AppCompatTransferActivity extends AppCompatActivity {
 
@@ -54,6 +54,6 @@ public class AppCompatTransferActivity extends AppCompatActivity {
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        CliOper.enterModuleActivity(Utils.getShort$Name(this));
+        CliOper.enterModuleActivity(Reflex.getShortClassName(this));
     }
 }

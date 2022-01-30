@@ -28,6 +28,7 @@ import com.microsoft.appcenter.crashes.AbstractCrashesListener;
 import com.microsoft.appcenter.crashes.Crashes;
 import com.microsoft.appcenter.crashes.model.ErrorReport;
 import io.github.qauxv.BuildConfig;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigManager;
 import java.util.HashMap;
 import java.util.Map;
@@ -48,7 +49,7 @@ public class CliOper {
             return;
         }
 
-        long longAccount = Utils.getLongAccountUin();
+        long longAccount = AppRuntimeHelper.getLongAccountUin();
         if (longAccount != -1) {
             AppCenter.setUserId(String.valueOf(longAccount));
         }
@@ -100,9 +101,9 @@ public class CliOper {
             Log.e(e);
         }
         HashMap<String, String> properties = new HashMap<>();
-        properties.put("versionName", Utils.QN_VERSION_NAME);
-        properties.put("versionCode", String.valueOf(Utils.QN_VERSION_CODE));
-        long longAccount = Utils.getLongAccountUin();
+        properties.put("versionName", BuildConfig.VERSION_NAME);
+        properties.put("versionCode", String.valueOf(BuildConfig.VERSION_CODE));
+        long longAccount = AppRuntimeHelper.getLongAccountUin();
         if (longAccount != -1) {
             properties.put("Uin", String.valueOf(longAccount));
         }

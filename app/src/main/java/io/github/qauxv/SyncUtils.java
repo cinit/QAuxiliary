@@ -267,6 +267,14 @@ public class SyncUtils {
         return holder;
     }
 
+    public static void runOnUiThread(@NonNull Runnable r) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            r.run();
+        } else {
+            post(r);
+        }
+    }
+
     @SuppressLint("LambdaLast")
     public static void postDelayed(@NonNull Runnable r, long ms) {
         if (sHandler == null) {

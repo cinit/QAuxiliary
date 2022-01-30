@@ -21,14 +21,13 @@
  */
 package io.github.qauxv.bridge;
 
-import static io.github.qauxv.util.Utils.getQQAppInterface;
+import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
-import io.github.qauxv.util.Utils;
 import java.lang.reflect.Modifier;
 import me.singleneuron.qn_kernel.data.HostInfo;
 import me.singleneuron.qn_kernel.tlb.ConfigTable;
@@ -37,7 +36,7 @@ public class QQMessageFacade {
 
     public static Object get() {
         try {
-            return Reflex.invokeVirtualAny(Utils.getQQAppInterface(), Initiator._QQMessageFacade());
+            return Reflex.invokeVirtualAny(AppRuntimeHelper.getQQAppInterface(), Initiator._QQMessageFacade());
         } catch (Exception e) {
             Log.e("QQMessageFacade.get() failed!");
             Log.e(e);
