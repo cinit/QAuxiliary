@@ -24,6 +24,7 @@ package io.github.qauxv.config;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.ExfriendManager;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
@@ -31,7 +32,6 @@ import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.io.IOException;
 import java.util.Objects;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 public class ConfigItems {
 
@@ -65,10 +65,10 @@ public class ConfigItems {
         @Override
         public boolean isEnabled() {
             try {
-                Context ctx = HostInfo.getHostInfo().getApplication();
+                Context ctx = HostInfo.getApplication();
                 return new File(ctx.getFilesDir(), "qn_disable_hot_patch").exists();
             } catch (Throwable e) {
-                Toasts.error(HostInfo.hostInfo.getApplication(), e.toString());
+                Toasts.error(HostInfo.getApplication(), e.toString());
                 return false;
             }
         }
@@ -81,7 +81,7 @@ public class ConfigItems {
         @Override
         public void setEnabled(boolean enabled) {
             try {
-                Context ctx = HostInfo.getHostInfo().getApplication();
+                Context ctx = HostInfo.getApplication();
                 File f = new File(ctx.getFilesDir(), "qn_disable_hot_patch");
                 if (enabled != f.exists()) {
                     if (enabled) {
@@ -91,7 +91,7 @@ public class ConfigItems {
                     }
                 }
             } catch (Throwable e) {
-                Toasts.error(HostInfo.hostInfo.getApplication(), e.toString());
+                Toasts.error(HostInfo.getApplication(), e.toString());
             }
         }
 

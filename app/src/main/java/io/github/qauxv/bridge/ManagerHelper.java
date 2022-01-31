@@ -24,12 +24,12 @@ package io.github.qauxv.bridge;
 
 import static io.github.qauxv.util.Initiator.load;
 
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
-import me.singleneuron.qn_kernel.data.HostInfo;
 import mqq.app.AppRuntime;
 
 public class ManagerHelper {

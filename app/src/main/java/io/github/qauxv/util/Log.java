@@ -82,4 +82,9 @@ public class Log {
     public static void d(@NonNull String msg, @NonNull Throwable e) {
         android.util.Log.d(TAG, msg, e);
     }
+
+    @NonNull
+    public static String getStackTraceString(@NonNull Throwable th) {
+        return android.util.Log.getStackTraceString(th);
+    }
 }

@@ -25,10 +25,10 @@ import android.app.Application;
 import android.content.Context;
 import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
 import io.github.qauxv.MainHook;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 public class StartupRoutine {
 
@@ -52,7 +52,7 @@ public class StartupRoutine {
         EzXHelperInit.INSTANCE.initHandleLoadPackage(HookEntry.getLoadPackageParam());
         // resource injection is done somewhere else, do not init it here
         EzXHelperInit.INSTANCE.initAppContext(ctx, false, false);
-        HostInfo.init((Application) ctx);
+        HostInfoKt.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
         try {
             Natives.load(ctx);

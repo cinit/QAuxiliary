@@ -23,12 +23,12 @@
 package io.github.qauxv.bridge;
 
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Field;
-import me.singleneuron.qn_kernel.data.HostInfo;
 import mqq.app.AppRuntime;
 
 public class AppRuntimeHelper {
@@ -77,7 +77,7 @@ public class AppRuntimeHelper {
             // getAppRuntime/W invoked before NewRuntime.step
             return null;
         }
-        Object baseApplicationImpl = HostInfo.getHostInfo().getApplication();
+        Object baseApplicationImpl = HostInfo.getApplication();
         try {
             if (f_mAppRuntime == null) {
                 f_mAppRuntime = Class.forName("mqq.app.MobileQQ").getDeclaredField("mAppRuntime");

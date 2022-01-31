@@ -24,7 +24,7 @@ package io.github.qauxv.util;
 import android.app.Application;
 import cc.ioctl.util.Reflex;
 import com.microsoft.appcenter.crashes.Crashes;
-import me.singleneuron.qn_kernel.data.HostInfo;
+import cc.ioctl.util.HostInfo;
 
 public class BugCollector {
 
@@ -33,7 +33,7 @@ public class BugCollector {
             if (Reflex.isCallingFrom("BugCollector")) {
                 return;
             }
-            Application ctx = HostInfo.getHostInfo().getApplication();
+            Application ctx = HostInfo.getApplication();
             if (ctx != null) {
                 CliOper.__init__(ctx);
                 Crashes.trackError(th);

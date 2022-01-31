@@ -28,11 +28,11 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.SyncUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 /**
  * Use custom toast anywhere
@@ -64,7 +64,7 @@ public class Toasts {
                                  @NonNull final CharSequence text, int duration) {
         Objects.requireNonNull(text, "text");
         if (context == null) {
-            context = HostInfo.getHostInfo().getApplication();
+            context = HostInfo.getApplication();
         }
         final Context ctx = context;
         SyncUtils.runOnUiThread(() -> {

@@ -259,7 +259,7 @@ public class Parasitics {
                 if (index != -1) {
                     Intent raw = (Intent) args[index];
                     ComponentName component = raw.getComponent();
-                    Context hostApp = me.singleneuron.qn_kernel.data.HostInfo.getHostInfo().getApplication();
+                    Context hostApp = HostInfo.getApplication();
                     if (hostApp != null && component != null
                         && hostApp.getPackageName().equals(component.getPackageName())
                         && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {

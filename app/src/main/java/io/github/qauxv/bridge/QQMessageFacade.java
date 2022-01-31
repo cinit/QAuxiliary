@@ -23,14 +23,14 @@ package io.github.qauxv.bridge;
 
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Modifier;
-import me.singleneuron.qn_kernel.data.HostInfo;
-import me.singleneuron.qn_kernel.tlb.ConfigTable;
+import me.singleneuron.tlb.ConfigTable;
 
 public class QQMessageFacade {
 

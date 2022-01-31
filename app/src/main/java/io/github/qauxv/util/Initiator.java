@@ -24,7 +24,7 @@ package io.github.qauxv.util;
 import static cc.ioctl.util.HostInfo.PACKAGE_NAME_QQ;
 
 import android.os.Parcelable;
-import me.singleneuron.qn_kernel.data.HostInfo;
+import cc.ioctl.util.HostInfo;
 import mqq.app.AppRuntime;
 
 @SuppressWarnings("rawtypes")

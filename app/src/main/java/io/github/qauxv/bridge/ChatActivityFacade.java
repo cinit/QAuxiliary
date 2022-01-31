@@ -29,6 +29,7 @@ import static cc.ioctl.util.Reflex.getShortClassName;
 
 import android.content.Context;
 import android.os.Parcelable;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
@@ -38,7 +39,6 @@ import java.io.Externalizable;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
-import me.singleneuron.qn_kernel.data.HostInfo;
 import mqq.app.AppRuntime;
 
 public class ChatActivityFacade {
@@ -242,7 +242,7 @@ public class ChatActivityFacade {
             case "MessageForLongTextMsg":
                 msgText = (String) Reflex.getInstanceObjectOrNull(msg, "msg");
                 if (msgText.length() > 3000) {
-                    Toasts.error(HostInfo.getHostInfo().getApplication(),
+                    Toasts.error(HostInfo.getApplication(),
                         "暂不支持发送长消息");
                     return;
                 }
@@ -256,10 +256,10 @@ public class ChatActivityFacade {
                     // ignore
                 }
                 if (atInfo == null) {
-                    sendMessage(app, HostInfo.getHostInfo().getApplication(), session,
+                    sendMessage(app, HostInfo.getApplication(), session,
                         msgText);
                 } else {
-                    sendMessage(app, HostInfo.getHostInfo().getApplication(), session,
+                    sendMessage(app, HostInfo.getApplication(), session,
                         msgText, atInfo, null);
                 }
                 break;
@@ -287,7 +287,7 @@ public class ChatActivityFacade {
                         m.invoke(null, app, session, msg, 0);
                     }
                 } catch (Exception e) {
-                    Toasts.error(HostInfo.getHostInfo().getApplication(),
+                    Toasts.error(HostInfo.getApplication(),
                         e.toString().replace("java.lang.", ""));
                     Log.e(e);
                 }
@@ -297,19 +297,19 @@ public class ChatActivityFacade {
                     String url = (String) Reflex.invokeVirtual(msg, "getLocalFilePath");
                     File file = new File(url);
                     if (!file.exists()) {
-                        Toasts.error(HostInfo.getHostInfo().getApplication(),
+                        Toasts.error(HostInfo.getApplication(),
                             "未找到语音文件");
                         return;
                     }
                     sendPttMessage(getQQAppInterface(), session, url);
                 } catch (Exception e) {
-                    Toasts.error(HostInfo.getHostInfo().getApplication(),
+                    Toasts.error(HostInfo.getApplication(),
                         e.toString().replace("java.lang.", ""));
                     Log.e(e);
                 }
                 break;
             default:
-                Toasts.error(HostInfo.getHostInfo().getApplication(),
+                Toasts.error(HostInfo.getApplication(),
                     "Unsupported msg type: " + getShortClassName(msg));
         }
     }

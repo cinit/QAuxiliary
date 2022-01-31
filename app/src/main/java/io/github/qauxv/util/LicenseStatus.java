@@ -21,6 +21,7 @@
  */
 package io.github.qauxv.util;
 
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.activity.EulaActivity;
 import io.github.qauxv.bridge.AppRuntimeHelper;
@@ -29,7 +30,6 @@ import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.util.data.UserStatusConst;
 import java.io.IOException;
 import java.util.Date;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 public class LicenseStatus {
 
@@ -48,7 +48,7 @@ public class LicenseStatus {
             ConfigManager.getDefaultConfig().save();
         } catch (IOException e) {
             Log.e(e);
-            Toasts.error(HostInfo.getHostInfo().getApplication(), e.toString());
+            Toasts.error(HostInfo.getApplication(), e.toString());
         }
     }
 
@@ -82,7 +82,7 @@ public class LicenseStatus {
                     .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())));
             } catch (IOException e) {
                 Log.e(e);
-                Toasts.error(HostInfo.getHostInfo().getApplication(), e.toString());
+                Toasts.error(HostInfo.getApplication(), e.toString());
             }
         }).start();
 

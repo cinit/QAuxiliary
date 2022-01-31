@@ -32,11 +32,11 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
-import me.singleneuron.qn_kernel.tlb.ActivityRouter;
 
 /**
  * Used to jump into module proxy Activities from external Intent
@@ -78,9 +78,8 @@ public class JumpActivityEntryHook {
                         if (LicenseStatus.sDisableCommonHooks) {
                         } else {
                             Intent realIntent = new Intent(intent);
-                            realIntent
-                                .setComponent(new ComponentName(activity,
-                                    ActivityRouter.INSTANCE.getActivityClass()));
+                            realIntent.setComponent(new ComponentName(activity,
+                                SettingsUiFragmentHostActivity.class));
                             activity.startActivity(realIntent);
                         }
                     } else if (JUMP_ACTION_START_ACTIVITY.equals(cmd)) {

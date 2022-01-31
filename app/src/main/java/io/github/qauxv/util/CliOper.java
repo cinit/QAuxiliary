@@ -22,6 +22,7 @@
 package io.github.qauxv.util;
 
 import android.app.Application;
+import cc.ioctl.util.HostInfo;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.AbstractCrashesListener;
@@ -32,7 +33,6 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigManager;
 import java.util.HashMap;
 import java.util.Map;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 public class CliOper {
 
@@ -91,7 +91,7 @@ public class CliOper {
     }
 
     public static void onLoad() {
-        CliOper.__init__(HostInfo.getHostInfo().getApplication());
+        CliOper.__init__(HostInfo.getApplication());
         final String LAST_TRACE_HASHCODE_CONFIG = "lastTraceHashcode";
         ConfigManager configManager = ConfigManager.getDefaultConfig();
         Integer oldHashCode = null;
@@ -117,7 +117,7 @@ public class CliOper {
         } catch (Exception e) {
             //ignored
         }
-        __init__(HostInfo.getHostInfo().getApplication());
+        __init__(HostInfo.getApplication());
         Analytics.trackEvent("onLoad", properties);
         Log.d("start App Center Trace OnLoad:" + properties.toString());
     }
@@ -126,7 +126,7 @@ public class CliOper {
         if (msg == null) {
             return;
         }
-        __init__(HostInfo.getHostInfo().getApplication());
+        __init__(HostInfo.getApplication());
         try {
             Analytics.trackEvent("copyCardMsg", digestCardMsg(msg));
         } catch (Throwable e) {
@@ -138,7 +138,7 @@ public class CliOper {
         if (msg == null) {
             return;
         }
-        __init__(HostInfo.getHostInfo().getApplication());
+        __init__(HostInfo.getApplication());
         try {
             Map<String, String> prop = digestCardMsg(msg);
             prop.put("uin", String.valueOf(uin));
@@ -159,7 +159,7 @@ public class CliOper {
         properties.put("msg", msg);
         properties.put("uin", String.valueOf(uin));
         properties.put("count", String.valueOf(count));
-        __init__(HostInfo.getHostInfo().getApplication());
+        __init__(HostInfo.getApplication());
         Analytics.trackEvent("batchSendMsg", properties);
     }
 
@@ -272,7 +272,7 @@ public class CliOper {
 
     public static void enterModuleActivity(String shortName) {
         try {
-            __init__(HostInfo.getHostInfo().getApplication());
+            __init__(HostInfo.getApplication());
             Map<String, String> prop = new HashMap<>();
             prop.put("name", shortName);
             Analytics.trackEvent("enterModuleActivity", prop);

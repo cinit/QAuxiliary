@@ -26,6 +26,7 @@ import static io.github.qauxv.config.MmkvConfigManagerImpl.TYPE_JSON;
 import static io.github.qauxv.config.MmkvConfigManagerImpl.TYPE_SUFFIX;
 
 import android.os.Looper;
+import cc.ioctl.util.HostInfo;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import io.github.qauxv.SyncUtils;
@@ -33,7 +34,6 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Type;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 public class ConfigData<T> {
 
@@ -90,10 +90,10 @@ public class ConfigData<T> {
             }
             Log.e(e);
             if (Looper.myLooper() == Looper.getMainLooper()) {
-                Toasts.error(HostInfo.getHostInfo().getApplication(), "设置存储失败, 请重新设置" + e + "");
+                Toasts.error(HostInfo.getApplication(), "设置存储失败, 请重新设置" + e + "");
             } else {
                 SyncUtils.post(() -> Toasts
-                    .error(HostInfo.getHostInfo().getApplication(), "设置存储失败, 请重新设置" + e + ""));
+                    .error(HostInfo.getApplication(), "设置存储失败, 请重新设置" + e + ""));
             }
         }
     }

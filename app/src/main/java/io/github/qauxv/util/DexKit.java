@@ -29,6 +29,7 @@ import static io.github.qauxv.util.Initiator.load;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
@@ -45,7 +46,6 @@ import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.regex.Pattern;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 /**
  * I hadn't obfuscated the source code. I just don't want to name it, leaving it a()
@@ -260,7 +260,7 @@ public class DexKit {
         try {
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault("cache_" + a(i) + "_code", 0);
-            if (HostInfo.getHostInfo().getVersionCode32() != lastVersion) {
+            if (HostInfo.getVersionCode32() != lastVersion) {
                 return null;
             }
             String name = cache.getString("cache_" + a(i) + "_method");
@@ -290,7 +290,7 @@ public class DexKit {
         }
         int ver = -1;
         try {
-            ver = HostInfo.getHostInfo().getVersionCode32();
+            ver = HostInfo.getVersionCode32();
         } catch (Throwable ignored) {
         }
         try {
@@ -305,7 +305,7 @@ public class DexKit {
                 Log.i("Unable to deobf: " + c(i));
                 // save failed state
                 cache.putString("cache_" + a(i) + "_method", NO_SUCH_METHOD.toString());
-                cache.putInt("cache_" + a(i) + "_code", HostInfo.getHostInfo().getVersionCode32());
+                cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
                 cache.save();
                 return null;
             }
@@ -321,19 +321,18 @@ public class DexKit {
                 Log.i("Multiple classes candidates found, none satisfactory.");
                 // save failed state
                 cache.putString("cache_" + a(i) + "_method", NO_SUCH_METHOD.toString());
-                cache.putInt("cache_" + a(i) + "_code", HostInfo.getHostInfo().getVersionCode32());
+                cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
                 cache.save();
                 return null;
             }
             cache.putString("cache_" + a(i) + "_method", ret.toString());
-            cache.putInt("cache_" + a(i) + "_code", HostInfo.getHostInfo().getVersionCode32());
+            cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
             cache.save();
         } catch (Exception e) {
             Log.e(e);
         }
         return ret;
     }
-
 
     public static String a(int i) {
         switch (i) {

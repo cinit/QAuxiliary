@@ -33,7 +33,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import me.singleneuron.qn_kernel.data.HostInfo;
+import cc.ioctl.util.HostInfo;
 
 @SuppressWarnings("CharsetObjectCanBeUsed")
 public class ArscKit {
@@ -140,7 +140,7 @@ public class ArscKit {
         } catch (NumberFormatException ignored) {
         }
         if (ctx == null) {
-            ctx = HostInfo.getHostInfo().getApplication();
+            ctx = HostInfo.getApplication();
         }
         String pkg = ctx.getPackageName();
         int ret = ctx.getResources().getIdentifier(name, type, pkg);
@@ -151,7 +151,7 @@ public class ArscKit {
         ConfigManager cache = ConfigManager.getCache();
         ret = cache.getIntOrDefault(CACHED_RES_ID_NAME_PREFIX + type + "/" + name, 0);
         int oldcode = cache.getIntOrDefault(CACHED_RES_ID_CODE_PREFIX + type + "/" + name, -1);
-        int currcode = HostInfo.getHostInfo().getVersionCode32();
+        int currcode = HostInfo.getVersionCode32();
         if (ret != 0 && (oldcode == currcode)) {
             return ret;
         }

@@ -30,7 +30,8 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
-import io.github.qauxv.hook.AbsDelayableHook;
+import cc.ioctl.util.HostInfo;
+import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -41,7 +42,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
-import me.singleneuron.qn_kernel.data.HostInfo;
 
 
 @SuppressLint("PrivateApi")
@@ -108,7 +108,7 @@ public class SyncUtils {
 
     public static void sendGenericBroadcast(Context ctx, Intent intent) {
         if (ctx == null) {
-            ctx = HostInfo.getHostInfo().getApplication();
+            ctx = HostInfo.getApplication();
         }
         intent.putExtra(_REAL_INTENT, intent.getAction());
         intent.setAction(GENERIC_WRAPPER);
@@ -126,7 +126,7 @@ public class SyncUtils {
      * @param what 0 for unspecified
      */
     public static void onFileChanged(int file, long uin, int what) {
-        Context ctx = HostInfo.getHostInfo().getApplication();
+        Context ctx = HostInfo.getApplication();
         Intent changed = new Intent(SYNC_FILE_CHANGED);
         changed.setPackage(ctx.getPackageName());
         initId();
@@ -138,7 +138,7 @@ public class SyncUtils {
     }
 
     public static void requestInitHook(int hookId, int process) {
-        Context ctx = HostInfo.getHostInfo().getApplication();
+        Context ctx = HostInfo.getApplication();
         Intent changed = new Intent(HOOK_DO_INIT);
         changed.setPackage(ctx.getPackageName());
         initId();
@@ -206,9 +206,9 @@ public class SyncUtils {
         int retry = 0;
         do {
             try {
-                List<ActivityManager.RunningAppProcessInfo> runningAppProcesses = ((ActivityManager) HostInfo
-                    .getHostInfo().getApplication().getSystemService(Context.ACTIVITY_SERVICE))
-                    .getRunningAppProcesses();
+                List<ActivityManager.RunningAppProcessInfo> runningAppProcesses =
+                    ((ActivityManager) HostInfo.getApplication().getSystemService(Context.ACTIVITY_SERVICE))
+                        .getRunningAppProcesses();
                 if (runningAppProcesses != null) {
                     for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcesses) {
                         if (runningAppProcessInfo != null
@@ -415,10 +415,11 @@ public class SyncUtils {
                     int targetType = intent.getIntExtra("process", 0);
                     int hookId = intent.getIntExtra("hook", -1);
                     if (hookId != -1 && (myType & targetType) != 0) {
-                        AbsDelayableHook hook = AbsDelayableHook.getHookByType(hookId);
-                        if (hook != null) {
+                        IDynamicHook hook = InjectDelayableHooks.getHookByType(hookId);
+                        if (hook != null && hook.isAvailable() && hook.isTargetProcess()
+                            && !hook.isPreparationRequired()) {
                             try {
-                                hook.init();
+                                hook.initialize();
                             } catch (Throwable e) {
                                 Log.e(e);
                             }
