@@ -54,7 +54,7 @@ import android.view.View
  * }
  * return score; // if score is 0, the cell will not show in the search result.
  * ```
- * If it has a on click listener, this cell will be clickable.
+ * If it has a on click listener, this cell will be clickable. If it don't have a validator, it will always be valid.
  *
  * You can't both have a switch, value, and description at the same time, if you do, the description will be ignored.
  */
@@ -62,7 +62,7 @@ interface IUiItemAgent {
     val titleProvider: (IUiItemAgent, Context) -> String
     val summaryProvider: ((IUiItemAgent, Context) -> String?)?
     val valueProvider: ((IUiItemAgent, Context) -> String?)?
-    val validator: ((IUiItemAgent, Context) -> Boolean)?
+    val validator: ((IUiItemAgent) -> Boolean)?
     val switchProvider: ISwitchCellAgent?
     val onClickListener: ((IUiItemAgent, Context, View, Invalidatable) -> Unit)?
     val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)?

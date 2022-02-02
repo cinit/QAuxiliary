@@ -22,6 +22,8 @@
 
 package io.github.qauxv.base
 
+import io.github.qauxv.step.Step
+
 /**
  * The base interface for dynamic hooks.
  * It's just a hook, not a function, having nothing to do with the UI.
@@ -92,13 +94,12 @@ interface IDynamicHook {
     val isPreparationRequired: Boolean
 
     /**
-     * Make parameters for the hook.
-     * This method is called before initialize() on background thread.
-     * You may perform time-consuming operations in this method.
+     * Get the steps which are required to be done before initialization.
+     * You may perform time-consuming operations in those steps.
      *
-     * @return true if the hook is prepared successfully and ready to initialize.
+     * @return a step array, or null if no preparation is required.
      */
-    fun makePreparations(): Boolean
+    fun makePreparationSteps(): Array<Step>?
 
     /**
      * Whether an application restart required to use this hook

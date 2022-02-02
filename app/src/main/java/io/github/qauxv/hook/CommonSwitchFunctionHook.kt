@@ -24,6 +24,7 @@ package io.github.qauxv.hook
 
 import android.content.Context
 import android.view.View
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.Invalidatable
@@ -31,10 +32,21 @@ import io.github.qauxv.base.Invalidatable
 /**
  * A function that only has a enable/disable switch function.
  */
-abstract class CommonFunctionHook(
+abstract class CommonSwitchFunctionHook(
     hookKey: String? = null,
-    defaultEnabled: Boolean = true
-) : BaseFunctionHook(hookKey, defaultEnabled) {
+    defaultEnabled: Boolean = false,
+    dexDeobfIndexes: IntArray? = null,
+    private val targetProc: Int = SyncUtils.PROC_MAIN
+) : BaseFunctionHook(hookKey, defaultEnabled, dexDeobfIndexes = dexDeobfIndexes) {
+
+    constructor() : this(null, false)
+    constructor(defaultEnabled: Boolean) : this(null, defaultEnabled)
+    constructor(key: String) : this(key, false)
+    constructor(key: String, dexDeobfIndexes: IntArray) : this(key, false, dexDeobfIndexes)
+    constructor(dexDeobfIndexes: IntArray) : this(null, false, dexDeobfIndexes)
+    constructor(key: String, targetProc: Int) : this(hookKey = key, targetProc = targetProc)
+    constructor(targetProc: Int) : this(null, targetProc = targetProc)
+    constructor(targetProc: Int, dexDeobfIndexes: IntArray) : this(null, targetProc = targetProc, dexDeobfIndexes = dexDeobfIndexes)
 
     /**
      * Name of the function.
@@ -46,12 +58,14 @@ abstract class CommonFunctionHook(
      */
     open val description: String? = null
 
+    override val targetProcesses = targetProc
+
     override val uiItemAgent: IUiItemAgent by lazy {
         object : IUiItemAgent {
             override val titleProvider: (IUiItemAgent, Context) -> String = { _, _ -> name }
             override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> description }
             override val valueProvider: ((IUiItemAgent, Context) -> String?)? = null
-            override val validator: ((IUiItemAgent, Context) -> Boolean) = { _, _ -> true }
+            override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
             override val switchProvider: ISwitchCellAgent? by lazy {
                 object : ISwitchCellAgent {
                     override val isCheckable = true
@@ -68,7 +82,4 @@ abstract class CommonFunctionHook(
             override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
         }
     }
-
-    override val uiItemLocation: Array<String>
-        get() = TODO("Not yet implemented")
 }

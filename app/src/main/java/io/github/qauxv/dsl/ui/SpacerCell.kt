@@ -7,7 +7,7 @@
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,31 +20,22 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.ioctl.util;
+package io.github.qauxv.dsl.ui
 
-import android.content.Context;
+import android.content.Context
+import android.widget.FrameLayout
+import cc.ioctl.util.LayoutHelperViewScope
 
-public class LayoutUtils {
+class SpacerCell(context: Context) : FrameLayout(context), LayoutHelperViewScope {
 
-    /**
-     * 根据手机的分辨率从 dip 的单位 转成为 px(像素)
-     */
-    public static int dip2px(Context context, float dpValue) {
-        float scale = context.getResources().getDisplayMetrics().density;
-        return (int) (dpValue * scale + 0.5f);
-    }
+    var spacerHeight: Int = 12.dp
+        set(value) {
+            field = value
+            requestLayout()
+        }
 
-    public static float dip2sp(Context context, float dpValue) {
-        float scale = context.getResources().getDisplayMetrics().density /
-            context.getResources().getDisplayMetrics().scaledDensity;
-        return dpValue * scale + 0.5f;
-    }
-
-    /**
-     * 将px值转换为sp值，保证文字大小不变
-     */
-    public static int px2sp(Context context, float pxValue) {
-        float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
-        return (int) (pxValue / fontScale + 0.5f);
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(spacerHeight, MeasureSpec.EXACTLY))
     }
 }

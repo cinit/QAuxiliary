@@ -1,0 +1,131 @@
+/*
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * https://github.com/cinit/QAuxiliary
+ *
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or any later version and our eula as published
+ * by QAuxiliary contributors.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+ */
+
+package cc.ioctl.util;
+
+import android.content.Context;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import androidx.annotation.NonNull;
+
+public class LayoutHelper {
+
+    private LayoutHelper() {
+    }
+
+    public static final int WRAP_CONTENT = ViewGroup.LayoutParams.WRAP_CONTENT;
+    public static final int MATCH_PARENT = ViewGroup.LayoutParams.MATCH_PARENT;
+
+    /**
+     * 根据手机的分辨率从 dip 的单位 转成为 px(像素)
+     */
+    public static int dip2px(Context context, float dpValue) {
+        float scale = context.getResources().getDisplayMetrics().density;
+        return (int) (dpValue * scale + 0.5f);
+    }
+
+    public static float dip2sp(Context context, float dpValue) {
+        float scale = context.getResources().getDisplayMetrics().density / context.getResources()
+            .getDisplayMetrics().scaledDensity;
+        return dpValue * scale + 0.5f;
+    }
+
+    /**
+     * 将px值转换为sp值，保证文字大小不变
+     */
+    public static int px2sp(Context context, float pxValue) {
+        float fontScale = context.getResources().getDisplayMetrics().scaledDensity;
+        return (int) (pxValue / fontScale + 0.5f);
+    }
+
+    public static LinearLayout.LayoutParams newLinearLayoutParams(int width, int height, int left, int top, int right,
+                                                                  int bottom) {
+        LinearLayout.LayoutParams ret = new LinearLayout.LayoutParams(width, height);
+        ret.setMargins(left, top, right, bottom);
+        return ret;
+    }
+
+    public static LinearLayout.LayoutParams newLinearLayoutParams(int width, int height, int gravity, int left, int top,
+                                                                  int right, int bottom) {
+        LinearLayout.LayoutParams ret = new LinearLayout.LayoutParams(width, height);
+        ret.setMargins(left, top, right, bottom);
+        ret.gravity = gravity;
+        return ret;
+    }
+
+    public static LinearLayout.LayoutParams newLinearLayoutParams(int width, int height, int margins) {
+        return newLinearLayoutParams(width, height, margins, margins, margins, margins);
+    }
+
+    public static RelativeLayout.LayoutParams newRelativeLayoutParamsM(int width, int height, int left, int top,
+                                                                       int right, int bottom, int... verbArgv) {
+        RelativeLayout.LayoutParams ret = new RelativeLayout.LayoutParams(width, height);
+        ret.setMargins(left, top, right, bottom);
+        for (int i = 0; i < verbArgv.length / 2; i++) {
+            ret.addRule(verbArgv[i * 2], verbArgv[i * 2 + 1]);
+        }
+        return ret;
+    }
+
+    public static RelativeLayout.LayoutParams newRelativeLayoutParams(int width, int height, int... verbArgv) {
+        RelativeLayout.LayoutParams ret = new RelativeLayout.LayoutParams(width, height);
+        for (int i = 0; i < verbArgv.length / 2; i++) {
+            ret.addRule(verbArgv[i * 2], verbArgv[i * 2 + 1]);
+        }
+        return ret;
+    }
+
+    public static FrameLayout.LayoutParams newFrameLayoutParamsDp(@NonNull Context ctx, int width, int height,
+                                                                  int gravity, float left, float top, float right,
+                                                                  float bottom, float start, float end) {
+        FrameLayout.LayoutParams ret = new FrameLayout.LayoutParams(width > 0 ? dip2px(ctx, width) : width,
+            height > 0 ? dip2px(ctx, height) : height);
+        ret.setMargins(dip2px(ctx, left), dip2px(ctx, top), dip2px(ctx, right), dip2px(ctx, bottom));
+        ret.setMarginStart(dip2px(ctx, start));
+        ret.setMarginEnd(dip2px(ctx, end));
+        ret.gravity = gravity;
+        return ret;
+    }
+
+    public static FrameLayout.LayoutParams newFrameLayoutParamsDp(@NonNull Context ctx, int width, int height,
+                                                                  int gravity, float left, float top, float right,
+                                                                  float bottom) {
+        return newFrameLayoutParamsDp(ctx, width, height, gravity, left, top, right, bottom, 0, 0);
+    }
+
+    public static FrameLayout.LayoutParams newFrameLayoutParams(int width, int height, int gravity, int left, int top,
+                                                                int right, int bottom, int start, int end) {
+        FrameLayout.LayoutParams ret = new FrameLayout.LayoutParams(width, height);
+        ret.setMargins(left, top, right, bottom);
+        ret.setMarginStart(start);
+        ret.setMarginEnd(end);
+        ret.gravity = gravity;
+        return ret;
+    }
+
+    public static FrameLayout.LayoutParams newFrameLayoutParams(int width, int height, int gravity, int left, int top,
+                                                                int right, int bottom) {
+        return newFrameLayoutParams(width, height, gravity, left, top, right, bottom, 0, 0);
+    }
+}

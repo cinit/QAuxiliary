@@ -27,7 +27,7 @@ import android.graphics.Color;
 import android.graphics.ColorFilter;
 import android.graphics.Paint;
 import android.graphics.drawable.Drawable;
-import cc.ioctl.util.LayoutUtils;
+import cc.ioctl.util.LayoutHelper;
 
 public class DebugDrawable extends Drawable {
 
@@ -36,8 +36,8 @@ public class DebugDrawable extends Drawable {
     int i1, i8;
 
     public DebugDrawable(Context ctx) {
-        i8 = LayoutUtils.dip2px(ctx, 8);
-        i1 = LayoutUtils.dip2px(ctx, 1);
+        i8 = LayoutHelper.dip2px(ctx, 8);
+        i1 = LayoutHelper.dip2px(ctx, 1);
         paint.setAntiAlias(false);
     }
 

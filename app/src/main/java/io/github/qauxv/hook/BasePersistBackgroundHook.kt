@@ -7,7 +7,7 @@
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -24,25 +24,15 @@ package io.github.qauxv.hook
 
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
-import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.config.ConfigManager
-import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import java.util.*
 
-abstract class BaseFunctionHook(
-    hookKey: String? = null,
-    defaultEnabled: Boolean = true,
-    dexDeobfIndexes: IntArray? = null
-) : IDynamicHook, IUiItemAgentProvider {
+abstract class BasePersistBackgroundHook : IDynamicHook {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
     private var mInitializeResult = false
-    private val mHookKey: String = hookKey ?: this::class.java.name
-    private val mDefaultEnabled: Boolean = defaultEnabled
-    private val mDexDeobfIndexes: IntArray? = dexDeobfIndexes
 
     override val isInitialized: Boolean
         get() = mInitialized
@@ -76,16 +66,16 @@ abstract class BaseFunctionHook(
 
     override val isAvailable = true
 
-    override val isPreparationRequired = mDexDeobfIndexes?.isNotEmpty() ?: false
+    override val isPreparationRequired = false
 
-    override fun makePreparationSteps(): Array<Step>? = mDexDeobfIndexes?.map { DexDeobfStep(it) }?.toTypedArray()
+    override fun makePreparationSteps(): Array<Step>? = null
 
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault("$mHookKey.enabled", mDefaultEnabled)
+        get() = true
         set(value) {
-            ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
+            // always true
         }
 
     open fun traceError(e: Throwable) {

@@ -31,7 +31,7 @@ import android.widget.LinearLayout
 import androidx.core.view.isVisible
 import androidx.core.view.minusAssign
 import androidx.core.view.plusAssign
-import cc.ioctl.util.LayoutUtils.dip2px
+import cc.ioctl.util.LayoutHelper.dip2px
 
 class ConfigView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0

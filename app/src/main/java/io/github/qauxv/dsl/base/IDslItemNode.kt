@@ -7,7 +7,7 @@
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,17 +20,20 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base.annotation;
+package io.github.qauxv.dsl.base
 
-import io.github.qauxv.base.IUiItemAgentProvider;
+import cc.ioctl.tmoe.ui.dsl.DslTMsgListItemInflatable
 
-/**
- * It's a UI item agent entry(has nothing to do with the hook).
- * <p>
- * It's should be a Kotlin object(or a Java class with a public static final INSTANCE field).
- * <p>
- * Target should be an instance of {@link IUiItemAgentProvider}
- */
-public @interface UiItemAgentEntry {
+interface IDslItemNode : DslTMsgListItemInflatable {
+    /**
+     * Human readable name of this node, will be displayed in the UI.
+     */
+    val name: String
 
+    /**
+     * The identifier of this node, will be used to identify this node in the UI.
+     * The identifier should be unique among all children of the same parent,
+     * but not necessarily unique among all nodes in the whole tree.
+     */
+    val identifier: String
 }

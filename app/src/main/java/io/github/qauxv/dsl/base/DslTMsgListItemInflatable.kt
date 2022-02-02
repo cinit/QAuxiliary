@@ -7,7 +7,7 @@
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -20,17 +20,8 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base.annotation;
+package cc.ioctl.tmoe.ui.dsl
 
-import io.github.qauxv.base.IUiItemAgentProvider;
-
-/**
- * It's a UI item agent entry(has nothing to do with the hook).
- * <p>
- * It's should be a Kotlin object(or a Java class with a public static final INSTANCE field).
- * <p>
- * Target should be an instance of {@link IUiItemAgentProvider}
- */
-public @interface UiItemAgentEntry {
-
+interface DslTMsgListItemInflatable {
+    fun inflateTMsgListItems(context: android.content.Context): List<TMsgListItem>
 }
