@@ -24,20 +24,35 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static io.github.qauxv.ui.ViewBuilder.newLinearLayoutParams;
-import static cc.ioctl.util.LayoutUtils.dip2px;
+import static cc.ioctl.util.LayoutHelper.dip2px;
 
 import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
-import io.github.qauxv.ui.CustomDialog;
+import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
+import io.github.qauxv.base.ISwitchCellAgent;
+import io.github.qauxv.base.IUiItemAgent;
+import io.github.qauxv.base.IUiItemAgentProvider;
+import io.github.qauxv.base.Invalidatable;
+import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations;
+import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
+import java.util.List;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function4;
 
-public class CheckCommonGroup {
+@UiItemAgentEntry
+public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
 
     public static void onClick(Context ctx) {
         CustomDialog dialog = CustomDialog.createFailsafe(ctx);
@@ -48,7 +63,7 @@ public class CheckCommonGroup {
         ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
         linearLayout
-            .addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
+            .addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
         AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入对方QQ号")
             .setView(linearLayout)
             .setCancelable(true)
@@ -90,4 +105,60 @@ public class CheckCommonGroup {
             });
     }
 
+    @NonNull
+    @Override
+    public Function2<IUiItemAgent, Context, String> getTitleProvider() {
+        return (agent, ctx) -> "查找共同群";
+    }
+
+    @Nullable
+    @Override
+    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Function2<IUiItemAgent, Context, String> getValueProvider() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Function1<IUiItemAgent, Boolean> getValidator() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public ISwitchCellAgent getSwitchProvider() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Function4<IUiItemAgent, Context, View, Invalidatable, Unit> getOnClickListener() {
+        return (agent, ctx, view, invalidatable) -> {
+            onClick(ctx);
+            return Unit.INSTANCE;
+        };
+    }
+
+    @Nullable
+    @Override
+    public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public IUiItemAgent getUiItemAgent() {
+        return this;
+    }
+
+    @NonNull
+    @Override
+    public String[] getUiItemLocation() {
+        return Locations.UTILITY_CATEGORY;
+    }
 }
