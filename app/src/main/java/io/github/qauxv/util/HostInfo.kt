@@ -58,7 +58,7 @@ fun init(applicationContext: Application) {
             PACKAGE_NAME_TIM -> HostSpecies.TIM
             PACKAGE_NAME_QQ_LITE -> HostSpecies.QQ_Lite
             PACKAGE_NAME_QQ_INTERNATIONAL -> HostSpecies.QQ_International
-            PACKAGE_NAME_SELF -> HostSpecies.QNotified
+            PACKAGE_NAME_SELF -> HostSpecies.QAuxiliary
             else -> HostSpecies.Unknown
         },
     )
@@ -121,6 +121,6 @@ enum class HostSpecies {
     QQ_Play,
     QQ_Lite,
     QQ_International,
-    QNotified,
+    QAuxiliary,
     Unknown
 }

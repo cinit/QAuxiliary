@@ -45,8 +45,8 @@ import java.lang.reflect.Method;
  */
 public class JumpActivityEntryHook {
 
-    public static final String JUMP_ACTION_CMD = "qn_jump_action_cmd";
-    public static final String JUMP_ACTION_TARGET = "qn_jump_action_target";
+    public static final String JUMP_ACTION_CMD = "qa_jump_action_cmd";
+    public static final String JUMP_ACTION_TARGET = "qa_jump_action_target";
     public static final String JUMP_ACTION_START_ACTIVITY = "io.github.qauxv.START_ACTIVITY";
     public static final String JUMP_ACTION_SETTING_ACTIVITY = "io.github.qauxv.SETTING_ACTIVITY";
     public static final String JUMP_ACTION_REQUEST_SKIP_DIALOG = "io.github.qauxv.REQUEST_SKIP_DIALOG";

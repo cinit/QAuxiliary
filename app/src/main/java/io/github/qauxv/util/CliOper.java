@@ -63,11 +63,11 @@ public class CliOper {
 
         @Override
         public boolean shouldProcess(ErrorReport report) {
-            return containsQN(
+            return containsQA(
                 report.getStackTrace().replace("io.github.qauxv.lifecycle.Parasitics", ""));
         }
 
-        private boolean containsQN(String string) {
+        private boolean containsQA(String string) {
             for (String name : qauxvPackageName) {
                 if (string.contains(name)) {
                     return true;
