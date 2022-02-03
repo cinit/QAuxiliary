@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.ioctl.tmoe.ui.dsl
+package io.github.qauxv.dsl.item
 
 interface DslTMsgListItemInflatable {
     fun inflateTMsgListItems(context: android.content.Context): List<TMsgListItem>

@@ -59,7 +59,7 @@ import android.view.View
  * You can't both have a switch, value, and description at the same time, if you do, the description will be ignored.
  */
 interface IUiItemAgent {
-    val titleProvider: (IUiItemAgent, Context) -> String
+    val titleProvider: (IUiItemAgent) -> String
     val summaryProvider: ((IUiItemAgent, Context) -> String?)?
     val valueProvider: ((IUiItemAgent, Context) -> String?)?
     val validator: ((IUiItemAgent) -> Boolean)?

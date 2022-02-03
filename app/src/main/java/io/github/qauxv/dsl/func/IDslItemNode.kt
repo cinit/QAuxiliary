@@ -20,30 +20,23 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.ioctl.tmoe.ui.dsl
+package io.github.qauxv.dsl.func
 
-import android.content.Context
-import android.view.View
-import android.view.ViewGroup
-import androidx.recyclerview.widget.RecyclerView
+interface IDslItemNode {
+    /**
+     * The identifier of this node, will be used to identify this node in the UI.
+     * The identifier should be unique among all children of the same parent,
+     * but not necessarily unique among all nodes in the whole tree.
+     */
+    val identifier: String
 
-interface TMsgListItem : DslTMsgListItemInflatable {
+    /**
+     * Human readable name of this node, will be displayed in the UI.
+     */
+    val name: String?
 
-    val isEnabled: Boolean
-
-    val isVoidBackground: Boolean
-
-    fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder
-
-    fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context)
-
-    fun onItemClick(v: View, position: Int, x: Int, y: Int)
-
-    val isLongClickable: Boolean
-
-    fun onLongClick(v: View, position: Int, x: Int, y: Int): Boolean
-
-    override fun inflateTMsgListItems(context: Context): List<TMsgListItem> {
-        return listOf(this)
-    }
+    /**
+     * Whether this node will show in the search result.
+     */
+    val isSearchable: Boolean
 }

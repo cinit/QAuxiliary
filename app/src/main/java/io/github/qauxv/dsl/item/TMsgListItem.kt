@@ -20,12 +20,30 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base
+package io.github.qauxv.dsl.item
 
-interface IUiItemAgentProvider {
-    val uiItemAgent: IUiItemAgent
+import android.content.Context
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
 
-    val uiItemLocation: Array<String>
+interface TMsgListItem : DslTMsgListItemInflatable {
 
-    val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+    val isEnabled: Boolean
+
+    val isVoidBackground: Boolean
+
+    fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder
+
+    fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context)
+
+    fun onItemClick(v: View, position: Int, x: Int, y: Int)
+
+    val isLongClickable: Boolean
+
+    fun onLongClick(v: View, position: Int, x: Int, y: Int): Boolean
+
+    override fun inflateTMsgListItems(context: Context): List<TMsgListItem> {
+        return listOf(this)
+    }
 }

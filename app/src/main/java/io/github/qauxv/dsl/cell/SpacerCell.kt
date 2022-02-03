@@ -20,20 +20,22 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.dsl.base
+package io.github.qauxv.dsl.cell
 
-import cc.ioctl.tmoe.ui.dsl.DslTMsgListItemInflatable
+import android.content.Context
+import android.widget.FrameLayout
+import cc.ioctl.util.LayoutHelperViewScope
 
-interface IDslItemNode : DslTMsgListItemInflatable {
-    /**
-     * Human readable name of this node, will be displayed in the UI.
-     */
-    val name: String
+class SpacerCell(context: Context) : FrameLayout(context), LayoutHelperViewScope {
 
-    /**
-     * The identifier of this node, will be used to identify this node in the UI.
-     * The identifier should be unique among all children of the same parent,
-     * but not necessarily unique among all nodes in the whole tree.
-     */
-    val identifier: String
+    var spacerHeight: Int = 12.dp
+        set(value) {
+            field = value
+            requestLayout()
+        }
+
+    override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
+        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(spacerHeight, MeasureSpec.EXACTLY))
+    }
 }

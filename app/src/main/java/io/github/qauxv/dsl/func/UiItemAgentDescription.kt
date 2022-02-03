@@ -20,12 +20,17 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base
+package io.github.qauxv.dsl.func
 
-interface IUiItemAgentProvider {
-    val uiItemAgent: IUiItemAgent
+import io.github.qauxv.base.IUiItemAgentProvider
 
-    val uiItemLocation: Array<String>
+class UiItemAgentDescription(
+    val itemAgentProvider: IUiItemAgentProvider,
+) : IDslItemNode {
 
-    val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+    override val identifier: String get() = itemAgentProvider.itemAgentProviderUniqueIdentifier
+
+    override val name: String get() = itemAgentProvider.uiItemAgent.titleProvider.invoke(itemAgentProvider.uiItemAgent)
+
+    override val isSearchable: Boolean = true
 }

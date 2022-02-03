@@ -26,15 +26,16 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import cc.ioctl.tmoe.ui.dsl.TMsgListItem
 import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.dsl.base.IDslItemNode
+import io.github.qauxv.dsl.func.IDslItemNode
 
 class TitleValueItem(
-    override val name: String,
     override val identifier: String,
+    override val name: String,
     private val agentProvider: IUiItemAgentProvider,
 ) : IDslItemNode, TMsgListItem {
+
+    override val isSearchable: Boolean = true
 
     override val isEnabled: Boolean
         get() {

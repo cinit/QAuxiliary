@@ -20,12 +20,14 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.dsl.base
+package io.github.qauxv.dsl.func
 
 abstract class BaseParentNode : IDslParentNode {
 
     protected open val mChildren: MutableList<IDslItemNode> = mutableListOf()
     override val children: List<IDslItemNode> get() = mChildren
+
+    override val isSearchable: Boolean = true
 
     override fun findChildById(id: String): IDslItemNode? {
         return mChildren.find { it.identifier == id }
@@ -57,5 +59,43 @@ abstract class BaseParentNode : IDslParentNode {
 
     override fun removeAllChildren() {
         mChildren.clear()
+    }
+
+    override fun lookupHierarchy(ids: Array<String>): IDslItemNode? {
+        if (ids.isEmpty() || (ids.size == 1 && ids[0] == "")) {
+            return this
+        }
+        val child = findChildById(ids[0]) ?: return null
+        if (ids.size == 1) {
+            return child
+        }
+        // recursive lookup
+        if (child is IDslParentNode) {
+            return child.lookupHierarchy(ids.copyOfRange(1, ids.size))
+        }
+        return null
+    }
+
+    override fun findLocationByIdentifier(identifier: String): Array<String>? {
+        if (identifier == this.identifier) {
+            // self, return empty array
+            return arrayOf()
+        }
+        for (i in 0 until mChildren.size) {
+            val child = mChildren[i]
+            if (child.identifier == identifier) {
+                // found
+                return arrayOf(child.identifier)
+            }
+            if (child is IDslParentNode) {
+                val location = child.findLocationByIdentifier(identifier)
+                if (location != null) {
+                    // found
+                    return arrayOf(child.identifier, *location)
+                }
+            }
+        }
+        // not found
+        return null
     }
 }

@@ -20,12 +20,33 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base
+package io.github.qauxv.dsl.func
 
-interface IUiItemAgentProvider {
-    val uiItemAgent: IUiItemAgent
+import io.github.qauxv.base.IUiItemAgentProvider
 
-    val uiItemLocation: Array<String>
+class CategoryDescription(
+    override val identifier: String,
+    override val name: String,
+    categoryTitleSearchable: Boolean = true,
+    initializer: (CategoryDescription.() -> Unit)?
+) : BaseParentNode() {
 
-    val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+    override val isSearchable: Boolean = categoryTitleSearchable
+
+    init {
+        initializer?.invoke(this)
+    }
+
+    fun fragment(
+        identifier: String,
+        name: String,
+        categoryTitleSearchable: Boolean = true,
+        initializer: (FragmentDescription.() -> Unit)? = null
+    ): FragmentDescription = FragmentDescription(identifier, name, categoryTitleSearchable, initializer).also {
+        addChild(it)
+    }
+
+    fun agentItem(targetItem: IUiItemAgentProvider): UiItemAgentDescription = UiItemAgentDescription(targetItem).also {
+        addChild(it)
+    }
 }

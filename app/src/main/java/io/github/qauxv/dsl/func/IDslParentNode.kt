@@ -20,12 +20,24 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.base
+package io.github.qauxv.dsl.func
 
-interface IUiItemAgentProvider {
-    val uiItemAgent: IUiItemAgent
+interface IDslParentNode : IDslItemNode {
+    val children: List<IDslItemNode>
 
-    val uiItemLocation: Array<String>
+    fun findChildById(id: String): IDslItemNode?
 
-    val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+    fun getChildAt(index: Int): IDslItemNode
+
+    fun addChild(child: IDslItemNode, index: Int = -1)
+
+    fun removeChild(child: IDslItemNode)
+
+    fun removeChildAt(index: Int)
+
+    fun removeAllChildren()
+
+    fun lookupHierarchy(ids: Array<String>): IDslItemNode?
+
+    fun findLocationByIdentifier(identifier: String): Array<String>?
 }

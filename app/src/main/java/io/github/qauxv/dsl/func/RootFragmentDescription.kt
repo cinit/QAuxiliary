@@ -20,20 +20,10 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.dsl.base
+package io.github.qauxv.dsl.func
 
-interface IDslParentNode : IDslItemNode {
-    val children: List<IDslItemNode>
-
-    fun findChildById(id: String): IDslItemNode?
-
-    fun getChildAt(index: Int): IDslItemNode
-
-    fun addChild(child: IDslItemNode, index: Int = -1)
-
-    fun removeChild(child: IDslItemNode)
-
-    fun removeChildAt(index: Int)
-
-    fun removeAllChildren()
+class RootFragmentDescription(
+    initializer: (FragmentDescription.() -> Unit)?
+) : FragmentDescription("root", "root", false, initializer) {
+    override val name: String? = null
 }

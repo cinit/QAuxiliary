@@ -62,7 +62,7 @@ abstract class CommonSwitchFunctionHook(
 
     override val uiItemAgent: IUiItemAgent by lazy {
         object : IUiItemAgent {
-            override val titleProvider: (IUiItemAgent, Context) -> String = { _, _ -> name }
+            override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
             override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> description }
             override val valueProvider: ((IUiItemAgent, Context) -> String?)? = null
             override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }

@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.dsl.ui
+package io.github.qauxv.dsl.cell
 
 import android.content.Context
 import android.graphics.Canvas
