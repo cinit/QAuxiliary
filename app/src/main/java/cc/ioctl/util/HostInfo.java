@@ -68,7 +68,7 @@ public class HostInfo {
     }
 
     public static long getLongVersionCode() {
-        return io.github.qauxv.util.HostInfo.getHostInfo().getVersionCodeLong();
+        return io.github.qauxv.util.HostInfo.getHostInfo().getVersionCode();
     }
 
     public static boolean isTim() {

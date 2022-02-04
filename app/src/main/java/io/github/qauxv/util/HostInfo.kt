@@ -94,7 +94,7 @@ fun requireMinTimVersion(versionCode: Long): Boolean {
 }
 
 fun requireMinVersion(versionCode: Long, hostSpecies: HostSpecies): Boolean {
-    return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCodeLong >= versionCode
+    return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCode >= versionCode
 }
 
 fun requireMinVersion(
@@ -109,7 +109,7 @@ data class HostInfoImpl(
     val application: Application,
     val packageName: String,
     val hostName: String,
-    val versionCodeLong: Long,
+    val versionCode: Long,
     val versionCode32: Int,
     val versionName: String,
     val hostSpecies: HostSpecies

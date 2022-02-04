@@ -91,6 +91,7 @@ object FunctionEntryRouter {
                     category("ui-group-chat-animation", "动画")
                     category("ui-group-chat-other", "其他", false)
                 }
+                fragment("ui-profile", "资料卡")
                 fragment("host-ui-misc", "杂项", false)
             }
             category("auxiliary-function", "辅助功能") {
@@ -204,6 +205,9 @@ object FunctionEntryRouter {
 
                 @JvmField
                 val CHAT_GROUP_OTHER: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-other")
+
+                @JvmField
+                val UI_PROFILE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-profile")
 
                 @JvmField
                 val UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc-title")

@@ -30,6 +30,7 @@ import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.config.ConfigManager
+import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.*
 import me.kyuubiran.util.getDefaultCfg
 import me.kyuubiran.util.getExFriendCfg
@@ -129,6 +130,12 @@ internal fun <T : IDynamicHook> T.tryOrFalse(function: () -> Unit): Boolean {
     }
 }
 
+internal fun <T : IDynamicHook> T.throwOrTrue(function: () -> Unit): Boolean {
+    if (!this.isAvailable) return false
+    function()
+    return true
+}
+
 internal fun Any?.get(name: String): Any? = this.get(name, null)
 
 internal fun <T> Any?.get(name: String, type: Class<out T>? = null): T? =
@@ -200,7 +207,11 @@ internal fun Member.hookBefore(
     override fun beforeMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        if (baseHook is BaseFunctionHook) {
+            baseHook.traceError(e)
+        } else {
+            logThrowable(e)
+        }
     }
 })
 
@@ -211,7 +222,11 @@ internal fun Member.hookAfter(
     override fun afterMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        if (baseHook is BaseFunctionHook) {
+            baseHook.traceError(e)
+        } else {
+            logThrowable(e)
+        }
     }
 })
 
@@ -226,7 +241,11 @@ internal fun <T : Any> Member.replace(
     override fun replaceMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        if (baseHook is BaseFunctionHook) {
+            baseHook.traceError(e)
+        } else {
+            logThrowable(e)
+        }
         null
     }
 })

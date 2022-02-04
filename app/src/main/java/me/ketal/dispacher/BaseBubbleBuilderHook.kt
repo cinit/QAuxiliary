@@ -26,18 +26,17 @@ import android.view.View
 import android.view.ViewGroup
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
-import io.github.qauxv.hook.CommonDelayableHook
+import io.github.qauxv.hook.BasePersistBackgroundHook
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
-import me.singleneuron.qn_kernel.data.MsgRecordData
+import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.hook.HideTroopLevel
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.isPublic
-import xyz.nextalone.util.tryOrFalse
 
 @FunctionHookEntry
-object BaseBubbleBuilderHook : CommonDelayableHook("__NOT_USED__") {
+object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
     //Register your decorator here
     private val decorators = arrayOf<OnBubbleBuilder>(
         HideTroopLevel,
@@ -45,7 +44,8 @@ object BaseBubbleBuilderHook : CommonDelayableHook("__NOT_USED__") {
         ChatItemShowQQUin,
     )
 
-    override fun initOnce() = tryOrFalse {
+    @Throws(Exception::class)
+    override fun initOnce(): Boolean {
         for (m in "com.tencent.mobileqq.activity.aio.BaseBubbleBuilder".clazz?.methods!!) {
             //
             if (m.name != "a") continue
@@ -60,16 +60,13 @@ object BaseBubbleBuilderHook : CommonDelayableHook("__NOT_USED__") {
                     try {
                         decorator.onGetView(rootView, msg, it)
                     } catch (e: Exception) {
-                        Log.e(e)
+                        traceError(e)
                     }
                 }
             }
         }
+        return true
     }
-
-    override fun isEnabled() = true
-
-    override fun setEnabled(enabled: Boolean) = Unit
 }
 
 interface OnBubbleBuilder {

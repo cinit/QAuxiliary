@@ -1,0 +1,101 @@
+/*
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * https://github.com/cinit/QAuxiliary
+ *
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or any later version and our eula as published
+ * by QAuxiliary contributors.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+ */
+
+package me.ketal.hook
+
+import android.text.Spannable
+import android.text.SpannableString
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
+import android.view.View
+import android.view.ViewGroup
+import android.widget.TextView
+import androidx.core.view.forEach
+import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.MainHook
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.isTim
+import me.ketal.dispacher.OnBubbleBuilder
+import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.*
+
+@UiItemAgentEntry
+object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
+
+    override val name = "消息显示At对象"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+
+    override fun initOnce() = !isTim()
+
+    override fun onGetView(
+        rootView: ViewGroup,
+        chatMessage: MsgRecordData,
+        param: XC_MethodHook.MethodHookParam
+    ) {
+        if (!isEnabled || 1 != chatMessage.isTroop) return
+        val textMsgType = "com.tencent.mobileqq.data.MessageForText".clazz!!
+        val extStr = chatMessage.msgRecord.invoke(
+            "getExtInfoFromExtStr",
+            "troop_at_info_list", String::class.java
+        ) ?: return
+        if ("" == extStr) return
+        val atList = (textMsgType.method("getTroopMemberInfoFromExtrJson")
+            ?.invoke(null, extStr) ?: return) as List<*>
+        when (val content = rootView.findHostView<View>("chat_item_content_layout")) {
+            is TextView -> {
+                copeAtInfo(content, atList)
+            }
+            is ViewGroup -> {
+                content.forEach {
+                    if (it is TextView)
+                        copeAtInfo(it, atList)
+                }
+            }
+            else -> {
+                Log.d("暂不支持的控件类型--->$content")
+                return
+            }
+        }
+    }
+
+    private fun copeAtInfo(textView: TextView, atList: List<*>) {
+        val spannableString = SpannableString(textView.text)
+        atList.forEach {
+            val uin = it.get("uin") as Long
+            val start = (it.get("startPos") as Short).toInt()
+            val length = it.get("textLen") as Short
+            if (spannableString[start] == '@')
+                spannableString.setSpan(ProfileCardSpan(uin), start, start + length, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+        }
+        textView.text = spannableString
+        textView.movementMethod = LinkMovementMethod.getInstance()
+    }
+}
+
+class ProfileCardSpan(val qq: Long) : ClickableSpan() {
+    override fun onClick(v: View) {
+        MainHook.openProfileCard(v.context, qq)
+    }
+}
