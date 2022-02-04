@@ -86,8 +86,9 @@ object FunctionEntryRouter {
                     category("ui-chat-emoticon", "表情")
                     category("ui-chat-other", "其他", false)
                 }
-                fragment("host-ui-group-chat", "群聊") {
+                fragment("host-ui-group-chat", "聊天页面") {
                     category("ui-group-chat-title", "标题栏")
+                    category("ui-chat-message", "消息")
                     category("ui-group-chat-animation", "动画")
                     category("ui-group-chat-other", "其他", false)
                 }
@@ -199,6 +200,9 @@ object FunctionEntryRouter {
 
                 @JvmField
                 val CHAT_GROUP_TITLE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-title")
+
+                @JvmField
+                val UI_CHAT_MSG: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-message")
 
                 @JvmField
                 val CHAT_GROUP_ANIMATION: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-animation")
