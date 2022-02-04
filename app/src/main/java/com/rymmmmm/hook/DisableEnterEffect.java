@@ -19,9 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
-
-import static io.github.qauxv.util.Initiator._UpgradeController;
+package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -29,47 +27,42 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+//屏蔽所有进场特效
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DisableEnterEffect extends CommonSwitchFunctionHook {
+
+    public static final DisableEnterEffect INSTANCE = new DisableEnterEffect();
+
+    protected DisableEnterEffect() {
+        super("rq_disable_enter_effect");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽所有进场特效";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.CHAT_DECORATION;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator._TroopEnterEffectController().getDeclaredMethods()) {
+            if (m.getName().equals("a") && !Modifier.isStatic(m.getModifiers())
+                && m.getReturnType() == void.class) {
+                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+                return true;
             }
         }
-        return true;
+        return false;
     }
 }

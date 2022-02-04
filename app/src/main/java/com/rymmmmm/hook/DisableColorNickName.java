@@ -19,9 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
-
-import static io.github.qauxv.util.Initiator._UpgradeController;
+package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -29,45 +27,40 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+//屏蔽群聊炫彩昵称
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DisableColorNickName extends CommonSwitchFunctionHook {
+
+    public static final DisableColorNickName INSTANCE = new DisableColorNickName();
+
+    protected DisableColorNickName() {
+        super("rq_disable_color_nick_name");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽群聊炫彩昵称";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.CHAT_GROUP_TITLE;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator._ColorNickManager().getDeclaredMethods()) {
+            Class<?>[] argt = m.getParameterTypes();
+            if (m.getName().equals("a") && Modifier.isStatic(m.getModifiers())
+                && m.getReturnType() == void.class && argt.length == 3) {
+                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
             }
         }
         return true;

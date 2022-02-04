@@ -19,55 +19,65 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
+package com.rymmmmm.hook;
 
-import static io.github.qauxv.util.Initiator._UpgradeController;
-
+import android.view.View;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
+//屏蔽头像挂件
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
+
+    public static final DisableAvatarDecoration INSTANCE = new DisableAvatarDecoration();
+
+    protected DisableAvatarDecoration() {
+        super("rq_disable_avatar_decoration");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽头像挂件";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.UI_PROFILE;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator.load("com.tencent.mobileqq.vas.PendantInfo").getDeclaredMethods()) {
+            if (m.getReturnType() == void.class) {
+                Class<?>[] argt = m.getParameterTypes();
+                if (argt.length != 5) {
+                    continue;
+                }
+                if (argt[0] != View.class) {
+                    continue;
+                }
+                if (argt[1] != int.class) {
+                    continue;
+                }
+                if (argt[2] != long.class) {
+                    continue;
+                }
+                if (argt[3] != String.class) {
+                    continue;
+                }
+                if (argt[4] != int.class) {
+                    continue;
+                }
+                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
             }
         }
         return true;

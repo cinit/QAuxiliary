@@ -19,9 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
-
-import static io.github.qauxv.util.Initiator._UpgradeController;
+package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -29,45 +27,40 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+//屏蔽掉落小表情
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DisableDropSticker extends CommonSwitchFunctionHook {
+
+    public static final DisableDropSticker INSTANCE = new DisableDropSticker();
+
+    protected DisableDropSticker() {
+        super("rq_disable_drop_sticker");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽掉落小表情";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.MAIN_UI_MSG;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator._ConfigHandler().getDeclaredMethods()) {
+            Class<?>[] argt = m.getParameterTypes();
+            if (m.getName().equals("f") && !Modifier.isStatic(m.getModifiers())
+                && argt.length == 1) {
+                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
             }
         }
         return true;

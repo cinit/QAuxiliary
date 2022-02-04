@@ -22,18 +22,21 @@
 package me.kyuubiran.hook
 
 import android.app.Activity
+import android.content.Intent
+import cc.ioctl.util.HookUtils
+import cc.ioctl.util.HostInfo
+import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.DexKit
-import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.isTim
-import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.*
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -63,6 +66,56 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                     }
                 }
             }
+        for (m in Initiator.load("com.tencent.mobileqq.activity.FriendProfileCardActivity").declaredMethods) {
+            val argt = m.parameterTypes
+            if (HostInfo.getVersionCode32() <= QQVersion.QQ_8_3_6) {
+                if (m.name == "a" && !Modifier.isStatic(m.modifiers) && m.returnType == Void.TYPE) {
+                    if (argt.size != 2) {
+                        continue
+                    }
+                    if (argt[1] != Boolean::class.javaPrimitiveType) {
+                        continue
+                    }
+                    if (argt[0].superclass != Any::class.java) {
+                        continue
+                    }
+                } else {
+                    continue
+                }
+            } else {
+                if (m.name == "b" && !Modifier.isStatic(m.modifiers) && m.returnType == Void.TYPE) {
+                    if (argt.size != 1) {
+                        continue
+                    }
+                    if (argt[0].superclass == Intent::class.java) {
+                        continue
+                    }
+                    if (argt[0].superclass != Any::class.java) {
+                        continue
+                    }
+                } else {
+                    continue
+                }
+            }
+            HookUtils.hookBeforeIfEnabled(this, m) { param ->
+                val _ProfileCardInfo = (param.method as Method).parameterTypes[0]
+                val info = Reflex.getInstanceObjectOrNull(param.thisObject, "a", _ProfileCardInfo)
+                if (info != null) {
+                    val _Card = Initiator.load("com.tencent.mobileqq.data.Card")
+                    val card = Reflex.getInstanceObjectOrNull(info, "a", _Card)
+                    if (card != null) {
+                        val f = _Card.getField("lCurrentStyleId")
+                        if (f.getLong(card) == 22L || f.getLong(card) == 21L) {
+                            f.setLong(card, 0)
+                        }
+                    } else {
+                        Log.e("IgnoreDiyCard/W but info.<Card> == null")
+                    }
+                } else {
+                    Log.e("IgnoreDiyCard/W but info == null")
+                }
+            }
+        }
     }
 
     private fun copeCard(card: Any) {

@@ -19,55 +19,52 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
+package com.rymmmmm.hook;
 
-import static io.github.qauxv.util.Initiator._UpgradeController;
-
+import android.view.View;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+//强制使用默认字体
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DefaultFont extends CommonSwitchFunctionHook {
+
+    public static final DefaultFont INSTANCE = new DefaultFont();
+
+    protected DefaultFont() {
+        super("rq_default_font");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "强制使用默认字体";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.UI_CHAT_MSG;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        Class<?> C_ChatMessage = Initiator.load("com.tencent.mobileqq.data.ChatMessage");
+        for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
+            if (m.getName().equals("a") && !Modifier.isStatic(m.getModifiers())
+                && m.getReturnType() == void.class) {
+                Class<?>[] argt = m.getParameterTypes();
+                if (argt.length == 2 && argt[0] != View.class && argt[1] == C_ChatMessage) {
+                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+                }
             }
         }
         return true;

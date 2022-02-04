@@ -19,57 +19,59 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
-
-import static io.github.qauxv.util.Initiator._UpgradeController;
+package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-@FunctionHookEntry
+//屏蔽抖动窗口 作用暂时不明
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+@FunctionHookEntry
+public class DisableShakeWindow extends CommonSwitchFunctionHook {
+
+    private static final DisableShakeWindow INSTANCE = new DisableShakeWindow();
+
+    private DisableShakeWindow() {
+        super("rq_disable_shake_window");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽抖动窗口";
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return "作用暂时不明";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.CHAT_OTHER;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (int i = 1; i < 4; i++) {
+            for (Method m : Initiator
+                .load("com.tencent.mobileqq.activity.aio.helper.AIOShakeHelper$" + i).getDeclaredMethods()) {
+                if (m.getName().equals("run") && !Modifier.isStatic(m.getModifiers())) {
+                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+                    return true;
+                }
             }
         }
-        return true;
+        return false;
     }
 }

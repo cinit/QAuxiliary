@@ -19,9 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
-
-import static io.github.qauxv.util.Initiator._UpgradeController;
+package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -29,45 +27,44 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
+//屏蔽戳一戳动画
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class DisablePokeEffect extends CommonSwitchFunctionHook {
+
+    public static final DisablePokeEffect INSTANCE = new DisablePokeEffect();
+
+    public DisablePokeEffect() {
+        super("rq_disable_poke_effect");
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "屏蔽戳一戳动画";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Simplify.CHAT_DECORATION;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator._GivingHeartItemBuilder().getDeclaredMethods()) {
+            Class<?>[] argt = m.getParameterTypes();
+            if (m.getName().equals("a") && argt.length == 3 && !Modifier.isStatic(m.getModifiers())) {
+                HookUtils.hookBeforeIfEnabled(this, m, param -> {
+                    // param.setResult(null);// 此处不应为null
+                    if (param.getResult().getClass().isPrimitive()) {// 判断是boolean (基本类型)
+                        param.setResult(false);
+                    }
+                });
             }
         }
         return true;

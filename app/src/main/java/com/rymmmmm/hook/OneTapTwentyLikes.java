@@ -19,55 +19,57 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook;
+package com.rymmmmm.hook;
 
-import static io.github.qauxv.util.Initiator._UpgradeController;
+import static cc.ioctl.util.Reflex.getFirstByType;
 
+import android.view.View;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 
+//回赞界面一键20赞
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PreUpgradeHook extends CommonSwitchFunctionHook {
+public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
+
+    public static final OneTapTwentyLikes INSTANCE = new OneTapTwentyLikes();
+
+    private OneTapTwentyLikes() {
+    }
 
     @NonNull
     @Override
     public String getName() {
-        return "屏蔽更新提醒";
+        return "回赞界面一键20赞";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_MISC;
-    }
-
-    public static final PreUpgradeHook INSTANCE = new PreUpgradeHook();
-
-    private PreUpgradeHook() {
+        return Auxiliary.PROFILE_CATEGORY;
     }
 
     @Override
-    public boolean initOnce() throws Exception {
-        for (Method m : _UpgradeController().getDeclaredMethods()) {
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            if (Modifier.isStatic(m.getModifiers())) {
-                continue;
-            }
-            if (!m.getName().equals("a")) {
-                continue;
-            }
-            if (m.getReturnType().getName().contains("UpgradeDetailWrapper")) {
-                HookUtils.hookBeforeIfEnabled(this, m, 43, param -> param.setResult(null));
-                break;
+    public boolean initOnce() {
+        for (Method m : Initiator.load("com.tencent.mobileqq.activity.VisitorsActivity").getDeclaredMethods()) {
+            if (m.getName().equals("onClick")) {
+                HookUtils.hookBeforeIfEnabled(this, m, param -> {
+                    View view = (View) param.args[0];
+                    Object tag = view.getTag();
+                    Object likeClickListener = getFirstByType(param.thisObject, Initiator._VoteHelper());
+                    Method onClick = likeClickListener.getClass().getDeclaredMethod("a",
+                        tag.getClass(), ImageView.class);
+                    for (int i = 0; i < 20; i++) {
+                        onClick.invoke(likeClickListener, tag, (ImageView) view);
+                    }
+                });
             }
         }
         return true;
