@@ -84,4 +84,44 @@ public class HookUtils {
                                            final @NonNull BeforeHookedMethod beforeHookedMethod) {
         hookBeforeIfEnabled(this0, method, 50, beforeHookedMethod);
     }
+
+    public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                       int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    afterHookedMethod.afterHookedMethod(param);
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        });
+    }
+
+    public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                        int priority, final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    beforeHookedMethod.beforeHookedMethod(param);
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        });
+    }
+
+    public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                       final @NonNull AfterHookedMethod afterHookedMethod) {
+        hookAfterAlways(this0, method, 50, afterHookedMethod);
+    }
+
+    public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                        final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        hookBeforeAlways(this0, method, 50, beforeHookedMethod);
+    }
 }

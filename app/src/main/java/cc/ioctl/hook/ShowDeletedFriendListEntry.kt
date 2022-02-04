@@ -33,7 +33,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 
 @UiItemAgentEntry
 object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchCellAgent {
-    override val titleProvider: (IUiItemAgent, Context) -> String = { _, _ -> "显示历史好友入口" }
+    override val titleProvider: (IUiItemAgent) -> String = { _ -> "显示历史好友入口" }
     override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> "在好友列表下方显示历史好友入口" }
     override val valueProvider: ((IUiItemAgent, Context) -> String?)? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
@@ -41,7 +41,7 @@ object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchC
     override val onClickListener: ((IUiItemAgent, Context, View, Invalidatable) -> Unit)? = null
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
     override val uiItemAgent: IUiItemAgent = this
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.PASSIVE_AUXILIARY_CATEGORY
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.FRIEND_CATEGORY
     override var isChecked = isEnable
     override val isCheckable: Boolean = true
     var isEnable: Boolean

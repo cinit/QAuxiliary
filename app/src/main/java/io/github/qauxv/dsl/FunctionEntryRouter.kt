@@ -99,14 +99,21 @@ object FunctionEntryRouter {
                     category("auxiliary-message", "消息")
                 }
                 fragment("auxiliary-file", "文件与存储")
-                fragment("auxiliary-profile", "资料卡")
+                fragment("auxiliary-friend-and-profile", "好友和资料卡") {
+                    category("auxiliary-friend", "好友")
+                    category("auxiliary-profile", "资料卡")
+                }
+                fragment("auxiliary-notification", "通知设置")
                 fragment("auxiliary-experimental", "实验性功能")
                 fragment("auxiliary-misc", "杂项", false)
             }
             fragment("entertainment-function", "娱乐功能")
+            category("debug-category", "调试", false) {
+                fragment("debug-function", "调试功能", false)
+                fragment("argv-config", "参数配置")
+                fragment("debug-impl", "故障排查")
+            }
             category("other-config", "其他") {
-                fragment("other-argv-config", "参数配置")
-                fragment("other-debug", "故障排查")
                 fragment("other-coming-soon", "开发中的功能", false)
                 fragment("other-about", "关于", false)
             }
@@ -147,88 +154,101 @@ object FunctionEntryRouter {
      */
     class Locations {
         companion object {
-            @JvmStatic
+            @JvmField
             val ANY_CAST_PREFIX: String = "@any-cast"
+        }
 
-            class Simplify {
-                companion object {
-                    /**
-                     * 主页
-                     */
-                    @JvmStatic
-                    val MAIN_UI_TITLE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-title")
+        class Simplify {
+            companion object {
+                /**
+                 * 主页
+                 */
+                @JvmField
+                val MAIN_UI_TITLE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-title")
 
-                    @JvmStatic
-                    val MAIN_UI_MSG: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-msg")
+                @JvmField
+                val MAIN_UI_MSG: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-msg")
 
-                    @JvmStatic
-                    val MAIN_UI_CONTACT: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-contact")
+                @JvmField
+                val MAIN_UI_CONTACT: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-contact")
 
-                    @JvmStatic
-                    val MAIN_UI_OPERATION_LOG: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-operation-log")
+                @JvmField
+                val MAIN_UI_OPERATION_LOG: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-operation-log")
 
-                    @JvmStatic
-                    val MAIN_UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc")
+                @JvmField
+                val MAIN_UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc")
 
-                    /**
-                     * 侧滑烂
-                     */
-                    @JvmStatic
-                    val SLIDING_UI: Array<String> = arrayOf(ANY_CAST_PREFIX, "host-ui-sideswipe")
+                /**
+                 * 侧滑烂
+                 */
+                @JvmField
+                val SLIDING_UI: Array<String> = arrayOf(ANY_CAST_PREFIX, "host-ui-sideswipe")
 
-                    /**
-                     * 聊天
-                     */
-                    @JvmStatic
-                    val CHAT_DECORATION: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-decoration")
+                /**
+                 * 聊天
+                 */
+                @JvmField
+                val CHAT_DECORATION: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-decoration")
 
-                    @JvmStatic
-                    val CHAT_EMOTICON: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-emoticon")
+                @JvmField
+                val CHAT_EMOTICON: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-emoticon")
 
-                    @JvmStatic
-                    val CHAT_OTHER: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-other")
+                @JvmField
+                val CHAT_OTHER: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-chat-other")
 
-                    @JvmStatic
-                    val CHAT_GROUP_TITLE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-title")
+                @JvmField
+                val CHAT_GROUP_TITLE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-title")
 
-                    @JvmStatic
-                    val CHAT_GROUP_ANIMATION: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-animation")
+                @JvmField
+                val CHAT_GROUP_ANIMATION: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-animation")
 
-                    @JvmStatic
-                    val CHAT_GROUP_OTHER: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-other")
+                @JvmField
+                val CHAT_GROUP_OTHER: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-group-chat-other")
 
-                    @JvmStatic
-                    val UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc-title")
-                }
+                @JvmField
+                val UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc-title")
             }
+        }
 
-            class Auxiliary {
-                companion object {
-                    @JvmStatic
-                    val CHAT_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-chat")
+        class Auxiliary {
+            companion object {
+                @JvmField
+                val CHAT_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-chat")
 
-                    @JvmStatic
-                    val MESSAGE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-message")
+                @JvmField
+                val MESSAGE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-message")
 
-                    @JvmStatic
-                    val FILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-file")
+                @JvmField
+                val FILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-file")
 
-                    @JvmStatic
-                    val PROFILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-profile")
+                @JvmField
+                val FRIEND_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-friend")
 
-                    @JvmStatic
-                    val EXPERIMENTAL_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-experimental")
+                @JvmField
+                val PROFILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-profile")
 
-                    @JvmStatic
-                    val MISC_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-misc")
-                }
+                @JvmField
+                val NOTIFICATION_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-notification")
+
+                @JvmField
+                val EXPERIMENTAL_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-experimental")
+
+                @JvmField
+                val MISC_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-misc")
             }
+        }
 
-            class Entertainment {
-                companion object {
-                    @JvmStatic
-                    val ENTERTAIN_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "entertainment-function")
-                }
+        class Entertainment {
+            companion object {
+                @JvmField
+                val ENTERTAIN_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "entertainment-function")
+            }
+        }
+
+        class DebugCategory {
+            companion object {
+                @JvmField
+                val DEBUG_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "debug-function")
             }
         }
     }

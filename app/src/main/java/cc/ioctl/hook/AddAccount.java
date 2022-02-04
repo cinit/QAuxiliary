@@ -28,8 +28,6 @@ import static cc.ioctl.util.LayoutHelper.dip2px;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.Intent;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -43,9 +41,11 @@ import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.Invalidatable;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Entertainment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
+import java.io.File;
+import java.io.IOException;
 import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -53,65 +53,59 @@ import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function4;
 
 @UiItemAgentEntry
-public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
+public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
 
-    public static void onClick(Context ctx) {
-        CustomDialog dialog = CustomDialog.createFailsafe(ctx);
+    public static void onAddAccountClick(Context context) {
+        CustomDialog dialog = CustomDialog.createFailsafe(context);
+        Context ctx = dialog.getContext();
         EditText editText = new EditText(ctx);
         editText.setTextSize(16);
-        int _5 = dip2px(ctx, 5);
+        int _5 = dip2px(context, 5);
         editText.setPadding(_5, _5, _5, _5);
         ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
-        linearLayout
-                .addView(editText,
-                        LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
-        AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入对方QQ号")
-                .setView(linearLayout)
-                .setCancelable(true)
-                .setPositiveButton("打开QQ号", null)
-                .setNegativeButton("取消", null)
-                .create();
+        linearLayout.addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
+        AlertDialog alertDialog = (AlertDialog) dialog
+            .setTitle("输入要添加的QQ号")
+            .setView(linearLayout)
+            .setPositiveButton("添加", null)
+            .setNegativeButton("取消", null)
+            .create();
         alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                .setOnClickListener(v -> {
-                    String text = editText.getText().toString();
-                    if (TextUtils.isEmpty(text)) {
-                        Toasts.error(ctx, "请输入QQ号");
-                        return;
-                    }
-                    long uin = 0;
-                    try {
-                        uin = Long.parseLong(text);
-                    } catch (NumberFormatException ignored) {
-                    }
-                    if (uin < 10000) {
-                        Toasts.error(ctx, "请输入有效的QQ号");
-                        return;
-                    }
-                    alertDialog.dismiss();
-                    Class<?> browser = null;
-                    try {
-                        browser = Class
-                                .forName(
-                                        "com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
-                        Intent intent = new Intent(ctx, browser);
-                        intent.putExtra("fling_action_key", 2);
-                        intent.putExtra("fling_code_key", ctx.hashCode());
-                        intent.putExtra("useDefBackText", true);
-                        intent.putExtra("param_force_internal_browser", true);
-                        intent.putExtra("url", "https://ti.qq.com/friends/recall?uin=" + uin);
-                        ctx.startActivity(intent);
-                    } catch (ClassNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                });
+        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v1 -> {
+            String uinText = editText.getText().toString();
+            long uin = -1;
+            try {
+                uin = Long.parseLong(uinText);
+            } catch (NumberFormatException ignored) {
+            }
+            if (uin < 10000) {
+                Toasts.error(context, "QQ号无效");
+                return;
+            }
+            boolean success;
+            File f = new File(context.getFilesDir(), "user/u_" + uin + "_t");
+            try {
+                success = f.createNewFile();
+            } catch (IOException e) {
+                Toasts.error(context,
+                    e.toString().replaceAll("java\\.(lang|io)\\.", ""));
+                return;
+            }
+            if (success) {
+                Toasts.success(context, "已添加");
+            } else {
+                Toasts.info(context, "该账号已存在");
+                return;
+            }
+            alertDialog.dismiss();
+        });
     }
 
     @NonNull
     @Override
     public Function1<IUiItemAgent, String> getTitleProvider() {
-        return agent -> "查找共同群";
+        return (agent) -> "添加账号";
     }
 
     @Nullable
@@ -141,8 +135,8 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
     @Nullable
     @Override
     public Function4<IUiItemAgent, Context, View, Invalidatable, Unit> getOnClickListener() {
-        return (agent, ctx, view, invalidatable) -> {
-            onClick(ctx);
+        return (agent, context, view, invalidator) -> {
+            onAddAccountClick(context);
             return Unit.INSTANCE;
         };
     }
@@ -162,7 +156,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Auxiliary.FRIEND_CATEGORY;
+        return Entertainment.ENTERTAIN_CATEGORY;
     }
 
     @NonNull
