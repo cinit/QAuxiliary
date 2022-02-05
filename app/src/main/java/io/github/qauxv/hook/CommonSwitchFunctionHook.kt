@@ -22,12 +22,13 @@
 
 package io.github.qauxv.hook
 
+import android.app.Activity
 import android.content.Context
 import android.view.View
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
-import io.github.qauxv.base.Invalidatable
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * A function that only has a enable/disable switch function.
@@ -66,7 +67,7 @@ abstract class CommonSwitchFunctionHook(
         object : IUiItemAgent {
             override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
             override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> description }
-            override val valueProvider: ((IUiItemAgent, Context) -> String?)? = null
+            override val valueState: MutableStateFlow<String?>? = null
             override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
             override val switchProvider: ISwitchCellAgent? by lazy {
                 object : ISwitchCellAgent {
@@ -80,7 +81,7 @@ abstract class CommonSwitchFunctionHook(
                         }
                 }
             }
-            override val onClickListener: ((IUiItemAgent, Context, View, Invalidatable) -> Unit)? = null
+            override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
             override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)?
                 get() = extraSearchKeywords?.let { { _, _ -> it } }
         }

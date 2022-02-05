@@ -24,6 +24,7 @@ package cc.ioctl.hook;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -40,7 +41,6 @@ import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
-import io.github.qauxv.base.Invalidatable;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.config.ConfigItems;
@@ -60,12 +60,13 @@ import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
-import kotlin.jvm.functions.Function4;
+import kotlin.jvm.functions.Function3;
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandler,
-        SyncUtils.BroadcastListener {
+public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandler, SyncUtils.BroadcastListener {
 
     public static final FakeBatteryHook INSTANCE = new FakeBatteryHook();
 
@@ -82,9 +83,9 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     private Object origStatus = null;
     private int lastFakeLevel = -1;
     private int lastFakeStatus = -1;
+    private final MutableStateFlow<String> batteryStateFlow = StateFlowKt.MutableStateFlow(null);
 
-    private static void doPostReceiveEvent(final BroadcastReceiver recv, final Context ctx,
-                                           final Intent intent) {
+    private static void doPostReceiveEvent(final BroadcastReceiver recv, final Context ctx, final Intent intent) {
         SyncUtils.post(() -> {
             SyncUtils.setTlsFlag(_FLAG_MANUAL_CALL);
             try {
@@ -113,11 +114,11 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     @SuppressLint("SoonBlockedPrivateApi")
     @Override
     public boolean initOnce() throws Exception {
+        batteryStateFlow.setValue(generateValueString());
         //for :MSF
         Method mGetSendBatteryStatus = null;
         for (Method m : load("com/tencent/mobileqq/msf/sdk/MsfSdkUtils").getMethods()) {
-            if (m.getName().equals("getSendBatteryStatus") && m.getReturnType()
-                    .equals(int.class)) {
+            if (m.getName().equals("getSendBatteryStatus") && m.getReturnType().equals(int.class)) {
                 mGetSendBatteryStatus = m;
                 break;
             }
@@ -194,8 +195,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
         // @MainProcess
         // 接下去是UI stuff, 给自己看的
         // 本来还想用反射魔改Binder/ActivityThread$ApplicationThread实现Xposed-less拦截广播onReceive的,太肝了,就不搞了
-        BatteryManager batmgr = (BatteryManager) HostInfo.getApplication()
-                .getSystemService(Context.BATTERY_SERVICE);
+        BatteryManager batmgr = (BatteryManager) HostInfo.getApplication().getSystemService(Context.BATTERY_SERVICE);
         if (batmgr == null) {
             Log.e("Wtf, init FakeBatteryHook but BatteryManager is null!");
             return false;
@@ -204,8 +204,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             //make a call to init mBatteryStats, so we don't care about the result
             batmgr.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
         }
-        Field fBatteryPropertiesRegistrar = BatteryManager.class
-                .getDeclaredField("mBatteryPropertiesRegistrar");
+        Field fBatteryPropertiesRegistrar = BatteryManager.class.getDeclaredField("mBatteryPropertiesRegistrar");
         fBatteryPropertiesRegistrar.setAccessible(true);
         origRegistrar = fBatteryPropertiesRegistrar.get(batmgr);
         Class<?> cIBatteryPropertiesRegistrar = fBatteryPropertiesRegistrar.getType();
@@ -226,19 +225,18 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
         } catch (NoSuchFieldException e) {
             if (Build.VERSION.SDK_INT >= 23) {
                 traceError(e);
-                Log.e("FakeBatteryHook/W Field mBatteryStats not found, but SDK_INT is "
-                        + Build.VERSION.SDK_INT);
+                Log.e("FakeBatteryHook/W Field mBatteryStats not found, but SDK_INT is " + Build.VERSION.SDK_INT);
             }
         }
         Object proxy;
         if (origStatus != null && cIBatteryStatus != null) {
             proxy = Proxy.newProxyInstance(Initiator.getPluginClassLoader(),
-                    new Class[]{cIBatteryPropertiesRegistrar, cIBatteryStatus}, this);
+                new Class[]{cIBatteryPropertiesRegistrar, cIBatteryStatus}, this);
             fBatteryPropertiesRegistrar.set(batmgr, proxy);
             fBatteryStatus.set(batmgr, proxy);
         } else {
             proxy = Proxy.newProxyInstance(Initiator.getPluginClassLoader(),
-                    new Class[]{cIBatteryPropertiesRegistrar}, this);
+                new Class[]{cIBatteryPropertiesRegistrar}, this);
             fBatteryPropertiesRegistrar.set(batmgr, proxy);
         }
         SyncUtils.addBroadcastListener(this);
@@ -275,7 +273,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             }
         }
         String act = isFakeBatteryCharging() ? "android.intent.action.ACTION_POWER_CONNECTED"
-                : "android.intent.action.ACTION_POWER_DISCONNECTED";
+            : "android.intent.action.ACTION_POWER_DISCONNECTED";
         final Intent intent = new Intent(act);
         intent.putExtra(BatteryManager.EXTRA_LEVEL, getFakeBatteryCapacity());
         intent.putExtra(BatteryManager.EXTRA_SCALE, 100);
@@ -283,7 +281,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
         intent.putExtra(BatteryManager.EXTRA_TECHNOLOGY, "Li-ion");
         if (isFakeBatteryCharging()) {
             intent.putExtra(BatteryManager.EXTRA_STATUS,
-                    lastFakeStatus = BatteryManager.BATTERY_STATUS_CHARGING);
+                lastFakeStatus = BatteryManager.BATTERY_STATUS_CHARGING);
             intent.putExtra(BatteryManager.EXTRA_PLUGGED, BatteryManager.BATTERY_PLUGGED_AC);
         } else {
             intent.putExtra(BatteryManager.EXTRA_STATUS, BatteryManager.BATTERY_STATUS_DISCHARGING);
@@ -300,8 +298,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
                     scheduleReceiveBatteryLevel();
                 }
                 if (lastFakeStatus == -1 ||
-                        lastFakeStatus == BatteryManager.BATTERY_STATUS_DISCHARGING
-                                == isFakeBatteryCharging()) {
+                    lastFakeStatus == BatteryManager.BATTERY_STATUS_DISCHARGING == isFakeBatteryCharging()) {
                     scheduleReceiveBatteryStatus();
                 }
             }
@@ -321,16 +318,14 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
                         if (isFakeBatteryCharging()) {
                             BatteryProperty_setLong(prop, BatteryManager.BATTERY_STATUS_CHARGING);
                         } else {
-                            BatteryProperty_setLong(prop,
-                                    BatteryManager.BATTERY_STATUS_DISCHARGING);
+                            BatteryProperty_setLong(prop, BatteryManager.BATTERY_STATUS_DISCHARGING);
                         }
                         return 0;
                     } else if (id == BatteryManager.BATTERY_PROPERTY_CAPACITY) {
                         BatteryProperty_setLong(prop, getFakeBatteryCapacity());
                         return 0;
                     }
-                } else if (method.getName().equals("isCharging") && (args == null
-                        || args.length == 0)) {
+                } else if (method.getName().equals("isCharging") && (args == null || args.length == 0)) {
                     return isFakeBatteryCharging();
                 }
             }
@@ -370,14 +365,14 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             cfg.save();
             Intent intent = new Intent(ACTION_UPDATE_BATTERY_STATUS);
             SyncUtils.sendGenericBroadcast(intent);
+            updateSettingsUiState();
         } catch (IOException e) {
             traceError(e);
         }
     }
 
     public int getFakeBatteryStatus() {
-        int val = ConfigManager.getDefaultConfig()
-                .getIntOrDefault(ConfigItems.qn_fake_bat_expr, -1);
+        int val = ConfigManager.getDefaultConfig().getIntOrDefault(ConfigItems.qn_fake_bat_expr, -1);
         if (val < 0) {
             return 0; //safe value
         }
@@ -403,8 +398,17 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
         return SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF;
     }
 
-    public static void onItemClicked(Context context, Invalidatable invalidator) {
+    public static void onItemClicked(Activity activity) {
         // TODO: 2022-02-01 add settings UI
+    }
+
+    @NonNull
+    private String generateValueString() {
+        return isEnabled() ? (getFakeBatteryCapacity() + "%" + (isFakeBatteryCharging() ? "+" : "")) : "禁用";
+    }
+
+    private void updateSettingsUiState() {
+        batteryStateFlow.setValue(generateValueString());
     }
 
     @NonNull
@@ -414,6 +418,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     }
 
     private final IUiItemAgent mUiItemAgent = new IUiItemAgent() {
+
         @NonNull
         @Override
         public Function1<IUiItemAgent, String> getTitleProvider() {
@@ -426,10 +431,10 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             return null;
         }
 
+        @NonNull
         @Override
-        public Function2<IUiItemAgent, Context, String> getValueProvider() {
-            return (agent, context) -> isEnabled() ?
-                    (getFakeBatteryCapacity() + "%" + (isFakeBatteryCharging() ? "+" : "")) : "禁用";
+        public MutableStateFlow<String> getValueState() {
+            return batteryStateFlow;
         }
 
         @Nullable
@@ -445,9 +450,9 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
         }
 
         @Override
-        public Function4<IUiItemAgent, Context, View, Invalidatable, Unit> getOnClickListener() {
-            return (agent, context, view, invalidator) -> {
-                onItemClicked(context, invalidator);
+        public Function3<IUiItemAgent, Activity, View, Unit> getOnClickListener() {
+            return (agent, activity, view) -> {
+                onItemClicked(activity);
                 return Unit.INSTANCE;
             };
         }

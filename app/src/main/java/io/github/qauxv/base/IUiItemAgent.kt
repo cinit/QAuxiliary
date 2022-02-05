@@ -22,8 +22,10 @@
 
 package io.github.qauxv.base
 
+import android.app.Activity
 import android.content.Context
 import android.view.View
+import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
  * It's a single "cell" of the UI on the settings page.
@@ -61,9 +63,9 @@ import android.view.View
 interface IUiItemAgent {
     val titleProvider: (IUiItemAgent) -> String
     val summaryProvider: ((IUiItemAgent, Context) -> String?)?
-    val valueProvider: ((IUiItemAgent, Context) -> String?)?
+    val valueState: MutableStateFlow<String?>?
     val validator: ((IUiItemAgent) -> Boolean)?
     val switchProvider: ISwitchCellAgent?
-    val onClickListener: ((IUiItemAgent, Context, View, Invalidatable) -> Unit)?
+    val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)?
     val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)?
 }
