@@ -24,6 +24,11 @@ package io.github.qauxv.util;
 import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
+import android.os.Process;
+import android.system.Os;
+import android.system.StructUtsname;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.startup.HookEntry;
@@ -32,6 +37,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Arrays;
 
 public class Natives {
 
@@ -147,8 +153,29 @@ public class Natives {
                 // direct memory map load failed, extract and dlopen
                 File libnatives = extractNativeLibrary(ctx, "natives");
                 registerNativeLibEntry(libnatives.getName());
-                System.load(libnatives.getAbsolutePath());
-                Log.d("dlopen by extract success");
+                try {
+                    System.load(libnatives.getAbsolutePath());
+                    Log.d("dlopen by extract success");
+                } catch (UnsatisfiedLinkError e3) {
+                    // give enough information to help debug
+                    // Is this CPU_ABI bad?
+                    Log.e("Build.SDK_INT=" + VERSION.SDK_INT);
+                    Log.e("Build.CPU_ABI is: " + Build.CPU_ABI);
+                    Log.e("Build.CPU_ABI2 is: " + Build.CPU_ABI2);
+                    Log.e("Build.SUPPORTED_ABIS is: " + Arrays.toString(Build.SUPPORTED_ABIS));
+                    Log.e("Build.SUPPORTED_32_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
+                    Log.e("Build.SUPPORTED_64_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
+                    // check whether this is a 64-bit ART runtime
+                    if (VERSION.SDK_INT >= VERSION_CODES.M) {
+                        Log.e("Process.is64bit is: " + Process.is64Bit());
+                    }
+                    StructUtsname uts = Os.uname();
+                    Log.e("uts.machine is: " + uts.machine);
+                    Log.e("uts.version is: " + uts.version);
+                    Log.e("uts.sysname is: " + uts.sysname);
+                    // panic, this is a bug
+                    throw e3;
+                }
             }
         } catch (ClassNotFoundException e) {
             // not in host process, ignore
