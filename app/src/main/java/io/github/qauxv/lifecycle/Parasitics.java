@@ -49,7 +49,7 @@ import cc.ioctl.util.HostInfo;
 import io.github.qauxv.MainHook;
 import io.github.qauxv.R;
 import io.github.qauxv.startup.HookEntry;
-import io.github.qauxv.ui.___WindowIsTranslucent;
+import io.github.qauxv.ui.WindowIsTranslucent;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
@@ -266,8 +266,7 @@ public class Parasitics {
                         boolean isTranslucent = false;
                         try {
                             Class<?> targetActivity = Class.forName(component.getClassName());
-                            if (targetActivity != null && (___WindowIsTranslucent.class
-                                .isAssignableFrom(targetActivity))) {
+                            if (targetActivity != null && (WindowIsTranslucent.class.isAssignableFrom(targetActivity))) {
                                 isTranslucent = true;
                             }
                         } catch (ClassNotFoundException ignored) {
