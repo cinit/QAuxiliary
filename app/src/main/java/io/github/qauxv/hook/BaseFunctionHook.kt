@@ -33,7 +33,7 @@ import java.util.*
 
 abstract class BaseFunctionHook(
     hookKey: String? = null,
-    defaultEnabled: Boolean = true,
+    defaultEnabled: Boolean = false,
     dexDeobfIndexes: IntArray? = null
 ) : IDynamicHook, IUiItemAgentProvider {
 
@@ -55,7 +55,8 @@ abstract class BaseFunctionHook(
             initOnce()
         } catch (e: Throwable) {
             traceError(e)
-            if (e !is Exception && e !is LinkageError && e !is AssertionError) {
+            // don't throw exception here, except errors like OutOfMemoryError or StackOverflowError
+            if (e is Error && e !is AssertionError && e !is LinkageError) {
                 // wtf Throwable
                 throw e
             }

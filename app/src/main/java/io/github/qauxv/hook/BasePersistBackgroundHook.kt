@@ -45,7 +45,7 @@ abstract class BasePersistBackgroundHook : IDynamicHook {
             initOnce()
         } catch (e: Throwable) {
             traceError(e)
-            if (e !is Exception && e !is LinkageError && e !is AssertionError) {
+            if (e is Error && e !is AssertionError && e !is LinkageError) {
                 // wtf Throwable
                 throw e
             }
