@@ -99,6 +99,7 @@ object FunctionEntryRouter {
                 fragment("auxiliary-chat-and-message", "聊天和消息") {
                     category("auxiliary-chat", "聊天")
                     category("auxiliary-message", "消息")
+                    category("auxiliary-guild", "频道")
                 }
                 fragment("auxiliary-file", "文件与存储")
                 fragment("auxiliary-friend-and-profile", "好友和资料卡") {
@@ -225,6 +226,9 @@ object FunctionEntryRouter {
 
                 @JvmField
                 val MESSAGE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-message")
+
+                @JvmField
+                val GUILD_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-guild")
 
                 @JvmField
                 val FILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-file")

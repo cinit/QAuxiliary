@@ -125,7 +125,11 @@ internal fun <T : IDynamicHook> T.tryOrFalse(function: () -> Unit): Boolean {
         function()
         true
     } catch (t: Throwable) {
-        logThrowable(t)
+        if (this is BaseFunctionHook) {
+            this.traceError(t)
+        } else {
+            logThrowable(t)
+        }
         false
     }
 }
