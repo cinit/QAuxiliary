@@ -42,6 +42,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 
 @SuppressLint("PrivateApi")
@@ -81,6 +83,7 @@ public class SyncUtils {
     private static int mProcType = 0;
     private static String mProcName = null;
     private static Handler sHandler;
+    private static final ExecutorService sExecutor = Executors.newCachedThreadPool();
 
     private SyncUtils() {
         throw new AssertionError("No instance for you!");
@@ -273,6 +276,10 @@ public class SyncUtils {
         } else {
             post(r);
         }
+    }
+
+    public static void async(@NonNull Runnable r) {
+        sExecutor.execute(r);
     }
 
     @SuppressLint("LambdaLast")

@@ -24,29 +24,24 @@ package io.github.qauxv.hook
 
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
-import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.base.RuntimeErrorTracer
-import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import java.util.*
 
-abstract class BaseFunctionHook(
-    hookKey: String? = null,
-    defaultEnabled: Boolean = false,
-    dexDeobfIndexes: IntArray? = null
-) : IDynamicHook, IUiItemAgentProvider,RuntimeErrorTracer {
+abstract class BaseHookDispatcher<T : IDynamicHook>(
+        dexDeobfIndexes: IntArray?
+) : IDynamicHook, RuntimeErrorTracer {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
     private var mInitializeResult = false
-    private val mHookKey: String = hookKey ?: this::class.java.name
-    private val mDefaultEnabled: Boolean = defaultEnabled
     private val mDexDeobfIndexes: IntArray? = dexDeobfIndexes
 
-    override val isInitialized: Boolean
-        get() = mInitialized
+    override val isInitialized: Boolean get() = mInitialized
+
+    abstract val decorators: Array<T>
 
     override fun initialize(): Boolean {
         if (mInitialized) {
@@ -85,9 +80,12 @@ abstract class BaseFunctionHook(
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault("$mHookKey.enabled", mDefaultEnabled)
+        get() {
+            decorators.iterator().forEach { if (it.isEnabled) return true }
+            return false
+        }
         set(value) {
-            ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
+            // not supported
         }
 
     override fun traceError(e: Throwable) {

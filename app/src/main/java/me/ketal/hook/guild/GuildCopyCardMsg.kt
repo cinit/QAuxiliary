@@ -23,7 +23,7 @@
 package me.ketal.hook.guild
 
 import android.view.View
-import cc.ioctl.hook.InputButtonHook.R_ID_COPY_CODE
+import cc.ioctl.hook.CopyCardMsg
 import cc.ioctl.util.Reflex.getFirstByType
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -60,7 +60,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
             val clQQCustomMenuItem = list.first().javaClass
             val item = CustomMenu.createItem(
                 clQQCustomMenuItem,
-                R_ID_COPY_CODE,
+                CopyCardMsg.R_ID_COPY_CODE,
                 "复制代码",
                 R.drawable.ic_guild_schedule_edit
             )
@@ -70,7 +70,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
         adapterClazz.method("onClick")?.hookBefore(this) {
             val view = it.args[0] as View
             val ctx = view.context
-            if (view.id == R_ID_COPY_CODE) {
+            if (view.id == CopyCardMsg.R_ID_COPY_CODE) {
                 it.result = null
                 val fragment = getFirstByType(it.thisObject, clFragment)
                 val chatMessage = getFirstByType(fragment,

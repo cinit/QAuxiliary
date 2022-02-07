@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.hook.BaseFunctionHook;
+import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Method;
 
@@ -42,6 +43,23 @@ public class HookUtils {
     }
 
     public static void hookAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                          int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                        afterHookedMethod.afterHookedMethod(param);
+                    }
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        });
+    }
+
+    public static void hookAfterIfEnabled(final @NonNull BaseHookDispatcher<?> this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override

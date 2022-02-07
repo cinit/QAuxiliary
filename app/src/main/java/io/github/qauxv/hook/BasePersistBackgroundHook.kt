@@ -24,11 +24,12 @@ package io.github.qauxv.hook
 
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import java.util.*
 
-abstract class BasePersistBackgroundHook : IDynamicHook {
+abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
@@ -78,7 +79,7 @@ abstract class BasePersistBackgroundHook : IDynamicHook {
             // always true
         }
 
-    open fun traceError(e: Throwable) {
+    override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
         var alreadyLogged = false
         for (error in mErrors) {

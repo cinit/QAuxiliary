@@ -436,7 +436,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         env->ExceptionClear();
         __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");
     } else {
-        jclass clazz = env->FindClass("cc/ioctl/hook/CardMsgHook");
+        jclass clazz = env->FindClass("cc/ioctl/hook/CardMsgSender");
         lMethods[0].name = "ntSendCardMsg";
         lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/String;)Z";
         lMethods[0].fnPtr = (void *) &handleSendCardMsg;
