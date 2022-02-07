@@ -5,7 +5,6 @@ end_of_line = lf
 insert_final_newline = true
 charset = utf-8
 indent_style = space
-indent_size = 4
 
 [{*.java, *.kt,*.kts, *.cpp, *.c, *.cc, *.h}]
 tab_width = 4
