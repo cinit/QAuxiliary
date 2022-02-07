@@ -24,7 +24,7 @@ package io.github.qauxv.startup;
 import android.app.Application;
 import android.content.Context;
 import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
-import io.github.qauxv.MainHook;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;

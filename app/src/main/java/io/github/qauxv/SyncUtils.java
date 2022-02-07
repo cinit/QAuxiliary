@@ -32,6 +32,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
+import io.github.qauxv.core.InjectDelayableHooks;
 import io.github.qauxv.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;

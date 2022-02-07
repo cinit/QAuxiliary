@@ -31,7 +31,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
 import de.robv.android.xposed.XC_MethodHook
-import io.github.qauxv.MainHook
+import io.github.qauxv.core.MainHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook

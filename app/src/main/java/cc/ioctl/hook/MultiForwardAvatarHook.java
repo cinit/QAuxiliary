@@ -36,7 +36,7 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.MainHook;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;

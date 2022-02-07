@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv;
+package io.github.qauxv.core;
 
 import android.content.Context;
 import android.content.Intent;
@@ -32,9 +32,9 @@ import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.SyncUtils;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigItems;
-import io.github.qauxv.hook.BaseDelayableHook;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.HideVmStack;
@@ -119,13 +119,13 @@ public class MainHook {
         }
         HideVmStack.setHideEnabled(!new File(ctx.getFilesDir(), "qn_disable_hide_vm_stack").exists());
         injectLifecycleForProcess(ctx);
-        BaseDelayableHook.allowEarlyInit(RevokeMsgHook.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(GagInfoDisclosure.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(CustomSplash.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(RemoveCameraButton.INSTANCE);
-        BaseDelayableHook.allowEarlyInit(RemoveRedDot.INSTANCE);
+        HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
+        HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
+        HookInstaller.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
+        HookInstaller.allowEarlyInit(GagInfoDisclosure.INSTANCE);
+        HookInstaller.allowEarlyInit(CustomSplash.INSTANCE);
+        HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
+        HookInstaller.allowEarlyInit(RemoveRedDot.INSTANCE);
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             injectStartupHookForMain(ctx);

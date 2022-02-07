@@ -110,7 +110,7 @@ public class RikkaBaseApkFormatDialog {
                 String format = s.toString();
                 currentFormat = format;
                 String result = format
-                        .replace("%n", "QNotified")
+                        .replace("%n", "QAuxiliary")
                         .replace("%p", HostInfo.PACKAGE_NAME_SELF)
                         .replace("%v", BuildConfig.VERSION_NAME)
                         .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));

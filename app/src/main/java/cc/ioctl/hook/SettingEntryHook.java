@@ -88,7 +88,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     item = (View) Reflex.newInstance(itemRef.getClass(), activity, Context.class);
                 }
                 item.setId(R.id.setting2Activity_settingEntryItem);
-                Reflex.invokeVirtual(item, "setLeftText", "QNotified", CharSequence.class);
+                Reflex.invokeVirtual(item, "setLeftText", "QAuxiliary", CharSequence.class);
                 Reflex.invokeVirtual(item, "setBgType", 2, int.class);
                 if (LicenseStatus.hasUserAcceptEula()) {
                     Reflex.invokeVirtual(item, "setRightText", BuildConfig.VERSION_NAME, CharSequence.class);

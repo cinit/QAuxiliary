@@ -35,7 +35,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import androidx.core.view.ViewCompat;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
-import io.github.qauxv.MainHook;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;

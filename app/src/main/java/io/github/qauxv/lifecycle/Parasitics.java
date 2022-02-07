@@ -46,7 +46,7 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.MainHook;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.R;
 import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.ui.WindowIsTranslucent;

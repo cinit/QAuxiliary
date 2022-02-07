@@ -30,9 +30,9 @@ import io.github.qauxv.base.IUiItemAgent
 import kotlinx.coroutines.flow.MutableStateFlow
 
 abstract class BaseSwitchFunctionDecorator(
-        hookKey: String?,
-        defaultEnabled: Boolean,
-        dexDeobfIndexes: IntArray?
+        hookKey: String? = null,
+        defaultEnabled: Boolean = false,
+        dexDeobfIndexes: IntArray? = null
 ) : BaseDecorator(hookKey, defaultEnabled, dexDeobfIndexes) {
 
     /**
