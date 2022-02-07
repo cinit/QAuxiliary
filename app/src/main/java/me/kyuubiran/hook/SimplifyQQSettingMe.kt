@@ -43,7 +43,7 @@ import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion.*
 import io.github.qauxv.util.requireMinQQVersion
 import me.kyuubiran.util.setViewZeroSize
-import me.singleneuron.tlb.ConfigTable
+import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hide

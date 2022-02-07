@@ -36,7 +36,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import me.singleneuron.tlb.ConfigTable;
+import io.github.qauxv.tlb.ConfigTable;
 
 /**
  * Not an important hook. Provide limited anti-crash feature for VasProfileCard, esp DIY card.

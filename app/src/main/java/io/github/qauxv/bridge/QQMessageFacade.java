@@ -30,7 +30,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Modifier;
-import me.singleneuron.tlb.ConfigTable;
+import io.github.qauxv.tlb.ConfigTable;
 
 public class QQMessageFacade {
 

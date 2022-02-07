@@ -29,7 +29,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isPlayQQ
 import io.github.qauxv.util.requireMinQQVersion
-import me.singleneuron.tlb.ConfigTable
+import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.tryOrFalse

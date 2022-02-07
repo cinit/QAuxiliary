@@ -42,7 +42,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Method;
 import java.util.List;
-import me.singleneuron.tlb.ConfigTable;
+import io.github.qauxv.tlb.ConfigTable;
 
 @FunctionHookEntry
 @UiItemAgentEntry

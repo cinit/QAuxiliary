@@ -39,7 +39,7 @@ import io.github.qauxv.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.data.ConfigData
 import me.ketal.ui.activity.ModifyLeftSwipeReplyActivity
-import me.singleneuron.tlb.ConfigTable.getConfig
+import io.github.qauxv.tlb.ConfigTable.getConfig
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue

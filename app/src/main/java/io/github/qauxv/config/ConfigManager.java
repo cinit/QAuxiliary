@@ -148,7 +148,7 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
     @NonNull
     public abstract Map<String, ?> getAll();
 
-    public abstract void save() throws IOException;
+    public abstract void save();
 
     public long getLongOrDefault(@Nullable String key, long i) {
         return getLong(key, i);

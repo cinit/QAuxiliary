@@ -40,7 +40,7 @@ import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.util.findViewByType
 import me.kyuubiran.hook.SimplifyQQSettingMe
-import me.singleneuron.tlb.ConfigTable
+import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.util.*
 
 @SuppressLint("StaticFieldLeak")

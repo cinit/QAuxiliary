@@ -83,7 +83,6 @@ public class CliOper {
             "me.ketal.",
             "me.kyuubiran.",
             "me.singleneuron.",
-            "me.zpp0196.",
             "io.github.qauxv.",
             "xyz.nextalone."
         };

@@ -29,7 +29,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.*
 import me.ketal.util.BaseUtil.tryVerbosely
-import me.singleneuron.tlb.ConfigTable
+import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.data.TroopInfo
 import xyz.nextalone.util.*
 

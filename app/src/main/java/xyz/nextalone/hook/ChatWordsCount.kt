@@ -40,7 +40,7 @@ import io.github.qauxv.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getExFriendCfg
 import me.kyuubiran.util.showToastByTencent
-import me.singleneuron.tlb.ConfigTable.getConfig
+import io.github.qauxv.tlb.ConfigTable.getConfig
 import xyz.nextalone.util.*
 import java.util.*
 
