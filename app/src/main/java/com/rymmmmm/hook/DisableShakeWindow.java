@@ -37,7 +37,7 @@ import java.lang.reflect.Modifier;
 @FunctionHookEntry
 public class DisableShakeWindow extends CommonSwitchFunctionHook {
 
-    private static final DisableShakeWindow INSTANCE = new DisableShakeWindow();
+    public static final DisableShakeWindow INSTANCE = new DisableShakeWindow();
 
     private DisableShakeWindow() {
         super("rq_disable_shake_window");

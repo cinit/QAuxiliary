@@ -27,23 +27,40 @@ import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static cc.ioctl.util.LayoutHelper.dip2px;
 import static cc.ioctl.util.LayoutHelper.newLinearLayoutParams;
 
+import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
-import io.github.qauxv.core.MainHook;
+import io.github.qauxv.base.ISwitchCellAgent;
+import io.github.qauxv.base.IUiItemAgent;
+import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.core.MainHook;
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
+import java.util.List;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function1;
+import kotlin.jvm.functions.Function2;
+import kotlin.jvm.functions.Function3;
+import kotlinx.coroutines.flow.MutableStateFlow;
 
 @UiItemAgentEntry
-public class OpenProfileCard {
+public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
 
-    // TODO: 2022-02-04 Add UI item interface
+    public static final OpenProfileCard INSTANCE = new OpenProfileCard();
+
+    private OpenProfileCard() {
+    }
 
     public static void onClick(Context ctx) {
         CustomDialog dialog = CustomDialog.createFailsafe(ctx);
@@ -123,4 +140,66 @@ public class OpenProfileCard {
         ctx.startActivity(intent);
     }
 
+    @NonNull
+    @Override
+    public Function1<IUiItemAgent, String> getTitleProvider() {
+        return (agent) -> "打开资料卡";
+    }
+
+    @Nullable
+    @Override
+    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public MutableStateFlow<String> getValueState() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Function1<IUiItemAgent, Boolean> getValidator() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public ISwitchCellAgent getSwitchProvider() {
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public Function3<IUiItemAgent, Activity, View, Unit> getOnClickListener() {
+        return (agent, activity, view) -> {
+            onClick(activity);
+            return Unit.INSTANCE;
+        };
+    }
+
+    @Nullable
+    @Override
+    public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
+        return null;
+    }
+
+    @NonNull
+    @Override
+    public IUiItemAgent getUiItemAgent() {
+        return this;
+    }
+
+    @NonNull
+    @Override
+    public String[] getUiItemLocation() {
+        return Auxiliary.PROFILE_CATEGORY;
+    }
+
+    @NonNull
+    @Override
+    public String getItemAgentProviderUniqueIdentifier() {
+        return getClass().getName();
+    }
 }

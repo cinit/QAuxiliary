@@ -39,9 +39,7 @@ public class HookInstaller {
         }
         synchronized (HookInstaller.class) {
             if (sAnnotatedHooks == null) {
-                throw new UnsupportedOperationException("Not supported yet.");
-                // TODO: 2022-02-08 add
-//                sAnnotatedHooks = io.github.qauxv.gen.HookProvider.queryAllAnnotatedHooks();
+                sAnnotatedHooks = io.github.qauxv.gen.AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList();
             }
         }
         return sAnnotatedHooks;

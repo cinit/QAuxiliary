@@ -56,6 +56,11 @@ import kotlinx.coroutines.flow.MutableStateFlow;
 @UiItemAgentEntry
 public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
 
+    public static final CheckCommonGroup INSTANCE = new CheckCommonGroup();
+
+    private CheckCommonGroup() {
+    }
+
     public static void onClick(Context ctx) {
         CustomDialog dialog = CustomDialog.createFailsafe(ctx);
         EditText editText = new EditText(ctx);

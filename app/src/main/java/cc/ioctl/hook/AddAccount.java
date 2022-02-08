@@ -56,6 +56,11 @@ import kotlinx.coroutines.flow.MutableStateFlow;
 @UiItemAgentEntry
 public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
 
+    public static final AddAccount INSTANCE = new AddAccount();
+
+    private AddAccount() {
+    }
+
     public static void onAddAccountClick(Context context) {
         CustomDialog dialog = CustomDialog.createFailsafe(context);
         Context ctx = dialog.getContext();

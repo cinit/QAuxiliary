@@ -39,7 +39,7 @@ import java.lang.reflect.Field;
 @UiItemAgentEntry
 public class GalleryBgHook extends CommonSwitchFunctionHook {
 
-    private static final GalleryBgHook INSTANCE = new GalleryBgHook();
+    public static final GalleryBgHook INSTANCE = new GalleryBgHook();
 
     private GalleryBgHook() {
         super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE});
