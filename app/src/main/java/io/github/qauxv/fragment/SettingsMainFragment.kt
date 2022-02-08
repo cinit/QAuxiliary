@@ -31,6 +31,7 @@ class SettingsMainFragment : BaseSettingFragment() {
     override fun getTitle() = "QAuxiliary"
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
 
     }
 }

@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations;
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import java.util.List;
 
@@ -60,7 +60,7 @@ public class FriendDeletionNotification extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Locations.PASSIVE_AUXILIARY_CATEGORY;
+        return Auxiliary.FRIEND_CATEGORY;
     }
 
     @NonNull

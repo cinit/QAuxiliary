@@ -32,7 +32,7 @@ import android.os.Looper;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
-import io.github.qauxv.core.InjectDelayableHooks;
+import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -423,7 +423,7 @@ public class SyncUtils {
                     int targetType = intent.getIntExtra("process", 0);
                     int hookId = intent.getIntExtra("hook", -1);
                     if (hookId != -1 && (myType & targetType) != 0) {
-                        IDynamicHook hook = InjectDelayableHooks.getHookByType(hookId);
+                        IDynamicHook hook = HookInstaller.getHookById(hookId);
                         if (hook != null && hook.isAvailable() && hook.isTargetProcess()
                             && !hook.isPreparationRequired()) {
                             try {

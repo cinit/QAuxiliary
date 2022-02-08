@@ -23,12 +23,9 @@ package io.github.qauxv.startup;
 
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
-import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import io.github.qauxv.R;
-import me.singleneuron.util.HookStatue;
 
 /**
  * Xposed entry class DO NOT MODIFY ANY CODE HERE UNLESS NECESSARY. DO NOT INVOKE ANY METHOD THAT MAY GET IN TOUCH WITH
@@ -63,9 +60,6 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         sLoadPackageParam = lpparam;
         switch (lpparam.packageName) {
             case PACKAGE_NAME_SELF: {
-                XposedHelpers.findAndHookMethod(HookStatue.class.getName(), lpparam.classLoader,
-                    "isEnabled",
-                    XC_MethodReplacement.returnConstant(true));
                 break;
             }
             case PACKAGE_NAME_TIM:

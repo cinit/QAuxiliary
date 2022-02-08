@@ -86,9 +86,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            Intent intent = new Intent(activity, FileRecvRedirectActivity.class);
-            activity.startActivity(intent);
-            return Unit.INSTANCE;
+            throw new NoClassDefFoundError("FileRecvRedirectActivity");
         };
     }
 

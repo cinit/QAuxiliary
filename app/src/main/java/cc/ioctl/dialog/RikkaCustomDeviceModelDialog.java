@@ -38,9 +38,7 @@ import com.rymmmmm.hook.CustomMsgTimeFormat;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
-import java.io.IOException;
 
 public class RikkaCustomDeviceModelDialog {
 
@@ -188,13 +186,8 @@ public class RikkaCustomDeviceModelDialog {
                         cfg.putString(rq_custom_device_manufacturer, currentDeviceManufacturer);
                         cfg.putString(rq_custom_device_model, currentDeviceModel);
                     }
-                    try {
-                        cfg.save();
-                        Toasts.success(ctx,
-                                "重启" + HostInfo.getAppName() + "生效!");
-                    } catch (IOException e) {
-                        Log.e(e);
-                    }
+                    cfg.save();
+                    Toasts.success(ctx, "重启" + HostInfo.getAppName() + "生效!");
                     dialog.dismiss();
                     if (enableCustomDeviceModel) {
                         CustomMsgTimeFormat hook = CustomMsgTimeFormat.INSTANCE;

@@ -168,6 +168,6 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
     @NonNull
     @Override
     public String getItemAgentProviderUniqueIdentifier() {
-        return IUiItemAgentProvider.super.getItemAgentProviderUniqueIdentifier();
+        return getClass().getName();
     }
 }

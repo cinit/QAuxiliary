@@ -49,7 +49,6 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import io.github.qauxv.activity.TroopSelectActivity;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.util.CliOper;
@@ -309,16 +308,17 @@ public class SendBatchMsg {
 
         private void init() throws Exception {
             mFriends = ExfriendManager.getCurrent().getFriendsRemark();
-            ArrayList tx = TroopSelectActivity.getTroopInfoListRaw();
-            mGroups = new ArrayList<>();
-            for (Object info : tx) {
-                ContactDescriptor cd = new ContactDescriptor();
-                cd.nick = (String) Reflex.getInstanceObjectOrNull(info, "troopname");
-                cd.uin = (String) Reflex.getInstanceObjectOrNull(info, "troopuin");
-                cd.uinType = 1;
-                mGroups.add(cd);
-            }
-            mHits.addAll(mFriends);
+            throw new NoClassDefFoundError("io.github.qauxv.activity.TroopSelectActivity");
+//            ArrayList tx = null;// getTroopInfoListRaw();
+//            mGroups = new ArrayList<>();
+//            for (Object info : tx) {
+//                ContactDescriptor cd = new ContactDescriptor();
+//                cd.nick = (String) Reflex.getInstanceObjectOrNull(info, "troopname");
+//                cd.uin = (String) Reflex.getInstanceObjectOrNull(info, "troopuin");
+//                cd.uinType = 1;
+//                mGroups.add(cd);
+//            }
+//            mHits.addAll(mFriends);
         }
 
         @Override

@@ -211,6 +211,6 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
     @NonNull
     @Override
     public String getItemAgentProviderUniqueIdentifier() {
-        return IUiItemAgentProvider.super.getItemAgentProviderUniqueIdentifier();
+        return getClass().getName();
     }
 }

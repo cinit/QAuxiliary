@@ -40,9 +40,7 @@ import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
-import java.io.IOException;
 
 public class RikkaBaseApkFormatDialog {
 
@@ -121,12 +119,9 @@ public class RikkaBaseApkFormatDialog {
             }
         });
         input.setText(currentFormat);
-        enable.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                enableBaseApk = isChecked;
-                panel.setVisibility(enableBaseApk ? View.VISIBLE : View.GONE);
-            }
+        enable.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            enableBaseApk = isChecked;
+            panel.setVisibility(enableBaseApk ? View.VISIBLE : View.GONE);
         });
         dialog.setView(vg);
         dialog.show();
@@ -148,11 +143,7 @@ public class RikkaBaseApkFormatDialog {
                         }
                     }
                     if (done) {
-                        try {
-                            cfg.save();
-                        } catch (IOException e) {
-                            Log.e(e);
-                        }
+                        cfg.save();
                         dialog.dismiss();
                         if (enableBaseApk) {
                             BaseApk hook = BaseApk.INSTANCE;

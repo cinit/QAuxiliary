@@ -21,14 +21,12 @@
  */
 package io.github.qauxv.util;
 
-import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.activity.EulaActivity;
+import io.github.qauxv.SyncUtils;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.util.data.UserStatusConst;
-import java.io.IOException;
 import java.util.Date;
 
 public class LicenseStatus {
@@ -37,6 +35,7 @@ public class LicenseStatus {
     public static final String qn_user_auth_status = "qn_user_auth_status";
     public static final String qn_user_auth_last_update = "qn_user_auth_last_update";
     public static final boolean sDisableCommonHooks = LicenseStatus.isBlacklisted();
+    public static final int CURRENT_EULA_VERSION = 9;
 
     public static int getEulaStatus() {
         return ConfigManager.getDefaultConfig().getIntOrDefault(qn_eula_status, 0);
@@ -44,48 +43,35 @@ public class LicenseStatus {
 
     public static void setEulaStatus(int status) {
         ConfigManager.getDefaultConfig().putInt(qn_eula_status, status);
-        try {
-            ConfigManager.getDefaultConfig().save();
-        } catch (IOException e) {
-            Log.e(e);
-            Toasts.error(HostInfo.getApplication(), e.toString());
-        }
+        ConfigManager.getDefaultConfig().save();
     }
 
     public static boolean hasEulaUpdated() {
         int s = getEulaStatus();
-        return (s != 0 && s != EulaActivity.CURRENT_EULA_VERSION);
+        return (s != 0 && s != CURRENT_EULA_VERSION);
     }
 
     public static boolean hasUserAcceptEula() {
-        return getEulaStatus() == EulaActivity.CURRENT_EULA_VERSION;
+        return getEulaStatus() == CURRENT_EULA_VERSION;
     }
 
-
     public static void setUserCurrentStatus() {
-        new Thread(() -> {
+        SyncUtils.async(() -> {
             int currentStatus = TransactionHelper.getUserStatus(AppRuntimeHelper.getLongAccountUin());
             // 如果获取不到就放弃更新状态
             if (currentStatus == UserStatusConst.notExist) {
                 return;
             }
-            Log.i("User Current Status: "
-                + "" + currentStatus);
+            Log.i("User Current Status: " + "" + currentStatus);
             ConfigManager.getDefaultConfig().putInt(qn_user_auth_status, currentStatus);
             ConfigManager.getDefaultConfig()
-                .putLong(qn_user_auth_last_update, System.currentTimeMillis());
-            try {
-                ConfigManager.getDefaultConfig().save();
-                Log.i("User Current Status in ConfigManager: "
+                    .putLong(qn_user_auth_last_update, System.currentTimeMillis());
+            ConfigManager.getDefaultConfig().save();
+            Log.i("User Current Status in ConfigManager: "
                     + ConfigManager.getDefaultConfig().getIntOrDefault(qn_user_auth_status, -1));
-                Log.i("User Status Last Update: " + new Date(ConfigManager.getDefaultConfig()
+            Log.i("User Status Last Update: " + new Date(ConfigManager.getDefaultConfig()
                     .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())));
-            } catch (IOException e) {
-                Log.e(e);
-                Toasts.error(HostInfo.getApplication(), e.toString());
-            }
-        }).start();
-
+        });
     }
 
 

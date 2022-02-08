@@ -38,10 +38,8 @@ import com.rymmmmm.hook.CustomMsgTimeFormat;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
-import java.io.IOException;
 
 public class RikkaCustomSplash {
 
@@ -129,11 +127,7 @@ public class RikkaCustomSplash {
                 cfg.putBoolean(rq_splash_enabled, true);
                 cfg.putString(rq_splash_path, currentPath);
             }
-            try {
-                cfg.save();
-            } catch (IOException e) {
-                Log.e(e);
-            }
+            cfg.save();
             dialog.dismiss();
             if (enableSplash) {
                 CustomMsgTimeFormat hook = CustomMsgTimeFormat.INSTANCE;

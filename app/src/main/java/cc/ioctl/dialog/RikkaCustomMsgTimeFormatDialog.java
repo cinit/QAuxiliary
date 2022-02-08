@@ -37,9 +37,7 @@ import com.rymmmmm.hook.CustomMsgTimeFormat;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
@@ -161,11 +159,7 @@ public class RikkaCustomMsgTimeFormatDialog {
                         }
                     }
                     if (done) {
-                        try {
-                            cfg.save();
-                        } catch (IOException e) {
-                            Log.e(e);
-                        }
+                        cfg.save();
                         dialog.dismiss();
                         if (enableMsgTimeFormat) {
                             CustomMsgTimeFormat hook = CustomMsgTimeFormat.INSTANCE;

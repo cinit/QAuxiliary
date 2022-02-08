@@ -40,7 +40,6 @@ import io.github.qauxv.util.DexMethodDescriptor;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
-import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -130,11 +129,7 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
             if (field != null) {
                 cache.putString(cache_night_mask_field, field.toString());
                 cache.putInt(cache_night_mask_field_version_code, version);
-                try {
-                    cache.save();
-                } catch (IOException e) {
-                    Log.e(e);
-                }
+                cache.save();
                 return field;
             }
             return null;

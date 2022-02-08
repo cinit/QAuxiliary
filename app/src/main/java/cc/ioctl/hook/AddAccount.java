@@ -163,6 +163,6 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
     @NonNull
     @Override
     public String getItemAgentProviderUniqueIdentifier() {
-        return IUiItemAgentProvider.super.getItemAgentProviderUniqueIdentifier();
+        return getClass().getName();
     }
 }

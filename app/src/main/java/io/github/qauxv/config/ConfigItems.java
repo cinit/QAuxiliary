@@ -30,7 +30,6 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
-import java.io.IOException;
 import java.util.Objects;
 
 public class ConfigItems {
@@ -155,12 +154,8 @@ public class ConfigItems {
 
             @Override
             public boolean sync() {
-                try {
-                    ConfigManager.getDefaultConfig().save();
-                    return true;
-                } catch (IOException e) {
-                    return false;
-                }
+                ConfigManager.getDefaultConfig().save();
+                return true;
             }
 
             @Override
@@ -181,11 +176,7 @@ public class ConfigItems {
         if (cache.getIntOrDefault(cache_qn_prev_version, -1) < BuildConfig.VERSION_CODE) {
             cache.getFile().delete();
             cache.putInt(cache_qn_prev_version, BuildConfig.VERSION_CODE);
-            try {
-                cache.save();
-            } catch (IOException e) {
-                Log.e(e);
-            }
+            cache.save();
         }
     }
 }

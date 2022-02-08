@@ -23,6 +23,7 @@ package io.github.qauxv.util;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.config.ConfigManager;
 import java.io.ByteArrayOutputStream;
@@ -33,7 +34,6 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashMap;
-import cc.ioctl.util.HostInfo;
 
 @SuppressWarnings("CharsetObjectCanBeUsed")
 public class ArscKit {
@@ -163,11 +163,7 @@ public class ArscKit {
         if (ret != 0) {
             cache.putInt(CACHED_RES_ID_NAME_PREFIX + type + "/" + name, ret);
             cache.putInt(CACHED_RES_ID_CODE_PREFIX + type + "/" + name, currcode);
-            try {
-                cache.save();
-            } catch (IOException e) {
-                Log.e(e);
-            }
+            cache.save();
         }
         return ret;
     }

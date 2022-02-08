@@ -49,7 +49,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -359,16 +358,12 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     }
 
     public void setFakeSendBatteryStatus(int val) {
-        try {
-            ConfigManager cfg = ConfigManager.getDefaultConfig();
-            cfg.putInt(ConfigItems.qn_fake_bat_expr, val);
-            cfg.save();
-            Intent intent = new Intent(ACTION_UPDATE_BATTERY_STATUS);
-            SyncUtils.sendGenericBroadcast(intent);
-            updateSettingsUiState();
-        } catch (IOException e) {
-            traceError(e);
-        }
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putInt(ConfigItems.qn_fake_bat_expr, val);
+        cfg.save();
+        Intent intent = new Intent(ACTION_UPDATE_BATTERY_STATUS);
+        SyncUtils.sendGenericBroadcast(intent);
+        updateSettingsUiState();
     }
 
     public int getFakeBatteryStatus() {

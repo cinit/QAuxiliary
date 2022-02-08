@@ -96,11 +96,12 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     Reflex.invokeVirtual(item, "setRightText", "[未激活]", CharSequence.class);
                 }
                 item.setOnClickListener(v -> {
-                    if (LicenseStatus.hasUserAcceptEula()) {
+                    if (true || LicenseStatus.hasUserAcceptEula()) {
                         activity.startActivity(new Intent(activity, SettingsUiFragmentHostActivity.class));
                     } else {
-                        activity.startActivity(new Intent(activity, EulaActivity.class));
-                        activity.finish();
+                        // TODO: 2022-02-08 add eula activity
+                        throw new UnsupportedOperationException(
+                                "activity.startActivity(new Intent(activity, EulaActivity.class));activity.finish();");
                     }
                 });
                 if (itemRef != null) {
