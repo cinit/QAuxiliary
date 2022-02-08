@@ -42,13 +42,14 @@ android {
                 enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
+                enableV4Signing = true
             }
         }
     }
     buildTypes {
         getByName("release") {
-            isShrinkResources = true
-            isMinifyEnabled = true
+            isShrinkResources = false
+            isMinifyEnabled = false
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
@@ -61,8 +62,8 @@ android {
             kotlinOptions.suppressWarnings = true
         }
         getByName("debug") {
-            isShrinkResources = true
-            isMinifyEnabled = true
+            isShrinkResources = false
+            isMinifyEnabled = false
             setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
         }
         create("CI") {
