@@ -23,11 +23,15 @@ package me.ketal.ui.activity
 
 import android.annotation.SuppressLint
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import androidx.core.view.plusAssign
 import cc.ioctl.util.HostStyledViewBuilder
+import cc.ioctl.util.ui.newListItemHookSwitchInit
+import cc.ioctl.util.ui.newListItemSwitch
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.WhichButton
 import com.afollestad.materialdialogs.actions.setActionButtonEnabled
@@ -35,20 +39,22 @@ import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.getInputLayout
 import com.afollestad.materialdialogs.input.input
 import com.tencent.mobileqq.widget.BounceScrollView
-import io.github.qauxv.ui.CommonContextWrapper
-import io.github.qauxv.ui.ResUtils
+import io.github.qauxv.fragment.BaseSettingFragment
 import me.ketal.hook.LeftSwipeReplyHook
 
 @SuppressLint("Registered")
-class ModifyLeftSwipeReplyActivity : IphoneTitleBarActivityCompat() {
-    override fun doOnCreate(bundle: Bundle?): Boolean {
-        super.doOnCreate(bundle)
-        val ll = LinearLayout(this).apply {
+class ModifyLeftSwipeReplyFragment : BaseSettingFragment() {
+
+    override fun getTitle() = "修改消息左滑动作"
+
+    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        val activity = settingsHostActivity!!
+        val ll = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             val hook = LeftSwipeReplyHook
-            val ctx = CommonContextWrapper.createMaterialDesignContext(this@ModifyLeftSwipeReplyActivity)
-            this += HostStyledViewBuilder.newListItemHookSwitchInit(ctx, "总开关", "打开后才可使用以下功能", hook)
-            this += HostStyledViewBuilder.newListItemSwitch(ctx, "取消消息左滑动作", "取消取消，一定要取消", hook.isNoAction
+            val ctx = activity
+            this += newListItemHookSwitchInit(ctx, "总开关", "打开后才可使用以下功能", hook)
+            this += newListItemSwitch(ctx, "取消消息左滑动作", "取消取消，一定要取消", hook.isNoAction
             ) { _: CompoundButton?, on: Boolean -> hook.isNoAction = on }
             this += HostStyledViewBuilder.newListItemButton(ctx, "修改左滑消息灵敏度", "妈妈再也不用担心我误触了", null) {
                 val dialog = MaterialDialog(ctx).show {
@@ -72,18 +78,15 @@ class ModifyLeftSwipeReplyActivity : IphoneTitleBarActivityCompat() {
                     negativeButton(text = "取消")
                 }
                 dialog.getInputLayout().addView(HostStyledViewBuilder.subtitle(ctx,
-                    "若显示为-1，代表为初始化，请先在消息界面使用一次消息左滑回复，即可获得初始阈值。\n当你修改出错时，输入一个小于0的值，即可使用默认值"), 0)
+                        "若显示为-1，代表为初始化，请先在消息界面使用一次消息左滑回复，即可获得初始阈值。\n当你修改出错时，输入一个小于0的值，即可使用默认值"), 0)
             }
-            this += HostStyledViewBuilder.newListItemSwitch(ctx, "左滑多选消息", "娱乐功能，用途未知", hook.isMultiChose
+            this += newListItemSwitch(ctx, "左滑多选消息", "娱乐功能，用途未知", hook.isMultiChose
             ) { _: CompoundButton?, on: Boolean -> hook.isMultiChose = on }
         }
-        BounceScrollView(this, null).apply {
+        val rootView = BounceScrollView(activity, null).apply {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             addView(ll, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
-            setContentView(this)
         }
-        setContentBackgroundDrawable(ResUtils.skin_background)
-        title = "修改消息左滑动作"
-        return true
+        return rootView
     }
 }

@@ -22,6 +22,8 @@
 
 package io.github.qauxv.activity
 
+import android.content.Context
+import android.content.Intent
 import android.os.Bundle
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -47,6 +49,10 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         TODO("not implemented")
     }
 
+    fun presentFragment(fragment: BaseSettingFragment) {
+        TODO("not implemented")
+    }
+
     fun finishFragment(fragment: BaseSettingFragment) {
         supportFragmentManager.beginTransaction()
             .remove(fragment)
@@ -55,5 +61,27 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
     fun popCurrentFragment() {
         supportFragmentManager.popBackStack()
+    }
+
+    companion object {
+        const val TARGET_FRAGMENT_KEY: String = "SettingsUiFragmentHostActivity.TARGET_FRAGMENT_KEY"
+        const val TARGET_FRAGMENT_ARGS_KEY: String = "SettingsUiFragmentHostActivity.TARGET_FRAGMENT_ARGS_KEY"
+
+        @JvmStatic
+        fun startActivityForFragment(context: Context,
+                                     fragmentClass: Class<out BaseSettingFragment>,
+                                     args: Bundle? = null) {
+            context.startActivity(createStartActivityForFragmentIntent(context, fragmentClass, args))
+        }
+
+        @JvmStatic
+        fun createStartActivityForFragmentIntent(context: Context,
+                                                 fragmentClass: Class<out BaseSettingFragment>,
+                                                 args: Bundle? = null): Intent {
+            val intent = Intent(context, SettingsUiFragmentHostActivity::class.java)
+            intent.putExtra(TARGET_FRAGMENT_KEY, fragmentClass.name)
+            intent.putExtra(TARGET_FRAGMENT_ARGS_KEY, args)
+            return intent
+        }
     }
 }

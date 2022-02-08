@@ -23,7 +23,6 @@ package cc.ioctl.hook;
 
 import android.app.Activity;
 import android.content.Context;
-import android.content.Intent;
 import android.os.Build;
 import android.os.Looper;
 import android.os.Parcelable;
@@ -32,11 +31,12 @@ import android.view.View;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import cc.ioctl.activity.ChatTailActivity;
 import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
+import cc.ioctl.fragment.ChatTailFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -87,8 +87,9 @@ public class ChatTailHook extends CommonConfigFunctionHook implements IInputButt
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            Intent intent = new Intent(activity, ChatTailActivity.class);
-            activity.startActivity(intent);
+            ChatTailFragment fragment = new ChatTailFragment();
+            SettingsUiFragmentHostActivity settingActivity = (SettingsUiFragmentHostActivity) activity;
+            settingActivity.presentFragment(fragment);
             return Unit.INSTANCE;
         };
     }
@@ -109,16 +110,16 @@ public class ChatTailHook extends CommonConfigFunctionHook implements IInputButt
         if (!TextUtils.isEmpty(ChatTailHook.INSTANCE.getTailCapacity())) {
             int battery = FakeBatteryHook.INSTANCE.isEnabled() ?
                     FakeBatteryHook.INSTANCE.getFakeBatteryStatus() < 1
-                            ? ChatTailActivity.getBattery()
+                            ? ChatTailFragment.getBattery()
                             : FakeBatteryHook.INSTANCE
                                     .getFakeBatteryCapacity()
-                    : ChatTailActivity.getBattery();
+                    : ChatTailFragment.getBattery();
             String tc = ChatTailHook.INSTANCE.getTailCapacity().
-                    replace(ChatTailActivity.delimiter, input.getText())
+                    replace(ChatTailFragment.delimiter, input.getText())
                     .replace("#model#", Build.MODEL)
                     .replace("#brand#", Build.BRAND)
                     .replace("#battery#", battery + "")
-                    .replace("#power#", ChatTailActivity.getPower())
+                    .replace("#power#", ChatTailFragment.getPower())
                     .replace("#time#", new SimpleDateFormat(
                             RikkaCustomMsgTimeFormatDialog.getTimeFormat(), Locale.getDefault())
                             .format(new Date()));
@@ -216,15 +217,15 @@ public class ChatTailHook extends CommonConfigFunctionHook implements IInputButt
                     && (!isRegex() || !isPassRegex(msg))) {
                 int battery = FakeBatteryHook.INSTANCE.isEnabled() ?
                         FakeBatteryHook.INSTANCE.getFakeBatteryStatus() < 1
-                                ? ChatTailActivity.getBattery()
+                                ? ChatTailFragment.getBattery()
                                 : FakeBatteryHook.INSTANCE.getFakeBatteryCapacity()
-                        : ChatTailActivity.getBattery();
+                        : ChatTailFragment.getBattery();
                 text = ct.getTailCapacity()
-                        .replace(ChatTailActivity.delimiter, msg)
+                        .replace(ChatTailFragment.delimiter, msg)
                         .replace("#model#", Build.MODEL)
                         .replace("#brand#", Build.BRAND)
                         .replace("#battery#", battery + "")
-                        .replace("#power#", ChatTailActivity.getPower())
+                        .replace("#power#", ChatTailFragment.getPower())
                         .replace("#time#", new SimpleDateFormat(
                                 RikkaCustomMsgTimeFormatDialog.getTimeFormat(),
                                 Locale.getDefault()).format(new Date()));

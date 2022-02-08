@@ -21,6 +21,7 @@
  */
 package cc.ioctl.hook;
 
+import android.app.Activity;
 import android.app.Application;
 import android.content.Context;
 import android.view.View;
@@ -32,7 +33,6 @@ import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
-import io.github.qauxv.base.Invalidatable;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -44,7 +44,8 @@ import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
-import kotlin.jvm.functions.Function4;
+import kotlin.jvm.functions.Function3;
+import kotlinx.coroutines.flow.MutableStateFlow;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -167,7 +168,7 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, String> getValueProvider() {
+    public MutableStateFlow<String> getValueState() {
         return null;
     }
 
@@ -185,7 +186,7 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
     @Nullable
     @Override
-    public Function4<IUiItemAgent, Context, View, Invalidatable, Unit> getOnClickListener() {
+    public Function3<IUiItemAgent, Activity, View, Unit> getOnClickListener() {
         return null;
     }
 

@@ -35,20 +35,23 @@ import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
 import android.os.Build;
+import android.os.Build.VERSION;
+import android.os.Build.VERSION_CODES;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import cc.ioctl.activity.ExfriendListActivity;
-import cc.ioctl.hook.DelDetectorHook;
+import cc.ioctl.fragment.ExfriendListFragment;
+import cc.ioctl.hook.DeletionObserver;
+import cc.ioctl.util.data.EventRecord;
+import cc.ioctl.util.data.FriendRecord;
 import cc.ioctl.util.data.Table;
 import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FriendChunk;
 import io.github.qauxv.bridge.ManagerHelper;
 import io.github.qauxv.config.ConfigManager;
-import cc.ioctl.util.data.EventRecord;
-import cc.ioctl.util.data.FriendRecord;
 import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
@@ -504,20 +507,16 @@ public class ExfriendManager {
 
     public void saveConfigure() {
         synchronized (this) {
-            try {
-                if (persons == null) {
-                    persons = new ConcurrentHashMap<>();
-                }
-                if (dirtySerializedFlag) {
-                    saveEventsData();
-                    saveFriendsData();
-                    dirtySerializedFlag = false;
-                }
-                mConfig.putLong("uin", mUin);
-                mConfig.save();
-            } catch (IOException e) {
-                Log.e(e);
+            if (persons == null) {
+                persons = new ConcurrentHashMap<>();
             }
+            if (dirtySerializedFlag) {
+                saveEventsData();
+                saveFriendsData();
+                dirtySerializedFlag = false;
+            }
+            mConfig.putLong("uin", mUin);
+            mConfig.save();
         }
     }
 
@@ -589,7 +588,7 @@ public class ExfriendManager {
     }
 
     public void setRedDot() {
-        WeakReference redDotRef = DelDetectorHook.INSTANCE.redDotRef;
+        WeakReference redDotRef = DeletionObserver.INSTANCE.redDotRef;
         if (redDotRef == null) {
             return;
         }
@@ -757,20 +756,17 @@ public class ExfriendManager {
         saveConfigure();
         try {
             if (isNotifyWhenDeleted() && ((int) ptr[0]) > 0) {
-                Intent inner = new Intent(HostInfo.getApplication(),
-                    ExfriendListActivity.class);
+                Context app = HostInfo.getApplication();
+                Intent inner = SettingsUiFragmentHostActivity
+                        .createStartActivityForFragmentIntent(app, ExfriendListFragment.class, null);
                 Intent wrapper = new Intent();
-                wrapper.setClassName(
-                    HostInfo.getApplication().getPackageName(),
-                    ActProxyMgr.STUB_DEFAULT_ACTIVITY);
+                wrapper.setClassName(HostInfo.getApplication().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                 wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
-                PendingIntent pi = PendingIntent
-                    .getActivity(HostInfo.getApplication(), 0,
-                        wrapper, 0);
-                NotificationManager nm = (NotificationManager) HostInfo.getApplication()
-                    .getSystemService(Context.NOTIFICATION_SERVICE);
-                Notification n = createNotiComp(nm, (String) ptr[1], (String) ptr[2],
-                    (String) ptr[3], new long[]{100, 200, 200, 100}, pi);
+                PendingIntent pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper,
+                        VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+                NotificationManager nm = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
+                Notification n = createNotiComp(nm, (String) ptr[1], (String) ptr[2], (String) ptr[3],
+                        new long[]{100, 200, 200, 100}, pi);
                 nm.notify(ID_EX_NOTIFY, n);
                 setRedDot();
             }

@@ -22,24 +22,24 @@
 package me.ketal.hook
 
 import android.app.Activity
-import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.view.View
 import android.widget.ImageView
 import cc.ioctl.util.Reflex
 import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
+import io.github.qauxv.tlb.ConfigTable.getConfig
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.data.ConfigData
-import me.ketal.ui.activity.ModifyLeftSwipeReplyActivity
-import io.github.qauxv.tlb.ConfigTable.getConfig
+import me.ketal.ui.activity.ModifyLeftSwipeReplyFragment
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
@@ -56,8 +56,8 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
-        val intent = Intent(activity, ModifyLeftSwipeReplyActivity::class.java)
-        activity.startActivity(intent)
+        val settingActivity = activity as SettingsUiFragmentHostActivity
+        settingActivity.presentFragment(ModifyLeftSwipeReplyFragment())
     }
 
     private val LEFT_SWIPE_NO_ACTION = ConfigData<Boolean>("ketal_left_swipe_noAction")

@@ -36,10 +36,10 @@ import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.ui.ViewBuilder
 import io.github.qauxv.util.DexKit
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
@@ -96,7 +96,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
                     isEnabled = enableFake
                     if (enableFake) {
                         level = text
-                        if (!isInitialized) ViewBuilder.doSetupAndInit(context, this@FakeQQLevel)
+                        if (!isInitialized) HookInstaller.doSetupAndInit(context, this@FakeQQLevel)
                     }
                     dismiss()
                 }

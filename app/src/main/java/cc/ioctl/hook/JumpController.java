@@ -30,10 +30,11 @@ import android.view.View;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import cc.ioctl.activity.JefsRulesActivity;
+import cc.ioctl.fragment.JefsRuleConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -349,8 +350,7 @@ public class JumpController extends CommonConfigFunctionHook {
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            Intent intent = new Intent(activity, JefsRulesActivity.class);
-            activity.startActivity(intent);
+            SettingsUiFragmentHostActivity.startActivityForFragment(activity, JefsRuleConfigFragment.class, null);
             return Unit.INSTANCE;
         };
     }

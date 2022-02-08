@@ -26,19 +26,19 @@ import android.view.View
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.base.Invalidatable
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
+import kotlinx.coroutines.flow.MutableStateFlow
 
 @UiItemAgentEntry
 object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchCellAgent {
     override val titleProvider: (IUiItemAgent) -> String = { _ -> "显示历史好友入口" }
     override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> "在好友列表下方显示历史好友入口" }
-    override val valueProvider: ((IUiItemAgent, Context) -> String?)? = null
+    override val valueState: MutableStateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent = this
-    override val onClickListener: ((IUiItemAgent, Context, View, Invalidatable) -> Unit)? = null
+    override val onClickListener: ((IUiItemAgent, Context, View) -> Unit)? = null
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
     override val uiItemAgent: IUiItemAgent = this
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.FRIEND_CATEGORY

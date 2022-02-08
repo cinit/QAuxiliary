@@ -57,5 +57,9 @@ public abstract class BaseSettingFragment extends Fragment {
     }
 
     @Nullable
-    abstract String getTitle();
+    public abstract String getTitle();
+
+    public boolean doOnBackPressed() {
+        return false;
+    }
 }

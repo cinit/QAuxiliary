@@ -29,7 +29,6 @@ import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.graphics.Color;
 import android.view.Gravity;
 import android.view.View;
@@ -38,12 +37,13 @@ import android.widget.ExpandableListAdapter;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
-import cc.ioctl.activity.ExfriendListActivity;
+import cc.ioctl.fragment.ExfriendListFragment;
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FriendChunk;
@@ -136,10 +136,8 @@ public class DeletionObserver extends BasePersistBackgroundHook {
                 layout_entrance.addView(rell);
                 ViewGroup.LayoutParams llp = new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
                 layout_entrance.setPadding(0, (int) (height * 0.3f), 0, (int) (0.3f * height));
-                exfriend.setOnClickListener(v -> {
-                    Intent intent = new Intent(splashActivity, ExfriendListActivity.class);
-                    splashActivity.startActivity(intent);
-                });
+                exfriend.setOnClickListener(v -> SettingsUiFragmentHostActivity
+                        .startActivityForFragment(splashActivity, ExfriendListFragment.class, null));
                 exfriend.postInvalidate();
             } catch (Throwable e) {
                 traceError(e);
