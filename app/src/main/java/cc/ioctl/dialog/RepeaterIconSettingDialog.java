@@ -292,27 +292,19 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
                 }
             } else {
                 if (useDefault) {
-                    try {
-                        ConfigManager cfg = ConfigManager.getDefaultConfig();
-                        cfg.remove(qn_repeat_icon_data);
-                        cfg.remove(qn_repeat_icon_dpi);
-                        cfg.remove(qn_repeat_last_file);
-                        cfg.save();
-                        dialog.dismiss();
-                        sCachedRepeaterIcon = null;
-                    } catch (IOException e) {
-                        Toasts.error(ctx, e.toString());
-                    }
+                    ConfigManager cfg = ConfigManager.getDefaultConfig();
+                    cfg.remove(qn_repeat_icon_data);
+                    cfg.remove(qn_repeat_icon_dpi);
+                    cfg.remove(qn_repeat_last_file);
+                    cfg.save();
+                    dialog.dismiss();
+                    sCachedRepeaterIcon = null;
                 } else {
-                    try {
-                        ConfigManager cfg = ConfigManager.getDefaultConfig();
-                        cfg.putInt(qn_repeat_icon_dpi, getCurrentSelectedDpi());
-                        cfg.save();
-                        dialog.dismiss();
-                        sCachedRepeaterIcon = null;
-                    } catch (IOException e) {
-                        Toasts.error(ctx, e.toString());
-                    }
+                    ConfigManager cfg = ConfigManager.getDefaultConfig();
+                    cfg.putInt(qn_repeat_icon_dpi, getCurrentSelectedDpi());
+                    cfg.save();
+                    dialog.dismiss();
+                    sCachedRepeaterIcon = null;
                 }
             }
         } else if (v == browseBtn) {

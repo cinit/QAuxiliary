@@ -27,6 +27,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.hook.BaseHookDispatcher;
+import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Method;
 
@@ -42,7 +43,31 @@ public class HookUtils {
         void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable;
     }
 
+    public interface BeforeAndAfterHookedMethod {
+
+        void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable;
+
+        void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable;
+    }
+
     public static void hookAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                          int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                        afterHookedMethod.afterHookedMethod(param);
+                    }
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        });
+    }
+
+    public static void hookAfterIfEnabled(final @NonNull BasePersistBackgroundHook this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
@@ -141,5 +166,34 @@ public class HookUtils {
     public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                         final @NonNull BeforeHookedMethod beforeHookedMethod) {
         hookBeforeAlways(this0, method, 50, beforeHookedMethod);
+    }
+
+    public static void hookBeforeAndAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+                                                   int priority, final @NonNull BeforeAndAfterHookedMethod hook) {
+        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                    try {
+                        hook.beforeHookedMethod(param);
+                    } catch (Throwable e) {
+                        this0.traceError(e);
+                        throw e;
+                    }
+                }
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                    try {
+                        hook.afterHookedMethod(param);
+                    } catch (Throwable e) {
+                        this0.traceError(e);
+                        throw e;
+                    }
+                }
+            }
+        });
     }
 }
