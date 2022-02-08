@@ -28,17 +28,37 @@ import android.os.Bundle
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.fragment.BaseSettingFragment
+import io.github.qauxv.fragment.SettingsMainFragment
 import io.github.qauxv.util.UiThread
 
 class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
+    private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
+    private var mTopVisibleFragment: BaseSettingFragment? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.Theme_MaiTungTMDesign)
+        setTheme(R.style.AppTheme_Def)
         // TODO 2022-01-31: update day night color according to the host app
-        super.onCreate(savedInstanceState)
+        // we don't want the Fragment to be recreated
+        super.onCreate(null)
         setContentView(R.layout.activity_settings_ui_host)
-        if (savedInstanceState == null) {
+        val intent = intent
+        // check if we are requested to show a specific fragment
+        val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
+        val startupFragment: BaseSettingFragment = if (fragmentName != null) {
+            val clazz = Class.forName(fragmentName)
+            val fragment = clazz.newInstance() as BaseSettingFragment
+            val args: Bundle? = intent.getBundleExtra(TARGET_FRAGMENT_ARGS_KEY)
+            if (args != null) {
+                fragment.arguments = args
+            }
+            fragment
+        } else {
+            // otherwise, show the default fragment
+            SettingsMainFragment()
         }
+        // add the fragment to the stack
+        presentFragment(startupFragment)
     }
 
     /**
@@ -50,17 +70,67 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
     }
 
     fun presentFragment(fragment: BaseSettingFragment) {
-        TODO("not implemented")
+        rtlAddFragmentToTop(fragment)
     }
 
     fun finishFragment(fragment: BaseSettingFragment) {
-        supportFragmentManager.beginTransaction()
-            .remove(fragment)
-            .commitNow()
+        rtlRemoveFragment(fragment)
     }
 
     fun popCurrentFragment() {
-        supportFragmentManager.popBackStack()
+        val fragment = mFragmentStack.lastOrNull()
+        if (fragment != null) {
+            rtlRemoveFragment(fragment)
+        } else {
+            finish()
+        }
+    }
+
+    override fun onBackPressed() {
+        val consumed = mTopVisibleFragment?.doOnBackPressed() ?: false
+        if (!consumed) {
+            popCurrentFragment()
+        }
+    }
+
+    private fun rtlAddFragmentToTop(fragment: BaseSettingFragment) {
+        if (mFragmentStack.isEmpty()) {
+            // first fragment
+            supportFragmentManager.beginTransaction()
+                    .add(R.id.fragment_container, fragment)
+                    .commit()
+            mTopVisibleFragment = fragment
+            mFragmentStack.add(fragment)
+            title = fragment.title
+        } else {
+            // replace the top fragment
+            val transaction = supportFragmentManager.beginTransaction()
+            transaction.replace(R.id.fragment_container, fragment)
+            transaction.commit()
+            mTopVisibleFragment = fragment
+            mFragmentStack.add(fragment)
+            title = fragment.title
+        }
+    }
+
+    private fun rtlRemoveFragment(fragment: BaseSettingFragment) {
+        // remove
+        supportFragmentManager.beginTransaction()
+                .remove(fragment)
+                .commit()
+        mFragmentStack.remove(fragment)
+        // check if we need to show the previous fragment
+        if (fragment == mTopVisibleFragment) {
+            mTopVisibleFragment = mFragmentStack.lastOrNull()
+            if (mTopVisibleFragment == null) {
+                finish()
+            } else {
+                supportFragmentManager.beginTransaction()
+                        .replace(R.id.fragment_container, mTopVisibleFragment!!)
+                        .commit()
+                title = mTopVisibleFragment!!.title
+            }
+        }
     }
 
     companion object {

@@ -23,12 +23,13 @@
 package io.github.qauxv.dsl
 
 import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.dsl.func.FragmentDescription
-import io.github.qauxv.dsl.func.IDslParentNode
-import io.github.qauxv.dsl.func.RootFragmentDescription
-import io.github.qauxv.dsl.func.UiItemAgentDescription
+import io.github.qauxv.dsl.func.*
 
 object FunctionEntryRouter {
+
+    private val mAnnotatedUiItemAgentDescriptionList: Array<IUiItemAgentProvider> by lazy {
+        io.github.qauxv.gen.getAnnotatedUiItemAgentEntryList()
+    }
 
     /**
      * The full UI-DSL-function tree
@@ -46,8 +47,18 @@ object FunctionEntryRouter {
     }
 
     @JvmStatic
-    fun queryAnnotatedUiItemAgentEntries(): List<IUiItemAgentProvider> {
-        TODO("not implemented")
+    fun findDescriptionByLocation(location: Array<String>): IDslItemNode? {
+        val absoluteLocation = resolveUiItemAnycastLocation(location) ?: return null
+        if (absoluteLocation.isEmpty() || absoluteLocation.size == 1 && absoluteLocation[0] == "") {
+            // root
+            return settingsUiItemDslTree
+        }
+        return settingsUiItemDslTree.lookupHierarchy(absoluteLocation)
+    }
+
+    @JvmStatic
+    fun queryAnnotatedUiItemAgentEntries(): Array<IUiItemAgentProvider> {
+        return mAnnotatedUiItemAgentDescriptionList
     }
 
     @JvmStatic
