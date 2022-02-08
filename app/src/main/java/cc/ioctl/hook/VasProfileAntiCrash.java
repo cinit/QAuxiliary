@@ -29,6 +29,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
+import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
@@ -42,6 +43,7 @@ import io.github.qauxv.tlb.ConfigTable;
  * Not an important hook. Provide limited anti-crash feature for VasProfileCard, esp DIY card.
  */
 @FunctionHookEntry
+@UiItemAgentEntry
 public class VasProfileAntiCrash extends CommonSwitchFunctionHook {
 
     public static final VasProfileAntiCrash INSTANCE = new VasProfileAntiCrash();

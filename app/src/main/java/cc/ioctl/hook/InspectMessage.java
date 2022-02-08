@@ -34,6 +34,7 @@ import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
+import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.DebugCategory;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CustomDialog;
@@ -45,6 +46,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 @FunctionHookEntry
+@UiItemAgentEntry
 public class InspectMessage extends CommonSwitchFunctionHook implements View.OnLongClickListener {
 
     public static final InspectMessage INSTANCE = new InspectMessage();
