@@ -17,7 +17,7 @@ android {
         applicationId = "io.github.qauxv"
         minSdk = 21
         targetSdk = 32
-        versionCode = Common.getTimeStamp()
+        versionCode = Common.getBuildVersionCode(rootProject)
         // versionName = major.minor.bugfix.rev.commit
         versionName = "0.1.0" + (Common.getGitHeadRefsSuffix(rootProject))
         buildConfigField("String", "BUILD_UUID", '"' + currentBuildUuid + '"')
@@ -41,6 +41,7 @@ android {
                 keyPassword = System.getenv("KEY_PASSWORD")
                 enableV1Signing = true
                 enableV2Signing = true
+                enableV3Signing = true
             }
         }
     }
@@ -101,7 +102,7 @@ android {
         cmake {
             // Provides a relative path to your CMake build script.
             path = File(projectDir, "src/main/cpp/CMakeLists.txt")
-            version = "3.10.2"
+            version = "3.18.1"
         }
     }
     buildFeatures {
@@ -125,15 +126,10 @@ dependencies {
     //add("kspAndroid", project(":compiler"))
     ksp(project(":ksp"))
     compileOnly("de.robv.android.xposed:api:82")
-    implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("de.psdev.licensesdialog:licensesdialog:2.2.0")
     implementation("io.noties.markwon:core:4.6.2")
     implementation(kotlin("stdlib", Version.kotlin))
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
-    // 脚本解析
-    implementation("org.apache-extras.beanshell:bsh:2.0b6")
     // androidx
-    implementation("androidx.preference:preference-ktx:1.1.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
     implementation("androidx.browser:browser:1.4.0")
     implementation("com.google.android.material:material:1.5.0")
