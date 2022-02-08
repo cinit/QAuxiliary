@@ -151,10 +151,10 @@ public class Natives {
                 }
             } catch (UnsatisfiedLinkError e1) {
                 // direct memory map load failed, extract and dlopen
-                File libnatives = extractNativeLibrary(ctx, "natives");
-                registerNativeLibEntry(libnatives.getName());
+                File libname = extractNativeLibrary(ctx, "qauxv");
+                registerNativeLibEntry(libname.getName());
                 try {
-                    System.load(libnatives.getAbsolutePath());
+                    System.load(libname.getAbsolutePath());
                     Log.d("dlopen by extract success");
                 } catch (UnsatisfiedLinkError e3) {
                     // give enough information to help debug
@@ -179,7 +179,7 @@ public class Natives {
             }
         } catch (ClassNotFoundException e) {
             // not in host process, ignore
-            System.loadLibrary("natives");
+            System.loadLibrary("qauxv");
         }
         getpagesize();
         File mmkvDir = new File(ctx.getFilesDir(), "qa_mmkv");
@@ -196,7 +196,7 @@ public class Natives {
     /**
      * Extract or update native library into "qa_dyn_lib" dir
      *
-     * @param libraryName library name without "lib" or ".so", eg. "natives", "mmkv"
+     * @param libraryName library name without "lib" or ".so", eg. "qauxv", "mmkv"
      */
     static File extractNativeLibrary(Context ctx, String libraryName) throws IOException {
         String abi = Build.CPU_ABI;

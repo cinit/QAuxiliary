@@ -65,6 +65,9 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             case PACKAGE_NAME_TIM:
             case PACKAGE_NAME_QQ:
             case PACKAGE_NAME_QQ_LITE: {
+                if (sInitZygoteStartupParam == null) {
+                    throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
+                }
                 StartupHook.getInstance().doInit(lpparam.classLoader);
                 break;
             }
@@ -82,6 +85,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
      */
     @Override
     public void initZygote(StartupParam startupParam) {
+        sInitZygoteStartupParam = startupParam;
         sModulePath = startupParam.modulePath;
     }
 

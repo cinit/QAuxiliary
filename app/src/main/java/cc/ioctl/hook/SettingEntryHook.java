@@ -57,7 +57,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
         return true;
     }
 
-    private final XC_MethodHook mAddModuleEntry = new XC_MethodHook(54) {
+    private final XC_MethodHook mAddModuleEntry = new XC_MethodHook(51) {
         @Override
         protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
             try {
