@@ -26,6 +26,7 @@ import android.app.Activity
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CompoundButton
 import androidx.recyclerview.widget.RecyclerView
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -54,6 +55,16 @@ class UiAgentItem(
         return HeaderViewHolder(TitleValueCell(context))
     }
 
+    private val mCheckChangedListener = CompoundButton.OnCheckedChangeListener { _, isChecked ->
+        val agent = agentProvider.uiItemAgent
+        val switchCellAgent = agent.switchProvider
+        switchCellAgent?.isChecked = isChecked
+    }
+
+    private val mOnClickListener = View.OnClickListener {
+        onItemClick(it, -1, -1, -1)
+    }
+
     override fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context) {
         val cell = viewHolder.itemView as TitleValueCell
         val agent = agentProvider.uiItemAgent
@@ -73,12 +84,13 @@ class UiAgentItem(
             cell.isHasSwitch = true
             cell.isChecked = switchAgent.isChecked
             cell.switchView.isEnabled = switchAgent.isCheckable
-            cell.switchView.setOnCheckedChangeListener { _, isChecked -> switchAgent.isChecked = isChecked }
+            cell.switchView.setOnCheckedChangeListener(mCheckChangedListener)
         } else {
             // simple case, as it is
             cell.summary = description
             cell.value = valueStateValue
         }
+        cell.setOnClickListener(mOnClickListener)
     }
 
     override fun onItemClick(v: View, position: Int, x: Int, y: Int) {

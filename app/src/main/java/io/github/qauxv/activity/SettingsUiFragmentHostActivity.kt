@@ -25,7 +25,9 @@ package io.github.qauxv.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
@@ -35,6 +37,8 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
     private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
     private var mTopVisibleFragment: BaseSettingFragment? = null
+    private lateinit var mAppBarLayout: AppBarLayout
+    private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
         setTheme(R.style.AppTheme_Def)
@@ -42,6 +46,8 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         // we don't want the Fragment to be recreated
         super.onCreate(null)
         setContentView(R.layout.activity_settings_ui_host)
+        mAppBarLayout = findViewById(R.id.topAppBarLayout)
+        mAppToolBar = findViewById(R.id.topAppBar)
         val intent = intent
         // check if we are requested to show a specific fragment
         val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
@@ -93,6 +99,17 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
     }
 
+    private fun updateTitle(fragment: BaseSettingFragment) {
+        SyncUtils.postDelayed(1) {
+            val text: String? = fragment.title
+            this.title = text
+            supportActionBar?.title = text
+            if (::mAppToolBar.isInitialized) {
+                mAppToolBar.title = text
+            }
+        }
+    }
+
     private fun rtlAddFragmentToTop(fragment: BaseSettingFragment) {
         if (mFragmentStack.isEmpty()) {
             // first fragment
@@ -101,35 +118,40 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
                     .commit()
             mTopVisibleFragment = fragment
             mFragmentStack.add(fragment)
-            title = fragment.title
+            updateTitle(fragment)
         } else {
             // replace the top fragment
-            val transaction = supportFragmentManager.beginTransaction()
-            transaction.replace(R.id.fragment_container, fragment)
-            transaction.commit()
+            supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                    .hide(mTopVisibleFragment!!)
+                    .add(R.id.fragment_container, fragment)
+                    .commit()
             mTopVisibleFragment = fragment
             mFragmentStack.add(fragment)
-            title = fragment.title
+            updateTitle(fragment)
         }
     }
 
     private fun rtlRemoveFragment(fragment: BaseSettingFragment) {
-        // remove
-        supportFragmentManager.beginTransaction()
-                .remove(fragment)
-                .commit()
-        mFragmentStack.remove(fragment)
         // check if we need to show the previous fragment
         if (fragment == mTopVisibleFragment) {
+            // this is the visible fragment, so we need to show the previous one
+            val transaction = supportFragmentManager.beginTransaction()
+                    .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left)
+                    .remove(fragment)
+            mFragmentStack.remove(fragment)
             mTopVisibleFragment = mFragmentStack.lastOrNull()
             if (mTopVisibleFragment == null) {
                 finish()
             } else {
-                supportFragmentManager.beginTransaction()
-                        .replace(R.id.fragment_container, mTopVisibleFragment!!)
-                        .commit()
-                title = mTopVisibleFragment!!.title
+                transaction.show(mTopVisibleFragment!!).commit()
+                updateTitle(mTopVisibleFragment!!)
             }
+        } else {
+            // background fragment, just remove it
+            supportFragmentManager.beginTransaction()
+                    .remove(fragment)
+                    .commit()
         }
     }
 

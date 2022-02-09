@@ -53,6 +53,11 @@ class SimpleListItem(
         cell.summary = description
         cell.isHasSwitch = false
         cell.hasDivider = true
+        cell.setOnClickListener(mOnClickListener)
+    }
+
+    private val mOnClickListener = View.OnClickListener {
+        onItemClick(it, -1, -1, -1)
     }
 
     override fun onItemClick(v: View, position: Int, x: Int, y: Int) {

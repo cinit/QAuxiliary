@@ -28,12 +28,16 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
+import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
+import io.github.qauxv.R
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
+import io.github.qauxv.util.Log
 
 class SettingsMainFragment : BaseSettingFragment() {
 
@@ -108,7 +112,9 @@ class SettingsMainFragment : BaseSettingFragment() {
                 val delegate = itemTypeDelegate[viewType]
                 val vh = delegate.createViewHolder(context, parent)
                 if (!delegate.isVoidBackground && delegate.isClickable) {
-                    // TODO: add ripple effect
+                    // add ripple effect
+                    val rippleColor: Int = ResourcesCompat.getColor(context.resources, R.color.rippleColor, parent.context.theme)
+                    vh.itemView.background = BackgroundDrawableUtils.getRoundRectSelectorDrawable(parent.context, rippleColor)
                 }
                 return vh
             }

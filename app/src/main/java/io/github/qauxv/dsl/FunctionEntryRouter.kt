@@ -159,6 +159,8 @@ object FunctionEntryRouter {
             }
             // add to the top of the tree to make it the first node
             baseTree.addChild(lostAndFoundFragmentDescription, 0)
+            // sync with the skeleton
+            settingsUiItemDslTreeSkeleton.addChild(FragmentDescription("lost-and-found", "Lost & Found", false, null), 0)
         }
         return baseTree
     }
