@@ -1,5 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <color name="colorPrimary">#03A9F4</color>
+    <color name="colorPrimaryDark">#FF82A8E7</color>
+    <color name="colorAccent">#2D88FF</color>
+
     <!-- 原主题 -->
 
     <color name="firstTextColor">#FFFFFFFF</color>
