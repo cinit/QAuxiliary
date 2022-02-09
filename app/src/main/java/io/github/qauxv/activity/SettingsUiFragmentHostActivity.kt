@@ -103,9 +103,12 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         SyncUtils.postDelayed(1) {
             val text: String? = fragment.title
             this.title = text
-            supportActionBar?.title = text
             if (::mAppToolBar.isInitialized) {
                 mAppToolBar.title = text
+            }
+            supportActionBar?.let {
+                it.setDisplayHomeAsUpEnabled(mFragmentStack.size > 1)
+                it.title = text
             }
         }
     }
@@ -138,7 +141,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
             // this is the visible fragment, so we need to show the previous one
             val transaction = supportFragmentManager.beginTransaction()
                     .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left)
-                    .remove(fragment)
+                    .hide(fragment)
             mFragmentStack.remove(fragment)
             mTopVisibleFragment = mFragmentStack.lastOrNull()
             if (mTopVisibleFragment == null) {
@@ -146,6 +149,11 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
             } else {
                 transaction.show(mTopVisibleFragment!!).commit()
                 updateTitle(mTopVisibleFragment!!)
+                SyncUtils.postDelayed(300) {
+                    // wait 300ms before remove the fragment to allow the animation to play
+                    // I don't know why, but it works.
+                    supportFragmentManager.beginTransaction().remove(fragment).commit()
+                }
             }
         } else {
             // background fragment, just remove it

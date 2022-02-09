@@ -49,7 +49,7 @@ class HeaderCell(context: Context) : FrameLayout(context), LayoutHelperViewScope
             setTextColor(ResourcesCompat.getColor(resources, R.color.colorAccent, context.theme))
             minHeight = cellHeight - topMargin
         }
-        addView(titleTextView, LayoutHelper.newFrameLayoutParams(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
+        addView(titleTextView, LayoutHelper.newFrameLayoutParamsRel(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
             Gravity.TOP or Gravity.START, paddings, topMargin, paddings, 0))
     }
 

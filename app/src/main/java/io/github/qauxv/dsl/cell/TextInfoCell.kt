@@ -136,7 +136,7 @@ class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21
         textView.setTextColor(textColor)
         textView.setLinkTextColor(textLinkColor)
         textView.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
-        addView(textView, LayoutHelper.newFrameLayoutParams(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
+        addView(textView, LayoutHelper.newFrameLayoutParamsAbs(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
                 Gravity.START or Gravity.TOP, padding, 0, padding, 0))
     }
 }

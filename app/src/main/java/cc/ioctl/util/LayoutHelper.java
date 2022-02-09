@@ -114,18 +114,21 @@ public class LayoutHelper {
         return newFrameLayoutParamsDp(ctx, width, height, gravity, left, top, right, bottom, 0, 0);
     }
 
-    public static FrameLayout.LayoutParams newFrameLayoutParams(int width, int height, int gravity, int left, int top,
-                                                                int right, int bottom, int start, int end) {
+    public static FrameLayout.LayoutParams newFrameLayoutParamsAbs(int width, int height, int gravity,
+                                                                   int left, int top,int right, int bottom) {
         FrameLayout.LayoutParams ret = new FrameLayout.LayoutParams(width, height);
         ret.setMargins(left, top, right, bottom);
-        ret.setMarginStart(start);
-        ret.setMarginEnd(end);
         ret.gravity = gravity;
         return ret;
     }
 
-    public static FrameLayout.LayoutParams newFrameLayoutParams(int width, int height, int gravity, int left, int top,
-                                                                int right, int bottom) {
-        return newFrameLayoutParams(width, height, gravity, left, top, right, bottom, 0, 0);
+    public static FrameLayout.LayoutParams newFrameLayoutParamsRel(int width, int height, int gravity,
+                                                                   int start, int top, int end, int bottom) {
+        FrameLayout.LayoutParams ret = new FrameLayout.LayoutParams(width, height);
+        ret.setMargins(0, top, 0, bottom);
+        ret.setMarginStart(start);
+        ret.setMarginEnd(end);
+        ret.gravity = gravity;
+        return ret;
     }
 }

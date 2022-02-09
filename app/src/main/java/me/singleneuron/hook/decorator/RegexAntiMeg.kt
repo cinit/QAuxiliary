@@ -113,7 +113,6 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
                 getExFriendCfg()?.putString(RegexAntiMeg::class.simpleName!!, regexString)
             }
             setNegativeButton("取消") { _, _ -> }
-            show()
         }.show()
     }
 }

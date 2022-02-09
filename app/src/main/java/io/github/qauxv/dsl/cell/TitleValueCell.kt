@@ -49,11 +49,17 @@ class TitleValueCell(
     private val dividerColor: Int
     private val dividerPaint by lazy {
         Paint().apply {
-            strokeWidth = 1f
+            strokeWidth = 1.dp.toFloat()
         }
     }
 
+    private val mCenterVertical = LayoutHelper.newFrameLayoutParamsRel(MATCH_PARENT, WRAP_CONTENT,
+            Gravity.CENTER_VERTICAL or Gravity.START, 21.dp, 0, 21.dp, 0)
+    private val mCenterTop = LayoutHelper.newFrameLayoutParamsRel(MATCH_PARENT, WRAP_CONTENT,
+            Gravity.TOP or Gravity.START, 21.dp, 10.dp, 21.dp, 0)
+
     init {
+        minimumHeight = 48.dp
         dividerColor = ResourcesCompat.getColor(resources, R.color.divideColor, context.theme)
         // title text view
         titleView = TextView(context).apply {
@@ -61,8 +67,7 @@ class TitleValueCell(
             setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, context.theme))
             gravity = Gravity.CENTER_VERTICAL or Gravity.START
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParams(MATCH_PARENT, WRAP_CONTENT,
-                Gravity.TOP or Gravity.START, 21.dp, 10.dp, 21.dp, 0))
+            addView(it, mCenterVertical)
         }
         // summary text view
         summaryView = TextView(context).apply {
@@ -71,8 +76,8 @@ class TitleValueCell(
             gravity = Gravity.START
             visibility = GONE
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParams(WRAP_CONTENT, WRAP_CONTENT,
-                Gravity.TOP or Gravity.START, 21.dp, 35.dp, 21.dp, 0))
+            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START, 21.dp, 35.dp, 21.dp, 0))
         }
         // value text view
         valueView = TextView(context).apply {
@@ -80,8 +85,8 @@ class TitleValueCell(
             setTextColor(ResourcesCompat.getColor(resources, R.color.colorAccent, context.theme))
             visibility = GONE
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParams(WRAP_CONTENT, WRAP_CONTENT,
-                Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
+            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
         }
         // switch view
         switchView = SwitchCompat(context).apply {
@@ -90,8 +95,8 @@ class TitleValueCell(
             // but they can still set onCheckedChangeListener if they want
             isClickable = false
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParams(WRAP_CONTENT, WRAP_CONTENT,
-                Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
+            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
         }
     }
 
@@ -106,6 +111,8 @@ class TitleValueCell(
         set(value) {
             summaryView.text = value
             summaryView.visibility = if (value.isNullOrEmpty()) GONE else VISIBLE
+            titleView.layoutParams = if (value.isNullOrEmpty()) mCenterVertical else mCenterTop
+            requestLayout()
         }
 
     var value: String?
@@ -117,6 +124,7 @@ class TitleValueCell(
                 // value text and switch view are in the same position
                 switchView.visibility = GONE
             }
+            requestLayout()
         }
 
     var isHasSwitch: Boolean
