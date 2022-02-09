@@ -20,14 +20,35 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-@file:JvmName("UiItemAgentDescriptionToTMsgDslItemConverter")
-
-package io.github.qauxv.dsl.converter
+package io.github.qauxv.dsl.item
 
 import android.content.Context
-import io.github.qauxv.dsl.func.IDslParentNode
-import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import android.view.View
+import android.view.ViewGroup
+import androidx.recyclerview.widget.RecyclerView
+import io.github.qauxv.dsl.cell.TextInfoCell
 
-fun convertToTMsgDslItemTree(context: Context, rootNode: IDslParentNode): DslTMsgListItemInflatable {
+class DescriptionItem(
+        val textString: String
+) : DslTMsgListItemInflatable, TMsgListItem {
 
+    class HeaderViewHolder(cell: TextInfoCell) : RecyclerView.ViewHolder(cell)
+
+    override val isEnabled = false
+    override val isClickable = false
+    override val isLongClickable = false
+    override val isVoidBackground = false
+
+    override fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder {
+        return HeaderViewHolder(TextInfoCell(context))
+    }
+
+    override fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context) {
+        val cell = viewHolder.itemView as TextInfoCell
+        cell.text = textString
+    }
+
+    override fun onItemClick(v: View, position: Int, x: Int, y: Int) {
+        // do nothing
+    }
 }

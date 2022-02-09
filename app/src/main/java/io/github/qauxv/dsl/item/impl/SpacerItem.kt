@@ -20,47 +20,34 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.dsl.item
+package io.github.qauxv.dsl.item.impl
 
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.dsl.func.IDslItemNode
+import io.github.qauxv.dsl.cell.SpacerCell
+import io.github.qauxv.dsl.item.TMsgListItem
 
-class TitleValueItem(
-    override val identifier: String,
-    override val name: String,
-    private val agentProvider: IUiItemAgentProvider,
-) : IDslItemNode, TMsgListItem {
+class SpacerItem : TMsgListItem {
+    class HeaderViewHolder(cell: SpacerCell) : RecyclerView.ViewHolder(cell)
 
-    override val isSearchable: Boolean = true
-
-    override val isEnabled: Boolean
-        get() {
-            val agent = agentProvider.uiItemAgent
-            return agent.validator?.invoke(agent) ?: true
-        }
-
-    override val isVoidBackground: Boolean = false
+    override val isEnabled = false
+    override val isVoidBackground = false
+    override val isClickable = false
+    override val isLongClickable = false
 
     override fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder {
-        TODO("Not yet implemented")
+        return HeaderViewHolder(SpacerCell(context))
     }
 
     override fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context) {
-        TODO("Not yet implemented")
+        // check cast
+        viewHolder.itemView as SpacerCell
+        // nothing more to do
     }
 
     override fun onItemClick(v: View, position: Int, x: Int, y: Int) {
-        TODO("Not yet implemented")
-    }
-
-    override val isLongClickable: Boolean = false
-
-    override fun onLongClick(v: View, position: Int, x: Int, y: Int): Boolean {
-        // nop
-        return false
+        // do nothing
     }
 }

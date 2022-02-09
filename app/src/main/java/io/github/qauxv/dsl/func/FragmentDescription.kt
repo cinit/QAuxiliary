@@ -42,7 +42,7 @@ open class FragmentDescription(
         name: String,
         categoryTitleSearchable: Boolean = true,
         initializer: (CategoryDescription.() -> Unit)? = null
-    ): CategoryDescription = CategoryDescription(name, identifier, categoryTitleSearchable, initializer).also {
+    ): CategoryDescription = CategoryDescription(identifier, name, categoryTitleSearchable, initializer).also {
         addChild(it)
     }
 

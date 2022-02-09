@@ -55,7 +55,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
             fragment
         } else {
             // otherwise, show the default fragment
-            SettingsMainFragment()
+            SettingsMainFragment.newInstance(arrayOf())
         }
         // add the fragment to the stack
         presentFragment(startupFragment)

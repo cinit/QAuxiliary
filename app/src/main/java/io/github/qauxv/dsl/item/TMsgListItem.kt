@@ -30,7 +30,8 @@ import androidx.recyclerview.widget.RecyclerView
 interface TMsgListItem : DslTMsgListItemInflatable {
 
     val isEnabled: Boolean
-
+    val isClickable: Boolean
+    val isLongClickable: Boolean
     val isVoidBackground: Boolean
 
     fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder
@@ -39,9 +40,9 @@ interface TMsgListItem : DslTMsgListItemInflatable {
 
     fun onItemClick(v: View, position: Int, x: Int, y: Int)
 
-    val isLongClickable: Boolean
-
-    fun onLongClick(v: View, position: Int, x: Int, y: Int): Boolean
+    fun onLongClick(v: View, position: Int, x: Int, y: Int): Boolean {
+        return false
+    }
 
     override fun inflateTMsgListItems(context: Context): List<TMsgListItem> {
         return listOf(this)

@@ -27,11 +27,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.FrameLayout
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.dsl.converter.convertToTMsgDslItemTree
-import io.github.qauxv.dsl.converter.createRecyclerViewFromTMSgDslTree
-import io.github.qauxv.dsl.func.FragmentDescription
-import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import io.github.qauxv.dsl.func.*
+import io.github.qauxv.dsl.item.*
 
 class SettingsMainFragment : BaseSettingFragment() {
 
@@ -39,6 +41,14 @@ class SettingsMainFragment : BaseSettingFragment() {
     private var title: String = "QAuxiliary"
     private lateinit var mFragmentLocations: Array<String>
     private lateinit var mFragmentDescription: FragmentDescription
+
+    // DSL stuff below
+    protected lateinit var adapter: RecyclerView.Adapter<*>
+    protected lateinit var recyclerListView: RecyclerView
+    protected lateinit var typeList: Array<Class<*>>
+    protected lateinit var itemList: ArrayList<TMsgListItem>
+    protected lateinit var itemTypeIds: Array<Int>
+    protected lateinit var itemTypeDelegate: Array<TMsgListItem>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -58,19 +68,128 @@ class SettingsMainFragment : BaseSettingFragment() {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = layoutInflater.context
-        val tmsgDslTree = convertToTMsgDslItemTree(context, mFragmentDescription)
+        val rootView = FrameLayout(context)
+        val tmsgDslTree = convertFragmentDslToTMsgDslItemTree(context, mFragmentDescription)
         if (isRootFragmentDescription()) {
-            addFlavorToRootDslTree(tmsgDslTree)
+            addHeaderItemToRootDslTree(tmsgDslTree)
         }
-        val recyclerView = createRecyclerViewFromTMSgDslTree(context, tmsgDslTree)
-        return recyclerView
+        // inflate DSL tree, the most awful code in the world
+        itemList = ArrayList()
+        // inflate hierarchy recycler list view items, each item will have its own view holder type
+        tmsgDslTree.forEach {
+            itemList.addAll(it.inflateTMsgListItems(context))
+        }
+        // group items by java class
+        typeList = itemList.map { it.javaClass }.distinct().toTypedArray()
+        // item id to type id mapping
+        itemTypeIds = Array(itemList.size) {
+            typeList.indexOf(itemList[it].javaClass)
+        }
+        // item type delegate is used to create view holder
+        itemTypeDelegate = Array(typeList.size) {
+            itemList[itemTypeIds.indexOf(it)]
+        }
+
+        // init view
+        recyclerListView = RecyclerView(context).apply {
+            itemAnimator = null
+            layoutAnimation = null
+            layoutManager = object : LinearLayoutManager(context, VERTICAL, false) {
+                override fun supportsPredictiveItemAnimations() = false
+            }
+            isVerticalScrollBarEnabled = false
+        }
+        // init adapter
+        adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
+            override fun onCreateViewHolder(
+                    parent: ViewGroup,
+                    viewType: Int
+            ): RecyclerView.ViewHolder {
+                val delegate = itemTypeDelegate[viewType]
+                val vh = delegate.createViewHolder(context, parent)
+                if (!delegate.isVoidBackground && delegate.isClickable) {
+                    // TODO: add ripple effect
+                }
+                return vh
+            }
+
+            override fun onBindViewHolder(holder: RecyclerView.ViewHolder, position: Int) {
+                val item = itemList[position]
+                item.bindView(holder, position, context)
+            }
+
+            override fun getItemCount() = itemList.size
+
+            override fun getItemViewType(position: Int) = itemTypeIds[position]
+        }
+        recyclerListView.adapter = adapter
+
+        rootView.addView(recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        return rootView
+    }
+
+    override fun onDestroyView() {
+        super.onDestroyView()
+        if (::recyclerListView.isInitialized) {
+            recyclerListView.adapter = null
+        }
+    }
+
+    private fun convertFragmentDslToTMsgDslItemTree(context: Context, fragmentDsl: FragmentDescription): ArrayList<DslTMsgListItemInflatable> {
+        val resultDslItems: ArrayList<DslTMsgListItemInflatable> = ArrayList()
+        for (child: IDslItemNode in fragmentDsl.children) {
+            if (child.isEndNode()) {
+                val item: DslTMsgListItemInflatable = convertEndNode(context, child)
+                resultDslItems.add(item)
+            } else {
+                val item: DslTMsgListItemInflatable = convertParentNodeRecursive(context, child as IDslParentNode)
+                resultDslItems.add(item)
+            }
+        }
+        return resultDslItems
+    }
+
+    private fun convertParentNodeRecursive(context: Context, parentNode: IDslParentNode): DslTMsgListItemInflatable {
+        if (parentNode is CategoryDescription) {
+            return CategoryItem(parentNode.name, null).also {
+                // init category item, which should only be end nodes here
+                for (item: IDslItemNode in parentNode.children) {
+                    val child = convertEndNode(context, item)
+                    it.add(child)
+                }
+            }
+        }
+        if (parentNode.isEndNode()) {
+            return convertEndNode(context, parentNode)
+        }
+        throw UnsupportedOperationException("unsupported node type: " + parentNode.javaClass.name)
+    }
+
+    private fun convertEndNode(context: Context, endNode: IDslItemNode): DslTMsgListItemInflatable {
+        if (endNode is UiItemAgentDescription) {
+            return UiAgentItem(endNode.identifier, endNode.name, endNode.itemAgentProvider)
+        } else if (endNode is FragmentDescription) {
+            return SimpleListItem(endNode.identifier, endNode.name ?: endNode.toString(), null).apply {
+                onClickListener = {
+                    // jump to target fragment
+                    val location: Array<String> = arrayOf(*mFragmentLocations, endNode.identifier)
+                    val fragment = SettingsMainFragment.newInstance(location)
+                    settingsHostActivity!!.presentFragment(fragment)
+                }
+            }
+        }
+        throw UnsupportedOperationException("unsupported node type: " + endNode.javaClass.name)
+    }
+
+    private fun IDslItemNode.isEndNode(): Boolean {
+        return this !is IDslParentNode || this is FragmentDescription
     }
 
     private fun isRootFragmentDescription(): Boolean {
         return mFragmentLocations.isEmpty() || mFragmentLocations.size == 1 && mFragmentLocations[0].isEmpty()
     }
 
-    private fun addFlavorToRootDslTree(dslTree: DslTMsgListItemInflatable) {
+    private fun addHeaderItemToRootDslTree(dslTree: ArrayList<DslTMsgListItemInflatable>) {
         // TODO: 2022-02-22 add flavor to root dsl tree
     }
 

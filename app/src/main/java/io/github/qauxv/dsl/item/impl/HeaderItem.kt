@@ -20,15 +20,36 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-@file:JvmName("DslItemRecyclerViewFactory")
-
-package io.github.qauxv.dsl.converter
+package io.github.qauxv.dsl.item.impl
 
 import android.content.Context
+import android.view.View
+import android.view.ViewGroup
 import androidx.recyclerview.widget.RecyclerView
-import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import io.github.qauxv.dsl.cell.HeaderCell
+import io.github.qauxv.dsl.item.TMsgListItem
 
+class HeaderItem(
+        val headerText: String?
+) : TMsgListItem {
 
-fun createRecyclerViewFromTMSgDslTree(context: Context, rootNode: DslTMsgListItemInflatable): RecyclerView {
+    class HeaderViewHolder(cell: HeaderCell) : RecyclerView.ViewHolder(cell)
 
+    override val isEnabled = false
+    override val isVoidBackground = false
+    override val isClickable = false
+    override val isLongClickable = false
+
+    override fun createViewHolder(context: Context, parent: ViewGroup): RecyclerView.ViewHolder {
+        return HeaderViewHolder(HeaderCell(context))
+    }
+
+    override fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context) {
+        val cell = viewHolder.itemView as HeaderCell
+        cell.title = headerText.orEmpty()
+    }
+
+    override fun onItemClick(v: View, position: Int, x: Int, y: Int) {
+        // do nothing
+    }
 }
