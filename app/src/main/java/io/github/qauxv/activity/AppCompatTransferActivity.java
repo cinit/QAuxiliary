@@ -29,7 +29,7 @@ import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
 
-public class AppCompatTransferActivity extends AppCompatActivity {
+public abstract class AppCompatTransferActivity extends AppCompatActivity {
 
     private ClassLoader mXref = null;
 

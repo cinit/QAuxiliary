@@ -177,8 +177,11 @@ class SettingsMainFragment : BaseSettingFragment() {
         } else if (endNode is FragmentDescription) {
             return SimpleListItem(endNode.identifier, endNode.name ?: endNode.toString(), null).apply {
                 onClickListener = {
+                    val targetLocation = FunctionEntryRouter.resolveUiItemAnycastLocation(arrayOf(
+                            FunctionEntryRouter.Locations.ANY_CAST_PREFIX, endNode.identifier))
+                            ?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
                     // jump to target fragment
-                    val location: Array<String> = arrayOf(*mFragmentLocations, endNode.identifier)
+                    val location: Array<String> = targetLocation
                     val fragment = SettingsMainFragment.newInstance(location)
                     settingsHostActivity!!.presentFragment(fragment)
                 }
@@ -204,6 +207,12 @@ class SettingsMainFragment : BaseSettingFragment() {
 
         @JvmStatic
         fun newInstance(location: Array<String>): SettingsMainFragment {
+            // check destination fragment
+            val desc = FunctionEntryRouter.findDescriptionByLocation(location)
+                    ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
+            if (desc !is FragmentDescription) {
+                throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
+            }
             val fragment = SettingsMainFragment()
             val bundle = Bundle()
             bundle.putStringArray(TARGET_FRAGMENT_LOCATION, location)

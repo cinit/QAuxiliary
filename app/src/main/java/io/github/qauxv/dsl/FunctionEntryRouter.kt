@@ -104,7 +104,7 @@ object FunctionEntryRouter {
                     category("ui-group-chat-other", "其他", false)
                 }
                 fragment("ui-profile", "资料卡")
-                fragment("host-ui-misc", "杂项", false)
+                fragment("ui-misc", "杂项", false)
             }
             category("auxiliary-function", "辅助功能") {
                 fragment("auxiliary-chat-and-message", "聊天和消息") {
@@ -140,7 +140,8 @@ object FunctionEntryRouter {
         val lostAndFoundItems = mutableListOf<IUiItemAgentProvider>()
         val annotatedUiItemAgentEntries = queryAnnotatedUiItemAgentEntries()
         for (uiItemAgentEntry in annotatedUiItemAgentEntries) {
-            val location = uiItemAgentEntry.uiItemLocation
+            var location = uiItemAgentEntry.uiItemLocation
+            location = resolveUiItemAnycastLocation(location) ?: location
             // find the parent node
             val parentNode = baseTree.lookupHierarchy(location)
             if (parentNode is IDslParentNode) {
@@ -154,7 +155,7 @@ object FunctionEntryRouter {
             // create a lost and found node
             val lostAndFoundFragmentDescription = FragmentDescription("lost-and-found", "Lost & Found") {
                 lostAndFoundItems.forEach {
-                    UiItemAgentDescription(it)
+                    addChild(UiItemAgentDescription(it))
                 }
             }
             // add to the top of the tree to make it the first node
@@ -228,7 +229,7 @@ object FunctionEntryRouter {
                 val UI_PROFILE: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-profile")
 
                 @JvmField
-                val UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc-title")
+                val UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc")
             }
         }
 
