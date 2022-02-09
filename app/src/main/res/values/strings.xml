@@ -29,4 +29,5 @@
     <string name="qq_lite">QQ极速版</string>
     <string name="tip">提示</string>
     <string name="send_to_ipad">发送到我的iPad</string>
+    <string name="action_search">搜索</string>
 </resources>
