@@ -27,14 +27,18 @@ import android.os.Bundle
 import android.view.*
 import android.widget.FrameLayout
 import androidx.core.content.res.ResourcesCompat
+import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
 import io.github.qauxv.R
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
+import kotlinx.coroutines.flow.FlowCollector
+import kotlinx.coroutines.flow.MutableStateFlow
 
 class SettingsMainFragment : BaseSettingFragment() {
 
@@ -44,7 +48,7 @@ class SettingsMainFragment : BaseSettingFragment() {
     private lateinit var mFragmentDescription: FragmentDescription
 
     // DSL stuff below
-    protected lateinit var adapter: RecyclerView.Adapter<*>
+    protected var adapter: RecyclerView.Adapter<*>? = null
     protected lateinit var recyclerListView: RecyclerView
     protected lateinit var typeList: Array<Class<*>>
     protected lateinit var itemList: ArrayList<TMsgListItem>
@@ -127,6 +131,23 @@ class SettingsMainFragment : BaseSettingFragment() {
             override fun getItemViewType(position: Int) = itemTypeIds[position]
         }
         recyclerListView.adapter = adapter
+
+        // collect all StateFlow and observe them in case of state change
+        for (i in itemList.indices) {
+            val item = itemList[i]
+            if (item is UiAgentItem) {
+                val valueStateFlow: MutableStateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
+                if (valueStateFlow != null) {
+                    lifecycleScope.launchWhenStarted {
+                        valueStateFlow.collect(object : FlowCollector<String?> {
+                            override suspend fun emit(value: String?) {
+                                SyncUtils.runOnUiThread { adapter?.notifyItemChanged(i) }
+                            }
+                        })
+                    }
+                }
+            }
+        }
 
         rootView.addView(recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         return rootView

@@ -40,7 +40,7 @@ import io.github.qauxv.util.hostInfo
 class UiAgentItem(
         override val identifier: String,
         override val name: String,
-        private val agentProvider: IUiItemAgentProvider,
+        val agentProvider: IUiItemAgentProvider,
 ) : IDslItemNode, TMsgListItem {
 
     override val isSearchable: Boolean = true
