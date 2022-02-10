@@ -33,7 +33,10 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.*
+import io.github.qauxv.util.CustomMenu
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Toasts
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
@@ -121,7 +124,6 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
                         *arrayOfNulls(0)) as String
                 copyToClipboard(ctx, text)
                 Toasts.info(ctx, "复制成功")
-                CliOper.copyCardMsg(text)
             } else if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
                             .isAssignableFrom(chatMessage.javaClass)) {
                 val text = Reflex.invokeVirtual(
@@ -129,7 +131,6 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
                         *arrayOfNulls(0)) as String
                 copyToClipboard(ctx, text)
                 Toasts.info(ctx, "复制成功")
-                CliOper.copyCardMsg(text)
             }
         }
     }

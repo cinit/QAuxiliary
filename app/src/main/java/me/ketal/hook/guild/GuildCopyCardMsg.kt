@@ -30,7 +30,6 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.CliOper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Toasts
 import xyz.nextalone.util.*
@@ -86,7 +85,6 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
                 }
                 copyToClipboard(ctx, text)
                 Toasts.info(ctx, "复制成功")
-                CliOper.copyCardMsg(text)
                 fragment.invoke("dismiss")
             }
         }

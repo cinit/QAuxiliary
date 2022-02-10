@@ -121,47 +121,6 @@ public class CliOper {
         Log.d("start App Center Trace OnLoad:" + properties.toString());
     }
 
-    public static void copyCardMsg(String msg) {
-        if (msg == null) {
-            return;
-        }
-        __init__(HostInfo.getApplication());
-        try {
-            Analytics.trackEvent("copyCardMsg", digestCardMsg(msg));
-        } catch (Throwable e) {
-            Log.e(e);
-        }
-    }
-
-    public static void sendCardMsg(long uin, String msg) {
-        if (msg == null) {
-            return;
-        }
-        __init__(HostInfo.getApplication());
-        try {
-            Map<String, String> prop = digestCardMsg(msg);
-            prop.put("uin", String.valueOf(uin));
-            Analytics.trackEvent("sendCardMsg", prop);
-        } catch (Throwable e) {
-            Log.e(e);
-        }
-    }
-
-    public static void batchSendMsg(long uin, String msg, int count) {
-        if (msg == null) {
-            return;
-        }
-        Map<String, String> properties = new HashMap<>();
-        if (msg.length() > 127) {
-            msg = msg.substring(0, 127);
-        }
-        properties.put("msg", msg);
-        properties.put("uin", String.valueOf(uin));
-        properties.put("count", String.valueOf(count));
-        __init__(HostInfo.getApplication());
-        Analytics.trackEvent("batchSendMsg", properties);
-    }
-
     private static Map<String, String> digestCardMsg(String msg) {
         Map<String, String> prop = new HashMap<>();
         if (msg.startsWith("<")) {
