@@ -82,7 +82,10 @@ class UiAgentItem(
     }
 
     override fun bindView(viewHolder: RecyclerView.ViewHolder, position: Int, context: Context) {
+        // remove the listener first to avoid mess up
         val cell = viewHolder.itemView as TitleValueCell
+        cell.setOnClickListener(null)
+        cell.switchView.setOnCheckedChangeListener(null)
         val agent = agentProvider.uiItemAgent
         cell.title = agent.titleProvider.invoke(agent)
         val description: String? = agent.summaryProvider?.invoke(agent, context)
@@ -104,6 +107,7 @@ class UiAgentItem(
             cell.switchView.setOnCheckedChangeListener(mCheckChangedListener)
         } else {
             // simple case, as it is
+            cell.isHasSwitch = false
             cell.summary = description
             cell.value = valueStateValue
         }
