@@ -23,6 +23,7 @@ package io.github.qauxv.startup;
 
 import android.app.Application;
 import android.content.Context;
+import cc.ioctl.hook.AppCenterFix;
 import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.util.HostInfo;
@@ -59,6 +60,7 @@ public class StartupRoutine {
         } catch (Exception | LinkageError e3) {
             Log.e(e3);
         }
+        AppCenterFix.init();
         MainHook.getInstance().performHook(ctx, step);
     }
 }
