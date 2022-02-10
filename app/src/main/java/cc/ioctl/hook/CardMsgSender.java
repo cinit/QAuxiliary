@@ -39,7 +39,6 @@ import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.DexKit;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.InvocationTargetException;
 import mqq.app.AppRuntime;
@@ -94,9 +93,19 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
             return false;
         }
         if ((text.contains("<?xml") || text.contains("{\""))) {
+            long uin = AppRuntimeHelper.getLongAccountUin();
+            if (uin < 10000) {
+                Toasts.error(ctx1, "Invalid account uin");
+                return true;
+            }
             SyncUtils.async(() -> {
                 if (text.contains("<?xml")) {
                     try {
+                        String errorMsg = TransactionHelper.postCardMsg(uin, text);
+                        if (errorMsg != null) {
+                            Toasts.error(ctx1, errorMsg);
+                            return;
+                        }
                         if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
                             SyncUtils.runOnUiThread(() -> input.setText(""));
                         } else {
@@ -106,11 +115,16 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                         if (e instanceof InvocationTargetException) {
                             e = e.getCause();
                         }
-                        Log.e(e);
+                        traceError(e);
                         Toasts.error(ctx1, e.toString().replace("java.lang.", ""));
                     }
                 } else if (text.contains("{\"")) {
                     try {
+                        String errorMsg = TransactionHelper.postCardMsg(uin, text);
+                        if (errorMsg != null) {
+                            Toasts.error(ctx1, errorMsg);
+                            return;
+                        }
                         // Object arkMsg = load("com.tencent.mobileqq.data.ArkAppMessage").newInstance();
                         if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
                             SyncUtils.runOnUiThread(() -> input.setText(""));
@@ -121,9 +135,8 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                         if (e instanceof InvocationTargetException) {
                             e = e.getCause();
                         }
-                        Log.e(e);
-                        Toasts.error(ctx1,
-                                e.toString().replace("java.lang.", ""));
+                        traceError(e);
+                        Toasts.error(ctx1, e.toString().replace("java.lang.", ""));
                     }
                 }
             });

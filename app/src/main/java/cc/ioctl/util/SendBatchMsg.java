@@ -36,11 +36,9 @@ import android.text.TextWatcher;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.BaseAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
@@ -49,7 +47,9 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
+import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
@@ -75,8 +75,7 @@ public class SendBatchMsg {
         editText.setSingleLine(false);
         editText.setMinLines(4);
         editText.setGravity(Gravity.TOP);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-                WRAP_CONTENT);
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         layoutParams.setMargins(padding, dip2px(context, 10.0f), padding, 10);
         editText.setLayoutParams(layoutParams);
         linearLayout.addView(editText);
@@ -104,59 +103,51 @@ public class SendBatchMsg {
 
     @SuppressWarnings("deprecation")
     public static View.OnClickListener clickToBatchMsg() {
-        return new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (LicenseStatus.sDisableCommonHooks) {
-                    return;
-                }
-                try {
-                    final Context exactCtx = v.getContext();
-                    LinearLayout linearLayout = getEditView(exactCtx);
-                    final EditText editText = (EditText) linearLayout.getChildAt(0);
-                    final AlertDialog alertDialog = new AlertDialog.Builder(exactCtx,
-                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-                                    ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
-                                    : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                            .setTitle("输入群发文本")
-                            .setView(linearLayout)
-                            .setPositiveButton("选择群发对象", null)
-                            .setNegativeButton("取消", null)
-                            .create();
-                    alertDialog.show();
-                    setEditDialogStyle(alertDialog);
-                    alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                            .setOnClickListener(new View.OnClickListener() {
-                                @Override
-                                public void onClick(View v) {
-                                    String msg = editText.getText().toString();
-                                    if (msg.isEmpty() || msg.equals("")) {
-                                        Toasts.error(exactCtx, "请输入文本消息");
-                                    } else {
-                                        if (msg.length() > 6 && !LicenseStatus.isAsserted()) {
-                                            Toasts.error(exactCtx, "超出字数限制：输入被限制在五个字以内");
-                                        } else {
-                                            try {
-                                                showSelectDialog(exactCtx, msg);
-                                            } catch (Throwable e) {
-                                                Log.e(e);
-                                            }
-                                        }
+        return v -> {
+            if (LicenseStatus.sDisableCommonHooks) {
+                return;
+            }
+            try {
+                final Context exactCtx = v.getContext();
+                LinearLayout linearLayout = getEditView(exactCtx);
+                final EditText editText = (EditText) linearLayout.getChildAt(0);
+                final AlertDialog alertDialog = new AlertDialog.Builder(exactCtx,
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+                                ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+                                : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                        .setTitle("输入群发文本")
+                        .setView(linearLayout)
+                        .setPositiveButton("选择群发对象", null)
+                        .setNegativeButton("取消", null)
+                        .create();
+                alertDialog.show();
+                setEditDialogStyle(alertDialog);
+                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        .setOnClickListener(v1 -> {
+                            String msg = editText.getText().toString();
+                            if (msg.isEmpty() || msg.equals("")) {
+                                Toasts.error(exactCtx, "请输入文本消息");
+                            } else {
+                                if (msg.length() > 6 && !LicenseStatus.isAsserted()) {
+                                    Toasts.error(exactCtx, "超出字数限制：输入被限制在五个字以内");
+                                } else {
+                                    try {
+                                        showSelectDialog(exactCtx, msg);
+                                    } catch (Throwable e) {
+                                        Log.e(e);
                                     }
                                 }
-                            });
-                } catch (Throwable e) {
-                    Log.e(e);
-                }
+                            }
+                        });
+            } catch (Throwable e) {
+                Log.e(e);
             }
         };
     }
 
-
     @SuppressWarnings("deprecation")
     private static void showSelectDialog(final Context context, final String msg) throws Throwable {
-        final TroopAndFriendSelectAdpter troopAndFriendSelectAdpter = new TroopAndFriendSelectAdpter(
-                context);
+        final TroopAndFriendSelectAdpter troopAndFriendSelectAdpter = new TroopAndFriendSelectAdpter(context);
         final AlertDialog alertDialog = new AlertDialog.Builder(context,
                 Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
                         ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
@@ -164,7 +155,17 @@ public class SendBatchMsg {
                 .setTitle("发送到")
                 .setView(getListView(context, msg, troopAndFriendSelectAdpter))
                 .setPositiveButton("发送", (dialog, which) -> {
+                    long currentUin = AppRuntimeHelper.getLongAccountUin();
+                    if (currentUin < 10000) {
+                        Toasts.error(context, "Invalid account uin");
+                        return;
+                    }
                     HashSet<ContactDescriptor> arrayList = troopAndFriendSelectAdpter.mTargets;
+                    String errorMsg = TransactionHelper.postBatchMsg(currentUin, msg, arrayList.size());
+                    if (errorMsg != null) {
+                        Toasts.error(context, errorMsg);
+                        return;
+                    }
                     if (!arrayList.isEmpty()) {
                         int size = arrayList.size();
                         int[] type = new int[size];
@@ -177,21 +178,18 @@ public class SendBatchMsg {
                             }
                             i++;
                         }
-                    boolean isSuccess = ntSendBatchMessages(getQQAppInterface(), context, msg,
-                        type, uins);
-                        // TODO: 群发文本记录
-                    try {
-                        Toasts.showToast(context, Toasts.TYPE_INFO,
-                            "发送" + (isSuccess ? "成功" : "失败"), Toast.LENGTH_SHORT);
-                    } catch (Throwable throwable) {
-                        Toast.makeText(context, "发送" + (isSuccess ? "成功" : "失败"),
-                            Toast.LENGTH_SHORT).show();
+                        boolean isSuccess = ntSendBatchMessages(getQQAppInterface(), context, msg, type, uins);
+                        try {
+                            Toasts.showToast(context, Toasts.TYPE_INFO,
+                                    "发送" + (isSuccess ? "成功" : "失败"), Toast.LENGTH_SHORT);
+                        } catch (Throwable throwable) {
+                            Toast.makeText(context, "发送" + (isSuccess ? "成功" : "失败"), Toast.LENGTH_SHORT).show();
+                        }
                     }
-                }
-            })
-            .setNegativeButton("取消", null)
-            .setNeutralButton("全选", null)
-            .create();
+                })
+                .setNegativeButton("取消", null)
+                .setNeutralButton("全选", null)
+                .create();
         alertDialog.show();
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextSize(16.0f);
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextSize(16.0f);
@@ -199,8 +197,7 @@ public class SendBatchMsg {
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setTextColor(0xff4284f3);
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xff4284f3);
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(0xff4284f3);
-        alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-                .setOnClickListener(v -> troopAndFriendSelectAdpter.setAllSelect());
+        alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener(v -> troopAndFriendSelectAdpter.setAllSelect());
         troopAndFriendSelectAdpter.sendBtn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         new android.os.Handler().postDelayed(() -> troopAndFriendSelectAdpter.notifyDataSetChanged(), 1000);
     }
@@ -215,8 +212,7 @@ public class SendBatchMsg {
         editText.setBackgroundColor(0x00000000);
         editText.setHint("搜索");
         editText.setTextSize(18.0f);
-        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-                dip2px(context, 30.0f));
+        LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, dip2px(context, 30.0f));
         layoutParams.setMargins(dip2px(context, 30.0f), 0, dip2px(context, 30.0f), 10);
         editText.setLayoutParams(layoutParams);
         final ListView listView = new ListView(context);
@@ -237,20 +233,17 @@ public class SendBatchMsg {
         group.setId(R_ID_SELECT_GROUP);
         radioGroup.addView(friend);
         radioGroup.addView(group);
-        radioGroup.setOnCheckedChangeListener(new RadioGroup.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(RadioGroup group, int checkedId) {
-                if (checkedId == R_ID_SELECT_FRIEND) {
-                    ((RadioButton) group.getChildAt(0)).setChecked(true);
-                    ((RadioButton) group.getChildAt(1)).setChecked(false);
-                    troopAndFriendSelectAdpter.toggleFriends();
-                } else if (checkedId == R_ID_SELECT_GROUP) {
-                    ((RadioButton) group.getChildAt(0)).setChecked(false);
-                    ((RadioButton) group.getChildAt(1)).setChecked(true);
-                    troopAndFriendSelectAdpter.toggleGroups();
-                }
-                editText.setText("");
+        radioGroup.setOnCheckedChangeListener((group1, checkedId) -> {
+            if (checkedId == R_ID_SELECT_FRIEND) {
+                ((RadioButton) group1.getChildAt(0)).setChecked(true);
+                ((RadioButton) group1.getChildAt(1)).setChecked(false);
+                troopAndFriendSelectAdpter.toggleFriends();
+            } else if (checkedId == R_ID_SELECT_GROUP) {
+                ((RadioButton) group1.getChildAt(0)).setChecked(false);
+                ((RadioButton) group1.getChildAt(1)).setChecked(true);
+                troopAndFriendSelectAdpter.toggleGroups();
             }
+            editText.setText("");
         });
         editText.addTextChangedListener(new TextWatcher() {
             @Override
@@ -267,13 +260,9 @@ public class SendBatchMsg {
             }
         });
 
-        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                TroopAndFriendSelectAdpter.ViewHolder viewHolder = (TroopAndFriendSelectAdpter.ViewHolder) view
-                        .getTag();
-                viewHolder.cBox.toggle();
-            }
+        listView.setOnItemClickListener((parent, view, position, id) -> {
+            TroopAndFriendSelectAdpter.ViewHolder viewHolder = (TroopAndFriendSelectAdpter.ViewHolder) view.getTag();
+            viewHolder.cBox.toggle();
         });
         LinearLayout linearLayout = new LinearLayout(context);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
@@ -336,7 +325,7 @@ public class SendBatchMsg {
 
         @Override
         public View getView(final int position, View convertView, ViewGroup parent) {
-            ViewHolder viewHolder = null;
+            ViewHolder viewHolder;
             if (convertView == null) {
                 viewHolder = new ViewHolder();
                 LinearLayout linearLayout = getListItem(context);
@@ -346,23 +335,19 @@ public class SendBatchMsg {
                 viewHolder.title = (TextView) linearLayout.getChildAt(2);
                 convertView.setTag(viewHolder);
                 viewHolder.cBox
-                        .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                            @Override
-                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                                ContactDescriptor cd = ((ViewHolder) ((View) buttonView.getParent())
-                                        .getTag()).mUin;
-                                if (isChecked) {
-                                    mTargets.add(cd);
+                        .setOnCheckedChangeListener((buttonView, isChecked) -> {
+                            ContactDescriptor cd = ((ViewHolder) ((View) buttonView.getParent()).getTag()).mUin;
+                            if (isChecked) {
+                                mTargets.add(cd);
+                            } else {
+                                mTargets.remove(cd);
+                            }
+                            if (sendBtn != null) {
+                                int size = mTargets.size();
+                                if (size != 0) {
+                                    sendBtn.setText("发送(" + size + ")");
                                 } else {
-                                    mTargets.remove(cd);
-                                }
-                                if (sendBtn != null) {
-                                    int size = mTargets.size();
-                                    if (size != 0) {
-                                        sendBtn.setText("发送(" + size + ")");
-                                    } else {
-                                        sendBtn.setText("发送");
-                                    }
+                                    sendBtn.setText("发送");
                                 }
                             }
                         });
@@ -382,20 +367,18 @@ public class SendBatchMsg {
             int imgPadding = dip2px(context, 10.0f);
             int imgHeight = dip2px(context, 40.0f);
             LinearLayout linearLayout = new LinearLayout(context);
-            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-                    WRAP_CONTENT);
+            LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
             linearLayout.setLayoutParams(layoutParams);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
             linearLayout.setPadding(padding, 15, padding, 25);
-            LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(WRAP_CONTENT,
-                    WRAP_CONTENT);
+            LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
             layoutParams1.gravity = Gravity.CENTER_VERTICAL;
             CheckBox check = new CheckBox(context);
             check.setFocusable(false);
             check.setClickable(false);
             ImageView imageView = new ImageView(context);
-            @SuppressWarnings("SuspiciousNameCombination") LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(
-                    imgHeight, imgHeight);
+            @SuppressWarnings("SuspiciousNameCombination")
+            LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(imgHeight, imgHeight);
             layoutParams2.gravity = Gravity.CENTER_VERTICAL;
             layoutParams2.setMargins(imgPadding, 0, imgPadding, 0);
             imageView.setLayoutParams(layoutParams2);
