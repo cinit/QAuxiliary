@@ -33,11 +33,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
+import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
@@ -99,7 +99,6 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                     try {
                         if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
                             SyncUtils.runOnUiThread(() -> input.setText(""));
-                            CliOper.sendCardMsg(AppRuntimeHelper.getLongAccountUin(), text);
                         } else {
                             Toasts.error(ctx1, "XML语法错误(代码有误)");
                         }
@@ -115,7 +114,6 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                         // Object arkMsg = load("com.tencent.mobileqq.data.ArkAppMessage").newInstance();
                         if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
                             SyncUtils.runOnUiThread(() -> input.setText(""));
-                            CliOper.sendCardMsg(AppRuntimeHelper.getLongAccountUin(), text);
                         } else {
                             Toasts.error(ctx1, "JSON语法错误(代码有误)");
                         }

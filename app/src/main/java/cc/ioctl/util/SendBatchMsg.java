@@ -49,9 +49,7 @@ import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import android.widget.Toast;
-import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
-import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
@@ -78,7 +76,7 @@ public class SendBatchMsg {
         editText.setMinLines(4);
         editText.setGravity(Gravity.TOP);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-            WRAP_CONTENT);
+                WRAP_CONTENT);
         layoutParams.setMargins(padding, dip2px(context, 10.0f), padding, 10);
         editText.setLayoutParams(layoutParams);
         linearLayout.addView(editText);
@@ -117,36 +115,36 @@ public class SendBatchMsg {
                     LinearLayout linearLayout = getEditView(exactCtx);
                     final EditText editText = (EditText) linearLayout.getChildAt(0);
                     final AlertDialog alertDialog = new AlertDialog.Builder(exactCtx,
-                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-                            ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
-                            : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-                        .setTitle("输入群发文本")
-                        .setView(linearLayout)
-                        .setPositiveButton("选择群发对象", null)
-                        .setNegativeButton("取消", null)
-                        .create();
+                            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+                                    ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+                                    : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                            .setTitle("输入群发文本")
+                            .setView(linearLayout)
+                            .setPositiveButton("选择群发对象", null)
+                            .setNegativeButton("取消", null)
+                            .create();
                     alertDialog.show();
                     setEditDialogStyle(alertDialog);
                     alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                        .setOnClickListener(new View.OnClickListener() {
-                            @Override
-                            public void onClick(View v) {
-                                String msg = editText.getText().toString();
-                                if (msg.isEmpty() || msg.equals("")) {
-                                    Toasts.error(exactCtx, "请输入文本消息");
-                                } else {
-                                    if (msg.length() > 6 && !LicenseStatus.isAsserted()) {
-                                        Toasts.error(exactCtx, "超出字数限制：输入被限制在五个字以内");
+                            .setOnClickListener(new View.OnClickListener() {
+                                @Override
+                                public void onClick(View v) {
+                                    String msg = editText.getText().toString();
+                                    if (msg.isEmpty() || msg.equals("")) {
+                                        Toasts.error(exactCtx, "请输入文本消息");
                                     } else {
-                                        try {
-                                            showSelectDialog(exactCtx, msg);
-                                        } catch (Throwable e) {
-                                            Log.e(e);
+                                        if (msg.length() > 6 && !LicenseStatus.isAsserted()) {
+                                            Toasts.error(exactCtx, "超出字数限制：输入被限制在五个字以内");
+                                        } else {
+                                            try {
+                                                showSelectDialog(exactCtx, msg);
+                                            } catch (Throwable e) {
+                                                Log.e(e);
+                                            }
                                         }
                                     }
                                 }
-                            }
-                        });
+                            });
                 } catch (Throwable e) {
                     Log.e(e);
                 }
@@ -158,30 +156,30 @@ public class SendBatchMsg {
     @SuppressWarnings("deprecation")
     private static void showSelectDialog(final Context context, final String msg) throws Throwable {
         final TroopAndFriendSelectAdpter troopAndFriendSelectAdpter = new TroopAndFriendSelectAdpter(
-            context);
+                context);
         final AlertDialog alertDialog = new AlertDialog.Builder(context,
-            Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-                ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
-                : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
-            .setTitle("发送到")
-            .setView(getListView(context, msg, troopAndFriendSelectAdpter))
-            .setPositiveButton("发送", (dialog, which) -> {
-                HashSet<ContactDescriptor> arrayList = troopAndFriendSelectAdpter.mTargets;
-                if (!arrayList.isEmpty()) {
-                    int size = arrayList.size();
-                    int[] type = new int[size];
-                    long[] uins = new long[size];
-                    int i = 0;
-                    for (ContactDescriptor target : arrayList) {
-                        if (i < size) {
-                            type[i] = target.uinType;
-                            uins[i] = Long.parseLong(target.uin);
+                Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
+                        ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
+                        : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT)
+                .setTitle("发送到")
+                .setView(getListView(context, msg, troopAndFriendSelectAdpter))
+                .setPositiveButton("发送", (dialog, which) -> {
+                    HashSet<ContactDescriptor> arrayList = troopAndFriendSelectAdpter.mTargets;
+                    if (!arrayList.isEmpty()) {
+                        int size = arrayList.size();
+                        int[] type = new int[size];
+                        long[] uins = new long[size];
+                        int i = 0;
+                        for (ContactDescriptor target : arrayList) {
+                            if (i < size) {
+                                type[i] = target.uinType;
+                                uins[i] = Long.parseLong(target.uin);
+                            }
+                            i++;
                         }
-                        i++;
-                    }
                     boolean isSuccess = ntSendBatchMessages(getQQAppInterface(), context, msg,
                         type, uins);
-                    CliOper.batchSendMsg(AppRuntimeHelper.getLongAccountUin(), msg, arrayList.size());
+                        // TODO: 群发文本记录
                     try {
                         Toasts.showToast(context, Toasts.TYPE_INFO,
                             "发送" + (isSuccess ? "成功" : "失败"), Toast.LENGTH_SHORT);
@@ -202,23 +200,23 @@ public class SendBatchMsg {
         alertDialog.getButton(AlertDialog.BUTTON_NEGATIVE).setTextColor(0xff4284f3);
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL).setTextColor(0xff4284f3);
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
-            .setOnClickListener(v -> troopAndFriendSelectAdpter.setAllSelect());
+                .setOnClickListener(v -> troopAndFriendSelectAdpter.setAllSelect());
         troopAndFriendSelectAdpter.sendBtn = alertDialog.getButton(AlertDialog.BUTTON_POSITIVE);
         new android.os.Handler().postDelayed(() -> troopAndFriendSelectAdpter.notifyDataSetChanged(), 1000);
     }
 
     @SuppressWarnings("JavaJniMissingFunction")
     static native boolean ntSendBatchMessages(AppRuntime rt, Context ctx, String msg, int[] type,
-                                              long[] uin);
+            long[] uin);
 
     private static View getListView(Context context, String sendMsg,
-                                    final TroopAndFriendSelectAdpter troopAndFriendSelectAdpter) {
+            final TroopAndFriendSelectAdpter troopAndFriendSelectAdpter) {
         final EditText editText = new EditText(context);
         editText.setBackgroundColor(0x00000000);
         editText.setHint("搜索");
         editText.setTextSize(18.0f);
         LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-            dip2px(context, 30.0f));
+                dip2px(context, 30.0f));
         layoutParams.setMargins(dip2px(context, 30.0f), 0, dip2px(context, 30.0f), 10);
         editText.setLayoutParams(layoutParams);
         final ListView listView = new ListView(context);
@@ -273,7 +271,7 @@ public class SendBatchMsg {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 TroopAndFriendSelectAdpter.ViewHolder viewHolder = (TroopAndFriendSelectAdpter.ViewHolder) view
-                    .getTag();
+                        .getTag();
                 viewHolder.cBox.toggle();
             }
         });
@@ -348,26 +346,26 @@ public class SendBatchMsg {
                 viewHolder.title = (TextView) linearLayout.getChildAt(2);
                 convertView.setTag(viewHolder);
                 viewHolder.cBox
-                    .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-                        @Override
-                        public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                            ContactDescriptor cd = ((ViewHolder) ((View) buttonView.getParent())
-                                .getTag()).mUin;
-                            if (isChecked) {
-                                mTargets.add(cd);
-                            } else {
-                                mTargets.remove(cd);
-                            }
-                            if (sendBtn != null) {
-                                int size = mTargets.size();
-                                if (size != 0) {
-                                    sendBtn.setText("发送(" + size + ")");
+                        .setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+                            @Override
+                            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                                ContactDescriptor cd = ((ViewHolder) ((View) buttonView.getParent())
+                                        .getTag()).mUin;
+                                if (isChecked) {
+                                    mTargets.add(cd);
                                 } else {
-                                    sendBtn.setText("发送");
+                                    mTargets.remove(cd);
+                                }
+                                if (sendBtn != null) {
+                                    int size = mTargets.size();
+                                    if (size != 0) {
+                                        sendBtn.setText("发送(" + size + ")");
+                                    } else {
+                                        sendBtn.setText("发送");
+                                    }
                                 }
                             }
-                        }
-                    });
+                        });
             } else {
                 viewHolder = (ViewHolder) convertView.getTag();
             }
@@ -385,19 +383,19 @@ public class SendBatchMsg {
             int imgHeight = dip2px(context, 40.0f);
             LinearLayout linearLayout = new LinearLayout(context);
             LinearLayout.LayoutParams layoutParams = new LinearLayout.LayoutParams(MATCH_PARENT,
-                WRAP_CONTENT);
+                    WRAP_CONTENT);
             linearLayout.setLayoutParams(layoutParams);
             linearLayout.setOrientation(LinearLayout.HORIZONTAL);
             linearLayout.setPadding(padding, 15, padding, 25);
             LinearLayout.LayoutParams layoutParams1 = new LinearLayout.LayoutParams(WRAP_CONTENT,
-                WRAP_CONTENT);
+                    WRAP_CONTENT);
             layoutParams1.gravity = Gravity.CENTER_VERTICAL;
             CheckBox check = new CheckBox(context);
             check.setFocusable(false);
             check.setClickable(false);
             ImageView imageView = new ImageView(context);
             @SuppressWarnings("SuspiciousNameCombination") LinearLayout.LayoutParams layoutParams2 = new LinearLayout.LayoutParams(
-                imgHeight, imgHeight);
+                    imgHeight, imgHeight);
             layoutParams2.gravity = Gravity.CENTER_VERTICAL;
             layoutParams2.setMargins(imgPadding, 0, imgPadding, 0);
             imageView.setLayoutParams(layoutParams2);
