@@ -58,7 +58,7 @@ object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null)
                 val intent: Intent = param.args[0] as Intent
                 for (decorator in decorators) {
                     try {
-                        if (decorator.doDecorate(intent, param)) {
+                        if (decorator.isEnabled && decorator.doDecorate(intent, param)) {
                             return
                         }
                     } catch (e: Throwable) {

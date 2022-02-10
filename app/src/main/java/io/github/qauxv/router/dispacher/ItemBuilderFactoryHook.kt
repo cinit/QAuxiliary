@@ -66,7 +66,7 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
                 val chatMessage = param.args[param.args.size - 1]
                 for (decorator in decorators) {
                     try {
-                        if (decorator.doDecorate(result, chatMessage, param)) {
+                        if (decorator.isEnabled && decorator.doDecorate(result, chatMessage, param)) {
                             return
                         }
                     } catch (e: Throwable) {

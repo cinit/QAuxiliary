@@ -146,7 +146,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
                         }
                         for (IInputButtonDecorator decorator : DECORATORS) {
                             try {
-                                if (decorator.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
+                                if (decorator.isEnabled() && decorator.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
                                     return true;
                                 }
                             } catch (Throwable e) {

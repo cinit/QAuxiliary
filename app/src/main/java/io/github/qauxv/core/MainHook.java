@@ -132,8 +132,7 @@ public class MainHook {
             Class loadData = Initiator.load("com/tencent/mobileqq/startup/step/LoadData");
             Method doStep = null;
             for (Method method : loadData.getDeclaredMethods()) {
-                if (method.getReturnType().equals(boolean.class)
-                    && method.getParameterTypes().length == 0) {
+                if (method.getReturnType().equals(boolean.class) && method.getParameterTypes().length == 0) {
                     doStep = method;
                     break;
                 }
