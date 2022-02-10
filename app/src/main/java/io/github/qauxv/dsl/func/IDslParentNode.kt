@@ -39,5 +39,7 @@ interface IDslParentNode : IDslItemNode {
 
     fun lookupHierarchy(ids: Array<String>): IDslItemNode?
 
+    fun findChildWithId(id: String): IDslItemNode?
+
     fun findLocationByIdentifier(identifier: String): Array<String>?
 }

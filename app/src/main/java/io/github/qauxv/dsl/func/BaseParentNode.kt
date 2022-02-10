@@ -76,6 +76,10 @@ abstract class BaseParentNode : IDslParentNode {
         return null
     }
 
+    override fun findChildWithId(id: String): IDslItemNode? {
+        return mChildren.find { it.identifier == id }
+    }
+
     override fun findLocationByIdentifier(identifier: String): Array<String>? {
         if (identifier == this.identifier) {
             // self, return empty array

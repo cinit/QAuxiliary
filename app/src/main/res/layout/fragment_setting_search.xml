@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ QAuxiliary - An Xposed module for QQ/TIM
+  ~ Copyright (C) 2019-2022 qwq233@qwq2333.top
+  ~ https://github.com/cinit/QAuxiliary
+  ~
+  ~ This software is non-free but opensource software: you can redistribute it
+  ~ and/or modify it under the terms of the GNU Affero General Public License
+  ~ as published by the Free Software Foundation; either
+  ~ version 3 of the License, or any later version and our eula as published
+  ~ by QAuxiliary contributors.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ and eula along with this software.  If not, see
+  ~ <https://www.gnu.org/licenses/>
+  ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+  -->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/searchKeyWords"
+            android:layout_width="0dp"
+            android:layout_height="match_parent"
+            android:layout_weight="1"
+            android:focusedByDefault="true"
+            android:hint="搜索关键词"
+            android:inputType="text"
+            tools:targetApi="o" />
+
+    </LinearLayout>
+
+    <FrameLayout
+        android:id="@+id/searchSetting_resultFrameContainer"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <LinearLayout
+            android:id="@+id/searchSetting_searchHistoryLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top|start"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:text="TODO: 2022-02-10 假装这里是历史记录" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/searchSetting_noResultLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top|center_horizontal">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="50dp"
+                android:gravity="center"
+                android:text="没有搜索到结果"
+                android:textAppearance="?android:attr/textAppearanceLarge"
+                android:textColor="@color/secondTextColor" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/searchSetting_searchResultLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="top|start"
+            android:orientation="vertical">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/searchSetting_searchResultRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent" />
+
+        </LinearLayout>
+
+    </FrameLayout>
+
+</LinearLayout>

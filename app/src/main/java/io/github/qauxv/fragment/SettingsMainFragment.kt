@@ -210,6 +210,17 @@ class SettingsMainFragment : BaseSettingFragment() {
         inflater.inflate(R.menu.main_settings_toolbar, menu)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        if (item.itemId == R.id.menu_item_action_search) {
+            // always use global search, or search in current fragment?
+            // TODO: 2022-02-10 support search in current fragment
+            val fragment = SearchOverlayFragment()
+            settingsHostActivity!!.presentFragment(fragment)
+            return true
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
     companion object {
         const val TARGET_FRAGMENT_LOCATION = "SettingsMainFragment.TARGET_FRAGMENT_LOCATION"
 
