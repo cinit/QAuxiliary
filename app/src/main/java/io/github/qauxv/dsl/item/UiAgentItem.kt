@@ -64,8 +64,8 @@ class UiAgentItem(
         val switchCellAgent = agent.switchProvider
         switchCellAgent?.isChecked = isChecked
         // if the function is enabled but not initialized, initialize it
-        if (agent is IDynamicHook) {
-            val hook = agent as IDynamicHook
+        if (agentProvider is IDynamicHook) {
+            val hook: IDynamicHook = agentProvider
             val context = btn.context
             if (hook.isEnabled && !hook.isInitialized) {
                 // we need to initialize the hook

@@ -38,12 +38,14 @@ public class LicenseStatus {
     public static final int CURRENT_EULA_VERSION = 9;
 
     public static int getEulaStatus() {
-        return ConfigManager.getDefaultConfig().getIntOrDefault(qn_eula_status, 0);
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getIntOrDefault(qn_eula_status, 0);
     }
 
     public static void setEulaStatus(int status) {
-        ConfigManager.getDefaultConfig().putInt(qn_eula_status, status);
-        ConfigManager.getDefaultConfig().save();
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putInt(qn_eula_status, status);
+        cfg.save();
     }
 
     public static boolean hasEulaUpdated() {
@@ -52,39 +54,39 @@ public class LicenseStatus {
     }
 
     public static boolean hasUserAcceptEula() {
-        return getEulaStatus() == CURRENT_EULA_VERSION;
+        // TODO: 2022-02-10 add EULA activity
+        return true;
+        // return getEulaStatus() == CURRENT_EULA_VERSION;
     }
 
     public static void setUserCurrentStatus() {
         SyncUtils.async(() -> {
+            ConfigManager cfg = ConfigManager.getDefaultConfig();
             int currentStatus = TransactionHelper.getUserStatus(AppRuntimeHelper.getLongAccountUin());
             // 如果获取不到就放弃更新状态
             if (currentStatus == UserStatusConst.notExist) {
                 return;
             }
             Log.i("User Current Status: " + "" + currentStatus);
-            ConfigManager.getDefaultConfig().putInt(qn_user_auth_status, currentStatus);
-            ConfigManager.getDefaultConfig()
-                    .putLong(qn_user_auth_last_update, System.currentTimeMillis());
-            ConfigManager.getDefaultConfig().save();
+            cfg.putInt(qn_user_auth_status, currentStatus);
+            cfg.putLong(qn_user_auth_last_update, System.currentTimeMillis());
+            cfg.save();
             Log.i("User Current Status in ConfigManager: "
-                    + ConfigManager.getDefaultConfig().getIntOrDefault(qn_user_auth_status, -1));
-            Log.i("User Status Last Update: " + new Date(ConfigManager.getDefaultConfig()
+                    + cfg.getIntOrDefault(qn_user_auth_status, -1));
+            Log.i("User Status Last Update: " + new Date(cfg
                     .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())));
         });
     }
 
 
     public static boolean isInsider() {
-        int currentStatus = ConfigManager.getDefaultConfig()
-            .getIntOrDefault(qn_user_auth_status, -1);
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        int currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         if (currentStatus == UserStatusConst.notExist) {
             LicenseStatus.setUserCurrentStatus();
-            currentStatus = ConfigManager.getDefaultConfig()
-                .getIntOrDefault(qn_user_auth_status, -1);
+            currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         }
-        long lastUpdate = ConfigManager.getDefaultConfig()
-            .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
+        long lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
         if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
             LicenseStatus.setUserCurrentStatus();
         }
@@ -92,15 +94,13 @@ public class LicenseStatus {
     }
 
     public static boolean isBlacklisted() {
-        int currentStatus = ConfigManager.getDefaultConfig()
-            .getIntOrDefault(qn_user_auth_status, -1);
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        int currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         if (currentStatus == UserStatusConst.notExist) {
             LicenseStatus.setUserCurrentStatus();
-            currentStatus = ConfigManager.getDefaultConfig()
-                .getIntOrDefault(qn_user_auth_status, -1);
+            currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         }
-        long lastUpdate = ConfigManager.getDefaultConfig()
-            .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
+        long lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
         if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
             LicenseStatus.setUserCurrentStatus();
         }
@@ -108,40 +108,34 @@ public class LicenseStatus {
     }
 
     public static boolean isWhitelisted() {
-        int currentStatus = ConfigManager.getDefaultConfig()
-            .getIntOrDefault(qn_user_auth_status, -1);
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        int currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         if (currentStatus == UserStatusConst.notExist) {
             LicenseStatus.setUserCurrentStatus();
-            currentStatus = ConfigManager.getDefaultConfig()
-                .getIntOrDefault(qn_user_auth_status, -1);
+            currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         }
-        long lastUpdate = ConfigManager.getDefaultConfig()
-            .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
+        long lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
         if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
             LicenseStatus.setUserCurrentStatus();
         }
-        return currentStatus == UserStatusConst.whitelisted
-            || currentStatus == UserStatusConst.developer;
+        return currentStatus == UserStatusConst.whitelisted || currentStatus == UserStatusConst.developer;
     }
 
     public static boolean isAsserted() {
-        int currentStatus = ConfigManager.getDefaultConfig()
-            .getIntOrDefault(qn_user_auth_status, -1);
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        int currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         if (BuildConfig.DEBUG) {
             return true;
         }
         if (currentStatus == UserStatusConst.notExist) {
             LicenseStatus.setUserCurrentStatus();
-            currentStatus = ConfigManager.getDefaultConfig()
-                .getIntOrDefault(qn_user_auth_status, -1);
+            currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1);
         }
-        long lastUpdate = ConfigManager.getDefaultConfig()
-            .getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
+        long lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis());
         if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
             LicenseStatus.setUserCurrentStatus();
         }
-        return currentStatus == UserStatusConst.whitelisted
-            || currentStatus == UserStatusConst.developer;
+        return currentStatus == UserStatusConst.whitelisted || currentStatus == UserStatusConst.developer;
     }
 
 }

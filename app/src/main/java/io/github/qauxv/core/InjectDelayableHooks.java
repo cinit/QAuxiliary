@@ -157,7 +157,7 @@ public class InjectDelayableHooks {
                         if (!h.isPreparationRequired()) {
                             h.initialize();
                         } else {
-                            Log.e("InjectDelayableHooks/E not init " + h + " ,since checkPreconditions == false");
+                            Log.e("InjectDelayableHooks/E not init " + h + ", checkPreconditions == false");
                         }
                     }
                 } catch (Throwable e) {
