@@ -36,9 +36,7 @@ import java.util.Map;
 
 public class CliOper {
 
-    private static final String appCenterToken =
-        BuildConfig.DEBUG ? "530d3819-3543-46e3-8c59-5576604f3801"
-            : "ddf4b597-1833-45dd-af28-96ca504b8123";
+    private static final String appCenterToken = "77c14c01-b4bf-46cf-bf95-dad60d7418a4";
     private static boolean appCenterInit = false;
 
     public static void __init__(Application app) {
