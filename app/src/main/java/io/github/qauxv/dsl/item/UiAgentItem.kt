@@ -28,10 +28,14 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
 import androidx.recyclerview.widget.RecyclerView
+import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.cell.TitleValueCell
 import io.github.qauxv.dsl.func.IDslItemNode
+import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.hostInfo
 
 class UiAgentItem(
         override val identifier: String,
@@ -55,10 +59,22 @@ class UiAgentItem(
         return HeaderViewHolder(TitleValueCell(context))
     }
 
-    private val mCheckChangedListener = CompoundButton.OnCheckedChangeListener { _, isChecked ->
+    private val mCheckChangedListener = CompoundButton.OnCheckedChangeListener { btn, isChecked ->
         val agent = agentProvider.uiItemAgent
         val switchCellAgent = agent.switchProvider
         switchCellAgent?.isChecked = isChecked
+        // if the function is enabled but not initialized, initialize it
+        if (agent is IDynamicHook) {
+            val hook = agent as IDynamicHook
+            val context = btn.context
+            if (hook.isEnabled && !hook.isInitialized) {
+                // we need to initialize the hook
+                HookInstaller.initializeHookForeground(context, hook)
+            }
+            if (hook.isApplicationRestartRequired) {
+                Toasts.info(context, "重启 ${hostInfo.hostName} 生效")
+            }
+        }
     }
 
     private val mOnClickListener = View.OnClickListener {

@@ -96,7 +96,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
                     isEnabled = enableFake
                     if (enableFake) {
                         level = text
-                        if (!isInitialized) HookInstaller.doSetupAndInit(context, this@FakeQQLevel)
+                        if (!isInitialized) HookInstaller.initializeHookForeground(context, this@FakeQQLevel)
                     }
                     dismiss()
                 }

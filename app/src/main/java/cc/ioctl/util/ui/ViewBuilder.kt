@@ -55,10 +55,8 @@ fun newListItemHookSwitchInit(ctx: Context, title: String, desc: String?, hook: 
     val on: Boolean = hook.isEnabled
     return newListItemSwitch(ctx, title, desc, on) { _: CompoundButton, isChecked: Boolean ->
         if (!hook.isInitialized && isChecked) {
-            SyncUtils.async {
-                hook.isEnabled = true
-                HookInstaller.doSetupAndInit(ctx, hook)
-            }
+            hook.isEnabled = true
+            HookInstaller.initializeHookForeground(ctx, hook)
         } else {
             hook.isEnabled = isChecked
         }

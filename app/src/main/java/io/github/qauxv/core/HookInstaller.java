@@ -24,9 +24,13 @@ package io.github.qauxv.core;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.RuntimeErrorTracer;
+import io.github.qauxv.step.Step;
+import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.Toasts;
 
 public class HookInstaller {
 
@@ -76,7 +80,65 @@ public class HookInstaller {
         return queryAllAnnotatedHooks()[index];
     }
 
-    public static void doSetupAndInit(@NonNull Context context, @NonNull IDynamicHook hook) {
-        throw new UnsupportedOperationException("Not supported yet.");
+    public static void initializeHookForeground(@NonNull Context context, @NonNull IDynamicHook hook) {
+        SyncUtils.async(() -> doInitAndSetupHookForeground(context, hook));
+    }
+
+    public static void doInitAndSetupHookForeground(@NonNull Context context, @NonNull IDynamicHook hook) {
+        final CustomDialog[] pDialog = new CustomDialog[1];
+        Throwable err = null;
+        boolean isSuccessful = true;
+        try {
+            if (hook.isPreparationRequired()) {
+                Step[] steps = hook.makePreparationSteps();
+                if (steps != null) {
+                    for (Step s : steps) {
+                        if (s.isDone()) {
+                            continue;
+                        }
+                        final String name = s.getDescription();
+                        SyncUtils.runOnUiThread(() -> {
+                            if (pDialog[0] == null) {
+                                pDialog[0] = CustomDialog.createFailsafe(context);
+                                pDialog[0].setCancelable(false);
+                                pDialog[0].setTitle("请稍候");
+                                pDialog[0].show();
+                            }
+                            pDialog[0].setMessage("QAuxiliary 正在初始化:\n" + name + "\n每个类一般不会超过一分钟");
+                        });
+                        s.step();
+                    }
+                }
+            }
+        } catch (Throwable stepErr) {
+            if (hook instanceof RuntimeErrorTracer) {
+                ((RuntimeErrorTracer) hook).traceError(stepErr);
+            }
+            err = stepErr;
+            isSuccessful = false;
+        }
+        if (isSuccessful) {
+            if (hook.isTargetProcess()) {
+                boolean success = false;
+                try {
+                    success = hook.initialize();
+                } catch (Throwable ex) {
+                    err = ex;
+                }
+                if (!success) {
+                    SyncUtils.runOnUiThread(() -> Toasts.error(context, "初始化失败"));
+                }
+            }
+            SyncUtils.requestInitHook(HookInstaller.getHookIndex(hook), hook.getTargetProcesses());
+        }
+        if (err != null) {
+            Throwable finalErr = err;
+            SyncUtils.runOnUiThread(() -> CustomDialog.createFailsafe(context).setTitle("发生错误")
+                    .setMessage(finalErr.toString())
+                    .setCancelable(true).setPositiveButton(android.R.string.ok, null).show());
+        }
+        if (pDialog[0] != null) {
+            SyncUtils.runOnUiThread(() -> pDialog[0].dismiss());
+        }
     }
 }
