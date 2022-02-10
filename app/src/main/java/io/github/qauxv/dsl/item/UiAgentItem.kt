@@ -84,6 +84,7 @@ class UiAgentItem(
             cell.isHasSwitch = true
             cell.isChecked = switchAgent.isChecked
             cell.switchView.isEnabled = switchAgent.isCheckable
+            cell.switchView.isClickable = switchAgent.isCheckable
             cell.switchView.setOnCheckedChangeListener(mCheckChangedListener)
         } else {
             // simple case, as it is
@@ -95,9 +96,18 @@ class UiAgentItem(
 
     override fun onItemClick(v: View, position: Int, x: Int, y: Int) {
         val agent = agentProvider.uiItemAgent
+        val cell = v as TitleValueCell
         // TODO: 2022-02-09 if ClassCastException, it means the context is not Activity use base.context
         val activity: Activity = v.context as Activity
-        agent.onClickListener?.invoke(agent, activity, v)
+        val onClick = agent.onClickListener
+        if (onClick != null) {
+            onClick.invoke(agent, activity, v)
+        } else {
+            // check if it has switch
+            if (cell.isHasSwitch) {
+                cell.switchView.toggle()
+            }
+        }
     }
 
     override val isLongClickable: Boolean = false

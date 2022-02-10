@@ -24,9 +24,7 @@ package io.github.qauxv.fragment
 
 import android.content.Context
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.widget.FrameLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -37,7 +35,6 @@ import io.github.qauxv.R
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
-import io.github.qauxv.util.Log
 
 class SettingsMainFragment : BaseSettingFragment() {
 
@@ -202,6 +199,16 @@ class SettingsMainFragment : BaseSettingFragment() {
         // TODO: 2022-02-22 add flavor to root dsl tree
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.main_settings_toolbar, menu)
+    }
+
     companion object {
         const val TARGET_FRAGMENT_LOCATION = "SettingsMainFragment.TARGET_FRAGMENT_LOCATION"
 
@@ -218,6 +225,19 @@ class SettingsMainFragment : BaseSettingFragment() {
             bundle.putStringArray(TARGET_FRAGMENT_LOCATION, location)
             fragment.arguments = bundle
             return fragment
+        }
+
+        @JvmStatic
+        fun getBundleForLocation(location: Array<String>): Bundle {
+            // check destination fragment
+            val desc = FunctionEntryRouter.findDescriptionByLocation(location)
+                    ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
+            if (desc !is FragmentDescription) {
+                throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
+            }
+            val bundle = Bundle()
+            bundle.putStringArray(TARGET_FRAGMENT_LOCATION, location)
+            return bundle
         }
     }
 }

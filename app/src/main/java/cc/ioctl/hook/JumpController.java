@@ -350,7 +350,7 @@ public class JumpController extends CommonConfigFunctionHook {
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            SettingsUiFragmentHostActivity.startActivityForFragment(activity, JefsRuleConfigFragment.class, null);
+            SettingsUiFragmentHostActivity.startFragmentWithContext(activity, JefsRuleConfigFragment.class, null);
             return Unit.INSTANCE;
         };
     }

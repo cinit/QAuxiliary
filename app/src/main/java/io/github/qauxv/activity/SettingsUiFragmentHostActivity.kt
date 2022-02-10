@@ -48,6 +48,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         setContentView(R.layout.activity_settings_ui_host)
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
+        setSupportActionBar(mAppToolBar)
         val intent = intent
         // check if we are requested to show a specific fragment
         val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
@@ -166,6 +167,20 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
     companion object {
         const val TARGET_FRAGMENT_KEY: String = "SettingsUiFragmentHostActivity.TARGET_FRAGMENT_KEY"
         const val TARGET_FRAGMENT_ARGS_KEY: String = "SettingsUiFragmentHostActivity.TARGET_FRAGMENT_ARGS_KEY"
+
+        @JvmStatic
+        fun startFragmentWithContext(context: Context,
+                                     fragmentClass: Class<out BaseSettingFragment>,
+                                     args: Bundle? = null) {
+            // check if we need to start a new activity
+            if (context is SettingsUiFragmentHostActivity) {
+                // just add the fragment to the top
+                context.presentFragment(fragmentClass.newInstance().apply { arguments = args })
+            } else {
+                // start a new activity for the fragment
+                startActivityForFragment(context, fragmentClass, args)
+            }
+        }
 
         @JvmStatic
         fun startActivityForFragment(context: Context,
