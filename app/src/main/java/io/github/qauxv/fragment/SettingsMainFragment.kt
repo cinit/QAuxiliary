@@ -93,6 +93,7 @@ class SettingsMainFragment : BaseSettingFragment() {
 
         // init view
         recyclerListView = RecyclerView(context).apply {
+            id = R.id.fragmentMainRecyclerView // id is used to allow saving state
             itemAnimator = null
             layoutAnimation = null
             layoutManager = object : LinearLayoutManager(context, VERTICAL, false) {

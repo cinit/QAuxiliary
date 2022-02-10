@@ -229,7 +229,7 @@ public class JefsRuleConfigFragment extends BaseSettingFragment implements View.
     @Override
     public boolean doOnBackPressed() {
         if (currEditMode) {
-            CustomDialog.create(requireContext())
+            CustomDialog.createFailsafe(requireContext())
                     .setPositiveButton("确认", (dialog, which) -> finishFragment())
                     .setNegativeButton("取消", null)
                     .setTitle("退出")

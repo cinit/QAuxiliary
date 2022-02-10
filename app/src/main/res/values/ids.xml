@@ -4,6 +4,7 @@
     <item type="id" name="rootBounceScrollView"/>
     <item type="id" name="rootMainLayout"/>
     <item type="id" name="rootMainList"/>
+    <item type="id" name="fragmentMainRecyclerView"/>
     <item type="id" name="root_content_toolbarLayout" />
     <item type="id" name="jefsRulesMainSwitch" />
     <item type="id" name="jefsRulesTextView" />
@@ -15,6 +16,10 @@
     <item type="id" name="jefsRulesCancelButton" />
     <item type="id" name="jefsRulesResetButton" />
     <item type="id" name="ketalRecallImageView" />
+    <item type="id" name="btn_apply" />
+    <item type="id" name="btn_cancel" />
+    <item type="id" name="btn_disable" />
+    <item type="id" name="input_value" />
 
     <item name="mainV2_menuItem_toggleDesktopIcon" type="id" />
     <item name="chat_words_count" type="id" />

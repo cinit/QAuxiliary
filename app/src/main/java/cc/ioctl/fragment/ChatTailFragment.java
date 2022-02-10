@@ -59,7 +59,6 @@ import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
-import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.fragment.BaseSettingFragment;
 import io.github.qauxv.util.Log;
@@ -71,18 +70,14 @@ import me.kyuubiran.util.UtilsKt;
 public class ChatTailFragment extends BaseSettingFragment implements View.OnClickListener {
 
     public static final String delimiter = "#msg#";
-    private static final int R_ID_APPLY = 0x300AFF81;
-    private static final int R_ID_DISABLE = 0x300AFF82;
-    private static final int R_ID_PERCENT_VALUE = 0x300AFF83;
-    private static final int R_ID_REGEX_VALUE = 0x300AFF84;
     private static int battery = 0;
     private static String power = "未充电";
     private BatteryReceiver mReceiver = new BatteryReceiver();
 
     TextView tvStatus;
 
-    private boolean mMsfResponsive = false;
-    private TextView __tv_chat_tail_groups, __tv_chat_tail_friends, __tv_chat_tail_time_format;
+    private Button btnApply = null, btnDisable = null;
+    private EditText inputTail, inputRegex;
 
     public static int getBattery() {
         return battery;
@@ -162,9 +157,10 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
         ll.addView(_g = subtitle(requireContext(), "#Spacemsg#    : 空格消息"));
         ll.addView(_h = subtitle(requireContext(), "\\n       : 换行"));
         int _5dp = dip2px(requireContext(), 5);
-        EditText pct = createEditText(R_ID_PERCENT_VALUE, _5dp,
+        EditText pct = createEditText(View.NO_ID, _5dp,
                 ct.getTailCapacity().replace("\n", "\\n"),
                 ChatTailFragment.delimiter + " 将会被替换为消息");
+        inputTail = pct;
         _a.setOnClickListener(v -> pct.setText(pct.getText() + delimiter));
         _b.setOnClickListener(v -> pct.setText(pct.getText() + "#model#"));
         _c.setOnClickListener(v -> pct.setText(pct.getText() + "#brand#"));
@@ -177,20 +173,20 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
 //        ll.addView(newListItemSwitchFriendConfigNext(this, "正则开关",
 //                "通过正则表达式的消息不会携带小尾巴(无需重启" + HostInfo.getAppName() + ")",
 //        ConfigItems.qn_chat_tail_regex, false));
-        ll.addView(createEditText(R_ID_REGEX_VALUE, _5dp, ChatTailHook.getTailRegex(),
+        ll.addView(inputRegex = createEditText(View.NO_ID, _5dp, ChatTailHook.getTailRegex(),
                         "需要有正则表达式相关知识(部分匹配)"),
                 newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT,
                         2 * _5dp, _5dp, 2 * _5dp, _5dp));
 //        ll.addView(newListItemSwitchFriendConfigNext(this, "全局开关",
 //                "开启将无视生效范围(无需重启" + HostInfo.getAppName() + ")",
 //        ConfigItems.qn_chat_tail_global, false));
-        Button apply = new Button(requireContext());
-        apply.setId(R_ID_APPLY);
-        apply.setOnClickListener(this);
-//        ResUtils.applyStyleCommonBtnBlue(apply);
-        ll.addView(apply, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
+        btnApply = new Button(requireContext());
+        btnApply.setId(R.id.btn_apply);
+        btnApply.setOnClickListener(this);
+//        ResUtils.applyStyleCommonBtnBlue(btnApply);
+        ll.addView(btnApply, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         Button dis = new Button(requireContext());
-        dis.setId(R_ID_DISABLE);
+        dis.setId(R.id.btn_disable);
         dis.setOnClickListener(this);
 //        ResUtils.applyStyleCommonBtnBlue(dis);
         dis.setText("停用");
@@ -221,25 +217,16 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
     public void onDestroyView() {
         super.onDestroyView();
         requireContext().unregisterReceiver(mReceiver);
+        btnDisable.setOnClickListener(null);
+        btnDisable = null;
+        btnApply.setOnClickListener(null);
+        btnApply = null;
+        inputTail = null;
+        inputRegex = null;
+        tvStatus = null;
+
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        ConfigManager cfg = ExfriendManager.getCurrent().getConfig();
-        String str = cfg.getString(ConfigItems.qn_chat_tail_troops);
-        int n = 0;
-        if (str != null && str.length() > 4) {
-            n = str.split(",").length;
-        }
-        __tv_chat_tail_groups.setText(n + "个群");
-        str = cfg.getString(ConfigItems.qn_chat_tail_friends);
-        n = 0;
-        if (str != null && str.length() > 4) {
-            n = str.split(",").length;
-        }
-        __tv_chat_tail_friends.setText(n + "个好友");
-    }
 
     private void showStatus() {
         Activity activity = requireActivity();
@@ -269,8 +256,8 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
         }
         tvStatus.setText(desc);
         Button apply, disable;
-        apply = activity.findViewById(R_ID_APPLY);
-        disable = activity.findViewById(R_ID_DISABLE);
+        apply = btnApply;
+        disable = btnDisable;
         if (!enabled) {
             apply.setText("保存并启用");
         } else {
@@ -287,13 +274,13 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
     public void onClick(View v) {
         ConfigManager cfg = ExfriendManager.getCurrent().getConfig();
         switch (v.getId()) {
-            case R_ID_APPLY:
+            case R.id.btn_apply:
                 doUpdateTailCfg();
                 Log.i("isRegex:" + String.valueOf(ChatTailHook.isRegex()));
                 Log.i("isPassRegex:" + String.valueOf(ChatTailHook.isPassRegex("示例消息")));
                 Log.i("getTailRegex:" + ChatTailHook.getTailRegex());
                 break;
-            case R_ID_DISABLE:
+            case R.id.btn_disable:
                 cfg.putBoolean(ChatTailHook.qn_chat_tail_enable, false);
                 try {
                     cfg.save();
@@ -310,7 +297,7 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
         ChatTailHook ct = ChatTailHook.INSTANCE;
         ConfigManager cfg = ExfriendManager.getCurrent().getConfig();
         EditText pct;
-        pct = activity.findViewById(R_ID_PERCENT_VALUE);
+        pct = inputTail;
         String val = pct.getText().toString();
         if (TextUtils.isEmpty(val)) {
             Toasts.error(requireContext(), "请输入小尾巴");
@@ -321,8 +308,7 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
             return;
         }
         ct.setTail(val);
-        val = ((EditText) activity.findViewById(R_ID_REGEX_VALUE)).getText()
-                .toString();
+        val = (inputRegex).getText().toString();
         if (!TextUtils.isEmpty(val)) {
             ChatTailHook.setTailRegex(val);
         }
