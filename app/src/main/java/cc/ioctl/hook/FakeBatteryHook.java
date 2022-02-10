@@ -34,11 +34,13 @@ import android.os.Parcelable;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.fragment.FakeBatteryConfigFragment;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -394,7 +396,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     }
 
     public static void onItemClicked(Activity activity) {
-        // TODO: 2022-02-01 add settings UI
+        SettingsUiFragmentHostActivity.startFragmentWithContext(activity, FakeBatteryConfigFragment.class, null);
     }
 
     @NonNull

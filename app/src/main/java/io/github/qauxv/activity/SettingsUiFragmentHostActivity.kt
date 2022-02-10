@@ -104,11 +104,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         SyncUtils.postDelayed(1) {
             val text: String? = fragment.title
             this.title = text
-            if (::mAppToolBar.isInitialized) {
-                mAppToolBar.title = text
-            }
             supportActionBar?.let {
-                it.setDisplayHomeAsUpEnabled(mFragmentStack.size > 1)
                 it.title = text
             }
         }

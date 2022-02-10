@@ -62,13 +62,10 @@ import io.github.qauxv.util.Toasts;
 
 public class FakeBatteryConfigFragment extends BaseSettingFragment implements View.OnClickListener {
 
-    private static final int R_ID_APPLY = 0x300AFF81;
-    private static final int R_ID_DISABLE = 0x300AFF82;
-    private static final int R_ID_PERCENT_VALUE = 0x300AFF83;
-    private static final int R_ID_CHARGING = 0x300AFF84;
-    private static final int R_ID_FAK_BAT_STATUS = 0x300AFF85;
-
-    TextView tvStatus;
+    private TextView tvStatus;
+    private Button btnApply, btnDisable;
+    private EditText inputBatteryLevel;
+    private CheckBox checkBoxCharging;
 
     private boolean mMsfResponsive = false;
 
@@ -92,16 +89,13 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         bounceScrollView.setId(R.id.rootBounceScrollView);
         ll.setId(R.id.rootMainLayout);
         bounceScrollView.addView(ll, new ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT));
-        LinearLayout.LayoutParams fixlp = new LinearLayout.LayoutParams(MATCH_PARENT,
-                dip2px(context, 48));
-        RelativeLayout.LayoutParams __lp_l = new RelativeLayout.LayoutParams(WRAP_CONTENT,
-                WRAP_CONTENT);
+        LinearLayout.LayoutParams fixlp = new LinearLayout.LayoutParams(MATCH_PARENT, dip2px(context, 48));
+        RelativeLayout.LayoutParams __lp_l = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         int mar = (int) (dip2px(context, 12) + 0.5f);
         __lp_l.setMargins(mar, 0, mar, 0);
         __lp_l.addRule(RelativeLayout.ALIGN_PARENT_LEFT);
         __lp_l.addRule(RelativeLayout.CENTER_VERTICAL);
-        RelativeLayout.LayoutParams __lp_r = new RelativeLayout.LayoutParams(WRAP_CONTENT,
-                WRAP_CONTENT);
+        RelativeLayout.LayoutParams __lp_r = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
         __lp_r.setMargins(mar, 0, mar, 0);
         __lp_r.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);
         __lp_r.addRule(RelativeLayout.CENTER_VERTICAL);
@@ -117,7 +111,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         ll.addView(subtitle(context, "设置自定义电量百分比:"));
         int _5dp = dip2px(context, 5);
         EditText pct = new EditText(context);
-        pct.setId(R_ID_PERCENT_VALUE);
+        inputBatteryLevel = pct;
         pct.setInputType(TYPE_CLASS_NUMBER);
 //        pct.setTextColor(ResUtils.skin_black);
         pct.setTextSize(dip2sp(context, 18));
@@ -128,39 +122,46 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         pct.setHint("电量百分比, 取值范围 [1,100]");
         pct.setText(bat.getFakeBatteryCapacity() + "");
         pct.setSelection(pct.getText().length());
-        ll.addView(pct,
-                newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
+        ll.addView(pct, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         CheckBox charging = new CheckBox(context);
-        charging.setId(R_ID_CHARGING);
+        checkBoxCharging = charging;
         charging.setText("正在充电");
         charging.setTextSize(17);
 //        charging.setTextColor(ResUtils.skin_black);
 //        charging.setButtonDrawable(ResUtils.getCheckBoxBackground());
         charging.setPadding(_5dp, _5dp, _5dp, _5dp);
         charging.setChecked(FakeBatteryHook.INSTANCE.isFakeBatteryCharging());
-        ll.addView(charging,
-                newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 3 * _5dp, _5dp, 2 * _5dp, _5dp));
+        ll.addView(charging, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 3 * _5dp, _5dp, 2 * _5dp, _5dp));
         Button apply = new Button(context);
-        apply.setId(R_ID_APPLY);
+        btnApply = apply;
+        apply.setId(R.id.btn_apply);
         apply.setOnClickListener(this);
 //        ResUtils.applyStyleCommonBtnBlue(apply);
-        ll.addView(apply,
-                newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
+        ll.addView(apply, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         Button dis = new Button(context);
-        dis.setId(R_ID_DISABLE);
+        dis.setId(R.id.btn_disable);
+        btnDisable = dis;
         dis.setOnClickListener(this);
 //        ResUtils.applyStyleCommonBtnBlue(dis);
         dis.setText("停用");
-        ll.addView(dis,
-                newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
+        ll.addView(dis, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         __ll.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         showStatus();
         return bounceScrollView;
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        tvStatus = null;
+        inputBatteryLevel = null;
+        checkBoxCharging = null;
+        btnApply = null;
+        btnDisable = null;
+    }
+
     private void showStatus() {
         FakeBatteryHook bat = FakeBatteryHook.INSTANCE;
-        Activity activity = requireActivity();
         boolean enabled = bat.isEnabled();
         String desc = "当前状态: ";
         if (enabled) {
@@ -172,9 +173,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
             desc += "禁用";
         }
         tvStatus.setText(desc);
-        Button apply, disable;
-        apply = activity.findViewById(R_ID_APPLY);
-        disable = activity.findViewById(R_ID_DISABLE);
+        Button apply = btnApply, disable = btnDisable;
         if (!enabled) {
             apply.setText("保存并启用");
         } else {
@@ -192,7 +191,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         ConfigManager cfg = ConfigManager.getDefaultConfig();
         Context context = requireContext();
         switch (v.getId()) {
-            case R_ID_APPLY:
+            case R.id.btn_apply:
                 if (mMsfResponsive) {
                     doUpdateBatCfg();
                 } else {
@@ -239,7 +238,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
                             });
                 }
                 break;
-            case R_ID_DISABLE:
+            case R.id.btn_disable:
                 cfg.putBoolean(FakeBatteryHook.qn_fake_bat_enable, false);
                 try {
                     cfg.save();
@@ -260,8 +259,8 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         CheckBox charging;
         int val;
         Activity context = requireActivity();
-        pct = context.findViewById(R_ID_PERCENT_VALUE);
-        charging = context.findViewById(R_ID_CHARGING);
+        pct = inputBatteryLevel;
+        charging = checkBoxCharging;
         try {
             val = Integer.parseInt(pct.getText().toString());
         } catch (NumberFormatException e) {

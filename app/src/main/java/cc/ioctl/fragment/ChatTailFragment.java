@@ -76,7 +76,7 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
 
     TextView tvStatus;
 
-    private Button btnApply = null, btnDisable = null;
+    private Button btnApply = null;
     private EditText inputTail, inputRegex;
 
     public static int getBattery() {
@@ -217,8 +217,6 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
     public void onDestroyView() {
         super.onDestroyView();
         requireContext().unregisterReceiver(mReceiver);
-        btnDisable.setOnClickListener(null);
-        btnDisable = null;
         btnApply.setOnClickListener(null);
         btnApply = null;
         inputTail = null;
@@ -255,18 +253,12 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
             desc += "禁用";
         }
         tvStatus.setText(desc);
-        Button apply, disable;
+        Button apply;
         apply = btnApply;
-        disable = btnDisable;
         if (!enabled) {
             apply.setText("保存并启用");
         } else {
             apply.setText("确认");
-        }
-        if (!enabled) {
-            disable.setVisibility(View.GONE);
-        } else {
-            disable.setVisibility(View.VISIBLE);
         }
     }
 
