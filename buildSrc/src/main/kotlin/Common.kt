@@ -4,8 +4,6 @@ import org.gradle.api.Project
 import java.io.File
 
 object Common {
-
-    @JvmStatic
     fun getBuildVersionCode(project: Project): Int {
         // .git/HEAD描述当前目录所指向的分支信息，内容示例："ref: refs/heads/master\n"
         val headFile = File(project.rootProject.projectDir, ".git" + File.separator + "HEAD")
@@ -38,7 +36,6 @@ object Common {
         }
     }
 
-    @JvmStatic
     fun getGitHeadRefsSuffix(project: Project): String {
         // .git/HEAD描述当前目录所指向的分支信息，内容示例："ref: refs/heads/master\n"
         val headFile = File(project.rootProject.projectDir, ".git" + File.separator + "HEAD")
@@ -71,7 +68,6 @@ object Common {
         }
     }
 
-    @JvmStatic
     fun getBuildIdSuffix(): String {
         return try {
             val ciBuildId = System.getenv()["APPCENTER_BUILD_ID"]
@@ -83,7 +79,6 @@ object Common {
         }
     }
 
-    @JvmStatic
     fun getTimeStamp(): Int {
         return (System.currentTimeMillis() / 1000L).toInt()
     }
