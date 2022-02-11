@@ -51,7 +51,7 @@ android {
         getByName("release") {
             isShrinkResources = false
             isMinifyEnabled = false
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+            proguardFiles("proguard-rules.pro")
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
@@ -65,7 +65,7 @@ android {
         getByName("debug") {
             isShrinkResources = false
             isMinifyEnabled = false
-            setProguardFiles(listOf(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"))
+            proguardFiles("proguard-rules.pro")
         }
         create("CI") {
             initWith(getByName("debug"))
