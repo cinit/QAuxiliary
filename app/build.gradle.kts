@@ -109,6 +109,13 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    applicationVariants.all {
+        val outputFileName = "Qauxv-v${defaultConfig.versionName}-${this.buildType.name}.apk"
+        outputs.all {
+            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+            output?.outputFileName = outputFileName
+        }
+    }
 }
 
 kotlin {
