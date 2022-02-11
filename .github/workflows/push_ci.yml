@@ -83,7 +83,7 @@ jobs:
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
           COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
-          export release=$(find $OUTPUT -name "*.apk")
+          export release=$(find . -name "*.apk")
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
           curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Frelease%22%2C%22caption%22%3A%24%7BESCAPED%7D%7D%5D" -F release="@$release"
 
@@ -101,11 +101,9 @@ jobs:
       - name: Release
         run: |
           curl "https://gist.githubusercontent.com/qwq233/2a903f28a38d48d57731a1e4d6358948/raw/80e515d659a6f3c4737a1674f50fae5087e1f83c/taichi.py" -o taichi.py
-          apt install -y python3-pip
+          sudo apt install -y python3-pip
           pip3 install requests
-          cat > taichi.json << EOF
-          ${{ secrets.TC_UPLOAD_USER_TOKEN }}"
-          EOF
+          echo ${{ secrets.TC_UPLOAD_USER_TOKEN }} | base64 -d > taichi.json
           export release=$(find $OUTPUT -name "*.apk")
           python3 taichi.py $release
   upload-lsp:
@@ -117,6 +115,7 @@ jobs:
     steps:
       - name: Donwload Artifacts
         uses: actions/download-artifact@v2
+        id: download
         with:
           path: artifacts
       - name: Generate Changelog
@@ -125,7 +124,7 @@ jobs:
         id: apk
         uses: JantHsueh/get-apk-info-action@master
         with:
-          apkPath: "artifacts/QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
+          apkPath: "${{steps.download.outputs.download-path}}/QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
       - name: Get Date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
