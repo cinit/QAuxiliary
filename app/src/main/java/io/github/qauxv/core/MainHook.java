@@ -37,12 +37,10 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
-import io.github.qauxv.util.HideVmStack;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
-import java.io.File;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import me.kyuubiran.hook.RemoveCameraButton;
@@ -117,7 +115,6 @@ public class MainHook {
             Log.e("NewRuntime/E hook failed: " + e);
             AppRuntimeHelper.$access$set$sAppRuntimeInit(true);
         }
-        HideVmStack.setHideEnabled(!new File(ctx.getFilesDir(), "qn_disable_hide_vm_stack").exists());
         injectLifecycleForProcess(ctx);
         HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
         HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
