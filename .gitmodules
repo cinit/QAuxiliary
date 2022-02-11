@@ -1,0 +1,3 @@
+[submodule "libs/mmkv/MMKV"]
+	path = libs/mmkv/MMKV
+	url = https://github.com/Tencent/MMKV
