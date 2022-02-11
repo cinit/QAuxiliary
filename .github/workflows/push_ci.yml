@@ -8,6 +8,7 @@ on:
 
 jobs:
   build:
+    name: Build CI
     runs-on: ubuntu-latest
     if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }}
 
@@ -34,7 +35,6 @@ jobs:
           key: gradle-deps-core-${{ hashFiles('**/build.gradle') }}
           restore-keys: |
             gradle-deps
-
       - name: Cache Gradle Build
         uses: actions/cache@v2
         with:
@@ -48,12 +48,157 @@ jobs:
         run: chmod +x gradlew
 
       - name: Build with Gradle
-        run: ./gradlew :app:assemble
+        run: |
+          echo $(echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d) > keystore.jks
+          ./gradlew :app:assembleRelease
+        with:
+          KEYSTORE_PATH: "./keystore.jks"
+          KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.SIGN_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
 
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         # don't upload the artifacts if it's a pull request
         if: ${{ !github.event.pull_request }}
         with:
-          path: './app/build/outputs/*'
-          name: build_output_${{ github.event.head_commit.id }}.zip
+          path: 'app/build/outputs/apk/release/*.apk'
+          name: QAuxiliary-release-${{ github.event.head_commit.id }}.apk
+
+  upload-telegram:
+    name: Upload to Telegram
+    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
+      - telegram-bot-api
+    steps:
+      - name: Donwload Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Download Telegram Bot API Binary
+        uses: actions/download-artifact@master
+        with:
+          name: telegram-bot-api-binary
+          path: .
+      - name: Release
+        run: |
+          chmod +x telegram-bot-api-binary
+          ./telegram-bot-api-binary --api-id=21724 --api-hash=3e0cb5efcd52300aec5994fdfc5bdc16 --local 2>&1 > /dev/null &
+          curl http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN }}/sendMessage \
+           -X POST \
+           -F chat_id="${{ secrets.TELEGRAM_TO }}" \
+           -F text="==== ${{ github.event.head_commit.id }} ====" \
+           --silent --show-error --fail >/dev/null
+          mkdir apks
+          find artifacts -name "*.apk" -exec cp {} apks \;
+          function upload() {
+            for apk in $@; do
+              echo ">> Uploading $apk"
+              curl http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument \
+                -X POST \
+                -F chat_id="${{ secrets.TELEGRAM_TO }}" \
+                -F document="@$apk" \
+                --silent --show-error --fail >/dev/null
+              sleep 1
+            done
+          }
+          upload apks/*.apk
+          pkill telegram-bot
+
+  upload-taichi:
+    name: Upload taichi
+    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Donwload Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Release
+        run: |
+          chmod +x telegram-bot-api-binary
+          curl https://gist.githubusercontent.com/qwq233/2a903f28a38d48d57731a1e4d6358948/raw/80e515d659a6f3c4737a1674f50fae5087e1f83c/taichi.py -O taichi.py
+          apt install -y python3-pip
+          pip3 install requests
+          cat > taichi.json << EOF
+          ${{ secrets.TC_UPLOAD_USER_TOKEN }}"
+          EOF
+          python3 taichi.py *.apk
+
+  upload-lsp:
+    name: Upload to LSPosed repo
+    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+    runs-on: ubuntu-latest
+    needs:
+      - build
+    steps:
+      - name: Donwload Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          path: artifacts
+      - name: Generate Changelog
+        run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
+      - name: Get Apk Info
+        id: apk
+        uses: JantHsueh/get-apk-info-action@master
+        with:
+          apkPath: "QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
+      - name: Get Date
+        id: date
+        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+      - name: Release
+        uses: softprops/action-gh-release@v1
+        if: startsWith(github.ref, 'refs/tags/')
+        with:
+          tag_name: ${{steps.apk.outputs.versionCode}}
+          name: Snapshot ${{ steps.date.outputs.date }} ${{ github.sha }}
+          body_path: ${{ github.workspace }}-CHANGELOG.txt
+          token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
+          prerelease: true
+          target_commitish: "dd4ff94e2c9c4522b3d5b3b6848a16e2c5d149b9"
+          files: "QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
+        env:
+          GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv
+      
+          
+
+
+  telegram-bot-api:
+    name: Telegram Bot API
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+      - name: Clone Telegram Bot API
+        run: |
+          git clone --recursive https://github.com/tdlib/telegram-bot-api.git
+          git status telegram-bot-api >> telegram-bot-api-status
+      - name: Cache Bot API Binary
+        id: cache-bot-api
+        uses: actions/cache@v2
+        with:
+          path: telegram-bot-api-binary
+          key: CI-telegram-bot-api-${{ hashFiles('telegram-bot-api-status') }}
+      - name: Compile Telegram Bot API
+        if: steps.cache-bot-api.outputs.cache-hit != 'true'
+        run: |
+          sudo apt-get update
+          sudo apt-get install make git zlib1g-dev libssl-dev gperf cmake g++
+          cd telegram-bot-api
+          rm -rf build
+          mkdir build
+          cd build
+          cmake -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX:PATH=.. ..
+          cmake --build . --target install -j$(nproc)
+          cd ../..
+          ls -l telegram-bot-api/bin/telegram-bot-api*
+          cp telegram-bot-api/bin/telegram-bot-api telegram-bot-api-binary
+      - name: Upload Binary
+        uses: actions/upload-artifact@master
+        with:
+          name: telegram-bot-api-binary
+          path: telegram-bot-api-binary
