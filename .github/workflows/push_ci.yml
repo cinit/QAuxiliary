@@ -1,0 +1,59 @@
+name: main
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }}
+
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: 'recursive'
+          fetch-depth: 0
+
+      - name: set up JDK 11
+        uses: actions/setup-java@v2
+        with:
+          java-version: '11'
+          distribution: 'adopt'
+          cache: gradle
+
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches
+            ~/.gradle/wrapper
+            !~/.gradle/caches/build-cache-*
+          key: gradle-deps-core-${{ hashFiles('**/build.gradle') }}
+          restore-keys: |
+            gradle-deps
+
+      - name: Cache Gradle Build
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.gradle/caches/build-cache-*
+          key: gradle-builds-core-${{ github.sha }}
+          restore-keys: |
+            gradle-builds
+
+      - name: Grant execute permission for gradlew
+        run: chmod +x gradlew
+
+      - name: Build with Gradle
+        run: ./gradlew :app:assemble
+
+      - name: Upload Artifacts
+        uses: actions/upload-artifact@v2
+        # don't upload the artifacts if it's a pull request
+        if: ${{ !github.event.pull_request }}
+        with:
+          path: './app/build/outputs/*'
+          name: build_output_${{ github.event.head_commit.id }}.zip
