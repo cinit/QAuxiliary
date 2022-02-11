@@ -22,7 +22,6 @@
 package cc.ioctl.hook;
 
 import android.app.Activity;
-import android.content.Intent;
 import android.os.Environment;
 import android.view.View;
 import androidx.annotation.NonNull;
@@ -38,6 +37,7 @@ import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Field;
 import java.util.Collections;
 import java.util.List;
@@ -86,7 +86,8 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            throw new NoClassDefFoundError("FileRecvRedirectActivity");
+            Toasts.show(activity,"坏了, 没修");
+            return Unit.INSTANCE;
         };
     }
 
@@ -163,13 +164,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
 
     @Override
     public boolean isEnabled() {
-        try {
-            return ConfigManager.getDefaultConfig()
-                    .getBooleanOrFalse(ConfigItems.qn_file_recv_redirect_enable);
-        } catch (Exception e) {
-            Log.e(e);
-            return false;
-        }
+        return false && ConfigManager.getDefaultConfig().getBooleanOrFalse(ConfigItems.qn_file_recv_redirect_enable);
     }
 
     /**
