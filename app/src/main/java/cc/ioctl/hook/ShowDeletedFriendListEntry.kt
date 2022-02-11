@@ -39,7 +39,7 @@ object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchC
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent = this
     override val onClickListener: ((IUiItemAgent, Context, View) -> Unit)? = null
-    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     override val uiItemAgent: IUiItemAgent = this
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.FRIEND_CATEGORY
     override var isChecked = isEnable

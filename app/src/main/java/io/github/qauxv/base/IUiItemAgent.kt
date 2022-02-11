@@ -67,5 +67,5 @@ interface IUiItemAgent {
     val validator: ((IUiItemAgent) -> Boolean)?
     val switchProvider: ISwitchCellAgent?
     val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)?
-    val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)?
+    val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
 }

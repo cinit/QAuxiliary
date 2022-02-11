@@ -159,7 +159,7 @@ class SearchOverlayFragment : BaseSettingFragment() {
         val context = requireContext()
         val title: String = item.titleProvider.invoke(item).replace(" ", "")
         val summary: String? = item.summaryProvider?.invoke(item, context)?.replace(" ", "")?.replace("\n", "")
-        val extraKeywords: List<String>? = item.extraSearchKeywordProvider?.invoke(item, context)
+        val extraKeywords: Array<String>? = item.extraSearchKeywordProvider?.invoke(item, context)
         if (title == keyword) {
             score += 80
         } else if (title.contains(keyword, true)) {

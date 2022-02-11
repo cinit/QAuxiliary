@@ -181,7 +181,7 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
+    public Function2<IUiItemAgent, Context, String[]> getExtraSearchKeywordProvider() {
         return null;
     }
 

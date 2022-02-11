@@ -39,8 +39,6 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Field;
-import java.util.Collections;
-import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -66,8 +64,8 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
 
     @Nullable
     @Override
-    public List<String> getExtraSearchKeywords() {
-        return Collections.singletonList("下载重定向");
+    public String[] getExtraSearchKeywords() {
+        return new String[]{"下载重定向"};
     }
 
     @NonNull

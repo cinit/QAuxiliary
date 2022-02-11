@@ -40,6 +40,6 @@ abstract class BasePlainUiAgentItem(
     override val valueState: MutableStateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent? = null
-    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     override val uiItemAgent: IUiItemAgent = this
 }

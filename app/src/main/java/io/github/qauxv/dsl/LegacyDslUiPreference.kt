@@ -40,7 +40,7 @@ class UiSwitchPreferenceItemFactory(receiver: BaseFunctionHook) : IUiItemAgent {
         }
     }
     override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
 }
 
 class UiClickableItemFactory(receiver: BaseFunctionHook) : IUiItemAgent {
@@ -53,5 +53,5 @@ class UiClickableItemFactory(receiver: BaseFunctionHook) : IUiItemAgent {
     override val validator: ((IUiItemAgent) -> Boolean) = { receiver.isAvailable }
     override val switchProvider: ISwitchCellAgent? = null
     override var onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+    override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
 }

@@ -31,7 +31,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Log;
-import java.util.List;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -87,7 +86,7 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
 
     @Nullable
     @Override
-    public List<String> getExtraSearchKeywords() {
-        return List.of("VIP", "SVIP", "贴表情", "贴收藏表情");
+    public String[] getExtraSearchKeywords() {
+        return new String[]{"VIP", "SVIP", "贴表情", "贴收藏表情"};
     }
 }

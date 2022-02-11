@@ -37,12 +37,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.tlb.ConfigTable;
 import io.github.qauxv.util.DexMethodDescriptor;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Method;
-import java.util.List;
-import io.github.qauxv.tlb.ConfigTable;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -62,8 +61,8 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
 
     @Nullable
     @Override
-    public List<String> getExtraSearchKeywords() {
-        return List.of("艾特");
+    public String[] getExtraSearchKeywords() {
+        return new String[]{"艾特"};
     }
 
     @NonNull
@@ -84,7 +83,7 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
      */
     @Override
     public boolean initOnce() throws Exception {
-        String method = ConfigTable.INSTANCE.getConfig(ReplyNoAtHook.class.getSimpleName());
+        String method = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
         if (method == null) {
             return false;
         }

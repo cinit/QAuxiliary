@@ -58,7 +58,6 @@ import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.ui.widget.LinearLayoutDelegate;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Method;
-import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -101,8 +100,8 @@ public class RepeaterHook extends BaseFunctionHook {
                 };
 
                 @Override
-                public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
-                    return (agent, context) -> List.of("复读机", "+1");
+                public Function2<IUiItemAgent, Context, String[]> getExtraSearchKeywordProvider() {
+                    return (agent, context) -> new String[]{"复读机", "+1"};
                 }
 
                 @Override

@@ -89,7 +89,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
             }
         }
         override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     }
 
     inner class UiClickableItemFactory() : IUiItemAgent {
@@ -103,6 +103,6 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
         override val validator: ((IUiItemAgent) -> Boolean) = { isAvailable }
         override val switchProvider: ISwitchCellAgent? = null
         override var onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)? = null
+        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     }
 }

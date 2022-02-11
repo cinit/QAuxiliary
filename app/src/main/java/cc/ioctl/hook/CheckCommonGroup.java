@@ -154,7 +154,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
+    public Function2<IUiItemAgent, Context, String[]> getExtraSearchKeywordProvider() {
         return null;
     }
 

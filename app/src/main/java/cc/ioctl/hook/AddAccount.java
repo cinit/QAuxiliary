@@ -46,7 +46,6 @@ import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.io.IOException;
-import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -149,7 +148,7 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, List<String>> getExtraSearchKeywordProvider() {
+    public Function2<IUiItemAgent, Context, String[]> getExtraSearchKeywordProvider() {
         return null;
     }
 

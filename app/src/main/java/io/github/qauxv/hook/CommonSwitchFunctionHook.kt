@@ -61,7 +61,7 @@ abstract class CommonSwitchFunctionHook(
 
     override val targetProcesses = targetProc
 
-    open val extraSearchKeywords: List<String>? = null
+    open val extraSearchKeywords: Array<String>? = null
 
     override val uiItemAgent: IUiItemAgent by lazy {
         object : IUiItemAgent {
@@ -82,7 +82,7 @@ abstract class CommonSwitchFunctionHook(
                 }
             }
             override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-            override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> List<String>?)?
+            override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
                 get() = extraSearchKeywords?.let { { _, _ -> it } }
         }
     }

@@ -63,9 +63,14 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
     suspend fun convertUriToPath(uri: Uri): String? {
         return withContext(Dispatchers.IO) {
             contentResolver.openInputStream(uri)?.use { input ->
-                val displayName: String? = contentResolver.query(uri, null, null, null, null, null)?.run {
-                    if (moveToFirst()) {
-                        getString(getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                val displayName: String? = contentResolver.query(uri, null, null, null, null, null)?.use {
+                    if (it.moveToFirst()) {
+                        val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        if (index != -1) {
+                            getString(index)
+                        } else {
+                            null
+                        }
                     } else {
                         null
                     }
@@ -85,9 +90,14 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
         for (i in 0 until clipData.itemCount) {
             val uri = clipData.getItemAt(i).uri
             contentResolver.openInputStream(uri)?.use { input ->
-                val displayName: String? = contentResolver.query(uri, null, null, null, null, null)?.run {
-                    if (moveToFirst()) {
-                        getString(getColumnIndex(OpenableColumns.DISPLAY_NAME))
+                val displayName: String? = contentResolver.query(uri, null, null, null, null, null)?.use {
+                    if (it.moveToFirst()) {
+                        val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
+                        if (index != -1) {
+                            getString(index)
+                        } else {
+                            null
+                        }
                     } else {
                         null
                     }
