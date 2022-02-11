@@ -120,11 +120,13 @@ jobs:
           path: artifacts
       - name: Generate Changelog
         run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
+      - name: find apk
+        run: echo "APK_FILE=$(find ${{steps.download.outputs.download-path}} -name '*.apk')" >> $GITHUB_ENV
       - name: Get Apk Info
         id: apk
         uses: JantHsueh/get-apk-info-action@master
         with:
-          apkPath: "${{steps.download.outputs.download-path}}/QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
+          apkPath: ${{ env.APK_FILE }}
       - name: Get Date
         id: date
         run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
