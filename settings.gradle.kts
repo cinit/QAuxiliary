@@ -13,5 +13,5 @@ include(":app", ":stub", ":ksp", ":mmkv")
 val compilerLibsDir: File = File(settingsDir, "libs")
 project(":stub").projectDir = File(compilerLibsDir, "stub")
 project(":ksp").projectDir = File(compilerLibsDir, "ksp")
-project(":mmkv").projectDir = File(compilerLibsDir, "mmkv" + File.separator + "Android")
+project(":mmkv").projectDir = File(compilerLibsDir, "mmkv")
 rootProject.name = "QAuxiliary"

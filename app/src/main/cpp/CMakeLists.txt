@@ -26,7 +26,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-ty
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
 
-add_subdirectory(../../../../libs/mmkv/Android mmkv)
+add_subdirectory(../../../../libs/mmkv mmkv)
 
 add_library(qauxv SHARED qauxv_core/Natives.cpp qauxv_core/version.c
         qauxv_core/NativeHookEntry.cc qauxv_core/NativeMainHook.cc)

@@ -206,3 +206,15 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
         }
     }
 }
+
+tasks.register("checkGitSubmodule") {
+    doLast {
+        val path = "libs/mmkv/MMKV/Core".replace('/', File.separatorChar)
+        val submoduleDir = File(rootProject.projectDir, path)
+        if (!submoduleDir.exists()) {
+            throw IllegalStateException("submodule dir not found: $submoduleDir" +
+                    "\nPlease run 'git submodule init' and 'git submodule update' manually.")
+        }
+    }
+}
+tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
