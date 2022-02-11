@@ -12,7 +12,6 @@ println("Current build ID is $currentBuildUuid")
 
 android {
     compileSdk = 31
-    buildToolsVersion = "31.0.0"
     ndkVersion = Version.detectNdkVersion()
     defaultConfig {
         applicationId = "io.github.qauxv"
@@ -125,7 +124,6 @@ dependencies {
     compileOnly(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
     compileOnly(project(":stub"))
     implementation(project(":mmkv"))
-    //add("kspAndroid", project(":compiler"))
     ksp(project(":ksp"))
     compileOnly("de.robv.android.xposed:api:82")
     implementation("io.noties.markwon:core:4.6.2")
@@ -155,39 +153,23 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
 }
 
-tasks.register("checkTargetNativeLibsDebug") {
-    dependsOn(":app:externalNativeBuildDebug")
-    doLast {
-        val targetAbi = listOf("arm64-v8a", "armeabi-v7a")
-        val soName = "libqauxv.so"
-        val libPath = "app/build/intermediates/cmake/debug/obj"
-        for (abi in targetAbi) {
-            var tmpPath = "$libPath/$abi/$soName"
-            if ("/" != File.separator) {
-                tmpPath = tmpPath.replace('/', File.separatorChar)
-            }
-            val f = File(rootProject.projectDir, tmpPath)
-            if (!f.exists()) {
-                throw IllegalStateException("Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuildDebug' manually to force android gradle plugin to satisfy all required ABIs.")
-            }
-        }
-    }
-}
-
-tasks.register("checkTargetNativeLibsRelease") {
-    dependsOn(":app:externalNativeBuildRelease")
-    doLast {
-        val targetAbi = listOf("arm64-v8a", "armeabi-v7a")
-        val soName = "libqauxv.so"
-        val libPath = "app/build/intermediates/cmake/release/obj"
-        for (abi in targetAbi) {
-            var tmpPath = "$libPath/$abi/$soName"
-            if ("/" != File.separator) {
-                tmpPath = tmpPath.replace('/', File.separatorChar)
-            }
-            val f = File(rootProject.projectDir, tmpPath)
-            if (!f.exists()) {
-                throw IllegalStateException("Native library missing for the target abi: $abi.\nPlease run gradle task ':app:externalNativeBuildRelease' manually to force android gradle plugin to satisfy all required ABIs.")
+androidComponents.onVariants { variant ->
+    val variantCapped = variant.name.capitalize()
+    tasks.register("checkTargetNativeLibs$variantCapped") {
+        dependsOn(":app:externalNativeBuild$variantCapped")
+        doLast {
+            val targetAbi = listOf("arm64-v8a", "armeabi-v7a")
+            val soName = "libqauxv.so"
+            val libPath = "app/build/intermediates/cmake/debug/obj"
+            for (abi in targetAbi) {
+                var tmpPath = "$libPath/$abi/$soName"
+                if ("/" != File.separator) {
+                    tmpPath = tmpPath.replace('/', File.separatorChar)
+                }
+                val f = File(rootProject.projectDir, tmpPath)
+                if (!f.exists()) {
+                    throw IllegalStateException("Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuild$variantCapped' manually to force android gradle plugin to satisfy all required ABIs.")
+                }
             }
         }
     }
