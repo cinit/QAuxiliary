@@ -1,4 +1,4 @@
-import java.util.UUID
+import java.util.*
 
 plugins {
     id("com.android.application")
@@ -9,10 +9,11 @@ plugins {
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
 
+
 android {
     compileSdk = 31
     buildToolsVersion = "31.0.0"
-    ndkVersion = "23.1.7779620"
+    ndkVersion = Version.detectNdkVersion()
     defaultConfig {
         applicationId = "io.github.qauxv"
         minSdk = 21
