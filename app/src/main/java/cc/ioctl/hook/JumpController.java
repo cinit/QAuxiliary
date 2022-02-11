@@ -199,8 +199,10 @@ public class JumpController extends CommonConfigFunctionHook {
             }
             int result = checkIntent(ctx, intent);
             ComponentName cmp = intent.getComponent();
-            if (cmp != null && ctx.getPackageName().equals(cmp.getPackageName()) &&
-                    ActProxyMgr.isModuleProxyActivity(cmp.getClassName())) {
+            if (cmp != null && (!ctx.getPackageName().equals(cmp.getPackageName()) &&
+                    ActProxyMgr.isModuleProxyActivity(cmp.getClassName()))) {
+                // don't return JMP_ALLOW if it's a module proxy activity in the host app
+                // because host will always allow it since the package name is the same
                 result = JMP_ALLOW;
             }
             if (result != JMP_DEFAULT) {

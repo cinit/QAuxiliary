@@ -53,6 +53,7 @@ public class StartupRoutine {
         EzXHelperInit.INSTANCE.initHandleLoadPackage(HookEntry.getLoadPackageParam());
         // resource injection is done somewhere else, do not init it here
         EzXHelperInit.INSTANCE.initAppContext(ctx, false, false);
+        EzXHelperInit.INSTANCE.setLogTag("QAuxv");
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
         try {
