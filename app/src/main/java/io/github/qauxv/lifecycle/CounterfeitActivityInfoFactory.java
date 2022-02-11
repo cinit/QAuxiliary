@@ -35,13 +35,14 @@ import io.github.qauxv.R;
 public class CounterfeitActivityInfoFactory {
 
     @Nullable
-    public static ActivityInfo makeProxyActivityInfo(@NonNull String className, int flags) {
+    public static ActivityInfo makeProxyActivityInfo(@NonNull String className, long flags) {
         try {
             Context ctx = HostInfo.getApplication();
             Class<?> cl = Class.forName(className);
             try {
+                // TODO: 2022-02-11 cast flags from long to int loses information
                 ActivityInfo proto = ctx.getPackageManager().getActivityInfo(new ComponentName(
-                    ctx.getPackageName(), "com.tencent.mobileqq.activity.QQSettingSettingActivity"), flags);
+                        ctx.getPackageName(), "com.tencent.mobileqq.activity.QQSettingSettingActivity"), (int) flags);
                 // init style here, comment it out if it crashes on Android >= 10
                 proto.theme = R.style.Theme_MaiTungTMDesign;
                 return initCommon(proto, className);

@@ -46,8 +46,8 @@ import android.view.KeyEvent;
 import android.view.MotionEvent;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.core.MainHook;
 import io.github.qauxv.R;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.ui.WindowIsTranslucent;
 import io.github.qauxv.util.Initiator;
@@ -792,11 +792,11 @@ public class Parasitics {
                         return ai;
                     }
                     ComponentName component = (ComponentName) args[0];
-                    int flags = (Integer) args[1];
+                    // before Android 13 flag was int; >= Android 13, flag is long
+                    long flags = ((Number) args[1]).longValue();
                     if (HostInfo.getPackageName().equals(component.getPackageName())
-                        && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
-                        return CounterfeitActivityInfoFactory
-                            .makeProxyActivityInfo(component.getClassName(), flags);
+                            && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
+                        return CounterfeitActivityInfoFactory.makeProxyActivityInfo(component.getClassName(), flags);
                     } else {
                         return null;
                     }
