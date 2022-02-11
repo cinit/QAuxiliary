@@ -1,4 +1,3 @@
--keep class nil.** { *; }
 -keep class me.** { *; }
 -keep class bsh.** { *; }
 -keep class de.** { *; }
