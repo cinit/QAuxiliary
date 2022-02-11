@@ -37,6 +37,7 @@ import io.github.qauxv.SyncUtils
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
+import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -46,6 +47,8 @@ class SettingsMainFragment : BaseSettingFragment() {
     private var title: String = "QAuxiliary"
     private lateinit var mFragmentLocations: Array<String>
     private lateinit var mFragmentDescription: FragmentDescription
+    private var mTargetUiAgentNavId: String? = null
+    private var mTargetUiAgentNavigated: Boolean = false
 
     // DSL stuff below
     protected var adapter: RecyclerView.Adapter<*>? = null
@@ -69,6 +72,7 @@ class SettingsMainFragment : BaseSettingFragment() {
         }
         mFragmentDescription = desc
         title = mFragmentDescription.name ?: title
+        mTargetUiAgentNavId = arguments?.getString(TARGET_UI_AGENT_IDENTIFIER)
     }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
@@ -151,6 +155,37 @@ class SettingsMainFragment : BaseSettingFragment() {
 
         rootView.addView(recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         return rootView
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (!mTargetUiAgentNavId.isNullOrEmpty() && !mTargetUiAgentNavigated) {
+            navigateToTargetUiAgentItem()
+        }
+    }
+
+    @UiThread
+    private fun navigateToTargetUiAgentItem() {
+        if (!isResumed) {
+            return
+        }
+        // wait for the view to be created and animation to finish
+        SyncUtils.postDelayed(200) {
+            var index = -1
+            // find the UI agent index
+            for (i in itemList.indices) {
+                val item = itemList[i]
+                if (item is UiAgentItem && item.agentProvider.itemAgentProviderUniqueIdentifier == mTargetUiAgentNavId) {
+                    index = i
+                    break
+                }
+            }
+            if (index >= 0) {
+                // scroll to the target item
+                recyclerListView.scrollToPosition(index)
+                mTargetUiAgentNavigated = true
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -244,24 +279,20 @@ class SettingsMainFragment : BaseSettingFragment() {
 
     companion object {
         const val TARGET_FRAGMENT_LOCATION = "SettingsMainFragment.TARGET_FRAGMENT_LOCATION"
+        const val TARGET_UI_AGENT_IDENTIFIER = "SettingsMainFragment.TARGET_UI_AGENT_IDENTIFIER"
 
         @JvmStatic
-        fun newInstance(location: Array<String>): SettingsMainFragment {
-            // check destination fragment
-            val desc = FunctionEntryRouter.findDescriptionByLocation(location)
-                    ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
-            if (desc !is FragmentDescription) {
-                throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
-            }
+        @JvmOverloads
+        fun newInstance(location: Array<String>, targetUiAgentId: String? = null): SettingsMainFragment {
             val fragment = SettingsMainFragment()
-            val bundle = Bundle()
-            bundle.putStringArray(TARGET_FRAGMENT_LOCATION, location)
+            val bundle = getBundleForLocation(location, targetUiAgentId)
             fragment.arguments = bundle
             return fragment
         }
 
         @JvmStatic
-        fun getBundleForLocation(location: Array<String>): Bundle {
+        @JvmOverloads
+        fun getBundleForLocation(location: Array<String>, targetUiAgentId: String? = null): Bundle {
             // check destination fragment
             val desc = FunctionEntryRouter.findDescriptionByLocation(location)
                     ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
@@ -270,6 +301,7 @@ class SettingsMainFragment : BaseSettingFragment() {
             }
             val bundle = Bundle()
             bundle.putStringArray(TARGET_FRAGMENT_LOCATION, location)
+            targetUiAgentId?.let { bundle.putString(TARGET_UI_AGENT_IDENTIFIER, it) }
             return bundle
         }
     }

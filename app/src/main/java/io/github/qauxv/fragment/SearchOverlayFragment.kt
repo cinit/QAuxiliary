@@ -26,6 +26,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
@@ -36,6 +37,7 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.FragmentSettingSearchBinding
 import io.github.qauxv.databinding.SearchResultItemBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.func.FragmentDescription
 import io.github.qauxv.dsl.func.IDslParentNode
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.UiThread
@@ -107,6 +109,15 @@ class SearchOverlayFragment : BaseSettingFragment() {
         binding.summary.text = description
         val locationString = item.shownLocation!!.joinToString(separator = " > ")
         binding.description.text = locationString
+        binding.root.setTag(R.id.tag_searchResultItem, item)
+        binding.root.setOnClickListener(mSearchResultOnClickListener)
+    }
+
+    private val mSearchResultOnClickListener = View.OnClickListener { v ->
+        val item = v?.getTag(R.id.tag_searchResultItem) as SearchResult?
+        item?.let {
+            navigateToTargetSearchResult(it)
+        }
     }
 
     @NonUiThread
@@ -215,6 +226,51 @@ class SearchOverlayFragment : BaseSettingFragment() {
             var location: Array<String>? = null,
             var shownLocation: Array<String>? = null
     )
+
+    @UiThread
+    private fun navigateToTargetSearchResult(item: SearchResult) {
+        if (item.location == null) {
+            updateUiItemAgentLocation(item)
+        }
+        // find containing fragment
+        val absFullLocation = item.location!!
+        val identifier = absFullLocation.last()
+        var container = absFullLocation.dropLast(1)
+        var targetFragmentLocation: Array<String>? = null
+        var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
+        // lookup the parent container, until we find the parent is a fragment
+        while (true) {
+            if (node == null) {
+                // we are lost!!!
+                break
+            }
+            if (node is FragmentDescription) {
+                // found
+                targetFragmentLocation = container.toTypedArray()
+                break
+            }
+            if (container.isEmpty()) {
+                // we are lost!!!
+                break
+            }
+            // not a fragment, keep looking up parent
+            container = container.dropLast(1)
+            // get current node
+            node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
+        }
+        if (targetFragmentLocation == null) {
+            // tell user we are lost
+            AlertDialog.Builder(requireContext()).apply {
+                setTitle("Navigation Error")
+                setMessage("We are lost, can't find the target fragment: " + absFullLocation.joinToString("."))
+                setPositiveButton(android.R.string.ok) { _, _ -> }
+                setCancelable(true)
+            }.show()
+        } else {
+            val fragment = SettingsMainFragment.newInstance(targetFragmentLocation, identifier)
+            settingsHostActivity!!.presentFragment(fragment)
+        }
+    }
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSettingSearchBinding.inflate(inflater, container, false).apply {

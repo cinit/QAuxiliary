@@ -72,14 +72,6 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         presentFragment(startupFragment)
     }
 
-    /**
-     * Navigate to the specified UI item.
-     */
-    @UiThread
-    fun navigateToFunctionUiItemEntry(targetItem: IUiItemAgentProvider) {
-        TODO("not implemented")
-    }
-
     fun presentFragment(fragment: BaseSettingFragment) {
         rtlAddFragmentToTop(fragment)
     }

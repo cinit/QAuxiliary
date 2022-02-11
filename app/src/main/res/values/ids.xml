@@ -20,6 +20,7 @@
     <item type="id" name="btn_cancel" />
     <item type="id" name="btn_disable" />
     <item type="id" name="input_value" />
+    <item type="id" name="tag_searchResultItem" />
 
     <item name="mainV2_menuItem_toggleDesktopIcon" type="id" />
     <item name="chat_words_count" type="id" />
