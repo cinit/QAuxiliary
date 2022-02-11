@@ -135,18 +135,22 @@ public class DexKit {
      * failed, its failed result will be cached, which means that the same dex class will not be deobfuscated again.
      *
      * @param i the dex class index
-     * @return true if the dex class is deobfuscated and cached(regardless of success or failure) or not.
+     * @return true if time is required to deobfuscate the dex class, false if either the dex class is already
+     * found or there was already a failed result.
      */
-    public static boolean checkFor(int i) {
+    public static boolean isRunDexDeobfuscationRequired(int i) {
         if (i / 10000 == 0) {
+            // class
             if (loadClassFromCache(i) != null) {
-                return true;
+                return false;
             }
             DexMethodDescriptor desc = getMethodDescFromCache(i);
-            return desc != null;
+            // either the method is already found or there was a failed result
+            return desc == null;
         } else {
             DexMethodDescriptor desc = getMethodDescFromCache(i);
-            return desc != null;
+            // either the method is already found or there was a failed result
+            return desc == null;
         }
     }
 
@@ -205,7 +209,7 @@ public class DexKit {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
         DexMethodDescriptor m = getMethodDescFromCache(i);
-        if (m == null) {
+        if (m == null || NO_SUCH_METHOD.toString().equals(m.name)) {
             return null;
         }
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) {
@@ -233,7 +237,7 @@ public class DexKit {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
         DexMethodDescriptor m = doFindMethodDesc(i);
-        if (m == null) {
+        if (m == null || NO_SUCH_METHOD.toString().equals(m.name)) {
             return null;
         }
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) {
@@ -256,7 +260,7 @@ public class DexKit {
      * @return the target method descriptor, null if the target is not in deobfuscation cache.
      */
     @Nullable
-    public static DexMethodDescriptor getMethodDescFromCache(int i) {
+    private static DexMethodDescriptor getMethodDescFromCache(int i) {
         try {
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault("cache_" + a(i) + "_code", 0);
@@ -280,7 +284,7 @@ public class DexKit {
      *
      * @param i the dex method index
      * @return the target method descriptor, null if the target is not found.
-     * @see #checkFor(int)
+     * @see #isRunDexDeobfuscationRequired(int) 
      */
     @Nullable
     public static DexMethodDescriptor doFindMethodDesc(int i) {

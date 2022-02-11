@@ -42,7 +42,7 @@ public class DexDeobfStep implements Step {
 
     @Override
     public boolean isDone() {
-        return DexKit.checkFor(id);
+        return !DexKit.isRunDexDeobfuscationRequired(id);
     }
 
     @Override

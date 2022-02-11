@@ -102,6 +102,7 @@ public class HookInstaller {
                                 pDialog[0] = CustomDialog.createFailsafe(context);
                                 pDialog[0].setCancelable(false);
                                 pDialog[0].setTitle("请稍候");
+                                pDialog[0].setMessage("正在初始化...");
                                 pDialog[0].show();
                             }
                             pDialog[0].setMessage("QAuxiliary 正在初始化:\n" + name + "\n每个类一般不会超过一分钟");

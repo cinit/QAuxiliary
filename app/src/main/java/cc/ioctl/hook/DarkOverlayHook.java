@@ -187,8 +187,8 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean isPreparationRequired() {
-        return FindNightMask.getNightMaskField() == null || !DexKit.checkFor(
-                DexKit.N_BASE_CHAT_PIE__handleNightMask);
+        return FindNightMask.getNightMaskField() == null
+                || DexKit.isRunDexDeobfuscationRequired(DexKit.N_BASE_CHAT_PIE__handleNightMask);
     }
 
     @Nullable

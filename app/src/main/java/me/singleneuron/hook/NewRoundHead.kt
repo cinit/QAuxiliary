@@ -53,9 +53,9 @@ object NewRoundHead : CommonSwitchFunctionHook() {
     override val isPreparationRequired: Boolean
         get() {
             return if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-                !DexKit.checkFor(DexKit.C_AvatarUtil)
+                DexKit.isRunDexDeobfuscationRequired(DexKit.C_AvatarUtil)
             } else {
-                !DexKit.checkFor(DexKit.C_FaceManager)
+                DexKit.isRunDexDeobfuscationRequired(DexKit.C_FaceManager)
             }
         }
 

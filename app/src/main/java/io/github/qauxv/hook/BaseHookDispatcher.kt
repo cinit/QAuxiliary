@@ -27,6 +27,7 @@ import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
+import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Log
 import java.util.*
 
@@ -73,7 +74,17 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
 
     override val isAvailable = true
 
-    override val isPreparationRequired = mDexDeobfIndexes?.isNotEmpty() ?: false
+    override val isPreparationRequired: Boolean
+        get() {
+            mDexDeobfIndexes?.let {
+                it.forEach { i ->
+                    if (DexKit.isRunDexDeobfuscationRequired(i)) {
+                        return true
+                    }
+                }
+            }
+            return false
+        }
 
     override fun makePreparationSteps(): Array<Step>? = mDexDeobfIndexes?.map { DexDeobfStep(it) }?.toTypedArray()
 
