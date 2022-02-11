@@ -26,6 +26,7 @@ import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import io.github.qauxv.R;
+import io.github.qauxv.util.hookstatus.HookStatusInit;
 
 /**
  * Xposed entry class DO NOT MODIFY ANY CODE HERE UNLESS NECESSARY. DO NOT INVOKE ANY METHOD THAT MAY GET IN TOUCH WITH
@@ -60,6 +61,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         sLoadPackageParam = lpparam;
         switch (lpparam.packageName) {
             case PACKAGE_NAME_SELF: {
+                HookStatusInit.init(lpparam.classLoader);
                 break;
             }
             case PACKAGE_NAME_TIM:

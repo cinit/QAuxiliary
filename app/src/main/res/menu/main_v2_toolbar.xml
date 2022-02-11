@@ -6,10 +6,6 @@
         android:id="@+id/menu_item_debugInfo"
         app:showAsAction="never" />
     <item
-        android:title="切换主题"
-        android:id="@+id/menu_item_switchTheme"
-        app:showAsAction="never" />
-    <item
         android:title="关于"
         android:id="@+id/menu_item_about"
         app:showAsAction="never" />

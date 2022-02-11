@@ -20,7 +20,6 @@
   ~ <https://www.gnu.org/licenses/>
   ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
   -->
-
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     package="io.github.qauxv">
@@ -33,9 +32,9 @@
         android:theme="@style/AppThemeDummy"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
-            android:name="io.github.qauxv.activity.ConfigV2Activity"
             android:exported="true"
             android:icon="@drawable/icon"
+            android:name="io.github.qauxv.activity.ConfigV2Activity"
             android:theme="@style/Theme.MaiTungTMDesign">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -44,33 +43,15 @@
         </activity>
 
         <activity
-            android:name="io.github.qauxv.activity.ConfigActivity"
-            android:icon="@drawable/icon" />
-
-        <activity-alias
-            android:name=".activity.ConfigV2ActivityAlias"
-            android:icon="@drawable/icon"
-            android:label="@string/app_name"
-            android:targetActivity="io.github.qauxv.activity.ConfigV2Activity"
-            android:theme="@style/Theme.MaiTungTMDesign"
-            android:exported="true">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
-        </activity-alias>
-
-        <activity
-            android:name="me.ketal.ui.activity.QFileShareToIpadActivity"
-            android:icon="@drawable/icon"
-            android:exported="true"
             android:enabled="false"
-            android:theme="@style/noDisplay" >
+            android:exported="true"
+            android:icon="@drawable/icon"
+            android:name="me.ketal.ui.activity.QFileShareToIpadActivity"
+            android:theme="@style/noDisplay">
             <intent-filter android:label="@string/send_to_ipad">
-                <action
-                    android:name="android.intent.action.SEND" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+
                 <data android:mimeType="image/*" />
                 <data android:mimeType="video/*" />
                 <data android:mimeType="audio/*" />
@@ -78,13 +59,24 @@
                 <data android:mimeType="text/*" />
             </intent-filter>
             <intent-filter android:label="@string/send_to_ipad">
-                <action
-                    android:name="android.intent.action.SEND_MULTIPLE" />
-                <category
-                    android:name="android.intent.category.DEFAULT" />
+                <action android:name="android.intent.action.SEND_MULTIPLE" />
+                <category android:name="android.intent.category.DEFAULT" />
                 <data android:mimeType="image/*" />
             </intent-filter>
         </activity>
+
+        <activity-alias
+            android:exported="true"
+            android:icon="@drawable/icon"
+            android:label="@string/app_name"
+            android:name=".activity.ConfigV2ActivityAlias"
+            android:targetActivity="io.github.qauxv.activity.ConfigV2Activity"
+            android:theme="@style/Theme.MaiTungTMDesign">
+            <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+            </intent-filter>
+        </activity-alias>
 
         <meta-data
             android:name="xposedmodule"

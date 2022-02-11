@@ -17,7 +17,6 @@
             android:layout_height="wrap_content"
             android:id="@+id/topAppBar"
             style="@style/Toolbar"
-            app:menu="@menu/main_v2_toolbar"
             app:title="@string/app_name" />
 
     </com.google.android.material.appbar.AppBarLayout>
