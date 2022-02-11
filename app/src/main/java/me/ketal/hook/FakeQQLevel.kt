@@ -44,7 +44,10 @@ import io.github.qauxv.util.DexKit
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
 import me.ketal.util.BaseUtil.tryVerbosely
-import xyz.nextalone.util.*
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.set
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -82,7 +85,11 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
                 input(hint = "自定义QQ等级...", prefill = level, waitForPositiveButton = false) { dialog, text ->
                     val inputField = dialog.getInputField()
                     dialog.setActionButtonEnabled(WhichButton.POSITIVE, try {
-                        text.toString().toInt()
+                        val level = text.toString().toInt()
+                        if (level < 1 || level > 1000) {
+                            inputField.error = "无效数值，仅可以输入1-1000范围内的数字"
+                            false
+                        }
                         inputField.error = null
                         true
                     } catch (e: NumberFormatException) {

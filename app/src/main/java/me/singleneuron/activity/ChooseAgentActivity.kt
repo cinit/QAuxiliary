@@ -92,7 +92,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
     fun sendAFile(filePath: String, data: Intent) {
         val intent = Intent().apply {
             component = ComponentName(
-                    "com.tencent.mobileqq",
+                    application.packageName,
                     "com.tencent.mobileqq.activity.SplashActivity"
             )
             flags = 0x14000000
