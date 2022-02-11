@@ -444,14 +444,6 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             __android_log_print(ANDROID_LOG_INFO, "QAuxv", "register native method[1] failed!\n");
             return -1;
         }
-        clazz = env->FindClass("cc/ioctl/util/SendBatchMsg");
-        lMethods[0].name = "ntSendBatchMessages";
-        lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/content/Context;Ljava/lang/String;[I[J)Z";
-        lMethods[0].fnPtr = (void *) &handleSendBatchMessages;
-        if (env->RegisterNatives(clazz, lMethods, 1)) {
-            __android_log_print(ANDROID_LOG_INFO, "QAuxv", "register native method[2] failed!\n");
-            return -1;
-        }
         NativeHook_initOnce();
     }
     return retCode;

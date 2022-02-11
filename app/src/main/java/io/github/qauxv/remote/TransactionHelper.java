@@ -110,46 +110,4 @@ public class TransactionHelper {
             return "server is offline";
         }
     }
-
-    /**
-     * 记录群发文本
-     *
-     * @param uin   发送者qq号
-     * @param msg   群发文本
-     * @param count 数量
-     * @return 是否上报成功 成功返回null 失败返回理由 失败有可能是服务端出现问题 也有可能是服务端认为非法
-     */
-    public static String postBatchMsg(long uin, String msg, int count) {
-        try {
-            if (msg == null) {
-                msg = "msg is null";
-            }
-            URL url = new URL(apiAddress + "/statistics/batch");
-            HttpsURLConnection conn = (HttpsURLConnection) url.openConnection();
-            conn.setRequestMethod("POST");
-            conn.setRequestProperty("Content-Type", "application/json; utf-8");
-            conn.setRequestProperty("Accept", "application/json");
-            DataOutputStream os = new DataOutputStream(conn.getOutputStream());
-
-            JSONObject request = new JSONObject();
-            request.put("uin", uin);
-            request.put("msg", msg);
-            request.put("count", count);
-
-            os.writeBytes(request.toString());
-
-            os.flush();
-            os.close();
-
-            JSONObject resp = new JSONObject(convertInputStreamToString(conn.getInputStream()));
-            if (resp.getInt("code") == 200) {
-                return null;
-            } else {
-                return resp.getString("reason");
-            }
-        } catch (Exception e) {
-            Log.e(e);
-            return "server is offline";
-        }
-    }
 }
