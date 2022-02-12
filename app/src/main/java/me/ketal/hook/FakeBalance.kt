@@ -33,9 +33,11 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.materialdialogs.input.input
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.hostInfo
 import me.ketal.base.PluginDelayableHook
 import me.ketal.data.ConfigData
@@ -58,6 +60,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
             showDialog(it, null)
         }
     }
+    override val targetProcesses = SyncUtils.PROC_TOOL
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val pluginID = "qwallet_plugin.apk"

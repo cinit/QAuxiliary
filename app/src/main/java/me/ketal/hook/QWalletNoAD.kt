@@ -28,6 +28,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex.getFirstByType
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -46,7 +47,7 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
     override val preference = uiSwitchPreference {
         title = "隐藏QQ钱包超值精选"
     }
-
+    override val targetProcesses = SyncUtils.PROC_TOOL
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
 
     override val pluginID = "qwallet_plugin.apk"
@@ -69,8 +70,8 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
                         ?.get(rootView) as ViewGroup
                 headerView.viewTreeObserver.addOnGlobalLayoutListener(object :
                     OnGlobalLayoutListener {
-                    override fun onGlobalLayout() {
-                        val webView =
+                override fun onGlobalLayout() {
+                    val webView =
                             getFirstByType(headerView,
                                 "com.tencent.biz.ui.TouchWebView".clazz) as? View
                                 ?: return

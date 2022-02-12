@@ -25,6 +25,7 @@ import android.app.Activity
 import android.view.View
 import android.widget.TextView
 import cc.ioctl.util.Reflex
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -44,6 +45,7 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
         title = "发送收藏消息添加分组"
     }
 
+    override val targetProcesses = SyncUtils.PROC_QQFAV
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_0_0)

@@ -41,8 +41,6 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     abstract val preference: IUiItemAgent
     val cfg = keyName
 
-    override val targetProcesses = SyncUtils.PROC_ANY
-
     override val uiItemAgent: IUiItemAgent get() = preference
 
     @Throws(Throwable::class)

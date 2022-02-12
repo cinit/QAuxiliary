@@ -23,6 +23,7 @@
 package me.ketal.hook
 
 import cc.ioctl.util.Reflex
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -42,6 +43,7 @@ object QZoneNoAD : PluginDelayableHook("ketal_qzone_hook") {
         title = "隐藏空间好友热播和广告"
     }
 
+    override val targetProcesses = SyncUtils.PROC_QZONE
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_OPERATION_LOG
 
     override val isAvailable = requireMinVersion(QQVersion.QQ_8_0_0, TIMVersion.TIM_1_0_0)
