@@ -2,7 +2,7 @@ import java.util.UUID
 
 plugins {
     id("com.android.application")
-    id("kotlin-android")
+    id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
 }
 
