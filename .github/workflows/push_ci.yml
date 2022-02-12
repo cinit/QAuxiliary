@@ -123,7 +123,7 @@ jobs:
         with:
           path: artifacts
       - name: Generate Changelog
-        run: echo "# Good things have arrived" > ${{ github.workspace }}-CHANGELOG.txt
+        run: echo "${{ github.sha }}" > ${{ github.workspace }}-CHANGELOG.txt
       - name: find apk
         run: echo "APK_FILE=$(find ${{steps.download.outputs.download-path}} -name '*.apk')" >> $GITHUB_ENV
       - name: Get Apk Info
@@ -138,7 +138,7 @@ jobs:
         uses: softprops/action-gh-release@v1
         with:
           tag_name: ${{steps.apk.outputs.versionCode}}
-          name: Snapshot ${{ steps.date.outputs.date }} ${{ github.sha }}
+          name: CI-${{ steps.date.outputs.date }}
           body_path: ${{ github.workspace }}-CHANGELOG.txt
           token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
           files: ${{ env.APK_FILE }}
