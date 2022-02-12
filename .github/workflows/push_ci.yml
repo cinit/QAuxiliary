@@ -25,7 +25,11 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: gradle
-
+      - name: Install NDK v23
+        run: | 
+          echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
+          echo "sdk.dir=${ANDROID_HOME}" > local.properties
+          echo "ndk.dir=${ANDROID_HOME}/ndk/23.1.7779620" >> local.properties
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
         with:
