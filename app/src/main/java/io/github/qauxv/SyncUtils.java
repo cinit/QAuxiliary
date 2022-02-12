@@ -50,6 +50,41 @@ import java.util.concurrent.Executors;
 @SuppressLint("PrivateApi")
 public class SyncUtils {
 
+    //*MSF -- PROC_MSF
+    //:TMAssistantDownloadSDKService
+    //:avgame
+    //:backtrace__
+    //:dataline
+    //:dynamic_feature_plugin_oat
+    //:gameservice
+    //:groupvideo
+    //:guild_audio
+    //:imageservice
+    //:lightsdk
+    //:map
+    //*mini*?
+    //:nearby_video
+    //:openSdk
+    //* peak  -- PROC_PEAK
+    //* picture  (qzone picture)
+    //* plugin**  -- PROC_PLUGIN_PROCESS
+    //:pushservice
+    //:qlink
+    //* qqfav
+    //* qzone**?  -- PROC_QZONE
+    //:readinjoy
+    //:rmonitor
+    //:smartdevice
+    //:standalone
+    //:support
+    //* tool
+    //* troop**
+    //* unity*
+    //* video
+    //:weiyun
+    //* wxa_container*
+    //:zplan
+
     public static final int PROC_ERROR = 0;
     public static final int PROC_MAIN = 1;
     public static final int PROC_MSF = 1 << 1;
@@ -58,7 +93,12 @@ public class SyncUtils {
     public static final int PROC_QZONE = 1 << 4;
     public static final int PROC_VIDEO = 1 << 5;
     public static final int PROC_MINI = 1 << 6;
-    public static final int PROC_LOLA = 1 << 7;
+    public static final int PROC_PLUGIN_PROCESS = 1 << 7;
+    public static final int PROC_QQFAV = 1 << 8;
+    public static final int PROC_TROOP = 1 << 9;
+    public static final int PROC_UNITY = 1 << 10;
+    public static final int PROC_WXA_CONTAINER = 1 << 11;
+
     public static final int PROC_OTHERS = 1 << 31;
     public static final int PROC_ANY = 0xFFFFFFFF;
     //file=0
@@ -164,31 +204,30 @@ public class SyncUtils {
             }
         } else {
             String tail = parts[parts.length - 1];
-            switch (tail) {
-                case "MSF":
-                    mProcType = PROC_MSF;
-                    break;
-                case "peak":
-                    mProcType = PROC_PEAK;
-                    break;
-                case "tool":
-                    mProcType = PROC_TOOL;
-                    break;
-                case "qzone":
-                    mProcType = PROC_QZONE;
-                    break;
-                case "video":
-                    mProcType = PROC_VIDEO;
-                    break;
-                case "mini":
-                    mProcType = PROC_MINI;
-                    break;
-                case "lola":
-                    mProcType = PROC_LOLA;
-                    break;
-                default:
-                    mProcType = PROC_OTHERS;
-                    break;
+            if ("MSF".equals(tail)) {
+                mProcType = PROC_MSF;
+            } else if ("peak".equals(tail)) {
+                mProcType = PROC_PEAK;
+            } else if ("tool".equals(tail)) {
+                mProcType = PROC_TOOL;
+            } else if (tail.startsWith("qzone")) {
+                mProcType = PROC_QZONE;
+            } else if ("video".equals(tail)) {
+                mProcType = PROC_VIDEO;
+            } else if (tail.startsWith("mini")) {
+                mProcType = PROC_MINI;
+            } else if (tail.startsWith("plugin")) {
+                mProcType = PROC_PLUGIN_PROCESS;
+            } else if (tail.startsWith("troop")) {
+                mProcType = PROC_TROOP;
+            } else if (tail.startsWith("unity")) {
+                mProcType = PROC_UNITY;
+            } else if (tail.startsWith("wxa_container")) {
+                mProcType = PROC_WXA_CONTAINER;
+            } else if (tail.startsWith("qqfav")) {
+                mProcType = PROC_QQFAV;
+            } else {
+                mProcType = PROC_OTHERS;
             }
         }
         return mProcType;
