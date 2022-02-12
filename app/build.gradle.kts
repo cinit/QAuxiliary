@@ -93,9 +93,6 @@ android {
     }
     kotlinOptions {
         jvmTarget = Version.java.toString()
-        compileOptions {
-            kotlinOptions.freeCompilerArgs += "-Xmulti-platform"
-        }
     }
     // Encapsulates your external native build configurations.
     externalNativeBuild {
