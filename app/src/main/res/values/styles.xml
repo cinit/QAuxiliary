@@ -1,13 +1,33 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppThemeDummy" parent="@android:style/Theme.Holo"></style>
+    <style name="AppThemeDummy" parent="@android:style/Theme.Material">
+    </style>
 
     <!-- Base application theme. -->
     <style name="AppTheme.Def" parent="Theme.AppCompat.DayNight.NoActionBar">
         <!-- Customize your theme here. -->
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
+        <!-- color forwarding -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColor">@color/themeColor</item>
+        <!-- Primary brand color. -->
+        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorOnPrimary">@color/firstTextColor</item>
+        <!-- Secondary brand color. -->
+        <item name="colorSecondary">@color/themeColor</item>
+        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorOnSecondary">@color/firstTextColor</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">@color/backgroundColor</item>
+        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
+        <!-- Customize your theme here. -->
+        <item name="android:windowActionBar">false</item>
+        <item name="colorControlNormal">@color/firstTextColor</item>
+        <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
 
     <!--    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog.Alert">-->
@@ -132,6 +152,9 @@
 
     <style name="Theme.MaiTungTMDesign" parent="Theme.MaterialComponents.DayNight.NoActionBar">
         <!-- Primary brand color. -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColor">@color/themeColor</item>
         <item name="colorPrimary">@color/themeColor</item>
         <item name="colorPrimaryVariant">@color/themeColor</item>
         <item name="colorOnPrimary">@color/firstTextColor</item>
@@ -145,13 +168,15 @@
         <!-- Customize your theme here. -->
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
 
     <style name="Theme.MaiTungTMDesignNight" parent="Theme.MaterialComponents.NoActionBar">
         <!-- Primary brand color. -->
+        <item name="colorAccent">@color/colorAccent</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="themeColor">@color/themeColor</item>
         <item name="colorPrimary">@color/themeColor</item>
         <item name="colorPrimaryVariant">@color/themeColor</item>
         <item name="colorOnPrimary">@color/firstTextColor</item>
