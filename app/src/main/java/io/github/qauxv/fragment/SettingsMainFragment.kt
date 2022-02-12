@@ -38,8 +38,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
 import io.github.qauxv.util.UiThread
-import kotlinx.coroutines.flow.FlowCollector
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.collect
 
 class SettingsMainFragment : BaseSettingFragment() {
 
@@ -143,11 +143,9 @@ class SettingsMainFragment : BaseSettingFragment() {
                 val valueStateFlow: MutableStateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
                 if (valueStateFlow != null) {
                     lifecycleScope.launchWhenStarted {
-                        valueStateFlow.collect(object : FlowCollector<String?> {
-                            override suspend fun emit(value: String?) {
-                                SyncUtils.runOnUiThread { adapter?.notifyItemChanged(i) }
-                            }
-                        })
+                        valueStateFlow.collect {
+                            SyncUtils.runOnUiThread { adapter?.notifyItemChanged(i) }
+                        }
                     }
                 }
             }
