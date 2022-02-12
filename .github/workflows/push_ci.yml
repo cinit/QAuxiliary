@@ -67,7 +67,7 @@ jobs:
         if: ${{ !github.event.pull_request }}
         with:
           path: 'app/build/outputs/apk/release/*.apk'
-          name: QAuxiliary-release-${{ github.event.head_commit.id }}.apk
+          name: QAuxiliary-release-${{ github.event.head_commit.id }}
 
   upload-telegram:
     name: Upload to Telegram
@@ -89,7 +89,7 @@ jobs:
         run: |
           export release=$(find . -name "*.apk")
           ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
-          curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Frelease%22%2C%22caption%22%3A%24%7BESCAPED%7D%7D%5D" -F release="@$release"
+          curl -v "https://api.telegram.org/bot${BOT_TOKEN}/sendMediaGroup?chat_id=${CHANNEL_ID}&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Frelease%22%2C%22caption%22%3A${ESCAPED}%7D%5D" -F release="@$release"
 
   upload-taichi:
     name: Upload taichi
@@ -141,8 +141,7 @@ jobs:
           name: Snapshot ${{ steps.date.outputs.date }} ${{ github.sha }}
           body_path: ${{ github.workspace }}-CHANGELOG.txt
           token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
+          files: ${{ env.APK_FILE }}
           prerelease: true
-          target_commitish: "dd4ff94e2c9c4522b3d5b3b6848a16e2c5d149b9"
-          files: "QAuxiliary-release-${{ github.event.head_commit.id }}.apk"
         env:
           GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv
