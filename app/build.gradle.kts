@@ -1,4 +1,4 @@
-import java.util.*
+import java.util.UUID
 
 plugins {
     id("com.android.application")
@@ -20,8 +20,8 @@ android {
         versionCode = Common.getBuildVersionCode(rootProject)
         // versionName = major.minor.bugfix.rev.commit
         versionName = "0.1.0" + (Common.getGitHeadRefsSuffix(rootProject))
-        buildConfigField("String", "BUILD_UUID", '"' + currentBuildUuid + '"')
-        buildConfigField("long", "BUILD_TIMESTAMP", System.currentTimeMillis().toString() + "L")
+        buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
+        buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         multiDexEnabled = false
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
@@ -154,7 +154,7 @@ dependencies {
 }
 
 dependencies {
-    val lifecycleVersion = "2.4.0"
+    val lifecycleVersion = "2.4.1"
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
     implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
 }
