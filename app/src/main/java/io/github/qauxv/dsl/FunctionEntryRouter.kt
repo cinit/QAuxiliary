@@ -91,7 +91,7 @@ object FunctionEntryRouter {
                     category("ui-operation-log", "动态")
                     category("ui-other", "其他", false)
                 }
-                fragment("host-ui-sideswipe", "侧滑烂")
+                fragment("host-ui-sideswipe", "侧滑栏")
                 fragment("host-ui-chat", "聊天界面") {
                     category("ui-chat-decoration", "装扮")
                     category("ui-chat-emoticon", "表情")
@@ -196,7 +196,7 @@ object FunctionEntryRouter {
                 val MAIN_UI_MISC: Array<String> = arrayOf(ANY_CAST_PREFIX, "ui-misc")
 
                 /**
-                 * 侧滑烂
+                 * 侧滑栏
                  */
                 @JvmField
                 val SLIDING_UI: Array<String> = arrayOf(ANY_CAST_PREFIX, "host-ui-sideswipe")
