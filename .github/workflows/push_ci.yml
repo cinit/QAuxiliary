@@ -146,5 +146,6 @@ jobs:
           token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
           files: ${{ env.APK_FILE }}
           prerelease: true
+          repository: Xposed-Modules-Repo/io.github.qauxv
         env:
           GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv
