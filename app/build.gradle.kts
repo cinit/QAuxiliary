@@ -66,23 +66,6 @@ android {
             isMinifyEnabled = false
             proguardFiles("proguard-rules.pro")
         }
-        create("CI") {
-            initWith(getByName("debug"))
-            isShrinkResources = false
-            isMinifyEnabled = false
-            signingConfig = null
-            ndk {
-                abiFilters.clear()
-                abiFilters.add("arm64-v8a")
-            }
-            matchingFallbacks += listOf("debug")
-            tasks.forEach {
-                if (it.name.contains("lint")) {
-                    it.enabled = false
-                }
-            }
-            kotlinOptions.suppressWarnings = true
-        }
     }
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
