@@ -29,6 +29,7 @@ import java.net.URL;
  */
 public class HybridClassLoader extends ClassLoader {
 
+    private static String sObfuscatedPackageName = null;
     private static final ClassLoader sBootClassLoader = Context.class.getClassLoader();
     private final ClassLoader clPreload;
     private final ClassLoader clBase;
@@ -93,5 +94,21 @@ public class HybridClassLoader extends ClassLoader {
             return ret;
         }
         return clBase.getResource(name);
+    }
+
+    public static void setObfuscatedXposedApiPackage(String packageName) {
+        sObfuscatedPackageName = packageName;
+    }
+
+    public static String getObfuscatedXposedApiPackage() {
+        return sObfuscatedPackageName;
+    }
+
+    public static String getXposedBridgeClassName() {
+        if (sObfuscatedPackageName == null) {
+            return "de.robv.android.xposed.XposedBridge";
+        } else {
+            return sObfuscatedPackageName + ".XposedBridge";
+        }
     }
 }

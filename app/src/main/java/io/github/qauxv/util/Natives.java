@@ -32,6 +32,7 @@ import android.system.StructUtsname;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.startup.HybridClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -114,7 +115,7 @@ public class Natives {
             return;
         }
         try {
-            Class<?> xp = Class.forName("de.robv.android.xposed.XposedBridge");
+            Class<?> xp = Class.forName(HybridClassLoader.getXposedBridgeClassName());
             try {
                 xp.getClassLoader()
                     .loadClass("org.lsposed.lspd.nativebridge.NativeAPI")
@@ -140,7 +141,7 @@ public class Natives {
         } catch (UnsatisfiedLinkError ignored) {
         }
         try {
-            Class.forName("de.robv.android.xposed.XposedBridge");
+            Class.forName(HybridClassLoader.getXposedBridgeClassName());
             // in host process
             try {
                 String modulePath = HookEntry.getModulePath();

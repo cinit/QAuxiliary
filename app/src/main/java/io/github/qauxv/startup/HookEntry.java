@@ -59,6 +59,13 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             return;
         }
         sLoadPackageParam = lpparam;
+        // check LSPosed dex-obfuscation
+        Class<?> kXposedBridge = XposedBridge.class;
+        if (!"de.robv.android.xposed.XposedBridge".equals(kXposedBridge.getName())) {
+            String className = kXposedBridge.getName();
+            String pkgName = className.substring(0, className.lastIndexOf('.'));
+            HybridClassLoader.setObfuscatedXposedApiPackage(pkgName);
+        }
         switch (lpparam.packageName) {
             case PACKAGE_NAME_SELF: {
                 HookStatusInit.init(lpparam.classLoader);
