@@ -12,7 +12,7 @@ println("Current build ID is $currentBuildUuid")
 
 android {
     compileSdk = 31
-    ndkVersion = Version.detectNdkVersion()
+    ndkVersion = Version.getNdkVersion(project)
     defaultConfig {
         applicationId = "io.github.qauxv"
         minSdk = 21
@@ -100,7 +100,7 @@ android {
         cmake {
             // Provides a relative path to your CMake build script.
             path = File(projectDir, "src/main/cpp/CMakeLists.txt")
-            version = "3.18.1"
+            version = Version.getCMakeVersion(project)
         }
     }
     buildFeatures {
