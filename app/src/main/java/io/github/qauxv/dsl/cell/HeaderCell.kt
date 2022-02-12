@@ -27,9 +27,9 @@ import android.util.TypedValue
 import android.view.Gravity
 import android.widget.FrameLayout
 import android.widget.TextView
-import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelperViewScope
+import cc.ioctl.util.ui.ThemeAttrUtils
 import io.github.qauxv.R
 
 class HeaderCell(context: Context) : FrameLayout(context), LayoutHelperViewScope {
@@ -46,7 +46,7 @@ class HeaderCell(context: Context) : FrameLayout(context), LayoutHelperViewScope
         titleTextView = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_DIP, 15f)
             gravity = Gravity.CENTER_VERTICAL or Gravity.START
-            setTextColor(ResourcesCompat.getColor(resources, R.color.colorAccent, context.theme))
+            setTextColor(ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent))
             minHeight = cellHeight - topMargin
         }
         addView(titleTextView, LayoutHelper.newFrameLayoutParamsRel(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,

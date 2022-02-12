@@ -29,11 +29,10 @@ import androidx.appcompat.app.AppCompatDelegate
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
-import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
+import io.github.qauxv.ui.ModuleThemeManager
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.UiThread
 
 class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
@@ -46,7 +45,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         // sync theme with host
         AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode())
             AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
-        setTheme(R.style.AppTheme_Def)
+        setTheme(ModuleThemeManager.getCurrentStyleId())
         // we don't want the Fragment to be recreated
         super.onCreate(null)
         setContentView(R.layout.activity_settings_ui_host)

@@ -38,6 +38,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelperViewScope
+import cc.ioctl.util.ui.ThemeAttrUtils
 import io.github.qauxv.R
 
 class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21)
@@ -127,7 +128,7 @@ class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21
 
     init {
         textColor = ResourcesCompat.getColor(context.resources, R.color.thirdTextColor, context.theme)
-        textLinkColor = ResourcesCompat.getColor(context.resources, R.color.colorAccent, context.theme)
+        textLinkColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent)
         textView = AppCompatTextView(context)
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f)
         textView.gravity = Gravity.START

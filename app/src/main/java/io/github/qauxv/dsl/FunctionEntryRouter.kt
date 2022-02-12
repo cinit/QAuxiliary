@@ -119,9 +119,10 @@ object FunctionEntryRouter {
                 }
                 fragment("auxiliary-notification", "通知设置")
                 fragment("auxiliary-experimental", "实验性功能")
+                fragment("entertainment-function", "娱乐功能")
                 fragment("auxiliary-misc", "杂项", false)
             }
-            fragment("entertainment-function", "娱乐功能")
+            category("module-config", "配置", false)
             category("debug-category", "调试", false) {
                 fragment("debug-function", "调试功能", false)
                 fragment("argv-config", "参数配置")
@@ -268,6 +269,13 @@ object FunctionEntryRouter {
             companion object {
                 @JvmField
                 val ENTERTAIN_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "entertainment-function")
+            }
+        }
+
+        class ConfigCategory {
+            companion object {
+                @JvmField
+                val CONFIG_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "module-config")
             }
         }
 

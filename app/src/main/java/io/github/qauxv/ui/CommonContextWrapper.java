@@ -104,7 +104,7 @@ public class CommonContextWrapper extends ContextThemeWrapper {
 
     @NonNull
     public static CommonContextWrapper createAppCompatContext(@NonNull Context base) {
-        return new CommonContextWrapper(base, androidx.appcompat.R.style.Theme_AppCompat_DayNight,
+        return new CommonContextWrapper(base, ModuleThemeManager.getCurrentStyleId(),
             recreateNighModeConfig(base, ResUtils.getNightModeMasked()));
     }
 

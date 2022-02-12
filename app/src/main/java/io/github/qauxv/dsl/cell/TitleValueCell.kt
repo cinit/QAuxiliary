@@ -35,6 +35,7 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.LayoutHelper.WRAP_CONTENT
 import cc.ioctl.util.LayoutHelperViewScope
+import cc.ioctl.util.ui.ThemeAttrUtils
 import io.github.qauxv.R
 
 class TitleValueCell(
@@ -82,7 +83,7 @@ class TitleValueCell(
         // value text view
         valueView = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
-            setTextColor(ResourcesCompat.getColor(resources, R.color.colorAccent, context.theme))
+            setTextColor(ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent))
             visibility = GONE
         }.also {
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
