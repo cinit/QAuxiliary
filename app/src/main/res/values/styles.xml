@@ -23,7 +23,7 @@
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/backgroundColor</item>
-        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
         <!-- Customize your theme here. -->
         <item name="android:windowActionBar">false</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
@@ -168,6 +168,7 @@
         <!-- Customize your theme here. -->
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
