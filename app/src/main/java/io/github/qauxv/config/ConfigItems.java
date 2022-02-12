@@ -172,6 +172,11 @@ public class ConfigItems {
 
     @MainProcess
     public static void removePreviousCacheIfNecessary() {
+        // clear cache if is a release build to invalidate previous potential bad dex-deobfuscation result
+        // do not clear cache if is a debug build, devs should clear cache themselves
+        if (BuildConfig.DEBUG) {
+            return;
+        }
         ConfigManager cache = ConfigManager.getCache();
         if (cache.getIntOrDefault(cache_qn_prev_version, -1) < BuildConfig.VERSION_CODE) {
             cache.getFile().delete();
