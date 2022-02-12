@@ -43,11 +43,13 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.res.ResourcesCompat;
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.data.EventRecord;
 import cc.ioctl.util.data.FriendRecord;
+import cc.ioctl.util.ui.ThemeAttrUtils;
 import com.tencent.widget.XListView;
 import io.github.qauxv.R;
 import io.github.qauxv.bridge.AppRuntimeHelper;
@@ -250,14 +252,14 @@ public class ExfriendListFragment extends BaseSettingFragment {
         title.setId(R_ID_EXL_TITLE);
         title.setSingleLine();
         title.setGravity(Gravity.CENTER_VERTICAL);
-//        title.setTextColor(ResUtils.cloneColor(ResUtils.skin_black));
+        title.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.firstTextColor, context.getTheme()));
         title.setTextSize(LayoutHelper.px2sp(context, LayoutHelper.dip2px(context, 16)));
 
         TextView subtitle = new TextView(context);
         subtitle.setId(R_ID_EXL_SUBTITLE);
         subtitle.setSingleLine();
         subtitle.setGravity(Gravity.CENTER_VERTICAL);
-//        subtitle.setTextColor(ResUtils.cloneColor(ResUtils.skin_gray3));
+        subtitle.setTextColor(ResourcesCompat.getColor(context.getResources(), R.color.secondTextColor, context.getTheme()));
         subtitle.setTextSize(LayoutHelper.px2sp(context, LayoutHelper.dip2px(context, 14)));
 
         textlayout.addView(title, textlp);
@@ -284,8 +286,9 @@ public class ExfriendListFragment extends BaseSettingFragment {
         });
         rlayout.setOnLongClickListener(v -> {
             try {
-                CustomDialog dialog = CustomDialog.create(context);
+                CustomDialog dialog = CustomDialog.createFailsafe(context);
                 dialog.setTitle("删除记录");
+                dialog.setCancelable(true);
                 dialog.setMessage("确认删除历史记录(" + ((EventRecord) v.getTag())._remark + ")");
                 dialog.setPositiveButton("确认", (dialog12, which) -> {
                     dialog12.dismiss();

@@ -46,6 +46,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     override val name = "消息显示At对象"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+    override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
 
     override fun initOnce() = !isTim()
 

@@ -27,9 +27,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.*
 import me.ketal.util.BaseUtil.tryVerbosely
-import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.data.TroopInfo
 import xyz.nextalone.util.*
 
@@ -42,6 +42,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
     override val name = "修改@界面排序"
     override val description = "排序由群主管理员至正常人员"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+    override val extraSearchKeywords: Array<String> = arrayOf("艾特", "at")
     override val isAvailable: Boolean
         get() = requireMinVersion(QQVersion.QQ_8_1_3, TIMVersion.TIM_3_1_1, PlayQQVersion.PlayQQ_8_2_9)
 

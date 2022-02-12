@@ -62,7 +62,7 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public String[] getExtraSearchKeywords() {
-        return new String[]{"艾特"};
+        return new String[]{"艾特", "at"};
     }
 
     @NonNull
