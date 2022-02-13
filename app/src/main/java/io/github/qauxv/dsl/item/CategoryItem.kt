@@ -23,6 +23,7 @@
 package io.github.qauxv.dsl.item
 
 import android.content.Context
+import android.view.View
 import io.github.qauxv.dsl.item.impl.HeaderItem
 import io.github.qauxv.dsl.item.impl.SpacerItem
 
@@ -54,6 +55,16 @@ open class CategoryItem(
     ) = DescriptionItem(text).also {
         checkState()
         dslItems.add(it)
+    }
+
+    open fun textItem(
+            title: String,
+            summary: String? = null,
+            value: String? = null,
+            onClick: View.OnClickListener? = null
+    ) {
+        checkState()
+        dslItems.add(TextListItem(title, summary, value, onClick))
     }
 
     @JvmOverloads

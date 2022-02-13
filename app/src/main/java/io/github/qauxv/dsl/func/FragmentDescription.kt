@@ -22,14 +22,17 @@
 
 package io.github.qauxv.dsl.func
 
+import android.os.Bundle
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.fragment.BaseSettingFragment
+import io.github.qauxv.fragment.SettingsMainFragment
 
 open class FragmentDescription(
     override val identifier: String,
     override val name: String?,
     categoryTitleSearchable: Boolean = true,
     initializer: (FragmentDescription.() -> Unit)?
-) : BaseParentNode() {
+) : BaseParentNode(), IDslFragmentNode {
 
     init {
         initializer?.invoke(this)
@@ -55,8 +58,22 @@ open class FragmentDescription(
         addChild(it)
     }
 
+    open fun fragmentImpl(
+            identifier: String,
+            name: String,
+            targetClass: Class<out BaseSettingFragment>,
+            categoryTitleSearchable: Boolean = true,
+    ): FragmentImplDescription = FragmentImplDescription(identifier, name, targetClass, categoryTitleSearchable).also {
+        addChild(it)
+    }
+
     open fun agentItem(targetItem: IUiItemAgentProvider): UiItemAgentDescription = UiItemAgentDescription(targetItem).also {
         addChild(it)
     }
 
+    override fun getTargetFragmentClass(location: Array<String>) = SettingsMainFragment::class.java
+
+    override fun getTargetFragmentArguments(location: Array<String>, targetItemId: String?): Bundle? {
+        return SettingsMainFragment.getBundleForLocation(location, targetItemId)
+    }
 }

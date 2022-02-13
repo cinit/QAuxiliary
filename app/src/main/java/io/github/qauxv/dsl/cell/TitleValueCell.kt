@@ -78,7 +78,7 @@ class TitleValueCell(
             visibility = GONE
         }.also {
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
-                    Gravity.TOP or Gravity.START, 21.dp, 35.dp, 21.dp, 0))
+                    Gravity.TOP or Gravity.START, 21.dp, 35.dp, 70.dp, 0))
         }
         // value text view
         valueView = TextView(context).apply {

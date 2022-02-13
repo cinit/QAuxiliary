@@ -38,9 +38,21 @@ public class CliOper {
 
     private static final String appCenterToken = "77c14c01-b4bf-46cf-bf95-dad60d7418a4";
     private static boolean appCenterInit = false;
+    private static final String TAG_IS_APP_CENTER_ALLOWED = "is_app_center_allowed";
+
+    public static boolean isAppCenterAllowed() {
+        return ConfigManager.getDefaultConfig().getBooleanOrDefault(TAG_IS_APP_CENTER_ALLOWED, true);
+    }
+
+    public static void setAppCenterAllowed(boolean allowed) {
+        ConfigManager.getDefaultConfig().putBoolean(TAG_IS_APP_CENTER_ALLOWED, allowed);
+    }
 
     public static void __init__(Application app) {
         if (app == null) {
+            return;
+        }
+        if (!isAppCenterAllowed()) {
             return;
         }
         if (appCenterInit) {
@@ -88,6 +100,9 @@ public class CliOper {
     }
 
     public static void onLoad() {
+        if (!isAppCenterAllowed()) {
+            return;
+        }
         CliOper.__init__(HostInfo.getApplication());
         final String LAST_TRACE_HASHCODE_CONFIG = "lastTraceHashcode";
         ConfigManager configManager = ConfigManager.getDefaultConfig();
@@ -117,35 +132,6 @@ public class CliOper {
         __init__(HostInfo.getApplication());
         Analytics.trackEvent("onLoad", properties);
         Log.d("start App Center Trace OnLoad:" + properties.toString());
-    }
-
-    private static Map<String, String> digestCardMsg(String msg) {
-        Map<String, String> prop = new HashMap<>();
-        if (msg.startsWith("<")) {
-            //xml
-            prop.put("type", "xml");
-            prop.put("serviceID", findXmlValueOrEmpty(msg, "serviceID"));
-            prop.put("templateID", findXmlValueOrEmpty(msg, "templateID"));
-            prop.put("action", findXmlValueOrEmpty(msg, "action"));
-            prop.put("brief", findXmlValueOrEmpty(msg, "brief"));
-            prop.put("name", findXmlValueOrEmpty(msg, "name"));
-        } else if (msg.startsWith("{")) {
-            //json
-            prop.put("type", "json");
-            prop.put("app", findJsonValueOrEmpty(msg, "app"));
-            prop.put("desc", findJsonValueOrEmpty(msg, "desc"));
-            prop.put("prompt", findJsonValueOrEmpty(msg, "prompt"));
-            prop.put("appID", findJsonValueOrEmpty(msg, "appID"));
-            prop.put("text", findJsonValueOrEmpty(msg, "text"));
-            prop.put("actionData", findJsonValueOrEmpty(msg, "actionData"));
-        } else {
-            if (msg.length() > 127) {
-                msg = msg.substring(0, 127);
-            }
-            prop.put("type", "unknown");
-            prop.put("raw", msg);
-        }
-        return prop;
     }
 
     private static String findJsonValueOrEmpty(String raw, String key) {
@@ -227,6 +213,9 @@ public class CliOper {
     }
 
     public static void enterModuleActivity(String shortName) {
+        if (!isAppCenterAllowed()) {
+            return;
+        }
         try {
             __init__(HostInfo.getApplication());
             Map<String, String> prop = new HashMap<>();

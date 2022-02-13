@@ -22,41 +22,24 @@
 
 package io.github.qauxv.dsl.func
 
-import io.github.qauxv.base.IUiItemAgentProvider
+import android.os.Bundle
 import io.github.qauxv.fragment.BaseSettingFragment
 
-class CategoryDescription(
-    override val identifier: String,
-    override val name: String,
-    categoryTitleSearchable: Boolean = true,
-    initializer: (CategoryDescription.() -> Unit)?
-) : BaseParentNode() {
+class FragmentImplDescription(
+        override val identifier: String,
+        override val name: String?,
+        private val targetClass: Class<out BaseSettingFragment>,
+        categoryTitleSearchable: Boolean = true,
+) : BaseParentNode(), IDslFragmentNode {
 
     override val isSearchable: Boolean = categoryTitleSearchable
 
-    init {
-        initializer?.invoke(this)
+    override fun getTargetFragmentClass(location: Array<String>): Class<out BaseSettingFragment> {
+        return targetClass
     }
 
-    fun fragment(
-        identifier: String,
-        name: String,
-        categoryTitleSearchable: Boolean = true,
-        initializer: (FragmentDescription.() -> Unit)? = null
-    ): FragmentDescription = FragmentDescription(identifier, name, categoryTitleSearchable, initializer).also {
-        addChild(it)
-    }
-
-    open fun fragmentImpl(
-            identifier: String,
-            name: String,
-            targetClass: Class<out BaseSettingFragment>,
-            categoryTitleSearchable: Boolean = true,
-    ): FragmentImplDescription = FragmentImplDescription(identifier, name, targetClass, categoryTitleSearchable).also {
-        addChild(it)
-    }
-
-    fun agentItem(targetItem: IUiItemAgentProvider): UiItemAgentDescription = UiItemAgentDescription(targetItem).also {
-        addChild(it)
+    override fun getTargetFragmentArguments(location: Array<String>, targetItemId: String?): Bundle? {
+        // TODO: 2022-02-13: add search navigation support for custom fragment
+        return null
     }
 }

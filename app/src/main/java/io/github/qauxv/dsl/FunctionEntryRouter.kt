@@ -24,6 +24,7 @@ package io.github.qauxv.dsl
 
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.func.*
+import io.github.qauxv.fragment.AboutFragment
 
 object FunctionEntryRouter {
 
@@ -130,7 +131,7 @@ object FunctionEntryRouter {
             }
             category("other-config", "其他") {
                 fragment("other-coming-soon", "开发中的功能", false)
-                fragment("other-about", "关于", false)
+                fragmentImpl("other-about", "关于", AboutFragment::class.java, false)
             }
         }
         return baseTree

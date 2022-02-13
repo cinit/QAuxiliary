@@ -37,7 +37,7 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.FragmentSettingSearchBinding
 import io.github.qauxv.databinding.SearchResultItemBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.dsl.func.FragmentDescription
+import io.github.qauxv.dsl.func.IDslFragmentNode
 import io.github.qauxv.dsl.func.IDslParentNode
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.UiThread
@@ -244,7 +244,7 @@ class SearchOverlayFragment : BaseSettingFragment() {
                 // we are lost!!!
                 break
             }
-            if (node is FragmentDescription) {
+            if (node is IDslFragmentNode) {
                 // found
                 targetFragmentLocation = container.toTypedArray()
                 break

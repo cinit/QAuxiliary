@@ -226,7 +226,7 @@ class SettingsMainFragment : BaseSettingFragment() {
     private fun convertEndNode(context: Context, endNode: IDslItemNode): DslTMsgListItemInflatable {
         if (endNode is UiItemAgentDescription) {
             return UiAgentItem(endNode.identifier, endNode.name, endNode.itemAgentProvider)
-        } else if (endNode is FragmentDescription) {
+        } else if (endNode is IDslFragmentNode) {
             return SimpleListItem(endNode.identifier, endNode.name ?: endNode.toString(), null).apply {
                 onClickListener = {
                     val targetLocation = FunctionEntryRouter.resolveUiItemAnycastLocation(arrayOf(
@@ -234,7 +234,10 @@ class SettingsMainFragment : BaseSettingFragment() {
                             ?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
                     // jump to target fragment
                     val location: Array<String> = targetLocation
-                    val fragment = SettingsMainFragment.newInstance(location)
+                    val fragmentClass = endNode.getTargetFragmentClass(location)
+                    val bundle = endNode.getTargetFragmentArguments(location)
+                    val fragment = fragmentClass.newInstance() as BaseSettingFragment
+                    fragment.arguments = bundle
                     settingsHostActivity!!.presentFragment(fragment)
                 }
             }
@@ -243,7 +246,7 @@ class SettingsMainFragment : BaseSettingFragment() {
     }
 
     private fun IDslItemNode.isEndNode(): Boolean {
-        return this !is IDslParentNode || this is FragmentDescription
+        return this !is IDslParentNode || this is IDslFragmentNode
     }
 
     private fun isRootFragmentDescription(): Boolean {

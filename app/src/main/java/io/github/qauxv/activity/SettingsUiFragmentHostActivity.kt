@@ -178,6 +178,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         const val TARGET_FRAGMENT_ARGS_KEY: String = "SettingsUiFragmentHostActivity.TARGET_FRAGMENT_ARGS_KEY"
 
         @JvmStatic
+        @JvmOverloads
         fun startFragmentWithContext(context: Context,
                                      fragmentClass: Class<out BaseSettingFragment>,
                                      args: Bundle? = null) {
@@ -192,6 +193,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
 
         @JvmStatic
+        @JvmOverloads
         fun startActivityForFragment(context: Context,
                                      fragmentClass: Class<out BaseSettingFragment>,
                                      args: Bundle? = null) {
@@ -199,6 +201,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
 
         @JvmStatic
+        @JvmOverloads
         fun createStartActivityForFragmentIntent(context: Context,
                                                  fragmentClass: Class<out BaseSettingFragment>,
                                                  args: Bundle? = null): Intent {
