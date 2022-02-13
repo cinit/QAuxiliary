@@ -38,6 +38,7 @@ import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
+import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.LicenseStatus;
 
@@ -96,12 +97,11 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     Reflex.invokeVirtual(item, "setRightText", "[未激活]", CharSequence.class);
                 }
                 item.setOnClickListener(v -> {
-                    if (true || LicenseStatus.hasUserAcceptEula()) {
+                    if (LicenseStatus.hasUserAcceptEula()) {
                         activity.startActivity(new Intent(activity, SettingsUiFragmentHostActivity.class));
                     } else {
-                        // TODO: 2022-02-08 add eula activity
-                        throw new UnsupportedOperationException(
-                                "activity.startActivity(new Intent(activity, EulaActivity.class));activity.finish();");
+                        SettingsUiFragmentHostActivity.startActivityForFragment(activity, EulaFragment.class, null);
+                        activity.finish();
                     }
                 });
                 if (itemRef != null) {

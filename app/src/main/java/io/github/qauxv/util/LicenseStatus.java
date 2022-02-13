@@ -54,9 +54,7 @@ public class LicenseStatus {
     }
 
     public static boolean hasUserAcceptEula() {
-        // TODO: 2022-02-10 add EULA activity
-        return true;
-        // return getEulaStatus() == CURRENT_EULA_VERSION;
+        return getEulaStatus() == CURRENT_EULA_VERSION;
     }
 
     public static void setUserCurrentStatus() {
