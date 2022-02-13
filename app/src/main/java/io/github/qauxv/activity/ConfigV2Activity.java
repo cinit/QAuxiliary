@@ -41,11 +41,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.databinding.MainV2Binding;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
@@ -57,7 +58,7 @@ import java.util.Date;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
 
-public class ConfigV2Activity extends AppCompatActivity {
+public class ConfigV2Activity extends AppCompatTransferActivity {
 
     private static final String ALIAS_ACTIVITY_NAME = "io.github.qauxv.activity.ConfigV2ActivityAlias";
     private String dbgInfo = "";
@@ -65,6 +66,20 @@ public class ConfigV2Activity extends AppCompatActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        // load native lib
+        try {
+            long delta = System.currentTimeMillis();
+            Natives.load(this);
+            long ts = BuildConfig.BUILD_TIMESTAMP;
+            delta = System.currentTimeMillis() - delta;
+            dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
+                    "delta=" + delta + "ms\n" +
+                    "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
+                    .getpagesize();
+        } catch (Throwable e) {
+            dbgInfo += "\n" + e;
+        }
+        setDayNightStatus(getCurrentDayNightStatus());
         super.onCreate(savedInstanceState);
         if (R.string.res_inject_success >>> 24 == 0x7f) {
             throw new RuntimeException("package id must NOT be 0x7f");
@@ -89,18 +104,6 @@ public class ConfigV2Activity extends AppCompatActivity {
         mainV2Binding = MainV2Binding.inflate(LayoutInflater.from(this));
         setContentView(mainV2Binding.getRoot());
         setSupportActionBar(mainV2Binding.topAppBar);
-        try {
-            long delta = System.currentTimeMillis();
-            Natives.load(this);
-            long ts = BuildConfig.BUILD_TIMESTAMP;
-            delta = System.currentTimeMillis() - delta;
-            dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
-                    "delta=" + delta + "ms\n" +
-                    "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
-                    .getpagesize();
-        } catch (Throwable e) {
-            dbgInfo += "\n" + e;
-        }
         updateActivationStatus();
         SyncUtils.postDelayed(3000, this::updateActivationStatus);
     }
@@ -240,6 +243,10 @@ public class ConfigV2Activity extends AppCompatActivity {
                 SyncUtils.postDelayed(this::updateMenuItems, 500);
                 return true;
             }
+            case R.id.menu_item_changeTheme: {
+                showChangeThemeDialog();
+                return true;
+            }
             default: {
                 return ConfigV2Activity.super.onOptionsItemSelected(item);
             }
@@ -250,6 +257,44 @@ public class ConfigV2Activity extends AppCompatActivity {
     protected void onResume() {
         super.onResume();
         updateMenuItems();
+    }
+
+    private void showChangeThemeDialog() {
+        String[] themes = new String[]{"系统默认", "深色", "浅色"};
+        new AlertDialog.Builder(this)
+                .setTitle("更换主题")
+                .setItems(themes, (dialog, which) -> {
+                    saveCurrentDayNightStatus(which);
+                    SyncUtils.postDelayed(50, this::recreate);
+                })
+                .show();
+    }
+
+    private int getCurrentDayNightStatus() {
+        return ConfigManager.getDefaultConfig().getIntOrDefault("KEY_DAY_NIGHT_STATUS", 0);
+    }
+
+    private void saveCurrentDayNightStatus(int i) {
+        ConfigManager.getDefaultConfig().putInt("KEY_DAY_NIGHT_STATUS", i);
+    }
+
+    private void setDayNightStatus(int i) {
+        switch (i) {
+            case 0: {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                break;
+            }
+            case 1: {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                break;
+            }
+            case 2: {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                break;
+            }
+            default:
+                break;
+        }
     }
 
     void updateMenuItems() {
