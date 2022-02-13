@@ -57,6 +57,7 @@ import java.util.Arrays;
 import java.util.Date;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
+import name.mikanoshi.customiuizer.holidays.HolidayHelper;
 
 public class ConfigV2Activity extends AppCompatTransferActivity {
 
@@ -104,6 +105,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         mainV2Binding = MainV2Binding.inflate(LayoutInflater.from(this));
         setContentView(mainV2Binding.getRoot());
         setSupportActionBar(mainV2Binding.topAppBar);
+        requestTranslucentStatusBar();
+        HolidayHelper.setup(this);
         updateActivationStatus();
         SyncUtils.postDelayed(3000, this::updateActivationStatus);
     }
@@ -257,6 +260,19 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     protected void onResume() {
         super.onResume();
         updateMenuItems();
+        HolidayHelper.onResume();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        HolidayHelper.onDestroy();
+    }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        HolidayHelper.onPause();
     }
 
     private void showChangeThemeDialog() {
@@ -265,7 +281,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                 .setTitle("更换主题")
                 .setItems(themes, (dialog, which) -> {
                     saveCurrentDayNightStatus(which);
-                    SyncUtils.postDelayed(50, this::recreate);
+                    setDayNightStatus(which);
                 })
                 .show();
     }

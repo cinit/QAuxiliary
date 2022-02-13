@@ -22,7 +22,6 @@ android {
         versionName = "0.1.0" + (Common.getGitHeadRefsSuffix(rootProject))
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
-        multiDexEnabled = false
         ndk {
             abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
         }
@@ -126,6 +125,9 @@ dependencies {
     implementation("com.afollestad.material-dialogs:input:3.3.0")
     implementation("com.jaredrummler:colorpicker:1.1.0")
     implementation("com.github.kyuubiran:EzXHelper:0.6.1")
+    // festival title
+    implementation("com.github.jinatonic.confetti:confetti:1.1.2")
+    implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
 }
 
 dependencies {

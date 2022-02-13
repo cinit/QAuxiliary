@@ -33,6 +33,7 @@ import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
 import io.github.qauxv.ui.ModuleThemeManager
 import io.github.qauxv.ui.ResUtils
+import name.mikanoshi.customiuizer.holidays.HolidayHelper
 
 class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
@@ -52,6 +53,8 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
         setSupportActionBar(mAppToolBar)
+        requestTranslucentStatusBar()
+        HolidayHelper.setup(this)
         val intent = intent
         // check if we are requested to show a specific fragment
         val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
@@ -153,6 +156,21 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
                     .remove(fragment)
                     .commit()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        HolidayHelper.onResume()
+    }
+
+    override fun onPause() {
+        HolidayHelper.onPause()
+        super.onPause()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        HolidayHelper.onDestroy()
     }
 
     companion object {

@@ -21,7 +21,10 @@
  */
 package io.github.qauxv.activity;
 
+import android.graphics.Color;
 import android.os.Bundle;
+import android.view.View;
+import android.view.Window;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -55,5 +58,15 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         CliOper.enterModuleActivity(Reflex.getShortClassName(this));
+    }
+
+    protected void requestTranslucentStatusBar() {
+        Window window = getWindow();
+        View decorView = window.getDecorView();
+        int option = decorView.getSystemUiVisibility()
+                | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+        decorView.setSystemUiVisibility(option);
+        window.setStatusBarColor(Color.TRANSPARENT);
     }
 }

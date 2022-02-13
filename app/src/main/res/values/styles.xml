@@ -1,8 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:tools="http://schemas.android.com/tools">
 
-    <style name="AppThemeDummy" parent="@android:style/Theme.Material">
-    </style>
+    <style name="AppThemeDummy" parent="@android:style/Theme.Material"></style>
 
     <!-- Base application theme. -->
     <style name="AppTheme.Def" parent="Theme.AppCompat.DayNight.NoActionBar">
@@ -22,9 +21,13 @@
         <item name="colorSecondaryVariant">@color/themeColor</item>
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
+            shortEdges
+        </item>
         <item name="android:statusBarColor">@color/backgroundColor</item>
+        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
-        <!-- Customize your theme here. -->
         <item name="android:windowActionBar">false</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
@@ -164,10 +167,13 @@
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/backgroundColor</item>
-        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
-        <!-- Customize your theme here. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
+            shortEdges
+        </item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
@@ -187,10 +193,13 @@
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
         <item name="android:statusBarColor">@color/backgroundColor</item>
-        <!-- <item name="android:statusBarColor">@color/themeColor</item> -->
-        <!-- Customize your theme here. -->
+        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
+            shortEdges
+        </item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!-- <item name="colorControlNormal">@color/whiteTextColor</item> -->

@@ -2,4 +2,6 @@
 <resources>
     <bool name="is_night_mode">false</bool>
     <bool name="is_not_night_mode">true</bool>
+    <bool name="is_sdk_eg_m_23">false</bool>
+    <bool name="is_not_sdk_eg_m_23">true</bool>
 </resources>
