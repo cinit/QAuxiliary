@@ -58,6 +58,8 @@ import java.util.Date;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
 import name.mikanoshi.customiuizer.holidays.HolidayHelper;
+import name.mikanoshi.customiuizer.utils.Helpers;
+import name.mikanoshi.customiuizer.utils.Helpers.Holidays;
 
 public class ConfigV2Activity extends AppCompatTransferActivity {
 
@@ -117,8 +119,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
         frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(),
-                isHookEnabled ? R.drawable.bg_green_solid :
-                        R.drawable.bg_red_solid, getTheme()));
+                (isHookEnabled && Helpers.currentHoliday != Holidays.LUNARNEWYEAR)
+                        ? R.drawable.bg_green_solid : R.drawable.bg_red_solid, getTheme()));
         frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
                 isHookEnabled ? R.drawable.ic_success_white :
                         R.drawable.ic_failure_white, getTheme()));
