@@ -10,7 +10,7 @@ import io.github.qauxv.dsl.cell.TitleValueCell
 
 class TextSwitchItem(
         private val title: String,
-        private val summary: String,
+        private val summary: String?,
         private val switchAgent: ISwitchCellAgent
 ) : DslTMsgListItemInflatable, TMsgListItem {
 

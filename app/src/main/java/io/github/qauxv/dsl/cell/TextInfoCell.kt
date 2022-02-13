@@ -127,8 +127,6 @@ class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21
     }
 
     init {
-        textColor = ResourcesCompat.getColor(context.resources, R.color.thirdTextColor, context.theme)
-        textLinkColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent)
         textView = AppCompatTextView(context)
         textView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f)
         textView.gravity = Gravity.START
@@ -137,7 +135,9 @@ class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21
         textView.setTextColor(textColor)
         textView.setLinkTextColor(textLinkColor)
         textView.importantForAccessibility = IMPORTANT_FOR_ACCESSIBILITY_NO
+        textColor = ResourcesCompat.getColor(context.resources, R.color.thirdTextColor, context.theme)
+        textLinkColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent)
         addView(textView, LayoutHelper.newFrameLayoutParamsAbs(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT,
-                Gravity.START or Gravity.TOP, padding, 0, padding, 0))
+                Gravity.START or Gravity.TOP, padding.dp, 0, padding.dp, 0))
     }
 }
