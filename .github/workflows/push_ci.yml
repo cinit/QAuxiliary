@@ -1,4 +1,3 @@
-
 name: main
 
 on:
@@ -26,7 +25,7 @@ jobs:
           distribution: 'adopt'
           cache: gradle
       - name: Install NDK v23
-        run: | 
+        run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           echo "ndk.dir=${ANDROID_HOME}/ndk/23.1.7779620" >> local.properties
@@ -110,42 +109,42 @@ jobs:
           echo ${{ secrets.TC_UPLOAD_USER_TOKEN }} | base64 -d > taichi.json
           export release=$(find $OUTPUT -name "*.apk")
           python3 taichi.py $release
-  upload-lsp:
-    name: Upload to LSPosed repo
-    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
-      - name: Donwload Artifacts
-        uses: actions/download-artifact@v2
-        id: download
-        with:
-          path: artifacts
-      - name: Generate Changelog
-        env:
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-          COMMIT_URL: ${{ github.event.head_commit.url }}
-        run: echo "$(python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))')" > ${{ github.workspace }}-CHANGELOG.txt
-      - name: find apk
-        run: echo "APK_FILE=$(find ${{steps.download.outputs.download-path}} -name '*.apk')" >> $GITHUB_ENV
-      - name: Get Apk Info
-        id: apk
-        uses: JantHsueh/get-apk-info-action@master
-        with:
-          apkPath: ${{ env.APK_FILE }}
-      - name: Get Date
-        id: date
-        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-      - name: Release
-        uses: softprops/action-gh-release@v1
-        with:
-          tag_name: ${{steps.apk.outputs.versionCode}}
-          name: CI-${{ steps.date.outputs.date }}
-          body_path: ${{ github.workspace }}-CHANGELOG.txt
-          token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
-          files: ${{ env.APK_FILE }}
-          prerelease: true
-          repository: Xposed-Modules-Repo/io.github.qauxv
-        env:
-          GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv
+#  upload-lsp:
+#    name: Upload to LSPosed repo
+#    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
+#    runs-on: ubuntu-latest
+#    needs:
+#      - build
+#    steps:
+#      - name: Donwload Artifacts
+#        uses: actions/download-artifact@v2
+#        id: download
+#        with:
+#          path: artifacts
+#      - name: Generate Changelog
+#        env:
+#          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+#          COMMIT_URL: ${{ github.event.head_commit.url }}
+#        run: echo "$(python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))')" > ${{ github.workspace }}-CHANGELOG.txt
+#      - name: find apk
+#        run: echo "APK_FILE=$(find ${{steps.download.outputs.download-path}} -name '*.apk')" >> $GITHUB_ENV
+#      - name: Get Apk Info
+#        id: apk
+#        uses: JantHsueh/get-apk-info-action@master
+#        with:
+#          apkPath: ${{ env.APK_FILE }}
+#      - name: Get Date
+#        id: date
+#        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
+#      - name: Release
+#        uses: softprops/action-gh-release@v1
+#        with:
+#          tag_name: ${{steps.apk.outputs.versionCode}}
+#          name: CI-${{ steps.date.outputs.date }}
+#          body_path: ${{ github.workspace }}-CHANGELOG.txt
+#          token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
+#          files: ${{ env.APK_FILE }}
+#          prerelease: true
+#          repository: Xposed-Modules-Repo/io.github.qauxv
+#        env:
+#          GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv
