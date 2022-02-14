@@ -22,10 +22,12 @@
 
 package io.github.qauxv.fragment
 
+import android.content.Context
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.inputmethod.InputMethodManager
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -267,6 +269,9 @@ class SearchOverlayFragment : BaseSettingFragment() {
                 setCancelable(true)
             }.show()
         } else {
+            // hide IME
+            val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+            imm.hideSoftInputFromWindow(requireView().windowToken, 0)
             val fragment = SettingsMainFragment.newInstance(targetFragmentLocation, identifier)
             settingsHostActivity!!.presentFragment(fragment)
         }
@@ -297,5 +302,17 @@ class SearchOverlayFragment : BaseSettingFragment() {
     override fun onDestroyView() {
         super.onDestroyView()
         binding = null
+    }
+
+    override fun onResume() {
+        super.onResume()
+        binding?.let {
+            if (it.searchKeyWords.text.isEmpty()) {
+                it.searchKeyWords.requestFocus()
+                // show keyboard
+                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
+                imm.showSoftInput(it.searchKeyWords, InputMethodManager.SHOW_IMPLICIT)
+            }
+        }
     }
 }

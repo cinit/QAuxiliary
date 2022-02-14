@@ -128,7 +128,6 @@ object FunctionEntryRouter {
             category("module-config", "配置", false)
             category("debug-category", "调试", false) {
                 fragment("debug-function", "调试功能", false)
-                fragment("argv-config", "参数配置")
                 fragmentImpl("debug-impl", "故障排查", TroubleshootFragment::class.java)
             }
             category("other-config", "其他") {
