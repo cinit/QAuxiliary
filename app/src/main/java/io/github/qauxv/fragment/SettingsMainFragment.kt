@@ -242,8 +242,9 @@ class SettingsMainFragment : BaseSettingFragment() {
         val layoutParams = FrameLayout.LayoutParams(rect.width(), rect.height()).apply {
             setMargins(rect.left, rect.top, 0, 0)
         }
-        rootFrameLayout?.addView(view, layoutParams) ?: return
+        val parent = rootFrameLayout ?: return
         async {
+            var isAddedToParent = false
             // in out and repeat
             for (i in 0..3) {
                 val animation = if (i % 2 == 0) {
@@ -252,6 +253,10 @@ class SettingsMainFragment : BaseSettingFragment() {
                     fadeOut
                 }
                 runOnUiThread {
+                    if (!isAddedToParent) {
+                        parent.addView(view, layoutParams)
+                        isAddedToParent = true
+                    }
                     view.startAnimation(animation)
                 }
                 Thread.sleep(300)
