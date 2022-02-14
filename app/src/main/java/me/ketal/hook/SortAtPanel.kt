@@ -29,7 +29,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.*
-import me.ketal.util.BaseUtil.tryVerbosely
 import xyz.nextalone.data.TroopInfo
 import xyz.nextalone.util.*
 
@@ -48,7 +47,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
 
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null
-    override fun initOnce() = tryVerbosely(false) {
+    override fun initOnce() = tryOrFalse {
         val showDialogAtView = DexKit.doFindMethod(DexKit.N_AtPanel__showDialogAtView)
             ?: DexKit.doFindClass(DexKit.N_AtPanel__showDialogAtView)?.method {
                 it.parameterTypes.contentEquals(arrayOf(View::class.java, String::class.java, Boolean::class.java))
@@ -78,7 +77,6 @@ object SortAtPanel : CommonSwitchFunctionHook(
             list.removeAll(admin)
             list.addAll(if (isAdmin) 1 else 0, admin)
         }
-        true
     }
 
     private fun getTroopUin(sessionInfo: Any?): String? =

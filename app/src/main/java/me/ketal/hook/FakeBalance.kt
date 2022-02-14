@@ -37,17 +37,16 @@ import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.hostInfo
 import me.ketal.base.PluginDelayableHook
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
-import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
+import xyz.nextalone.util.tryOrFalse
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -77,7 +76,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
     }
 
     private fun showDialog(ctx: Context, textView: TextView?) {
-        tryVerbosely(false) {
+        tryOrFalse {
             val vg = ConfigView(ctx)
             val dialog = MaterialDialog(ctx).show {
                 title(text = "自定义钱包余额")

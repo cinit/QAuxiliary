@@ -40,9 +40,9 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
-import me.ketal.util.BaseUtil.tryVerbosely
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
+import xyz.nextalone.util.tryOrFalse
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -85,7 +85,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     }
 
     private fun recall() {
-        tryVerbosely(false) {
+        tryOrFalse {
             val clazz = DexKit.doFindClass(DexKit.C_MultiMsg_Manager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
             val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)

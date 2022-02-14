@@ -32,11 +32,11 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
-import me.ketal.util.BaseUtil.tryVerbosely
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
+import xyz.nextalone.util.tryOrFalse
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -68,7 +68,7 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
                     thisObj, tv, thisObj::class.java, View::class.java
                 )
                 tv?.setOnClickListener {
-                    tryVerbosely(false) {
+                    tryOrFalse {
                         Reflex.invokeVirtual(logic, "b")
                         val b = Reflex.getInstanceObjectOrNull(logic, "b", View::class.java)
                         if (b.visibility != 0) {

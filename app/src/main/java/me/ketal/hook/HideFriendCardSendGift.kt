@@ -34,9 +34,9 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import me.ketal.util.BaseUtil.tryVerbosely
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
+import xyz.nextalone.util.tryOrFalse
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -49,7 +49,7 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
     override val isAvailable: Boolean
         get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
 
-    override fun initOnce() = tryVerbosely(false) {
+    override fun initOnce() = tryOrFalse {
         if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
             "Lcom/tencent/mobileqq/profilecard/base/container/ProfileBottomContainer;->initViews()V"
                 .method.hookAfter(this) {
@@ -57,7 +57,6 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
                         Reflex.getFirstNSFByType(it.thisObject, LinearLayout::class.java)
                     hideView(rootView)
                 }
-            return true
         }
         "Lcom/tencent/mobileqq/activity/FriendProfileCardActivity;->a(Landroid/widget/LinearLayout;)V"
             .method.hookAfter(this) {
