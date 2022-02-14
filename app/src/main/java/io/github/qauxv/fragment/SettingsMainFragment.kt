@@ -23,8 +23,10 @@
 package io.github.qauxv.fragment
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
 import android.view.*
+import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
@@ -34,6 +36,8 @@ import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
+import io.github.qauxv.SyncUtils.async
+import io.github.qauxv.SyncUtils.runOnUiThread
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
@@ -51,12 +55,14 @@ class SettingsMainFragment : BaseSettingFragment() {
     private var mTargetUiAgentNavigated: Boolean = false
 
     // DSL stuff below
-    protected var adapter: RecyclerView.Adapter<*>? = null
-    protected lateinit var recyclerListView: RecyclerView
-    protected lateinit var typeList: Array<Class<*>>
-    protected lateinit var itemList: ArrayList<TMsgListItem>
-    protected lateinit var itemTypeIds: Array<Int>
-    protected lateinit var itemTypeDelegate: Array<TMsgListItem>
+    private var adapter: RecyclerView.Adapter<*>? = null
+    private var recyclerListView: RecyclerView? = null
+    private var rootFrameLayout: FrameLayout? = null
+
+    private lateinit var typeList: Array<Class<*>>
+    private lateinit var itemList: ArrayList<TMsgListItem>
+    private lateinit var itemTypeIds: Array<Int>
+    private lateinit var itemTypeDelegate: Array<TMsgListItem>
 
     override fun onAttach(context: Context) {
         super.onAttach(context)
@@ -78,6 +84,7 @@ class SettingsMainFragment : BaseSettingFragment() {
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = layoutInflater.context
         val rootView = FrameLayout(context)
+        rootFrameLayout = rootView
         val tmsgDslTree = convertFragmentDslToTMsgDslItemTree(context, mFragmentDescription)
         if (isRootFragmentDescription()) {
             addHeaderItemToRootDslTree(tmsgDslTree)
@@ -107,7 +114,7 @@ class SettingsMainFragment : BaseSettingFragment() {
             layoutManager = object : LinearLayoutManager(context, VERTICAL, false) {
                 override fun supportsPredictiveItemAnimations() = false
             }
-            isVerticalScrollBarEnabled = false
+            isVerticalScrollBarEnabled = true
         }
         // init adapter
         adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -134,7 +141,7 @@ class SettingsMainFragment : BaseSettingFragment() {
 
             override fun getItemViewType(position: Int) = itemTypeIds[position]
         }
-        recyclerListView.adapter = adapter
+        recyclerListView!!.adapter = adapter
 
         // collect all StateFlow and observe them in case of state change
         for (i in itemList.indices) {
@@ -142,16 +149,16 @@ class SettingsMainFragment : BaseSettingFragment() {
             if (item is UiAgentItem) {
                 val valueStateFlow: MutableStateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
                 if (valueStateFlow != null) {
-                    lifecycleScope.launchWhenStarted {
+                    lifecycleScope.launchWhenResumed {
                         valueStateFlow.collect {
-                            SyncUtils.runOnUiThread { adapter?.notifyItemChanged(i) }
+                            runOnUiThread { adapter?.notifyItemChanged(i) }
                         }
                     }
                 }
             }
         }
 
-        rootView.addView(recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
+        rootView.addView(recyclerListView!!, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         return rootView
     }
 
@@ -168,7 +175,7 @@ class SettingsMainFragment : BaseSettingFragment() {
             return
         }
         // wait for the view to be created and animation to finish
-        SyncUtils.postDelayed(200) {
+        SyncUtils.postDelayed(300) {
             var index = -1
             // find the UI agent index
             for (i in itemList.indices) {
@@ -179,18 +186,89 @@ class SettingsMainFragment : BaseSettingFragment() {
                 }
             }
             if (index >= 0) {
-                // scroll to the target item
-                recyclerListView.scrollToPosition(index)
+                // scroll it to the center
+                val layoutManager = recyclerListView!!.layoutManager as LinearLayoutManager
+                val firstVisibleItemPosition: Int = layoutManager.findFirstVisibleItemPosition()
+                val lastVisibleItemPosition: Int = layoutManager.findLastVisibleItemPosition()
+                val centerPosition = (firstVisibleItemPosition + lastVisibleItemPosition) / 2
+                var scrollTargetIndex = index
+                if (scrollTargetIndex > centerPosition) {
+                    scrollTargetIndex++
+                } else if (scrollTargetIndex < centerPosition) {
+                    scrollTargetIndex--
+                }
+                if (scrollTargetIndex < 0) {
+                    scrollTargetIndex = 0
+                }
+                if (scrollTargetIndex > itemList.size - 1) {
+                    scrollTargetIndex = itemList.size - 1
+                }
+                recyclerListView!!.scrollToPosition(scrollTargetIndex)
+                SyncUtils.postDelayed(100) {
+                    // wait for scrolling to finish
+                    val itemView = layoutManager.findViewByPosition(index)!!
+                    // calculate the position of the item, startY and endY of the recyclerView
+                    val startY = itemView.top
+                    val endY = itemView.bottom
+                    val width = itemView.width
+                    val rect = Rect(0, startY, width, endY)
+                    highlightRect(rect)
+                }
                 mTargetUiAgentNavigated = true
+            }
+        }
+    }
+
+    @UiThread
+    private fun highlightRect(rect: Rect) {
+        if (!isResumed) {
+            return
+        }
+        val fadeIn = AlphaAnimation(0f, 1f).apply {
+            duration = 300
+            fillAfter = true
+        }
+        val fadeOut = AlphaAnimation(1f, 0f).apply {
+            duration = 300
+            fillAfter = true
+        }
+        val view = View(context).apply {
+            isFocusable = false
+            isFocusableInTouchMode = false
+            isClickable = false
+            isLongClickable = false
+            setBackgroundColor(ResourcesCompat.getColor(context!!.resources, R.color.rippleColor, context!!.theme))
+        }
+        val layoutParams = FrameLayout.LayoutParams(rect.width(), rect.height()).apply {
+            setMargins(rect.left, rect.top, 0, 0)
+        }
+        rootFrameLayout?.addView(view, layoutParams) ?: return
+        async {
+            // in out and repeat
+            for (i in 0..3) {
+                val animation = if (i % 2 == 0) {
+                    fadeIn
+                } else {
+                    fadeOut
+                }
+                runOnUiThread {
+                    view.startAnimation(animation)
+                }
+                Thread.sleep(300)
+            }
+            runOnUiThread {
+                rootFrameLayout?.removeView(view)
             }
         }
     }
 
     override fun onDestroyView() {
         super.onDestroyView()
-        if (::recyclerListView.isInitialized) {
-            recyclerListView.adapter = null
+        recyclerListView?.let {
+            it.adapter = null
         }
+        recyclerListView = null
+        rootFrameLayout = null
     }
 
     private fun convertFragmentDslToTMsgDslItemTree(context: Context, fragmentDsl: FragmentDescription): ArrayList<DslTMsgListItemInflatable> {
