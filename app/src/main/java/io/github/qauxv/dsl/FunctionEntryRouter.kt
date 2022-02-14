@@ -26,6 +26,7 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.fragment.AboutFragment
 import io.github.qauxv.fragment.PendingFunctionFragment
+import io.github.qauxv.fragment.TroubleshootFragment
 
 object FunctionEntryRouter {
 
@@ -128,7 +129,7 @@ object FunctionEntryRouter {
             category("debug-category", "调试", false) {
                 fragment("debug-function", "调试功能", false)
                 fragment("argv-config", "参数配置")
-                fragment("debug-impl", "故障排查")
+                fragmentImpl("debug-impl", "故障排查", TroubleshootFragment::class.java)
             }
             category("other-config", "其他") {
                 fragmentImpl("other-coming-soon", "开发中的功能", PendingFunctionFragment::class.java, false)

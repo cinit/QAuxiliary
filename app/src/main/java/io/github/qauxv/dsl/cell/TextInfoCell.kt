@@ -87,6 +87,12 @@ class TextInfoCell @JvmOverloads constructor(context: Context, padding: Int = 21
             }
         }
 
+    var textIsSelectable: Boolean
+        get() = textView.isTextSelectable
+        set(value) {
+            textView.setTextIsSelectable(value)
+        }
+
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
         if (fixedSize != 0) {
             super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),

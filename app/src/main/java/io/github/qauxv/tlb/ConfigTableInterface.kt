@@ -23,6 +23,6 @@
 package io.github.qauxv.tlb
 
 interface ConfigTableInterface {
-    val configs: Map<String?, Map<Long, Any>>
-    val rangingConfigs: Map<String?, Map<Long, Any>>
+    val configs: Map<String, Map<Long, Any>>
+    val rangingConfigs: Map<String, Map<Long, Any>>
 }

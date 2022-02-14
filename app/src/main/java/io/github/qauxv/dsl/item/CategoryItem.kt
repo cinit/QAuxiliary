@@ -51,8 +51,9 @@ open class CategoryItem(
     }
 
     open fun description(
-            text: String
-    ) = DescriptionItem(text).also {
+            text: String,
+            isTextSelectable: Boolean = false,
+    ) = DescriptionItem(text, isTextSelectable).also {
         checkState()
         dslItems.add(it)
     }

@@ -22,13 +22,15 @@
 package io.github.qauxv.tlb
 
 import cc.ioctl.util.HostInfo.isTim
+import io.github.qauxv.base.annotation.InternalApi
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isPlayQQ
 
 object ConfigTable {
 
-    private val cacheMap: Map<String?, Any?> by lazy {
-        val map: HashMap<String?, Any?> = HashMap()
+    @InternalApi
+    val cacheMap: Map<String, Any?> by lazy {
+        val map: HashMap<String, Any?> = HashMap()
         val versionCode = hostInfo.versionCode
         val table: ConfigTableInterface = when {
             isTim() -> TIMConfigTable()
@@ -52,7 +54,7 @@ object ConfigTable {
     }
 
     @JvmStatic
-    fun <T> getConfig(className: String?): T {
+    fun <T> getConfig(className: String): T {
         val config = cacheMap[className]
         return config as T ?: throw RuntimeException("$className :Unsupported Version: " + hostInfo.versionName)
     }

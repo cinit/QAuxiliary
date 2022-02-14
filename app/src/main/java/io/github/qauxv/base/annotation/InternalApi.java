@@ -19,34 +19,9 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
 
-import cc.ioctl.hook.ReplyNoAtHook
-import cc.ioctl.hook.VasProfileAntiCrash
-import io.github.qauxv.util.PlayQQVersion.*
-import me.kyuubiran.hook.AutoMosaicName
+package io.github.qauxv.base.annotation;
 
-class PlayQQConfigTable : ConfigTableInterface {
-
-    override val configs: Map<String, Map<Long, Any>> = mapOf(
-
-            VasProfileAntiCrash::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "ause",
-                    PlayQQ_8_2_9_1 to "ause",
-                    PlayQQ_8_2_10 to "ausa",
-                    PlayQQ_8_2_11 to "ausf",
-            ),
-
-            )
-
-    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-            ReplyNoAtHook::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "m",
-            ),
-
-            AutoMosaicName::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "r",
-            ),
-    )
+public @interface InternalApi {
 
 }

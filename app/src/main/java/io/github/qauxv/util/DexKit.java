@@ -33,6 +33,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
+import io.github.qauxv.base.annotation.InternalApi;
 import io.github.qauxv.config.ConfigManager;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
@@ -51,6 +52,9 @@ import java.util.regex.Pattern;
  * I hadn't obfuscated the source code. I just don't want to name it, leaving it a()
  */
 public class DexKit {
+
+    private DexKit() {
+    }
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
@@ -260,7 +264,8 @@ public class DexKit {
      * @return the target method descriptor, null if the target is not in deobfuscation cache.
      */
     @Nullable
-    private static DexMethodDescriptor getMethodDescFromCache(int i) {
+    @InternalApi
+    public static DexMethodDescriptor getMethodDescFromCache(int i) {
         try {
             ConfigManager cache = ConfigManager.getCache();
             int lastVersion = cache.getIntOrDefault("cache_" + a(i) + "_code", 0);
@@ -284,7 +289,7 @@ public class DexKit {
      *
      * @param i the dex method index
      * @return the target method descriptor, null if the target is not found.
-     * @see #isRunDexDeobfuscationRequired(int) 
+     * @see #isRunDexDeobfuscationRequired(int)
      */
     @Nullable
     public static DexMethodDescriptor doFindMethodDesc(int i) {

@@ -31,10 +31,10 @@ import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
 
-    override val configs: Map<String?, Map<Long, Any>> = mapOf(
+    override val configs: Map<String, Map<Long, Any>> = mapOf(
     )
 
-    override val rangingConfigs: Map<String?, Map<Long, Any>> = mapOf(
+    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
             ReplyNoAtHook::class.java.simpleName to mapOf(
                     QQ_8_1_3 to "k",
                     QQ_8_1_5 to "l",

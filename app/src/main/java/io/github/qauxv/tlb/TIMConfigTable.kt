@@ -29,10 +29,10 @@ import me.kyuubiran.hook.AutoMosaicName
 
 class TIMConfigTable : ConfigTableInterface {
 
-    override val configs: Map<String?, Map<Long, Any>> = mapOf(
+    override val configs: Map<String, Map<Long, Any>> = mapOf(
     )
 
-    override val rangingConfigs: Map<String?, Map<Long, Any>> = mapOf(
+    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
 
             //key:public \S* \(boolean
             QQMessageFacade::class.java.simpleName to mapOf(
