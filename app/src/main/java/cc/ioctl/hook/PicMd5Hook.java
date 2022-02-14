@@ -162,6 +162,8 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
                     CustomDialog.createFailsafe(ctx).setTitle("MD5").setCancelable(true)
                             .setMessage(md5).setPositiveButton("复制",
                                     (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, md5))
+                            .setNeutralButton("复制图片链接",
+                                    (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, getPicturePath(md5)))
                             .setNegativeButton("关闭", null).show();
                 } catch (Throwable e) {
                     INSTANCE.traceError(e);
@@ -169,5 +171,9 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
                 }
             }
         }
+    }
+
+    private static String getPicturePath(@NonNull String md5) {
+        return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + md5 + "/0";
     }
 }
