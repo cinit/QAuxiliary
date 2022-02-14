@@ -60,7 +60,7 @@ class TitleValueCell(
             Gravity.TOP or Gravity.START, 21.dp, 10.dp, 21.dp, 0)
 
     init {
-        minimumHeight = 48.dp
+        minimumHeight = 50.dp
         dividerColor = ResourcesCompat.getColor(resources, R.color.divideColor, context.theme)
         // title text view
         titleView = TextView(context).apply {
@@ -78,7 +78,7 @@ class TitleValueCell(
             visibility = GONE
         }.also {
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
-                    Gravity.TOP or Gravity.START, 21.dp, 35.dp, 70.dp, 0))
+                    Gravity.TOP or Gravity.START, 21.dp, 34.dp, 70.dp, 6.dp))
         }
         // value text view
         valueView = TextView(context).apply {

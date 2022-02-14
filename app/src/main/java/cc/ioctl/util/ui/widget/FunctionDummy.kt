@@ -38,7 +38,7 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
     val title = TextView(context).apply {
         layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         setTextColor(HostStyledViewBuilder.getColorSkinBlack())
-        textSize = 18.dp2sp.toFloat()
+        textSize = 16.dp2sp.toFloat()
         addView(this)
     }
     private var hasDesc = false
@@ -46,7 +46,7 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
         TextView(context).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             setTextColor(HostStyledViewBuilder.getColorSkinGray3())
-            textSize = 13.dp2sp.toFloat()
+            textSize = 14.dp2sp.toFloat()
             isSingleLine = true
             ellipsize = TextUtils.TruncateAt.END
             hasDesc = true
@@ -67,11 +67,11 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
         val titleWidth = descWidth - value.measuredWidth
         title.measure(titleWidth.toExactlyMeasureSpec(), defaultHeightMeasureSpec(this))
         if (hasDesc) desc.measure(descWidth.toExactlyMeasureSpec(), defaultHeightMeasureSpec(this))
-        setMeasuredDimension(measuredWidth, 48.dp)
+        setMeasuredDimension(measuredWidth, 50.dp)
     }
 
     override fun onLayout(changed: Boolean, l: Int, t: Int, r: Int, b: Int) {
-        val margin = 14.dp
+        val margin = 20.dp
         value.layout(margin, value.toVerticalCenter(this), true)
         if (hasDesc) {
             title.layout(margin, margin / 2)
