@@ -25,13 +25,11 @@ package me.ketal.base
 import android.app.Activity
 import android.content.Context
 import android.view.View
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.ketal.data.ConfigData
 import me.ketal.util.HookUtil.getMethod
 import xyz.nextalone.util.throwOrTrue
 
@@ -69,7 +67,6 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     inner class UiSwitchPreferenceItemFactory() : IUiItemAgent {
         lateinit var title: String
         var summary: String? = null
-        private val configData = ConfigData<Boolean>(cfg)
 
         override val titleProvider: (IUiItemAgent) -> String = { title }
         override val summaryProvider: ((IUiItemAgent, Context) -> String?) = { _, _ -> summary }
@@ -80,9 +77,9 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
                 override val isCheckable: Boolean get() = isAvailable
 
                 override var isChecked: Boolean
-                    get() = configData.getOrDefault(false)
+                    get() = isEnabled
                     set(value) {
-                        configData.value = value
+                        isEnabled = value
                     }
             }
         }
@@ -93,7 +90,6 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     inner class UiClickableItemFactory() : IUiItemAgent {
         lateinit var title: String
         var summary: String? = null
-        private val configData = ConfigData<Boolean>(cfg)
 
         override val titleProvider: (IUiItemAgent) -> String = { title }
         override val summaryProvider: ((IUiItemAgent, Context) -> String?) = { _, _ -> summary }
