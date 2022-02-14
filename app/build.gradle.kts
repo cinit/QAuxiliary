@@ -190,3 +190,24 @@ tasks.register("checkGitSubmodule") {
     }
 }
 tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
+
+val restartQQ = task("restartQQ").doLast {
+    val adbExecutable: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
+    exec {
+        commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
+    }
+    exec {
+        commandLine(
+                adbExecutable, "shell", "am", "start",
+                "$(pm resolve-activity --components com.tencent.mobileqq)"
+        )
+    }
+}
+
+tasks.whenTaskAdded {
+    when (name) {
+        "installDebug" -> {
+            finalizedBy(restartQQ)
+        }
+    }
+}
