@@ -33,7 +33,6 @@ import android.widget.*
 import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.hook.FakeBatteryHook
 import cc.ioctl.util.LayoutHelper.*
-import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
@@ -43,6 +42,7 @@ import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.LicenseStatus.CURRENT_EULA_VERSION
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.isInModuleProcess
 import java.io.BufferedReader
 import java.io.IOException
 import java.io.InputStream
@@ -57,16 +57,17 @@ class EulaFragment : BaseSettingFragment(), View.OnClickListener {
 
     override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = inflater.context
-        val bounceScrollView: ViewGroup = BounceScrollView(context, null).apply {
+        val scrollView: ViewGroup = ScrollView(context, null).apply {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
             id = R.id.rootBounceScrollView
         }
+        val onlyShowLicense = isInModuleProcess
         val ll = LinearLayout(context).apply {
             id = R.id.rootMainLayout
             orientation = LinearLayout.VERTICAL
             setPadding(dip2px(context, 16f), 0, dip2px(context, 16f), 0)
 
-            if (LicenseStatus.hasEulaUpdated()) {
+            if (!onlyShowLicense && LicenseStatus.hasEulaUpdated()) {
                 val tv_updated = TextView(context)
                 tv_updated.textSize = 22f
                 tv_updated.gravity = Gravity.CENTER
@@ -108,38 +109,40 @@ class EulaFragment : BaseSettingFragment(), View.OnClickListener {
 
             val _5dp: Int = dip2px(context, 5f)
 
-            if (!LicenseStatus.hasUserAcceptEula()) {
-                val iHaveRead = CheckBox(context)
-                mCheckBoxHaveRead = iHaveRead
-                iHaveRead.text = "我已阅读<<协议>>和<<隐私条款>>并自愿承担由使用本软件导致的一切后果"
-                iHaveRead.textSize = 17f
-                iHaveRead.setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, context.theme))
-                iHaveRead.setPadding(_5dp, _5dp, _5dp, _5dp)
-                iHaveRead.isChecked = FakeBatteryHook.INSTANCE.isFakeBatteryCharging
-                addView(iHaveRead,
-                        newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 3 * _5dp, _5dp, 2 * _5dp, _5dp))
-                val agree = Button(context)
-                agree.id = R.id.btn_allow
-                agree.setOnClickListener(this@EulaFragment)
-                agree.text = "我同意并继续"
-                addView(agree, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
-                val deny = Button(context)
-                deny.setId(R.id.btn_deny)
-                deny.setOnClickListener(this@EulaFragment)
-                deny.setText("我拒绝")
-                addView(deny, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
-            } else {
-                tv = TextView(context)
-                tv.textSize = 17f
-                tv.paint.isFakeBoldText = true
-                tv.gravity = Gravity.CENTER
-                tv.setTextColor(ResourcesCompat.getColor(resources, R.color.thirdTextColor, context.theme))
-                tv.text = "你已阅读并同意<<协议>>和<<隐私条款>>"
-                addView(tv, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
+            if (!onlyShowLicense) {
+                if (!LicenseStatus.hasUserAcceptEula()) {
+                    val iHaveRead = CheckBox(context)
+                    mCheckBoxHaveRead = iHaveRead
+                    iHaveRead.text = "我已阅读<<协议>>和<<隐私条款>>并自愿承担由使用本软件导致的一切后果"
+                    iHaveRead.textSize = 17f
+                    iHaveRead.setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, context.theme))
+                    iHaveRead.setPadding(_5dp, _5dp, _5dp, _5dp)
+                    iHaveRead.isChecked = FakeBatteryHook.INSTANCE.isFakeBatteryCharging
+                    addView(iHaveRead,
+                            newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 3 * _5dp, _5dp, 2 * _5dp, _5dp))
+                    val agree = Button(context)
+                    agree.id = R.id.btn_allow
+                    agree.setOnClickListener(this@EulaFragment)
+                    agree.text = "我同意并继续"
+                    addView(agree, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
+                    val deny = Button(context)
+                    deny.setId(R.id.btn_deny)
+                    deny.setOnClickListener(this@EulaFragment)
+                    deny.setText("我拒绝")
+                    addView(deny, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
+                } else {
+                    tv = TextView(context)
+                    tv.textSize = 17f
+                    tv.paint.isFakeBoldText = true
+                    tv.gravity = Gravity.CENTER
+                    tv.setTextColor(ResourcesCompat.getColor(resources, R.color.thirdTextColor, context.theme))
+                    tv.text = "你已阅读并同意<<协议>>和<<隐私条款>>"
+                    addView(tv, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
+                }
             }
         }
-        bounceScrollView.addView(ll)
-        return bounceScrollView
+        scrollView.addView(ll)
+        return scrollView
     }
 
     override fun onDestroyView() {
@@ -148,6 +151,10 @@ class EulaFragment : BaseSettingFragment(), View.OnClickListener {
     }
 
     override fun onClick(v: View) {
+        if (isInModuleProcess) {
+            // no EULA in module process
+            return
+        }
         val iHaveRead: CheckBox = mCheckBoxHaveRead!!
         val read = iHaveRead.isChecked
         val context = v.context

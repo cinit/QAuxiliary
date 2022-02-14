@@ -33,6 +33,7 @@ import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
 import io.github.qauxv.ui.ModuleThemeManager
 import io.github.qauxv.ui.ResUtils
+import io.github.qauxv.util.isInModuleProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
 
 class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
@@ -43,9 +44,11 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
     private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        // sync theme with host
-        AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode())
-            AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+        if (!isInModuleProcess) {
+            // sync theme with host
+            AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode())
+                AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+        }
         setTheme(ModuleThemeManager.getCurrentStyleId())
         // we don't want the Fragment to be recreated
         super.onCreate(null)

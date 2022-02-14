@@ -43,6 +43,7 @@ import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.util.CliOper
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.isInModuleProcess
 import java.util.*
 
 class AboutFragment : BaseSettingFragment() {
@@ -72,7 +73,9 @@ class AboutFragment : BaseSettingFragment() {
                 CategoryItem("版本") {
                     textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
                     textItem("构建时间", value = getBuildTimeString())
-                    textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
+                    if (!isInModuleProcess) {
+                        textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
+                    }
                 },
                 CategoryItem("隐私与协议") {
                     textItem("用户协议与隐私政策") {
@@ -81,9 +84,11 @@ class AboutFragment : BaseSettingFragment() {
                                 fragmentClass = EulaFragment::class.java
                         )
                     }
-                    add(TextSwitchItem("AppCenter 匿名统计",
-                            summary = "我们使用 Microsoft AppCenter 来匿名发送最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
-                            switchAgent = mAllowAppCenterStatics))
+                    if (!isInModuleProcess) {
+                        add(TextSwitchItem("AppCenter 匿名统计",
+                                summary = "我们使用 Microsoft AppCenter 来匿名发送最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
+                                switchAgent = mAllowAppCenterStatics))
+                    }
                 },
                 CategoryItem("群组") {
                     textItem("Telegram 频道", value = "@QAuxiliary") {

@@ -28,6 +28,7 @@
         android:icon="@drawable/icon"
         android:label="@string/app_name"
         android:multiArch="true"
+        android:name=".util.hookstatus.ModuleAppImpl"
         android:resizeableActivity="true"
         android:theme="@style/AppThemeDummy"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
@@ -77,6 +78,11 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity-alias>
+
+        <activity
+            android:exported="false"
+            android:name=".activity.SettingsUiFragmentHostActivity"
+            android:theme="@style/AppTheme.Def" />
 
         <meta-data
             android:name="xposedmodule"

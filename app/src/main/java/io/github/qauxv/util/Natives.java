@@ -35,6 +35,7 @@ import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.startup.HybridClassLoader;
 import java.io.File;
 import java.io.FileOutputStream;
+import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
@@ -134,7 +135,7 @@ public class Natives {
 
     @SuppressWarnings("deprecation")
     @SuppressLint("UnsafeDynamicallyLoadedCode")
-    public static void load(Context ctx) throws IOException, LinkageError {
+    public static void load(Context ctx) throws LinkageError {
         try {
             getpagesize();
             return;
@@ -199,7 +200,7 @@ public class Natives {
      *
      * @param libraryName library name without "lib" or ".so", eg. "qauxv", "mmkv"
      */
-    static File extractNativeLibrary(Context ctx, String libraryName) throws IOException {
+    static File extractNativeLibrary(Context ctx, String libraryName) throws IOError {
         String abi = Build.CPU_ABI;
         String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_CODE + "." + abi;
         File dir = new File(ctx.getFilesDir(), "qa_dyn_lib");
@@ -223,17 +224,22 @@ public class Natives {
                     new File(dir, name).delete();
                 }
             }
-            //extract so file
-            soFile.createNewFile();
-            FileOutputStream fout = new FileOutputStream(soFile);
-            byte[] buf = new byte[1024];
-            int i;
-            while ((i = in.read(buf)) > 0) {
-                fout.write(buf, 0, i);
+            try {
+                // extract so file
+                soFile.createNewFile();
+                FileOutputStream fout = new FileOutputStream(soFile);
+                byte[] buf = new byte[1024];
+                int i;
+                while ((i = in.read(buf)) > 0) {
+                    fout.write(buf, 0, i);
+                }
+                in.close();
+                fout.flush();
+                fout.close();
+            } catch (IOException ioe) {
+                // rethrow as error
+                throw new IOError(ioe);
             }
-            in.close();
-            fout.flush();
-            fout.close();
         }
         return soFile;
     }

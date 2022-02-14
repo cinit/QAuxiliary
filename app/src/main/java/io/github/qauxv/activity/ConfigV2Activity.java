@@ -38,7 +38,6 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -48,6 +47,7 @@ import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.databinding.MainV2Binding;
+import io.github.qauxv.fragment.AboutFragment;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.util.Natives;
@@ -69,14 +69,9 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        // load native lib
         try {
-            long delta = System.currentTimeMillis();
-            Natives.load(this);
             long ts = BuildConfig.BUILD_TIMESTAMP;
-            delta = System.currentTimeMillis() - delta;
             dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
-                    "delta=" + delta + "ms\n" +
                     "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
                     .getpagesize();
         } catch (Throwable e) {
@@ -240,7 +235,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                 return true;
             }
             case R.id.menu_item_about: {
-                Toast.makeText(ConfigV2Activity.this, "暂不支持", Toast.LENGTH_SHORT).show();
+                SettingsUiFragmentHostActivity.startActivityForFragment(this, AboutFragment.class, null);
                 return true;
             }
             case R.id.mainV2_menuItem_toggleDesktopIcon: {

@@ -105,6 +105,9 @@ fun requireMinVersion(
     return requireMinQQVersion(QQVersionCode) || requireMinTimVersion(TimVersionCode) || requireMinPlayQQVersion(PlayQQVersionCode)
 }
 
+val isInModuleProcess: Boolean
+    get() = hostInfo.hostSpecies == HostSpecies.QAuxiliary
+
 data class HostInfoImpl(
     val application: Application,
     val packageName: String,

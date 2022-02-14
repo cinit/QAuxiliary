@@ -71,6 +71,10 @@ public class HostInfo {
         return io.github.qauxv.util.HostInfo.getHostInfo().getVersionCode();
     }
 
+    public static boolean isInModuleProcess() {
+        return io.github.qauxv.util.HostInfo.isInModuleProcess();
+    }
+
     public static boolean isTim() {
         return io.github.qauxv.util.HostInfo.isTim();
     }
