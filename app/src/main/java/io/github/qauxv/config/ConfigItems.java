@@ -179,7 +179,7 @@ public class ConfigItems {
         }
         ConfigManager cache = ConfigManager.getCache();
         if (cache.getIntOrDefault(cache_qn_prev_version, -1) < BuildConfig.VERSION_CODE) {
-            cache.getFile().delete();
+            cache.clear();
             cache.putInt(cache_qn_prev_version, BuildConfig.VERSION_CODE);
             cache.save();
         }
