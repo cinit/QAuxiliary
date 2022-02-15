@@ -26,7 +26,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import java.io.File;
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -63,9 +62,12 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
         if (cfg != null) {
             return cfg;
         }
-        ConfigManager overlay = new MmkvConfigManagerImpl("u_" + uin);
-        cfg = overlay;
+        cfg = new MmkvConfigManagerImpl("u_" + uin);
         sUinConfig.put(uin, cfg);
+        // save uin to config
+        if (cfg.getLongOrDefault("uin", 0) == 0) {
+            cfg.putLong("uin", uin);
+        }
         return cfg;
     }
 
