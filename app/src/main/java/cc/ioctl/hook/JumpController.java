@@ -316,7 +316,7 @@ public class JumpController extends CommonConfigFunctionHook {
     }
 
     public int getEffectiveRulesCount() {
-        if (isEnabled() && isInitialized()) {
+        if (isEnabled()) {
             return getRuleList().size();
         } else {
             return -1;
