@@ -78,12 +78,12 @@ public class InterceptZipBomb extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "拦截异常体积图片加载";
+        return "拦截资料卡异常体积压缩包";
     }
 
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Auxiliary.MESSAGE_CATEGORY;
+        return Auxiliary.PROFILE_CATEGORY;
     }
 }
