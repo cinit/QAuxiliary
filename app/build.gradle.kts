@@ -19,7 +19,7 @@ android {
         targetSdk = 32
         versionCode = Common.getBuildVersionCode(rootProject)
         // versionName = major.minor.bugfix.rev.commit
-        versionName = "1.1.0" + (Common.getGitHeadRefsSuffix(rootProject))
+        versionName = "1.1.1" + (Common.getGitHeadRefsSuffix(rootProject))
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         ndk {
