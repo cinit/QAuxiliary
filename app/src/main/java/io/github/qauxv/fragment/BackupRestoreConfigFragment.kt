@@ -34,6 +34,7 @@ import cc.ioctl.util.Reflex
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.BackupConfigSession
+import io.github.qauxv.config.RestoreConfigSession
 import io.github.qauxv.databinding.FragmentBackupRestoreConfigBinding
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.NonUiThread
@@ -41,6 +42,7 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.UiThread
 import java.io.File
 import java.util.*
+import kotlin.system.exitProcess
 
 class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener {
 
@@ -48,6 +50,7 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
 
     private var binding: FragmentBackupRestoreConfigBinding? = null
     private var mBackupSession: BackupConfigSession? = null
+    private var mRestoreSession: RestoreConfigSession? = null
     private var mBackupResultZipFile: File? = null
 
     private var editTextBackupLocation: EditText? = null
@@ -100,7 +103,7 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
                 }
             }
             if (availableChoices.isEmpty()) {
-                Toasts.show(context, "没有可备份的配置文件")
+                Toasts.error(context, "没有可备份的配置文件")
                 return
             }
             // show multi choice dialog
@@ -116,7 +119,7 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
                             }
                         }
                         if (selectedItemsList.isEmpty()) {
-                            Toasts.show(context, "没有选择要备份的配置文件")
+                            Toasts.error(context, "没有选择要备份的配置文件")
                             return@setPositiveButton
                         }
                         SyncUtils.async {
@@ -155,7 +158,110 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
 
     @UiThread
     private fun startRestoreProcedure(location: String) {
-        Toasts.error(requireContext(), "暂不支持")
+        val context = requireContext()
+        try {
+            if (mRestoreSession == null) {
+                mRestoreSession = RestoreConfigSession(context)
+            }
+            mRestoreSession!!.also {
+                it.loadBackupFile(File(location))
+                val availableChoices: ArrayList<String> = it.listBackupMmkvConfig().toCollection(ArrayList())
+                // remove the cache
+                availableChoices.remove("global_cache")
+                if (availableChoices.isEmpty()) {
+                    Toasts.error(context, "没有可恢复的配置文件")
+                    return
+                }
+                // show multi choice dialog
+                AlertDialog.Builder(context)
+                        .setTitle("选择要恢复的配置文件")
+                        .setMultiChoiceItems(availableChoices.toTypedArray(), null) { _, _, _ -> }
+                        .setPositiveButton("确定") { dialog, _ ->
+                            val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
+                            val selectedItemsList = ArrayList<String>()
+                            for (i in 0 until availableChoices.size) {
+                                if (selectedItems.get(i)) {
+                                    selectedItemsList.add(availableChoices[i])
+                                }
+                            }
+                            if (selectedItemsList.isEmpty()) {
+                                Toasts.error(context, "没有选择要恢复的配置文件")
+                                return@setPositiveButton
+                            }
+                            confirmRestoreOverwrite(location, selectedItemsList.toTypedArray())
+                        }
+                        .setNegativeButton("取消") { _, _ -> }
+                        .show()
+            }
+        } catch (e: Exception) {
+            showErrorDialog(e)
+            return
+        }
+    }
+
+    @UiThread
+    private fun confirmRestoreOverwrite(location: String, choices: Array<String>) {
+        val context = requireContext()
+        val onDeviceConfigList: Array<String> = mRestoreSession!!.listOnDeviceMmkvConfig()
+        val overwriteList = ArrayList<String>()
+        for (choice in choices) {
+            if (onDeviceConfigList.contains(choice)) {
+                overwriteList.add(choice)
+            }
+        }
+        if (overwriteList.isEmpty()) {
+            SyncUtils.async {
+                executeRestoreTask(choices)
+            }
+            return
+        }
+        // ask user to confirm overwrite
+        val message = StringBuilder().apply {
+            append("您选择了以下配置文件要恢复：\n")
+            append(choices.joinToString(", ")).append("\n")
+            append("但是在设备上已经存在以下配置文件：\n")
+            append(overwriteList.joinToString(", ")).append("\n")
+            append("已存在的配置文件将被覆盖，确定要恢复吗？")
+        }
+        AlertDialog.Builder(context)
+                .setTitle("恢复配置文件")
+                .setMessage(message)
+                .setPositiveButton("确定") { _, _ ->
+                    SyncUtils.async {
+                        executeRestoreTask(choices)
+                    }
+                }
+                .setNegativeButton("取消") { _, _ -> }
+                .show()
+    }
+
+    @NonUiThread
+    private fun executeRestoreTask(configs: Array<String>) {
+        mRestoreSession!!.also { session ->
+            try {
+                configs.forEach {
+                    session.restoreBackupMmkvConfig(it)
+                }
+                session.close()
+                mRestoreSession = null
+                // ask user to restart app
+                SyncUtils.runOnUiThread {
+                    AlertDialog.Builder(requireContext())
+                            .setTitle("恢复完成")
+                            .setMessage("恢复完成，部分功能需要重启应用才能生效，是否现在重启应用？")
+                            .setCancelable(false)
+                            .setPositiveButton("现在重启") { _, _ ->
+                                Thread.sleep(100)
+                                exitProcess(0)
+                                // AM will restart us on most platforms, we don't need to do anything
+                            }
+                            .setNegativeButton("稍后重启") { _, _ -> }
+                            .show()
+                }
+            } catch (e: Exception) {
+                showErrorDialog(e)
+            }
+        }
     }
 
     private fun generateDefaultBackupLocation(): String {
@@ -198,7 +304,7 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
         val file = File(location)
         val context = requireContext()
         if (!location.startsWith("/")) {
-            Toasts.show(context, "恢复路径必须是绝对路径(以 / 开头)")
+            Toasts.error(context, "恢复路径必须是绝对路径(以 / 开头)")
             return false
         }
         if (!file.exists()) {
@@ -250,5 +356,8 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
         super.onDestroy()
         binding = null
         mBackupSession?.close()
+        mBackupSession = null
+        mRestoreSession?.close()
+        mRestoreSession = null
     }
 }
