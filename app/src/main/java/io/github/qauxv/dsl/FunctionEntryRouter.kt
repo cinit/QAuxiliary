@@ -25,6 +25,7 @@ package io.github.qauxv.dsl
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.fragment.AboutFragment
+import io.github.qauxv.fragment.BackupRestoreConfigFragment
 import io.github.qauxv.fragment.PendingFunctionFragment
 import io.github.qauxv.fragment.TroubleshootFragment
 
@@ -125,7 +126,9 @@ object FunctionEntryRouter {
                 fragment("entertainment-function", "娱乐功能")
                 fragment("auxiliary-misc", "杂项", false)
             }
-            category("module-config", "配置", false)
+            category("module-config", "配置", false) {
+                fragmentImpl("cfg-backup-restore", "备份和恢复", BackupRestoreConfigFragment::class.java)
+            }
             category("debug-category", "调试", false) {
                 fragment("debug-function", "调试功能", false)
                 fragmentImpl("debug-impl", "故障排查", TroubleshootFragment::class.java)

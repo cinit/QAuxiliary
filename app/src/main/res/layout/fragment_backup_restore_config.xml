@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ QAuxiliary - An Xposed module for QQ/TIM
+  ~ Copyright (C) 2019-2022 qwq233@qwq2333.top
+  ~ https://github.com/cinit/QAuxiliary
+  ~
+  ~ This software is non-free but opensource software: you can redistribute it
+  ~ and/or modify it under the terms of the GNU Affero General Public License
+  ~ as published by the Free Software Foundation; either
+  ~ version 3 of the License, or any later version and our eula as published
+  ~ by QAuxiliary contributors.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ and eula along with this software.  If not, see
+  ~ <https://www.gnu.org/licenses/>
+  ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+  -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootBounceScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fadeScrollbars="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/rootMainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginEnd="20dp"
+            android:gravity="start|top"
+            android:text="请选择操作"
+            android:textColor="?attr/colorAccent"
+            android:textSize="16sp" />
+
+        <RadioGroup
+            android:id="@+id/backupRestoreConfig_radioGroup_operationType"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <RadioButton
+                android:id="@+id/backupRestoreConfig_radioButton_backup"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:text="备份导出配置"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+            <RadioButton
+                android:id="@+id/backupRestoreConfig_radioButton_restore"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:text="导入恢复配置"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+        </RadioGroup>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginBottom="20dp"
+            android:background="@color/divideColor" />
+
+        <LinearLayout
+            android:id="@+id/backupRestoreConfig_linearLayout_backupLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:gravity="start|top"
+                android:text="备份导出路径"
+                android:textColor="?attr/colorAccent"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/backupRestoreConfig_editText_backupPath"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:autofillHints="text"
+                android:gravity="start|center_vertical"
+                android:hint="请输入备份导出路径"
+                android:inputType="text"
+                android:maxLines="1"
+                android:minHeight="48dp"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/backupRestoreConfig_linearLayout_restoreLayout"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:gravity="start|top"
+                android:text="要恢复的配置文件路径"
+                android:textColor="?attr/colorAccent"
+                android:textSize="16sp" />
+
+            <EditText
+                android:id="@+id/backupRestoreConfig_editText_restorePath"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="20dp"
+                android:layout_marginEnd="20dp"
+                android:autofillHints="text"
+                android:gravity="start|center_vertical"
+                android:hint="请输入要导入的配置文件路径"
+                android:inputType="text"
+                android:maxLines="1"
+                android:minHeight="48dp"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:id="@+id/backupRestoreConfig_button_nextStep"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="20dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:background="@drawable/bg_ripple_rect"
+            android:drawablePadding="10dp"
+            android:drawableStart="@drawable/ic_arrow_forward_outline_24"
+            android:gravity="start|center_vertical"
+            android:minHeight="48dp"
+            android:text="下一步"
+            android:textColor="?attr/colorAccent"
+            android:visibility="gone"
+            app:drawableTint="?attr/colorAccent" />
+
+    </LinearLayout>
+</ScrollView>

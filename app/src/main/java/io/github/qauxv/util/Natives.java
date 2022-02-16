@@ -188,6 +188,11 @@ public class Natives {
         if (!mmkvDir.exists()) {
             mmkvDir.mkdirs();
         }
+        // MMKV requires a ".tmp" cache directory, we have to create it manually
+        File cacheDir = new File(mmkvDir, ".tmp");
+        if (!cacheDir.exists()) {
+            cacheDir.mkdir();
+        }
         MMKV.initialize(mmkvDir.getAbsolutePath(), s -> {
             // nop, mmkv is attached with libqauxv.so already
         });

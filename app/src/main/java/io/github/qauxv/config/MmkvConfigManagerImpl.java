@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.google.gson.Gson;
 import com.tencent.mmkv.MMKV;
+import io.github.qauxv.base.annotation.InternalApi;
 import io.github.qauxv.util.Log;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
@@ -45,8 +46,9 @@ import java.util.Set;
 
 public class MmkvConfigManagerImpl extends ConfigManager {
 
-    final MMKV mmkv;
-    final File file;
+    private final MMKV mmkv;
+    private final File file;
+    private final String mmkvId;
     public static final String TYPE_SUFFIX = "$shadow$type";
     private static final String CLASS_SUFFIX = "$shadow$class";
     private static final int TYPE_BOOL = 0x80 + 2;
@@ -391,6 +393,7 @@ public class MmkvConfigManagerImpl extends ConfigManager {
     };
 
     protected MmkvConfigManagerImpl(@NonNull String name) {
+        mmkvId = Objects.requireNonNull(name, "name");
         mmkv = MMKV.mmkvWithID(name, MMKV.MULTI_PROCESS_MODE);
         file = new File(MMKV.getRootDir(), name);
     }
@@ -652,5 +655,24 @@ public class MmkvConfigManagerImpl extends ConfigManager {
     @Override
     public boolean isPersistent() {
         return true;
+    }
+
+    @NonNull
+    public String getMmkvId() {
+        return mmkvId;
+    }
+
+    /**
+     * Get the internal mmkv instance.
+     * <p>
+     * THIS IS USUALLY NOT WHAT YOU WANT.
+     *
+     * @return the underlying mmkv instance
+     * @see com.tencent.mmkv.MMKV
+     */
+    @InternalApi
+    @NonNull
+    public MMKV getInternalMmkv() {
+        return mmkv;
     }
 }
