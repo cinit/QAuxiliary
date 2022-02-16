@@ -114,6 +114,16 @@
                 android:textColor="@color/firstTextColor"
                 android:textSize="16sp" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:text="注意：导出的配置文件中可能含有您账号的个人隐私信息，请妥善处理。"
+                android:textColor="@color/thirdTextColor"
+                android:textSize="14sp" />
+
         </LinearLayout>
 
         <LinearLayout

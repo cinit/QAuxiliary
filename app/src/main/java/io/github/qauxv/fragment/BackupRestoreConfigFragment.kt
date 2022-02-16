@@ -296,6 +296,10 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
             Toasts.error(context, "备份文件所在目录不可写")
             return false
         }
+        if (checkBadLocation(location)) {
+            Toasts.error(context, "禁止接触")
+            return false
+        }
         return true
     }
 
@@ -313,6 +317,10 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
         }
         if (!file.canRead()) {
             Toasts.error(context, "恢复文件不可读")
+            return false
+        }
+        if (checkBadLocation(location)) {
+            Toasts.error(context, "禁止接触")
             return false
         }
         return true
@@ -359,5 +367,23 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
         mBackupSession = null
         mRestoreSession?.close()
         mRestoreSession = null
+    }
+
+    private fun checkBadLocation(path: String): Boolean {
+        val specs: Array<String> = arrayOf("/dev/", "/sys/", "/acct/", "/d/");
+        for (spec in specs) {
+            if (path.startsWith(spec)) {
+                return true
+            }
+        }
+        if (path.startsWith("/proc/")) {
+            // allow /proc/[pid]/fd/[fd], where [pid] may be self and thread-self
+            if (path.startsWith("/proc/self/fd/") || path.startsWith("/proc/thread-self/fd/")
+                    || path.matches("/proc/[0-9]+/fd/[0-9]+".toRegex())) {
+                return false
+            }
+            return true
+        }
+        return false
     }
 }
