@@ -21,7 +21,6 @@
  */
 package cc.ioctl.hook;
 
-import static cc.ioctl.util.Reflex.findField;
 import static cc.ioctl.util.Reflex.getShortClassName;
 import static io.github.qauxv.util.Initiator._MessageRecord;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
@@ -138,13 +137,9 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 return;
             }
             if (fBaseChatItemLayout == null) {
-                fBaseChatItemLayout = findField(viewHolder.getClass(),
-                        load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"), "a");
-                if (fBaseChatItemLayout == null) {
-                    fBaseChatItemLayout = Reflex
-                            .getFirstNSFFieldByType(viewHolder.getClass(),
-                                    load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"));
-                }
+                // should only have on field with name with given type BaseChatItemLayout
+                fBaseChatItemLayout = Reflex.getFirstNSFFieldByType(viewHolder.getClass(),
+                        load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"));
                 fBaseChatItemLayout.setAccessible(true);
             }
             if (setTailMessage == null) {
