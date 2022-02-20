@@ -22,6 +22,7 @@
 package io.github.qauxv.util;
 
 import android.app.Application;
+import cc.ioctl.hook.AppCenterFix;
 import cc.ioctl.util.HostInfo;
 import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
@@ -59,14 +60,13 @@ public class CliOper {
             return;
         }
 
+        AppCenterFix.startAppCenter(app, appCenterToken);
+        Crashes.setListener(new CrashesFilter());
         long longAccount = AppRuntimeHelper.getLongAccountUin();
-        if (longAccount != -1) {
+        if (longAccount > 10000) {
             AppCenter.setUserId(String.valueOf(longAccount));
         }
-        Crashes.setListener(new CrashesFilter());
-        AppCenter.start(app, appCenterToken, Analytics.class, Crashes.class);
         appCenterInit = true;
-
     }
 
     public static class CrashesFilter extends AbstractCrashesListener {
@@ -132,84 +132,6 @@ public class CliOper {
         __init__(HostInfo.getApplication());
         Analytics.trackEvent("onLoad", properties);
         Log.d("start App Center Trace OnLoad:" + properties.toString());
-    }
-
-    private static String findJsonValueOrEmpty(String raw, String key) {
-        if (key == null || raw == null) {
-            return "";
-        }
-        key = '"' + key + '"';
-        raw = raw.replace(" ", "");
-        if (!raw.contains(key)) {
-            return "";
-        }
-        int limit = raw.indexOf(key);
-        int start = raw.indexOf(':', limit);
-        int e1 = raw.indexOf(',', start);
-        int e2 = raw.indexOf('}', start);
-        int end;
-        if (e1 * e2 == 1) {
-            return "";
-        }
-        if (e1 * e2 < 0) {
-            if (e1 == -1) {
-                end = e2;
-            } else {
-                end = e1;
-            }
-        } else {
-            end = Math.min(e1, e2);
-        }
-        String subseq = raw.substring(start + 1, end);
-        if (subseq.startsWith("\"")) {
-            int e3 = raw.indexOf('"', start);
-            int stop = indexMax(end, e3);
-            if ((raw.charAt(stop) == ',' || raw.charAt(stop) == '}')
-                && raw.charAt(stop - 1) == '"') {
-                return raw.substring(start + 2, stop - 1);//exclude '"'
-            } else {
-                return raw.substring(start + 1, stop);
-            }
-        } else {
-            return subseq;
-        }
-    }
-
-    private static String findXmlValueOrEmpty(String raw, String key) {
-        if (key == null || raw == null) {
-            return "";
-        }
-        raw = raw.replace('\'', '"').replace(" ", "");
-        if (!raw.contains(key)) {
-            return "";
-        }
-        int limit = raw.indexOf(key);
-        int start = raw.indexOf('"', limit);
-        int end = raw.indexOf('"', start + 1);
-        if (start == -1 || end == -1) {
-            return "";
-        }
-        return raw.substring(start + 1, end);
-    }
-
-    public static int indexMax(int a, int b) {
-        if (a < 0) {
-            return b;
-        }
-        if (b < 0) {
-            return a;
-        }
-        return Math.max(a, b);
-    }
-
-    public static int indexMin(int a, int b) {
-        if (a < 0) {
-            return b;
-        }
-        if (b < 0) {
-            return a;
-        }
-        return Math.min(a, b);
     }
 
     public static void enterModuleActivity(String shortName) {
