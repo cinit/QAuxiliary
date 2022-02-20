@@ -34,7 +34,8 @@ import java.io.File
 
 abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTranslucent {
 
-    val REQUEST_CODE = this.hashCode()
+    // androidx: Can only use lower 16 bits for requestCode
+    val REQUEST_CODE = this.hashCode() and 0x0000ffff
 
     lateinit var sendCacheDir: File
 
