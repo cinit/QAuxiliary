@@ -109,7 +109,10 @@ object MultiActionHook : CommonSwitchFunctionHook(
     private fun setMargin(rootView: LinearLayout) {
         val width = rootView.resources.displayMetrics.widthPixels
         val count = rootView.childCount
-        val rootMargin = (rootView.layoutParams as RelativeLayout.LayoutParams).leftMargin
+        var rootMargin = (rootView.layoutParams as RelativeLayout.LayoutParams).leftMargin
+        if (rootMargin == 0) {
+            rootMargin = (rootView.getChildAt(0).layoutParams as LinearLayout.LayoutParams).leftMargin
+        }
         val w = (rootView.getChildAt(0).layoutParams as LinearLayout.LayoutParams).height
         val leftMargin = (width - rootMargin * 2 - w * count) / (count - 1)
         for (i in 1 until count) {
