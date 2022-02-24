@@ -35,7 +35,7 @@ import xyz.nextalone.util.*
 object Emoji2Sticker : CommonSwitchFunctionHook() {
 
     override val name = "关闭大号emoji"
-    override val description = "关闭此功能，输入单个emoji后发送大表情，仅支持部分表情"
+    override val description = "禁用新版QQ输入单个emoji后发送大表情"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val isAvailable: Boolean
