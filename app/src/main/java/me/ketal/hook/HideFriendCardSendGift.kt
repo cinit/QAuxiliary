@@ -57,13 +57,13 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
                         Reflex.getFirstNSFByType(it.thisObject, LinearLayout::class.java)
                     hideView(rootView)
                 }
+        } else {
+            "Lcom/tencent/mobileqq/activity/FriendProfileCardActivity;->a(Landroid/widget/LinearLayout;)V"
+                .method.hookAfter(this) {
+                    val rootView = it.args[0] as LinearLayout
+                    hideView(rootView)
+                }
         }
-        "Lcom/tencent/mobileqq/activity/FriendProfileCardActivity;->a(Landroid/widget/LinearLayout;)V"
-            .method.hookAfter(this) {
-                val rootView = it.args[0] as LinearLayout
-                hideView(rootView)
-            }
-        true
     }
 
     private fun hideView(rootView: LinearLayout) {
