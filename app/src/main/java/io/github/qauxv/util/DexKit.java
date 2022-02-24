@@ -951,7 +951,7 @@ public class DexKit {
             case N_QQSettingMe_onResume:
                 return new int[]{4, 6, 8, 7};
             case N_VIP_UTILS_getPrivilegeFlags:
-                return new int[]{14, 4, 2, 3};
+                return new int[]{16, 11, 12, 14, 4, 2, 3};
             case N_TroopChatPie_showNewTroopMemberCount:
                 return new int[]{4, 8, 11, 6};
             case N_Conversation_onCreate:
@@ -1310,6 +1310,9 @@ public class DexKit {
                             return m;
                         }
                         Class<?>[] argt = method.getParameterTypes();
+                        if (argt.length == 1 && argt[0].equals(String.class)) {
+                            return m;
+                        }
                         if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1]
                             .equals(String.class)) {
                             return m;
