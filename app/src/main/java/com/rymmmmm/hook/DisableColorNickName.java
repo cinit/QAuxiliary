@@ -50,6 +50,12 @@ public class DisableColorNickName extends CommonSwitchFunctionHook {
 
     @NonNull
     @Override
+    public String getDescription() {
+        return "可能导致聊天页面滑动卡顿";
+    }
+
+    @NonNull
+    @Override
     public String[] getUiItemLocation() {
         return Simplify.CHAT_GROUP_TITLE;
     }
