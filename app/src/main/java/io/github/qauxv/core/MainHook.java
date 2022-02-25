@@ -44,7 +44,6 @@ import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import me.kyuubiran.hook.RemoveCameraButton;
-import me.kyuubiran.hook.RemoveRedDot;
 
 /*TitleKit:Lcom/tencent/mobileqq/widget/navbar/NavBarCommon*/
 
@@ -122,7 +121,6 @@ public class MainHook {
         HookInstaller.allowEarlyInit(GagInfoDisclosure.INSTANCE);
         HookInstaller.allowEarlyInit(CustomSplash.INSTANCE);
         HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
-        HookInstaller.allowEarlyInit(RemoveRedDot.INSTANCE);
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             injectStartupHookForMain(ctx);
