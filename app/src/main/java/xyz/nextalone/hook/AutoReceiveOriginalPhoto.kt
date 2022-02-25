@@ -44,7 +44,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
 
     override val name: String = "聊天自动接收原图"
 
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
         val method: String = when {
