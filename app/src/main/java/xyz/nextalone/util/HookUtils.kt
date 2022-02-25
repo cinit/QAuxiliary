@@ -186,8 +186,8 @@ internal fun <T> Any?.getAll(type: Class<out T>? = null): MutableList<T>? {
 
 internal fun Any.set(name: String, value: Any): Any = Reflex.setInstanceObject(this, name, value)
 
-internal fun Any.set(name: String, clz: Class<*>?, value: Any): Any =
-    Reflex.setInstanceObject(this, name, clz, value)
+internal fun Any.set(name: String, type: Class<*>?, value: Any): Any =
+    Reflex.setInstanceObject(this, name, type, value)
 
 internal fun Class<*>?.instance(vararg arg: Any?): Any = XposedHelpers.newInstance(this, *arg)
 

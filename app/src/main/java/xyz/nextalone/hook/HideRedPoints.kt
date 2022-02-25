@@ -22,30 +22,70 @@
 
 package xyz.nextalone.hook
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.clazz
-import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.method
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.*
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideRedPoints : CommonSwitchFunctionHook() {
 
-    override val name = "隐藏部分小红点"
+    override val name = "隐藏小红点"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
     override fun initOnce(): Boolean = tryOrFalse {
+        // unknown red point
         "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method("a", 1, ImageView::class.java) {
             it.parameterTypes[0] == Int::class.java
         }?.hookAfter(this) {
             (it.result as ImageView).isVisible = false
         }
+
+        // bottom red point
+        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
+                ?.replace(this, null)
+        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.method(
+                "a",
+                6,
+                Void.TYPE
+        )?.replace(this, null)
+
+        // skin_tips_dot
+        "com.tencent.theme.ResourcesFactory".clazz?.method {
+            it.name == "createImageFromResourceStream" || it.name == "a" && it.parameterTypes.size == 7
+        }?.hookAfter(this) {
+            if (!it.args[3].toString().contains("skin_tips_dot")) return@hookAfter
+            it.result.set(
+                    "a", Bitmap::class.java,
+                    BitmapFactory.decodeByteArray(
+                            TRANSPARENT_PNG,
+                            0,
+                            TRANSPARENT_PNG.size
+                    ),
+            )
+        }
     }
+
+    // for skin_tips_dot
+    private val TRANSPARENT_PNG = byteArrayOf(
+            0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(),
+            0x1A.toByte(), 0x0A.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x0D.toByte(),
+            0x49.toByte(), 0x48.toByte(), 0x44.toByte(), 0x52.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(),
+            0x08.toByte(), 0x06.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x1F.toByte(),
+            0x15.toByte(), 0xC4.toByte(), 0x89.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x0B.toByte(), 0x49.toByte(), 0x44.toByte(), 0x41.toByte(), 0x54.toByte(), 0x08.toByte(),
+            0xD7.toByte(), 0x63.toByte(), 0x60.toByte(), 0x00.toByte(), 0x02.toByte(), 0x00.toByte(),
+            0x00.toByte(), 0x05.toByte(), 0x00.toByte(), 0x01.toByte(), 0xE2.toByte(), 0x26.toByte(),
+            0x05.toByte(), 0x9B.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+            0x49.toByte(), 0x45.toByte(), 0x4E.toByte(), 0x44.toByte(), 0xAE.toByte(), 0x42.toByte(),
+            0x60.toByte(), 0x82.toByte()
+    )
 }
