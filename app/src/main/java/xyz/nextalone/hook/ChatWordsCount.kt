@@ -28,21 +28,39 @@ import android.content.DialogInterface
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.FrameLayout
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
+import android.widget.TextView
+import android.widget.Toast
 import cc.ioctl.util.LayoutHelper
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
+import io.github.qauxv.tlb.ConfigTable.getConfig
 import io.github.qauxv.ui.CustomDialog
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getExFriendCfg
 import me.kyuubiran.util.showToastByTencent
-import io.github.qauxv.tlb.ConfigTable.getConfig
-import xyz.nextalone.util.*
-import java.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookAfterAllConstructors
+import xyz.nextalone.util.hookBeforeAllConstructors
+import xyz.nextalone.util.method
+import xyz.nextalone.util.putExFriend
+import xyz.nextalone.util.throwOrTrue
+import xyz.nextalone.util.today
+import java.util.Date
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -68,12 +86,11 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
     private fun getChatWords(): String {
         return getExFriendCfg()?.let {
             val isToday = Date().today == it.getStringOrDefault(timeCfg, "")
-            val str = it.getStringOrDefault(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")
             val msg = if (isToday) it.getIntOrDefault(msgCfg, 0) else 0
             val words = if (isToday) it.getIntOrDefault(wordsCfg, 0) else 0
             val emo = if (isToday) it.getIntOrDefault(emoCfg, 0) else 0
-            str.replace("%1", msg.toString()).replace("%2", words.toString())
-                .replace("%3", emo.toString())
+            it.getStringOrDefault(strCfg, "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个")
+                .format(msg, words, emo)
         } ?: UIN_CONFIG_ERROR_MESSAGE
     }
 
@@ -224,7 +241,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
         editText.setText(
             getExFriendCfg()?.getStringOrDefault(
                 strCfg,
-                "今日已发送 %1 条消息，共 %2 字，表情包 %3 个"
+                "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个"
             ) ?: UIN_CONFIG_ERROR_MESSAGE
         )
         val checkBox = CheckBox(ctx)
@@ -238,7 +255,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
             }
         }
         val textView = TextView(ctx)
-        textView.text = "替换侧滑栏个性签名为聊天字数统计，点击可更换字体颜色。\n%1表示发送消息总数，%2表示发送字数，%3表示发送表情包个数。"
+        textView.text = "替换侧滑栏个性签名为聊天字数统计，点击可更换字体颜色。\n%1\$d表示发送消息总数，%2\$d表示发送字数，%3\$d表示发送表情包个数。"
         textView.setPadding(_5 * 2, _5, _5 * 2, _5)
         val linearLayout = LinearLayout(ctx)
         linearLayout.orientation = LinearLayout.VERTICAL
@@ -274,7 +291,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
             .setCancelable(true)
             .setPositiveButton("确认") { _, _ ->
             }.setNeutralButton("使用默认值") { _, _ ->
-                putExFriend(strCfg, "今日已发送 %1 条消息，共 %2 字，表情包 %3 个")
+                putExFriend(strCfg, "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个")
             }
             .setNegativeButton("取消", null)
             .create() as AlertDialog
