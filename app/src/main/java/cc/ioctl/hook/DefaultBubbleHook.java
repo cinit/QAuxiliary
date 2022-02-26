@@ -56,6 +56,8 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
     private DefaultBubbleHook() {
     }
 
+    private static final String[] paths = {"/bubble_info", "/files/bubble_info", "/files/bubble_paster"};
+
     @Override
     public boolean isAvailable() {
         return !HostInfo.isTim();
@@ -78,21 +80,23 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
     @Override
     public void setEnabled(boolean enabled) {
-        File dir = new File(
-                HostInfo.getApplication().getFilesDir().getAbsolutePath() + "/bubble_info");
-        boolean curr = !dir.exists() || !dir.canRead();
-        if (dir.exists()) {
-            if (enabled && !curr) {
-                dir.setWritable(false);
-                dir.setReadable(false);
-                dir.setExecutable(false);
-            }
-            if (!enabled && curr) {
-                dir.setWritable(true);
-                dir.setReadable(true);
-                dir.setExecutable(true);
+        for (String path : paths) {
+            File dir = new File(HostInfo.getApplication().getFilesDir().getAbsolutePath() + path);
+            boolean curr = !dir.exists() || !dir.canRead();
+            if (dir.exists()) {
+                if (enabled && !curr) {
+                    dir.setWritable(false);
+                    dir.setReadable(false);
+                    dir.setExecutable(false);
+                }
+                if (!enabled && curr) {
+                    dir.setWritable(true);
+                    dir.setReadable(true);
+                    dir.setExecutable(true);
+                }
             }
         }
+
     }
 
     private final ISwitchCellAgent switchCellAgent = new ISwitchCellAgent() {
