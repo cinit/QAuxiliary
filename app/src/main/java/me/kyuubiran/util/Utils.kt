@@ -25,18 +25,14 @@ import android.content.Context
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
+import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.SyncUtils
+import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
 import java.lang.reflect.Method
-import java.lang.reflect.Modifier
-
-fun Context.showToastBySystem(text: CharSequence, duration: Int = Toast.LENGTH_SHORT) {
-    if (Looper.getMainLooper() == Looper.myLooper())
-        Toast.makeText(this, text, duration).show()
-    else SyncUtils.runOnUiThread { showToastBySystem(text, duration) }
-}
 
 fun Context.showToastByTencent(
     text: CharSequence,
@@ -68,23 +64,6 @@ fun loadClass(clzName: String): Class<*> {
 fun getMethods(clzName: String): Array<Method> {
     return Initiator.load(clzName).declaredMethods
 }
-
-fun getMethods(clz: Class<Any>): Array<Method> {
-    return clz.declaredMethods
-}
-
-
-val Method.isStatic: Boolean
-    get() = Modifier.isStatic(this.modifiers)
-
-
-val Method.isPrivate: Boolean
-    get() = Modifier.isPrivate(this.modifiers)
-
-
-val Method.isPublic: Boolean
-    get() = Modifier.isPublic(this.modifiers)
-
 
 fun makeSpaceMsg(str: String): String {
     val sb = StringBuilder()

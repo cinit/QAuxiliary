@@ -30,6 +30,7 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
 import java.util.*
 
@@ -37,7 +38,7 @@ abstract class BaseFunctionHook(
     hookKey: String? = null,
     defaultEnabled: Boolean = false,
     dexDeobfIndexes: IntArray? = null
-) : IDynamicHook, IUiItemAgentProvider,RuntimeErrorTracer {
+) : IDynamicHook, IUiItemAgentProvider, RuntimeErrorTracer {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
@@ -100,6 +101,9 @@ abstract class BaseFunctionHook(
         set(value) {
             ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
         }
+
+    val allowHook: Boolean
+        get() = isEnabled && !LicenseStatus.sDisableCommonHooks
 
     override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
