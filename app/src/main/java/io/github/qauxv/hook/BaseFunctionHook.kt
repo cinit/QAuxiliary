@@ -102,9 +102,6 @@ abstract class BaseFunctionHook(
             ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
         }
 
-    val allowHook: Boolean
-        get() = isEnabled && !LicenseStatus.sDisableCommonHooks
-
     override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
         var alreadyLogged = false

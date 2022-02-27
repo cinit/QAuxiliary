@@ -39,7 +39,7 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE }.hookBefore {
-            if (!allowHook) return@hookBefore; it.result = null
+            if (!isEnabled) return@hookBefore; it.result = null
         }
     }
 
