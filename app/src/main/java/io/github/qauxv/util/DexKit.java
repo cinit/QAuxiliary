@@ -190,10 +190,7 @@ public class DexKit {
         if (ret != null) {
             return ret;
         }
-        DexMethodDescriptor m = getMethodDescFromCache(i);
-        if (m == null) {
-            m = doFindMethodDesc(i);
-        }
+        DexMethodDescriptor m = doFindMethodDesc(i);
         if (m == null) {
             return null;
         }
@@ -1354,20 +1351,12 @@ public class DexKit {
         return null;
     }
 
-    public static boolean p(int i) {
-        if (i == C_CustomWidgetUtil || i == N_BASE_CHAT_PIE__INIT) {
-            return true;
-        }
-        return false;
-    }
-
     @Nullable
     private static HashSet<DexMethodDescriptor> e(int i, DexDeobfReport rep) {
         ClassLoader loader = Initiator.getHostClassLoader();
         int record = 0;
         int[] qf = d(i);
         byte[][] keys = b(i);
-        boolean check = p(i);
         if (qf != null) {
             for (int dexi : qf) {
                 record |= 1 << dexi;
@@ -1376,16 +1365,7 @@ public class DexKit {
                         HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi,
                             loader);
                         if (ret != null && ret.size() > 0) {
-                            if (check) {
-                                DexMethodDescriptor m = a(i, ret, rep);
-                                if (m != null) {
-                                    ret.clear();
-                                    ret.add(m);
-                                    return ret;
-                                }
-                            } else {
-                                return ret;
-                            }
+                            return ret;
                         }
                     }
                 } catch (FileNotFoundException ignored) {
@@ -1402,16 +1382,7 @@ public class DexKit {
                 for (byte[] k : keys) {
                     HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
                     if (ret != null && ret.size() > 0) {
-                        if (check) {
-                            DexMethodDescriptor m = a(i, ret, rep);
-                            if (m != null) {
-                                ret.clear();
-                                ret.add(m);
-                                return ret;
-                            }
-                        } else {
-                            return ret;
-                        }
+                        return ret;
                     }
                 }
             } catch (FileNotFoundException ignored) {
