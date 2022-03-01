@@ -22,6 +22,7 @@
 
 package cc.ioctl.util
 
+import dalvik.system.BaseDexClassLoader
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.hook.BaseFunctionHook
@@ -98,4 +99,13 @@ fun BaseFunctionHook.beforeHookIfEnabled(priority: Int, hook: (XC_MethodHook.Met
 
 fun BaseFunctionHook.beforeHookIfEnabled(hook: (XC_MethodHook.MethodHookParam) -> Unit): XC_MethodHook {
     return beforeHookIfEnabled(50, hook)
+}
+
+inline fun ClassLoader.findDexClassLoader(): BaseDexClassLoader? {
+    var classLoader = this
+    while (classLoader !is BaseDexClassLoader) {
+        if (classLoader.parent != null) classLoader = classLoader.parent
+        else return null
+    }
+    return classLoader
 }

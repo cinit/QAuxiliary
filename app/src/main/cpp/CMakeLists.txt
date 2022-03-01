@@ -28,8 +28,23 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib
 
 add_subdirectory(../../../../libs/mmkv mmkv)
 
-add_library(qauxv SHARED qauxv_core/Natives.cpp qauxv_core/version.c
-        qauxv_core/NativeHookEntry.cc qauxv_core/NativeMainHook.cc)
+add_library(qauxv SHARED
+        qauxv_core/Natives.cpp
+        qauxv_core/version.c
+        qauxv_core/NativeHookEntry.cc
+        qauxv_core/NativeMainHook.cc
+        qauxv_core/biliroaming.cc
+        dex_builder/dex_builder.cc
+        dex_builder/dex_helper.cc
+        dex_builder/slicer/reader.cc
+        dex_builder/slicer/writer.cc
+        dex_builder/slicer/dex_ir.cc
+        dex_builder/slicer/common.cc
+        dex_builder/slicer/dex_format.cc
+        dex_builder/slicer/dex_utf8.cc
+        dex_builder/slicer/dex_bytecode.cc)
+
+target_include_directories(qauxv PUBLIC dex_builder/include)
 
 set_target_properties(qauxv PROPERTIES
         CXX_EXTENSIONS OFF

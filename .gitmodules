@@ -1,3 +1,6 @@
 [submodule "libs/mmkv/MMKV"]
 	path = libs/mmkv/MMKV
 	url = https://github.com/Tencent/MMKV
+[submodule "app/src/main/cpp/dex_builder"]
+	path = app/src/main/cpp/dex_builder
+	url = git@github.com:LSPosed/DexBuilder.git

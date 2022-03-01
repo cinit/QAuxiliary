@@ -180,6 +180,18 @@ class AboutFragment : BaseSettingFragment() {
                         "https://github.com/LSPosed/AndroidHiddenApiBypass",
                         "Copyright (C) 2021 LSPosed",
                         "Apache License 2.0"
+                ),
+                LicenseNotice(
+                    "DexBuilder",
+                    "https://github.com/LSPosed/DexBuilder",
+                    "Copyright (C) 2021 LSPosed",
+                    "LGPL-3.0 License"
+                ),
+                LicenseNotice(
+                    "BiliRoaming",
+                    "https://github.com/yujincheng08/BiliRoaming",
+                    "yujincheng08",
+                    " GPL-3.0 License"
                 )
         )
     }
