@@ -1482,7 +1482,10 @@ public class DexKit {
                             String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
-                                urls.add(eu.nextElement());
+                                URL url = eu.nextElement();
+                                if (url.toString().contains(HostInfo.getPackageName())) {
+                                    urls.add(url);
+                                }
                             }
                         }
                     } catch (Throwable e) {
@@ -1497,7 +1500,10 @@ public class DexKit {
                                 "findResources", name, String.class);
                             if (eu != null) {
                                 while (eu.hasMoreElements()) {
-                                    urls.add(eu.nextElement());
+                                    URL url = eu.nextElement();
+                                    if (url.toString().contains(HostInfo.getPackageName())) {
+                                        urls.add(url);
+                                    }
                                 }
                             }
                         } catch (Throwable e) {
@@ -1552,7 +1558,10 @@ public class DexKit {
                         String.class);
                     if (eu != null) {
                         while (eu.hasMoreElements()) {
-                            urls.add(eu.nextElement());
+                            URL url = eu.nextElement();
+                            if (url.toString().contains(HostInfo.getPackageName())) {
+                                urls.add(url);
+                            }
                         }
                     }
                 } catch (Throwable e) {
@@ -1567,7 +1576,10 @@ public class DexKit {
                             name, String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
-                                urls.add(eu.nextElement());
+                                URL url = eu.nextElement();
+                                if (url.toString().contains(HostInfo.getPackageName())) {
+                                    urls.add(url);
+                                }
                             }
                         }
                     } catch (Throwable e) {
@@ -1661,7 +1673,10 @@ public class DexKit {
             eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name, String.class);
             if (eu != null) {
                 while (eu.hasMoreElements()) {
-                    urls.add(eu.nextElement());
+                    URL url = eu.nextElement();
+                    if (url.toString().contains(HostInfo.getPackageName())) {
+                        urls.add(url);
+                    }
                 }
             }
         } catch (Throwable e) {
@@ -1676,7 +1691,10 @@ public class DexKit {
                     String.class);
                 if (eu != null) {
                     while (eu.hasMoreElements()) {
-                        urls.add(eu.nextElement());
+                        URL url = eu.nextElement();
+                        if (url.toString().contains(HostInfo.getPackageName())) {
+                            urls.add(url);
+                        }
                     }
                 }
             } catch (Throwable e) {
