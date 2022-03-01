@@ -108,7 +108,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                             if (isTroop == 1) {
                                 val sender = senderName.find(text)?.value?.replace(": ", "")
                                 text = senderName.replace(text, "")
-                                /*tryOrFalse {
+                                /*throwOrTrue {
                                     val senderUin = intent.getStringExtra("param_fromuin")
                                     bitmap = face.getBitmapFromCache(TYPE_USER,senderUin)
                                 }*/

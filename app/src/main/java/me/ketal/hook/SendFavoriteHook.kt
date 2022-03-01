@@ -36,7 +36,7 @@ import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -68,7 +68,7 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
                     thisObj, tv, thisObj::class.java, View::class.java
                 )
                 tv?.setOnClickListener {
-                    tryOrFalse {
+                    throwOrTrue {
                         Reflex.invokeVirtual(logic, "b")
                         val b = Reflex.getInstanceObjectOrNull(logic, "b", View::class.java)
                         if (b.visibility != 0) {

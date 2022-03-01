@@ -36,7 +36,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -49,7 +49,7 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
     override val isAvailable: Boolean
         get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
 
-    override fun initOnce() = tryOrFalse {
+    override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
             "Lcom/tencent/mobileqq/profilecard/base/container/ProfileBottomContainer;->initViews()V"
                 .method.hookAfter(this) {

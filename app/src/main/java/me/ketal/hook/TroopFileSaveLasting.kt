@@ -34,7 +34,7 @@ import me.ketal.base.PluginDelayableHook
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.hookMethod
 import xyz.nextalone.util.invoke
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Field
 
 @FunctionHookEntry
@@ -48,7 +48,7 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
     override val targetProcesses = SyncUtils.PROC_MAIN
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.FILE_CATEGORY
 
-    override fun startHook(classLoader: ClassLoader) = tryOrFalse {
+    override fun startHook(classLoader: ClassLoader) = throwOrTrue {
         val troopFileShowAdapter = "com.tencent.mobileqq.troop.data.TroopFileShowAdapter\$1"
             .findClass(classLoader).getDeclaredField("this$0").type
         val infoClass = troopFileShowAdapter.declaredFields.find {
@@ -67,7 +67,7 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
             lateinit var tag: Any
             override fun beforeHookedMethod(param: MethodHookParam) {
                 if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
-                tryOrFalse {
+                throwOrTrue {
                     val view = param.args[0] as View
                     tag = view.tag
                     val info = Reflex.getFirstByType(param.thisObject, infoClass)
@@ -85,7 +85,7 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
 
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
-                tryOrFalse {
+                throwOrTrue {
                     val view = param.args[0] as View
                     val info = view.tag
                     fields.forEach {

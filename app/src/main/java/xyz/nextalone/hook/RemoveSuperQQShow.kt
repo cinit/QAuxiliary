@@ -35,7 +35,7 @@ import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry

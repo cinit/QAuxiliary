@@ -46,7 +46,7 @@ import me.ketal.util.HookUtil.getMethod
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -76,7 +76,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
     }
 
     private fun showDialog(ctx: Context, textView: TextView?) {
-        tryOrFalse {
+        throwOrTrue {
             val vg = ConfigView(ctx)
             val dialog = MaterialDialog(ctx).show {
                 title(text = "自定义钱包余额")

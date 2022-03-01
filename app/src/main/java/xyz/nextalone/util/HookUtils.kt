@@ -119,21 +119,6 @@ internal val Member.isFinal: Boolean
 internal val Class<*>.isAbstract: Boolean
     get() = Modifier.isAbstract(this.modifiers)
 
-internal fun <T : IDynamicHook> T.tryOrFalse(function: () -> Unit): Boolean {
-    return try {
-        if (!this.isAvailable) return false
-        function()
-        true
-    } catch (e: Throwable) {
-        if (this is BaseFunctionHook) {
-            this.traceError(e)
-        } else {
-            Log.e(e)
-        }
-        false
-    }
-}
-
 internal fun <T : IDynamicHook> T.throwOrTrue(function: () -> Unit): Boolean {
     if (!this.isAvailable) return false
     function()

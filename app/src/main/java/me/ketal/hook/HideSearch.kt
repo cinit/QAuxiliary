@@ -94,7 +94,7 @@ object HideSearch : CommonSwitchFunctionHook(
         plusButton.layoutParams = layoutParams
         plusButton.setImageResource(ctx.hostDrawable("header_btn_add")!!)
         plusButton.setOnClickListener {
-            tryOrFalse {
+            throwOrTrue {
                 val n2 = (widthPixels - (180.0f * density + 0.5f) - (6.0f * density + 0.5f)).toInt()
                 val n3 = (density * 1.0f + 0.5f).toInt()
                 val popBar = "com.tencent.mobileqq.activity.recent.RecentOptPopBar".clazz

@@ -47,7 +47,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
 
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null
-    override fun initOnce() = tryOrFalse {
+    override fun initOnce() = throwOrTrue {
         val showDialogAtView = DexKit.doFindMethod(DexKit.N_AtPanel__showDialogAtView)
             ?: DexKit.doFindClass(DexKit.N_AtPanel__showDialogAtView)?.method {
                 it.parameterTypes.contentEquals(arrayOf(View::class.java, String::class.java, Boolean::class.java))

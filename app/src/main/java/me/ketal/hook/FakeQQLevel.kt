@@ -43,7 +43,7 @@ import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.DexKit
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.set
@@ -78,7 +78,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     }
 
     private fun showDialog(ctx: Context) {
-        tryOrFalse {
+        throwOrTrue {
             val vg = ConfigView(ctx)
             val dialog = MaterialDialog(ctx).show {
                 title(text = "自定义QQ等级")

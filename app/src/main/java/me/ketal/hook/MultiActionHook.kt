@@ -42,7 +42,7 @@ import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -85,7 +85,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     }
 
     private fun recall() {
-        tryOrFalse {
+        throwOrTrue {
             val clazz = DexKit.doFindClass(DexKit.C_MultiMsg_Manager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
             val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)

@@ -29,7 +29,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
-import xyz.nextalone.util.tryOrFalse
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -39,7 +39,7 @@ object RemoveShortCutBar : CommonSwitchFunctionHook() {
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
-    override fun initOnce() = tryOrFalse {
+    override fun initOnce() = throwOrTrue {
         val methodName = if (requireMinQQVersion(QQVersion.QQ_8_6_0))
             "Lcom/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper;->g()V"
         else "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V"

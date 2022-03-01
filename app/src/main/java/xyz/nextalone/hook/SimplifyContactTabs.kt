@@ -39,7 +39,7 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_mu
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_CONTACT
 
-    override fun initOnce() = tryOrFalse {
+    override fun initOnce() = throwOrTrue {
         "Lcom.tencent.mobileqq.activity.contacts.base.tabs.ContactsTabs;->a()V".method.hookAfter(
             this
         ) {

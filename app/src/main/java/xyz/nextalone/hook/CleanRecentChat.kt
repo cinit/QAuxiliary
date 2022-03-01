@@ -56,7 +56,7 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
     private val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
-    override fun initOnce(): Boolean = tryOrFalse {
+    override fun initOnce(): Boolean = throwOrTrue {
         DexKit.doFindMethod(DexKit.N_Conversation_onCreate)
             ?.hookAfter(this) {
                 val recentAdapter = it.thisObject.get(RecentAdapter.clazz)

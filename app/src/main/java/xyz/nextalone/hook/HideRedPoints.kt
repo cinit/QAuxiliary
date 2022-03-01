@@ -40,7 +40,7 @@ object HideRedPoints : CommonSwitchFunctionHook() {
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
-    override fun initOnce(): Boolean = tryOrFalse {
+    override fun initOnce(): Boolean = throwOrTrue {
         // unknown red point
         "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method("a", 1, ImageView::class.java) {
             it.parameterTypes[0] == Int::class.java
