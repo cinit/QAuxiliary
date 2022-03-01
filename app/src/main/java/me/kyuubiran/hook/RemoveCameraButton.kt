@@ -22,6 +22,7 @@
 
 package me.kyuubiran.hook
 
+import android.view.View
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -38,7 +39,10 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
     override val name: String = "屏蔽聊天界面相机图标"
 
     override fun initOnce() = throwOrTrue {
-        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE }.hookBefore {
+        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java)) }.hookBefore {
+            if (!isEnabled) return@hookBefore; it.result = null
+        }
+        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE && parameterTypes.isEmpty() }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
     }
