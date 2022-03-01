@@ -97,14 +97,13 @@ object FunctionEntryRouter {
                 }
                 fragment("host-ui-sideswipe", "侧滑栏")
                 fragment("host-ui-chat", "聊天界面") {
+                    category("ui-chat-message", "消息")
                     category("ui-chat-decoration", "装扮")
                     category("ui-chat-emoticon", "表情")
                     category("ui-chat-other", "其他", false)
                 }
-                fragment("host-ui-group-chat", "聊天页面") {
+                fragment("host-ui-group-chat", "群聊") {
                     category("ui-group-chat-title", "标题栏")
-                    category("ui-chat-message", "消息")
-                    category("ui-group-chat-animation", "动画")
                     category("ui-group-chat-other", "其他", false)
                 }
                 fragment("ui-profile", "资料卡")
