@@ -169,8 +169,8 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                             midContentListLayout?.getChildAt(i)?.hide()
                         }
                     }
-                } catch (t: Throwable) {
-                    traceError(t)
+                } catch (e: Throwable) {
+                    traceError(e)
                 }
             }
         })

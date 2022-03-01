@@ -69,8 +69,8 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
                             LinearLayout::class.java
                         ) as LinearLayout
                         dailySignLayout.setViewZeroSize()
-                    } catch (t: Throwable) {
-                        traceError(t)
+                    } catch (e: Throwable) {
+                        traceError(e)
                     }
                 }
             })

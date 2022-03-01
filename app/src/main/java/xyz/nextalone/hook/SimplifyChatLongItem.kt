@@ -80,7 +80,7 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
                         "L$customMenu;->a(ILjava/lang/String;II)V"
                             .method
                             .hookBefore(this@SimplifyChatLongItem, callback)
-                    } catch (t: Throwable) {
+                    } catch (e: Throwable) {
                         Unit
                     }
                     try {
@@ -88,7 +88,7 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
                         "L$customMenu;->a(ILjava/lang/String;I)V"
                             .method
                             .hookBefore(this@SimplifyChatLongItem, callback)
-                    } catch (t: Throwable) {
+                    } catch (e: Throwable) {
                         Unit
                     }
                     return@forEach

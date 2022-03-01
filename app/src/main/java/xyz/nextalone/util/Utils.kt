@@ -37,7 +37,7 @@ internal val isSimpleUi by lazy {
             ) as SharedPreferences
         val bool = sharedPreferences.getBoolean("key_simple_ui_switch", false)
         bool
-    } catch (t: Throwable) {
+    } catch (e: Throwable) {
         false
     }
 }

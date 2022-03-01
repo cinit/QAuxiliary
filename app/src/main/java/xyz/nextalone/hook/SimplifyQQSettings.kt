@@ -59,7 +59,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
                     this,
                     null
                 )
-            } catch (t: Throwable) {
+            } catch (e: Throwable) {
                 "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->b()V".method.replace(
                     this,
                     null

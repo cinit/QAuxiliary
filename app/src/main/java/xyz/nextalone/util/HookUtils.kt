@@ -124,11 +124,11 @@ internal fun <T : IDynamicHook> T.tryOrFalse(function: () -> Unit): Boolean {
         if (!this.isAvailable) return false
         function()
         true
-    } catch (t: Throwable) {
+    } catch (e: Throwable) {
         if (this is BaseFunctionHook) {
-            this.traceError(t)
+            this.traceError(e)
         } else {
-            logThrowable(t)
+            Log.e(e)
         }
         false
     }
@@ -200,7 +200,7 @@ internal fun Any?.invoke(name: String, vararg args: Any): Any? =
 internal fun Member.hook(callback: NAMethodHook) = try {
     XposedBridge.hookMethod(this, callback)
 } catch (e: Throwable) {
-    logThrowable(e)
+    Log.e(e)
     null
 }
 
@@ -214,7 +214,7 @@ internal fun Member.hookBefore(
         if (baseHook is BaseFunctionHook) {
             baseHook.traceError(e)
         } else {
-            logThrowable(e)
+            Log.e(e)
         }
     }
 })
@@ -229,7 +229,7 @@ internal fun Member.hookAfter(
         if (baseHook is BaseFunctionHook) {
             baseHook.traceError(e)
         } else {
-            logThrowable(e)
+            Log.e(e)
         }
     }
 })
@@ -248,7 +248,7 @@ internal fun <T : Any> Member.replace(
         if (baseHook is BaseFunctionHook) {
             baseHook.traceError(e)
         } else {
-            logThrowable(e)
+            Log.e(e)
         }
         null
     }
@@ -257,13 +257,13 @@ internal fun <T : Any> Member.replace(
 internal fun Class<*>.hook(method: String?, vararg args: Any?) = try {
     XposedHelpers.findAndHookMethod(this, method, *args)
 } catch (e: NoSuchMethodError) {
-    logThrowable(e)
+    Log.e(e)
     null
 } catch (e: XposedHelpers.ClassNotFoundError) {
-    logThrowable(e)
+    Log.e(e)
     null
 } catch (e: ClassNotFoundException) {
-    logThrowable(e)
+    Log.e(e)
     null
 }
 
@@ -276,7 +276,7 @@ internal fun Class<*>.hookBefore(
     override fun beforeMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
     }
 })
 
@@ -289,7 +289,7 @@ internal fun Class<*>.hookAfter(
     override fun afterMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
     }
 })
 
@@ -301,7 +301,7 @@ internal fun Class<*>.replace(
     override fun replaceHookedMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
         null
     }
 })
@@ -312,13 +312,13 @@ internal fun Class<*>.hookAllMethods(
 ): Set<XC_MethodHook.Unhook> = try {
     XposedBridge.hookAllMethods(this, methodName, hooker)
 } catch (e: NoSuchMethodError) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 } catch (e: XposedHelpers.ClassNotFoundError) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 } catch (e: ClassNotFoundException) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 }
 
@@ -330,7 +330,7 @@ internal fun Class<*>.hookBeforeAllMethods(
     override fun beforeMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
     }
 })
 
@@ -342,7 +342,7 @@ internal fun Class<*>.hookAfterAllMethods(
     override fun afterMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
     }
 })
 
@@ -353,7 +353,7 @@ internal fun Class<*>.replaceAfterAllMethods(
     override fun replaceHookedMethod(param: MethodHookParam) = try {
         hooker(param)
     } catch (e: Throwable) {
-        logThrowable(e)
+        Log.e(e)
         null
     }
 })
@@ -361,13 +361,13 @@ internal fun Class<*>.replaceAfterAllMethods(
 internal fun Class<*>.hookAllConstructors(hooker: XC_MethodHook): Set<XC_MethodHook.Unhook> = try {
     XposedBridge.hookAllConstructors(this, hooker)
 } catch (e: NoSuchMethodError) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 } catch (e: XposedHelpers.ClassNotFoundError) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 } catch (e: ClassNotFoundException) {
-    logThrowable(e)
+    Log.e(e)
     emptySet()
 }
 
@@ -376,7 +376,7 @@ internal fun Class<*>.hookBeforeAllConstructors(hooker: (XC_MethodHook.MethodHoo
         override fun beforeHookedMethod(param: MethodHookParam) = try {
             hooker(param)
         } catch (e: Throwable) {
-            logThrowable(e)
+            Log.e(e)
         }
     })
 
@@ -385,7 +385,7 @@ internal fun Class<*>.hookAfterAllConstructors(hooker: (XC_MethodHook.MethodHook
         override fun afterHookedMethod(param: MethodHookParam) = try {
             hooker(param)
         } catch (e: Throwable) {
-            logThrowable(e)
+            Log.e(e)
         }
     })
 

@@ -34,6 +34,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.Toasts
 import me.kyuubiran.util.getDefaultCfg
 import xyz.nextalone.util.*
@@ -105,7 +106,7 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
                     String::class.java,
                     String::class.java
                 )
-            } catch (t: Throwable) {
+            } catch (e: Throwable) {
                 RecentAdapter.clazz?.method(
                     "b",
                     Void.TYPE,
@@ -130,7 +131,7 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
                 chatCurrentIndex++
             }
         } catch (e: Throwable) {
-            logThrowable(e)
+            Log.e(e)
         }
     }
 
@@ -139,7 +140,7 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
             FriendsStatusUtil.clazz?.method("a", Boolean::class.java, Initiator._QQAppInterface(), String::class.java, Int::class.java)
                 ?.invoke(null, app, str, i) as Boolean
         } catch (e: Throwable) {
-            logThrowable(e)
+            Log.e(e)
             false
         }
     }

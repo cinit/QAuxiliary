@@ -85,10 +85,10 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                 if (item != null) {
                     val str = try {
                         (item.javaClass.getDeclaredField("name").get(item) as String).toString()
-                    } catch (t: Throwable) {
+                    } catch (e: Throwable) {
                         try {
                             (item.javaClass.getDeclaredField("a").get(item) as String).toString()
-                        } catch (t: Throwable) {
+                        } catch (e: Throwable) {
                             (item.javaClass.getDeclaredField("d").get(item) as String).toString()
                         }
                     }
