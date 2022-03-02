@@ -2,7 +2,7 @@
 #include <dex_helper.h>
 #include <jni.h>
 
-#define LOG_TAG "BiliRoaming"
+#define LOG_TAG "QAuxv"
 #define LOGV(...) __android_log_print(ANDROID_LOG_VERBOSE, LOG_TAG, __VA_ARGS__)
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, LOG_TAG, __VA_ARGS__)
 #define LOGI(...) __android_log_print(ANDROID_LOG_INFO, LOG_TAG, __VA_ARGS__)
@@ -177,6 +177,10 @@ Java_me_iacn_biliroaming_utils_DexHelper_load(JNIEnv *env, jobject thiz,
                 env->GetLongArrayElements(cookie, nullptr));
         while (dex_file_length-- > 1) {
             const auto *dex_file = dex_files[dex_file_length];
+            if (!dex_file) {
+                LOGE("dex_file is nullptr at %d", dex_file_length);
+                continue;
+            }
             LOGD("Got dex file %d", dex_file_length);
             if (dex::Reader::IsCompact(dex_file->begin_)) {
                 images.emplace_back(dex_file->begin_, dex_file->size_, dex_file->data_begin_, dex_file->data_size_);
