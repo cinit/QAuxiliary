@@ -94,8 +94,6 @@ class PendingFunctionFragment : BaseSettingFragment() {
             Item("QQ电话关麦时解除占用", "再开麦时如麦被其他程序占用可能崩溃", null, true),
             Item("QQ视频通话旋转锁定", "可在通话界面设置旋转方向", null, true),
             Item("屏蔽回执消息的通知", null, null, true),
-            Item("聊天图片自动接收原图", null, "禁用"),
-            Item("强制原图发送聊天图片", null, "禁用"),
             Item("隐藏联系人", "和自带的\"隐藏会话\"有所不同", "0人"),
             Item("自定义本地头像", "仅本机生效", "禁用"),
             Item("QQ电话睡眠模式", "仅保持连麦, 暂停消息接收, 减少电量消耗", null, true),
