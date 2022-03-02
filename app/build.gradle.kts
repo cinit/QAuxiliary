@@ -89,10 +89,12 @@ android {
         viewBinding = true
     }
     applicationVariants.all {
-        val outputFileName = "QAuxv-v${defaultConfig.versionName}-${this.buildType.name}.apk"
-        outputs.all {
-            val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
-            output?.outputFileName = outputFileName
+        if (!this.buildType.isDebuggable) {
+            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${this.buildType.name}.apk"
+            outputs.all {
+                val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
+                output?.outputFileName = outputFileName
+            }
         }
     }
 }
