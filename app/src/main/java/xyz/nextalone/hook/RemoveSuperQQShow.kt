@@ -32,9 +32,6 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.method
-import xyz.nextalone.util.throwOrTrue
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
