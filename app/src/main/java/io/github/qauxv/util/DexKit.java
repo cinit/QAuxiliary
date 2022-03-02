@@ -29,6 +29,7 @@ import static io.github.qauxv.util.Initiator.load;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HookUtilsKt;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import dalvik.system.DexClassLoader;
@@ -39,14 +40,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.regex.Pattern;
+import me.iacn.biliroaming.utils.DexHelper;
 
 /**
  * I hadn't obfuscated the source code. I just don't want to name it, leaving it a()
@@ -58,6 +62,7 @@ public class DexKit {
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
+    static DexHelper helper = null;
 
     //WARN: NEVER change the index!
     public static final int C_DIALOG_UTIL = 1;
@@ -119,6 +124,14 @@ public class DexKit {
     public static final int N_QQSettingMe_onResume = 20016;
     public static final int N_BaseChatPie_mosaic = 20017;
     public static final int DEOBF_NUM_N = 17;
+
+    public static DexHelper getHelper() {
+        if (helper == null) {
+            ClassLoader dexClassLoader = HookUtilsKt.findDexClassLoader(Initiator.getHostClassLoader());
+            helper = new DexHelper(dexClassLoader);
+        }
+        return helper;
+    }
 
     /**
      * Run the dex deobfuscation.
@@ -190,10 +203,11 @@ public class DexKit {
         if (ret != null) {
             return ret;
         }
-        DexMethodDescriptor m = getMethodDescFromCache(i);
-        if (m == null) {
-            m = doFindMethodDesc(i);
-        }
+        // find class from native
+        DexMethodDescriptor m = doFindMethodFromNative(i);
+        if (m != null) Initiator.load(m.declaringClass);
+        // find class use legacy method
+        m = doFindMethodDesc(i);
         if (m == null) {
             return null;
         }
@@ -240,6 +254,13 @@ public class DexKit {
         if (i / 10000 == 0) {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
+        try {
+            // find method from native
+            DexMethodDescriptor m = doFindMethodFromNative(i);
+            if (m != null) return m.getMethodInstance(Initiator.getHostClassLoader());
+        } catch (NoSuchMethodException e) {
+            // ignore
+        }
         DexMethodDescriptor m = doFindMethodDesc(i);
         if (m == null || NO_SUCH_METHOD.toString().equals(m.name)) {
             return null;
@@ -281,6 +302,51 @@ public class DexKit {
             Log.e(e);
             return null;
         }
+    }
+
+    @Nullable
+    public static DexMethodDescriptor doFindMethodFromNative(int i) {
+        DexMethodDescriptor ret = getMethodDescFromCache(i);
+        if (ret != null) {
+            return ret;
+        }
+        DexHelper helper = getHelper();
+        byte[][] keys = b(i);
+        HashSet<DexMethodDescriptor> methods = new HashSet<>();
+        ConfigManager cache = ConfigManager.getCache();
+        for (byte[] key : keys) {
+            String str = new String(Arrays.copyOfRange(key, 1, key.length));
+            Log.d("doFindMethodFromNative: id " + i + ", key:" + str);
+            long[] ms = helper.findMethodUsingString(
+                    str, true, -1, (short) 0, null, -1,
+                    null, null, null, false);
+            for (long methodIndex : ms) {
+                Executable m = helper.decodeMethodIndex(methodIndex);
+                if (m instanceof Method) {
+                    methods.add(new DexMethodDescriptor((Method) m));
+                    Log.d("doFindMethodFromNative: id " + i + ", m:" + m);
+                } else {
+                    Log.i("find Constructor: " + m + ", but not support Constructor currently");
+                }
+            }
+        }
+        if (methods.size() == 0) {
+            return null;
+        }
+        if (methods.size() == 1) {
+            ret = methods.iterator().next();
+        } else {
+            ret = a(i, methods, null);
+        }
+        if (ret == null) {
+            Log.i("Multiple classes candidates found, none satisfactory.");
+            return null;
+        }
+        //
+        cache.putString("cache_" + a(i) + "_method", ret.toString());
+        cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
+        cache.save();
+        return ret;
     }
 
     /**
@@ -1354,42 +1420,23 @@ public class DexKit {
         return null;
     }
 
-    public static boolean p(int i) {
-        if (i == C_CustomWidgetUtil || i == N_BASE_CHAT_PIE__INIT) {
-            return true;
-        }
-        return false;
-    }
-
     @Nullable
     private static HashSet<DexMethodDescriptor> e(int i, DexDeobfReport rep) {
         ClassLoader loader = Initiator.getHostClassLoader();
         int record = 0;
         int[] qf = d(i);
         byte[][] keys = b(i);
-        boolean check = p(i);
-        if (qf != null) {
-            for (int dexi : qf) {
-                record |= 1 << dexi;
-                try {
-                    for (byte[] k : keys) {
-                        HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi,
-                            loader);
-                        if (ret != null && ret.size() > 0) {
-                            if (check) {
-                                DexMethodDescriptor m = a(i, ret, rep);
-                                if (m != null) {
-                                    ret.clear();
-                                    ret.add(m);
-                                    return ret;
-                                }
-                            } else {
-                                return ret;
-                            }
-                        }
+        for (int dexi : qf) {
+            record |= 1 << dexi;
+            try {
+                for (byte[] k : keys) {
+                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi,
+                        loader);
+                    if (ret != null && ret.size() > 0) {
+                        return ret;
                     }
-                } catch (FileNotFoundException ignored) {
                 }
+            } catch (FileNotFoundException ignored) {
             }
         }
         int dexi = 1;
@@ -1402,16 +1449,7 @@ public class DexKit {
                 for (byte[] k : keys) {
                     HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
                     if (ret != null && ret.size() > 0) {
-                        if (check) {
-                            DexMethodDescriptor m = a(i, ret, rep);
-                            if (m != null) {
-                                ret.clear();
-                                ret.add(m);
-                                return ret;
-                            }
-                        } else {
-                            return ret;
-                        }
+                        return ret;
                     }
                 }
             } catch (FileNotFoundException ignored) {
@@ -1444,7 +1482,10 @@ public class DexKit {
                             String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
-                                urls.add(eu.nextElement());
+                                URL url = eu.nextElement();
+                                if (url.toString().contains(HostInfo.getPackageName())) {
+                                    urls.add(url);
+                                }
                             }
                         }
                     } catch (Throwable e) {
@@ -1459,7 +1500,10 @@ public class DexKit {
                                 "findResources", name, String.class);
                             if (eu != null) {
                                 while (eu.hasMoreElements()) {
-                                    urls.add(eu.nextElement());
+                                    URL url = eu.nextElement();
+                                    if (url.toString().contains(HostInfo.getPackageName())) {
+                                        urls.add(url);
+                                    }
                                 }
                             }
                         } catch (Throwable e) {
@@ -1514,7 +1558,10 @@ public class DexKit {
                         String.class);
                     if (eu != null) {
                         while (eu.hasMoreElements()) {
-                            urls.add(eu.nextElement());
+                            URL url = eu.nextElement();
+                            if (url.toString().contains(HostInfo.getPackageName())) {
+                                urls.add(url);
+                            }
                         }
                     }
                 } catch (Throwable e) {
@@ -1529,7 +1576,10 @@ public class DexKit {
                             name, String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
-                                urls.add(eu.nextElement());
+                                URL url = eu.nextElement();
+                                if (url.toString().contains(HostInfo.getPackageName())) {
+                                    urls.add(url);
+                                }
                             }
                         }
                     } catch (Throwable e) {
@@ -1623,7 +1673,10 @@ public class DexKit {
             eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name, String.class);
             if (eu != null) {
                 while (eu.hasMoreElements()) {
-                    urls.add(eu.nextElement());
+                    URL url = eu.nextElement();
+                    if (url.toString().contains(HostInfo.getPackageName())) {
+                        urls.add(url);
+                    }
                 }
             }
         } catch (Throwable e) {
@@ -1638,7 +1691,10 @@ public class DexKit {
                     String.class);
                 if (eu != null) {
                     while (eu.hasMoreElements()) {
-                        urls.add(eu.nextElement());
+                        URL url = eu.nextElement();
+                        if (url.toString().contains(HostInfo.getPackageName())) {
+                            urls.add(url);
+                        }
                     }
                 }
             } catch (Throwable e) {
