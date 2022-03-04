@@ -28,6 +28,8 @@ import android.content.DialogInterface
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
@@ -36,6 +38,7 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -53,8 +56,8 @@ import me.kyuubiran.util.getExFriendCfg
 import me.kyuubiran.util.showToastByTencent
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.hookAfterAllConstructors
 import xyz.nextalone.util.hookBeforeAllConstructors
 import xyz.nextalone.util.method
 import xyz.nextalone.util.putExFriend
@@ -76,6 +79,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
     }
 
     private const val UIN_CONFIG_ERROR_MESSAGE = "未登录或无法获取当前账号信息"
+    private const val DEFAULT_MESSAGE_FORMAT = "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个"
 
     private const val msgCfg = "na_chat_words_count_kt_msg"
     private const val wordsCfg = "na_chat_words_count_kt_words"
@@ -89,102 +93,30 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
             val msg = if (isToday) it.getIntOrDefault(msgCfg, 0) else 0
             val words = if (isToday) it.getIntOrDefault(wordsCfg, 0) else 0
             val emo = if (isToday) it.getIntOrDefault(emoCfg, 0) else 0
-            it.getStringOrDefault(strCfg, "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个")
-                .format(msg, words, emo)
+            try {
+                it.getStringOrDefault(strCfg, DEFAULT_MESSAGE_FORMAT).format(msg, words, emo)
+            } catch (fe: IllegalArgumentException) {
+                fe.toString()
+            }
         } ?: UIN_CONFIG_ERROR_MESSAGE
     }
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.activity.QQSettingMe".clazz?.hookBeforeAllConstructors {
-            val viewGroup = it.args[2] as ViewGroup
+        val kQQSettingMe: Class<*> = "com.tencent.mobileqq.activity.QQSettingMe".clazz!!
+        val ctor = kQQSettingMe.constructors.asSequence().first { it.parameterTypes.size > 2 }
+        // select a method to get view
+        if (ViewGroup::class.java.isAssignableFrom(ctor.parameterTypes[2])) {
+            // for after QQ 8.8.20
+            kQQSettingMe.hookBeforeAllConstructors {
+                val viewGroup = it.args[2] as ViewGroup
+                updateChatWordView(viewGroup)
+            }
+        } else {
+            // for older version
             DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)?.hookAfter(this) {
-                val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
-                val textView = (relativeLayout?.parent as FrameLayout).findViewById<TextView>(io.github.qauxv.R.id.chat_words_count)
-                textView.text = getChatWords()
+                val viewGroup = it.thisObject.get("a", ViewGroup::class.java) as ViewGroup
+                updateChatWordView(viewGroup)
             }
-        }
-        "com.tencent.mobileqq.activity.QQSettingMe".clazz?.hookAfterAllConstructors {
-            val activity = it.args[0] as Activity
-            val relativeLayout = (it.args[2] as ViewGroup).findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
-            relativeLayout?.visibility = View.GONE
-            val textView = TextView(activity)
-            textView.text = getChatWords()
-            textView.setTextColor(
-                Color.parseColor(
-                    getExFriendCfg()?.getString(
-                        colorCfg
-                    ) ?: "#FF000000"
-                )
-            )
-            textView.id = io.github.qauxv.R.id.chat_words_count
-            textView.textSize = 15.0f
-            textView.setOnClickListener {
-                val dialog = CustomDialog.createFailsafe(activity)
-                val ctx = dialog.context
-                val editText = EditText(ctx)
-                editText.setText(getExFriendCfg()?.getString(colorCfg) ?: "#ff000000")
-                editText.textSize = 16f
-                val _5 = LayoutHelper.dip2px(activity, 5f)
-                editText.setPadding(_5, _5, _5, _5 * 2)
-                val linearLayout = LinearLayout(ctx)
-                linearLayout.addView(
-                    editText,
-                    LayoutHelper.newLinearLayoutParams(
-                        ViewGroup.LayoutParams.MATCH_PARENT,
-                        ViewGroup.LayoutParams.WRAP_CONTENT,
-                        _5 * 2
-                    )
-                )
-                val alertDialog = dialog
-                    .setTitle("输入聊天字数统计颜色")
-                    .setView(linearLayout)
-                    .setPositiveButton("确认") { _, _ ->
-                    }
-                    .setNegativeButton("取消", null)
-                    .setNeutralButton("使用默认值") { _, _ ->
-                        putExFriend(colorCfg, "#FF000000")
-                        Toasts.showToast(
-                            activity,
-                            Toasts.TYPE_INFO,
-                            "重启以应用设置",
-                            Toast.LENGTH_SHORT
-                        )
-                    }
-                    .create() as AlertDialog
-                alertDialog.show()
-                alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
-                    val color = editText.text.toString()
-                    try {
-                        Color.parseColor(color)
-                        putExFriend(colorCfg, color)
-                        alertDialog.cancel()
-                        Toasts.showToast(
-                            activity,
-                            Toasts.TYPE_INFO,
-                            "重启以应用设置",
-                            Toast.LENGTH_SHORT
-                        )
-                    } catch (e: IllegalArgumentException) {
-                        Toasts.showToast(
-                            activity,
-                            Toasts.TYPE_ERROR,
-                            "颜色格式不正确",
-                            Toast.LENGTH_SHORT
-                        )
-                    }
-                }
-                textView.setOnLongClickListener {
-                    CustomDialog.createFailsafe(activity).setTitle("聊天字数统计设置").setMessage("是否要重置统计记录").setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
-                        putExFriend(timeCfg, Date().today)
-                        putExFriend(msgCfg, 0)
-                        putExFriend(wordsCfg, 0)
-                        putExFriend(emoCfg, 0)
-                        activity.showToastByTencent("已清空聊天字数统计")
-                    }.setNegativeButton(android.R.string.cancel, null).show()
-                    true
-                }
-            }
-            (relativeLayout?.parent as FrameLayout).addView(textView)
         }
         Initiator._ChatActivityFacade().method(
             "a",
@@ -229,6 +161,74 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
         }
     }
 
+    private fun updateChatWordView(viewGroup: ViewGroup) {
+        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
+        var textView: TextView? = (relativeLayout.parent as FrameLayout).findViewById(io.github.qauxv.R.id.chat_words_count)
+        if (textView == null) {
+            injectChatWordView(viewGroup.context, viewGroup)
+            textView = (relativeLayout.parent as FrameLayout).findViewById(io.github.qauxv.R.id.chat_words_count)
+        }
+        textView!!.text = getChatWords()
+    }
+
+    private fun injectChatWordView(context: Context, viewGroup: ViewGroup) {
+        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
+        relativeLayout?.visibility = View.GONE
+        val textView = TextView(context)
+        textView.text = getChatWords()
+        textView.setTextColor(
+            Color.parseColor(getExFriendCfg()?.getString(colorCfg) ?: "#FF000000")
+        )
+        textView.id = io.github.qauxv.R.id.chat_words_count
+        textView.textSize = 15.0f
+        textView.setOnClickListener {
+            val dialog = CustomDialog.createFailsafe(context)
+            val ctx = dialog.context
+            val editText = EditText(ctx)
+            editText.setText(getExFriendCfg()?.getString(colorCfg) ?: "#ff000000")
+            editText.textSize = 16f
+            val _5 = LayoutHelper.dip2px(context, 5f)
+            editText.setPadding(_5, _5, _5, _5 * 2)
+            val linearLayout = LinearLayout(ctx)
+            linearLayout.addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2))
+            val alertDialog = dialog
+                .setTitle("输入聊天字数统计颜色")
+                .setView(linearLayout)
+                .setPositiveButton("确认") { _, _ ->
+                }
+                .setNegativeButton("取消", null)
+                .setNeutralButton("使用默认值") { _, _ ->
+                    putExFriend(colorCfg, "#FF000000")
+                    Toasts.showToast(context, Toasts.TYPE_INFO, "重启以应用设置", Toast.LENGTH_SHORT)
+                }
+                .create() as AlertDialog
+            alertDialog.show()
+            alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val color = editText.text.toString()
+                try {
+                    Color.parseColor(color)
+                    putExFriend(colorCfg, color)
+                    alertDialog.cancel()
+                    Toasts.showToast(context, Toasts.TYPE_INFO, "重启以应用设置", Toast.LENGTH_SHORT)
+                } catch (e: IllegalArgumentException) {
+                    Toasts.showToast(context, Toasts.TYPE_ERROR, "颜色格式不正确", Toast.LENGTH_SHORT)
+                }
+            }
+            textView.setOnLongClickListener {
+                CustomDialog.createFailsafe(context).setTitle("聊天字数统计设置").setMessage("是否要重置统计记录")
+                    .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
+                        putExFriend(timeCfg, Date().today)
+                        putExFriend(msgCfg, 0)
+                        putExFriend(wordsCfg, 0)
+                        putExFriend(emoCfg, 0)
+                        context.showToastByTencent("已清空聊天字数统计")
+                    }.setNegativeButton(android.R.string.cancel, null).show()
+                true
+            }
+        }
+        (relativeLayout?.parent as FrameLayout).addView(textView)
+    }
+
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
     private fun showChatWordsCountDialog(activity: Context) {
@@ -241,7 +241,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
         editText.setText(
             getExFriendCfg()?.getStringOrDefault(
                 strCfg,
-                "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个"
+                DEFAULT_MESSAGE_FORMAT
             ) ?: UIN_CONFIG_ERROR_MESSAGE
         )
         val checkBox = CheckBox(ctx)
@@ -259,39 +259,15 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
         textView.setPadding(_5 * 2, _5, _5 * 2, _5)
         val linearLayout = LinearLayout(ctx)
         linearLayout.orientation = LinearLayout.VERTICAL
-        linearLayout.addView(
-            textView,
-            LayoutHelper.newLinearLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                _5,
-                0,
-                _5,
-                0
-            )
-        )
-        linearLayout.addView(
-            checkBox,
-            LayoutHelper.newLinearLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                _5 * 2
-            )
-        )
-        linearLayout.addView(
-            editText,
-            LayoutHelper.newLinearLayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT,
-                _5 * 2
-            )
-        )
+        linearLayout.addView(textView, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5, 0, _5, 0))
+        linearLayout.addView(checkBox, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2))
+        linearLayout.addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2))
         val alertDialog = dialog.setTitle("输入聊天字数统计样式")
             .setView(linearLayout)
             .setCancelable(true)
             .setPositiveButton("确认") { _, _ ->
             }.setNeutralButton("使用默认值") { _, _ ->
-                putExFriend(strCfg, "今日已发送 %1\$d 条消息，共 %2\$d 字，表情包 %3\$d 个")
+                putExFriend(strCfg, DEFAULT_MESSAGE_FORMAT)
             }
             .setNegativeButton("取消", null)
             .create() as AlertDialog
