@@ -28,6 +28,7 @@
     <item type="id" name="holiday_header" />
 
     <item name="mainV2_menuItem_toggleDesktopIcon" type="id" />
+    <item name="inject_fun_btn_intercept" type="id" />
     <item name="chat_words_count" type="id" />
     <item name="setting2Activity_settingEntryItem" type="id" />
 </resources>

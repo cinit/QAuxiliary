@@ -72,8 +72,7 @@ public class InspectMessage extends CommonSwitchFunctionHook implements View.OnL
                         if (!isEnabled()) {
                             return;
                         }
-                        Context ctx = Reflex.getInstanceObjectOrNull(param.thisObject, "a",
-                                Context.class);
+                        Context ctx = Reflex.getInstanceObjectOrNull(param.thisObject, "a", Context.class);
                         if (ctx == null) {
                             ctx = getFirstNSFByType(param.thisObject, Context.class);
                         }
@@ -82,8 +81,7 @@ public class InspectMessage extends CommonSwitchFunctionHook implements View.OnL
                             return;
                         }
                         String activityName = ctx.getClass().getName();
-                        if (activityName
-                                .equals("com.tencent.mobileqq.activity.MultiForwardActivity")) {
+                        if (activityName.equals("com.tencent.mobileqq.activity.MultiForwardActivity")) {
                             return;
                         }
                         final Object msg = MultiForwardAvatarHook.getChatMessageByView(view);
@@ -105,8 +103,7 @@ public class InspectMessage extends CommonSwitchFunctionHook implements View.OnL
         for (Method m : load("com.tencent.mobileqq.activity.aio.panel.PanelIconLinearLayout")
                 .getDeclaredMethods()) {
             if (m.getReturnType().equals(void.class) && Modifier.isPublic(m.getModifiers())
-                    && !Modifier.isStatic(m.getModifiers())
-                    && m.getParameterTypes().length == 0) {
+                    && !Modifier.isStatic(m.getModifiers()) && m.getParameterTypes().length == 0) {
                 String name = m.getName();
                 if ("a".equals(name)) {
                     a = m;
@@ -134,6 +131,10 @@ public class InspectMessage extends CommonSwitchFunctionHook implements View.OnL
                 }
                 ViewGroup panel = (ViewGroup) param.thisObject;
                 View v = panel.getChildAt(panel.getChildCount() - 1);
+                if (v == null) {
+                    // TODO 2022-03-04 inspect msg in simple UI mode...
+                    return;
+                }
                 if (v instanceof ViewGroup) {
                     View v2;
                     for (int i = 0; i < ((ViewGroup) v).getChildCount(); i++) {

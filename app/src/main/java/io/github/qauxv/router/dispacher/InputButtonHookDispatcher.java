@@ -35,6 +35,7 @@ import androidx.annotation.NonNull;
 import cc.ioctl.hook.CardMsgSender;
 import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.util.HookUtils;
+import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
@@ -93,22 +94,31 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
                     }
                     ViewGroup aioRootView = __aioRootView;
                     Context ctx = aioRootView.getContext();
-                    int fun_btn = ctx.getResources()
-                            .getIdentifier("fun_btn", "id", ctx.getPackageName());
-                    View sendBtn = aioRootView.findViewById(fun_btn);
-                    final AppRuntime qqApp = getFirstNSFByType(param.thisObject,
-                            Initiator._QQAppInterface());
-                    final Parcelable session = getFirstNSFByType(param.thisObject,
-                            _SessionInfo());
-                    if (!sendBtn.getParent().getClass().getName().equals(InterceptLayout.class.getName())) {
+                    int funBtnId = ctx.getResources().getIdentifier("fun_btn", "id", ctx.getPackageName());
+                    View sendBtn = aioRootView.findViewById(funBtnId);
+                    final AppRuntime qqApp = getFirstNSFByType(param.thisObject, Initiator._QQAppInterface());
+                    final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    boolean isInterceptorInstalled = false;
+                    {
+                        ViewGroup parent = (ViewGroup) sendBtn.getParent();
+                        if (parent instanceof InterceptLayout) {
+                            isInterceptorInstalled = true;
+                        } else {
+                            ViewGroup p2 = (ViewGroup) parent.getParent();
+                            if (p2 instanceof InterceptLayout) {
+                                isInterceptorInstalled = true;
+                            }
+                        }
+                    }
+                    if (!isInterceptorInstalled) {
                         InterceptLayout layout = InterceptLayout.setupRudely(sendBtn);
+                        layout.setId(R.id.inject_fun_btn_intercept);
                         layout.setTouchInterceptor(new TouchEventToLongClickAdapter() {
                             @Override
                             public boolean onTouch(View v, MotionEvent event) {
                                 ViewGroup vg = (ViewGroup) v;
                                 if (event.getAction() == MotionEvent.ACTION_DOWN &&
-                                        vg.getChildCount() != 0 && vg.getChildAt(0)
-                                        .isEnabled()) {
+                                        vg.getChildCount() != 0 && vg.getChildAt(0).isEnabled()) {
                                     return false;
                                 }
                                 return super.onTouch(v, event);
@@ -119,8 +129,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
                                 try {
                                     ViewGroup vg = (ViewGroup) v;
                                     Context ctx = v.getContext();
-                                    if (vg.getChildCount() != 0 && !vg.getChildAt(0)
-                                            .isEnabled()) {
+                                    if (vg.getChildCount() != 0 && !vg.getChildAt(0).isEnabled()) {
                                         EditText input = aioRootView.findViewById(
                                                 ctx.getResources().getIdentifier("input", "id", ctx.getPackageName()));
                                         String text = input.getText().toString();
