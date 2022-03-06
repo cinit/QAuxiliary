@@ -232,11 +232,28 @@ public class MsgRecordUtil {
         put("MSG_TYPE_VIP_AIO_SEND_TIPS", -4022);
         put("MSG_TYPE_VIP_DONATE", -2047);
         put("MSG_TYPE_VIP_KEYWORD", -4021);
+        put("MSG_TYPE_VIDEO_EMOTICON", -2079);
         put("MSG_TYPE_VIP_VIDEO", -2045);
         put("MSG_TYPE_YANZHI", -2070);
+        put("MSG_TYPE_ZPLAN", -2078);
+        put("MSG_TYPE_GUILD_APP_CHANNEL", -4051);
+        put("MSG_TYPE_GUILD_GIFT", -5009);
+        put("MSG_TYPE_GUILD_LIVE_GIFT", -4070);
+        put("MSG_TYPE_GUILD_MARK_DOWN", -4052);
+        put("MSG_TYPE_GUILD_REVOKE_GRAY_TIP", -4050);
+        put("MSG_TYPE_GUILD_ROBOT_WELCOME_TIPS", -4090);
+        put("MSG_TYPE_GUILD_WELCOME_TIPS", -4028);
+        put("MSG_TYPE_GUILD_YOLO_GAME_RESULT", -4029);
+        put("MSG_TYPE_GUILD_YOLO_SYSTEM", -4030);
+        put("MSG_TYPE_GUILD_YOLO_TEAM", -4031);
     }};
 
     public static final BiMap<String, String> DESC = new HashBiMap<String, String>() {{
+        put("MSG_TYPE_GUILD_APP_CHANNEL", "频道消息");
+        put("MSG_TYPE_GUILD_GIFT", "频道礼物");
+        put("MSG_TYPE_GUILD_LIVE_GIFT", "频道直播礼物");
+        put("MSG_TYPE_GUILD_REVOKE_GRAY_TIP", "频道撤回礼物");
+        put("MSG_TYPE_GUILD_WELCOME_TIPS", "频道欢迎提示");
         put("MSG_TYPE_TEXT", "文本消息");
         put("MSG_TYPE_TEXT_VIDEO", "小视频");
         put("MSG_TYPE_TROOP_TIPS_ADD_MEMBER", "加群消息");
