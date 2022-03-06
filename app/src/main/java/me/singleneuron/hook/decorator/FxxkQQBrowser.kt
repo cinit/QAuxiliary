@@ -29,6 +29,7 @@ import android.util.TypedValue
 import androidx.annotation.ColorInt
 import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import cc.ioctl.hook.JumpController
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -71,7 +72,10 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
                     }
                     .setShowTitle(true)
                     .build()
-            customTabsIntent.intent.putExtra("from_fqb", true)
+            customTabsIntent.intent.apply {
+                putExtra("from_fqb", true)
+                putExtra(JumpController.EXTRA_JMP_JEFS_PERMISSIVE, true)
+            }
             customTabsIntent.launchUrl(hostInfo.application, Uri.parse(url))
             param.result = null
             true
