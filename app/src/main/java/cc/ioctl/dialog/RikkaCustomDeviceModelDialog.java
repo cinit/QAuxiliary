@@ -39,6 +39,7 @@ import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
+import java.io.File;
 
 public class RikkaCustomDeviceModelDialog {
 
@@ -186,6 +187,8 @@ public class RikkaCustomDeviceModelDialog {
                         cfg.putString(rq_custom_device_manufacturer, currentDeviceManufacturer);
                         cfg.putString(rq_custom_device_model, currentDeviceModel);
                     }
+                    //移除缓存文件
+                    new File(ctx.getCacheDir().getParent()+"/app_x5webview/Default/Local Storage/leveldb","MANIFEST-000001").delete();
                     cfg.save();
                     Toasts.success(ctx, "重启" + HostInfo.getAppName() + "生效!");
                     dialog.dismiss();

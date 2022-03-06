@@ -22,10 +22,13 @@
 package com.rymmmmm.hook;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.dialog.RikkaCustomDeviceModelDialog;
+import de.robv.android.xposed.XC_MethodReplacement;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IUiItemAgent;
@@ -35,6 +38,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -87,6 +91,21 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
         model.setAccessible(true);
         manufacturer.set(Clz.newInstance(), RikkaCustomDeviceModelDialog.getCurrentDeviceManufacturer());
         model.set(Clz.newInstance(), RikkaCustomDeviceModelDialog.getCurrentDeviceModel());
+        //hook 替换QQ获取缓存里的设备信息
+        Class<?> devInfoManager = Initiator.load("com.tencent.mobileqq.Pandora.deviceInfo.DeviceInfoManager");
+        if (devInfoManager == null) devInfoManager = Initiator.load("com.tencent.mobileqq.pandora.deviceinfo.DeviceInfoManager");
+        if (devInfoManager != null){
+            Method getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager,"getModel", Context.class);
+            if (getMODEL == null) getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager,"h", Context.class);
+            if (getMODEL != null){
+                XposedBridge.hookMethod(getMODEL, new XC_MethodReplacement() {
+                    @Override
+                    protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
+                        return RikkaCustomDeviceModelDialog.getCurrentDeviceModel();
+                    }
+                });
+            }
+        }
         return true;
     }
 
