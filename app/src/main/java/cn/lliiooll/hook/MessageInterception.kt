@@ -28,7 +28,6 @@ import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Initiator._MessageRecord
 import me.singleneuron.data.MsgRecordData
 
 @FunctionHookEntry
@@ -36,10 +35,9 @@ object MessageInterception : BasePersistBackgroundHook() {
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        val clazz = Initiator._QQMessageFacade()
+        val clazz = Initiator._C2CMessageManager()
         for (m in clazz.declaredMethods) {
-            val argt = m.parameterTypes
-            if (argt.size == 1 && argt[0] == _MessageRecord()) {
+            if (m.parameterTypes.size == 2 && m.returnType == MessageManager.booleanType && m.parameterTypes[1] == MessageManager.intType) {
                 XposedBridge.hookMethod(m, object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         val msgRecord = param.args[0]
