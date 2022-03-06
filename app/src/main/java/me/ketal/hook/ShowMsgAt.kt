@@ -31,15 +31,19 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
 import de.robv.android.xposed.XC_MethodHook
-import io.github.qauxv.core.MainHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.isTim
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.get
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
 
 @UiItemAgentEntry
 object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
@@ -97,6 +101,9 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
 class ProfileCardSpan(val qq: Long) : ClickableSpan() {
     override fun onClick(v: View) {
-        MainHook.openProfileCard(v.context, qq)
+        // 0 for @all
+        if (qq > 10000) {
+            MainHook.openProfileCard(v.context, qq)
+        }
     }
 }
