@@ -37,6 +37,8 @@ public class MessageManager {
         RegexAntiMeg.INSTANCE,
         AntiMessage.INSTANCE,
     };
+    public static Class<?> intType = int.class;
+    public static Class<?> booleanType = boolean.class;
 
     /**
      * 通过这里广播拦截的消息

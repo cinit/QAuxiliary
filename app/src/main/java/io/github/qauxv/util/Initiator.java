@@ -76,7 +76,7 @@ public class Initiator {
     public static Class _QbossADImmersionBannerManager() {
         Class tmp;
         Class mQbossADImmersionBannerManager = load(
-            "cooperation.vip.qqbanner.QbossADImmersionBannerManager");
+                "cooperation.vip.qqbanner.QbossADImmersionBannerManager");
         if (mQbossADImmersionBannerManager == null) {
             try {
                 tmp = load("cooperation.vip.qqbanner.QbossADImmersionBannerManager$1");
@@ -89,7 +89,7 @@ public class Initiator {
             }
         }
         mQbossADImmersionBannerManager = load(
-            "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
+                "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
         if (mQbossADImmersionBannerManager == null) {
             try {
                 tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$1");
@@ -102,7 +102,7 @@ public class Initiator {
             }
         }
         mQbossADImmersionBannerManager = load(
-            "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
+                "cooperation.vip.qqbanner.manager.VasADImmersionBannerManager");
         if (mQbossADImmersionBannerManager == null) {
             try {
                 tmp = load("cooperation.vip.qqbanner.manager.VasADImmersionBannerManager$1");
@@ -120,7 +120,7 @@ public class Initiator {
     public static Class _ConversationTitleBtnCtrl() {
         Class<?> ret, cref;
         for (String clzName : new String[]{
-            "com.tencent.mobileqq.activity.ConversationTitleBtnCtrl"}) {
+                "com.tencent.mobileqq.activity.ConversationTitleBtnCtrl"}) {
             ret = load(clzName);
             if (ret != null) {
                 return ret;
@@ -187,7 +187,7 @@ public class Initiator {
     public static Class _GivingHeartItemBuilder() {
         Class tmp;
         Class mGivingHeartItemBuilder = load(
-            "com.tencent.mobileqq.activity.aio.item.GivingHeartItemBuilder");
+                "com.tencent.mobileqq.activity.aio.item.GivingHeartItemBuilder");
         if (mGivingHeartItemBuilder == null) {
             try {
                 tmp = load("com.tencent.mobileqq.activity.aio.item.GivingHeartItemBuilder$10");
@@ -221,7 +221,7 @@ public class Initiator {
     public static Class _TroopEnterEffectController() {
         Class tmp;
         Class mController = load(
-            "com.tencent.mobileqq.troop.enterEffect.TroopEnterEffect.Controller");
+                "com.tencent.mobileqq.troop.enterEffect.TroopEnterEffect.Controller");
         if (mController == null) {
             try {
                 tmp = load("com.tencent.mobileqq.troop.enterEffect.TroopEnterEffectController$3");
@@ -357,7 +357,7 @@ public class Initiator {
     public static Class _TroopFileUploadMgr() {
         Class<?> ret, cref;
         for (String clzName : new String[]{
-            "com.tencent.mobileqq.troop.filemanager.upload.TroopFileUploadMgr"}) {
+                "com.tencent.mobileqq.troop.filemanager.upload.TroopFileUploadMgr"}) {
             ret = load(clzName);
             if (ret != null) {
                 return ret;
@@ -442,7 +442,7 @@ public class Initiator {
 
     public static Class _TroopGiftAnimationController() {
         Class cl_TroopGiftAnimationController = load(
-            "com.tencent.mobileqq.troopgift.TroopGiftAnimationController");
+                "com.tencent.mobileqq.troopgift.TroopGiftAnimationController");
         if (cl_TroopGiftAnimationController == null) {
             Class cref = load("com.tencent.mobileqq.troopgift.TroopGiftAnimationController$1");
             try {
@@ -470,7 +470,7 @@ public class Initiator {
         if (director == null) {
             try {
                 director = load("com/tencent/mobileqq/startup/director/StartupDirector$1")
-                    .getDeclaredField("this$0").getType();
+                        .getDeclaredField("this$0").getType();
             } catch (NoSuchFieldException ignored) {
             }
         }
@@ -611,7 +611,7 @@ public class Initiator {
     public static Class _C2CMessageProcessor() {
         Class<?> ret, cref;
         for (String clzName : new String[]{"com/tencent/mobileqq/app/message/C2CMessageProcessor",
-            "com/tencent/imcore/message/C2CMessageProcessor"}) {
+                "com/tencent/imcore/message/C2CMessageProcessor"}) {
             ret = load(clzName);
             if (ret != null) {
                 return ret;
@@ -628,6 +628,10 @@ public class Initiator {
         }
         Log.e("Initiator/E class C2CMessageProcessor not found");
         return null;
+    }
+
+    public static Class _C2CMessageManager() {
+        return load("com/tencent/imcore/message/C2CMessageManager");
     }
 
     public static Class _AllInOne() {
