@@ -54,6 +54,7 @@ import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import cc.ioctl.util.DebugUtils;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
@@ -245,8 +246,10 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
             @SuppressLint("SetTextI18n")
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                Field f = findField(param.thisObject.getClass(), Bundle.class, "a");
-                if (f == null) {
+                Field f;
+                try{
+                    f = findField(param.thisObject.getClass(), Bundle.class, "a");
+                }catch (NoSuchFieldException ex){
                     f = Reflex.getFirstNSFFieldByType(param.thisObject.getClass(), Bundle.class);
                 }
                 f.setAccessible(true);
