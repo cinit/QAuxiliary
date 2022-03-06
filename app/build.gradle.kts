@@ -76,6 +76,11 @@ android {
     kotlinOptions {
         jvmTarget = Version.java.toString()
     }
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+        }
+    }
     // Encapsulates your external native build configurations.
     externalNativeBuild {
         // Encapsulates your CMake build configurations.
