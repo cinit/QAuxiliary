@@ -106,10 +106,10 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
                 Toasts.error(context, "没有可备份的配置文件")
                 return
             }
-            // show multi choice dialog
+            // show multi choice dialog, all choices are checked by default
             AlertDialog.Builder(context)
                     .setTitle("选择要备份的配置文件")
-                    .setMultiChoiceItems(availableChoices.toTypedArray(), null) { _, _, _ -> }
+                    .setMultiChoiceItems(availableChoices.toTypedArray(), BooleanArray(availableChoices.size) { true }) { _, _, _ -> }
                     .setPositiveButton("确定") { dialog, _ ->
                         val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
                         val selectedItemsList = ArrayList<String>()
