@@ -30,6 +30,8 @@ import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
@@ -117,10 +119,18 @@ public class HookStatus {
     }
 
     public static void init(@NonNull Context context) {
-        SyncUtils.async(() -> {
-            sExpCpCalled = callTaichiContentProvider(context);
-            sExpCpResult = sExpCpCalled;
-        });
+        if (context.getPackageName().equals(BuildConfig.APPLICATION_ID)) {
+            SyncUtils.async(() -> {
+                sExpCpCalled = callTaichiContentProvider(context);
+                sExpCpResult = sExpCpCalled;
+            });
+        } else {
+            // in host process???
+            try {
+                initHookStatusImplInHostProcess();
+            } catch (LinkageError ignored) {
+            }
+        }
     }
 
     public static HookType getHookType() {
@@ -128,6 +138,31 @@ public class HookStatus {
             return HookType.ZYGOTE;
         }
         return sExpCpResult ? HookType.APP_PATCH : HookType.NONE;
+    }
+
+    private static void initHookStatusImplInHostProcess() throws LinkageError {
+        boolean dexObfsEnabled = !"de.robv.android.xposed.XposedBridge".equals(XposedBridge.class.getName());
+        String hookProvider = null;
+        if (dexObfsEnabled) {
+            HookStatusImpl.sIsLsposedDexObfsEnabled = true;
+            hookProvider = "LSPosed";
+        } else {
+            String bridgeTag = null;
+            try {
+                bridgeTag = (String) XposedBridge.class.getDeclaredField("TAG").get(null);
+            } catch (ReflectiveOperationException ignored) {
+            }
+            if (bridgeTag != null) {
+                if (bridgeTag.startsWith("LSPosed")) {
+                    hookProvider = "LSPosed";
+                } else if (bridgeTag.startsWith("EdXposed")) {
+                    hookProvider = "EdXposed";
+                }
+            }
+        }
+        if (hookProvider != null) {
+            HookStatusImpl.sZygoteHookProvider = hookProvider;
+        }
     }
 
     public static String getHookProviderName() {
