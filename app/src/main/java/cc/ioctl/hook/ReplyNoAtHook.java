@@ -68,7 +68,7 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.MAIN_UI_MSG;
+        return Simplify.UI_CHAT_MSG;
     }
 
     public static final ReplyNoAtHook INSTANCE = new ReplyNoAtHook();
