@@ -36,10 +36,10 @@ object MessageInterception : BasePersistBackgroundHook() {
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        val clazz = Initiator._QQMessageFacade()
+        val clazz = Initiator._C2CMessageManager()
         for (m in clazz.declaredMethods) {
             val argt = m.parameterTypes
-            if (argt.size == 1 && argt[0] == _MessageRecord()) {
+            if (argt.size == 2 && m.returnType == MessageManager.booleanType && argt[0] == _MessageRecord() && argt[1] == MessageManager.intType) {
                 XposedBridge.hookMethod(m, object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
                         val msgRecord = param.args[0]
