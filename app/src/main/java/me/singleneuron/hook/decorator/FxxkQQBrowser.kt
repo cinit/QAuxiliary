@@ -27,8 +27,9 @@ import android.content.Intent
 import android.net.Uri
 import android.util.TypedValue
 import androidx.annotation.ColorInt
-import androidx.browser.customtabs.CustomTabColorSchemeParams
 import androidx.browser.customtabs.CustomTabsIntent
+import androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_DARK
+import androidx.browser.customtabs.CustomTabsIntent.COLOR_SCHEME_LIGHT
 import cc.ioctl.hook.JumpController
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -36,6 +37,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
 import io.github.qauxv.router.dispacher.StartActivityHook
+import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.hostInfo
 
 @UiItemAgentEntry
@@ -59,19 +61,27 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
                 && !url.contains(Regex("qq.com|tenpay.com"))
                 && intent.component?.shortClassName?.contains("QQBrowserActivity") == true
         ) {
-            val customTabsIntent = CustomTabsIntent.Builder()
-                    .apply {
-                        try {
-                            val color = getColorPrimary()
-                            setDefaultColorSchemeParams(CustomTabColorSchemeParams.Builder()
-                                    .setToolbarColor(color)
-                                    .build())
-                        } catch (e: Exception) {
-                            traceError(e)
-                        }
-                    }
-                    .setShowTitle(true)
-                    .build()
+            val customTabsIntent = CustomTabsIntent.Builder().apply {
+                if (ResUtils.isInNightMode()) {
+                    setColorScheme(COLOR_SCHEME_DARK)
+                    // QQ dark theme in does not seems to have an accent color
+                } else {
+                    setColorScheme(COLOR_SCHEME_LIGHT)
+                    // FF: QQ does not override the colorPrimary in the theme
+                    // TODO: 2022-03-06 find the actual effective primary color for the QQ theme
+                    // try {
+                    //     val color = getColorPrimary()
+                    //     setDefaultColorSchemeParams(
+                    //         CustomTabColorSchemeParams.Builder()
+                    //             .setToolbarColor(color)
+                    //             .build()
+                    //     )
+                    // } catch (e: Exception) {
+                    //     traceError(e)
+                    // }
+                }
+                setShowTitle(true)
+            }.build()
             customTabsIntent.intent.apply {
                 putExtra("from_fqb", true)
                 putExtra(JumpController.EXTRA_JMP_JEFS_PERMISSIVE, true)
