@@ -24,6 +24,7 @@ package io.github.qauxv.core;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Parcelable;
+import cc.ioctl.hook.FileRecvRedirect;
 import cc.ioctl.hook.GagInfoDisclosure;
 import cc.ioctl.hook.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.MuteQZoneThumbsUp;
@@ -123,6 +124,7 @@ public class MainHook {
         HookInstaller.allowEarlyInit(CustomSplash.INSTANCE);
         HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
         HookInstaller.allowEarlyInit(RemoveSuperQQShow.INSTANCE);
+        HookInstaller.allowEarlyInit(FileRecvRedirect.INSTANCE);
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             injectStartupHookForMain(ctx);
