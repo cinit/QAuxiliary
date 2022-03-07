@@ -27,7 +27,7 @@ jobs:
           cmake-version: '3.22.1'
       - name: Install ccache
         run: |
-          apt install -y ccache
+          sudo apt install -y ccache
           ccache -zp
           ccache -o max_size=10G
           ccache -o hash_dir=false
@@ -38,6 +38,8 @@ jobs:
           path: |
             ~/.cache/ccache
             ~/.ccache
+          key: ccache
+
       - name: Install NDK v23
         run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
