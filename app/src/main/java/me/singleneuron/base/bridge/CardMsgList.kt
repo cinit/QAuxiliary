@@ -23,7 +23,14 @@ package me.singleneuron.base.bridge
 
 import androidx.annotation.NonNull
 import com.google.gson.Gson
+import io.github.qauxv.SyncUtils
+import io.github.qauxv.config.ConfigManager
+import io.github.qauxv.util.LicenseStatus
 import java.net.URL
+
+const val apiAddress = "https://2fa.qwq2333.top/card/BlackList"
+const val cacheKey = "cardRuleCache"
+const val lastUpdateTimeKey = "cardRuleCacheLastUpdateTime"
 
 abstract class CardMsgList {
 
@@ -39,7 +46,7 @@ abstract class CardMsgList {
     }
 }
 
-fun getBlackListExample(): String {
+fun getBuiltInRule(): String {
     val map = mapOf(
         "禁止引流" to """(jq\.qq\.com)|(mqqapi.*?forward)""",
         "禁止发送回执消息" to "viewReceiptMessage",
@@ -52,5 +59,28 @@ fun getBlackListExample(): String {
 }
 
 fun getBlackList(): String {
-    return URL("https://ioctl.cc/QN/BlackList").readText()
+    if (LicenseStatus.isWhitelisted())
+        return "{}"
+    val cfg = ConfigManager.getDefaultConfig()
+    val cache: String = cfg.getStringOrDefault(cacheKey, "null")
+    if (cache != "null") {
+        val lastUpdateTime = cfg.getLongOrDefault(lastUpdateTimeKey, System.currentTimeMillis())
+        if (lastUpdateTime >= lastUpdateTime + 360 * 60 * 1000) {
+            SyncUtils.async {
+                val onlineRule = URL(apiAddress).readText()
+                cfg.putString(cacheKey, onlineRule)
+                cfg.putLong(lastUpdateTimeKey, System.currentTimeMillis())
+                cfg.save()
+            }
+        }
+        return cache
+    } else {
+        SyncUtils.async {
+            val onlineRule = URL(apiAddress).readText()
+            cfg.putString(cacheKey, onlineRule)
+            cfg.putLong(lastUpdateTimeKey, System.currentTimeMillis())
+            cfg.save()
+        }
+        return getBuiltInRule()
+    }
 }
