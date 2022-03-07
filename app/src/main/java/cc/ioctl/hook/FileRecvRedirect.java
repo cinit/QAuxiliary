@@ -30,9 +30,12 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HookUtils.AfterHookedMethod;
 import cc.ioctl.util.HostInfo;
 import com.afollestad.materialdialogs.MaterialDialog;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IUiItemAgent;
@@ -63,7 +66,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     private Field TARGET_FIELD = null;
 
     private FileRecvRedirect() {
-        super(SyncUtils.PROC_ANY);
+        super(SyncUtils.PROC_ANY,new int[]{DexKit.C_APP_CONSTANTS});
     }
 
     @NonNull
@@ -154,22 +157,16 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
         try {
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_2_8)){
                 if(!inited){
-                    XposedHelpers.findAndHookMethod(Initiator.load("com.tencent.mobileqq.vfs.VFSAssistantUtils"), "getSDKPrivatePath", String.class,
-                            new XC_MethodHook() {
-                                @Override
-                                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                                    super.afterHookedMethod(param);
-                                    String getResult = (String) param.getResult();
-                                    File checkAvailable = new File(getResult);
-                                    if (checkAvailable.exists() && checkAvailable.isFile())return;//如果文件存在则不处理
-                                    if (isEnabled() && getResult.startsWith(CacheDefPath)){
-                                        //在QQ尝试获取文件目录时进行替换
-                                        param.setResult(getRedirectPath()+getResult.substring(CacheDefPath.length()));
-                                    }
-                                }
-                            });
+                    HookUtils.hookAfterIfEnabled(this, XposedHelpers.findMethodBestMatch(Initiator.load("com.tencent.mobileqq.vfs.VFSAssistantUtils"), "getSDKPrivatePath", String.class), param -> {
+                        String getResult = (String) param.getResult();
+                        File checkAvailable = new File(getResult);
+                        if (checkAvailable.exists() && checkAvailable.isFile())return;//如果文件存在则不处理,防止已下载的文件出现异常
+                        if (getResult.startsWith(CacheDefPath)){
+                            //在QQ尝试获取文件目录时进行替换
+                            param.setResult(getRedirectPath()+getResult.substring(CacheDefPath.length()));
+                        }
+                    });
                 }
-
             }else {
                 Field[] fields = DexKit.doFindClass(DexKit.C_APP_CONSTANTS).getFields();
                 if (TARGET_FIELD == null) {
@@ -195,7 +192,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     public boolean CheckPathIsAvailable(String Path){
         File f = new File(Path);
         f = f.getParentFile();
-        return f.listFiles() != null;
+        return f != null && f.listFiles() != null;
     }
 
     public String getDefaultPath() {
@@ -216,10 +213,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     @Nullable
     public String getRedirectPath() {
         String path = ConfigManager.getDefaultConfig().getString(ConfigItems.qn_file_recv_redirect_path);
-        if (TextUtils.isEmpty(path)){
-            path = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)+"/MobileQQ/";
-        }
-        if (path.endsWith("/"))return path.substring(0,path.length()-1);
+        if (path != null && path.endsWith("/"))return path.substring(0,path.length()-1);
         return path;
     }
 
