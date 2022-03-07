@@ -42,6 +42,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
@@ -69,6 +70,10 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        if (HostInfo.isInHostProcess()) {
+            // we have to set the theme before super.onCreate()
+            setTheme(R.style.Theme_MaiTungTMDesign);
+        }
         try {
             long ts = BuildConfig.BUILD_TIMESTAMP;
             dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
@@ -77,7 +82,10 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         } catch (Throwable e) {
             dbgInfo += "\n" + e;
         }
-        setDayNightStatus(getCurrentDayNightStatus());
+        if (HostInfo.isInModuleProcess()) {
+            setDayNightStatus(getCurrentDayNightStatus());
+        }
+        // if in host process, it should already be done by last activity
         super.onCreate(savedInstanceState);
         if (R.string.res_inject_success >>> 24 == 0x7f) {
             throw new RuntimeException("package id must NOT be 0x7f");
@@ -221,7 +229,11 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         super.onCreateOptionsMenu(menu);
-        getMenuInflater().inflate(R.menu.main_v2_toolbar, menu);
+        if (HostInfo.isInModuleProcess()) {
+            getMenuInflater().inflate(R.menu.main_v2_toolbar, menu);
+        } else {
+            getMenuInflater().inflate(R.menu.host_main_v2_options, menu);
+        }
         return true;
     }
 
@@ -246,6 +258,20 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             case R.id.menu_item_changeTheme: {
                 showChangeThemeDialog();
                 return true;
+            }
+            case R.id.menu_item_switch_to_module_process: {
+                Intent intent = new Intent();
+                intent.setComponent(new ComponentName(BuildConfig.APPLICATION_ID, ConfigV2Activity.class.getName()));
+                intent.setAction(Intent.ACTION_MAIN);
+                intent.addCategory("de.robv.android.xposed.category.MODULE_SETTINGS");
+                try {
+                    startActivity(intent);
+                    finish();
+                } catch (ActivityNotFoundException e) {
+                    new AlertDialog.Builder(this).setTitle("出错啦")
+                            .setMessage("拉起模块失败, 请确认 " + BuildConfig.APPLICATION_ID + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
+                            .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+                }
             }
             default: {
                 return ConfigV2Activity.super.onOptionsItemSelected(item);
@@ -311,6 +337,9 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     }
 
     void updateMenuItems() {
+        if (HostInfo.isInHostProcess()) {
+            return;
+        }
         Menu menu = mainV2Binding.topAppBar.getMenu();
         if (menu != null) {
             menu.removeItem(R.id.mainV2_menuItem_toggleDesktopIcon);

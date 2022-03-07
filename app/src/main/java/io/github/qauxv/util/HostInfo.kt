@@ -108,6 +108,8 @@ fun requireMinVersion(
 val isInModuleProcess: Boolean
     get() = hostInfo.hostSpecies == HostSpecies.QAuxiliary
 
+val isInHostProcess: Boolean get() = !isInModuleProcess
+
 data class HostInfoImpl(
     val application: Application,
     val packageName: String,

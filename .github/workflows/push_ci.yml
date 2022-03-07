@@ -60,6 +60,9 @@ jobs:
           KEY_ALIAS: ${{ secrets.SIGN_ALIAS }}
           KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
 
+      - name: Show Artifacts MD5
+        run: md5sum app/build/outputs/apk/release/*.apk
+
       - name: Upload Artifacts
         uses: actions/upload-artifact@v2
         # don't upload the artifacts if it's a pull request

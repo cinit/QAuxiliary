@@ -26,6 +26,9 @@ import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
@@ -35,6 +38,7 @@ import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
+import io.github.qauxv.activity.ConfigV2Activity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.dsl.item.CategoryItem
@@ -43,8 +47,9 @@ import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.util.CliOper
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
-import java.util.*
+import java.util.Locale
 
 class AboutFragment : BaseSettingFragment() {
 
@@ -194,6 +199,32 @@ class AboutFragment : BaseSettingFragment() {
                     " GPL-3.0 License"
                 )
         )
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        if (isInHostProcess) {
+            setHasOptionsMenu(true)
+        }
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        if (isInHostProcess) {
+            inflater.inflate(R.menu.host_about_fragment_options, menu)
+        }
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_item_show_config_v2_activity -> {
+                val intent = Intent(requireContext(), ConfigV2Activity::class.java)
+                startActivity(intent)
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
+        }
     }
 
     private fun noticeToUiItem(notice: LicenseNotice) = TextListItem(
