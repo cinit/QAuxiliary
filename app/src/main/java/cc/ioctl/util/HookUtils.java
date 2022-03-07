@@ -30,6 +30,7 @@ import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 public class HookUtils {
 
@@ -52,6 +53,8 @@ public class HookUtils {
 
     public static void hookAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -69,6 +72,8 @@ public class HookUtils {
 
     public static void hookAfterIfEnabled(final @NonNull BasePersistBackgroundHook this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -86,6 +91,8 @@ public class HookUtils {
 
     public static void hookAfterIfEnabled(final @NonNull BaseHookDispatcher<?> this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -103,6 +110,8 @@ public class HookUtils {
 
     public static void hookBeforeIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                            int priority, final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -130,6 +139,8 @@ public class HookUtils {
 
     public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                        int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
@@ -145,6 +156,8 @@ public class HookUtils {
 
     public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                         int priority, final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -170,6 +183,8 @@ public class HookUtils {
 
     public static void hookBeforeAndAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
                                                    int priority, final @NonNull BeforeAndAfterHookedMethod hook) {
+        Objects.requireNonNull(this0, "this0 == null");
+        Objects.requireNonNull(method, "method == null");
         XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
