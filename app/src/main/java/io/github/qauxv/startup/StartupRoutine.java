@@ -27,7 +27,6 @@ import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
 
 public class StartupRoutine {
@@ -55,11 +54,7 @@ public class StartupRoutine {
         EzXHelperInit.INSTANCE.setLogTag("QAuxv");
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
-        try {
-            Natives.load(ctx);
-        } catch (Exception | LinkageError e3) {
-            Log.e(e3);
-        }
+        Natives.load(ctx);
         MainHook.getInstance().performHook(ctx, step);
     }
 }

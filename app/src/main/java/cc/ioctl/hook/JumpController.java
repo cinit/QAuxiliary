@@ -68,6 +68,7 @@ public class JumpController extends CommonConfigFunctionHook {
     public static final int JMP_ALLOW = 1;
     public static final int JMP_REJECT = 2;
     public static final int JMP_QUERY = 3;
+    public static final String EXTRA_JMP_JEFS_PERMISSIVE = "io.github.qauxv.EXTRA_JMP_JEFS_PERMISSIVE";
     public static final JumpController INSTANCE = new JumpController();
     private static final String qn_jmp_ctl_rules = "qn_jmp_ctl_rules";
     Method JefsClass_runV = null;
@@ -188,7 +189,7 @@ public class JumpController extends CommonConfigFunctionHook {
                 }
             }
         }
-        HookUtils.hookAfterIfEnabled(this, JefsClass_intercept, param -> {
+        HookUtils.hookBeforeIfEnabled(this, JefsClass_intercept, param -> {
             final Object that = param.thisObject;
             final Context ctx = (Context) param.args[0];
             final Intent intent = (Intent) param.args[1];
@@ -203,6 +204,10 @@ public class JumpController extends CommonConfigFunctionHook {
                     ActProxyMgr.isModuleProxyActivity(cmp.getClassName()))) {
                 // don't return JMP_ALLOW if it's a module proxy activity in the host app
                 // because host will always allow it since the package name is the same
+                result = JMP_ALLOW;
+            }
+            if (intent.getBooleanExtra(EXTRA_JMP_JEFS_PERMISSIVE, false)) {
+                // allow if the intent is marked as permissive
                 result = JMP_ALLOW;
             }
             if (result != JMP_DEFAULT) {
@@ -243,6 +248,7 @@ public class JumpController extends CommonConfigFunctionHook {
                                     + " for " + intent, Toast.LENGTH_SHORT).show());
                 }
             }
+            // CFG: we didn't intercept, then the original method will be invoked
         });
         updateStateValue();
         return true;

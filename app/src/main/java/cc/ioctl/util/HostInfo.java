@@ -75,6 +75,10 @@ public class HostInfo {
         return io.github.qauxv.util.HostInfo.isInModuleProcess();
     }
 
+    public static boolean isInHostProcess() {
+        return !isInModuleProcess();
+    }
+
     public static boolean isTim() {
         return io.github.qauxv.util.HostInfo.isTim();
     }
