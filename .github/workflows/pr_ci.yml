@@ -25,6 +25,19 @@ jobs:
         uses: jwlawson/actions-setup-cmake@v1.12
         with:
           cmake-version: '3.22.1'
+      - name: Install ccache
+        run: |
+          apt install -y ccache
+          ccache -zp
+          ccache -o max_size=10G
+          ccache -o hash_dir=false
+          ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
+      - name: Native Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/ccache
+            ~/.ccache
       - name: Install NDK v23
         run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
@@ -54,3 +67,4 @@ jobs:
       - name: Build with Gradle
         run: |
           ./gradlew :app:assembleDebug
+          ccache -s

@@ -30,6 +30,19 @@ jobs:
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
           ln -s  ${ANDROID_HOME}/cmake/3.18.1/bin/ninja /opt/hostedtoolcache/cmake/3.22.1/x64/cmake-3.22.1-linux-x86_64/bin/
+      - name: Install ccache
+        run: |
+          apt install -y ccache
+          ccache -zp
+          ccache -o max_size=10G
+          ccache -o hash_dir=false
+          ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
+      - name: Native Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/ccache
+            ~/.ccache
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
         with:
@@ -55,6 +68,7 @@ jobs:
         run: |
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:assembleRelease
+          ccache -s
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
