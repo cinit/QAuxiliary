@@ -73,6 +73,14 @@ public class Initiator {
         }
     }
 
+    public static Class<?> loadClass(String className) throws ClassNotFoundException {
+        Class<?> ret = load(className);
+        if (ret == null) {
+            throw new ClassNotFoundException(className);
+        }
+        return ret;
+    }
+
     public static Class _QbossADImmersionBannerManager() {
         Class tmp;
         Class mQbossADImmersionBannerManager = load(

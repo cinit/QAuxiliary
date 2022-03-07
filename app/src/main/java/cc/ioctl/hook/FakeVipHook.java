@@ -23,14 +23,15 @@ package cc.ioctl.hook;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
+import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.DexKit;
-import io.github.qauxv.util.Log;
+import io.github.qauxv.util.DexMethodDescriptor;
+import io.github.qauxv.util.Initiator;
+import java.lang.reflect.Method;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -44,26 +45,27 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
+        Method m;
         try {
-            XposedBridge.hookMethod(
-                    DexKit.doFindMethod(DexKit.N_VIP_UTILS_getPrivilegeFlags),
-                    new XC_MethodHook() {
-                        @Override
-                        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                            int ret;
-                            //null is self
-                            Object uin = param.args[param.args.length - 1];
-                            if (uin == null) {
-                                ret = (int) param.getResult();
-                                param.setResult(2 | 4 | 8 | ret);//vip + svip + 大会员
-                            }
-                        }
-                    });
-            return true;
-        } catch (Throwable e) {
-            Log.e(e);
-            return false;
+            m = new DexMethodDescriptor("Lcom/tencent/mobileqq/utils/VipUtils;->a(Lmqq/app/AppRuntime;Ljava/lang/String;)I")
+                    .getMethodInstance(Initiator.getHostClassLoader());
+        } catch (NoSuchMethodException e) {
+            m = DexKit.doFindMethod(DexKit.N_VIP_UTILS_getPrivilegeFlags);
         }
+        if (m.getReturnType() != int.class) {
+            throw new IllegalStateException("VipUtils.getPrivilegeFlags(AppRuntime, String) return type is not int");
+        }
+        HookUtils.hookAfterIfEnabled(this, m, param -> {
+            int ret;
+            // null is self
+            Object uin = param.args[param.args.length - 1];
+            if (uin == null) {
+                ret = (int) param.getResult();
+                // vip + svip + 大会员
+                param.setResult(2 | 4 | 8 | ret);
+            }
+        });
+        return true;
     }
 
     @NonNull

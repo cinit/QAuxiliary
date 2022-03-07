@@ -84,7 +84,8 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
     public boolean initOnce() {
         for (Method m : DexKit.doFindClass(DexKit.C_TimeFormatterUtils).getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
-            if (m.getName().equals("a") && argt.length == 3 && Modifier.isStatic(m.getModifiers())) {
+            if (m.getName().equals("a") && Modifier.isStatic(m.getModifiers())
+                    && argt.length == 3 && argt[2] == long.class) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> {
                     String fmt = RikkaCustomMsgTimeFormatDialog.getCurrentMsgTimeFormat();
                     if (fmt != null) {

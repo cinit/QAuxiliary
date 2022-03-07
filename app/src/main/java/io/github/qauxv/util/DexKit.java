@@ -198,14 +198,16 @@ public class DexKit {
      * @return the target class object, null if the dex class is not found.
      */
     @Nullable
-    public static Class doFindClass(int i) {
+    public static Class<?> doFindClass(int i) {
         Class<?> ret = Initiator.load(c(i));
         if (ret != null) {
             return ret;
         }
         // find class from native
         DexMethodDescriptor m = doFindMethodFromNative(i);
-        if (m != null) Initiator.load(m.declaringClass);
+        if (m != null) {
+            Initiator.load(m.declaringClass);
+        }
         // find class use legacy method
         m = doFindMethodDesc(i);
         if (m == null) {
@@ -227,7 +229,7 @@ public class DexKit {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
         DexMethodDescriptor m = getMethodDescFromCache(i);
-        if (m == null || NO_SUCH_METHOD.toString().equals(m.name)) {
+        if (m == null || NO_SUCH_METHOD.toString().equals(m.toString())) {
             return null;
         }
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) {
@@ -257,12 +259,14 @@ public class DexKit {
         try {
             // find method from native
             DexMethodDescriptor m = doFindMethodFromNative(i);
-            if (m != null) return m.getMethodInstance(Initiator.getHostClassLoader());
+            if (m != null) {
+                return m.getMethodInstance(Initiator.getHostClassLoader());
+            }
         } catch (NoSuchMethodException e) {
             // ignore
         }
         DexMethodDescriptor m = doFindMethodDesc(i);
-        if (m == null || NO_SUCH_METHOD.toString().equals(m.name)) {
+        if (m == null || NO_SUCH_METHOD.toString().equals(m.toString())) {
             return null;
         }
         if (m.name.equals("<init>") || m.name.equals("<clinit>")) {
@@ -1269,14 +1273,10 @@ public class DexKit {
                     if ("onCardUpdate".equals(method.getName())) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(Initiator
-                        .load(
-                            "com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
+                    if (method.getClass().isAssignableFrom(Initiator.load("com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(
-                        Initiator
-                            .load("com.tencent.mobileqq.activity.FriendProfileCardActivity"))) {
+                    if (method.getClass().isAssignableFrom(Initiator._FriendProfileCardActivity())) {
                         return m;
                     }
                 }

@@ -163,17 +163,21 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
 
     private fun updateChatWordView(viewGroup: ViewGroup) {
         val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
-        var textView: TextView? = (relativeLayout.parent as FrameLayout).findViewById(io.github.qauxv.R.id.chat_words_count)
+        // what accessibility service tells us does NOT match the view pragmatically does
+        // call it ghost view for the time being...
+        // TODO 2022-03-07 kill the ghost...
+        val ghostFrameLayout = relativeLayout.parent as ViewGroup
+        // if ghostFrameLayout is a RelativeLayout, it means the ghost is already there
+        var textView: TextView? = ghostFrameLayout.findViewById(io.github.qauxv.R.id.chat_words_count)
         if (textView == null) {
-            injectChatWordView(viewGroup.context, viewGroup)
-            textView = (relativeLayout.parent as FrameLayout).findViewById(io.github.qauxv.R.id.chat_words_count)
+            injectChatWordView(viewGroup.context, ghostFrameLayout)
+            textView = (relativeLayout.parent as ViewGroup).findViewById(io.github.qauxv.R.id.chat_words_count)
         }
-        textView!!.text = getChatWords()
+        textView?.text = getChatWords()
     }
 
     private fun injectChatWordView(context: Context, viewGroup: ViewGroup) {
-        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))
-        relativeLayout?.visibility = View.GONE
+        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
         val textView = TextView(context)
         textView.text = getChatWords()
         textView.setTextColor(
@@ -226,7 +230,20 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 true
             }
         }
-        (relativeLayout?.parent as FrameLayout).addView(textView)
+        if (relativeLayout.parent is FrameLayout) {
+            // no ghost here, everything is fine
+            (relativeLayout.parent as FrameLayout).addView(textView)
+            relativeLayout.visibility = View.GONE
+        } else {
+            // if got here, it means the ghost is still there
+            // ghost is here, we need to use an alternative way FOR THE TIME BEING
+            val ghostRelativeLayout = relativeLayout
+            // set child view visibility to GONE
+            for (i in 0 until ghostRelativeLayout.childCount) {
+                ghostRelativeLayout.getChildAt(i).visibility = View.GONE
+            }
+            ghostRelativeLayout.addView(textView)
+        }
     }
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
