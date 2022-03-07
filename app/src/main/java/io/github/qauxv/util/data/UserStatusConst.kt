@@ -19,18 +19,26 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
+package io.github.qauxv.util.data
 
-package io.github.qauxv.util.data;
+object UserStatusConst {
+    /**
+     * 未刷新前的默认状态
+     */
+    const val notExist = -1
 
-public class UserStatusConst {
+    /**
+     * 黑名单
+     */
+    const val blacklisted = 1
 
-    // 未刷新前的默认状态
-    public static final int notExist = -1;
+    /**
+     * 白名单
+     */
+    const val whitelisted = 2
 
-    public static final int blacklisted = 1;
-
-    public static final int whitelisted = 2;
-
-    public static final int developer = 3;
-
+    /**
+     * 开发者
+     */
+    const val developer = 3
 }
