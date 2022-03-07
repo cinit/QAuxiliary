@@ -3,14 +3,12 @@ name: main
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
-    name: Build CI
+    name: Build CI (Push)
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }}
+    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }} && ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
 
     steps:
       - uses: actions/checkout@v2
