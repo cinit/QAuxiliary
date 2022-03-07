@@ -1,5 +1,4 @@
 <?xml version="1.0" encoding="utf-8"?>
-
 <androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -8,14 +7,16 @@
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:background="@color/backgroundColor"
         android:elevation="0dp"
+        android:fitsSystemWindows="true"
         android:stateListAnimator="@null">
 
         <com.google.android.material.appbar.MaterialToolbar
+            android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/topAppBar"
             style="@style/Toolbar"
-            app:menu="@menu/main_v2_toolbar"
             app:title="@string/app_name" />
 
     </com.google.android.material.appbar.AppBarLayout>
@@ -29,62 +30,53 @@
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="match_parent"
-            android:orientation="vertical">
+            android:orientation="vertical"
+            android:padding="16dp">
 
             <LinearLayout
-
+                android:id="@+id/mainV2_activationStatusLinearLayout"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:background="@drawable/ic_bg_gradient"
-                android:gravity="center">
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_yellow_solid"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingLeft="0dp"
+                android:paddingTop="18dp"
+                android:paddingRight="0dp"
+                android:paddingBottom="18dp">
+
+                <ImageView
+                    android:id="@+id/mainV2_activationStatusIcon"
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_check_circle" />
 
                 <LinearLayout
-
-                    android:id="@+id/mainV2_activationStatusLinearLayout"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_margin="16dp"
-                    android:background="@drawable/bg_yellow_solid"
-                    android:orientation="horizontal"
-                    android:gravity="center"
-                    android:paddingLeft="0dp"
-                    android:paddingTop="18dp"
-                    android:paddingRight="0dp"
-                    android:paddingBottom="18dp">
+                    android:orientation="vertical">
 
-                    <ImageView
-                        android:id="@+id/mainV2_activationStatusIcon"
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:layout_marginLeft="16dp"
-                        android:layout_marginRight="16dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/ic_check_circle" />
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
+                    <TextView
+                        android:id="@+id/mainV2_activationStatusTitle"
+                        android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:orientation="vertical">
+                        android:layout_margin="0dp"
+                        android:text="N/A"
+                        android:textColor="@color/whiteTextColor"
+                        android:textSize="16sp" />
 
-                        <TextView
-                            android:id="@+id/mainV2_activationStatusTitle"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:layout_margin="0dp"
-                            android:text="N/A"
-                            android:textColor="@color/whiteTextColor"
-                            android:textSize="16sp" />
-
-                        <TextView
-                            android:id="@+id/mainV2_activationStatusDesc"
-                            android:layout_width="wrap_content"
-                            android:layout_height="wrap_content"
-                            android:paddingTop="2dp"
-                            android:text="Internal error"
-                            android:textColor="@color/whiteTextColor"
-                            android:textSize="12sp" />
-
-                    </LinearLayout>
+                    <TextView
+                        android:id="@+id/mainV2_activationStatusDesc"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:paddingTop="2dp"
+                        android:text="Internal error"
+                        android:textColor="@color/whiteTextColor"
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -93,11 +85,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginBottom="16dp"
-                android:background="@drawable/ic_bg_white"
+                android:background="@drawable/bg_trans_border_ripple"
                 android:clickable="true"
                 android:focusable="true"
                 android:orientation="horizontal"
@@ -115,7 +104,7 @@
                     android:layout_marginBottom="16dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_info"
-                    app:tint="@color/themeIconColor" />
+                    app:tint="@color/themeColor" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -153,11 +142,8 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginBottom="16dp"
-                android:background="@drawable/ic_bg_white"
+                android:background="@drawable/bg_trans_border_ripple"
                 android:clickable="true"
                 android:focusable="true"
                 android:orientation="horizontal"
@@ -174,7 +160,7 @@
                     android:layout_marginRight="16dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/ic_settings"
-                    app:tint="@color/themeIconColor" />
+                    app:tint="@color/themeColor" />
 
                 <LinearLayout
                     android:layout_width="match_parent"
@@ -232,7 +218,7 @@
                             android:paddingRight="0dp"
                             android:paddingBottom="2dp"
                             android:text="@string/qq"
-                            android:textColor="@color/themeIconColor"
+                            android:textColor="@color/themeColor"
                             android:textSize="16sp" />
 
                         <TextView
@@ -248,7 +234,7 @@
                             android:paddingRight="0dp"
                             android:paddingBottom="2dp"
                             android:text="@string/tim"
-                            android:textColor="@color/themeIconColor"
+                            android:textColor="@color/themeColor"
                             android:textSize="16sp" />
 
                         <TextView
@@ -264,7 +250,7 @@
                             android:paddingRight="0dp"
                             android:paddingBottom="2dp"
                             android:text="@string/qq_lite"
-                            android:textColor="@color/themeIconColor"
+                            android:textColor="@color/themeColor"
                             android:textSize="16sp" />
                     </LinearLayout>
 
@@ -276,9 +262,6 @@
                 android:id="@+id/mainV2_githubRepo"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_trans_border_null_ripple"
                 android:clickable="true"
@@ -323,9 +306,6 @@
                 android:id="@+id/mainV2_help"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="0dp"
-                android:layout_marginLeft="16dp"
-                android:layout_marginRight="16dp"
                 android:layout_marginBottom="16dp"
                 android:background="@drawable/bg_trans_border_null_ripple"
                 android:clickable="true"
@@ -357,6 +337,48 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="0dp"
                         android:text="@string/tip"
+                        android:textColor="@color/firstTextColor"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/mainV2_troubleshoot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_trans_border_null_ripple"
+                android:clickable="true"
+                android:onClick="handleClickEvent"
+                android:focusable="true"
+                android:gravity="center"
+                android:orientation="horizontal"
+                android:paddingLeft="0dp"
+                android:paddingTop="18dp"
+                android:paddingRight="0dp"
+                android:paddingBottom="18dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_build"
+                    app:tint="@color/secondTextColor" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="0dp"
+                        android:text="@string/BugCheck"
                         android:textColor="@color/firstTextColor"
                         android:textSize="16sp" />
 

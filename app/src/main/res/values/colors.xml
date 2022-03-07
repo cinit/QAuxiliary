@@ -19,33 +19,15 @@
 
     <!-- 原主题 -->
 
-        <color name="firstTextColor">#FF202124</color>
-        <color name="secondTextColor">#FF3C4043</color>
-        <color name="thirdTextColor">#FF5F6368</color>
-        <color name="whiteTextColor">#FFFFFFFF</color>
-        <color name="whiteTextColor2">#FFFFFFFF</color>
-        <color name="WhiteBackgroundColor">#FFFFFFFF</color>
-        <color name="themeColor">#FF4285F4</color>
-        <color name="themeIconColor">#FF4285F4</color>
-        <color name="usableColor">#FF4CAF50</color>
-        <color name="unusableColor">#FFFF5252</color>
-        <color name="warnColor">#ffFFC107</color>
-        <color name="rippleColor">#143C4043</color>
-        <color name="lineColor">#ffdddddd</color>
-        <color name="divideColor">#FFF0F2F5</color>
-        <color name="nullColor">#00000000</color>
-        <color name="backgroundColor">#FFFFFFFF</color>
-
-    <!-- 蓝调限时主题 -->
-
     <!--
     <color name="firstTextColor">#FF202124</color>
     <color name="secondTextColor">#FF3C4043</color>
     <color name="thirdTextColor">#FF5F6368</color>
     <color name="whiteTextColor">#FFFFFFFF</color>
+    <color name="whiteTextColor2">#FFFFFFFF</color>
     <color name="WhiteBackgroundColor">#FFFFFFFF</color>
-    <color name="themeColor">#FF3E5A72</color>
-    <color name="themeIconColor">#FF3E5A72</color>
+    <color name="themeColor">#FF4285F4</color>
+    <color name="themeIconColor">#FF4285F4</color>
     <color name="usableColor">#FF4CAF50</color>
     <color name="unusableColor">#FFFF5252</color>
     <color name="warnColor">#ffFFC107</color>
@@ -53,7 +35,29 @@
     <color name="lineColor">#ffdddddd</color>
     <color name="divideColor">#FFF0F2F5</color>
     <color name="nullColor">#00000000</color>
-    <color name="backgroundColor">#FFF2F2F6</color>
+    <color name="backgroundColor">#FFFFFFFF</color>
+
     -->
+
+<!-- 蓝调限时主题 -->
+
+
+    <color name="firstTextColor">#FF202124</color>
+    <color name="secondTextColor">#FF3C4043</color>
+    <color name="thirdTextColor">#FF5F6368</color>
+    <color name="whiteTextColor">#FFFFFFFF</color>
+    <color name="WhiteBackgroundColor">#FFFFFFFF</color>
+    <color name="themeColor">#FF1572A1</color>
+    <color name="themeIconColor">#FF1572A1</color>
+    <!-- <color name="usableColor">#FF4CAF50</color> -->
+    <color name="usableColor">#FF219F94</color>
+    <color name="unusableColor">#FFFF5252</color>
+    <color name="warnColor">#ffFFC107</color>
+    <color name="rippleColor">#143C4043</color>
+    <color name="lineColor">#ffdddddd</color>
+    <color name="divideColor">#FFF0F2F5</color>
+    <color name="nullColor">#00000000</color>
+    <color name="backgroundColor">#FFF2F2F6</color>
+
 
     </resources>
