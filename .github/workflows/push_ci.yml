@@ -3,21 +3,22 @@ name: main
 on:
   push:
     branches: [ main ]
-  pull_request:
-    branches: [ main ]
 
 jobs:
   build:
-    name: Build CI
+    name: Build CI (Push)
     runs-on: ubuntu-latest
-    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }}
+    if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }} && ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
 
     steps:
       - uses: actions/checkout@v2
         with:
           submodules: 'recursive'
           fetch-depth: 0
-
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.12
+        with:
+          cmake-version: '3.22.1'
       - name: set up JDK 17
         uses: actions/setup-java@v2
         with:
@@ -28,7 +29,21 @@ jobs:
         run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
-          echo "ndk.dir=${ANDROID_HOME}/ndk/23.1.7779620" >> local.properties
+          ln -s  ${ANDROID_HOME}/cmake/3.18.1/bin/ninja /opt/hostedtoolcache/cmake/3.22.1/x64/cmake-3.22.1-linux-x86_64/bin/
+      - name: Install ccache
+        run: |
+          sudo apt install -y ccache
+          ccache -zp
+          ccache -o max_size=10G
+          ccache -o hash_dir=false
+          ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
+      - name: Native Cache
+        uses: actions/cache@v2
+        with:
+          path: |
+            ~/.cache/ccache
+            ~/.ccache
+          key: ccache
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
         with:
@@ -54,6 +69,7 @@ jobs:
         run: |
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:assembleRelease
+          ccache -s
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}

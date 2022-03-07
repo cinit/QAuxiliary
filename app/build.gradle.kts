@@ -27,7 +27,13 @@ android {
         }
         externalNativeBuild {
             cmake {
-                arguments("-DQAUXV_VERSION=$versionName")
+                arguments += listOf(
+                    "-DQAUXV_VERSION=$versionName",
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                    "-DNDK_CCACHE=ccache"
+                )
+
             }
         }
     }
@@ -188,11 +194,17 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 
 tasks.register("checkGitSubmodule") {
     doLast {
-        val path = "libs/mmkv/MMKV/Core".replace('/', File.separatorChar)
-        val submoduleDir = File(rootProject.projectDir, path)
-        if (!submoduleDir.exists()) {
-            throw IllegalStateException("submodule dir not found: $submoduleDir" +
-                    "\nPlease run 'git submodule init' and 'git submodule update' manually.")
+        val path = listOf(
+            "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
+            "app/src/main/cpp/dex_builder"
+        ).forEach {
+            val submoduleDir = File(rootProject.projectDir, it)
+            if (!submoduleDir.exists()) {
+                throw IllegalStateException(
+                    "submodule dir not found: $submoduleDir" +
+                        "\nPlease run 'git submodule init' and 'git submodule update' manually."
+                )
+            }
         }
     }
 }
@@ -205,8 +217,8 @@ val restartQQ = task("restartQQ").doLast {
     }
     exec {
         commandLine(
-                adbExecutable, "shell", "am", "start",
-                "$(pm resolve-activity --components com.tencent.mobileqq)"
+            adbExecutable, "shell", "am", "start",
+            "$(pm resolve-activity --components com.tencent.mobileqq)"
         )
     }
 }
