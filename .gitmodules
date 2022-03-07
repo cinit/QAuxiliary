@@ -3,4 +3,4 @@
 	url = https://github.com/Tencent/MMKV
 [submodule "app/src/main/cpp/dex_builder"]
 	path = app/src/main/cpp/dex_builder
-	url = git@github.com:LSPosed/DexBuilder.git
+	url = https://github.com/LSPosed/DexBuilder.git
