@@ -66,7 +66,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                     }
                 }
             }
-        for (m in Initiator.load("com.tencent.mobileqq.activity.FriendProfileCardActivity").declaredMethods) {
+        for (m in Initiator._FriendProfileCardActivity().declaredMethods) {
             val argt = m.parameterTypes
             if (HostInfo.getVersionCode32() <= QQVersion.QQ_8_3_6) {
                 if (m.name == "a" && !Modifier.isStatic(m.modifiers) && m.returnType == Void.TYPE) {

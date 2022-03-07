@@ -32,6 +32,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.DexMethodDescriptor
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
@@ -58,8 +60,8 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
                     hideView(rootView)
                 }
         } else {
-            "Lcom/tencent/mobileqq/activity/FriendProfileCardActivity;->a(Landroid/widget/LinearLayout;)V"
-                .method.hookAfter(this) {
+            DexMethodDescriptor(Initiator._FriendProfileCardActivity(), "a", "(Landroid/widget/LinearLayout;)V")
+                .getMethodInstance(Initiator.getHostClassLoader()).hookAfter(this) {
                     val rootView = it.args[0] as LinearLayout
                     hideView(rootView)
                 }

@@ -1273,14 +1273,10 @@ public class DexKit {
                     if ("onCardUpdate".equals(method.getName())) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(Initiator
-                        .load(
-                            "com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
+                    if (method.getClass().isAssignableFrom(Initiator.load("com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(
-                        Initiator
-                            .load("com.tencent.mobileqq.activity.FriendProfileCardActivity"))) {
+                    if (method.getClass().isAssignableFrom(Initiator._FriendProfileCardActivity())) {
                         return m;
                     }
                 }
