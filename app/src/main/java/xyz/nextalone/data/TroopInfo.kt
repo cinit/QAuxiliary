@@ -22,16 +22,16 @@
 
 package xyz.nextalone.data
 
+import com.hicore.ReflectUtil.MMethod
 import io.github.qauxv.bridge.ManagerHelper
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.method
 
 data class TroopInfo(val troopUin: String?) {
-    private val troopInfo =
-        "com.tencent.mobileqq.app.TroopManager".clazz?.method {
-            it.parameterTypes.contentEquals(arrayOf(String::class.java)) && it.returnType == "com.tencent.mobileqq.data.troop.TroopInfo".clazz
-        }?.invoke(ManagerHelper.getTroopManager(), troopUin)
+
+    private val troopInfo = MMethod.CallMethod<Any>(ManagerHelper.getTroopManager(),"com.tencent.mobileqq.data.troop.TroopInfo".clazz,
+        arrayOf(String::class.java),troopUin)
 
     var troopName = troopInfo.get("troopname")
     var troopOwnerUin = troopInfo.get("troopowneruin", String::class.java)
