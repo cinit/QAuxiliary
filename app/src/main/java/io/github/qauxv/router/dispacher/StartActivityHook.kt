@@ -55,7 +55,13 @@ object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null)
         //dump startActivity
         val hook = object : XC_MethodHook() {
             override fun beforeHookedMethod(param: MethodHookParam) {
-                val intent: Intent = param.args[0] as Intent
+                // @UnsupportedAppUsage(maxTargetSdk = Build.VERSION_CODES.R, trackingBug = 170729553)
+                // public void startActivityForResult(String who, Intent intent, int requestCode, @Nullable Bundle options);
+                val intent: Intent = if (param.args[0] is Intent) {
+                    param.args[0] as Intent
+                } else {
+                    param.args[1] as Intent
+                }
                 for (decorator in decorators) {
                     try {
                         if (decorator.isEnabled && decorator.doDecorate(intent, param)) {
