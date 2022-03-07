@@ -188,11 +188,15 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 
 tasks.register("checkGitSubmodule") {
     doLast {
-        val path = "libs/mmkv/MMKV/Core".replace('/', File.separatorChar)
-        val submoduleDir = File(rootProject.projectDir, path)
-        if (!submoduleDir.exists()) {
-            throw IllegalStateException("submodule dir not found: $submoduleDir" +
+        val path = listOf(
+            "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
+            "app/src/main/cpp/dex_builder"
+        ).forEach {
+            val submoduleDir = File(rootProject.projectDir, it)
+            if (!submoduleDir.exists()) {
+                throw IllegalStateException("submodule dir not found: $submoduleDir" +
                     "\nPlease run 'git submodule init' and 'git submodule update' manually.")
+            }
         }
     }
 }

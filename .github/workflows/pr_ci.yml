@@ -21,11 +21,15 @@ jobs:
           java-version: '17'
           distribution: 'adopt'
           cache: gradle
+      - name: Setup cmake
+        uses: jwlawson/actions-setup-cmake@v1.12
+        with:
+          cmake-version: '3.22.1'
       - name: Install NDK v23
         run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
-          echo "ndk.dir=${ANDROID_HOME}/ndk/23.1.7779620" >> local.properties
+          ln -s  ${ANDROID_HOME}/cmake/3.18.1/bin/ninja /opt/hostedtoolcache/cmake/3.22.1/x64/cmake-3.22.1-linux-x86_64/bin/
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
         with:
