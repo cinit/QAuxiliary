@@ -73,12 +73,12 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val message = m.args[2]
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
-                val path = arrayOf("chatraw", "chatimg", "chatthumb")
-                    .first { type ->
-                        // chosen the first exist file
-                        val path = message.invoke("getFilePath", type, String::class.java) as String
-                        File(path).exists()
-                    }
+                val path = arrayOf("chatraw", "chatimg", "chatthumb").map { str ->
+                    message.invoke("getFilePath", str, String::class.java) as String
+                }.first { path ->
+                    // chosen the first exist file
+                    File(path).exists()
+                }
                 // An error occurs when the host does not have a fileprovider
                 val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
                 val item = ClipData.Item(uri)
