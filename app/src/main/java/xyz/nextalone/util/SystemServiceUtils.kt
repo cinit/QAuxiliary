@@ -25,7 +25,6 @@ package xyz.nextalone.util
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.text.TextUtils
 
 object SystemServiceUtils {
     /**
@@ -35,15 +34,13 @@ object SystemServiceUtils {
      * @param text    text will be copied.
      */
     @JvmStatic
-    fun copyToClipboard(context: Context, text: CharSequence?) {
-        if (TextUtils.isEmpty(text)) {
+    fun copyToClipboard(context: Context, text: CharSequence) {
+        if (text.isEmpty()) {
             return
         }
-        val item = ClipData.Item(text)
-        val clipData = ClipData("", arrayOf("text/plain"), item)
+        val clipData = ClipData.newPlainText("", text)
         val clipboardManager =
-            context.getSystemService(Context.CLIPBOARD_SERVICE) as? ClipboardManager
-        clipboardManager ?: return
+            context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboardManager.setPrimaryClip(clipData)
     }
 }

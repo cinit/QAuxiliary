@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <item type="id" name="item_showPicMd5"/>
+    <item type="id" name="item_copyToClipboard"/>
     <item type="id" name="rootBounceScrollView"/>
     <item type="id" name="rootMainLayout"/>
     <item type="id" name="rootMainList"/>
