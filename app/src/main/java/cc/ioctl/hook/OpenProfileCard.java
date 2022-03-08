@@ -32,6 +32,7 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -46,8 +47,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Toasts;
-import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -116,14 +117,26 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
                         return;
                     }
                     alertDialog.dismiss();
-                    openTroopCard(ctx, Long.toString(uin));
+                    openTroopProfileActivity(ctx, Long.toString(uin));
                 });
     }
 
-    public static void openTroopCard(Context ctx, String troop) {
+    public static void openTroopProfileActivity(@NonNull Context context, @NonNull String troopUin) {
+        if (TextUtils.isEmpty(troopUin)) {
+            return;
+        }
+        String knPublicFragmentActivity = "com.tencent.mobileqq.activity.PublicFragmentActivity";
+        Class<?> kVisitorTroopCardFragment = Initiator.load("com.tencent.mobileqq.troop.troopCard.VisitorTroopCardFragment");
+        if (kVisitorTroopCardFragment == null) {
+            kVisitorTroopCardFragment = Initiator.load("com.tencent.mobileqq.troop.troopcard.ui.VisitorTroopCardFragment");
+            knPublicFragmentActivity = "com.tencent.mobileqq.activity.QPublicFragmentActivity";
+        }
+        if (kVisitorTroopCardFragment == null || Initiator.load(knPublicFragmentActivity) == null) {
+            Toasts.error(context, "接口错误: troop = " + troopUin);
+            return;
+        }
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName("com.tencent.mobileqq",
-                "com.tencent.mobileqq.activity.PublicFragmentActivity"));
+        intent.setComponent(new ComponentName(context, knPublicFragmentActivity));
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         intent.putExtra("fling_action_key", 2);
         intent.putExtra("preAct", "QRJumpActivity");
@@ -133,11 +146,10 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
         intent.putExtra("preAct_time", System.currentTimeMillis());
         intent.putExtra("preAct_elapsedRealtime", System.nanoTime());
         intent.putExtra("troop_info_from", 14);
-        intent.putExtra("troop_uin", troop);
+        intent.putExtra("troop_uin", troopUin);
         intent.putExtra("vistor_type", 2);
-        intent.putExtra("public_fragment_class",
-                "com.tencent.mobileqq.troop.troopCard.VisitorTroopCardFragment");
-        ctx.startActivity(intent);
+        intent.putExtra("public_fragment_class", kVisitorTroopCardFragment.getName());
+        context.startActivity(intent);
     }
 
     @NonNull

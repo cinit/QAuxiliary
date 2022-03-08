@@ -36,9 +36,9 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.core.MainHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.core.MainHook;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CustomDialog;
@@ -120,7 +120,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
         String senderuin = (String) Reflex.getInstanceObjectOrNull(msg, "senderuin");
         String frienduin = (String) Reflex.getInstanceObjectOrNull(msg, "frienduin");
         HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "群号", frienduin, ll, true,
-                v -> OpenProfileCard.openTroopCard(__ctx, frienduin));
+                v -> OpenProfileCard.openTroopProfileActivity(__ctx, frienduin));
         HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "成员", senderuin, ll, true,
                 v -> {
                     try {

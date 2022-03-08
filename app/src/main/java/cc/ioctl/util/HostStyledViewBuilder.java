@@ -137,9 +137,6 @@ public class HostStyledViewBuilder {
         if (ll != null) {
             v.setOnLongClickListener(ll);
         }
-        if (l != null || ll != null) {
-            ViewCompat.setBackground(v, getDialogClickableItemBackground());
-        }
         if (attach) {
             vg.addView(root);
         }
