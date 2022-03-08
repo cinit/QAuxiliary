@@ -25,7 +25,12 @@ package io.github.qauxv.fragment
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
-import android.view.*
+import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
+import android.view.View
+import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
 import androidx.core.content.res.ResourcesCompat
@@ -39,8 +44,17 @@ import io.github.qauxv.SyncUtils
 import io.github.qauxv.SyncUtils.async
 import io.github.qauxv.SyncUtils.runOnUiThread
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.dsl.func.*
-import io.github.qauxv.dsl.item.*
+import io.github.qauxv.dsl.func.CategoryDescription
+import io.github.qauxv.dsl.func.FragmentDescription
+import io.github.qauxv.dsl.func.IDslFragmentNode
+import io.github.qauxv.dsl.func.IDslItemNode
+import io.github.qauxv.dsl.func.IDslParentNode
+import io.github.qauxv.dsl.func.UiItemAgentDescription
+import io.github.qauxv.dsl.item.CategoryItem
+import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import io.github.qauxv.dsl.item.SimpleListItem
+import io.github.qauxv.dsl.item.TMsgListItem
+import io.github.qauxv.dsl.item.UiAgentItem
 import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
@@ -109,12 +123,7 @@ class SettingsMainFragment : BaseSettingFragment() {
         // init view
         recyclerListView = RecyclerView(context).apply {
             id = R.id.fragmentMainRecyclerView // id is used to allow saving state
-            itemAnimator = null
-            layoutAnimation = null
-            layoutManager = object : LinearLayoutManager(context, VERTICAL, false) {
-                override fun supportsPredictiveItemAnimations() = false
-            }
-            isVerticalScrollBarEnabled = true
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         }
         // init adapter
         adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {

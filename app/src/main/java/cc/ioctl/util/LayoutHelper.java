@@ -23,11 +23,16 @@
 package cc.ioctl.util;
 
 import android.content.Context;
+import android.content.res.TypedArray;
+import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import io.github.qauxv.util.Log;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class LayoutHelper {
 
@@ -130,5 +135,42 @@ public class LayoutHelper {
         ret.setMarginEnd(end);
         ret.gravity = gravity;
         return ret;
+    }
+
+    public static int[] getStyleableValues(String str) {
+        try {
+            return (int[]) Class.forName("com.android.internal.R$styleable").getField(str).get(null);
+        } catch (Exception e) {
+            return new int[0];
+        }
+    }
+
+    private static Method sInitializeScrollbars = null;
+    private static int[] sViewAttributes = null;
+
+    public static void initializeScrollbars(@NonNull ViewGroup viewGroup) {
+        if (sInitializeScrollbars == null) {
+            try {
+                sInitializeScrollbars = View.class.getDeclaredMethod("initializeScrollbars", TypedArray.class);
+                sInitializeScrollbars.setAccessible(true);
+            } catch (NoSuchMethodException e) {
+                Log.e(e);
+                throw new NoSuchMethodError(e.getMessage());
+            }
+        }
+        if (sViewAttributes == null) {
+            sViewAttributes = getStyleableValues("View");
+        }
+        TypedArray obtainStyledAttributes = viewGroup.getContext().obtainStyledAttributes(getStyleableValues("View"));
+        try {
+            sInitializeScrollbars.invoke(viewGroup, obtainStyledAttributes);
+        } catch (IllegalAccessException e) {
+            // should not happen
+            throw new AssertionError(e);
+        } catch (InvocationTargetException e) {
+            Log.e(e);
+        } finally {
+            obtainStyledAttributes.recycle();
+        }
     }
 }

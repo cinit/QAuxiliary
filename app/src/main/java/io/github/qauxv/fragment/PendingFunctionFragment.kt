@@ -100,7 +100,6 @@ class PendingFunctionFragment : BaseSettingFragment() {
             Item("禁用QQ公交卡", "如果QQ在后台会干扰NFC的话", null, true),
             Item("AddFriendReq.sourceID", "自定义加好友来源", "[不改动]"),
             Item("DelFriendReq.delType", "只能为1或2", "[不改动]"),
-            Item("隐藏聊天界面右侧滑条", "强迫症专用", null, true)
     )
 
     private data class Item(val title: String, val desc: String?, val value: String? = null, val switch: Boolean = false)

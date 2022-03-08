@@ -285,8 +285,6 @@ class SearchOverlayFragment : BaseSettingFragment() {
                     orientation = LinearLayoutManager.VERTICAL
                 }
                 id = R.id.fragmentMainRecyclerView // id is used to allow saving state
-                itemAnimator = null
-                layoutAnimation = null
             }
             searchKeyWords.addTextChangedListener {
                 currentKeyword = it.toString()

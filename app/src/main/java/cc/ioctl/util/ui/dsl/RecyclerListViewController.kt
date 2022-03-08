@@ -137,12 +137,7 @@ class RecyclerListViewController(
             recyclerListView = RecyclerView(context)
         }
         recyclerListView!!.apply {
-            itemAnimator = null
-            layoutAnimation = null
-            layoutManager = object : LinearLayoutManager(context, VERTICAL, false) {
-                override fun supportsPredictiveItemAnimations() = false
-            }
-            isVerticalScrollBarEnabled = false
+            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
         }
         recyclerListView!!.adapter = adapter
     }

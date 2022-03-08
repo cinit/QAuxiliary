@@ -28,6 +28,7 @@ import cc.ioctl.hook.FileRecvRedirect;
 import cc.ioctl.hook.GagInfoDisclosure;
 import cc.ioctl.hook.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.MuteQZoneThumbsUp;
+import cc.ioctl.hook.OptXListViewScrollBar;
 import cc.ioctl.hook.RevokeMsgHook;
 import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
@@ -125,6 +126,7 @@ public class MainHook {
         HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
         HookInstaller.allowEarlyInit(RemoveSuperQQShow.INSTANCE);
         HookInstaller.allowEarlyInit(FileRecvRedirect.INSTANCE);
+        HookInstaller.allowEarlyInit(OptXListViewScrollBar.INSTANCE);
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             injectStartupHookForMain(ctx);
