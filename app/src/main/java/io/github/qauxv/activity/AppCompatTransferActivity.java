@@ -65,8 +65,10 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
         View decorView = window.getDecorView();
         int option = decorView.getSystemUiVisibility()
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE
-                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN;
+                | View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN
+                | View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION;
         decorView.setSystemUiVisibility(option);
         window.setStatusBarColor(Color.TRANSPARENT);
+        window.setNavigationBarColor(Color.TRANSPARENT);
     }
 }

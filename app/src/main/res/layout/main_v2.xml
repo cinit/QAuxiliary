@@ -9,6 +9,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:elevation="0dp"
+        android:fitsSystemWindows="true"
         android:stateListAnimator="@null">
 
         <com.google.android.material.appbar.MaterialToolbar
