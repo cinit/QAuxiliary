@@ -42,7 +42,7 @@
 
             <com.google.android.material.appbar.MaterialToolbar
                 android:id="@+id/topAppBar"
-                style="@style/Toolbar"
+                style="@style/Toolbar.DayNight"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 app:title="@string/app_name" />

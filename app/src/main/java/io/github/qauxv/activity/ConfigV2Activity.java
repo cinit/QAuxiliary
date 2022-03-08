@@ -35,6 +35,7 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -47,7 +48,7 @@ import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
-import io.github.qauxv.databinding.MainV2Binding;
+import io.github.qauxv.databinding.MainV2NormalBinding;
 import io.github.qauxv.fragment.AboutFragment;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
@@ -66,13 +67,13 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     private static final String ALIAS_ACTIVITY_NAME = "io.github.qauxv.activity.ConfigV2ActivityAlias";
     private String dbgInfo = "";
-    private MainV2Binding mainV2Binding = null;
+    private MainV2NormalBinding mainV2Binding = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         if (HostInfo.isInHostProcess()) {
             // we have to set the theme before super.onCreate()
-            setTheme(R.style.Theme_MaiTungTMDesign);
+            setTheme(getCurrentV2Theme() == 3 ? R.style.Theme_MaiTungTMDesign_LightBlue : R.style.Theme_MaiTungTMDesign_DayNight);
         }
         try {
             long ts = BuildConfig.BUILD_TIMESTAMP;
@@ -83,7 +84,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             dbgInfo += "\n" + e;
         }
         if (HostInfo.isInModuleProcess()) {
-            setDayNightStatus(getCurrentDayNightStatus());
+            applyV2Theme(getCurrentV2Theme(), false);
         }
         // if in host process, it should already be done by last activity
         super.onCreate(savedInstanceState);
@@ -107,7 +108,13 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             str += r;
         }
         dbgInfo += str;
-        mainV2Binding = MainV2Binding.inflate(LayoutInflater.from(this));
+        if (getCurrentV2Theme() == 3) {
+            // MaiTung light blue
+            ViewGroup root = (ViewGroup) LayoutInflater.from(this).inflate(R.layout.main_v2_light_blue, null);
+            mainV2Binding = MainV2NormalBinding.bind(root);
+        } else {
+            mainV2Binding = MainV2NormalBinding.inflate(LayoutInflater.from(this));
+        }
         setContentView(mainV2Binding.getRoot());
         setSupportActionBar(mainV2Binding.topAppBar);
         requestTranslucentStatusBar();
@@ -299,36 +306,65 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     }
 
     private void showChangeThemeDialog() {
-        String[] themes = new String[]{"系统默认", "深色", "浅色"};
+        String[] themes = new String[]{"系统默认", "深色", "浅色", "浅蓝限定"};
         new AlertDialog.Builder(this)
                 .setTitle("更换主题")
                 .setItems(themes, (dialog, which) -> {
-                    saveCurrentDayNightStatus(which);
-                    setDayNightStatus(which);
+                    saveCurrentV2Theme(which);
+                    applyV2Theme(which, true);
                 })
                 .show();
     }
 
-    private int getCurrentDayNightStatus() {
+    private int getCurrentV2Theme() {
         return ConfigManager.getDefaultConfig().getIntOrDefault("KEY_DAY_NIGHT_STATUS", 0);
     }
 
-    private void saveCurrentDayNightStatus(int i) {
+    private void saveCurrentV2Theme(int i) {
         ConfigManager.getDefaultConfig().putInt("KEY_DAY_NIGHT_STATUS", i);
     }
 
-    private void setDayNightStatus(int i) {
+    private void applyV2Theme(int i, boolean allowRecreate) {
         switch (i) {
             case 0: {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+                if (allowRecreate) {
+                    recreate();
+                } else {
+                    // just set theme
+                    setTheme(R.style.Theme_MaiTungTMDesign_DayNight);
+                }
                 break;
             }
             case 1: {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_YES);
+                if (allowRecreate) {
+                    recreate();
+                } else {
+                    // just set theme
+                    setTheme(R.style.Theme_MaiTungTMDesign_DayNight);
+                }
                 break;
             }
             case 2: {
                 AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                if (allowRecreate) {
+                    recreate();
+                } else {
+                    // just set theme
+                    setTheme(R.style.Theme_MaiTungTMDesign_DayNight);
+                }
+                break;
+            }
+            case 3: {
+                AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_NO);
+                // apply MaiTungTM light blue theme requires a recreate
+                if (allowRecreate) {
+                    recreate();
+                } else {
+                    // just set theme
+                    setTheme(R.style.Theme_MaiTungTMDesign_LightBlue);
+                }
                 break;
             }
             default:

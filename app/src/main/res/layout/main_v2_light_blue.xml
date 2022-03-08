@@ -15,7 +15,7 @@
         <com.google.android.material.appbar.MaterialToolbar
             android:layout_height="wrap_content"
             android:id="@+id/topAppBar"
-            style="@style/Toolbar"
+            style="@style/Toolbar.LightBlue"
             app:menu="@menu/main_v2_toolbar"
             app:title="@string/app_name" />
 
@@ -358,6 +358,51 @@
                         android:layout_height="wrap_content"
                         android:layout_margin="0dp"
                         android:text="@string/tip"
+                        android:textColor="@color/firstTextColor"
+                        android:textSize="16sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/mainV2_troubleshoot"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="0dp"
+                android:layout_marginLeft="16dp"
+                android:layout_marginRight="16dp"
+                android:layout_marginBottom="16dp"
+                android:background="@drawable/bg_trans_border_null_ripple"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:onClick="handleClickEvent"
+                android:orientation="horizontal"
+                android:paddingLeft="0dp"
+                android:paddingTop="18dp"
+                android:paddingRight="0dp"
+                android:paddingBottom="18dp">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginLeft="16dp"
+                    android:layout_marginRight="16dp"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/ic_build"
+                    app:tint="@color/secondTextColor" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_margin="0dp"
+                        android:text="@string/BugCheck"
                         android:textColor="@color/firstTextColor"
                         android:textSize="16sp" />
 

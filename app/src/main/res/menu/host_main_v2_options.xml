@@ -2,6 +2,10 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
+        android:id="@+id/menu_item_changeTheme"
+        android:title="切换主题"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_item_switch_to_module_process"
         android:title="切换到模块进程"
         app:showAsAction="never" />

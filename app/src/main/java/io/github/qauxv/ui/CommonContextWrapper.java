@@ -110,7 +110,7 @@ public class CommonContextWrapper extends ContextThemeWrapper {
 
     @NonNull
     public static CommonContextWrapper createMaterialDesignContext(@NonNull Context base) {
-        return new CommonContextWrapper(base, R.style.Theme_MaiTungTMDesign,
+        return new CommonContextWrapper(base, R.style.Theme_MaiTungTMDesign_DayNight,
             recreateNighModeConfig(base, ResUtils.getNightModeMasked()));
     }
 }

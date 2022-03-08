@@ -16,7 +16,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:id="@+id/topAppBar"
-            style="@style/Toolbar"
+            style="@style/Toolbar.DayNight"
             app:title="@string/app_name" />
 
     </com.google.android.material.appbar.AppBarLayout>

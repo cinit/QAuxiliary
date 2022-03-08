@@ -44,7 +44,7 @@ public class CounterfeitActivityInfoFactory {
                 ActivityInfo proto = ctx.getPackageManager().getActivityInfo(new ComponentName(
                         ctx.getPackageName(), "com.tencent.mobileqq.activity.QQSettingSettingActivity"), (int) flags);
                 // init style here, comment it out if it crashes on Android >= 10
-                proto.theme = R.style.Theme_MaiTungTMDesign;
+                proto.theme = R.style.Theme_MaiTungTMDesign_DayNight;
                 return initCommon(proto, className);
             } catch (PackageManager.NameNotFoundException e) {
                 throw new IllegalStateException(

@@ -29,13 +29,13 @@
         android:label="@string/app_name"
         android:name=".util.hookstatus.ModuleAppImpl"
         android:resizeableActivity="true"
-        android:theme="@style/AppThemeDummy"
+        android:theme="@style/AppTheme.Def"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:exported="true"
             android:icon="@drawable/icon"
             android:name="io.github.qauxv.activity.ConfigV2Activity"
-            android:theme="@style/Theme.MaiTungTMDesign">
+            android:theme="@style/Theme.MaiTungTMDesign.DayNight">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="de.robv.android.xposed.category.MODULE_SETTINGS" />
@@ -71,7 +71,7 @@
             android:label="@string/app_name"
             android:name=".activity.ConfigV2ActivityAlias"
             android:targetActivity="io.github.qauxv.activity.ConfigV2Activity"
-            android:theme="@style/Theme.MaiTungTMDesign">
+            android:theme="@style/Theme.MaiTungTMDesign.DayNight">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
