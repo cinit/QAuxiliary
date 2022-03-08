@@ -73,15 +73,16 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val message = m.args[2]
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
-                val info = message.invoke("getPicDownloadInfo")!!
-                val file = info.javaClass.superclass.method { m2 ->
-                    m2.returnType == File::class.java
-                }?.invokeAs<File>(info)
+                val path = arrayOf("chatraw", "chatimg", "chatthumb")
+                    .first { type ->
+                        // chosen the first exist file
+                        val path = message.invoke("getFilePath", type, String::class.java) as String
+                        File(path).exists()
+                    }
                 // An error occurs when the host does not have a fileprovider
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", file!!)
-                Log.d("uri: $uri")
+                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
                 val item = ClipData.Item(uri)
-                val clipData = ClipData( "label", arrayOf("image/*"), item)
+                val clipData = ClipData("label", arrayOf("image/*"), item)
                 val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
                 clipboardManager.setPrimaryClip(clipData)
             }
@@ -89,7 +90,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 m.returnType.isArray
                     && m.parameterTypes.contentEquals(arrayOf(View::class.java))
             }?.hookAfter { param ->
-                param.result = param.result.run { this as Array<Any>
+                param.result = param.result.run {
+                    this as Array<Any>
                     val clQQCustomMenuItem = javaClass.componentType
                     val itemCopy = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_copyToClipboard, "复制")
                     plus(itemCopy)
