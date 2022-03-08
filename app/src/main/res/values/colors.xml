@@ -5,59 +5,27 @@
     <color name="colorPrimaryDark">#0049b5</color>
     <color name="colorAccent">#1A73E8</color>
 
+    <!-- QQPurify Themes -->
     <color name="theme_color_blp">#fb7299</color>
     <color name="theme_color_gol">#ffbb33</color>
     <color name="theme_color_cag">#0f9d58</color>
     <color name="theme_color_ftb">#2196f3</color>
     <color name="theme_color_ghp">#aa66cc</color>
-
     <color name="theme_color_mar">#db4437</color>
     <color name="theme_color_tpo">#ff8833</color>
     <color name="theme_color_tlg">#009688</color>
     <color name="theme_color_ryb">#4169e1</color>
     <color name="theme_color_gap">#673ab7</color>
 
-    <!-- 原主题 -->
-
-    <!--
+    <!-- Text Colors -->
     <color name="firstTextColor">#FF202124</color>
     <color name="secondTextColor">#FF3C4043</color>
     <color name="thirdTextColor">#FF5F6368</color>
     <color name="whiteTextColor">#FFFFFFFF</color>
-    <color name="whiteTextColor2">#FFFFFFFF</color>
-    <color name="WhiteBackgroundColor">#FFFFFFFF</color>
-    <color name="themeColor">#FF4285F4</color>
-    <color name="themeIconColor">#FF4285F4</color>
-    <color name="usableColor">#FF4CAF50</color>
-    <color name="unusableColor">#FFFF5252</color>
-    <color name="warnColor">#ffFFC107</color>
     <color name="rippleColor">#143C4043</color>
-    <color name="lineColor">#ffdddddd</color>
     <color name="divideColor">#FFF0F2F5</color>
     <color name="nullColor">#00000000</color>
-    <color name="backgroundColor">#FFFFFFFF</color>
 
-    -->
+    <color name="defaultThemeBackgroundColor">#FFFFFF</color>
 
-<!-- 蓝调限时主题 -->
-
-
-    <color name="firstTextColor">#FF202124</color>
-    <color name="secondTextColor">#FF3C4043</color>
-    <color name="thirdTextColor">#FF5F6368</color>
-    <color name="whiteTextColor">#FFFFFFFF</color>
-    <color name="WhiteBackgroundColor">#FFFFFFFF</color>
-    <color name="themeColor">#FF1572A1</color>
-    <color name="themeIconColor">#FF1572A1</color>
-    <!-- <color name="usableColor">#FF4CAF50</color> -->
-    <color name="usableColor">#FF219F94</color>
-    <color name="unusableColor">#FFFF5252</color>
-    <color name="warnColor">#ffFFC107</color>
-    <color name="rippleColor">#143C4043</color>
-    <color name="lineColor">#ffdddddd</color>
-    <color name="divideColor">#FFF0F2F5</color>
-    <color name="nullColor">#00000000</color>
-    <color name="backgroundColor">#FFF2F2F6</color>
-
-
-    </resources>
+</resources>

@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <style name="Theme.MaiTungTMDesign.DayNight" parent="Theme.MaiTungTMDesign.Night" />
+
+    <style name="Theme.MaiTungTMDesign.DayNight.Blue" parent="Theme.MaiTungTMDesign.Night.Blue" />
+
+</resources>

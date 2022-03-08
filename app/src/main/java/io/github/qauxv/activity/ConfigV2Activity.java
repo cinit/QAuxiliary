@@ -73,7 +73,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     protected void onCreate(Bundle savedInstanceState) {
         if (HostInfo.isInHostProcess()) {
             // we have to set the theme before super.onCreate()
-            setTheme(getCurrentV2Theme() == 3 ? R.style.Theme_MaiTungTMDesign_LightBlue : R.style.Theme_MaiTungTMDesign_DayNight);
+            setTheme(getCurrentV2Theme() == 3 ? R.style.Theme_MaiTungTMDesign_Light_Blue : R.style.Theme_MaiTungTMDesign_DayNight);
         }
         try {
             long ts = BuildConfig.BUILD_TIMESTAMP;
@@ -363,7 +363,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                     recreate();
                 } else {
                     // just set theme
-                    setTheme(R.style.Theme_MaiTungTMDesign_LightBlue);
+                    setTheme(R.style.Theme_MaiTungTMDesign_Light_Blue);
                 }
                 break;
             }

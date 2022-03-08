@@ -3,6 +3,7 @@
 
     <!-- Base application theme. -->
     <style name="AppTheme.Def" parent="Theme.AppCompat.DayNight.NoActionBar">
+        <item name="backgroundColor">@color/defaultThemeBackgroundColor</item>
         <!-- Customize your theme here. -->
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
@@ -10,23 +11,23 @@
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimary">@color/colorPrimary</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="themeColor">@color/themeColor</item>
         <!-- Primary brand color. -->
-        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorPrimaryVariant">?attr/themeColor</item>
         <item name="colorOnPrimary">@color/firstTextColor</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/themeColor</item>
-        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorSecondary">?attr/themeColor</item>
+        <item name="colorSecondaryVariant">?attr/themeColor</item>
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
         <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
             shortEdges
         </item>
-        <item name="android:statusBarColor">@color/backgroundColor</item>
+        <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
         <item name="android:windowActionBar">false</item>
+        <item name="android:windowTranslucentNavigation">@bool/is_not_sdk_eg_m_23</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
@@ -151,84 +152,104 @@
         <item name="colorAccent">@color/colorAccent</item>
     </style>
 
-    <style name="Theme.MaiTungTMDesign.LightBlue" parent="Theme.MaterialComponents.Light.NoActionBar">
-        <!-- Primary brand color. -->
-        <item name="colorAccent">@color/colorAccent</item>
-        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="themeColor">@color/themeColor</item>
-        <item name="colorPrimary">@color/themeColor</item>
-        <item name="colorPrimaryVariant">@color/themeColor</item>
-        <item name="colorOnPrimary">@color/firstTextColor</item>
-        <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/themeColor</item>
-        <item name="colorSecondaryVariant">@color/themeColor</item>
-        <item name="colorOnSecondary">@color/firstTextColor</item>
-        <!-- Status bar color. -->
-        <!-- <item name="android:statusBarColor">@color/backgroundColor</item> -->
-        <item name="android:statusBarColor">@color/themeColor</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
-        <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
-            shortEdges
-        </item>
-        <item name="android:windowActionBar">false</item>
-        <item name="android:windowNoTitle">true</item>
-        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
-        <!-- <item name="colorControlNormal">@color/firstTextColor</item>  -->
-        <item name="colorControlNormal">@color/whiteTextColor</item>
-    </style>
+    <style name="Theme.MaiTungTMDesign.DayNight" parent="Theme.MaiTungTMDesign.Light" />
 
-    <style name="Theme.MaiTungTMDesign.DayNight" parent="Theme.MaterialComponents.DayNight.NoActionBar">
+    <style name="Theme.MaiTungTMDesign.DayNight.Blue" parent="Theme.MaiTungTMDesign.Light.Blue" />
+
+    <style name="Theme.MaiTungTMDesign.Light" parent="Theme.MaterialComponents.Light.NoActionBar">
+        <!-- Colors -->
+        <item name="whiteBackgroundColor">#FFFFFFFF</item>
+        <item name="themeColor">#FF4285F4</item>
+        <item name="themeIconColor">#FF4285F4</item>
+        <item name="usableColor">#FF4CAF50</item>
+        <item name="unusableColor">#FFFF5252</item>
+        <item name="warnColor">#ffFFC107</item>
+        <item name="lineColor">#ffdddddd</item>
+        <item name="backgroundColor">#FFFFFFFF</item>
         <!-- Primary brand color. -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="themeColor">@color/themeColor</item>
-        <item name="colorPrimary">@color/themeColor</item>
-        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorPrimary">?attr/themeColor</item>
+        <item name="colorPrimaryVariant">?attr/themeColor</item>
         <item name="colorOnPrimary">@color/firstTextColor</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/themeColor</item>
-        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorSecondary">?attr/themeColor</item>
+        <item name="colorSecondaryVariant">?attr/themeColor</item>
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
-        <item name="android:statusBarColor">@color/backgroundColor</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
             shortEdges
         </item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
 
-    <style name="Theme.MaiTungTMDesignNight" parent="Theme.MaterialComponents.NoActionBar">
+    <style name="Theme.MaiTungTMDesign.Light.Blue" parent="Theme.MaiTungTMDesign.Light">
+        <!-- Blue Override Colors -->
+        <item name="themeColor">#FF1572A1</item>
+        <item name="themeIconColor">#FF1572A1</item>
+        <!--<item name="usableColor">#FF4CAF50</item>-->
+        <item name="usableColor">#FF219F94</item>
+        <item name="backgroundColor">#FFF2F2F6</item>
+        <!-- Status bar color. -->
+        <!-- <item name="android:statusBarColor">@color/backgroundColor</item> -->
+        <item name="android:statusBarColor">?attr/themeColor</item>
+        <!-- <item name="colorControlNormal">@color/firstTextColor</item>  -->
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="colorControlNormal">@color/whiteTextColor</item>
+    </style>
+
+    <style name="Theme.MaiTungTMDesign.Night" parent="Theme.MaterialComponents.NoActionBar">
+        <!-- Theme Colors -->
+        <item name="themeColor">#FF82A8E7</item>
+        <item name="usableColor">#FF4CAF50</item>
+        <item name="unusableColor">#FFFF5252</item>
+        <item name="warnColor">#ffFFC107</item>
+        <item name="lineColor">#FF4F5355</item>
+        <item name="backgroundColor">#FF202124</item>
         <!-- Primary brand color. -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
-        <item name="themeColor">@color/themeColor</item>
-        <item name="colorPrimary">@color/themeColor</item>
-        <item name="colorPrimaryVariant">@color/themeColor</item>
+        <item name="colorPrimary">?attr/themeColor</item>
+        <item name="colorPrimaryVariant">?attr/themeColor</item>
         <item name="colorOnPrimary">@color/firstTextColor</item>
         <!-- Secondary brand color. -->
-        <item name="colorSecondary">@color/themeColor</item>
-        <item name="colorSecondaryVariant">@color/themeColor</item>
+        <item name="colorSecondary">?attr/themeColor</item>
+        <item name="colorSecondaryVariant">?attr/themeColor</item>
         <item name="colorOnSecondary">@color/firstTextColor</item>
-        <!-- Status bar color. -->
-        <!-- <item name="android:statusBarColor">@color/backgroundColor</item> -->
-        <item name="android:statusBarColor">@color/themeColor</item>
-        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <!-- Status bar color is drawn by view ourselves, not system -->
+        <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
             shortEdges
         </item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowTranslucentNavigation">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
         <!-- <item name="colorControlNormal">@color/firstTextColor</item> -->
         <item name="colorControlNormal">@color/whiteTextColor</item>
+    </style>
+
+    <style name="Theme.MaiTungTMDesign.Night.Blue" parent="Theme.MaiTungTMDesign.Night">
+        <!-- Blue Override Theme Colors -->
+        <item name="whiteBackgroundColor">#FF303134</item>
+        <item name="themeColor">#FF202124</item>
+        <item name="themeIconColor">#FF82A8E7</item>
+        <!-- Status bar color. -->
+        <item name="android:statusBarColor">?attr/themeColor</item>
+        <item name="colorControlNormal">@color/firstTextColor</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
+        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <!-- <item name="colorControlNormal">@color/whiteTextColor</item>-->
     </style>
 
     <style name="Toolbar.LightBlue" parent="Widget.MaterialComponents.Toolbar">
@@ -236,7 +257,7 @@
         <!-- <item name="colorControlNormal">@color/firstTextColor</item> -->
         <item name="colorControlNormal">@color/whiteTextColor</item>
         <!-- <item name="android:background">@color/backgroundColor</item> -->
-        <item name="android:background">@color/themeColor</item>
+        <item name="android:background">?attr/themeColor</item>
         <item name="elevation">0dp</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingRight">8dp</item>
@@ -249,8 +270,8 @@
         <item name="android:layout_width">match_parent</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!-- <item name="colorControlNormal">@color/whiteTextColor</item> -->
-        <item name="android:background">@color/backgroundColor</item>
-        <!-- <item name="android:background">@color/themeColor</item> -->
+        <item name="android:background">?attr/backgroundColor</item>
+        <!-- <item name="android:background">?attr/themeColor</item> -->
         <item name="elevation">0dp</item>
         <item name="android:paddingLeft">16dp</item>
         <item name="android:paddingRight">8dp</item>

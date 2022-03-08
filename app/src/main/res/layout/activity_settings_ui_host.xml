@@ -35,7 +35,7 @@
             android:id="@+id/topAppBarLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:background="@color/backgroundColor"
+            android:background="?attr/backgroundColor"
             android:elevation="0dp"
             android:fitsSystemWindows="true"
             android:stateListAnimator="@null">
