@@ -32,11 +32,11 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.CheckBox
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.children
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
 import io.github.qauxv.base.IUiItemAgent
@@ -230,18 +230,10 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 true
             }
         }
-        if (relativeLayout.parent is FrameLayout) {
-            // no ghost here, everything is fine
-            (relativeLayout.parent as FrameLayout).addView(textView)
-            relativeLayout.visibility = View.GONE
-        } else {
-            // if got here, it means the ghost is still there
-            // ghost is here, we need to use an alternative way FOR THE TIME BEING
-
-            // just fuck off all children views instead of hiding each
-            relativeLayout.removeAllViews()
-            relativeLayout.addView(textView)
+        relativeLayout.children.forEach {
+            it.alpha = 0.0f
         }
+        relativeLayout.addView(textView)
     }
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
