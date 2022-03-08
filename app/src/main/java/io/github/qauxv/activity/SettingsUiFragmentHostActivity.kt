@@ -55,6 +55,7 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         setContentView(R.layout.activity_settings_ui_host)
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
+        mAppBarLayout.background = mAppToolBar.background
         setSupportActionBar(mAppToolBar)
         requestTranslucentStatusBar()
         HolidayHelper.setup(this)
