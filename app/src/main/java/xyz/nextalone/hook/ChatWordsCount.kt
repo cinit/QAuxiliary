@@ -237,12 +237,10 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
         } else {
             // if got here, it means the ghost is still there
             // ghost is here, we need to use an alternative way FOR THE TIME BEING
-            val ghostRelativeLayout = relativeLayout
-            // set child view visibility to GONE
-            for (i in 0 until ghostRelativeLayout.childCount) {
-                ghostRelativeLayout.getChildAt(i).visibility = View.GONE
-            }
-            ghostRelativeLayout.addView(textView)
+
+            // just fuck off all children views instead of hiding each
+            relativeLayout.removeAllViews()
+            relativeLayout.addView(textView)
         }
     }
 
