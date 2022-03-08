@@ -68,7 +68,7 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
                     if (it.moveToFirst()) {
                         val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                         if (index != -1) {
-                            getString(index)
+                            it.getString(index)
                         } else {
                             null
                         }
@@ -95,7 +95,7 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
                     if (it.moveToFirst()) {
                         val index = it.getColumnIndex(OpenableColumns.DISPLAY_NAME)
                         if (index != -1) {
-                            getString(index)
+                            it.getString(index)
                         } else {
                             null
                         }

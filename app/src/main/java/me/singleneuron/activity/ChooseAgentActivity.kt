@@ -25,16 +25,20 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Intent
-import android.content.Intent.*
+import android.content.Intent.ACTION_GET_CONTENT
+import android.content.Intent.ACTION_PICK
+import android.content.Intent.EXTRA_ALLOW_MULTIPLE
 import android.os.Bundle
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
+import cc.ioctl.util.Reflex
 import io.github.qauxv.R
 import io.github.qauxv.util.Log
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import me.singleneuron.base.AbstractChooseActivity
-import java.util.*
+import java.util.Timer
 import kotlin.concurrent.schedule
 
 class ChooseAgentActivity : AbstractChooseActivity() {
@@ -59,33 +63,45 @@ class ChooseAgentActivity : AbstractChooseActivity() {
         super.onActivityResult(requestCode, resultCode, data)
         lifecycleScope.launch {
             withContext(Dispatchers.IO) {
-                if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK &&
-                        (data?.data != null || data?.clipData != null)) {
-                    initSendCacheDir()
-                    val uri = data.data
-                    val clip = data.clipData
-                    if (uri != null) {
-                        // Only one file chosen
-                        convertUriToPath(uri)?.let {
-                            sendAFile(it, data)
-                        }
-                    } else if (clip != null) {
-                        // multiple file chosen
-                        convertClipDataToPath(clip).let {
-                            var delayTime: Long = 0
-                            for (i in it) {
-                                Timer().schedule(delayTime) {
-                                    sendAFile(i, data)
+                try {
+                    if (requestCode == REQUEST_CODE && resultCode == Activity.RESULT_OK &&
+                        (data?.data != null || data?.clipData != null)
+                    ) {
+                        initSendCacheDir()
+                        val uri = data.data
+                        val clip = data.clipData
+                        if (uri != null) {
+                            // Only one file chosen
+                            convertUriToPath(uri)?.let {
+                                sendAFile(it, data)
+                            }
+                        } else if (clip != null) {
+                            // multiple file chosen
+                            convertClipDataToPath(clip).let {
+                                var delayTime: Long = 0
+                                for (i in it) {
+                                    Timer().schedule(delayTime) {
+                                        sendAFile(i, data)
+                                    }
+                                    delayTime += 1000
                                 }
-                                delayTime += 1000
                             }
                         }
                     }
+                    finish()
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        AlertDialog.Builder(this@ChooseAgentActivity)
+                            .setTitle(Reflex.getShortClassName(e))
+                            .setMessage(Log.getStackTraceString(e))
+                            .setCancelable(false)
+                            .setPositiveButton(android.R.string.ok) { _, _ -> this@ChooseAgentActivity.finish() }
+                            .show()
+                    }
+                    Log.e(e)
                 }
-                finish()
             }
         }
-
     }
 
     @SuppressLint("WrongConstant")
