@@ -40,6 +40,7 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
     override val defaultItems = setOf<String>()
     override var items: MutableList<String> = MsgRecordUtil.MSG_WITH_DESC.keys.sortedWith(chineseSorter).toMutableList()
     override val preferenceTitle: String = "静默指定类型消息通知"
+    override val dialogDesc = "静默消息"
     override val enableCustom = false
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 

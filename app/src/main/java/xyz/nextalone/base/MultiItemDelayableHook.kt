@@ -50,7 +50,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String) :
 
     override val description: String?
         get() = preferenceSummary.ifEmpty { null }
-
+    open val dialogDesc = "精简"
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow("已选择" + activeItems.size + "项")
     }
@@ -116,7 +116,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String) :
 
     private val alertDialogDecorator: MaterialAlertDialogBuilder.() -> Unit = {
         val cache = activeItems.toMutableList()
-        setTitle("选择要精简的条目")
+        setTitle("选择要${dialogDesc}的项目")
         setMultiChoiceItems(items.toTypedArray(), getBoolAry()) { _: DialogInterface, i: Int, _: Boolean ->
             val item = items[i]
             if (!cache.contains(item)) cache.add(item)
@@ -124,7 +124,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String) :
         }
         setNegativeButton("取消", null)
         setPositiveButton("确定") { _: DialogInterface, _: Int ->
-            Toasts.info(context, "已保存精简项目")
+            Toasts.info(context, "已保存${dialogDesc}项目")
             activeItems = cache
         }
         if (enableCustom)
@@ -153,7 +153,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String) :
                     )
                 )
                 MaterialAlertDialogBuilder(context, R.style.MaterialDialog)
-                    .setTitle("自定义精简项目")
+                    .setTitle("自定义${dialogDesc}项目")
                     .setView(linearLayout)
                     .setCancelable(true)
                     .setPositiveButton("确认") { _: DialogInterface, _: Int ->
