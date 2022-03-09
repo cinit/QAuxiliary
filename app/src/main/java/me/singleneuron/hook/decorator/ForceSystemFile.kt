@@ -49,6 +49,16 @@ object ForceSystemFile : BaseSwitchFunctionDecorator(), IStartActivityHookDecora
         if (intent.component?.className?.contains("filemanager.activity.FMActivity") == true &&
                 (!intent.getBooleanExtra("is_decorated", false))) {
             val context = param.thisObject as Context
+            val targetUin: Long = try {
+                intent.getStringExtra("targetUin")?.toLong() ?: -1L
+            } catch (e: NumberFormatException) {
+                -1L
+            }
+            // note that old version of FMActivity has no targetUin
+            if (targetUin in 1..9999) {
+                // reserved for special usage
+                return false
+            }
             Log.d("context: ${context.javaClass.name}")
             val activityMap = mapOf(
                     "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
