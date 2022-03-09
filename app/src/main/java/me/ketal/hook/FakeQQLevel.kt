@@ -68,7 +68,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
 
     private val levelKey = ConfigData<String>("Ketal_FakeQQLevel_level")
     private var level
-        get() = levelKey.getOrDefault("114514")
+        get() = levelKey.getOrDefault("255")
         set(value) {
             levelKey.value = value
         }
