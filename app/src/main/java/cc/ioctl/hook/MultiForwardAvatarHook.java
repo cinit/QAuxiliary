@@ -38,7 +38,6 @@ import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.core.MainHook;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CustomDialog;
@@ -126,7 +125,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
                     try {
                         long uin = Long.parseLong(senderuin);
                         if (uin > 10000) {
-                            MainHook.openProfileCard(__ctx, uin);
+                            OpenProfileCard.openUserProfileCard(__ctx, uin);
                         }
                     } catch (Exception e) {
                         Log.e(e);
@@ -160,7 +159,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
                     try {
                         long uin = Long.parseLong(senderuin);
                         if (uin > 10000) {
-                            MainHook.openProfileCard(__ctx, uin);
+                            OpenProfileCard.openUserProfileCard(__ctx, uin);
                         }
                     } catch (Exception e) {
                         Log.e(e);

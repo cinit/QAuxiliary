@@ -30,9 +30,9 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
+import cc.ioctl.hook.OpenProfileCard
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
-import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Log
@@ -103,7 +103,7 @@ class ProfileCardSpan(val qq: Long) : ClickableSpan() {
     override fun onClick(v: View) {
         // 0 for @all
         if (qq > 10000) {
-            MainHook.openProfileCard(v.context, qq)
+            OpenProfileCard.openUserProfileCard(v.context, qq)
         }
     }
 }

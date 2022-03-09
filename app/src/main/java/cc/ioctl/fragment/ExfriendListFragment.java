@@ -44,17 +44,16 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.res.ResourcesCompat;
+import cc.ioctl.hook.OpenProfileCard;
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.data.EventRecord;
 import cc.ioctl.util.data.FriendRecord;
-import cc.ioctl.util.ui.ThemeAttrUtils;
 import com.tencent.widget.XListView;
 import io.github.qauxv.R;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
-import io.github.qauxv.core.MainHook;
 import io.github.qauxv.fragment.BaseSettingFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
@@ -282,7 +281,7 @@ public class ExfriendListFragment extends BaseSettingFragment {
         rlayout.setClickable(true);
         rlayout.setOnClickListener(v -> {
             long uin = ((EventRecord) v.getTag()).operand;
-            MainHook.openProfileCard(v.getContext(), uin);
+            OpenProfileCard.openUserProfileCard(v.getContext(), uin);
         });
         rlayout.setOnLongClickListener(v -> {
             try {

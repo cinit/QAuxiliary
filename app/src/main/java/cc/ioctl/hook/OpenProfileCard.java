@@ -32,6 +32,7 @@ import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
 import android.widget.EditText;
@@ -39,15 +40,16 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
+import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.core.MainHook;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -98,7 +100,7 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
                         return;
                     }
                     alertDialog.dismiss();
-                    MainHook.openProfileCard(ctx, uin);
+                    openUserProfileCard(ctx, uin);
                 });
         alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
                 .setOnClickListener(v -> {
@@ -150,6 +152,20 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
         intent.putExtra("vistor_type", 2);
         intent.putExtra("public_fragment_class", kVisitorTroopCardFragment.getName());
         context.startActivity(intent);
+    }
+
+    public static void openUserProfileCard(@NonNull Context ctx, long uin) {
+        try {
+            Parcelable allInOne = (Parcelable) Reflex.newInstance(
+                    Initiator._AllInOne(), "" + uin, 35,
+                    String.class, int.class);
+            Intent intent = new Intent(ctx, Initiator._FriendProfileCardActivity());
+            intent.putExtra("AllInOne", allInOne);
+            ctx.startActivity(intent);
+        } catch (Exception e) {
+            Toasts.error(ctx, e.toString().replace("java.lang.", ""));
+            Log.e(e);
+        }
     }
 
     @NonNull

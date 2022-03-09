@@ -22,8 +22,6 @@
 package io.github.qauxv.core;
 
 import android.content.Context;
-import android.content.Intent;
-import android.os.Parcelable;
 import cc.ioctl.hook.FileRecvRedirect;
 import cc.ioctl.hook.GagInfoDisclosure;
 import cc.ioctl.hook.MuteAtAllAndRedPacket;
@@ -65,20 +63,6 @@ public class MainHook {
             SELF = new MainHook();
         }
         return SELF;
-    }
-
-    public static void openProfileCard(Context ctx, long uin) {
-        try {
-            Log.d("class=" + Initiator._AllInOne());
-            Parcelable allInOne = (Parcelable) Reflex.newInstance(
-                Initiator._AllInOne(), "" + uin, 35,
-                String.class, int.class);
-            Intent intent = new Intent(ctx, Initiator._FriendProfileCardActivity());
-            intent.putExtra("AllInOne", allInOne);
-            ctx.startActivity(intent);
-        } catch (Exception e) {
-            Log.e(e);
-        }
     }
 
     private static void injectLifecycleForProcess(Context ctx) {
