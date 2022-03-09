@@ -239,13 +239,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
                 }
                 break;
             case R.id.btn_disable:
-                cfg.putBoolean(FakeBatteryHook.qn_fake_bat_enable, false);
-                try {
-                    cfg.save();
-                } catch (Exception e) {
-                    Toasts.error(requireContext(), "错误:" + e, Toast.LENGTH_LONG);
-                    Log.e(e);
-                }
+                FakeBatteryHook.INSTANCE.setEnabled(false);
                 showStatus();
                 break;
             default: // nothing
@@ -276,7 +270,7 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
         }
         bat.setFakeSendBatteryStatus(val);
         if (!bat.isEnabled()) {
-            cfg.putBoolean(FakeBatteryHook.qn_fake_bat_enable, true);
+            bat.setEnabled(true);
             try {
                 cfg.save();
                 boolean success = true;
