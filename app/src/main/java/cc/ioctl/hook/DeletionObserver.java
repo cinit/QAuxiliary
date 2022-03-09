@@ -126,8 +126,7 @@ public class DeletionObserver extends BasePersistBackgroundHook {
                     Log.e(e);
                 }
                 rell.addView(exfriend, exlp);
-                RelativeLayout.LayoutParams dotlp = new RelativeLayout.LayoutParams(WRAP_CONTENT,
-                    WRAP_CONTENT);
+                RelativeLayout.LayoutParams dotlp = new RelativeLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT);
                 dotlp.topMargin = 0;
                 dotlp.rightMargin = LayoutHelper.dip2px(splashActivity, 24);
                 dotlp.addRule(RelativeLayout.ALIGN_PARENT_RIGHT);

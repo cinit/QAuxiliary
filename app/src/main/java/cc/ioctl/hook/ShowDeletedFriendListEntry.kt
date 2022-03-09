@@ -42,7 +42,11 @@ object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchC
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     override val uiItemAgent: IUiItemAgent = this
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.FRIEND_CATEGORY
-    override var isChecked = isEnable
+    override var isChecked
+        get() = isEnable
+        set(value) {
+            isEnable = value
+        }
     override val isCheckable: Boolean = true
     var isEnable: Boolean
         get() = ConfigManager.getDefaultConfig().getBooleanOrDefault("ShowDeletedFriendListEntry", false)
