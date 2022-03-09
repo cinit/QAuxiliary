@@ -43,7 +43,7 @@ import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.DexKit
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
-import xyz.nextalone.util.throwOrTrue
+import me.ketal.util.ignoreResult
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.set
@@ -89,14 +89,15 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
                         if (level < 1 || level > 1000) {
                             inputField.error = "无效数值，仅可以输入1-1000范围内的数字"
                             false
+                        } else {
+                            inputField.error = null
+                            true
                         }
-                        inputField.error = null
-                        true
                     } catch (e: NumberFormatException) {
                         inputField.error = "请输入有效的数据"
                         false
                     })
-                }
+                }.ignoreResult()
                 positiveButton(text = "保存") {
                     val text = getInputField().text.toString()
                     val enableFake = vg.isChecked

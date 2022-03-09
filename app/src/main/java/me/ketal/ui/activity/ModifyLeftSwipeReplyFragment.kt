@@ -41,6 +41,7 @@ import com.afollestad.materialdialogs.input.input
 import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.fragment.BaseSettingFragment
 import me.ketal.hook.LeftSwipeReplyHook
+import me.ketal.util.ignoreResult
 
 @SuppressLint("Registered")
 class ModifyLeftSwipeReplyFragment : BaseSettingFragment() {
@@ -69,7 +70,7 @@ class ModifyLeftSwipeReplyFragment : BaseSettingFragment() {
                         }
                         inputField.error = if (isValid) null else "请输入有效的数据"
                         dialog.setActionButtonEnabled(WhichButton.POSITIVE, isValid)
-                    }
+                    }.ignoreResult()
                     positiveButton(text = "确定") {
                         val text = it.getInputField().text.toString()
                         hook.replyDistance = text.toInt()

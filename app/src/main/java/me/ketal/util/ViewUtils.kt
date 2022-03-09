@@ -26,6 +26,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
+import com.afollestad.materialdialogs.MaterialDialog
 
 fun ViewGroup.findViewByText(text: String, contains: Boolean = false) =
     this.findViewByCondition {
@@ -51,4 +52,9 @@ fun ViewGroup.findViewByCondition(condition: (view: View) -> Boolean): View? {
         }
     }
     return null
+}
+
+@Suppress("unused")
+fun MaterialDialog.ignoreResult() {
+    // do nothing here, just ignore the result to make the lint happy
 }

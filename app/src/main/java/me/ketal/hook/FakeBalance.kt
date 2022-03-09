@@ -43,9 +43,9 @@ import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
+import me.ketal.util.ignoreResult
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.throwOrTrue
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -91,7 +91,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                     }
                     dialog.dismiss()
                     textView?.text = "114514"
-                }
+                }.ignoreResult()
                 positiveButton(text = "保存")
                 negativeButton(text = "取消")
             }
