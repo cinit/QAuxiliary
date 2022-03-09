@@ -49,28 +49,9 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         if (items.contains(data?.msgType)) {
             XposedHelpers.setBooleanField(data?.msgRecord, "isread", true)
             return true
-        } else if (items.contains(0) and (data?.msg?.contains("@全体成员") == true)) {
-            XposedHelpers.setBooleanField(data?.msgRecord, "isread", true)
-            return true
         }
         return false
     }
-
-//    override fun listener(): View.OnClickListener {
-//        items.forEachIndexed { i: Int, str: String ->
-//            items[i] = MsgRecordUtil.getDesc(str)
-//        }
-//        items = items.sortedWith(SortChinese()).toTypedArray().toMutableList()
-//        return super.listener()
-//    }
-
-//    override fun getBoolAry(): BooleanArray {
-//        val ret = BooleanArray(items.size)
-//        for ((i, item) in items.withIndex()) {
-//            ret[i] = activeItems.contains(item) or activeItems.contains(MsgRecordUtil.getKey(item))
-//        }
-//        return ret
-//    }
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
 }
