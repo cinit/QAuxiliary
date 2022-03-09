@@ -305,7 +305,7 @@ object MsgRecordUtil {
 //        Toasts.info(Utils.getQQAppInterface().getApplication(), s);
         return if (DESC.containsKey(s)) {
 //            Toasts.info(Utils.getQQAppInterface().getApplication(), DESC.get(s));
-            DESC[s]!!
+            DESC[s]!! + '\n' + s!!
         } else s!!
     }
 
