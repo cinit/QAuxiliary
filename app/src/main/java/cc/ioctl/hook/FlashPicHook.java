@@ -40,7 +40,11 @@ import io.github.qauxv.util.DexKit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 
+/**
+ * Peak frequency: ~40 invocations per second
+ */
 @UiItemAgentEntry
 @FunctionHookEntry
 public class FlashPicHook extends CommonSwitchFunctionHook {
@@ -80,14 +84,14 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
 
     static String sn_ItemBuilderFactory = null;
     static String sn_BasePicDownloadProcessor = null;
+    static String[] snarray_CheckStackClasses = null;
 
     @Override
     public boolean initOnce() throws Exception {
         Class clz = DexKit.loadClassFromCache(DexKit.C_FLASH_PIC_HELPER);
         Method isFlashPic = null;
         for (Method mi : clz.getDeclaredMethods()) {
-            if (mi.getReturnType().equals(boolean.class)
-                    && mi.getParameterTypes().length == 1) {
+            if (mi.getReturnType().equals(boolean.class) && mi.getParameterTypes().length == 1) {
                 String name = mi.getName();
                 if (name.equals("a") || name.equals("z") || name.equals("W")) {
                     isFlashPic = mi;
@@ -104,8 +108,15 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 sn_ItemBuilderFactory = getShortClassName(
                         DexKit.doFindClass(DexKit.C_ITEM_BUILDER_FAC));
             }
-            if (Reflex.isCallingFromEither(sn_ItemBuilderFactory,
-                    sn_BasePicDownloadProcessor, "FlashPicItemBuilder")) {
+            if (snarray_CheckStackClasses == null) {
+                snarray_CheckStackClasses = new String[]{
+                        Objects.requireNonNull(sn_ItemBuilderFactory),
+                        Objects.requireNonNull(sn_BasePicDownloadProcessor),
+                        "FlashPicItemBuilder"
+                };
+            }
+            // TODO 2022-03-10 find a better way instead of checking the stack to improve performance
+            if (checkIsCallingFromClass(snarray_CheckStackClasses, 4, 10)) {
                 param.setResult(false);
             }
         });
@@ -149,10 +160,8 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                         View.OnClickListener.class);
                 setTailMessage.setAccessible(true);
             }
-            if (setTailMessage != null) {
-                Object baseChatItemLayout = fBaseChatItemLayout.get(viewHolder);
-                setTailMessage.invoke(baseChatItemLayout, isFlashPic(param.args[0]), "闪照", null);
-            }
+            Object baseChatItemLayout = fBaseChatItemLayout.get(viewHolder);
+            setTailMessage.invoke(baseChatItemLayout, isFlashPic(param.args[0]), "闪照", null);
         });
         return true;
     }
@@ -167,5 +176,25 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "以图片方式打开闪照";
+    }
+
+    private static boolean checkIsCallingFromClass(@NonNull String[] className, int start, int maxDepth) {
+        int end;
+        if (maxDepth < 0) {
+            end = Integer.MAX_VALUE;
+        } else {
+            end = maxDepth + start;
+        }
+        StackTraceElement[] stackTrace = new Throwable().getStackTrace();
+        end = Math.min(end, stackTrace.length);
+        for (int i = start; i < end; i++) {
+            String cn = stackTrace[i].getClassName();
+            for (String name : className) {
+                if (cn.contains(name)) {
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

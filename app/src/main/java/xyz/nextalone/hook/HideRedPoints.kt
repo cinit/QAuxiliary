@@ -30,7 +30,12 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.replace
+import xyz.nextalone.util.set
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -62,15 +67,15 @@ object HideRedPoints : CommonSwitchFunctionHook() {
             it.name == "createImageFromResourceStream" || it.name == "a" && it.parameterTypes.size == 7
         }?.hookAfter(this) {
             if (!it.args[3].toString().contains("skin_tips_dot")) return@hookAfter
-            it.result.set(
-                    "a", Bitmap::class.java,
-                    BitmapFactory.decodeByteArray(
-                            TRANSPARENT_PNG,
-                            0,
-                            TRANSPARENT_PNG.size
-                    ),
-            )
+            it.result.set("a", Bitmap::class.java, transparentBitmap)
         }
+    }
+
+    /**
+     * Cache the transparent png bitmap to improve performance, bitmap is immutable
+     */
+    private val transparentBitmap: Bitmap by lazy {
+        BitmapFactory.decodeByteArray(TRANSPARENT_PNG, 0, TRANSPARENT_PNG.size)
     }
 
     // for skin_tips_dot

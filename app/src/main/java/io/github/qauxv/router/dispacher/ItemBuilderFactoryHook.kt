@@ -40,6 +40,9 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
 ) {
 
     // register your decorator here
+    // THEY ARE INVOKED IN UI THREAD WITH A VERY HIGH FREQUENCY,
+    // OPTIMIZE YOUR CODE, CACHE YOUR REFLECTION FIELDS AND METHODS FOR BETTER PERFORMANCE
+    // *** Peak frequency: ~412 invocations per second
     override val decorators: Array<IItemBuilderFactoryHookDecorator> = arrayOf(
             CardMsgToText,
             MiniAppToStruckMsg,

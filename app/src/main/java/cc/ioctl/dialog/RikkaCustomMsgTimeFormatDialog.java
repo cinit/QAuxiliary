@@ -61,17 +61,9 @@ public class RikkaCustomMsgTimeFormatDialog {
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_msg_time_enabled);
     }
 
-    @Nullable
+    @NonNull
     public static String getCurrentMsgTimeFormat() {
-        ConfigManager cfg = ConfigManager.getDefaultConfig();
-        if (cfg.getBooleanOrFalse(rq_msg_time_enabled)) {
-            String val = cfg.getString(rq_msg_time_format);
-            if (val == null) {
-                val = DEFAULT_MSG_TIME_FORMAT;
-            }
-            return val;
-        }
-        return null;
+        return ConfigManager.getDefaultConfig().getString(rq_msg_time_format, DEFAULT_MSG_TIME_FORMAT);
     }
 
     @NonNull

@@ -32,6 +32,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
+import java.util.Objects;
 import java.util.regex.Pattern;
 
 public class Reflex {
@@ -1048,12 +1049,8 @@ public class Reflex {
     }
 
     public static Field findField(Class<?> clazz, Class<?> type, String name) throws NoSuchFieldException {
-        if (clazz == null) {
-            throw new NullPointerException("clazz == null");
-        }
-        if (name == null) {
-            throw new NullPointerException("name == null");
-        }
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(name, "name == null");
         Class<?> clz = clazz;
         do {
             for (Field field : clz.getDeclaredFields()) {
@@ -1066,6 +1063,22 @@ public class Reflex {
         String errMsg = type == null ? ("field '" + name + "' not found in " + clazz.getName())
             : ("field '" + name + "' of type " + type.getName() + " not found in " + clazz.getName());
         throw new NoSuchFieldException(errMsg);
+    }
+
+    @Nullable
+    public static Field findFieldOrNull(Class<?> clazz, Class<?> type, String name) {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(name, "name == null");
+        Class<?> clz = clazz;
+        do {
+            for (Field field : clz.getDeclaredFields()) {
+                if ((type == null || field.getType().equals(type)) && field.getName().equals(name)) {
+                    field.setAccessible(true);
+                    return field;
+                }
+            }
+        } while ((clz = clz.getSuperclass()) != null);
+        return null;
     }
 
     public static Method findMethodByTypes_1(Class<?> clazz, Class returnType, Class... argt)
