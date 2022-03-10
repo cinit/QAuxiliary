@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 project(qauxv)
 
+enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_C_STANDARD 11)
 
@@ -12,8 +13,6 @@ find_library( # Defines the name of the path variable that stores the
         log)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-invalid-specifier -Werror=return-type -Wno-invalid-offsetof")
-#set(CMAKE_LINK_LIBRARY_FLAG " -Wl,-e,__libqauxv_main ${CMAKE_LINK_LIBRARY_FLAG}")
-
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     SET(CLANG_CXX_EXTRA_OPT "-Werror=unknown-warning-option -Werror=format-invalid-specifier -Werror=call-to-pure-virtual-from-ctor-dtor")
     SET(CLANG_C_EXTRA_OPT "-Werror=format-invalid-specifier")
@@ -40,6 +39,8 @@ set_target_properties(qauxv PROPERTIES
         CXX_EXTENSIONS OFF
         POSITION_INDEPENDENT_CODE ON
         )
+
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
+target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
 target_link_libraries(qauxv mmkv c dl ${ANDROID_LIBS} dex_builder_static)

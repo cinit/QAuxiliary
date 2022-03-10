@@ -33,7 +33,7 @@ android {
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
                     "-DNDK_CCACHE=ccache"
                 )
-
+                targets += "qauxv"
             }
         }
     }
