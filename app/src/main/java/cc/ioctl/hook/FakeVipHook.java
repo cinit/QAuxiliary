@@ -24,6 +24,8 @@ package cc.ioctl.hook;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -44,18 +46,8 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
-        Method m;
-        try {
-            m = new DexMethodDescriptor("Lcom/tencent/mobileqq/utils/VipUtils;->a(Lmqq/app/AppRuntime;Ljava/lang/String;)I")
-                    .getMethodInstance(Initiator.getHostClassLoader());
-        } catch (NoSuchMethodException e) {
-            m = DexKit.doFindMethod(DexKit.N_VIP_UTILS_getPrivilegeFlags);
-        }
-        if (m.getReturnType() != int.class) {
-            throw new IllegalStateException("VipUtils.getPrivilegeFlags(AppRuntime, String) return type is not int");
-        }
-        HookUtils.hookAfterIfEnabled(this, m, param -> {
+    public boolean initOnce() throws NoSuchMethodException {
+        XC_MethodHook hook = HookUtils.afterIfEnabled(this, param -> {
             int ret;
             // null is self
             Object uin = param.args[param.args.length - 1];
@@ -65,6 +57,26 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
                 param.setResult(2 | 4 | 8 | ret);
             }
         });
+        Method getPrivilegeFlags0VipUtils;
+        try {
+            getPrivilegeFlags0VipUtils = new DexMethodDescriptor("Lcom/tencent/mobileqq/utils/VipUtils;->a(Lmqq/app/AppRuntime;Ljava/lang/String;)I")
+                    .getMethodInstance(Initiator.getHostClassLoader());
+        } catch (NoSuchMethodException e) {
+            getPrivilegeFlags0VipUtils = DexKit.doFindMethod(DexKit.N_VIP_UTILS_getPrivilegeFlags);
+        }
+        if (getPrivilegeFlags0VipUtils != null && getPrivilegeFlags0VipUtils.getReturnType() != int.class) {
+            throw new IllegalStateException("VipUtils.getPrivilegeFlags(AppRuntime, String) return type is not int");
+        }
+        // com.tencent.mobileqq.vip.VipStatusManagerImpl#getPrivilegeFlags(String)I
+        Method getPrivilegeFlags1VipStatusManagerImpl = null;
+        Class<?> kVipStatusManagerImpl = Initiator.load("com.tencent.mobileqq.vip.VipStatusManagerImpl");
+        if (kVipStatusManagerImpl != null) {
+            getPrivilegeFlags1VipStatusManagerImpl = kVipStatusManagerImpl.getDeclaredMethod("getPrivilegeFlags", String.class);
+            XposedBridge.hookMethod(getPrivilegeFlags1VipStatusManagerImpl, hook);
+        }
+        if (getPrivilegeFlags0VipUtils != null) {
+            XposedBridge.hookMethod(getPrivilegeFlags0VipUtils, hook);
+        }
         return true;
     }
 
@@ -83,7 +95,7 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public String getDescription() {
-        return "此功能会导致误判SVIP，请谨慎使用";
+        return "假装是 SVIP, 非会员也可以贴表情";
     }
 
     @Nullable

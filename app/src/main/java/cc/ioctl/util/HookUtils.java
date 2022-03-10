@@ -70,6 +70,52 @@ public class HookUtils {
         });
     }
 
+    public static XC_MethodHook beforeIfEnabled(final @NonNull BaseFunctionHook this0, int priority,
+                                               final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        return new XC_MethodHook(priority) {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                        beforeHookedMethod.beforeHookedMethod(param);
+                    }
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        };
+    }
+
+    public static XC_MethodHook afterIfEnabled(final @NonNull BaseFunctionHook this0, int priority,
+                                               final @NonNull AfterHookedMethod afterHookedMethod) {
+        Objects.requireNonNull(this0, "this0 == null");
+        return new XC_MethodHook(priority) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    if (this0.isEnabled() && !LicenseStatus.sDisableCommonHooks) {
+                        afterHookedMethod.afterHookedMethod(param);
+                    }
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        };
+    }
+
+    public static XC_MethodHook beforeIfEnabled(final @NonNull BaseFunctionHook this0,
+                                                final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        return beforeIfEnabled(this0, 50, beforeHookedMethod);
+    }
+
+    public static XC_MethodHook afterIfEnabled(final @NonNull BaseFunctionHook this0,
+                                               final @NonNull AfterHookedMethod afterHookedMethod) {
+        return afterIfEnabled(this0, 50, afterHookedMethod);
+    }
+
     public static void hookAfterIfEnabled(final @NonNull BasePersistBackgroundHook this0, final @NonNull Method method,
                                           int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
         Objects.requireNonNull(this0, "this0 == null");
