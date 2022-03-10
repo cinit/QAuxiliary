@@ -44,7 +44,7 @@ body:
   - type: input
     attributes:
       label: Module Version/模块版本
-      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed./不要填用“最新版”。给出四位版本号，不然 issue 会被关闭。
+      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed./不要填用“最新版”。给出详细版本号，不然 issue 会被关闭。
     validations:
       required: true
   - type: checkboxes
