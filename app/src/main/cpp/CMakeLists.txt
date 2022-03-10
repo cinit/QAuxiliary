@@ -12,7 +12,7 @@ find_library( # Defines the name of the path variable that stores the
         log)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-invalid-specifier -Werror=return-type -Wno-invalid-offsetof")
-set(CMAKE_LINK_LIBRARY_FLAG " -Wl,-e,__libqauxv_main ${CMAKE_LINK_LIBRARY_FLAG}")
+#set(CMAKE_LINK_LIBRARY_FLAG " -Wl,-e,__libqauxv_main ${CMAKE_LINK_LIBRARY_FLAG}")
 
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
     SET(CLANG_CXX_EXTRA_OPT "-Werror=unknown-warning-option -Werror=format-invalid-specifier -Werror=call-to-pure-virtual-from-ctor-dtor")
@@ -27,24 +27,14 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-ty
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
+add_subdirectory(dex_builder)
 
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
         qauxv_core/version.c
         qauxv_core/NativeHookEntry.cc
         qauxv_core/NativeMainHook.cc
-        qauxv_core/biliroaming.cc
-        dex_builder/dex_builder.cc
-        dex_builder/dex_helper.cc
-        dex_builder/slicer/reader.cc
-        dex_builder/slicer/writer.cc
-        dex_builder/slicer/dex_ir.cc
-        dex_builder/slicer/common.cc
-        dex_builder/slicer/dex_format.cc
-        dex_builder/slicer/dex_utf8.cc
-        dex_builder/slicer/dex_bytecode.cc)
-
-target_include_directories(qauxv PUBLIC dex_builder/include)
+        qauxv_core/biliroaming.cc)
 
 set_target_properties(qauxv PROPERTIES
         CXX_EXTENSIONS OFF
@@ -52,4 +42,4 @@ set_target_properties(qauxv PROPERTIES
         )
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 
-target_link_libraries(qauxv mmkv c dl ${ANDROID_LIBS})
+target_link_libraries(qauxv mmkv c dl ${ANDROID_LIBS} dex_builder_static)
