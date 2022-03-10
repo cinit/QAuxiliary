@@ -1,0 +1,63 @@
+name: Bug report/反馈 Bug
+description: Report errors or unexpected behavior./反馈错误或异常行为。
+labels: ["Bug"]
+title: "[Bug] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢给 QAuxiliary 汇报问题！
+        为了使我们更好地帮助你，请提供以下信息。
+  - type: textarea
+    attributes:
+      label: Steps to reproduce/复现步骤
+      placeholder: |
+        1. 
+        2. 
+        3. 
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Expected behaviour/预期行为
+      placeholder: Tell us what should happen/正常情况下应该发生什么
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Actual behaviour/实际行为
+      placeholder: Tell us what happens instead/实际上发生了什么
+    validations:
+      required: true
+
+  - type: input
+    attributes:
+      label: XPosed Framework you used/你使用的XP框架
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: QQ(TIM)版本/QQ(TIM) Version
+      description:  QQ(TIM)版本/QQ(TIM) Version
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Module Version/模块版本
+      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed./不要填用“最新版”。给出四位版本号，不然 issue 会被关闭。
+    validations:
+      required: true
+  - type: checkboxes
+    id: latest
+    attributes:
+      label: Version requirement/版本要求
+      options:
+        - label: I am using latest debug CI version of QAuxiliary and enable verbose log/我正在使用最新 CI 调试版本且启用详细日志
+          required: true
+  - type: textarea
+    attributes:
+      label: Logs/日志
+      description: For usage issues, please provide the log zip saved from manager; for activation issues, please provide [bugreport](https://developer.android.com/studio/debug/bug-report). Without log, the issue will be closed. /使用问题请提供从管理器保存的日志压缩包；激活问题请提供 [bugreport](https://developer.android.google.cn/studio/debug/bug-report?hl=zh-cn) 日志。无日志提交会被关闭。
+      placeholder: Upload logs by clicking the bar on the bottom. /点击文本框底栏上传日志文件。
+    validations:
+      required: true
