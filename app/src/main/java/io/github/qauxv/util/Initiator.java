@@ -501,7 +501,7 @@ public class Initiator {
         return (Class<T>) load("com/tencent/mobileqq/activity/aio/SessionInfo");
     }
 
-    public static Class _BaseChatPie() {
+    public static Class<?> _BaseChatPie() {
         Class<?> clazz = load("com/tencent/mobileqq/activity/aio/core/BaseChatPie");
         if (clazz == null) {
             clazz = load("com.tencent.mobileqq.activity.BaseChatPie");
