@@ -23,7 +23,7 @@ android {
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
         ndk {
-            abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+            abiFilters.add("armeabi-v7a")
         }
         externalNativeBuild {
             cmake {
@@ -72,6 +72,35 @@ android {
             proguardFiles("proguard-rules.pro")
         }
     }
+    flavorDimensions += "abi"
+    productFlavors {
+        create("arm32") {
+            dimension = "abi"
+            ndk {
+                abiFilters.add("armeabi-v7a")
+            }
+        }
+        create("arm64") {
+            dimension = "abi"
+            ndk {
+                defaultConfig.ndk.abiFilters.remove("armeabi-v7a")
+                abiFilters.add("arm64-v8a")
+            }
+        }
+        create("armAll") {
+            dimension = "abi"
+            ndk {
+                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
+            }
+        }
+        create("universal") {
+            dimension = "abi"
+            ndk {
+                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
+            }
+        }
+    }
+
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
@@ -79,14 +108,9 @@ android {
         sourceCompatibility = Version.java
         targetCompatibility = Version.java
     }
-    kotlinOptions {
-        jvmTarget = Version.java.toString()
-    }
-    packagingOptions {
-        jniLibs {
-            useLegacyPackaging = false
-        }
-    }
+    kotlinOptions.jvmTarget = Version.java.toString()
+    packagingOptions.jniLibs.useLegacyPackaging = false
+
     // Encapsulates your external native build configurations.
     externalNativeBuild {
         // Encapsulates your CMake build configurations.
@@ -101,7 +125,7 @@ android {
     }
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
-            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${this.buildType.name}.apk"
+            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${buildType.name}-${productFlavors.first().name}.apk"
             outputs.all {
                 val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
                 output?.outputFileName = outputFileName
@@ -110,28 +134,23 @@ android {
     }
 }
 
-kotlin {
-    sourceSets.debug {
-        kotlin.srcDir("build/generated/ksp/debug/kotlin")
-    }
-    sourceSets.release {
-        kotlin.srcDir("build/generated/ksp/release/kotlin")
-    }
-}
-
 dependencies {
     compileOnly(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
     compileOnly(project(":stub"))
     implementation(project(":mmkv"))
     ksp(project(":ksp"))
-    compileOnly("de.robv.android.xposed:api:82")
-    implementation("io.noties.markwon:core:4.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.5.2")
     // androidx
     implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.lifecycle:lifecycle-runtime-testing:2.4.1")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
     implementation("androidx.browser:browser:1.4.0")
+    val lifecycleVersion = "2.4.1"
+    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
+    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
+
+    compileOnly("de.robv.android.xposed:api:82")
+    implementation("io.noties.markwon:core:4.6.2")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
     implementation("com.google.android.material:material:1.5.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
@@ -141,18 +160,9 @@ dependencies {
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
-}
-
-dependencies {
     val appCenterSdkVersion = "4.4.2"
     implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
-}
-
-dependencies {
-    val lifecycleVersion = "2.4.1"
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
 }
 
 androidComponents.onVariants { variant ->
@@ -225,7 +235,8 @@ val restartQQ = task("restartQQ").doLast {
 
 tasks.whenTaskAdded {
     when (name) {
-        "installDebug" -> {
+        "installArm32Debug",
+        "installArm64Debug" -> {
             finalizedBy(restartQQ)
         }
     }

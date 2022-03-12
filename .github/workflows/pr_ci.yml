@@ -68,5 +68,5 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          ./gradlew :app:assembleDebug
+          ./gradlew :app:packageArm32Debug
           ccache -s
