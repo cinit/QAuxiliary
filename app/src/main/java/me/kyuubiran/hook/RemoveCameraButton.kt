@@ -27,7 +27,7 @@ import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify
+import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import xyz.nextalone.util.throwOrTrue
@@ -36,7 +36,7 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button") {
 
-    override val name: String = "屏蔽聊天界面相机图标"
+    override val name: String = "屏蔽消息界面相机图标"
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java)) }.hookBefore {
@@ -47,5 +47,5 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
         }
     }
 
-    override val uiItemLocation: Array<String> = Simplify.CHAT_GROUP_OTHER
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
 }
