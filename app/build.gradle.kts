@@ -125,7 +125,7 @@ android {
     }
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
-            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${buildType.name}-${productFlavors.first().name}.apk"
+            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
             outputs.all {
                 val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
                 output?.outputFileName = outputFileName
