@@ -21,14 +21,16 @@
  */
 package io.github.qauxv.bridge;
 
+import static cc.ioctl.util.Reflex.getShortClassName;
+import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 import static io.github.qauxv.util.Initiator._BaseSessionInfo;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
-import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
-import static cc.ioctl.util.Reflex.getShortClassName;
 
 import android.content.Context;
 import android.os.Parcelable;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
@@ -39,103 +41,93 @@ import java.io.Externalizable;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Objects;
 import mqq.app.AppRuntime;
 
 public class ChatActivityFacade {
 
-    public static long[] sendMessage(AppRuntime qqAppInterface, Context context,
-                                     Parcelable sessionInfo, String msg,
-                                     ArrayList<?> atInfo, Object sendMsgParams) {
-        if (qqAppInterface == null) {
-            throw new NullPointerException("qqAppInterface == null");
-        }
-        if (sessionInfo == null) {
-            throw new NullPointerException("sessionInfo == null");
-        }
-        Class facade = DexKit.doFindClass(DexKit.C_FACADE);
-        Class SendMsgParams = null;
+    private ChatActivityFacade() {
+        throw new AssertionError("no instance for you");
+    }
+
+    /**
+     * Send a text message to the specified chat session with extra parameters.
+     * <p>
+     * If you just want to send a plain text message, use {@link #sendMessage(AppRuntime, Context, Parcelable, String)} for convenience.
+     *
+     * @param qqAppInterface The QQAppInterface instance, see {@link AppRuntimeHelper#getQQAppInterface()} for details.
+     * @param context        The context.
+     * @param sessionInfo    The target chat session, see {@link SessionInfoImpl} for details.
+     * @param msg            The message to be sent.
+     * @param atInfo         The @at info.
+     * @param sendMsgParams  The extra parameters.
+     * @return The message id, or null if failed.
+     */
+    public static long[] sendMessage(@NonNull AppRuntime qqAppInterface, @NonNull Context context, @NonNull Parcelable sessionInfo,
+                                     @NonNull String msg, @Nullable ArrayList<?> atInfo, @Nullable Object sendMsgParams) {
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(context, "context == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(msg, "msg == null");
+        Class<?> facade = DexKit.doFindClass(DexKit.C_FACADE);
+        Class<?> kSendMsgParams = null;
         Method m = null;
         for (Method mi : facade.getDeclaredMethods()) {
             if (!mi.getReturnType().equals(long[].class)) {
                 continue;
             }
-            Class[] argt = mi.getParameterTypes();
+            Class<?>[] argt = mi.getParameterTypes();
             if (argt.length != 6) {
                 continue;
             }
-            if (argt[1].equals(Context.class)
-                && (argt[2].equals(_SessionInfo()) || argt[2].equals(_BaseSessionInfo()))
-                && argt[3].equals(String.class) && argt[4].equals(ArrayList.class)) {
+            if (argt[1].equals(Context.class) && (argt[2].equals(_SessionInfo()) || argt[2].equals(_BaseSessionInfo()))
+                    && argt[3].equals(String.class) && argt[4].equals(ArrayList.class)) {
                 m = mi;
                 m.setAccessible(true);
-                SendMsgParams = argt[5];
+                kSendMsgParams = argt[5];
                 break;
             }
         }
         try {
+            if (atInfo == null) {
+                atInfo = new ArrayList<>();
+            }
             if (sendMsgParams == null) {
-                sendMsgParams = SendMsgParams.newInstance();
+                sendMsgParams = kSendMsgParams.newInstance();
             }
-            return (long[]) m
-                .invoke(null, qqAppInterface, context, sessionInfo, msg, atInfo, sendMsgParams);
-        } catch (Exception e) {
+            return (long[]) m.invoke(null, qqAppInterface, context, sessionInfo, msg, atInfo, sendMsgParams);
+        } catch (ReflectiveOperationException e) {
             Log.e(e);
-            return null;
+            throw new RuntimeException(e);
         }
     }
 
-    public static long[] sendMessage(AppRuntime qqAppInterface, Context context,
-                                     Parcelable sessionInfo, String msg) {
-        if (qqAppInterface == null) {
-            throw new NullPointerException("qqAppInterface == null");
-        }
-        if (sessionInfo == null) {
-            throw new NullPointerException("sessionInfo == null");
-        }
-        if (msg == null) {
-            throw new NullPointerException("msg == null");
-        }
-        Class facade = DexKit.doFindClass(DexKit.C_FACADE);
-        Class SendMsgParams = null;
-        Method m = null;
-        for (Method mi : facade.getDeclaredMethods()) {
-            if (!mi.getReturnType().equals(long[].class)) {
-                continue;
-            }
-            Class[] argt = mi.getParameterTypes();
-            if (argt.length != 6) {
-                continue;
-            }
-            if (argt[1].equals(Context.class)
-                && (argt[2].equals(_SessionInfo()) || argt[2].equals(_BaseSessionInfo()))
-                && argt[3].equals(String.class) && argt[4].equals(ArrayList.class)) {
-                m = mi;
-                m.setAccessible(true);
-                SendMsgParams = argt[5];
-                break;
-            }
-        }
-        try {
-            return (long[]) m
-                .invoke(null, qqAppInterface, context, sessionInfo, msg, new ArrayList<>(),
-                    SendMsgParams.newInstance());
-        } catch (Exception e) {
-            Log.e(e);
-            return null;
-        }
+    /**
+     * Send a text message to the specified chat session.
+     *
+     * @param qqAppInterface The QQAppInterface instance, see {@link AppRuntimeHelper#getQQAppInterface()} for details.
+     * @param context        The context.
+     * @param sessionInfo    The target chat session, see {@link SessionInfoImpl} for details.
+     * @param msg            The message to be sent.
+     * @return The message id, or null if failed.
+     */
+    public static long[] sendMessage(AppRuntime qqAppInterface, Context context, Parcelable sessionInfo, String msg) {
+        return sendMessage(qqAppInterface, context, sessionInfo, msg, null, null);
     }
 
-    public static long sendPttMessage(AppRuntime qqAppInterface, Parcelable sessionInfo,
-                                      String pttPath) {
-        if (qqAppInterface == null) {
-            throw new NullPointerException("qqAppInterface == null");
-        }
-        if (sessionInfo == null) {
-            throw new NullPointerException("sessionInfo == null");
-        }
-        if (pttPath == null) {
-            throw new NullPointerException("pttPath == null");
-        }
+    /**
+     * Send a PTT message to a chat session.
+     *
+     * @param qqAppInterface see {@link AppRuntimeHelper#getQQAppInterface()}
+     * @param sessionInfo    the chat session, see {@link SessionInfoImpl} for details
+     * @param pttPath        the path of the PTT file
+     * @return the message id, or 0 if failed
+     */
+    public static long sendPttMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
+                                      @NonNull String pttPath) {
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(pttPath, "pttPath == null");
         Method send = null;
         for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
             if (m.getReturnType().equals(long.class)) {
@@ -143,8 +135,7 @@ public class ChatActivityFacade {
                 if (clz.length != 3) {
                     continue;
                 }
-                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2]
-                    .equals(String.class)) {
+                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2].equals(String.class)) {
                     send = m;
                     break;
                 }
@@ -152,23 +143,17 @@ public class ChatActivityFacade {
         }
         try {
             return (long) send.invoke(null, qqAppInterface, sessionInfo, pttPath);
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.e(e);
-            return 0;
+            throw new RuntimeException(e);
         }
     }
 
-    public static boolean sendArkAppMessage(AppRuntime qqAppInterface, Parcelable sessionInfo,
-                                            Object arkAppMsg) {
-        if (qqAppInterface == null) {
-            throw new NullPointerException("qqAppInterface == null");
-        }
-        if (sessionInfo == null) {
-            throw new NullPointerException("sessionInfo == null");
-        }
-        if (arkAppMsg == null) {
-            throw new NullPointerException("arkAppMsg == null");
-        }
+    public static boolean sendArkAppMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
+                                            @NonNull Object arkAppMsg) {
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(arkAppMsg, "arkAppMsg == null");
         Method send = null;
         for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
             if (m.getReturnType().equals(boolean.class)) {
@@ -176,8 +161,7 @@ public class ChatActivityFacade {
                 if (clz.length != 3) {
                     continue;
                 }
-                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2]
-                    .isInstance(arkAppMsg)) {
+                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2].isInstance(arkAppMsg)) {
                     send = m;
                     break;
                 }
@@ -191,17 +175,11 @@ public class ChatActivityFacade {
         }
     }
 
-    public static void sendAbsStructMsg(AppRuntime qqAppInterface, Parcelable sessionInfo,
-                                        Externalizable absStructMsg) {
-        if (qqAppInterface == null) {
-            throw new NullPointerException("qqAppInterface == null");
-        }
-        if (sessionInfo == null) {
-            throw new NullPointerException("sessionInfo == null");
-        }
-        if (absStructMsg == null) {
-            throw new NullPointerException("absStructMsg == null");
-        }
+    public static void sendAbsStructMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
+                                        @NonNull Externalizable absStructMsg) {
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(absStructMsg, "absStructMsg == null");
         Method send = null;
         for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
             if (m.getReturnType().equals(void.class)) {
@@ -209,8 +187,7 @@ public class ChatActivityFacade {
                 if (clz.length != 3) {
                     continue;
                 }
-                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2]
-                    .isInstance(absStructMsg)) {
+                if (clz[0].equals(_QQAppInterface()) && clz[1].equals(_SessionInfo()) && clz[2].isInstance(absStructMsg)) {
                     send = m;
                     break;
                 }
@@ -223,18 +200,12 @@ public class ChatActivityFacade {
         }
     }
 
-    public static void repeatMessage(AppRuntime app, Parcelable session, Object msg) {
-        if (app == null) {
-            throw new NullPointerException("app == null");
-        }
-        if (session == null) {
-            throw new NullPointerException("session == null");
-        }
-        if (msg == null) {
-            throw new NullPointerException("msg == null");
-        }
+    public static void repeatMessage(@NonNull AppRuntime app, @NonNull Parcelable session, @NonNull Object msg) {
+        Objects.requireNonNull(app, "app == null");
+        Objects.requireNonNull(session, "session == null");
+        Objects.requireNonNull(msg, "msg == null");
         String msgText;
-        Class[] argt = null;
+        Class<?>[] argt = null;
         Method m = null;
         switch (getShortClassName(msg)) {
             case "MessageForText":
@@ -242,25 +213,20 @@ public class ChatActivityFacade {
             case "MessageForLongTextMsg":
                 msgText = (String) Reflex.getInstanceObjectOrNull(msg, "msg");
                 if (msgText.length() > 3000) {
-                    Toasts.error(HostInfo.getApplication(),
-                        "暂不支持发送长消息");
+                    Toasts.error(HostInfo.getApplication(), "暂不支持发送长消息");
                     return;
                 }
                 ArrayList<?> atInfo = null;
                 try {
-                    String extStr = (String) Reflex.invokeVirtual(msg, "getExtInfoFromExtStr", "troop_at_info_list",
-                        String.class);
-                    atInfo = (ArrayList) Reflex.invokeVirtual(msg, "getTroopMemberInfoFromExtrJson", extStr,
-                        String.class);
+                    String extStr = (String) Reflex.invokeVirtual(msg, "getExtInfoFromExtStr", "troop_at_info_list", String.class);
+                    atInfo = (ArrayList) Reflex.invokeVirtual(msg, "getTroopMemberInfoFromExtrJson", extStr, String.class);
                 } catch (Exception e) {
                     // ignore
                 }
                 if (atInfo == null) {
-                    sendMessage(app, HostInfo.getApplication(), session,
-                        msgText);
+                    sendMessage(app, HostInfo.getApplication(), session, msgText);
                 } else {
-                    sendMessage(app, HostInfo.getApplication(), session,
-                        msgText, atInfo, null);
+                    sendMessage(app, HostInfo.getApplication(), session, msgText, atInfo, null);
                 }
                 break;
             case "MessageForPic":
@@ -273,10 +239,8 @@ public class ChatActivityFacade {
                         if (argt.length < 3) {
                             continue;
                         }
-                        if (argt[0].equals(Initiator._QQAppInterface()) && argt[1]
-                            .equals(_SessionInfo())
-                            && argt[2].isAssignableFrom(msg.getClass()) && mi.getReturnType()
-                            .equals(void.class)) {
+                        if (argt[0].equals(Initiator._QQAppInterface()) && argt[1].equals(_SessionInfo())
+                                && argt[2].isAssignableFrom(msg.getClass()) && mi.getReturnType().equals(void.class)) {
                             m = mi;
                             break;
                         }
@@ -287,8 +251,7 @@ public class ChatActivityFacade {
                         m.invoke(null, app, session, msg, 0);
                     }
                 } catch (Exception e) {
-                    Toasts.error(HostInfo.getApplication(),
-                        e.toString().replace("java.lang.", ""));
+                    Toasts.error(HostInfo.getApplication(), e.toString().replace("java.lang.", ""));
                     Log.e(e);
                 }
                 break;
@@ -297,20 +260,17 @@ public class ChatActivityFacade {
                     String url = (String) Reflex.invokeVirtual(msg, "getLocalFilePath");
                     File file = new File(url);
                     if (!file.exists()) {
-                        Toasts.error(HostInfo.getApplication(),
-                            "未找到语音文件");
+                        Toasts.error(HostInfo.getApplication(), "未找到语音文件");
                         return;
                     }
                     sendPttMessage(getQQAppInterface(), session, url);
                 } catch (Exception e) {
-                    Toasts.error(HostInfo.getApplication(),
-                        e.toString().replace("java.lang.", ""));
+                    Toasts.error(HostInfo.getApplication(), e.toString().replace("java.lang.", ""));
                     Log.e(e);
                 }
                 break;
             default:
-                Toasts.error(HostInfo.getApplication(),
-                    "Unsupported msg type: " + getShortClassName(msg));
+                Toasts.error(HostInfo.getApplication(), "Unsupported msg type: " + getShortClassName(msg));
         }
     }
 }
