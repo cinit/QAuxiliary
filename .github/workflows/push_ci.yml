@@ -24,7 +24,6 @@ jobs:
         with:
           java-version: '17'
           distribution: 'adopt'
-          cache: gradle
       - name: Install NDK v23
         run: |
           echo "y" | sudo ${ANDROID_HOME}/tools/bin/sdkmanager --install "ndk;23.1.7779620" --sdk_root=${ANDROID_SDK_ROOT} &> /dev/null
@@ -72,7 +71,7 @@ jobs:
           echo "APK_FILE_ARM32=$(find app/build/outputs/apk -name '*arm32.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARM64=$(find app/build/outputs/apk -name '*arm64.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARMALL=$(find app/build/outputs/apk -name '*armAll.apk')" >> $GITHUB_ENV
-          echo "APK_FILE_UNIVERSAL=$(find app/build/outputs/apk -name '*universal*.apk')" >> $GITHUB_ENV
+          echo "APK_FILE_UNIVERSAL=$(find app/build/outputs/apk -name '*universal.apk')" >> $GITHUB_ENV
           ccache -s
         env:
           KEYSTORE_PATH: "../keystore.jks"
@@ -122,28 +121,22 @@ jobs:
           name: telegram-bot-api-binary
           path: .
       - name: Release
+        env:
+          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
+          COMMIT_URL: ${{ github.event.head_commit.url }}
         run: |
+          ESCAPED=`python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))'`
+          export arm32=$(find artifacts -name "*arm32.apk")
+          export arm64=$(find artifacts -name "*arm64.apk")
+          export armAll=$(find artifacts -name "*armAll.apk")
+          export universal=$(find artifacts -name "*universal.apk")
           chmod +x telegram-bot-api-binary
-          ./telegram-bot-api-binary --api-id=21724 --api-hash=3e0cb5efcd52300aec5994fdf--local 2>&1 > /dev/null &
-          curl http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN  }}/sendMessage \
-           -X POST \
-           -F chat_id="${{ secrets.TO_TELEGRAM }}" \
-           -F text="==== ${{ github.event.inputs.tag }} ====" \
-           --silent --show-error --fail >/dev/null
-          mkdir apks
-          find artifacts -name "*.apk" -exec cp {} apks \;
-          function upload() {
-            for apk in $@; do
-              echo ">> Uploading $apk"
-              curl http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN }}/sendDocument \
-                -X POST \
-                -F chat_id="${{ secrets.TELEGRAM_TO }}" \
-                -F document="@$apk" \
-                --silent --show-error --fail >/dev/null
-              sleep 1
-            done
-          }
-          upload apks/*.apk
+          ./telegram-bot-api-binary --api-id=21724 --api-hash=3e0cb5efcd52300aec5994fdfc5bdc16 --local 2>&1 > /dev/null &
+          curl -v "http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN  }}/sendMediaGroup?chat_id=-1001732413298&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Farm32%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Farm64%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FarmAll%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Funiversal%22%2C%22caption%22:${ESCAPED}%7D%5D" \
+           -F arm32="@$arm32" \
+           -F arm64="@$arm64" \
+           -F armAll="@$armAll" \
+           -F universal="@$universal"
           pkill telegram-bot
 
   upload-taichi:
