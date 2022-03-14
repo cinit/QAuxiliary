@@ -22,9 +22,6 @@ android {
         versionName = "1.1.3" + (Common.getGitHeadRefsSuffix(rootProject))
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
-        ndk {
-            abiFilters.add("armeabi-v7a")
-        }
         externalNativeBuild {
             cmake {
                 arguments += listOf(
@@ -83,7 +80,6 @@ android {
         create("arm64") {
             dimension = "abi"
             ndk {
-                defaultConfig.ndk.abiFilters.remove("armeabi-v7a")
                 abiFilters.add("arm64-v8a")
             }
         }
