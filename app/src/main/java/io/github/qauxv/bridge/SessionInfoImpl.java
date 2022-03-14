@@ -25,6 +25,7 @@ import android.os.Parcel;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Constructor;
 
@@ -95,5 +96,25 @@ public class SessionInfoImpl {
             parcel.recycle();
         }
         return ret;
+    }
+
+    public static int getUinType(@NonNull Parcelable session) {
+        Parcel parcel = Parcel.obtain();
+        session.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        int uinType = parcel.readInt();
+        parcel.recycle();
+        return uinType;
+    }
+
+    @Nullable
+    public static String getUin(@NonNull Parcelable session) {
+        Parcel parcel = Parcel.obtain();
+        session.writeToParcel(parcel, 0);
+        parcel.setDataPosition(0);
+        parcel.readInt(); // uinType
+        String uin = parcel.readString();
+        parcel.recycle();
+        return uin;
     }
 }

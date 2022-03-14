@@ -32,12 +32,15 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import cc.ioctl.hook.AioChatPieClipPasteHook;
 import cc.ioctl.hook.CardMsgSender;
 import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
+import io.github.qauxv.router.decorator.IBaseChatPieDecorator;
+import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.ui.TouchEventToLongClickAdapter;
 import io.github.qauxv.ui.widget.InterceptLayout;
@@ -46,10 +49,11 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Method;
+import java.util.Objects;
 import mqq.app.AppRuntime;
 
 @FunctionHookEntry
-public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDecorator> {
+public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDecorator> {
 
     public static final InputButtonHookDispatcher INSTANCE = new InputButtonHookDispatcher();
 
@@ -62,14 +66,15 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
         });
     }
 
-    private static final IInputButtonDecorator[] DECORATORS = {
+    private static final IBaseChatPieDecorator[] DECORATORS = {
             CardMsgSender.INSTANCE,
-            ChatTailHook.INSTANCE
+            ChatTailHook.INSTANCE,
+            AioChatPieClipPasteHook.INSTANCE,
     };
 
     @NonNull
     @Override
-    public IInputButtonDecorator[] getDecorators() {
+    public IBaseChatPieDecorator[] getDecorators() {
         return DECORATORS;
     }
 
@@ -98,6 +103,8 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
                     View sendBtn = aioRootView.findViewById(funBtnId);
                     final AppRuntime qqApp = getFirstNSFByType(param.thisObject, Initiator._QQAppInterface());
                     final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    Objects.requireNonNull(qqApp, "QQAppInterface is null");
+                    Objects.requireNonNull(session, "SessionInfo is null");
                     boolean isInterceptorInstalled = false;
                     {
                         ViewGroup parent = (ViewGroup) sendBtn.getParent();
@@ -153,17 +160,33 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
                         if (((TextView) v).length() == 0) { //|| !CardMsgHook.INSTANCE.isEnabled()
                             return false;
                         }
-                        for (IInputButtonDecorator decorator : DECORATORS) {
+                        for (IBaseChatPieDecorator decorator : DECORATORS) {
+                            if (decorator instanceof IInputButtonDecorator) {
+                                IInputButtonDecorator d = (IInputButtonDecorator) decorator;
+                                try {
+                                    if (d.isEnabled() && d.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
+                                        return true;
+                                    }
+                                } catch (Throwable e) {
+                                    decorator.traceError(e);
+                                }
+                            }
+                        }
+                        return true;
+                    });
+                    // call BaseChatPie init decorators
+                    for (IBaseChatPieDecorator baseDecorator : DECORATORS) {
+                        if (baseDecorator instanceof IBaseChatPieInitDecorator) {
+                            IBaseChatPieInitDecorator decorator = (IBaseChatPieInitDecorator) baseDecorator;
                             try {
-                                if (decorator.isEnabled() && decorator.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
-                                    return true;
+                                if (decorator.isEnabled()) {
+                                    decorator.onInitBaseChatPie(aioRootView, session, ctx, qqApp);
                                 }
                             } catch (Throwable e) {
                                 decorator.traceError(e);
                             }
                         }
-                        return true;
-                    });
+                    }
                 });
         //End: send btn
         return true;
@@ -171,7 +194,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IInputButtonDe
 
     @Override
     public boolean isEnabled() {
-        for (IInputButtonDecorator decorator : DECORATORS) {
+        for (IBaseChatPieDecorator decorator : DECORATORS) {
             if (decorator.isEnabled()) {
                 return true;
             }

@@ -98,37 +98,5 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 }
             }
         }
-
-        // todo: paste pic
-        /*
-        val clsXEditText = loadClass("com.tencent.widget.XEditText")
-        clsXEditText.method { m ->
-            m.name == "onCreateInputConnection"
-        }?.hookBefore {
-            val editorInfo = it.args[0] as EditorInfo
-            val editetxt = it.thisObject as EditText
-            val ic: InputConnection = editetxt.onCreateInputConnection(editorInfo)
-            EditorInfoCompat.setContentMimeTypes(editorInfo, arrayOf("image/*"))
-
-            val callback =
-                InputConnectionCompat.OnCommitContentListener { inputContentInfo, flags, opts ->
-                    val lacksPermission = (flags and
-                        InputConnectionCompat.INPUT_CONTENT_GRANT_READ_URI_PERMISSION) != 0
-                    // read and display inputContentInfo asynchronously
-                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1 && lacksPermission) {
-                        try {
-                            inputContentInfo.requestPermission()
-                        } catch (e: Exception) {
-                            return@OnCommitContentListener false // return false if failed
-                        }
-                    }
-                    val uri = inputContentInfo.contentUri
-                    Log.i("PicCopyToClipboard -> uri: $uri")
-                    true  // return true if succeeded
-                }
-            it.result = InputConnectionCompat.createWrapper(ic, editorInfo, callback)
-        }
-        */
-         */
     }
 }

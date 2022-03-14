@@ -23,12 +23,12 @@ package io.github.qauxv.bridge;
 
 import static io.github.qauxv.util.Initiator.load;
 
-import android.app.Activity;
 import android.graphics.Bitmap;
 import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.SyncUtils;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -50,9 +50,10 @@ public class FaceImpl implements InvocationHandler {
     private final HashMap<String, Bitmap> cachedUserFace;
     private final HashMap<String, Bitmap> cachedTroopFace;
     private final HashMap<String, WeakReference<ImageView>> registeredView;
-    private final Object mFaceDecoder;
+    private Object mFaceDecoder;
+    private boolean mFaceDecoderInitialized = false;
 
-    private FaceImpl() throws Throwable {
+    private FaceImpl() {
         Object qqAppInterface = AppRuntimeHelper.getAppRuntime();
         class_FaceDecoder = load("com/tencent/mobileqq/util/FaceDecoder");
         if (class_FaceDecoder == null) {
@@ -72,22 +73,27 @@ public class FaceImpl implements InvocationHandler {
                 class_FaceDecoder = f.getType();
             }
         }
-        mFaceDecoder = class_FaceDecoder.getConstructor(load("com/tencent/common/app/AppInterface"))
-            .newInstance(qqAppInterface);
-        Reflex.invokeVirtualAny(mFaceDecoder, createListener(), clz_DecodeTaskCompletionListener);
+        try {
+            mFaceDecoder = class_FaceDecoder.getConstructor(load("com/tencent/common/app/AppInterface"))
+                    .newInstance(qqAppInterface);
+            Reflex.invokeVirtualAny(mFaceDecoder, createListener(), clz_DecodeTaskCompletionListener);
+            mFaceDecoderInitialized = true;
+        } catch (ReflectiveOperationException e) {
+            Log.e(e);
+        }
         cachedUserFace = new HashMap<>();
         cachedTroopFace = new HashMap<>();
         registeredView = new HashMap<>();
     }
 
-    public static FaceImpl getInstance() throws Throwable {
+    public static FaceImpl getInstance() {
         FaceImpl ret = null;
         if (self != null) {
             ret = self.get();
         }
         if (ret == null) {
             ret = new FaceImpl();
-            self = new WeakReference(ret);
+            self = new WeakReference<>(ret);
         }
         return ret;
     }
@@ -137,7 +143,7 @@ public class FaceImpl implements InvocationHandler {
         return null;
     }
 
-    public void onDecodeTaskCompleted(int code, int type, String uin, Bitmap bitmap) {
+    private void onDecodeTaskCompleted(int code, int type, String uin, Bitmap bitmap) {
         if (bitmap != null) {
             if (type == TYPE_USER) {
                 cachedUserFace.put(uin, bitmap);
@@ -149,7 +155,7 @@ public class FaceImpl implements InvocationHandler {
             if ((ref = registeredView.remove(type + " " + uin)) != null) {
                 ImageView v = ref.get();
                 if (v != null) {
-                    ((Activity) v.getContext()).runOnUiThread(() -> v.setImageBitmap(bitmap));
+                    SyncUtils.runOnUiThread(() -> v.setImageBitmap(bitmap));
                 }
             }
         }
@@ -167,6 +173,9 @@ public class FaceImpl implements InvocationHandler {
     }
 
     public boolean requestDecodeFace(int type, String uin) {
+        if (!mFaceDecoderInitialized) {
+            return false;
+        }
         try {
             return (boolean) Reflex.invokeVirtualAny(mFaceDecoder, uin, type, true, (byte) 0,
                 String.class, int.class, boolean.class, byte.class, boolean.class);
@@ -177,8 +186,8 @@ public class FaceImpl implements InvocationHandler {
     }
 
     public boolean registerView(int type, String uin, ImageView v) {
-        boolean ret;
-        if (ret = requestDecodeFace(type, uin)) {
+        boolean ret = requestDecodeFace(type, uin);
+        if (ret) {
             registeredView.put(type + " " + uin, new WeakReference<>(v));
         }
         return ret;
@@ -191,8 +200,7 @@ public class FaceImpl implements InvocationHandler {
     public boolean setImageOrRegister(int type, String uin, ImageView imgview) {
         Bitmap bm = getBitmapFromCache(type, uin);
         if (bm == null) {
-            imgview
-                .setImageDrawable(ResUtils.loadDrawableFromAsset("face.png", imgview.getContext()));
+            imgview.setImageDrawable(ResUtils.loadDrawableFromAsset("face.png", imgview.getContext()));
             return registerView(type, uin, imgview);
         } else {
             imgview.setImageBitmap(bm);

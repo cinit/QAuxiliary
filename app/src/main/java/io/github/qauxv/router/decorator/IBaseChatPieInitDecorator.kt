@@ -24,17 +24,10 @@ package io.github.qauxv.router.decorator
 
 import android.content.Context
 import android.os.Parcelable
-import android.view.View
-import android.widget.EditText
+import android.view.ViewGroup
 import mqq.app.AppRuntime
 
-interface IInputButtonDecorator : IBaseChatPieDecorator {
-
+interface IBaseChatPieInitDecorator : IBaseChatPieDecorator {
     @Throws(Throwable::class)
-    fun doDecorate(text: String,
-                   session: Parcelable,
-                   input: EditText,
-                   sendBtn: View,
-                   ctx1: Context,
-                   qqApp: AppRuntime): Boolean
+    fun onInitBaseChatPie(aioRootView: ViewGroup, session: Parcelable, ctx: Context, rt: AppRuntime)
 }

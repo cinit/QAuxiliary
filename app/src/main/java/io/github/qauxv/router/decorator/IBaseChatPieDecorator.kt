@@ -22,19 +22,8 @@
 
 package io.github.qauxv.router.decorator
 
-import android.content.Context
-import android.os.Parcelable
-import android.view.View
-import android.widget.EditText
-import mqq.app.AppRuntime
+import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.RuntimeErrorTracer
 
-interface IInputButtonDecorator : IBaseChatPieDecorator {
-
-    @Throws(Throwable::class)
-    fun doDecorate(text: String,
-                   session: Parcelable,
-                   input: EditText,
-                   sendBtn: View,
-                   ctx1: Context,
-                   qqApp: AppRuntime): Boolean
+interface IBaseChatPieDecorator : RuntimeErrorTracer, IDynamicHook {
 }

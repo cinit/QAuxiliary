@@ -55,8 +55,10 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
         if (!sendCacheDir.exists()) {
             sendCacheDir.mkdirs()
         } else {
-            for (file in sendCacheDir.listFiles()) {
-                file.delete()
+            sendCacheDir.listFiles()?.let {
+                for (file in it) {
+                    file.delete()
+                }
             }
         }
     }

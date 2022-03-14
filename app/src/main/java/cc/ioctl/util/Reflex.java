@@ -1262,6 +1262,7 @@ public class Reflex {
         return false;
     }
 
+    @NonNull
     public static String getShortClassName(Object obj) {
         String name;
         if (obj == null) {
