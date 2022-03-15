@@ -23,7 +23,6 @@ package cc.ioctl.hook;
 
 import android.app.Activity;
 import android.os.Environment;
-import android.text.TextUtils;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
@@ -31,11 +30,8 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HookUtils.AfterHookedMethod;
 import cc.ioctl.util.HostInfo;
 import com.afollestad.materialdialogs.MaterialDialog;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IUiItemAgent;
@@ -112,8 +108,6 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
             PathSet.setVisibility(start.isChecked() ? View.VISIBLE :View.GONE);
 
             start.setOnCheckedChangeListener((buttonView, isChecked) -> PathSet.setVisibility(isChecked ? View.VISIBLE :View.GONE));
-
-
 
             MaterialDialog dialog = new MaterialDialog(activity,MaterialDialog.getDEFAULT_BEHAVIOR());
             dialog.title(null,"下载文件重定向");
@@ -212,9 +206,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
 
     @Nullable
     public String getRedirectPath() {
-        String path = ConfigManager.getDefaultConfig().getString(ConfigItems.qn_file_recv_redirect_path);
-        if (path != null && path.endsWith("/"))return path.substring(0,path.length()-1);
-        return path;
+        return ConfigManager.getDefaultConfig().getString(ConfigItems.qn_file_recv_redirect_path);
     }
 
     public void setRedirectPathAndEnable(String path) {
