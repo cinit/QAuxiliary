@@ -24,6 +24,12 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="io.github.qauxv">
 
+    <queries>
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.tencent.tim" />
+        <package android:name="com.tencent.qqlite" />
+    </queries>
+
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name"
@@ -97,5 +103,16 @@
             android:resource="@array/xposedscope" />
 
     </application>
+
+    <queries>
+        <package android:name="com.tencent.mobileqq" />
+        <package android:name="com.tencent.mobileqqi" />
+        <package android:name="com.tencent.tim" />
+        <package android:name="com.tencent.qqlite" />
+        <package android:name="me.weishu.exposed" />
+        <package android:name="de.robv.android.xposed.installer" />
+        <package android:name="org.lsposed.manager" />
+        <package android:name="com.android.shell" />
+    </queries>
 
 </manifest>

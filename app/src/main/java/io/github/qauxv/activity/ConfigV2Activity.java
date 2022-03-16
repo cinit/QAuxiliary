@@ -31,6 +31,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.system.Os;
+import android.system.StructUtsname;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -40,6 +42,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
@@ -52,11 +55,14 @@ import io.github.qauxv.databinding.MainV2NormalBinding;
 import io.github.qauxv.fragment.AboutFragment;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.UiThread;
+import io.github.qauxv.util.hookstatus.AbiUtils;
 import io.github.qauxv.util.hookstatus.HookStatus;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.HashSet;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
 import name.mikanoshi.customiuizer.holidays.HolidayHelper;
@@ -66,7 +72,6 @@ import name.mikanoshi.customiuizer.utils.Helpers.Holidays;
 public class ConfigV2Activity extends AppCompatTransferActivity {
 
     private static final String ALIAS_ACTIVITY_NAME = "io.github.qauxv.activity.ConfigV2ActivityAlias";
-    private String dbgInfo = "";
     private MainV2NormalBinding mainV2Binding = null;
 
     @Override
@@ -74,16 +79,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         if (HostInfo.isInHostProcess()) {
             // we have to set the theme before super.onCreate()
             setTheme(getCurrentV2Theme() == 3 ? R.style.Theme_MaiTungTMDesign_Light_Blue : R.style.Theme_MaiTungTMDesign_DayNight);
-        }
-        try {
-            long ts = BuildConfig.BUILD_TIMESTAMP;
-            dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
-                    "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
-                    .getpagesize();
-        } catch (Throwable e) {
-            dbgInfo += "\n" + e;
-        }
-        if (HostInfo.isInModuleProcess()) {
+        } else {
+            // we is in module process
             applyV2Theme(getCurrentV2Theme(), false);
         }
         // if in host process, it should already be done by last activity
@@ -99,15 +96,6 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             finish();
         }
         HookStatus.init(this);
-        String str = "";
-        try {
-            str += "SystemClassLoader:" + ClassLoader.getSystemClassLoader() +
-                    "\nActiveModuleVersion:" + BuildConfig.VERSION_NAME
-                    + "\nThisVersion:" + BuildConfig.VERSION_NAME + "";
-        } catch (Throwable r) {
-            str += r;
-        }
-        dbgInfo += str;
         if (getCurrentV2Theme() == 3) {
             // MaiTung light blue
             ViewGroup root = (ViewGroup) LayoutInflater.from(this).inflate(R.layout.main_v2_light_blue, null);
@@ -125,16 +113,40 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     public void updateActivationStatus() {
         boolean isHookEnabled = HookStatus.isModuleEnabled();
+        boolean isABIMatched = HookStatus.checkABI();
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
-        frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(),
-                (isHookEnabled && Helpers.currentHoliday != Holidays.LUNARNEWYEAR)
-                        ? R.drawable.bg_green_solid : R.drawable.bg_red_solid, getTheme()));
-        frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
-                isHookEnabled ? R.drawable.ic_success_white :
-                        R.drawable.ic_failure_white, getTheme()));
-        statusTitle.setText(isHookEnabled ? "已激活" : "未激活");
+        if (isABIMatched) {
+            frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(),
+                    (isHookEnabled && Helpers.currentHoliday != Holidays.LUNARNEWYEAR)
+                            ? R.drawable.bg_green_solid : R.drawable.bg_red_solid, getTheme()));
+            frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(),
+                    isHookEnabled ? R.drawable.ic_success_white :
+                            R.drawable.ic_failure_white, getTheme()));
+            statusTitle.setText(isHookEnabled ? "已激活" : "未激活");
+        } else {
+            frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.bg_yellow_solid, getTheme()));
+            frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_info_white, getTheme()));
+            String caption = (isHookEnabled ? "已激活" : "未激活") + ", " + "但 ABI 不匹配, 点击查看详情";
+            statusTitle.setText(caption);
+            frameStatus.setOnClickListener(v -> {
+                AlertDialog.Builder builder = new AlertDialog.Builder(this);
+                builder.setTitle("当前模块 ABI 不匹配");
+                StringBuilder message = new StringBuilder("当前模块 ABI: " + BuildConfig.FLAVOR);
+                for (String scope : HookStatus.getHostABI().keySet()) {
+                    message.append("\n").append(scope).append(" 需要: ").append(HookStatus.getHostABI().get(scope));
+                }
+//                message.append("\n\n").append("请使用 ").append(checkAbiFitness()).append(" 版本");
+                builder.setMessage(message.toString());
+                builder.setPositiveButton("去下载 " + checkAbiFitness() + " 版本", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("https://t.me/QAuxiliary"));
+                    startActivity(intent);
+                });
+                builder.show();
+            });
+        }
         TextView tvStatus = mainV2Binding.mainV2ActivationStatusDesc;
         tvStatus.setText(HookStatus.getHookProviderName());
         TextView tvInsVersion = mainV2Binding.mainTextViewVersion;
@@ -250,7 +262,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             case R.id.menu_item_debugInfo: {
                 new AlertDialog.Builder(ConfigV2Activity.this)
                         .setTitle("调试信息").setPositiveButton(android.R.string.ok, null)
-                        .setMessage(dbgInfo).show();
+                        .setMessage(getDebugInfo()).show();
                 return true;
             }
             case R.id.menu_item_about: {
@@ -279,6 +291,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                             .setMessage("拉起模块失败, 请确认 " + BuildConfig.APPLICATION_ID + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
                             .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
                 }
+                return true;
             }
             default: {
                 return ConfigV2Activity.super.onOptionsItemSelected(item);
@@ -393,5 +406,70 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     void setLauncherIconEnabled(boolean enabled) {
         ComponentName componentName = new ComponentName(this, ALIAS_ACTIVITY_NAME);
         ComponentUtilKt.setEnable(componentName, this, enabled);
+    }
+
+    @Nullable
+    private String checkAbiFitness() {
+        StructUtsname uts = Os.uname();
+        String sysAbi = uts.machine;
+        HashSet<String> requestAbis = new HashSet<>();
+        requestAbis.add(AbiUtils.archStringToLibDirName(sysAbi));
+        String[] pkgList = new String[]{
+                "com.tencent.mobileqq",
+//                "com.tencent.mobileqqi",
+                "com.tencent.qqlite",
+                "com.tencent.tim",
+        };
+        for (String pkg : pkgList) {
+            String activeAbi = AbiUtils.getApplicationActiveAbi(pkg);
+            if (activeAbi == null) {
+                continue;
+            }
+            String abi = AbiUtils.archStringToLibDirName(activeAbi);
+            if (!requestAbis.contains(abi)) {
+                requestAbis.add(abi);
+            }
+        }
+        String[] modulesAbis = AbiUtils.queryModuleAbiList();
+        HashSet<String> missingAbis = new HashSet<>();
+        // check if modulesAbis contains all requestAbis
+        for (String abi : requestAbis) {
+            if (!Arrays.asList(modulesAbis).contains(abi)) {
+                missingAbis.add(abi);
+            }
+        }
+        if (missingAbis.isEmpty()) {
+            return null;
+        }
+        // TODO: 2022-03-15
+        int abi = 0;
+        Log.d("missingAbis, " + missingAbis.toArray().toString());
+        for (String name : missingAbis) {
+            Log.d("missing abi: " + name);
+            abi += AbiUtils.archStringToArchInt(name);
+        }
+        Log.d("abi: " + abi);
+        return AbiUtils.archIntToArchString(abi);
+    }
+
+    private String getDebugInfo() {
+        String dbgInfo = "";
+        try {
+            long ts = BuildConfig.BUILD_TIMESTAMP;
+            dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
+                    "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
+                    .getpagesize();
+        } catch (Throwable e) {
+            dbgInfo += "\n" + e;
+        }
+        try {
+            dbgInfo += "SystemClassLoader: " + ClassLoader.getSystemClassLoader()
+                    + "\nActiveModuleVersion: " + BuildConfig.VERSION_NAME
+                    + "\nThisVersion: " + BuildConfig.VERSION_NAME
+                    + "\nProductFlavors: " + BuildConfig.FLAVOR;
+        } catch (Throwable r) {
+            dbgInfo += r;
+        }
+        return dbgInfo;
     }
 }

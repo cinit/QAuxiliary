@@ -26,15 +26,24 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.BuildConfig;
+import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
+import java.util.Enumeration;
+import java.util.HashMap;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 
 /**
  * This class is only intended to be used in module process, not in host process.
@@ -187,5 +196,100 @@ public class HookStatus {
 
     public static boolean isModuleEnabled() {
         return getHookType() != HookType.NONE;
+    }
+
+    public static boolean checkABI() {
+        int moduleABI = getModuleABI();
+        HashMap<String, String> hostABI = getHostABI();
+        for (String i : hostABI.values()) {
+            if ((AbiUtils.archStringToArchInt(i) & moduleABI) != moduleABI) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    public static HashMap<String, String> getHostABI() {
+        CharSequence[] scope = HostInfo.getApplication().getResources().getTextArray(R.array.xposedscope);
+        HashMap<String, String> result = new HashMap<>();
+        for (CharSequence s : scope) {
+            String abi = AbiUtils.getApplicationActiveAbi(s.toString());
+            if (abi != null) {
+                result.put(s.toString(), abi);
+            }
+        }
+        return result;
+    }
+
+    private static int getABI(String packageName) {
+        int abi = 0;
+        try {
+            PackageManager pm = HostInfo.getApplication().getPackageManager();
+            ApplicationInfo info = pm.getApplicationInfo(packageName, 0);
+            String path = info.sourceDir;
+            ZipFile zip = new ZipFile(path);
+            Enumeration<? extends ZipEntry> entries = zip.entries();
+            while (entries.hasMoreElements()) {
+                ZipEntry entry = entries.nextElement();
+                Log.d("entry name:" + entry.getName());
+                if (!entry.isDirectory()) {
+                    continue;
+                }
+                // fixme cant find native libs in apk
+                Log.i("found dir: " + entry.getName());
+                if (entry.getName().startsWith("lib/")) {
+                    String name = entry.getName().substring(4);
+                    Log.i("found lib: " + name);
+                    switch (name) {
+                        case "armeabi-v7a": {
+                            abi += 1;
+                            break;
+                        }
+                        case "arm64-v8a": {
+                            abi += 1 << 1;
+                            break;
+                        }
+                        case "x86": {
+                            abi += 1 << 2;
+                            break;
+                        }
+                        case "x86_64": {
+                            abi += 1 << 3;
+                            break;
+                        }
+                    }
+                }
+            }
+            zip.close();
+        } catch (Exception e) {
+            abi = -1;
+        }
+        return abi;
+    }
+
+    private static int getModuleABI() {
+        int abi;
+        switch (BuildConfig.FLAVOR) {
+            case "arm32": {
+                abi = 1;
+                break;
+            }
+            case "arm64": {
+                abi = 1 << 1;
+                break;
+            }
+            case "armAll": {
+                abi = 1 << 1 + 1;
+                break;
+            }
+            case "universal": {
+                abi = 1 << 3 + 1 << 2 + 1 << 1 + 1;
+                break;
+            }
+            default: {
+                abi = 0;
+            }
+        }
+        return abi;
     }
 }
