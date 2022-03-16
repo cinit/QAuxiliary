@@ -137,11 +137,16 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                 for (String scope : HookStatus.getHostABI().keySet()) {
                     message.append("\n").append(scope).append(" 需要: ").append(HookStatus.getHostABI().get(scope));
                 }
-//                message.append("\n\n").append("请使用 ").append(checkAbiFitness()).append(" 版本");
+                message.append("\n\n").append("请使用 ").append(checkAbiFitness()).append(" 版本");
                 builder.setMessage(message.toString());
-                builder.setPositiveButton("去下载 " + checkAbiFitness() + " 版本", (dialog, which) -> {
+                builder.setPositiveButton("去TG频道下载", (dialog, which) -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse("https://t.me/QAuxiliary"));
+                    startActivity(intent);
+                });
+                builder.setNegativeButton("去GitHub下载", (dialog, which) -> {
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setData(Uri.parse("https://github.com/cinit/QAuxiliary/releases/latest"));
                     startActivity(intent);
                 });
                 builder.show();

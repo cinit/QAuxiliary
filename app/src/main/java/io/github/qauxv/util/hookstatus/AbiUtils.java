@@ -152,11 +152,11 @@ public class AbiUtils {
     public static String archIntToArchString(int arch) {
         switch (arch) {
             case 1:
-                return "arm32";
+                return "arm32, armAll, universal";
             case 1 << 1:
-                return "arm64";
+                return "arm64, armAll, universal";
             case 1 << 1 + 1:
-                return "armAll";
+                return "armAll, universal";
             default:
                 return "universal";
         }
