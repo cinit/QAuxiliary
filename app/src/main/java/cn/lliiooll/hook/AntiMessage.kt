@@ -24,13 +24,13 @@ package cn.lliiooll.hook
 
 import cn.lliiooll.msg.MessageReceiver
 import cn.lliiooll.util.MsgRecordUtil
-import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.base.MultiItemDelayableHook
+import xyz.nextalone.util.set
 import java.text.Collator
 import java.util.Locale
 
@@ -48,7 +48,10 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         if (data?.selfUin.equals(data?.senderUin)) return false
         val items: List<Int> = MsgRecordUtil.parse(activeItems)
         if (items.contains(data?.msgType)) {
-            XposedHelpers.setBooleanField(data?.msgRecord, "isread", true)
+            data?.msgRecord?.set("isread", true)
+            return true
+        } else if (data?.msg?.startsWith("@NextAlone ") == true && items.contains(0)) {
+            data.msgRecord.set("isread", true)
             return true
         }
         return false

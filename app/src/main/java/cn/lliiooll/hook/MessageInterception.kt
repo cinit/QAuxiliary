@@ -24,29 +24,51 @@ package cn.lliiooll.hook
 
 import cn.lliiooll.msg.MessageManager
 import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.hostInfo
 import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 object MessageInterception : BasePersistBackgroundHook() {
-
-    @Throws(Exception::class)
-    override fun initOnce(): Boolean {
-        val clazz = Initiator._C2CMessageManager()
-        for (m in clazz.declaredMethods) {
-            if (m.parameterTypes.size == 2 && m.returnType == MessageManager.booleanType && m.parameterTypes[1] == MessageManager.intType) {
-                XposedBridge.hookMethod(m, object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        val msgRecord = param.args[0]
-                        val msgRecordData = MsgRecordData(msgRecord)
-                        MessageManager.call(msgRecordData)
-                    }
-                })
-            }
+    override fun initOnce() = throwOrTrue {
+        val callback: (XC_MethodHook.MethodHookParam) -> Unit = { param ->
+            val msgRecordData = MsgRecordData(param.args[0])
+            MessageManager.call(msgRecordData)
         }
-        return true
+        if (hostInfo.versionCode >= QQVersion.QQ_8_8_80) {
+            // i don't know why hook 3 methods, but it works
+            Initiator._C2CMessageManager().method(
+                "a",
+                Boolean::class.java,
+                Initiator._MessageRecord(),
+                Boolean::class.java,
+                Boolean::class.java,
+                "com.tencent.imcore.message.Message".clazz,
+                Boolean::class.java
+            )?.hookAfter(this, callback)
+            Initiator._C2CMessageManager().method(
+                "a",
+                Boolean::class.java,
+                Initiator._MessageRecord(),
+                Boolean::class.java,
+                Int::class.java
+            )?.hookAfter(this, callback)
+            Initiator._C2CMessageManager().method(
+                "d",
+                Boolean::class.java,
+                Initiator._MessageRecord(),
+            )?.hookAfter(this, callback)
+        } else {
+            Initiator._C2CMessageManager().method {
+                it.parameterTypes.size == 2 && it.returnType == Boolean::class.java && it.parameterTypes[1] == Int::class.java
+            }?.hookAfter(this, callback)
+        }
     }
 }
