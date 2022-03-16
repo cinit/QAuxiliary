@@ -113,13 +113,13 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     public void updateActivationStatus() {
         boolean isHookEnabled = HookStatus.isModuleEnabled();
-        boolean isABIMatched = HookStatus.checkABI();
+        boolean isAbiMatch = HookStatus.checkABI();
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
         TextView tvStatus = mainV2Binding.mainV2ActivationStatusDesc;
         TextView tvInsVersion = mainV2Binding.mainTextViewVersion;
-        if (isABIMatched) {
+        if (isAbiMatch) {
             frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(),
                     (isHookEnabled && Helpers.currentHoliday != Holidays.LUNARNEWYEAR)
                             ? R.drawable.bg_green_solid : R.drawable.bg_red_solid, getTheme()));
@@ -132,26 +132,34 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.bg_yellow_solid, getTheme()));
             frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_info_white, getTheme()));
             statusTitle.setText(isHookEnabled ? "未完全激活" : "未激活");
-            tvStatus.setText("模块与宿主 ABI 不匹配, 点击处理");
+            tvStatus.setText("点击处理");
             frameStatus.setOnClickListener(v -> {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("模块与宿主 ABI 不匹配");
-                StringBuilder message = new StringBuilder("当前模块 ABI 为 " + BuildConfig.FLAVOR);
-                for (String scope : HookStatus.getHostABI().keySet()) {
-                    message.append("\n").append(scope).append(" 需要 ABI 为 ").append(HookStatus.getHostABI().get(scope));
+                builder.setTitle("模块原生库与宿主不匹配");
+                StringBuilder message = new StringBuilder("当前模块使用的原生库为 " + BuildConfig.FLAVOR);
+                if ((AbiUtils.archStringToArchInt(Os.uname().machine) & (AbiUtils.ABI_X86 | AbiUtils.ABI_X86_64)) != 0) {
+                    message.append("\n").append("当前系统 uname machine 为 ").append(Os.uname().machine);
                 }
-                message.append("\n\n").append("请使用 ").append(checkAbiFitness()).append(" 版本");
+                for (String scope : HookStatus.getHostABI().keySet()) {
+                    String abi = HookStatus.getHostABI().get(scope);
+                    assert abi != null;
+                    String requiredVariant = AbiUtils.getSuggestedAbiVariant(AbiUtils.archStringToArchInt(abi));
+                    message.append("\n").append(scope).append(" 需要模块使用的原生库为 ").append(requiredVariant);
+                }
+                message.append("\n\n").append("推荐您将模块更换为使用 ").append(getSuggestedAbiVariant()).append(" 原生库的版本");
                 builder.setMessage(message.toString());
-                builder.setPositiveButton("去TG频道下载", (dialog, which) -> {
+                builder.setPositiveButton("去 Telegram 频道下载", (dialog, which) -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse("https://t.me/QAuxiliary"));
                     startActivity(intent);
                 });
-                builder.setNegativeButton("去GitHub下载", (dialog, which) -> {
+                builder.setNegativeButton("去 GitHub 下载", (dialog, which) -> {
                     Intent intent = new Intent(Intent.ACTION_VIEW);
                     intent.setData(Uri.parse("https://github.com/cinit/QAuxiliary/releases/latest"));
                     startActivity(intent);
                 });
+                builder.setNeutralButton(android.R.string.cancel, null);
+                builder.setCancelable(true);
                 builder.show();
             });
         }
@@ -414,7 +422,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     }
 
     @Nullable
-    private String checkAbiFitness() {
+    private String getSuggestedAbiVariant() {
         StructUtsname uts = Os.uname();
         String sysAbi = uts.machine;
         HashSet<String> requestAbis = new HashSet<>();
@@ -446,15 +454,14 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         if (missingAbis.isEmpty()) {
             return null;
         }
-        // TODO: 2022-03-15
         int abi = 0;
-        Log.d("missingAbis, " + missingAbis.toArray().toString());
+        Log.d("missingAbis, " + Arrays.toString(missingAbis.toArray()));
         for (String name : missingAbis) {
             Log.d("missing abi: " + name);
             abi += AbiUtils.archStringToArchInt(name);
         }
         Log.d("abi: " + abi);
-        return AbiUtils.archIntToArchString(abi);
+        return AbiUtils.getSuggestedAbiVariant(abi);
     }
 
     private String getDebugInfo() {

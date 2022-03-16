@@ -24,12 +24,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     package="io.github.qauxv">
 
-    <queries>
-        <package android:name="com.tencent.mobileqq" />
-        <package android:name="com.tencent.tim" />
-        <package android:name="com.tencent.qqlite" />
-    </queries>
-
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name"

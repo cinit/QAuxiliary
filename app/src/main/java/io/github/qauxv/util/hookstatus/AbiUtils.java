@@ -45,6 +45,11 @@ public class AbiUtils {
         throw new AssertionError("This class is not intended to be instantiated");
     }
 
+    public static final int ABI_ARM32 = 1;
+    public static final int ABI_ARM64 = 1 << 1;
+    public static final int ABI_X86 = 1 << 2;
+    public static final int ABI_X86_64 = 1 << 3;
+
     @Nullable
     public static String getApplicationActiveAbi(@NonNull String packageName) {
         Context ctx = HostInfo.getApplication();
@@ -137,28 +142,39 @@ public class AbiUtils {
     public static int archStringToArchInt(@NonNull String arch) {
         switch (arch) {
             case "arm":
-                return 1;
+            case "arm32":
+            case "armeabi":
+            case "armeabi-v7a":
+            case "armv7l":
+                return ABI_ARM32;
             case "arm64":
-                return 1 << 1;
+            case "arm64-v8a":
+            case "aaarch64":
+                return ABI_ARM64;
             case "x86":
-                return 1 << 2;
+            case "i386":
+            case "i486":
+            case "i586":
+            case "i686":
+                return ABI_X86;
             case "x86_64":
-                return 1 << 3;
+            case "amd64":
+                return ABI_X86_64;
             default:
                 return 0;
         }
     }
 
-    public static String archIntToArchString(int arch) {
-        switch (arch) {
-            case 1:
-                return "arm32, armAll, universal";
-            case 1 << 1:
-                return "arm64, armAll, universal";
-            case 1 << 1 + 1:
-                return "armAll, universal";
-            default:
-                return "universal";
+    public static String getSuggestedAbiVariant(int requestedAbi) {
+        if (requestedAbi == ABI_ARM32) {
+            return "arm32";
         }
+        if (requestedAbi == ABI_ARM64) {
+            return "arm64";
+        }
+        if ((requestedAbi | ABI_ARM32 | ABI_ARM64) == (ABI_ARM32 | ABI_ARM64)) {
+            return "armAll";
+        }
+        return "universal";
     }
 }
