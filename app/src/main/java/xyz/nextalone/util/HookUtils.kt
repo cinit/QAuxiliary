@@ -48,7 +48,7 @@ internal val String.method: Method
         this.replace(".", "/").replace(" ", "")
     ).getMethodInstance(Initiator.getHostClassLoader())
 
-internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
+internal fun Class<*>.method(name: String): Method? = this.methods.run {
     this.forEach {
         if (it.name == name) {
             return it
@@ -57,7 +57,7 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
     return null
 }
 
-internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.declaredMethods.run {
+internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.methods.run {
     this.forEach {
         if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
             return it
@@ -68,7 +68,7 @@ internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTyp
 
 internal fun Class<*>.method(
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
+): Method? = this.methods.run {
     this.forEach {
         if (condition(it)) {
             return it
@@ -81,7 +81,7 @@ internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
+): Method? = this.methods.run {
     this.forEach {
         if (it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it
@@ -95,7 +95,7 @@ internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
+): Method? = this.methods.run {
     this.forEach {
         if (it.name == name && it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it
