@@ -202,7 +202,7 @@ public class HookStatus {
         int moduleABI = getModuleABI();
         HashMap<String, String> hostABI = getHostABI();
         for (String i : hostABI.values()) {
-            if ((AbiUtils.archStringToArchInt(i) & moduleABI) != moduleABI) {
+            if ((AbiUtils.archStringToArchInt(i) | moduleABI) != moduleABI) {
                 return false;
             }
         }
