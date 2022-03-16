@@ -117,6 +117,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
+        TextView tvStatus = mainV2Binding.mainV2ActivationStatusDesc;
+        TextView tvInsVersion = mainV2Binding.mainTextViewVersion;
         if (isABIMatched) {
             frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(),
                     (isHookEnabled && Helpers.currentHoliday != Holidays.LUNARNEWYEAR)
@@ -125,17 +127,18 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                     isHookEnabled ? R.drawable.ic_success_white :
                             R.drawable.ic_failure_white, getTheme()));
             statusTitle.setText(isHookEnabled ? "已激活" : "未激活");
+            tvStatus.setText(HookStatus.getHookProviderName());
         } else {
             frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.bg_yellow_solid, getTheme()));
             frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_info_white, getTheme()));
-            String caption = (isHookEnabled ? "已激活" : "未激活") + ", " + "但 ABI 不匹配, 点击查看详情";
-            statusTitle.setText(caption);
+            statusTitle.setText(isHookEnabled ? "未完全激活" : "未激活");
+            tvStatus.setText("模块与宿主 ABI 不匹配, 点击处理");
             frameStatus.setOnClickListener(v -> {
                 AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("当前模块 ABI 不匹配");
-                StringBuilder message = new StringBuilder("当前模块 ABI: " + BuildConfig.FLAVOR);
+                builder.setTitle("模块与宿主 ABI 不匹配");
+                StringBuilder message = new StringBuilder("当前模块 ABI 为 " + BuildConfig.FLAVOR);
                 for (String scope : HookStatus.getHostABI().keySet()) {
-                    message.append("\n").append(scope).append(" 需要: ").append(HookStatus.getHostABI().get(scope));
+                    message.append("\n").append(scope).append(" 需要 ABI 为 ").append(HookStatus.getHostABI().get(scope));
                 }
                 message.append("\n\n").append("请使用 ").append(checkAbiFitness()).append(" 版本");
                 builder.setMessage(message.toString());
@@ -152,9 +155,6 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                 builder.show();
             });
         }
-        TextView tvStatus = mainV2Binding.mainV2ActivationStatusDesc;
-        tvStatus.setText(HookStatus.getHookProviderName());
-        TextView tvInsVersion = mainV2Binding.mainTextViewVersion;
         tvInsVersion.setText(BuildConfig.VERSION_NAME);
     }
 
