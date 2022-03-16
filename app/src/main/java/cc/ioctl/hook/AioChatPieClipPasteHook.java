@@ -32,6 +32,7 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -73,6 +74,7 @@ import mqq.app.AppRuntime;
 public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements IBaseChatPieInitDecorator {
 
     public static final AioChatPieClipPasteHook INSTANCE = new AioChatPieClipPasteHook();
+    private static final String MIME_IMAGE = "image/*";
 
     public interface IOnContextMenuItemCallback {
 
@@ -125,33 +127,53 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
         int inputTextId = ctx.getResources().getIdentifier("input", "id", ctx.getPackageName());
         EditText input = aioRootView.findViewById(inputTextId);
         Objects.requireNonNull(input, "onInitBaseChatPie: findViewById R.id.input is null");
-        input.setTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor, (IOnContextMenuItemCallback) (editText, i) -> {
-            if (i == android.R.id.paste) {
-                Pair<ClipDescription, Item> item = getPrimaryClipData0(ctx);
-                if (item != null && item.getFirst().hasMimeType("image/*")) {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            input.setOnReceiveContentListener(new String[]{MIME_IMAGE}, (view, payload) -> {
+                ClipData clipData = payload.getClip();
+                Pair<ClipDescription, Item> item = getClipDataItem0(clipData);
+                if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
                     Uri uri = item.getSecond().getUri();
                     if (uri != null && "content".equals(uri.getScheme())) {
                         handleSendUriPicture(ctx, session, uri, aioRootView, rt);
-                        return true;
+                        return null;
                     }
                 }
-            }
-            return false;
-        });
+                return payload;
+            });
+        } else {
+            input.setTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor, (IOnContextMenuItemCallback) (editText, i) -> {
+                if (i == android.R.id.paste) {
+                    Pair<ClipDescription, Item> item = getClipDataItem0(getPrimaryClip(ctx));
+                    if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
+                        Uri uri = item.getSecond().getUri();
+                        if (uri != null && "content".equals(uri.getScheme())) {
+                            handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+        }
     }
 
     @Nullable
-    private Pair<ClipDescription, Item> getPrimaryClipData0(@NonNull Context ctx) {
+    private static ClipData getPrimaryClip(@NonNull Context ctx) {
         ClipboardManager clipboard = (ClipboardManager) ctx.getSystemService(Context.CLIPBOARD_SERVICE);
         if (clipboard != null) {
-            ClipData clip = clipboard.getPrimaryClip();
-            // only support 1 item
-            if (clip != null && clip.getItemCount() == 1) {
-                ClipDescription desc = clip.getDescription();
-                Item item = clip.getItemAt(0);
-                if (desc != null && item != null) {
-                    return new Pair<>(desc, item);
-                }
+            return clipboard.getPrimaryClip();
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Pair<ClipDescription, Item> getClipDataItem0(@Nullable ClipData clip) {
+        // only support 1 item
+        if (clip != null && clip.getItemCount() == 1) {
+            ClipDescription desc = clip.getDescription();
+            Item item = clip.getItemAt(0);
+            if (desc != null && item != null) {
+                return new Pair<>(desc, item);
             }
         }
         return null;
