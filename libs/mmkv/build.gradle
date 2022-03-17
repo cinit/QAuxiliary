@@ -1,10 +1,7 @@
 apply plugin: 'com.android.library'
 
 android {
-    compileSdkVersion 31
-
     defaultConfig {
-        minSdkVersion 21
         buildConfigField("String", "FLAVOR", '"StaticCpp"')
     }
 
@@ -15,12 +12,6 @@ android {
             aidl.srcDirs = ['MMKV/Android/MMKV/mmkv/src/main/aidl']
             res.srcDirs = ['MMKV/Android/MMKV/mmkv/src/main/res']
             assets.srcDirs = ['MMKV/Android/MMKV/mmkv/src/main/assets']
-        }
-    }
-
-    buildTypes {
-        release {
-            minifyEnabled false
         }
     }
 

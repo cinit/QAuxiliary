@@ -9,30 +9,11 @@ plugins {
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
 
-
 android {
-    compileSdk = 31
-    ndkVersion = Version.getNdkVersion(project)
     defaultConfig {
         applicationId = "io.github.qauxv"
-        minSdk = 21
-        targetSdk = 32
-        versionCode = Common.getBuildVersionCode(rootProject)
-        // versionName = major.minor.bugfix.rev.commit
-        versionName = "1.1.3" + (Common.getGitHeadRefsSuffix(rootProject))
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
-        externalNativeBuild {
-            cmake {
-                arguments += listOf(
-                    "-DQAUXV_VERSION=$versionName",
-                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                    "-DNDK_CCACHE=ccache"
-                )
-                targets += "qauxv"
-            }
-        }
     }
     if (System.getenv("KEYSTORE_PATH") != null) {
         signingConfigs {
@@ -100,18 +81,10 @@ android {
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
-    compileOptions {
-        sourceCompatibility = Version.java
-        targetCompatibility = Version.java
-    }
     kotlinOptions.jvmTarget = Version.java.toString()
-    packagingOptions.jniLibs.useLegacyPackaging = false
 
-    // Encapsulates your external native build configurations.
     externalNativeBuild {
-        // Encapsulates your CMake build configurations.
         cmake {
-            // Provides a relative path to your CMake build script.
             path = File(projectDir, "src/main/cpp/CMakeLists.txt")
             version = Version.getCMakeVersion(project)
         }
@@ -131,10 +104,9 @@ android {
 }
 
 dependencies {
-    compileOnly(fileTree(mapOf("dir" to "lib", "include" to listOf("*.jar"))))
-    compileOnly(project(":stub"))
-    implementation(project(":mmkv"))
-    ksp(project(":ksp"))
+    compileOnly(projects.libs.stub)
+    implementation(projects.libs.mmkv)
+    ksp(projects.libs.ksp)
     // androidx
     implementation("androidx.core:core-ktx:1.7.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.3")
@@ -200,7 +172,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 
 tasks.register("checkGitSubmodule") {
     doLast {
-        val path = listOf(
+        listOf(
             "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
             "app/src/main/cpp/dex_builder"
         ).forEach {

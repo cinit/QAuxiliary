@@ -1,3 +1,6 @@
+@file:Suppress("UnstableApiUsage")
+enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+
 pluginManagement {
     repositories {
         gradlePluginPortal()
@@ -5,6 +8,7 @@ pluginManagement {
         mavenCentral()
     }
 }
+
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
@@ -15,9 +19,12 @@ dependencyResolutionManagement {
     }
 }
 
-include(":app", ":stub", ":ksp", ":mmkv")
-val compilerLibsDir: File = File(settingsDir, "libs")
-project(":stub").projectDir = File(compilerLibsDir, "stub")
-project(":ksp").projectDir = File(compilerLibsDir, "ksp")
-project(":mmkv").projectDir = File(compilerLibsDir, "mmkv")
 rootProject.name = "QAuxiliary"
+include(
+    ":app",
+    ":libs:stub",
+    ":libs:ksp",
+    ":libs:mmkv"
+)
+
+buildCache { local { removeUnusedEntriesAfterDays = 1 } }
