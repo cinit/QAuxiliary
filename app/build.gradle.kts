@@ -14,6 +14,18 @@ android {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
+
+        externalNativeBuild {
+            cmake {
+                arguments += listOf(
+                    "-DQAUXV_VERSION=$versionName",
+                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
+                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
+                    "-DNDK_CCACHE=ccache"
+                )
+                targets += "qauxv"
+            }
+        }
     }
     if (System.getenv("KEYSTORE_PATH") != null) {
         signingConfigs {

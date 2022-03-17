@@ -1,5 +1,4 @@
 import com.android.build.gradle.BaseExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 plugins {
     id("com.android.application") version "7.1.2" apply false
@@ -32,31 +31,15 @@ fun Project.configureBaseExtension() {
             targetSdk = androidTargetSdkVersion
             versionCode = verCode
             versionName = verName
-
-            externalNativeBuild {
-                cmake {
-                    arguments += listOf(
-                        "-DQAUXV_VERSION=$versionName",
-                        "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                        "-DNDK_CCACHE=ccache"
-                    )
-                    targets += "qauxv"
-                }
-            }
         }
 
         compileOptions {
             sourceCompatibility = Version.java
             targetCompatibility = Version.java
         }
-    }
 
-    extensions.findByName("kotlinOptions")?.run {
-        println("kotlinOptions")
-        (this as KotlinJvmOptions).jvmTarget = Version.java.toString()
+        packagingOptions.jniLibs.useLegacyPackaging = false
     }
-
 }
 
 subprojects {
