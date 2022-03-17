@@ -43,8 +43,8 @@ android {
     }
     buildTypes {
         getByName("release") {
-            isShrinkResources = false
-            isMinifyEnabled = false
+            isShrinkResources = true
+            isMinifyEnabled = true
             proguardFiles("proguard-rules.pro")
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
