@@ -48,7 +48,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.declaredMethod
+import xyz.nextalone.util.hookAfter
+import kotlin.collections.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -67,7 +70,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val personCache: HashMap<Int, Person> = HashMap()
     var windowHeight = -1
 
-    override fun initOnce() = throwOrTrue {
+    override fun initOnce(): Boolean {
         XposedHelpers.findAndHookMethod("com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
                 "a",
                 Intent::class.java,
@@ -276,7 +279,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            activityName.clazz!!.method("doOnStart")!!.hookAfter(this) {
+            activityName.clazz!!.declaredMethod("doOnStart")!!.hookAfter(this) {
                 val activity = it.thisObject as Activity
                 val rootView = activity.window.decorView
                 windowHeight = activity.window.attributes.height
@@ -290,5 +293,6 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 }
             }
         }
+        return true
     }
 }
