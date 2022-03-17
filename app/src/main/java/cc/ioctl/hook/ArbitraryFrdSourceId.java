@@ -23,18 +23,22 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static cc.ioctl.util.HostStyledViewBuilder.newListItemDummy;
 
 import android.app.Activity;
+import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
-import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -42,6 +46,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.UiThread;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -53,23 +58,42 @@ public class ArbitraryFrdSourceId extends CommonSwitchFunctionHook {
         super(true);
     }
 
+    @Nullable
     @UiThread
-    static ViewGroup[] findRlRootAndParent(Activity activity) {
+    static ViewGroup findRlRootRecursive(@NonNull ViewGroup root) {
+        if (root.getClass().getName().contains("BounceScrollView")) {
+            ViewGroup bsv = root;
+            return (ViewGroup) bsv.getChildAt(0);
+        }
+        for (int i = 0; i < root.getChildCount(); i++) {
+            View v = (root).getChildAt(i);
+            if (v instanceof ViewGroup) {
+                ViewGroup r = findRlRootRecursive((ViewGroup) v);
+                if (r != null) {
+                    return r;
+                }
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    @UiThread
+    static ViewGroup findRlRootLegacy(@NonNull Activity activity) {
         ViewGroup content = activity.findViewById(android.R.id.content);
         ViewGroup inner1 = (ViewGroup) content.getChildAt(0);
         for (int i = 0; i < inner1.getChildCount(); i++) {
             View v = inner1.getChildAt(i);
             if (v.getClass().getName().contains("BounceScrollView")) {
                 ViewGroup bsv = (ViewGroup) v;
-                return new ViewGroup[]{(ViewGroup) bsv.getChildAt(0), bsv};
+                return (ViewGroup) bsv.getChildAt(0);
             }
         }
         return null;
     }
 
     @UiThread
-    static void initFunView(Activity ctx) {
-        Intent intent = ctx.getIntent();
+    static void initFunView(@NonNull Context ctx, @NonNull Intent intent, @NonNull ViewGroup relativeRoot) {
         Bundle argv = intent.getExtras();
         assert argv != null : "Intent extra for AddFriendVerifyActivity should not be null";
         int uinType = argv.getInt("k_uin_type", 0);
@@ -77,52 +101,65 @@ public class ArbitraryFrdSourceId extends CommonSwitchFunctionHook {
             //Pointless for group entry
             return;
         }
-        ViewGroup[] tmp = findRlRootAndParent(ctx);
-        RelativeLayout rl_root = (RelativeLayout) tmp[0];
-        ViewGroup bsv = tmp[1];
-        int __10_ = LayoutHelper.dip2px(ctx, 10);
+        ViewGroup bsv = (ViewGroup) relativeRoot.getParent();
+        int dp10 = LayoutHelper.dip2px(ctx, 10);
         LinearLayout wrapper = new LinearLayout(ctx);
         wrapper.setOrientation(LinearLayout.VERTICAL);
 
         LinearLayout sourceAttrLayout = new LinearLayout(ctx);
         sourceAttrLayout.setOrientation(LinearLayout.VERTICAL);
         sourceAttrLayout.addView(HostStyledViewBuilder.subtitle(ctx, "来源参数"));
-        sourceAttrLayout.addView(HostStyledViewBuilder.newListItemDummy(ctx, "SourceId", null,
-            String.valueOf(argv.getInt("source_id", 3999))));
-        sourceAttrLayout.addView(HostStyledViewBuilder.newListItemDummy(ctx, "SubSourceId", null,
-            String.valueOf(argv.getInt("sub_source_id", 0))));
-        sourceAttrLayout.addView(HostStyledViewBuilder.newListItemDummy(ctx, "Extra", null,
-            String.valueOf(argv.getString("extra"))));
-        sourceAttrLayout.addView(
-            HostStyledViewBuilder.newListItemDummy(ctx, "Msg", null,
+        sourceAttrLayout.addView(newListItemDummy(ctx, "SourceId", null,
+                String.valueOf(argv.getInt("source_id", 3999))));
+        sourceAttrLayout.addView(newListItemDummy(ctx, "SubSourceId", null,
+                String.valueOf(argv.getInt("sub_source_id", 0))));
+        sourceAttrLayout.addView(newListItemDummy(ctx, "Extra", null,
+                String.valueOf(argv.getString("extra"))));
+        sourceAttrLayout.addView(newListItemDummy(ctx, "Msg", null,
                 String.valueOf(argv.getString("msg"))));
-        sourceAttrLayout.setPadding(0, __10_, 0, __10_);
+        sourceAttrLayout.setPadding(0, dp10, 0, dp10);
 
-        ViewGroup.LayoutParams rl_root_lp = rl_root.getLayoutParams();
+        ViewGroup.LayoutParams rlRootLp = relativeRoot.getLayoutParams();
         bsv.removeAllViews();
-        wrapper.addView(rl_root, MATCH_PARENT, WRAP_CONTENT);
+        wrapper.addView(relativeRoot, MATCH_PARENT, WRAP_CONTENT);
         wrapper.addView(sourceAttrLayout, MATCH_PARENT, WRAP_CONTENT);
 
-        bsv.addView(wrapper, rl_root_lp);
+        bsv.addView(wrapper, rlRootLp);
     }
 
     @Override
     public boolean initOnce() throws Exception {
-        Method AddFriendVerifyActivity_doOnCreate = null;
-        for (Method m : Initiator.load("com.tencent.mobileqq.activity.AddFriendVerifyActivity")
-            .getDeclaredMethods()) {
-            if (m.getName().equals("doOnCreate")) {
-                AddFriendVerifyActivity_doOnCreate = m;
-                break;
+        Class<?> kABTestAddFriendVerifyFragment = Initiator.load("com.tencent.mobileqq.abtest.ABTestAddFriendVerifyFragment");
+        if (kABTestAddFriendVerifyFragment != null) {
+            Method doOnCreateView = kABTestAddFriendVerifyFragment.getDeclaredMethod("doOnCreateView",
+                    LayoutInflater.class, ViewGroup.class, Bundle.class);
+            HookUtils.hookAfterIfEnabled(this, doOnCreateView, param -> {
+                ViewGroup contentView = (ViewGroup) Reflex.getInstanceObject(param.thisObject, "mContentView", View.class);
+                Objects.requireNonNull(contentView, "ABTestAddFriendVerifyFragment.this@QIphoneTitleBarFragment.mContentView should not be null");
+                ViewGroup rlRoot = findRlRootRecursive(contentView);
+                Objects.requireNonNull(rlRoot, "rl_root should not be null");
+                Activity activity = (Activity) Reflex.invokeVirtual(param.thisObject, "getActivity");
+                Objects.requireNonNull(activity, "activity should not be null");
+                initFunView(activity, activity.getIntent(), rlRoot);
+            });
+        }
+        Class<?> kAddFriendVerifyActivity = Initiator.load("com.tencent.mobileqq.activity.AddFriendVerifyActivity");
+        if (kAddFriendVerifyActivity != null) {
+            Method AddFriendVerifyActivity_doOnCreate = null;
+            for (Method m : kAddFriendVerifyActivity.getDeclaredMethods()) {
+                if ("doOnCreate".equals(m.getName())) {
+                    AddFriendVerifyActivity_doOnCreate = m;
+                    break;
+                }
             }
+            if (AddFriendVerifyActivity_doOnCreate == null) {
+                throw new NoSuchMethodException("AddFriendVerifyActivity_doOnCreate not found");
+            }
+            HookUtils.hookAfterIfEnabled(this, AddFriendVerifyActivity_doOnCreate, param -> {
+                Activity ctx = (Activity) param.thisObject;
+                initFunView(ctx, ctx.getIntent(), Objects.requireNonNull(findRlRootLegacy(ctx), "rl_root not found"));
+            });
         }
-        if (AddFriendVerifyActivity_doOnCreate == null) {
-            throw new NoSuchMethodException("AddFriendVerifyActivity_doOnCreate not found");
-        }
-        HookUtils.hookAfterIfEnabled(this, AddFriendVerifyActivity_doOnCreate, param -> {
-            Activity ctx = (Activity) param.thisObject;
-            initFunView(ctx);
-        });
         return true;
     }
 
