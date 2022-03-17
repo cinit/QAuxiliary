@@ -25,7 +25,6 @@ package cc.ioctl.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.Log;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -69,7 +68,7 @@ public class Reflex {
     }
 
     public static Object invokeVirtualAny(Object obj, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -106,16 +105,16 @@ public class Reflex {
                         //here we go through this class
                     } else {
                         throw new NoSuchMethodException(
-                            "Multiple methods found for __attribute__((any))" + paramsTypesToString(
-                                argt) + " in " + obj.getClass().getName());
+                                "Multiple methods found for __attribute__((any))" + paramsTypesToString(
+                                        argt) + " in " + obj.getClass().getName());
                     }
                 }
             }
         } while (method == null && !Object.class.equals(clazz = clazz.getSuperclass()));
         if (method == null) {
             throw new NoSuchMethodException(
-                "__attribute__((a))" + paramsTypesToString(argt) + " in " + obj.getClass()
-                    .getName());
+                    "__attribute__((a))" + paramsTypesToString(argt) + " in " + obj.getClass()
+                            .getName());
         }
         method.setAccessible(true);
         return method.invoke(obj, argv);
@@ -141,7 +140,7 @@ public class Reflex {
     }
 
     public static Object invokeStaticAny(Class<?> clazz, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
         Object[] argv = new Object[argc];
@@ -176,16 +175,14 @@ public class Reflex {
                         method = m[i];
                         //here we go through this class
                     } else {
-                        throw new NoSuchMethodException(
-                            "Multiple methods found for __attribute__((any))" + paramsTypesToString(
-                                argt) + " in " + clazz.getName());
+                        throw new NoSuchMethodException("Multiple methods found for __attribute__((any))"
+                                + paramsTypesToString(argt) + " in " + clazz.getName());
                     }
                 }
             }
         } while (method == null && !Object.class.equals(clazz = clazz.getSuperclass()));
         if (method == null) {
-            throw new NoSuchMethodException(
-                "__attribute__((a))" + paramsTypesToString(argt) + " in " + clazz.getName());
+            throw new NoSuchMethodException("__attribute__((a))" + paramsTypesToString(argt) + " in " + clazz.getName());
         }
         method.setAccessible(true);
         return method.invoke(null, argv);
@@ -193,7 +190,7 @@ public class Reflex {
 
     public static Object invokeVirtualDeclaredModifierAny(Object obj, int requiredMask,
                                                           int excludedMask, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -233,24 +230,20 @@ public class Reflex {
                     method = m[i];
                     //here we go through this class
                 } else {
-                    throw new NoSuchMethodException(
-                        "Multiple methods found for __attribute__((any))" + paramsTypesToString(
-                            argt) + " in " + obj.getClass().getName());
+                    throw new NoSuchMethodException("Multiple methods found for __attribute__((any))"
+                            + paramsTypesToString(argt) + " in " + obj.getClass().getName());
                 }
             }
         }
         if (method == null) {
-            throw new NoSuchMethodException(
-                "__attribute__((a))" + paramsTypesToString(argt) + " in " + obj.getClass()
-                    .getName());
+            throw new NoSuchMethodException("__attribute__((a))" + paramsTypesToString(argt) + " in " + obj.getClass().getName());
         }
         method.setAccessible(true);
         return method.invoke(obj, argv);
     }
 
     /**
-     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count
-     * from 0
+     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count from 0
      *
      * @param obj
      * @param ordinal                the ordinal of instance method meeting the signature
@@ -264,7 +257,7 @@ public class Reflex {
      */
     public static Object invokeVirtualDeclaredOrdinal(Object obj, int ordinal, int expected,
                                                       boolean strict, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -304,15 +297,13 @@ public class Reflex {
                     if (!strict) {
                         break;
                     }
-                    throw new NoSuchMethodException(
-                        "More methods than expected(" + expected + ") at " + paramsTypesToString(
-                            argt) + " in " + obj.getClass().getName());
+                    throw new NoSuchMethodException("More methods than expected(" + expected + ") at "
+                            + paramsTypesToString(argt) + " in " + obj.getClass().getName());
                 }
             }
         }
         if (strict && count != expected) {
-            throw new NoSuchMethodException(
-                "Less methods(" + count + ") than expected(" + expected + ") at "
+            throw new NoSuchMethodException("Less methods(" + count + ") than expected(" + expected + ") at "
                     + paramsTypesToString(argt) + " in " + obj.getClass().getName());
         }
         Arrays.sort(candidates, (o1, o2) -> {
@@ -344,8 +335,7 @@ public class Reflex {
     }
 
     /**
-     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count
-     * from 0
+     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count from 0
      *
      * @param obj
      * @param fixed                  which class
@@ -362,7 +352,7 @@ public class Reflex {
                                                                    Class<?> fixed, int ordinal, int expected,
                                                                    boolean strict,
                                                                    Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
         Object[] argv = new Object[argc];
@@ -407,15 +397,13 @@ public class Reflex {
                     if (!strict) {
                         break;
                     }
-                    throw new NoSuchMethodException(
-                        "More methods than expected(" + expected + ") at " + paramsTypesToString(
-                            argt) + " in " + obj.getClass().getName());
+                    throw new NoSuchMethodException("More methods than expected(" + expected + ") at "
+                            + paramsTypesToString(argt) + " in " + obj.getClass().getName());
                 }
             }
         }
         if (strict && count != expected) {
-            throw new NoSuchMethodException(
-                "Less methods(" + count + ") than expected(" + expected + ") at "
+            throw new NoSuchMethodException("Less methods(" + count + ") than expected(" + expected + ") at "
                     + paramsTypesToString(argt) + " in " + obj.getClass().getName());
         }
         Arrays.sort(candidates, (o1, o2) -> {
@@ -435,8 +423,7 @@ public class Reflex {
     }
 
     /**
-     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count
-     * from 0
+     * DO NOT USE, it's fragile instance methods are counted, both public/private, static methods are EXCLUDED, count from 0
      *
      * @param obj
      * @param ordinal                the ordinal of instance method meeting the signature
@@ -452,7 +439,7 @@ public class Reflex {
     public static Object invokeVirtualDeclaredOrdinalModifier(Object obj, int ordinal, int expected,
                                                               boolean strict, int requiredMask, int excludedMask,
                                                               Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -498,15 +485,13 @@ public class Reflex {
                     if (!strict) {
                         break;
                     }
-                    throw new NoSuchMethodException(
-                        "More methods than expected(" + expected + ") at " + paramsTypesToString(
-                            argt) + " in " + obj.getClass().getName());
+                    throw new NoSuchMethodException("More methods than expected(" + expected + ") at "
+                            + paramsTypesToString(argt) + " in " + obj.getClass().getName());
                 }
             }
         }
         if (strict && count != expected) {
-            throw new NoSuchMethodException(
-                "Less methods(" + count + ") than expected(" + expected + ") at "
+            throw new NoSuchMethodException("Less methods(" + count + ") than expected(" + expected + ") at "
                     + paramsTypesToString(argt) + " in " + obj.getClass().getName());
         }
         Arrays.sort(candidates, (o1, o2) -> {
@@ -522,12 +507,15 @@ public class Reflex {
             return strcmp(o1.getName(), o2.getName());
         });
         candidates[ordinal].setAccessible(true);
-        return candidates[ordinal].invoke(obj, argv);
+        try {
+            return candidates[ordinal].invoke(obj, argv);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        }
     }
 
     /**
-     * DO NOT USE, it's fragile static methods are counted, both public/private, instance methods are EXCLUDED, count
-     * from 0
+     * DO NOT USE, it's fragile static methods are counted, both public/private, instance methods are EXCLUDED, count from 0
      *
      * @param clazz
      * @param ordinal                the ordinal of instance method meeting the signature
@@ -543,7 +531,7 @@ public class Reflex {
     public static Object invokeStaticDeclaredOrdinalModifier(Class<?> clazz, int ordinal, int expected,
                                                              boolean strict, int requiredMask, int excludedMask,
                                                              Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
         Object[] argv = new Object[argc];
@@ -588,15 +576,13 @@ public class Reflex {
                     if (!strict) {
                         break;
                     }
-                    throw new NoSuchMethodException(
-                        "More methods than expected(" + expected + ") at " + paramsTypesToString(
-                            argt) + " in " + clazz.getName());
+                    throw new NoSuchMethodException("More methods than expected(" + expected + ") at "
+                            + paramsTypesToString(argt) + " in " + clazz.getName());
                 }
             }
         }
         if (strict && count != expected) {
-            throw new NoSuchMethodException(
-                "Less methods(" + count + ") than expected(" + expected + ") at "
+            throw new NoSuchMethodException("Less methods(" + count + ") than expected(" + expected + ") at "
                     + paramsTypesToString(argt) + " in " + clazz.getName());
         }
         Arrays.sort(candidates, (o1, o2) -> {
@@ -616,13 +602,12 @@ public class Reflex {
             return candidates[ordinal].invoke(null, argv);
         } catch (IllegalAccessException e) {
             // should not happen
-            throw new RuntimeException(e);
+            throw new AssertionError(e);
         }
     }
 
     /**
-     * DO NOT USE, it's fragile static methods are counted, both public/private, instance methods are EXCLUDED, count
-     * from 0
+     * DO NOT USE, it's fragile static methods are counted, both public/private, instance methods are EXCLUDED, count from 0
      *
      * @param clazz
      * @param ordinal                the ordinal of instance method meeting the signature
@@ -637,7 +622,7 @@ public class Reflex {
     @Deprecated
     public static Object invokeStaticDeclaredOrdinal(Class clazz, int ordinal, int expected,
                                                      boolean strict, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalAccessException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
         Object[] argv = new Object[argc];
@@ -676,15 +661,13 @@ public class Reflex {
                     if (!strict) {
                         break;
                     }
-                    throw new NoSuchMethodException(
-                        "More methods than expected(" + expected + ") at " + paramsTypesToString(
-                            argt) + " in " + clazz.getName());
+                    throw new NoSuchMethodException("More methods than expected(" + expected + ") at "
+                            + paramsTypesToString(argt) + " in " + clazz.getName());
                 }
             }
         }
         if (strict && count != expected) {
-            throw new NoSuchMethodException(
-                "Less methods(" + count + ") than expected(" + expected + ") at "
+            throw new NoSuchMethodException("Less methods(" + count + ") than expected(" + expected + ") at "
                     + paramsTypesToString(argt) + " in " + clazz.getName());
         }
         Arrays.sort(candidates, (o1, o2) -> {
@@ -700,11 +683,15 @@ public class Reflex {
             return strcmp(o1.getName(), o2.getName());
         });
         candidates[ordinal].setAccessible(true);
-        return candidates[ordinal].invoke(null, argv);
+        try {
+            return candidates[ordinal].invoke(null, argv);
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
+        }
     }
 
     public static Object invokeVirtual(Object obj, String name, Object... argsTypesAndReturnType)
-        throws ReflectiveOperationException {
+            throws ReflectiveOperationException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -745,14 +732,14 @@ public class Reflex {
         } while (!Object.class.equals(clazz = clazz.getSuperclass()));
         if (method == null) {
             throw new NoSuchMethodException(
-                name + paramsTypesToString(argt) + " in " + obj.getClass().getName());
+                    name + paramsTypesToString(argt) + " in " + obj.getClass().getName());
         }
         method.setAccessible(true);
         return method.invoke(obj, argv);
     }
 
     public static Object invokeVirtualOriginal(Object obj, String name, Object... argsTypesAndReturnType)
-        throws ReflectiveOperationException {
+            throws ReflectiveOperationException {
         Class clazz = obj.getClass();
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -814,8 +801,7 @@ public class Reflex {
             if (cause instanceof NullPointerException) {
                 String tr = android.util.Log.getStackTraceString(cause);
                 if (tr.indexOf("ExposedBridge.invokeOriginalMethod") != 0
-                    || Pattern.compile("me\\.[.a-zA-Z]+\\.invokeOriginalMethod").matcher(tr)
-                    .find()) {
+                        || Pattern.compile("me\\.[.a-zA-Z]+\\.invokeOriginalMethod").matcher(tr).find()) {
                     needPatch = true;
                 }
             }
@@ -829,7 +815,7 @@ public class Reflex {
     }
 
     public static Object invokeStatic(Class<?> staticClass, String name, Object... argsTypesAndReturnType)
-        throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
+            throws NoSuchMethodException, InvocationTargetException, IllegalArgumentException {
         Class clazz = staticClass;
         int argc = argsTypesAndReturnType.length / 2;
         Class[] argt = new Class[argc];
@@ -911,7 +897,6 @@ public class Reflex {
         try {
             setInstanceObject(obj, name, null, value);
         } catch (NoSuchFieldException e) {
-
         }
     }
 
@@ -923,8 +908,7 @@ public class Reflex {
         }
     }
 
-    public static void setInstanceObject(@NonNull Object obj, @NonNull String name, @Nullable Object value)
-        throws NoSuchFieldException {
+    public static void setInstanceObject(@NonNull Object obj, @NonNull String name, @Nullable Object value) throws NoSuchFieldException {
         setInstanceObject(obj, name, null, value);
     }
 
@@ -956,8 +940,7 @@ public class Reflex {
         setStaticObject(clz, name, null, value);
     }
 
-    public static void setStaticObject(Class<?> clazz, String name, Class<?> type, Object value)
-        throws NoSuchFieldException {
+    public static void setStaticObject(Class<?> clazz, String name, Class<?> type, Object value) throws NoSuchFieldException {
         Field f = findField(clazz, type, name);
         f.setAccessible(true);
         try {
@@ -967,74 +950,71 @@ public class Reflex {
         }
     }
 
-    public static Method hasMethod(Object obj, String name, Object... argsTypesAndReturnType)
-        throws IllegalArgumentException {
-        Class clazz;
-        if (obj == null) {
-            throw new NullPointerException("obj/clazz == null");
-        }
-        if (obj instanceof Class) {
-            clazz = (Class) obj;
-        } else {
-            clazz = obj.getClass();
-        }
-        return hasMethod(clazz, name, argsTypesAndReturnType);
-    }
-
-    public static Method hasMethod(Class clazz, String name, Object... argsTypesAndReturnType)
-        throws IllegalArgumentException {
-        int argc = argsTypesAndReturnType.length / 2;
-        Class[] argt = new Class[argc];
-        Object[] argv = new Object[argc];
-        Class returnType = null;
-        if (argc * 2 + 1 == argsTypesAndReturnType.length) {
-            returnType = (Class) argsTypesAndReturnType[argsTypesAndReturnType.length - 1];
-        }
-        int i, ii;
-        Method[] m;
-        Method method = null;
-        Class[] _argt;
-        for (i = 0; i < argc; i++) {
-            argt[i] = (Class) argsTypesAndReturnType[argc + i];
-            argv[i] = argsTypesAndReturnType[i];
-        }
-        loop_main:
+    @NonNull
+    public static Method findMethod(@NonNull Class<?> clazz, @Nullable Class<?> returnType,
+                                    @NonNull String name, @NonNull Class<?>... paramTypes) throws NoSuchMethodException {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(name, "name == null");
+        int argc = paramTypes.length;
+        Class<?> current = clazz;
         do {
-            m = clazz.getDeclaredMethods();
+            Method[] methods = current.getDeclaredMethods();
             loop:
-            for (i = 0; i < m.length; i++) {
-                if (m[i].getName().equals(name)) {
-                    _argt = m[i].getParameterTypes();
-                    if (_argt.length == argt.length) {
-                        for (ii = 0; ii < argt.length; ii++) {
-                            if (!argt[ii].equals(_argt[ii])) {
+            for (int i = 0; i < methods.length; i++) {
+                if (methods[i].getName().equals(name)) {
+                    Class<?>[] argt = methods[i].getParameterTypes();
+                    if (argt.length == argc) {
+                        for (int ii = 0; ii < argt.length; ii++) {
+                            if (!argt[ii].equals(paramTypes[ii])) {
                                 continue loop;
                             }
                         }
-                        if (returnType != null && !returnType.equals(m[i].getReturnType())) {
+                        if (returnType != null && !returnType.equals(methods[i].getReturnType())) {
                             continue;
                         }
-                        method = m[i];
-                        break loop_main;
+                        Method method = methods[i];
+                        method.setAccessible(true);
+                        return method;
                     }
                 }
             }
-        } while (!Object.class.equals(clazz = clazz.getSuperclass()));
-        if (method != null) {
-            method.setAccessible(true);
-        }
-        return method;
+            current = current.getSuperclass();
+        } while (current != null && current != Object.class);
+        throw new NoSuchMethodException("No method " + clazz.getName() + "." + name + Arrays.toString(paramTypes) +
+                (returnType == null ? "" : " with return type " + returnType.getName()) + " found");
     }
 
-    public static Object newInstance(Class clazz, Object... argsAndTypes)
-        throws ReflectiveOperationException {
+    @NonNull
+    public static Method findMethod(@NonNull Class<?> clazz, @NonNull String name,
+                                    @NonNull Class<?>... paramTypes) throws NoSuchMethodException {
+        return findMethod(clazz, null, name, paramTypes);
+    }
+
+    @Nullable
+    public static Method findMethodOrNull(@NonNull Class<?> clazz, @Nullable Class<?> returnType,
+                                          @NonNull String name, @NonNull Class<?>... paramTypes) {
+        try {
+            return findMethod(clazz, returnType, name, paramTypes);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
+    @Nullable
+    public static Method findMethodOrNull(@NonNull Class<?> clazz, @NonNull String name,
+                                          @NonNull Class<?>... paramTypes) {
+        return findMethodOrNull(clazz, null, name, paramTypes);
+    }
+
+    @NonNull
+    public static Object newInstance(@NonNull Class<?> clazz, Object... argsAndTypes) throws ReflectiveOperationException {
         int argc = argsAndTypes.length / 2;
-        Class[] argt = new Class[argc];
+        Class<?>[] argt = new Class[argc];
         Object[] argv = new Object[argc];
         int i;
-        Constructor m;
+        Constructor<?> m;
         for (i = 0; i < argc; i++) {
-            argt[i] = (Class) argsAndTypes[argc + i];
+            argt[i] = (Class<?>) argsAndTypes[argc + i];
             argv[i] = argsAndTypes[i];
         }
         m = clazz.getDeclaredConstructor(argt);
@@ -1042,9 +1022,7 @@ public class Reflex {
         try {
             return m.newInstance(argv);
         } catch (IllegalAccessException e) {
-            Log.e(e);
-            //should NOT happen
-            throw new RuntimeException(e);
+            throw new AssertionError(e);
         }
     }
 
@@ -1061,7 +1039,7 @@ public class Reflex {
             }
         } while ((clz = clz.getSuperclass()) != null);
         String errMsg = type == null ? ("field '" + name + "' not found in " + clazz.getName())
-            : ("field '" + name + "' of type " + type.getName() + " not found in " + clazz.getName());
+                : ("field '" + name + "' of type " + type.getName() + " not found in " + clazz.getName());
         throw new NoSuchFieldException(errMsg);
     }
 
@@ -1082,7 +1060,7 @@ public class Reflex {
     }
 
     public static Method findMethodByTypes_1(Class<?> clazz, Class returnType, Class... argt)
-        throws NoSuchMethodException {
+            throws NoSuchMethodException {
         Method method = null;
         Method[] m;
         Class[] _argt;
@@ -1105,16 +1083,14 @@ public class Reflex {
                         method = value;
                         //here we go through this class
                     } else {
-                        throw new NoSuchMethodException(
-                            "Multiple methods found for __attribute__((any))" + paramsTypesToString(
-                                argt) + " in " + clazz.getName());
+                        throw new NoSuchMethodException("Multiple methods found for __attribute__((any))"
+                                + paramsTypesToString(argt) + " in " + clazz.getName());
                     }
                 }
             }
         } while (method == null && !Object.class.equals(clazz = clazz.getSuperclass()));
         if (method == null) {
-            throw new NoSuchMethodException(
-                "__attribute__((a))" + paramsTypesToString(argt) + " in " + clazz.getName());
+            throw new NoSuchMethodException("__attribute__((a))" + paramsTypesToString(argt) + " in " + clazz.getName());
         }
         method.setAccessible(true);
         return method;
@@ -1160,7 +1136,7 @@ public class Reflex {
             clz = clz.getSuperclass();
         }
         throw new NoSuchFieldException("No field of type " + type.getName() + " found in "
-            + obj.getClass().getName() + " and superclasses");
+                + obj.getClass().getName() + " and superclasses");
     }
 
     public static <T> T getFirstByTypeOrNull(Object obj, Class<T> type) {

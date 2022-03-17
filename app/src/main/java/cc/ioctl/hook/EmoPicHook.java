@@ -67,8 +67,7 @@ public class EmoPicHook extends CommonSwitchFunctionHook {
                                 return;
                             }
                             if (f_picExtraData == null) {
-                                f_picExtraData = findField(chatMsg.getClass(), null,
-                                        "picExtraData");
+                                f_picExtraData = findField(chatMsg.getClass(), null, "picExtraData");
                                 f_picExtraData.setAccessible(true);
                             }
                             Object picMessageExtraData = f_picExtraData.get(chatMsg);
@@ -79,8 +78,7 @@ public class EmoPicHook extends CommonSwitchFunctionHook {
                             f_imageType.setInt(chatMsg, 0);
                             if (picMessageExtraData != null) {
                                 if (f_imageBizType == null) {
-                                    f_imageBizType = findField(picMessageExtraData.getClass(), null,
-                                            "imageBizType");
+                                    f_imageBizType = findField(picMessageExtraData.getClass(), null, "imageBizType");
                                     f_imageBizType.setAccessible(true);
                                 }
                                 f_imageBizType.setInt(picMessageExtraData, 0);

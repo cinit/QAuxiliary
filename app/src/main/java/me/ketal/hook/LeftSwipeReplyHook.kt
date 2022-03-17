@@ -123,7 +123,7 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
             it.result = null
         }
         methodName = if (isTim()) getConfig(LeftSwipeReplyHook::class.java.simpleName) else "a"
-        Reflex.hasMethod(hookClass, methodName, Int::class.java)
+        Reflex.findMethod(hookClass, Int::class.java, methodName)
             .hookAfter(this) {
                 if (replyDistance <= 0) {
                     replyDistance = it.result as Int

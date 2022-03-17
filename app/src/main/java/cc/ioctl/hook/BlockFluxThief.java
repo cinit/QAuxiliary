@@ -99,8 +99,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
             } catch (NoSuchMethodException ignored) {
             }
             if (mGetFilePath == null) {
-                mGetFilePath = Reflex.hasMethod(cHttpDownloader, "d", null, String.class,
-                        String.class);
+                mGetFilePath = Reflex.findMethod(cHttpDownloader, String.class, "d", String.class);
             }
             String savePath = (String) mGetFilePath.invoke(null, url);
             if (!new File(savePath).exists()) {
