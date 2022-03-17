@@ -25,17 +25,9 @@ package me.ketal.hook
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
-import android.os.Build
 import android.view.View
-import android.view.inputmethod.EditorInfo
-import android.view.inputmethod.InputConnection
-import android.widget.EditText
 import androidx.core.content.FileProvider
-import androidx.core.view.inputmethod.EditorInfoCompat
-import androidx.core.view.inputmethod.InputConnectionCompat
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import com.github.kyuubiran.ezxhelper.utils.invokeAs
+import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.tryOrFalse
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -43,14 +35,17 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
-import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
+import io.github.qauxv.util.Initiator._ChatMessage
+import io.github.qauxv.util.Initiator._PicItemBuilder
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import java.io.File
 
-@FunctionHookEntry
-@UiItemAgentEntry
+@[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
 object PicCopyToClipboard : CommonSwitchFunctionHook() {
     override val name: String = "复制图片到剪贴板"
 
@@ -59,44 +54,99 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = tryOrFalse {
-        val clsPicItemBuilder = Initiator._PicItemBuilder()
-        val clsBasePicItemBuilder = clsPicItemBuilder.superclass
-        val clazz = arrayOf(clsPicItemBuilder, clsBasePicItemBuilder)
+        val clsPicItemBuilder = _PicItemBuilder()
+        val clsMixedMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder".clazz
+        val clsStructingMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.StructingMsgItemBuilder".clazz
+        val clazz = arrayOf(clsPicItemBuilder, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder)
         // copy pic
-        clazz.forEach {
+        clazz.filterNotNull().forEach {
             it.method { m ->
                 m.name == "a"
-                    && m.parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, Initiator._ChatMessage()))
-            }?.hookBefore { m ->
+                    && m.parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, _ChatMessage()))
+            }?.hookBefore(this) { m ->
                 val id = m.args[0]
                 val context = m.args[1] as Context
                 val message = m.args[2]
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
-                val path = arrayOf("chatraw", "chatimg", "chatthumb").map { str ->
-                    message.invoke("getFilePath", str, String::class.java) as String
-                }.first { path ->
-                    // chosen the first exist file
-                    File(path).exists()
-                }
-                // An error occurs when the host does not have a fileprovider
-                val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
-                val item = ClipData.Item(uri)
-                val clipData = ClipData("label", arrayOf("image/*"), item)
-                val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-                clipboardManager.setPrimaryClip(clipData)
+                copyToClipboard(context, getPicFile(message))
             }
             it.method { m ->
                 m.returnType.isArray
                     && m.parameterTypes.contentEquals(arrayOf(View::class.java))
-            }?.hookAfter { param ->
+            }?.hookAfter(this) { param ->
+                val view = param.args[0] as View
+                val message = getMessage(view)
+                if (!hasPic(message)) return@hookAfter
                 param.result = param.result.run {
                     this as Array<Any>
                     val clQQCustomMenuItem = javaClass.componentType
-                    val itemCopy = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_copyToClipboard, "复制")
+                    val itemCopy = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_copyToClipboard, "复制图片")
                     plus(itemCopy)
                 }
             }
         }
+    }
+
+    // find chatMessage from view
+    private tailrec fun getMessage(view: View): Any {
+        return if (view.parent.javaClass.simpleName.endsWith("ListView")) {
+            val viewHolder = view.tag
+            viewHolder.get(_ChatMessage())!!
+        } else getMessage(view.parent as View)
+    }
+
+    private fun hasPic(message: Any): Boolean {
+        return when (Reflex.getShortClassName(message)) {
+            "MessageForPic" -> true
+            "MessageForMixedMsg" -> {
+                val list = message.get("msgElemList") as List<Any>
+                list.any { hasPic(it) }
+            }
+            "MessageForStructing" -> {
+                val text = message.get("structingMsg").invoke("getXml") as String
+                // Log.d("structingMsg: $text")
+                // todo parse structingmsg
+                false
+            }
+            else -> false
+        }
+    }
+
+    private fun getPicFile(message: Any): String {
+        return when (Reflex.getShortClassName(message)) {
+            "MessageForPic" -> getFilePath(message)
+            "MessageForMixedMsg" -> {
+                val list = message.get("msgElemList") as List<Any>
+                // todo Alert users when multiple images are included
+                val msg = list.first { Reflex.getShortClassName(it) == "MessageForPic" }
+                getFilePath(msg)
+            }
+            "MessageForStructing" -> {
+                val text = message.get("structingMsg").invoke("getXml") as String
+                // todo parse structingmsg
+                ""
+            }
+            else -> throw UnsupportedOperationException("get pic from ${Reflex.getShortClassName(message)}")
+        }
+    }
+
+    private fun getFilePath(message: Any): String {
+        val path = arrayOf("chatraw", "chatimg", "chatthumb").map { str ->
+            message.invoke("getFilePath", str, String::class.java) as String
+        }.first { path ->
+            // chosen the first exist file aka the biggest one
+            File(path).exists()
+        }
+        return path
+    }
+
+    private fun copyToClipboard(context: Context, path: String) {
+        // note: An error occurs when the host does not have a fileprovider
+        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
+        val item = ClipData.Item(uri)
+        val clipData = ClipData("label", arrayOf("image/*"), item)
+        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+        clipboardManager.setPrimaryClip(clipData)
     }
 }
