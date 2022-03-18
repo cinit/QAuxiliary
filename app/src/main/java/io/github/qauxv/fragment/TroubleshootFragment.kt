@@ -215,8 +215,7 @@ class TroubleshootFragment : BaseRootRecyclerFragment() {
         val wrapper = Intent()
         wrapper.setClassName(HostInfo.getApplication().packageName, ActProxyMgr.STUB_DEFAULT_ACTIVITY)
         wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner)
-        val pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper,
-                if (VERSION.SDK_INT >= VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+        val pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper, PendingIntent.FLAG_IMMUTABLE)
         val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val n = ExfriendManager.getCurrent().createNotiComp(nm, "Ticker", "Title", "Content", longArrayOf(100, 200, 200, 100), pi)
         nm.notify(ExfriendManager.ID_EX_NOTIFY, n)

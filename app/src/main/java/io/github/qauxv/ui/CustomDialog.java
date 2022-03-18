@@ -44,13 +44,8 @@ public class CustomDialog {
     private static Class<?> clz_DialogUtil;
     private static Class<?> clz_CustomDialog;
     private static Method m_DialogUtil_a;
-    @SuppressWarnings("deprecation")
-    private static int THEME_LIGHT = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-        ? android.R.style.Theme_DeviceDefault_Light_Dialog_Alert
-        : AlertDialog.THEME_DEVICE_DEFAULT_LIGHT;
-    @SuppressWarnings("deprecation")
-    private static int THEME_DARK = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1
-        ? android.R.style.Theme_DeviceDefault_Dialog_Alert : AlertDialog.THEME_DEVICE_DEFAULT_DARK;
+    private static final int THEME_LIGHT = android.R.style.Theme_DeviceDefault_Light_Dialog_Alert;
+    private static final int THEME_DARK = android.R.style.Theme_DeviceDefault_Dialog_Alert;
     private Dialog mDialog = null;
     private AlertDialog mFailsafeDialog = null;
     private AlertDialog.Builder mBuilder = null;

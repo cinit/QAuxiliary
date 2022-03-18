@@ -762,8 +762,7 @@ public class ExfriendManager {
                 Intent wrapper = new Intent();
                 wrapper.setClassName(HostInfo.getApplication().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                 wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
-                PendingIntent pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper,
-                        VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+                PendingIntent pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper, PendingIntent.FLAG_IMMUTABLE);
                 NotificationManager nm = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
                 Notification n = createNotiComp(nm, (String) ptr[1], (String) ptr[2], (String) ptr[3],
                         new long[]{100, 200, 200, 100}, pi);
@@ -801,15 +800,9 @@ public class ExfriendManager {
         } else {
             builder = new Notification.Builder(app);
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            Parasitics.injectModuleResources(app.getResources());
-            // We have to createWithBitmap rather than with a ResId, otherwise RemoteServiceException
-            builder.setSmallIcon(Icon.createWithBitmap(
-                BitmapFactory.decodeResource(app.getResources(), R.drawable.ic_del_friend_top)));
-        } else {
-            // 2022 now, still using <23?
-            builder.setSmallIcon(android.R.drawable.ic_delete);
-        }
+        Parasitics.injectModuleResources(app.getResources());
+        // We have to createWithBitmap rather than with a ResId, otherwise RemoteServiceException
+        builder.setSmallIcon(Icon.createWithBitmap(BitmapFactory.decodeResource(app.getResources(), R.drawable.ic_del_friend_top)));
         builder.setTicker(ticker);
         builder.setContentTitle(title);
         builder.setContentText(content);

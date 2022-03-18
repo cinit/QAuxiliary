@@ -19,15 +19,15 @@
         <item name="colorSecondaryVariant">?attr/themeColor</item>
         <item name="colorOnSecondary">@color/firstTextColor</item>
         <!-- Status bar color. -->
-        <item name="android:windowDrawsSystemBarBackgrounds">@bool/is_sdk_eg_m_23</item>
+        <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
             shortEdges
         </item>
         <item name="android:statusBarColor">?attr/backgroundColor</item>
-        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">@bool/is_not_night_mode</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowLightStatusBar">@bool/is_not_night_mode</item>
         <item name="android:windowActionBar">false</item>
-        <item name="android:windowTranslucentNavigation">@bool/is_not_sdk_eg_m_23</item>
+        <item name="android:windowTranslucentNavigation">false</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
@@ -185,8 +185,8 @@
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
-        <item name="android:windowTranslucentStatus">@bool/is_not_sdk_eg_m_23</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">true</item>
+        <item name="android:windowTranslucentStatus">false</item>
+        <item name="android:windowLightStatusBar">true</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
@@ -202,7 +202,7 @@
         <!-- <item name="android:statusBarColor">@color/backgroundColor</item> -->
         <item name="android:statusBarColor">?attr/themeColor</item>
         <!-- <item name="colorControlNormal">@color/firstTextColor</item>  -->
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <item name="colorControlNormal">@color/whiteTextColor</item>
     </style>
 
@@ -234,7 +234,7 @@
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">false</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <!-- <item name="colorControlNormal">@color/firstTextColor</item> -->
         <item name="colorControlNormal">@color/whiteTextColor</item>
     </style>
@@ -248,7 +248,7 @@
         <item name="android:statusBarColor">?attr/themeColor</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
-        <item name="android:windowLightStatusBar" tools:targetApi="m">false</item>
+        <item name="android:windowLightStatusBar">false</item>
         <!-- <item name="colorControlNormal">@color/whiteTextColor</item>-->
     </style>
 

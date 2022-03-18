@@ -186,10 +186,6 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             Log.e("Wtf, init FakeBatteryHook but BatteryManager is null!");
             return false;
         }
-        if (Build.VERSION.SDK_INT < 23) {
-            //make a call to init mBatteryStats, so we don't care about the result
-            batmgr.getIntProperty(BatteryManager.BATTERY_PROPERTY_CAPACITY);
-        }
         Field fBatteryPropertiesRegistrar = BatteryManager.class.getDeclaredField("mBatteryPropertiesRegistrar");
         fBatteryPropertiesRegistrar.setAccessible(true);
         origRegistrar = fBatteryPropertiesRegistrar.get(batmgr);
@@ -209,10 +205,8 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
                 Log.e("FakeBatteryHook/W Field mBatteryStats found, but instance got null");
             }
         } catch (NoSuchFieldException e) {
-            if (Build.VERSION.SDK_INT >= 23) {
-                traceError(e);
-                Log.e("FakeBatteryHook/W Field mBatteryStats not found, but SDK_INT is " + Build.VERSION.SDK_INT);
-            }
+            traceError(e);
+            Log.e("FakeBatteryHook/W Field mBatteryStats not found, but SDK_INT is " + Build.VERSION.SDK_INT);
         }
         Object proxy;
         if (origStatus != null && cIBatteryStatus != null) {
