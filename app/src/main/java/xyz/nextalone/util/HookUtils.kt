@@ -31,7 +31,11 @@ import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexMethodDescriptor
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.hostInfo
 import me.kyuubiran.util.getDefaultCfg
 import me.kyuubiran.util.getExFriendCfg
 import xyz.nextalone.bridge.NAMethodHook
@@ -58,6 +62,15 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
 }
 
 internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.declaredMethods.run {
+    this.forEach {
+        if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
+            return it
+        }
+    }
+    return null
+}
+
+internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = (this.declaredMethods + this.methods).run {
     this.forEach {
         if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
             return it

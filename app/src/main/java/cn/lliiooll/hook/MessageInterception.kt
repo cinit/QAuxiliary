@@ -33,6 +33,7 @@ import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
+import xyz.nextalone.util.methodWithSuper
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -44,7 +45,7 @@ object MessageInterception : BasePersistBackgroundHook() {
         }
         if (hostInfo.versionCode >= QQVersion.QQ_8_8_80) {
             // i don't know why hook 3 methods, but it works
-            Initiator._C2CMessageManager().method(
+            Initiator._C2CMessageManager().methodWithSuper(
                 "a",
                 Boolean::class.java,
                 Initiator._MessageRecord(),
@@ -53,14 +54,14 @@ object MessageInterception : BasePersistBackgroundHook() {
                 "com.tencent.imcore.message.Message".clazz,
                 Boolean::class.java
             )?.hookAfter(this, callback)
-            Initiator._C2CMessageManager().method(
+            Initiator._C2CMessageManager().methodWithSuper(
                 "a",
                 Boolean::class.java,
                 Initiator._MessageRecord(),
                 Boolean::class.java,
                 Int::class.java
             )?.hookAfter(this, callback)
-            Initiator._C2CMessageManager().method(
+            Initiator._C2CMessageManager().methodWithSuper(
                 "d",
                 Boolean::class.java,
                 Initiator._MessageRecord(),
