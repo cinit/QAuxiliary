@@ -47,7 +47,7 @@
             android:exported="true"
             android:icon="@drawable/icon"
             android:name="me.ketal.ui.activity.QFileShareToIpadActivity"
-            android:theme="@style/noDisplay">
+            android:theme="@style/NoDisplay">
             <intent-filter android:label="@string/send_to_ipad">
                 <action android:name="android.intent.action.SEND" />
                 <category android:name="android.intent.category.DEFAULT" />

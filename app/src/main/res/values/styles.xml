@@ -2,7 +2,7 @@
 <resources xmlns:tools="http://schemas.android.com/tools">
 
     <!-- Base application theme. -->
-    <style name="AppTheme.Def" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="AppTheme.Def" parent="Theme.MaiTungTMDesign.DayNight">
         <item name="backgroundColor">@color/defaultThemeBackgroundColor</item>
         <!-- Customize your theme here. -->
         <item name="android:windowIsTranslucent">true</item>
@@ -31,11 +31,6 @@
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
-
-    <!--    <style name="AppTheme.Dialog" parent="Theme.AppCompat.Light.Dialog.Alert">-->
-    <!--        <item name="android:windowIsTranslucent">true</item>-->
-    <!--        <item name="android:windowNoTitle">true</item>-->
-    <!--    </style>-->
 
     <style name="AppTheme.Blp" parent="AppTheme.Def">
         <item name="colorPrimary">@color/theme_color_blp</item>
@@ -107,7 +102,7 @@
         <item name="themeColor">@color/theme_color_gap</item>
     </style>
 
-    <style name="noDisplay" parent="Theme.AppCompat.DayNight.NoActionBar">
+    <style name="NoDisplay" parent="Theme.AppCompat.DayNight.NoActionBar">
         <item name="android:windowFrame">@null</item>
         <!-- 设置是否可滑动 -->
         <item name="android:windowIsFloating">true</item>

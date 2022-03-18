@@ -44,7 +44,7 @@ import kotlin.concurrent.schedule
 class ChooseAgentActivity : AbstractChooseActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        setTheme(R.style.noDisplay)
+        setTheme(R.style.NoDisplay)
         super.onCreate(savedInstanceState)
         bundle = intent.extras
         val intent = if (intent.getBooleanExtra("use_ACTION_PICK", false))

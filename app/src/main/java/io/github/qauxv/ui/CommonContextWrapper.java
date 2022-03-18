@@ -22,13 +22,15 @@
 
 package io.github.qauxv.ui;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.content.res.Configuration;
 import android.content.res.Resources;
+import android.content.res.TypedArray;
 import android.view.ContextThemeWrapper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.github.qauxv.R;
+import androidx.appcompat.app.AppCompatActivity;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
 import java.util.Objects;
@@ -102,15 +104,60 @@ public class CommonContextWrapper extends ContextThemeWrapper {
         }
     }
 
+    public static boolean isAppCompatContext(@NonNull Context context) {
+        if (!checkContextClassLoader(context)) {
+            return false;
+        }
+        TypedArray a = context.obtainStyledAttributes(androidx.appcompat.R.styleable.AppCompatTheme);
+        try {
+            return a.hasValue(androidx.appcompat.R.styleable.AppCompatTheme_windowActionBar);
+        } finally {
+            a.recycle();
+        }
+    }
+
+    private static final int[] MATERIAL_CHECK_ATTRS = {com.google.android.material.R.attr.colorPrimaryVariant};
+
+    public static boolean isMaterialDesignContext(@NonNull Context context) {
+        if (!isAppCompatContext(context)) {
+            return false;
+        }
+        @SuppressLint("ResourceType") TypedArray a = context.obtainStyledAttributes(MATERIAL_CHECK_ATTRS);
+        try {
+            return a.hasValue(0);
+        } finally {
+            a.recycle();
+        }
+    }
+
+    public static boolean checkContextClassLoader(@NonNull Context context) {
+        try {
+            ClassLoader cl = context.getClassLoader();
+            if (cl == null) {
+                return false;
+            }
+            return cl.loadClass(AppCompatActivity.class.getName()) == AppCompatActivity.class;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     @NonNull
-    public static CommonContextWrapper createAppCompatContext(@NonNull Context base) {
+    public static Context createAppCompatContext(@NonNull Context base) {
+        if (isAppCompatContext(base)) {
+            return base;
+        }
         return new CommonContextWrapper(base, ModuleThemeManager.getCurrentStyleId(),
             recreateNighModeConfig(base, ResUtils.getNightModeMasked()));
     }
 
     @NonNull
-    public static CommonContextWrapper createMaterialDesignContext(@NonNull Context base) {
-        return new CommonContextWrapper(base, R.style.Theme_MaiTungTMDesign_DayNight,
-            recreateNighModeConfig(base, ResUtils.getNightModeMasked()));
+    public static Context createMaterialDesignContext(@NonNull Context base) {
+        if (isMaterialDesignContext(base)) {
+            return base;
+        }
+        // currently all themes by createAppCompatContext are material themes
+        // change this if you have a AppCompat theme that is not material theme
+        return createAppCompatContext(base);
     }
 }
