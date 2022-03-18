@@ -15,7 +15,7 @@ val verCode = Common.getBuildVersionCode(rootProject)
 // versionName = major.minor.bugfix.rev.commit
 val verName = "1.1.4" + (Common.getGitHeadRefsSuffix(rootProject))
 val androidTargetSdkVersion by extra(32)
-val androidMinSdkVersion by extra(21)
+val androidMinSdkVersion by extra(24)
 val androidCompileSdkVersion by extra(32)
 val androidBuildToolsVersion by extra("32.0.0")
 val androidCompileNdkVersion = Version.getNdkVersion(project)
