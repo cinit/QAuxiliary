@@ -38,7 +38,6 @@ abstract class BaseRootRecyclerFragment : BaseSettingFragment() {
         rootRecyclerView?.let {
             it.setPadding(it.paddingLeft, layoutPaddingTop, it.paddingRight, layoutPaddingBottom)
         }
-        Log.d("applyPadding: $layoutPaddingTop, $layoutPaddingBottom")
     }
 
     override fun onLayoutPaddingsChanged() {
