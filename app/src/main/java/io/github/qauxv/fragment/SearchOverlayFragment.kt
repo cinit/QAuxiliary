@@ -47,7 +47,7 @@ import io.github.qauxv.util.UiThread
 /**
  * The search fragment. It will cover the whole screen including the AppBarLayout.
  */
-class SearchOverlayFragment : BaseSettingFragment() {
+class SearchOverlayFragment : BaseClipSettingFragment() {
 
     private var binding: FragmentSettingSearchBinding? = null
     private var currentKeyword: String = ""
@@ -277,7 +277,7 @@ class SearchOverlayFragment : BaseSettingFragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSettingSearchBinding.inflate(inflater, container, false).apply {
             searchSettingSearchResultRecyclerView.apply {
                 adapter = mRecyclerAdapter

@@ -60,14 +60,14 @@ import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
-import io.github.qauxv.fragment.BaseSettingFragment;
+import io.github.qauxv.fragment.BaseClipSettingFragment;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import me.kyuubiran.util.UtilsKt;
 
-public class ChatTailFragment extends BaseSettingFragment implements View.OnClickListener {
+public class ChatTailFragment extends BaseClipSettingFragment implements View.OnClickListener {
 
     public static final String delimiter = "#msg#";
     private static int battery = 0;
@@ -98,7 +98,7 @@ public class ChatTailFragment extends BaseSettingFragment implements View.OnClic
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         Context context = requireContext();
         if (!FakeBatteryHook.INSTANCE.isEnabled()) {

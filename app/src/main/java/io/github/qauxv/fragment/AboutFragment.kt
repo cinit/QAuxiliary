@@ -51,13 +51,13 @@ import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
 import java.util.Locale
 
-class AboutFragment : BaseSettingFragment() {
+class AboutFragment : BaseRootRecyclerFragment() {
 
     override fun getTitle() = "关于"
 
     private var mDslListViewController: RecyclerListViewController? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = inflater.context
         mDslListViewController = RecyclerListViewController(context, lifecycleScope)
         mDslListViewController!!.items = hierarchy
@@ -70,6 +70,7 @@ class AboutFragment : BaseSettingFragment() {
         val rootView: FrameLayout = FrameLayout(context).apply {
             addView(mDslListViewController!!.recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         }
+        rootRecyclerView = recyclerView
         return rootView
     }
 

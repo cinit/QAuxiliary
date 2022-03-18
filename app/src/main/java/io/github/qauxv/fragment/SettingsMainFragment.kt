@@ -59,7 +59,7 @@ import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.collect
 
-class SettingsMainFragment : BaseSettingFragment() {
+class SettingsMainFragment : BaseRootRecyclerFragment() {
 
     override fun getTitle() = title
     private var title: String = "QAuxiliary"
@@ -70,6 +70,7 @@ class SettingsMainFragment : BaseSettingFragment() {
 
     // DSL stuff below
     private var adapter: RecyclerView.Adapter<*>? = null
+    private var listLayoutManager: LinearLayoutManager? = null
     private var recyclerListView: RecyclerView? = null
     private var rootFrameLayout: FrameLayout? = null
 
@@ -95,7 +96,7 @@ class SettingsMainFragment : BaseSettingFragment() {
         mTargetUiAgentNavId = arguments?.getString(TARGET_UI_AGENT_IDENTIFIER)
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = layoutInflater.context
         val rootView = FrameLayout(context)
         rootFrameLayout = rootView
@@ -119,11 +120,12 @@ class SettingsMainFragment : BaseSettingFragment() {
         itemTypeDelegate = Array(typeList.size) {
             itemList[itemTypeIds.indexOf(it)]
         }
-
+        this@SettingsMainFragment.listLayoutManager = LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
         // init view
         recyclerListView = RecyclerView(context).apply {
             id = R.id.fragmentMainRecyclerView // id is used to allow saving state
-            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
+            layoutManager = this@SettingsMainFragment.listLayoutManager
+            clipToPadding = false
         }
         // init adapter
         adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -166,7 +168,7 @@ class SettingsMainFragment : BaseSettingFragment() {
                 }
             }
         }
-
+        rootRecyclerView = recyclerListView
         rootView.addView(recyclerListView!!, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         return rootView
     }

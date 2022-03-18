@@ -35,13 +35,15 @@ import io.github.qauxv.ui.ModuleThemeManager
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.isInModuleProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
+import java.lang.Integer.max
 
-class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
+open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
 
     private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
     private var mTopVisibleFragment: BaseSettingFragment? = null
     private lateinit var mAppBarLayout: AppBarLayout
     private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
+    private var mAppBarLayoutHeight: Int = 0
 
     override fun onCreate(savedInstanceState: Bundle?) {
         if (!isInModuleProcess) {
@@ -59,6 +61,12 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         setSupportActionBar(mAppToolBar)
         requestTranslucentStatusBar()
         HolidayHelper.setup(this)
+        mAppBarLayout.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
+            mAppBarLayoutHeight = bottom - top
+            for (fragment in mFragmentStack) {
+                fragment.notifyLayoutPaddingsChanged()
+            }
+        }
         val intent = intent
         // check if we are requested to show a specific fragment
         val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
@@ -159,6 +167,20 @@ class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
             supportFragmentManager.beginTransaction()
                     .remove(fragment)
                     .commit()
+        }
+    }
+
+    open val layoutPaddingTop: Int
+        get() = max(mAppBarLayoutHeight, statusBarLayoutInsect)
+
+    open val layoutPaddingBottom: Int
+        get() = navigationBarLayoutInsect
+
+    override fun onAttachedToWindow() {
+        super.onAttachedToWindow()
+        // notifies the fragment that it is attached to the window
+        for (fragment in mFragmentStack) {
+            fragment.notifyLayoutPaddingsChanged()
         }
     }
 

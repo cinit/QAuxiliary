@@ -54,7 +54,7 @@ import com.tencent.widget.XListView;
 import io.github.qauxv.R;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
-import io.github.qauxv.fragment.BaseSettingFragment;
+import io.github.qauxv.fragment.BaseClipSettingFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
@@ -64,7 +64,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ExfriendListFragment extends BaseSettingFragment {
+public class ExfriendListFragment extends BaseClipSettingFragment {
 
     private static final int R_ID_EXL_TITLE = 0x300AFF01;
     private static final int R_ID_EXL_SUBTITLE = 0x300AFF02;
@@ -104,7 +104,7 @@ public class ExfriendListFragment extends BaseSettingFragment {
 
     @Nullable
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+    public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
             @Nullable Bundle savedInstanceState) {
         Context context = inflater.getContext();
         try {

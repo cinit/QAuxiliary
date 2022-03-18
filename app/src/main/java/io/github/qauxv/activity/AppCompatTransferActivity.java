@@ -22,9 +22,11 @@
 package io.github.qauxv.activity;
 
 import android.graphics.Color;
+import android.os.Build;
 import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
+import android.view.WindowInsets;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -70,5 +72,41 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
         decorView.setSystemUiVisibility(option);
         window.setStatusBarColor(Color.TRANSPARENT);
         window.setNavigationBarColor(Color.TRANSPARENT);
+    }
+
+    protected int getNavigationBarLayoutInsect() {
+        View decorView = getWindow().getDecorView();
+        if ((decorView.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION) == 0) {
+            return 0;
+        } else {
+            WindowInsets insets = decorView.getRootWindowInsets();
+            if (insets != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    return insets.getInsets(WindowInsets.Type.systemBars()).bottom;
+                } else {
+                    return insets.getStableInsetBottom();
+                }
+            } else {
+                return 0;
+            }
+        }
+    }
+
+    protected int getStatusBarLayoutInsect() {
+        View decorView = getWindow().getDecorView();
+        if ((decorView.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0) {
+            return 0;
+        } else {
+            WindowInsets insets = decorView.getRootWindowInsets();
+            if (insets != null) {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    return insets.getInsets(WindowInsets.Type.systemBars()).top;
+                } else {
+                    return insets.getStableInsetTop();
+                }
+            } else {
+                return 0;
+            }
+        }
     }
 }

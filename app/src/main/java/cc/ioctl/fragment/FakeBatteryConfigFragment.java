@@ -55,12 +55,12 @@ import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.core.HookInstaller;
-import io.github.qauxv.fragment.BaseSettingFragment;
+import io.github.qauxv.fragment.BaseClipSettingFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 
-public class FakeBatteryConfigFragment extends BaseSettingFragment implements View.OnClickListener {
+public class FakeBatteryConfigFragment extends BaseClipSettingFragment implements View.OnClickListener {
 
     private TextView tvStatus;
     private Button btnApply, btnDisable;
@@ -76,8 +76,8 @@ public class FakeBatteryConfigFragment extends BaseSettingFragment implements Vi
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+    public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                               @Nullable Bundle savedInstanceState) {
         Context context = inflater.getContext();
         LinearLayout ll = new LinearLayout(context);
         ll.setOrientation(LinearLayout.VERTICAL);

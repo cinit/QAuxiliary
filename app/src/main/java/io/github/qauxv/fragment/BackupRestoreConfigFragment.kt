@@ -44,7 +44,7 @@ import java.io.File
 import java.util.*
 import kotlin.system.exitProcess
 
-class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener {
+class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListener {
 
     override fun getTitle(): String = "备份与恢复"
 
@@ -56,7 +56,7 @@ class BackupRestoreConfigFragment : BaseSettingFragment(), View.OnClickListener 
     private var editTextBackupLocation: EditText? = null
     private var editTextRestoreLocation: EditText? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentBackupRestoreConfigBinding.inflate(inflater, container, false).apply {
             editTextBackupLocation = backupRestoreConfigEditTextBackupPath
             editTextRestoreLocation = backupRestoreConfigEditTextRestorePath

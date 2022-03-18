@@ -58,13 +58,13 @@ import io.github.qauxv.util.hostInfo
 import kotlin.system.exitProcess
 
 
-class TroubleshootFragment : BaseSettingFragment() {
+class TroubleshootFragment : BaseRootRecyclerFragment() {
 
     override fun getTitle() = "故障排查"
 
     private var mDslListViewController: RecyclerListViewController? = null
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         val context = inflater.context
         mDslListViewController = RecyclerListViewController(context, lifecycleScope)
         mDslListViewController!!.items = hierarchy
@@ -77,6 +77,7 @@ class TroubleshootFragment : BaseSettingFragment() {
         val rootView: FrameLayout = FrameLayout(context).apply {
             addView(mDslListViewController!!.recyclerListView, FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT))
         }
+        rootRecyclerView = recyclerView
         return rootView
     }
 

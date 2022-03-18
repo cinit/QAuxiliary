@@ -47,12 +47,12 @@ import cc.ioctl.util.ui.ViewBuilder;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
-import io.github.qauxv.fragment.BaseSettingFragment;
+import io.github.qauxv.fragment.BaseClipSettingFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.UiThread;
 import java.text.ParseException;
 
-public class JefsRuleConfigFragment extends BaseSettingFragment implements View.OnClickListener {
+public class JefsRuleConfigFragment extends BaseClipSettingFragment implements View.OnClickListener {
 
     private static final JumpController jmpctl = JumpController.INSTANCE;
     private EditText rulesEt;
@@ -68,8 +68,8 @@ public class JefsRuleConfigFragment extends BaseSettingFragment implements View.
     }
 
     @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+    public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                               @Nullable Bundle savedInstanceState) {
         Context context = inflater.getContext();
         ViewGroup bounceScrollView = new BounceScrollView(context, null);
         bounceScrollView.setId(R.id.rootBounceScrollView);

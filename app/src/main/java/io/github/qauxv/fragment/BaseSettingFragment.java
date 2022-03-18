@@ -23,6 +23,10 @@
 package io.github.qauxv.fragment;
 
 import android.content.Context;
+import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -61,5 +65,37 @@ public abstract class BaseSettingFragment extends Fragment {
 
     public boolean doOnBackPressed() {
         return false;
+    }
+
+    public void notifyLayoutPaddingsChanged() {
+        onLayoutPaddingsChanged();
+    }
+
+    /**
+     * @deprecated use {@link #doOnCreateView(LayoutInflater, ViewGroup, Bundle)} instead
+     */
+    @Nullable
+    @Deprecated
+    @Override
+    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                             @Nullable Bundle savedInstanceState) {
+        return doOnCreateView(inflater, container, savedInstanceState);
+    }
+
+    @Nullable
+    public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
+                               @Nullable Bundle savedInstanceState) {
+        return super.onCreateView(inflater, container, savedInstanceState);
+    }
+
+    protected void onLayoutPaddingsChanged() {
+    }
+
+    public int getLayoutPaddingTop() {
+        return mSettingsHostActivity.getLayoutPaddingTop();
+    }
+
+    public int getLayoutPaddingBottom() {
+        return mSettingsHostActivity.getLayoutPaddingBottom();
     }
 }

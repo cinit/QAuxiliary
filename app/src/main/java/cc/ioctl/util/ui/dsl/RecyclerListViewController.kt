@@ -54,6 +54,9 @@ class RecyclerListViewController(
 
 
     var adapter: RecyclerView.Adapter<*>? = null
+    val layoutManager: LinearLayoutManager by lazy {
+        LinearLayoutManager(context, LinearLayoutManager.VERTICAL, false)
+    }
 
     var items: Array<DslTMsgListItemInflatable>? = null
         set(value) {
@@ -105,10 +108,7 @@ class RecyclerListViewController(
         if (adapter == null) {
             // set adapter to default adapter if user does not set it
             adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
-                override fun onCreateViewHolder(
-                        parent: ViewGroup,
-                        viewType: Int
-                ): RecyclerView.ViewHolder {
+                override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): RecyclerView.ViewHolder {
                     val delegate = itemTypeDelegate[viewType]
                     val vh = delegate.createViewHolder(context, parent)
                     if (!delegate.isVoidBackground && delegate.isClickable) {
@@ -134,12 +134,12 @@ class RecyclerListViewController(
     fun initRecyclerListView() {
         // init
         if (recyclerListView == null) {
-            recyclerListView = RecyclerView(context)
+            recyclerListView = RecyclerView(context).apply {
+                layoutManager = this@RecyclerListViewController.layoutManager
+                adapter = this@RecyclerListViewController.adapter
+                clipToPadding = false
+            }
         }
-        recyclerListView!!.apply {
-            layoutManager = LinearLayoutManager(context, RecyclerView.VERTICAL, false)
-        }
-        recyclerListView!!.adapter = adapter
     }
 
 }
