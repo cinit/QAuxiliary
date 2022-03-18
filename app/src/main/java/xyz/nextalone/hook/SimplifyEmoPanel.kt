@@ -27,7 +27,11 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -36,7 +40,7 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_EMOTICON
 
-    private val allItemsDict = mapOf(13 to "加号菜单", 7 to "默认表情", 4 to "收藏表情", 12 to "热门表情", 15 to "厘米秀", 11 to "DIY表情", 9 to "魔法表情", -1 to "表情包")
+    private val allItemsDict = mapOf(13 to "加号菜单", 7 to "默认表情", 4 to "收藏表情", 12 to "热门表情", 15 to "厘米秀", 11 to "DIY表情", 9 to "魔法表情", 17 to "超级QQ秀", -1 to "表情包")
     override val allItems: Set<String> = allItemsDict.values.toSet()
     override val enableCustom = false
 
