@@ -31,11 +31,7 @@ import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.DexMethodDescriptor
-import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
-import io.github.qauxv.util.Toasts
-import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.*
 import me.kyuubiran.util.getDefaultCfg
 import me.kyuubiran.util.getExFriendCfg
 import xyz.nextalone.bridge.NAMethodHook
@@ -52,7 +48,7 @@ internal val String.method: Method
         this.replace(".", "/").replace(" ", "")
     ).getMethodInstance(Initiator.getHostClassLoader())
 
-internal fun Class<*>.method(name: String): Method? = this.methods.run {
+internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
     this.forEach {
         if (it.name == name) {
             return it
@@ -61,16 +57,7 @@ internal fun Class<*>.method(name: String): Method? = this.methods.run {
     return null
 }
 
-internal fun Class<*>.declaredMethod(name: String): Method? = this.declaredMethods.run {
-    this.forEach {
-        if (it.name == name) {
-            return it
-        }
-    }
-    return null
-}
-
-internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.methods.run {
+internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.declaredMethods.run {
     this.forEach {
         if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
             return it
@@ -81,7 +68,7 @@ internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTyp
 
 internal fun Class<*>.method(
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.methods.run {
+): Method? = this.declaredMethods.run {
     this.forEach {
         if (condition(it)) {
             return it
@@ -94,7 +81,7 @@ internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.methods.run {
+): Method? = this.declaredMethods.run {
     this.forEach {
         if (it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it
@@ -108,7 +95,7 @@ internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.methods.run {
+): Method? = this.declaredMethods.run {
     this.forEach {
         if (it.name == name && it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it

@@ -49,8 +49,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
-import xyz.nextalone.util.declaredMethod
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
 import kotlin.collections.set
 
 @FunctionHookEntry
@@ -279,7 +279,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         }
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            activityName.clazz!!.declaredMethod("doOnStart")!!.hookAfter(this) {
+            activityName.clazz!!.method("doOnStart")!!.hookAfter(this) {
                 val activity = it.thisObject as Activity
                 val rootView = activity.window.decorView
                 windowHeight = activity.window.attributes.height
