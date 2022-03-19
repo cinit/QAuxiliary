@@ -57,7 +57,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         val clsPicItemBuilder = _PicItemBuilder()
         val clsMixedMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder".clazz
         val clsStructingMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.StructingMsgItemBuilder".clazz
-        val clazz = arrayOf(clsPicItemBuilder, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder)
+        val clazz = arrayOf(clsPicItemBuilder, clsPicItemBuilder.superclass, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder)
         // copy pic
         clazz.filterNotNull().forEach {
             it.method { m ->
