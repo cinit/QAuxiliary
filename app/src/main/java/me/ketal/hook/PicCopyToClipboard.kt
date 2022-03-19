@@ -99,6 +99,10 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
     private fun hasPic(message: Any): Boolean {
         return when (Reflex.getShortClassName(message)) {
             "MessageForPic" -> true
+            "MessageForLongMsg" -> {
+                val list = message.get("longMsgFragmentList") as List<Any>
+                list.any { hasPic(it) }
+            }
             "MessageForMixedMsg" -> {
                 val list = message.get("msgElemList") as List<Any>
                 list.any { hasPic(it) }
@@ -116,6 +120,12 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
     private fun getPicFile(message: Any): String {
         return when (Reflex.getShortClassName(message)) {
             "MessageForPic" -> getFilePath(message)
+            "MessageForLongMsg" -> {
+                val list = message.get("longMsgFragmentList") as List<Any>
+                // todo Alert users when multiple images are included
+                val msg = list.first { Reflex.getShortClassName(it) == "MessageForPic" }
+                getFilePath(msg)
+            }
             "MessageForMixedMsg" -> {
                 val list = message.get("msgElemList") as List<Any>
                 // todo Alert users when multiple images are included
