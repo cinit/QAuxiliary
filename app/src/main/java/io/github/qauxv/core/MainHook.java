@@ -38,7 +38,6 @@ import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
 import me.kyuubiran.hook.RemoveCameraButton;
 import xyz.nextalone.hook.RemoveSuperQQShow;
@@ -85,7 +84,7 @@ public class MainHook {
         HookInstaller.allowEarlyInit(OptXListViewScrollBar.INSTANCE);
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
-            injectStartupHookForMain(ctx);
+            JumpActivityEntryHook.initForJumpActivityEntry(ctx);
             Class loadData = Initiator.load("com/tencent/mobileqq/startup/step/LoadData");
             Method doStep = null;
             for (Method method : loadData.getDeclaredMethods()) {
@@ -126,10 +125,4 @@ public class MainHook {
             }
         }
     }
-
-    @MainProcess
-    private void injectStartupHookForMain(Context ctx) {
-        JumpActivityEntryHook.initForJumpActivityEntry(ctx);
-    }
-
 }
