@@ -33,16 +33,13 @@ import com.rymmmmm.hook.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
-import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import me.kyuubiran.hook.RemoveCameraButton;
 import xyz.nextalone.hook.RemoveSuperQQShow;
 
@@ -76,31 +73,6 @@ public class MainHook {
 
     public void performHook(Context ctx, Object step) {
         SyncUtils.initBroadcast(ctx);
-        try {
-            Class<?> _NewRuntime = Initiator.load("com.tencent.mobileqq.startup.step.NewRuntime");
-            Method[] methods = _NewRuntime.getDeclaredMethods();
-            Method doStep = null;
-            if (methods.length == 1) {
-                doStep = methods[0];
-            } else {
-                for (Method m : methods) {
-                    if (Modifier.isProtected(m.getModifiers()) || m.getName().equals("doStep")) {
-                        doStep = m;
-                        break;
-                    }
-                }
-            }
-            XposedBridge.hookMethod(doStep, new XC_MethodHook(52) {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) {
-                    // fix error in :video, and QZone启动失败
-                    AppRuntimeHelper.$access$set$sAppRuntimeInit(true);
-                }
-            });
-        } catch (Throwable e) {
-            Log.e("NewRuntime/E hook failed: " + e);
-            AppRuntimeHelper.$access$set$sAppRuntimeInit(true);
-        }
         injectLifecycleForProcess(ctx);
         HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
         HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);

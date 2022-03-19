@@ -174,6 +174,10 @@ public abstract class MobileQQ extends BaseApplication {
         throw new RuntimeException("Stub!");
     }
 
+    public AppRuntime peekAppRuntime() {
+        throw new RuntimeException("Stub!");
+    }
+
     public AppRuntime getAppRuntime(String account) throws AccountNotMatchException {
         throw new RuntimeException("Stub!");
     }

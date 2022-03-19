@@ -23,18 +23,14 @@
 package io.github.qauxv.bridge;
 
 import androidx.annotation.Nullable;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
-import java.lang.reflect.Field;
 import mqq.app.AppRuntime;
+import mqq.app.MobileQQ;
 
 public class AppRuntimeHelper {
-
-    private static boolean sAppRuntimeInit = false;
-    private static Field f_mAppRuntime = null;
 
     private AppRuntimeHelper() {
     }
@@ -66,24 +62,14 @@ public class AppRuntimeHelper {
         }
     }
 
-    public static void $access$set$sAppRuntimeInit(boolean z) {
-        sAppRuntimeInit = z;
-    }
-
     @Nullable
     @MainProcess
     public static AppRuntime getAppRuntime() {
-        if (!sAppRuntimeInit) {
-            // getAppRuntime/W invoked before NewRuntime.step
-            return null;
-        }
-        Object baseApplicationImpl = HostInfo.getApplication();
         try {
-            if (f_mAppRuntime == null) {
-                f_mAppRuntime = Class.forName("mqq.app.MobileQQ").getDeclaredField("mAppRuntime");
-                f_mAppRuntime.setAccessible(true);
+            if (MobileQQ.sMobileQQ != null) {
+                return MobileQQ.sMobileQQ.peekAppRuntime();
             }
-            return (AppRuntime) f_mAppRuntime.get(baseApplicationImpl);
+            return null;
         } catch (Exception e) {
             Log.e(e);
             return null;
