@@ -450,11 +450,11 @@ public class BaseActivity extends AppCompatTransferActivity {
     }
 
     @SuppressWarnings("unused")
-    protected void doOnRestoreInstanceState(Bundle bundle) {
+    protected void doOnRestoreInstanceState(@NonNull Bundle bundle) {
         // to implement
     }
 
-    protected void doOnSaveInstanceState(Bundle outState) {
+    protected void doOnSaveInstanceState(@NonNull Bundle outState) {
         // to implement
     }
 

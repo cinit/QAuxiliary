@@ -25,8 +25,10 @@ package io.github.qauxv.activity
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
+import androidx.fragment.app.Fragment
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
@@ -39,6 +41,11 @@ import name.mikanoshi.customiuizer.holidays.HolidayHelper
 import java.lang.Integer.max
 
 open class SettingsUiFragmentHostActivity : BaseActivity() {
+
+    private val FRAGMENT_TAG = "SettingsUiFragmentHostActivity.FRAGMENT_TAG"
+    private val FRAGMENT_SAVED_STATE_KEY = "SettingsUiFragmentHostActivity.FRAGMENT_SAVED_STATE_KEY"
+    private val FRAGMENT_CLASS_KEY = "SettingsUiFragmentHostActivity.FRAGMENT_CLASS_KEY"
+    private val FRAGMENT_ARGS_KEY = "SettingsUiFragmentHostActivity.FRAGMENT_ARGS_KEY"
 
     private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
     private var mTopVisibleFragment: BaseSettingFragment? = null
@@ -77,29 +84,66 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
             }
         }
         mAppBarLayout.doOnLayout {
-            SyncUtils.postDelayed(0) { initFragments() }
+            SyncUtils.postDelayed(0) { initFragments(savedInstanceState) }
         }
         return true
     }
 
-    private fun initFragments() {
-        val intent = intent
-        // check if we are requested to show a specific fragment
-        val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
-        val startupFragment: BaseSettingFragment = if (fragmentName != null) {
-            val clazz = Class.forName(fragmentName)
-            val fragment = clazz.newInstance() as BaseSettingFragment
-            val args: Bundle? = intent.getBundleExtra(TARGET_FRAGMENT_ARGS_KEY)
-            if (args != null) {
-                fragment.arguments = args
+    private fun initFragments(savedInstanceState: Bundle?) {
+        val fragmentBundle: Bundle? = savedInstanceState?.getBundle(FRAGMENT_TAG)
+        if (fragmentBundle == null) {
+            val intent = intent
+            // check if we are requested to show a specific fragment
+            val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
+            val startupFragment: BaseSettingFragment = if (fragmentName != null) {
+                val clazz = Class.forName(fragmentName)
+                val fragment = clazz.newInstance() as BaseSettingFragment
+                val args: Bundle? = intent.getBundleExtra(TARGET_FRAGMENT_ARGS_KEY)
+                if (args != null) {
+                    fragment.arguments = args
+                }
+                fragment
+            } else {
+                // otherwise, show the default fragment
+                SettingsMainFragment.newInstance(arrayOf())
             }
-            fragment
+            // add the fragment to the stack
+            presentFragment(startupFragment)
         } else {
-            // otherwise, show the default fragment
-            SettingsMainFragment.newInstance(arrayOf())
+            fragmentBundle.classLoader = this.javaClass.classLoader
+            val classNames: ArrayList<String> = fragmentBundle.getStringArrayList(FRAGMENT_CLASS_KEY)!!
+            val args: ArrayList<Bundle?> = fragmentBundle.getParcelableArrayList(FRAGMENT_ARGS_KEY)!!
+            val states: ArrayList<Parcelable?> = fragmentBundle.getParcelableArrayList(FRAGMENT_SAVED_STATE_KEY)!!
+            if (classNames.size != args.size || classNames.size != states.size) {
+                throw IllegalStateException("Fragment class names, arguments and states do not match")
+            }
+            if (classNames.size == 0) {
+                throw IllegalStateException("No fragments to restore")
+            }
+            val op = supportFragmentManager.beginTransaction()
+            for (i in classNames.indices) {
+                val clazz = Class.forName(classNames[i])
+                val fragment = clazz.newInstance() as BaseSettingFragment
+                fragment.arguments = args[i].also {
+                    it?.classLoader = this.javaClass.classLoader
+                }
+                fragment.setInitialSavedState(states[i] as Fragment.SavedState?)
+                mFragmentStack.add(fragment)
+                op.apply {
+                    add(R.id.fragment_container, fragment)
+                    hide(fragment)
+                }
+            }
+            op.commit()
+            // find the top fragment
+            val topFragment = mFragmentStack.last()
+            mTopVisibleFragment = topFragment
+            // show the top fragment
+            supportFragmentManager.beginTransaction().apply {
+                show(topFragment)
+                commit()
+            }
         }
-        // add the fragment to the stack
-        presentFragment(startupFragment)
     }
 
     fun presentFragment(fragment: BaseSettingFragment) {
@@ -123,6 +167,34 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         val consumed = mTopVisibleFragment?.doOnBackPressed() ?: false
         if (!consumed) {
             popCurrentFragment()
+        }
+    }
+
+    private fun saveFragmentInstanceState(): Bundle {
+        val bundle = Bundle()
+        val states = ArrayList<Fragment.SavedState?>(mFragmentStack.size)
+        for (fragment in mFragmentStack) {
+            val s = supportFragmentManager.saveFragmentInstanceState(fragment);
+            states.add(s)
+        }
+        bundle.putParcelableArrayList(FRAGMENT_SAVED_STATE_KEY, states)
+        val args = ArrayList<Bundle?>(mFragmentStack.size)
+        for (fragment in mFragmentStack) {
+            args.add(fragment.arguments)
+        }
+        bundle.putParcelableArrayList(FRAGMENT_ARGS_KEY, args)
+        val classNames = ArrayList<String>(mFragmentStack.size)
+        for (fragment in mFragmentStack) {
+            classNames.add(fragment.javaClass.name)
+        }
+        bundle.putStringArrayList(FRAGMENT_CLASS_KEY, classNames)
+        return bundle
+    }
+
+    override fun doOnSaveInstanceState(outState: Bundle) {
+        super.doOnSaveInstanceState(outState)
+        if (mFragmentStack.isNotEmpty()) {
+            outState.putBundle(FRAGMENT_TAG, saveFragmentInstanceState())
         }
     }
 
