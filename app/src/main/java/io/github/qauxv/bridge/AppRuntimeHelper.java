@@ -27,10 +27,13 @@ import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
+import java.lang.reflect.Field;
 import mqq.app.AppRuntime;
 import mqq.app.MobileQQ;
 
 public class AppRuntimeHelper {
+
+    private static Field f_mAppRuntime = null;
 
     private AppRuntimeHelper() {
     }
@@ -65,11 +68,16 @@ public class AppRuntimeHelper {
     @Nullable
     @MainProcess
     public static AppRuntime getAppRuntime() {
-        try {
-            if (MobileQQ.sMobileQQ != null) {
-                return MobileQQ.sMobileQQ.peekAppRuntime();
-            }
+        Object sMobileQQ = MobileQQ.sMobileQQ;
+        if (sMobileQQ == null) {
             return null;
+        }
+        try {
+            if (f_mAppRuntime == null) {
+                f_mAppRuntime = MobileQQ.class.getDeclaredField("mAppRuntime");
+                f_mAppRuntime.setAccessible(true);
+            }
+            return (AppRuntime) f_mAppRuntime.get(sMobileQQ);
         } catch (Exception e) {
             Log.e(e);
             return null;
