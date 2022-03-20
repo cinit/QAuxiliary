@@ -37,7 +37,7 @@ import io.github.qauxv.util.isInModuleProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
 import java.lang.Integer.max
 
-open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
+open class SettingsUiFragmentHostActivity : BaseActivity() {
 
     private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
     private var mTopVisibleFragment: BaseSettingFragment? = null
@@ -45,15 +45,24 @@ open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
     private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
     private var mAppBarLayoutHeight: Int = 0
 
-    override fun onCreate(savedInstanceState: Bundle?) {
+    override fun doOnEarlyCreate(savedInstanceState: Bundle?, isInitializing: Boolean) {
+        super.doOnEarlyCreate(savedInstanceState, isInitializing)
         if (!isInModuleProcess) {
             // sync theme with host
             AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode())
                 AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
         }
         setTheme(ModuleThemeManager.getCurrentStyleId())
+    }
+
+    /**
+     * Handle saved instance state ourselves
+     */
+    override fun shouldRetainActivitySavedInstanceState() = false
+
+    override fun doOnCreate(savedInstanceState: Bundle?): Boolean {
         // we don't want the Fragment to be recreated
-        super.onCreate(null)
+        super.doOnCreate(null)
         setContentView(R.layout.activity_settings_ui_host)
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
@@ -84,6 +93,7 @@ open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
         // add the fragment to the stack
         presentFragment(startupFragment)
+        return true
     }
 
     fun presentFragment(fragment: BaseSettingFragment) {
@@ -103,7 +113,7 @@ open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
     }
 
-    override fun onBackPressed() {
+    override fun doOnBackPressed() {
         val consumed = mTopVisibleFragment?.doOnBackPressed() ?: false
         if (!consumed) {
             popCurrentFragment()
@@ -184,18 +194,18 @@ open class SettingsUiFragmentHostActivity : AppCompatTransferActivity() {
         }
     }
 
-    override fun onResume() {
-        super.onResume()
+    override fun doOnPostResume() {
+        super.doOnPostResume()
         HolidayHelper.onResume()
     }
 
-    override fun onPause() {
+    override fun doOnPause() {
+        super.doOnPause()
         HolidayHelper.onPause()
-        super.onPause()
     }
 
-    override fun onDestroy() {
-        super.onDestroy()
+    override fun doOnDestroy() {
+        super.doOnDestroy()
         HolidayHelper.onDestroy()
     }
 

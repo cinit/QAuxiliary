@@ -50,7 +50,8 @@ public class ActProxyMgr {
             || className.startsWith("me.ketal.ui.activity.")
             || className.startsWith("com.rymmmmm.activity.")
             || className.startsWith("cn.lliiooll.activity.")
-            || className.startsWith("xyz.nextalone.activity.");
+            || className.startsWith("xyz.nextalone.activity.")
+            || "io.github.qauxv.util.consis.ShadowStartupAgentActivity".equals(className);
     }
 
     public static boolean isModuleBundleClassLoaderRequired(@NonNull String className) {

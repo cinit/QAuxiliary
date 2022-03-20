@@ -113,7 +113,7 @@ public class Parasitics {
             addAssetPath.setAccessible(true);
             int cookie = (int) addAssetPath.invoke(assets, sModulePath);
             try {
-                Log.d("injectModuleResources: " + res.getString(R.string.res_inject_success));
+                res.getString(R.string.res_inject_success);
                 if (sResInjectEndTime == 0) {
                     sResInjectEndTime = System.currentTimeMillis();
                 }

@@ -17,6 +17,7 @@ public class BaseApplicationImpl extends MobileQQ {
         throw new RuntimeException("Stub!");
     }
 
+    @Override
     public AppRuntime createRuntime(String str) {
         throw new RuntimeException("Stub!");
     }
@@ -44,7 +45,8 @@ public class BaseApplicationImpl extends MobileQQ {
         throw new RuntimeException("Stub!");
     }
 
-    public boolean onActivityCreate(AppActivity appActivity, Intent intent) {
+    @Override
+    public boolean onActivityCreate(Object component, Intent intent) {
         throw new RuntimeException("Stub!");
     }
 

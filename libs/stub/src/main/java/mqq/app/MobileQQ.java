@@ -174,6 +174,11 @@ public abstract class MobileQQ extends BaseApplication {
         throw new RuntimeException("Stub!");
     }
 
+    /**
+     * @since QQ 7.6.0
+     * @since TIM 3.1.1
+     * @return the AppRuntime, if it is not ready, return null
+     */
     public AppRuntime peekAppRuntime() {
         throw new RuntimeException("Stub!");
     }
@@ -232,7 +237,7 @@ public abstract class MobileQQ extends BaseApplication {
         }
     }
 
-    public boolean onActivityCreate(AppActivity appActivity, Intent intent) {
+    public boolean onActivityCreate(Object component, Intent intent) {
         return false;
     }
 

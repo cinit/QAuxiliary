@@ -65,6 +65,10 @@ public class AppRuntimeHelper {
         }
     }
 
+    /**
+     * Peek the AppRuntime instance.
+     * @return AppRuntime instance, or null if not ready.
+     */
     @Nullable
     @MainProcess
     public static AppRuntime getAppRuntime() {
