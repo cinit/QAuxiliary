@@ -21,6 +21,8 @@
  */
 package io.github.qauxv.activity;
 
+import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
@@ -31,7 +33,10 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.R;
+import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.CliOper;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
 
 public abstract class AppCompatTransferActivity extends AppCompatActivity {
@@ -108,5 +113,19 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
                 return 0;
             }
         }
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        try {
+            getString(R.string.res_inject_success);
+        } catch (Resources.NotFoundException e) {
+            // inject resources
+            // TODO: 2022-03-20 either inject into ActivityThread$H or Instrumentation to do this
+            if (HostInfo.isInHostProcess()) {
+                Parasitics.injectModuleResources(getResources());
+            }
+        }
+        super.onConfigurationChanged(newConfig);
     }
 }
