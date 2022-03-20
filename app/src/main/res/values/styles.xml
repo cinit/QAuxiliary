@@ -224,6 +224,7 @@
         <item name="android:windowLayoutInDisplayCutoutMode" tools:targetApi="o_mr1">
             shortEdges
         </item>
+        <item name="android:windowBackground">#FF202124</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
