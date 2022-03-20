@@ -26,6 +26,7 @@ import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatDelegate
+import androidx.core.view.doOnLayout
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
@@ -49,8 +50,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         super.doOnEarlyCreate(savedInstanceState, isInitializing)
         if (!isInModuleProcess) {
             // sync theme with host
-            AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode())
-                AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+            AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode()) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
         }
         setTheme(ModuleThemeManager.getCurrentStyleId())
     }
@@ -76,6 +76,13 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
                 fragment.notifyLayoutPaddingsChanged()
             }
         }
+        mAppBarLayout.doOnLayout {
+            SyncUtils.postDelayed(0) { initFragments() }
+        }
+        return true
+    }
+
+    private fun initFragments() {
         val intent = intent
         // check if we are requested to show a specific fragment
         val fragmentName: String? = intent.getStringExtra(TARGET_FRAGMENT_KEY)
@@ -93,7 +100,6 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         }
         // add the fragment to the stack
         presentFragment(startupFragment)
-        return true
     }
 
     fun presentFragment(fragment: BaseSettingFragment) {
@@ -134,18 +140,18 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         if (mFragmentStack.isEmpty()) {
             // first fragment
             supportFragmentManager.beginTransaction()
-                    .add(R.id.fragment_container, fragment)
-                    .commit()
+                .add(R.id.fragment_container, fragment)
+                .commit()
             mTopVisibleFragment = fragment
             mFragmentStack.add(fragment)
             updateTitle(fragment)
         } else {
             // replace the top fragment
             supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
-                    .hide(mTopVisibleFragment!!)
-                    .add(R.id.fragment_container, fragment)
-                    .commit()
+                .setCustomAnimations(R.anim.enter_from_right, R.anim.exit_to_left, R.anim.enter_from_left, R.anim.exit_to_right)
+                .hide(mTopVisibleFragment!!)
+                .add(R.id.fragment_container, fragment)
+                .commit()
             mTopVisibleFragment = fragment
             mFragmentStack.add(fragment)
             updateTitle(fragment)
@@ -157,8 +163,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         if (fragment == mTopVisibleFragment) {
             // this is the visible fragment, so we need to show the previous one
             val transaction = supportFragmentManager.beginTransaction()
-                    .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left)
-                    .hide(fragment)
+                .setCustomAnimations(R.anim.enter_from_left, R.anim.exit_to_right, R.anim.enter_from_right, R.anim.exit_to_left)
+                .hide(fragment)
             mFragmentStack.remove(fragment)
             mTopVisibleFragment = mFragmentStack.lastOrNull()
             if (mTopVisibleFragment == null) {
@@ -174,9 +180,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
             }
         } else {
             // background fragment, just remove it
-            supportFragmentManager.beginTransaction()
-                    .remove(fragment)
-                    .commit()
+            supportFragmentManager.beginTransaction().remove(fragment).commit()
         }
     }
 
@@ -215,9 +219,11 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
 
         @JvmStatic
         @JvmOverloads
-        fun startFragmentWithContext(context: Context,
-                                     fragmentClass: Class<out BaseSettingFragment>,
-                                     args: Bundle? = null) {
+        fun startFragmentWithContext(
+            context: Context,
+            fragmentClass: Class<out BaseSettingFragment>,
+            args: Bundle? = null
+        ) {
             // check if we need to start a new activity
             if (context is SettingsUiFragmentHostActivity) {
                 // just add the fragment to the top
@@ -230,17 +236,21 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
 
         @JvmStatic
         @JvmOverloads
-        fun startActivityForFragment(context: Context,
-                                     fragmentClass: Class<out BaseSettingFragment>,
-                                     args: Bundle? = null) {
+        fun startActivityForFragment(
+            context: Context,
+            fragmentClass: Class<out BaseSettingFragment>,
+            args: Bundle? = null
+        ) {
             context.startActivity(createStartActivityForFragmentIntent(context, fragmentClass, args))
         }
 
         @JvmStatic
         @JvmOverloads
-        fun createStartActivityForFragmentIntent(context: Context,
-                                                 fragmentClass: Class<out BaseSettingFragment>,
-                                                 args: Bundle? = null): Intent {
+        fun createStartActivityForFragmentIntent(
+            context: Context,
+            fragmentClass: Class<out BaseSettingFragment>,
+            args: Bundle? = null
+        ): Intent {
             val intent = Intent(context, SettingsUiFragmentHostActivity::class.java)
             intent.putExtra(TARGET_FRAGMENT_KEY, fragmentClass.name)
             intent.putExtra(TARGET_FRAGMENT_ARGS_KEY, args)

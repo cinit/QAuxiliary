@@ -108,8 +108,6 @@ public class StartupDirectorBridge {
      * @return true if the host is in splash screen
      */
     public boolean onActivityCreate(@NonNull Activity activity, @Nullable Intent intent) {
-        Log.d("onActivityCreate: " + activity.getClass().getName() + ", mStartupFinished=" + mStartupFinished
-                + ", mNeedInterceptStartActivity=" + mNeedInterceptStartActivity);
         if (mStartupFinished || !mNeedInterceptStartActivity) {
             return false;
         }
