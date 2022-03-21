@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowInsets;
+import android.view.WindowManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
@@ -69,6 +70,13 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
 
     protected void requestTranslucentStatusBar() {
         Window window = getWindow();
+        WindowManager.LayoutParams params = window.getAttributes();
+        params.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        params.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;
+        }
+        window.setAttributes(params);
         View decorView = window.getDecorView();
         int option = decorView.getSystemUiVisibility()
                 | View.SYSTEM_UI_FLAG_LAYOUT_STABLE

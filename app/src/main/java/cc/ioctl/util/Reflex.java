@@ -1059,6 +1059,32 @@ public class Reflex {
         return null;
     }
 
+    @Nullable
+    public static Field findFirstDeclaredInstanceFieldByTypeOrNull(@NonNull Class<?> clazz, @NonNull Class<?> type) {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(type, "type == null");
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType() == type && !Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        return null;
+    }
+
+    @Nullable
+    public static Field findFirstDeclaredStaticFieldByTypeOrNull(@NonNull Class<?> clazz, @NonNull Class<?> type) {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(type, "type == null");
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType() == type && Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        return null;
+    }
+
     public static Method findMethodByTypes_1(Class<?> clazz, Class returnType, Class... argt)
             throws NoSuchMethodException {
         Method method = null;

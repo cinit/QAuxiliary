@@ -26,10 +26,12 @@ import android.app.Activity;
 import android.content.Intent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.Reflex;
 import com.tencent.common.app.BaseApplicationImpl;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.activity.BaseActivity;
 import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
@@ -76,8 +78,18 @@ public class StartupDirectorBridge {
                 fDirector.setAccessible(true);
                 mDirectorField = fDirector;
                 mNeedInterceptStartActivity = true;
-            } catch (ReflectiveOperationException e) {
-                Log.e(e);
+            } catch (NoSuchFieldException nfe) {
+                Class<?> kStartupDirector = Initiator._StartupDirector();
+                Field fDirector = null;
+                if (kStartupDirector != null) {
+                    fDirector = Reflex.findFirstDeclaredStaticFieldByTypeOrNull(BaseApplicationImpl.class, kStartupDirector);
+                }
+                if (fDirector != null) {
+                    mDirectorField = fDirector;
+                    mNeedInterceptStartActivity = true;
+                } else {
+                    Log.e("StartupDirector field not found", nfe);
+                }
             }
         }
     }

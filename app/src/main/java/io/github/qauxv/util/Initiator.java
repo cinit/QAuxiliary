@@ -638,8 +638,12 @@ public class Initiator {
         return null;
     }
 
-    public static Class _C2CMessageManager() {
-        return load("com/tencent/imcore/message/C2CMessageManager");
+    public static Class<?> _C2CMessageManager() {
+        Class<?> k = load("com/tencent/imcore/message/C2CMessageManager");
+        if (k == null) {
+            k = load("com/tencent/mobileqq/app/message/C2CMessageManager");
+        }
+        return k;
     }
 
     public static Class _AllInOne() {

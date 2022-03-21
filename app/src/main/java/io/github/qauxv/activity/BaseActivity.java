@@ -666,7 +666,11 @@ public class BaseActivity extends AppCompatTransferActivity {
             return;
         }
         try {
-            Class<?> activityLifecycleCallbacksClass = Initiator.loadClass("com.tencent.mobileqq.app.lifecycle.BaseActivityLifecycleCallbacks");
+            Class<?> activityLifecycleCallbacksClass = Initiator.load("com.tencent.mobileqq.app.lifecycle.BaseActivityLifecycleCallbacks");
+            if (activityLifecycleCallbacksClass == null) {
+                // fail silently if not found
+                return;
+            }
             sOnActivityPreCreatedMethod = activityLifecycleCallbacksClass.getMethod("doOnActivityPreCreated", Activity.class, Bundle.class);
             sOnActivityCreateMethod = activityLifecycleCallbacksClass.getMethod("doOnActivityCreate", Activity.class, Bundle.class);
             sOnActivityPostCreatedMethod = activityLifecycleCallbacksClass.getMethod("doOnActivityPostCreated", Activity.class, Bundle.class);
