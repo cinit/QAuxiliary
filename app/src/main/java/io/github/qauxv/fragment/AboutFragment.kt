@@ -51,7 +51,7 @@ import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
 import java.util.Locale
 
-class AboutFragment : BaseRootRecyclerFragment() {
+class AboutFragment : BaseRootLayoutFragment() {
 
     override fun getTitle() = "关于"
 
@@ -70,7 +70,7 @@ class AboutFragment : BaseRootRecyclerFragment() {
         val rootView: FrameLayout = FrameLayout(context).apply {
             addView(mDslListViewController!!.recyclerListView, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         }
-        rootRecyclerView = recyclerView
+        rootLayoutView = recyclerView
         return rootView
     }
 

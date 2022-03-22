@@ -45,7 +45,7 @@ import java.util.ArrayList;
 /**
  * Compatible with host app's BaseActivity
  */
-public class BaseActivity extends AppCompatTransferActivity {
+public abstract class BaseActivity extends AppCompatTransferActivity {
 
     private static final String FRAGMENTS_TAG = "android:support:fragments";
     private boolean mIsFinishingInOnCreate = false;

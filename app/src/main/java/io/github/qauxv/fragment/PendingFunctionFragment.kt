@@ -38,7 +38,7 @@ import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.util.Toasts
 
-class PendingFunctionFragment : BaseRootRecyclerFragment() {
+class PendingFunctionFragment : BaseRootLayoutFragment() {
 
     override fun getTitle() = "开发中的功能"
 
@@ -57,7 +57,7 @@ class PendingFunctionFragment : BaseRootRecyclerFragment() {
         val rootView: FrameLayout = FrameLayout(context).apply {
             addView(mDslListViewController!!.recyclerListView, FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT))
         }
-        rootRecyclerView = recyclerView
+        rootLayoutView = recyclerView
         return rootView
     }
 

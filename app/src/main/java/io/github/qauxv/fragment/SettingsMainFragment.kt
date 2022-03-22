@@ -57,9 +57,8 @@ import io.github.qauxv.dsl.item.TMsgListItem
 import io.github.qauxv.dsl.item.UiAgentItem
 import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 
-class SettingsMainFragment : BaseRootRecyclerFragment() {
+class SettingsMainFragment : BaseRootLayoutFragment() {
 
     override fun getTitle() = title
     private var title: String = "QAuxiliary"
@@ -168,7 +167,7 @@ class SettingsMainFragment : BaseRootRecyclerFragment() {
                 }
             }
         }
-        rootRecyclerView = recyclerListView
+        rootLayoutView = recyclerListView
         rootView.addView(recyclerListView!!, FrameLayout.LayoutParams(MATCH_PARENT, MATCH_PARENT))
         return rootView
     }

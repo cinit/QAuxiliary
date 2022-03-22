@@ -22,12 +22,11 @@
 
 package io.github.qauxv.fragment
 
-import androidx.recyclerview.widget.RecyclerView
-import io.github.qauxv.util.Log
+import android.view.ViewGroup
 
-abstract class BaseRootRecyclerFragment : BaseSettingFragment() {
+abstract class BaseRootLayoutFragment : BaseSettingFragment() {
 
-    open var rootRecyclerView: RecyclerView? = null
+    open var rootLayoutView: ViewGroup? = null
 
     override fun onResume() {
         super.onResume()
@@ -35,7 +34,8 @@ abstract class BaseRootRecyclerFragment : BaseSettingFragment() {
     }
 
     private fun applyPadding() {
-        rootRecyclerView?.let {
+        rootLayoutView?.let {
+            it.clipToPadding = false
             it.setPadding(it.paddingLeft, layoutPaddingTop, it.paddingRight, layoutPaddingBottom)
         }
     }
@@ -47,6 +47,6 @@ abstract class BaseRootRecyclerFragment : BaseSettingFragment() {
 
     override fun onDestroyView() {
         super.onDestroyView()
-        rootRecyclerView = null
+        rootLayoutView = null
     }
 }

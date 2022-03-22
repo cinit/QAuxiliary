@@ -26,8 +26,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
-import android.os.Build.VERSION
-import android.os.Build.VERSION_CODES
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -48,7 +46,6 @@ import io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
-import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
@@ -58,7 +55,7 @@ import io.github.qauxv.util.hostInfo
 import kotlin.system.exitProcess
 
 
-class TroubleshootFragment : BaseRootRecyclerFragment() {
+class TroubleshootFragment : BaseRootLayoutFragment() {
 
     override fun getTitle() = "故障排查"
 
@@ -77,7 +74,7 @@ class TroubleshootFragment : BaseRootRecyclerFragment() {
         val rootView: FrameLayout = FrameLayout(context).apply {
             addView(mDslListViewController!!.recyclerListView, FrameLayout.LayoutParams(LayoutHelper.MATCH_PARENT, LayoutHelper.MATCH_PARENT))
         }
-        rootRecyclerView = recyclerView
+        rootLayoutView = recyclerView
         return rootView
     }
 

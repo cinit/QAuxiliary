@@ -23,6 +23,7 @@
 package io.github.qauxv.fragment;
 
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -89,6 +90,12 @@ public abstract class BaseSettingFragment extends Fragment {
     }
 
     protected void onLayoutPaddingsChanged() {
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        onLayoutPaddingsChanged();
     }
 
     public int getLayoutPaddingTop() {
