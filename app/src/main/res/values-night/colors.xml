@@ -13,5 +13,6 @@
     <color name="divideColor">#14FFFFFF</color>
 
     <color name="defaultThemeBackgroundColor">#FF303030</color>
+    <color name="defaultThemeBackgroundColorAlpha80">#CC303030</color>
 
 </resources>

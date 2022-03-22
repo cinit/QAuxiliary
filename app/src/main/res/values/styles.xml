@@ -4,6 +4,7 @@
     <!-- Base application theme. -->
     <style name="AppTheme.Def" parent="Theme.MaiTungTMDesign.DayNight">
         <item name="backgroundColor">@color/defaultThemeBackgroundColor</item>
+        <item name="backgroundColorAlphaTitle">@color/defaultThemeBackgroundColorAlpha80</item>
         <!-- Customize your theme here. -->
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
@@ -161,6 +162,7 @@
         <item name="warnColor">#ffFFC107</item>
         <item name="lineColor">#ffdddddd</item>
         <item name="backgroundColor">#FFFFFFFF</item>
+        <item name="backgroundColorAlphaTitle">#CCFFFFFF</item>
         <!-- Primary brand color. -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
@@ -193,6 +195,7 @@
         <!--<item name="usableColor">#FF4CAF50</item>-->
         <item name="usableColor">#FF219F94</item>
         <item name="backgroundColor">#FFF2F2F6</item>
+        <item name="backgroundColorAlphaTitle">#CCF2F2F6</item>
         <!-- Status bar color. -->
         <!-- <item name="android:statusBarColor">@color/backgroundColor</item> -->
         <item name="android:statusBarColor">?attr/themeColor</item>
@@ -209,6 +212,7 @@
         <item name="warnColor">#ffFFC107</item>
         <item name="lineColor">#FF4F5355</item>
         <item name="backgroundColor">#FF202124</item>
+        <item name="backgroundColorAlphaTitle">#CC202124</item>
         <!-- Primary brand color. -->
         <item name="colorAccent">@color/colorAccent</item>
         <item name="colorPrimaryDark">@color/colorPrimaryDark</item>

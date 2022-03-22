@@ -27,5 +27,6 @@
     <color name="nullColor">#00000000</color>
 
     <color name="defaultThemeBackgroundColor">#FFFFFF</color>
+    <color name="defaultThemeBackgroundColorAlpha80">#CCFFFFFF</color>
 
 </resources>

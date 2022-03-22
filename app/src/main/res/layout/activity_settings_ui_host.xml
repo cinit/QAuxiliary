@@ -33,7 +33,7 @@
     <FrameLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:background="@color/background_color_alpha_title"
+        android:background="?attr/backgroundColorAlphaTitle"
         android:elevation="1dp"
         android:orientation="vertical">
 

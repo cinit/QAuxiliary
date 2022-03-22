@@ -10,5 +10,6 @@
     <attr format="color" name="warnColor" />
     <attr format="color" name="lineColor" />
     <attr format="color" name="backgroundColor" />
+    <attr format="color" name="backgroundColorAlphaTitle" />
 
 </resources>
