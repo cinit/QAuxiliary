@@ -1,0 +1,176 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:id="@+id/warnAbiMismatchBar"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:background="?attr/warnColor"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:src="@drawable/ic_warn"
+                    app:tint="@color/whiteTextColor" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="模块原生库与宿主不匹配"
+                    android:textColor="@color/whiteTextColor"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divideColor" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:paddingTop="16dp"
+                android:paddingBottom="16dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:layout_marginStart="16dp"
+                    android:src="@drawable/ic_info"
+                    app:tint="?attr/colorAccent" />
+
+                <TextView
+                    android:id="@+id/recommendedModuleAbiVariant"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:text="推荐您将模块更换为使用 %s 原生库的版本"
+                    android:textColor="?attr/colorAccent"
+                    android:textSize="16sp" />
+
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:background="@color/divideColor" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:orientation="vertical"
+            android:paddingHorizontal="16dp">
+
+            <TextView
+                android:id="@+id/currentModuleAbiVariant"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="当前模块使用的原生库为 %s"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:layout_marginBottom="8dp"
+                android:text="宿主"
+                android:textColor="@color/firstTextColor"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/itemHostNotFound"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="8dp"
+            android:paddingBottom="16dp"
+            android:gravity="center"
+            android:text="什么都没找到 :("
+            android:textColor="@color/secondTextColor"
+            android:textSize="18sp"
+            android:visibility="gone" />
+
+        <include
+            android:id="@+id/itemHostQQ"
+            layout="@layout/item_host_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/itemHostTIM"
+            layout="@layout/item_host_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <include
+            android:id="@+id/itemHostQQLite"
+            layout="@layout/item_host_status"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp"
+            android:layout_marginHorizontal="16dp"
+            android:text="下载与更新"
+            android:textColor="@color/firstTextColor"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnDownloadFromGitHub"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_ripple_rect"
+            android:gravity="start|center_vertical"
+            android:minHeight="48dp"
+            android:paddingHorizontal="16dp"
+            android:text="去 GitHub 下载"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorAccent"
+            android:textSize="16sp" />
+
+        <Button
+            android:id="@+id/btnDownloadFromTelegram"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_ripple_rect"
+            android:gravity="start|center_vertical"
+            android:minHeight="48dp"
+            android:paddingHorizontal="16dp"
+            android:text="去 Telegram 频道下载"
+            android:textAllCaps="false"
+            android:textColor="?attr/colorAccent"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+</ScrollView>

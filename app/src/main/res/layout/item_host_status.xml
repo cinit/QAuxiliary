@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0px"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="16dp"
+            android:orientation="vertical"
+            android:paddingVertical="8dp">
+
+            <TextView
+                android:id="@+id/hostTitle"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginBottom="2dp"
+                android:text="${packageName}"
+                android:textColor="@color/firstTextColor"
+                android:textSize="14sp" />
+
+            <TextView
+                android:id="@+id/hostDescription"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="${status}"
+                android:textColor="@color/secondTextColor"
+                android:textSize="12sp" />
+
+        </LinearLayout>
+
+        <Button
+            android:id="@+id/itemHostIgnoreButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginEnd="8dp"
+            android:layout_gravity="center_vertical"
+            android:background="@drawable/bg_ripple_rect"
+            android:gravity="center"
+            android:minHeight="48dp"
+            android:minWidth="48dp"
+            android:text="忽略"
+            android:textColor="?attr/colorAccent" />
+
+    </LinearLayout>
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="1dp"
+        android:background="@color/divideColor" />
+
+</LinearLayout>

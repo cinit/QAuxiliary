@@ -29,10 +29,7 @@ import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
-import android.system.Os;
-import android.system.StructUtsname;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -42,7 +39,6 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
@@ -53,16 +49,12 @@ import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.databinding.MainV2NormalBinding;
 import io.github.qauxv.fragment.AboutFragment;
+import io.github.qauxv.fragment.CheckAbiVariantFragment;
+import io.github.qauxv.fragment.CheckAbiVariantModel;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
-import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.UiThread;
-import io.github.qauxv.util.hookstatus.AbiUtils;
 import io.github.qauxv.util.hookstatus.HookStatus;
-import java.util.Arrays;
-import java.util.Date;
-import java.util.HashSet;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
 import name.mikanoshi.customiuizer.holidays.HolidayHelper;
@@ -86,7 +78,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         // if in host process, it should already be done by last activity
         super.onCreate(savedInstanceState);
         if (R.string.res_inject_success >>> 24 == 0x7f) {
-            throw new RuntimeException("package id must NOT be 0x7f");
+            throw new AssertionError("package id must NOT be 0x7f");
         }
         String cmd = getIntent().getStringExtra(SEND_TO_IPAD_CMD);
         if (ENABLE_SEND_TO_IPAD.equals(cmd)) {
@@ -112,8 +104,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     }
 
     public void updateActivationStatus() {
-        boolean isHookEnabled = HookStatus.isModuleEnabled();
-        boolean isAbiMatch = HookStatus.checkABI();
+        boolean isHookEnabled = HookStatus.isModuleEnabled() || HostInfo.isInHostProcess();
+        boolean isAbiMatch = CheckAbiVariantModel.collectAbiInfo(this).isAbiMatch;
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
@@ -127,41 +119,17 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                     isHookEnabled ? R.drawable.ic_success_white :
                             R.drawable.ic_failure_white, getTheme()));
             statusTitle.setText(isHookEnabled ? "已激活" : "未激活");
-            tvStatus.setText(HookStatus.getHookProviderName());
+            if (HostInfo.isInHostProcess()) {
+                tvStatus.setText(HostInfo.getPackageName());
+            } else {
+                tvStatus.setText(HookStatus.getHookProviderName());
+            }
         } else {
             frameStatus.setBackground(ResourcesCompat.getDrawable(getResources(), R.drawable.bg_yellow_solid, getTheme()));
             frameIcon.setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_info_white, getTheme()));
             statusTitle.setText(isHookEnabled ? "未完全激活" : "未激活");
             tvStatus.setText("点击处理");
-            frameStatus.setOnClickListener(v -> {
-                AlertDialog.Builder builder = new AlertDialog.Builder(this);
-                builder.setTitle("模块原生库与宿主不匹配");
-                StringBuilder message = new StringBuilder("当前模块使用的原生库为 " + BuildConfig.FLAVOR);
-                if ((AbiUtils.archStringToArchInt(Os.uname().machine) & (AbiUtils.ABI_X86 | AbiUtils.ABI_X86_64)) != 0) {
-                    message.append("\n").append("当前系统 uname machine 为 ").append(Os.uname().machine);
-                }
-                for (String scope : HookStatus.getHostABI().keySet()) {
-                    String abi = HookStatus.getHostABI().get(scope);
-                    assert abi != null;
-                    String requiredVariant = AbiUtils.getSuggestedAbiVariant(AbiUtils.archStringToArchInt(abi));
-                    message.append("\n").append(scope).append(" 需要模块使用的原生库为 ").append(requiredVariant);
-                }
-                message.append("\n\n").append("推荐您将模块更换为使用 ").append(getSuggestedAbiVariant()).append(" 原生库的版本");
-                builder.setMessage(message.toString());
-                builder.setPositiveButton("去 Telegram 频道下载", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse("https://t.me/QAuxiliary"));
-                    startActivity(intent);
-                });
-                builder.setNegativeButton("去 GitHub 下载", (dialog, which) -> {
-                    Intent intent = new Intent(Intent.ACTION_VIEW);
-                    intent.setData(Uri.parse("https://github.com/cinit/QAuxiliary/releases/latest"));
-                    startActivity(intent);
-                });
-                builder.setNeutralButton(android.R.string.cancel, null);
-                builder.setCancelable(true);
-                builder.show();
-            });
+            frameStatus.setOnClickListener(v -> SettingsUiFragmentHostActivity.startActivityForFragment(this, CheckAbiVariantFragment.class, null));
         }
         tvInsVersion.setText(BuildConfig.VERSION_NAME);
     }
@@ -272,10 +240,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         switch (item.getItemId()) {
-            case R.id.menu_item_debugInfo: {
-                new AlertDialog.Builder(ConfigV2Activity.this)
-                        .setTitle("调试信息").setPositiveButton(android.R.string.ok, null)
-                        .setMessage(getDebugInfo()).show();
+            case R.id.menu_item_nativeLibVariantInfo: {
+                SettingsUiFragmentHostActivity.startActivityForFragment(this, CheckAbiVariantFragment.class, null);
                 return true;
             }
             case R.id.menu_item_about: {
@@ -316,6 +282,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     protected void onResume() {
         super.onResume();
         updateMenuItems();
+        updateActivationStatus();
         HolidayHelper.onResume();
     }
 
@@ -419,69 +386,5 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     void setLauncherIconEnabled(boolean enabled) {
         ComponentName componentName = new ComponentName(this, ALIAS_ACTIVITY_NAME);
         ComponentUtilKt.setEnable(componentName, this, enabled);
-    }
-
-    @Nullable
-    private String getSuggestedAbiVariant() {
-        StructUtsname uts = Os.uname();
-        String sysAbi = uts.machine;
-        HashSet<String> requestAbis = new HashSet<>();
-        requestAbis.add(AbiUtils.archStringToLibDirName(sysAbi));
-        String[] pkgList = new String[]{
-                "com.tencent.mobileqq",
-//                "com.tencent.mobileqqi",
-                "com.tencent.qqlite",
-                "com.tencent.tim",
-        };
-        for (String pkg : pkgList) {
-            String activeAbi = AbiUtils.getApplicationActiveAbi(pkg);
-            if (activeAbi == null) {
-                continue;
-            }
-            String abi = AbiUtils.archStringToLibDirName(activeAbi);
-            if (!requestAbis.contains(abi)) {
-                requestAbis.add(abi);
-            }
-        }
-        String[] modulesAbis = AbiUtils.queryModuleAbiList();
-        HashSet<String> missingAbis = new HashSet<>();
-        // check if modulesAbis contains all requestAbis
-        for (String abi : requestAbis) {
-            if (!Arrays.asList(modulesAbis).contains(abi)) {
-                missingAbis.add(abi);
-            }
-        }
-        if (missingAbis.isEmpty()) {
-            return null;
-        }
-        int abi = 0;
-        Log.d("missingAbis, " + Arrays.toString(missingAbis.toArray()));
-        for (String name : missingAbis) {
-            Log.d("missing abi: " + name);
-            abi += AbiUtils.archStringToArchInt(name);
-        }
-        Log.d("abi: " + abi);
-        return AbiUtils.getSuggestedAbiVariant(abi);
-    }
-
-    private String getDebugInfo() {
-        String dbgInfo = "";
-        try {
-            long ts = BuildConfig.BUILD_TIMESTAMP;
-            dbgInfo += "\nBuild Time: " + (ts > 0 ? new Date(ts).toString() : "unknown") + ", " +
-                    "SUPPORTED_ABIS=" + Arrays.toString(Build.SUPPORTED_ABIS) + "\npageSize=" + Natives
-                    .getpagesize();
-        } catch (Throwable e) {
-            dbgInfo += "\n" + e;
-        }
-        try {
-            dbgInfo += "SystemClassLoader: " + ClassLoader.getSystemClassLoader()
-                    + "\nActiveModuleVersion: " + BuildConfig.VERSION_NAME
-                    + "\nThisVersion: " + BuildConfig.VERSION_NAME
-                    + "\nProductFlavors: " + BuildConfig.FLAVOR;
-        } catch (Throwable r) {
-            dbgInfo += r;
-        }
-        return dbgInfo;
     }
 }

@@ -26,9 +26,9 @@ import android.content.ActivityNotFoundException;
 import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.Bundle;
-import android.system.Os;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
@@ -189,28 +189,23 @@ public class HookStatus {
         return "None";
     }
 
+    public static boolean isTaiChiInstalled(@NonNull Context context) {
+        try {
+            PackageManager pm = context.getPackageManager();
+            pm.getPackageInfo("me.weishu.exp", 0);
+            return true;
+        } catch (PackageManager.NameNotFoundException e) {
+            return false;
+        }
+    }
+
     public static boolean isModuleEnabled() {
         return getHookType() != HookType.NONE;
     }
 
-    public static boolean checkABI() {
-        int moduleABI = getModuleABI();
-        HashMap<String, String> hostABI = getHostABI();
-        for (String i : hostABI.values()) {
-            if ((AbiUtils.archStringToArchInt(i) | moduleABI) != moduleABI) {
-                return false;
-            }
-        }
-        int sysAbi = AbiUtils.archStringToArchInt(Os.uname().machine);
-        if ((sysAbi | moduleABI) != moduleABI && (sysAbi & (AbiUtils.ABI_X86_64 | AbiUtils.ABI_X86)) != 0) {
-            return false;
-        }
-        return true;
-    }
-
     public static HashMap<String, String> getHostABI() {
         CharSequence[] scope = HostInfo.getApplication().getResources().getTextArray(R.array.xposedscope);
-        HashMap<String, String> result = new HashMap<>();
+        HashMap<String, String> result = new HashMap<>(4);
         for (CharSequence s : scope) {
             String abi = AbiUtils.getApplicationActiveAbi(s.toString());
             if (abi != null) {
@@ -218,31 +213,5 @@ public class HookStatus {
             }
         }
         return result;
-    }
-
-    private static int getModuleABI() {
-        int abi;
-        switch (BuildConfig.FLAVOR) {
-            case "arm32": {
-                abi = AbiUtils.ABI_ARM32;
-                break;
-            }
-            case "arm64": {
-                abi = AbiUtils.ABI_ARM64;
-                break;
-            }
-            case "armAll": {
-                abi = AbiUtils.ABI_ARM32 | AbiUtils.ABI_ARM64;
-                break;
-            }
-            case "universal": {
-                abi = AbiUtils.ABI_ARM32 | AbiUtils.ABI_ARM64 | AbiUtils.ABI_X86 | AbiUtils.ABI_X86_64;
-                break;
-            }
-            default: {
-                abi = 0;
-            }
-        }
-        return abi;
     }
 }

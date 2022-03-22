@@ -27,10 +27,10 @@ import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.startup.HookEntry;
-import io.github.qauxv.util.Log;
+import io.github.qauxv.BuildConfig;
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Enumeration;
 import java.util.HashSet;
 import java.util.zip.ZipEntry;
@@ -75,25 +75,55 @@ public class AbiUtils {
             // TODO: 2022-03-14 handle multi arch
             return abiList.iterator().next();
         } catch (PackageManager.NameNotFoundException e) {
-            Log.e("PackageManager.NameNotFoundException: " + e.getMessage());
             return null;
         }
     }
 
     @NonNull
     public static String[] queryModuleAbiList() {
-        Context ctx = HostInfo.getApplication();
-        String apkPath;
-        if (HostInfo.isInModuleProcess()) {
-            apkPath = ctx.getPackageCodePath();
-        } else {
-            apkPath = HookEntry.getModulePath();
+        switch (BuildConfig.FLAVOR) {
+            case "arm32": {
+                return new String[]{"arm"};
+            }
+            case "arm64": {
+                return new String[]{"arm64"};
+            }
+            case "armAll": {
+                return new String[]{"arm", "arm64"};
+            }
+            case "universal": {
+                return new String[]{"arm", "arm64", "x86", "x86_64"};
+            }
+            default: {
+                return new String[]{};
+            }
         }
-        try {
-            return getApkAbiList(apkPath);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+    }
+
+    public static int getModuleABI() {
+        int abi;
+        switch (BuildConfig.FLAVOR) {
+            case "arm32": {
+                abi = AbiUtils.ABI_ARM32;
+                break;
+            }
+            case "arm64": {
+                abi = AbiUtils.ABI_ARM64;
+                break;
+            }
+            case "armAll": {
+                abi = AbiUtils.ABI_ARM32 | AbiUtils.ABI_ARM64;
+                break;
+            }
+            case "universal": {
+                abi = AbiUtils.ABI_ARM32 | AbiUtils.ABI_ARM64 | AbiUtils.ABI_X86 | AbiUtils.ABI_X86_64;
+                break;
+            }
+            default: {
+                abi = 0;
+            }
         }
+        return abi;
     }
 
     @NonNull
@@ -146,10 +176,12 @@ public class AbiUtils {
             case "armeabi":
             case "armeabi-v7a":
             case "armv7l":
+                // actually, armv7l is ARMv8 CPU in 32-bit compatibility mode,
+                // I don't know if we should throw armv7l into ABI_ARM64
                 return ABI_ARM32;
             case "arm64":
             case "arm64-v8a":
-            case "aaarch64":
+            case "aarch64":
                 return ABI_ARM64;
             case "x86":
             case "i386":
@@ -163,6 +195,30 @@ public class AbiUtils {
             default:
                 return 0;
         }
+    }
+
+    public static String archIntToNames(int abi) {
+        ArrayList<String> results = new ArrayList<>(4);
+        if ((abi & ABI_ARM32) != 0) {
+            results.add("armeabi-v7a");
+        }
+        if ((abi & ABI_ARM64) != 0) {
+            results.add("arm64-v8a");
+        }
+        if ((abi & ABI_X86) != 0) {
+            results.add("x86");
+        }
+        if ((abi & ABI_X86_64) != 0) {
+            results.add("x86_64");
+        }
+        if (results.isEmpty()) {
+            return "none";
+        }
+        StringBuilder sb = new StringBuilder();
+        for (String s : results) {
+            sb.append(s).append('|');
+        }
+        return sb.substring(0, sb.length() - 1);
     }
 
     public static String getSuggestedAbiVariant(int requestedAbi) {
