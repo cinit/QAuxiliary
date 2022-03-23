@@ -91,16 +91,11 @@ class PendingFunctionFragment : BaseRootLayoutFragment() {
     }
 
     private val pendingFunctionList: Array<Item> = arrayOf(
-            Item("无视QQ电话与语音冲突", "允许在QQ电话时播放语音和短视频", null, true),
-            Item("QQ电话关麦时解除占用", "再开麦时如麦被其他程序占用可能崩溃", null, true),
-            Item("QQ视频通话旋转锁定", "可在通话界面设置旋转方向", null, true),
-            Item("屏蔽回执消息的通知", null, null, true),
-            Item("隐藏联系人", "和自带的\"隐藏会话\"有所不同", "0人"),
-            Item("自定义本地头像", "仅本机生效", "禁用"),
-            Item("QQ电话睡眠模式", "仅保持连麦, 暂停消息接收, 减少电量消耗", null, true),
-            Item("禁用QQ公交卡", "如果QQ在后台会干扰NFC的话", null, true),
-            Item("AddFriendReq.sourceID", "自定义加好友来源", "[不改动]"),
-            Item("DelFriendReq.delType", "只能为1或2", "[不改动]"),
+        Item("QQ电话与语音不冲突", "允许在QQ电话时播放语音和短视频", null, true),
+        Item("QQ电话关麦时解除占用", "再开麦时如麦被其他程序占用可能崩溃", null, true),
+        Item("QQ视频通话旋转锁定", "可在通话界面设置旋转方向", null, true),
+        Item("屏蔽聊天消息大字体", null, null, true),
+        Item("禁用QQ公交卡", "禁止QQ在后台干扰NFC", null, true),
     )
 
     private data class Item(val title: String, val desc: String?, val value: String? = null, val switch: Boolean = false)
