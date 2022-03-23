@@ -22,6 +22,7 @@
 
 package io.github.qauxv.fragment
 
+import android.net.Uri
 import android.os.Bundle
 import android.os.Environment
 import android.view.LayoutInflater
@@ -31,17 +32,21 @@ import android.widget.EditText
 import androidx.annotation.AnyThread
 import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.Reflex
+import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.SyncUtils.async
+import io.github.qauxv.SyncUtils.runOnUiThread
 import io.github.qauxv.config.BackupConfigSession
 import io.github.qauxv.config.RestoreConfigSession
 import io.github.qauxv.databinding.FragmentBackupRestoreConfigBinding
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.NonUiThread
+import io.github.qauxv.util.SafUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.UiThread
 import java.io.File
-import java.util.*
+import java.util.Date
+import java.util.Locale
 import kotlin.system.exitProcess
 
 class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListener {
@@ -55,6 +60,7 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
 
     private var editTextBackupLocation: EditText? = null
     private var editTextRestoreLocation: EditText? = null
+    private val mTmpCacheFiles = ArrayList<File>()
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentBackupRestoreConfigBinding.inflate(inflater, container, false).apply {
@@ -83,6 +89,7 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
                 }
             }
             backupRestoreConfigButtonNextStep.setOnClickListener(this@BackupRestoreConfigFragment)
+            backupRestoreConfigButtonBrowseFile.setOnClickListener(this@BackupRestoreConfigFragment)
         }
         return binding!!.root
     }
@@ -108,26 +115,26 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
             }
             // show multi choice dialog, all choices are checked by default
             AlertDialog.Builder(context)
-                    .setTitle("选择要备份的配置文件")
-                    .setMultiChoiceItems(availableChoices.toTypedArray(), BooleanArray(availableChoices.size) { true }) { _, _, _ -> }
-                    .setPositiveButton("确定") { dialog, _ ->
-                        val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
-                        val selectedItemsList = ArrayList<String>()
-                        for (i in 0 until availableChoices.size) {
-                            if (selectedItems.get(i)) {
-                                selectedItemsList.add(availableChoices[i])
-                            }
-                        }
-                        if (selectedItemsList.isEmpty()) {
-                            Toasts.error(context, "没有选择要备份的配置文件")
-                            return@setPositiveButton
-                        }
-                        SyncUtils.async {
-                            executeBackupTask(location, selectedItemsList.toTypedArray())
+                .setTitle("选择要备份的配置文件")
+                .setMultiChoiceItems(availableChoices.toTypedArray(), BooleanArray(availableChoices.size) { true }) { _, _, _ -> }
+                .setPositiveButton("确定") { dialog, _ ->
+                    val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
+                    val selectedItemsList = ArrayList<String>()
+                    for (i in 0 until availableChoices.size) {
+                        if (selectedItems.get(i)) {
+                            selectedItemsList.add(availableChoices[i])
                         }
                     }
-                    .setNegativeButton("取消") { _, _ -> }
-                    .show()
+                    if (selectedItemsList.isEmpty()) {
+                        Toasts.error(context, "没有选择要备份的配置文件")
+                        return@setPositiveButton
+                    }
+                    async {
+                        executeBackupTask(location, selectedItemsList.toTypedArray())
+                    }
+                }
+                .setNegativeButton("取消") { _, _ -> }
+                .show()
         } catch (e: Exception) {
             showErrorDialog(e)
             return
@@ -174,24 +181,24 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
                 }
                 // show multi choice dialog
                 AlertDialog.Builder(context)
-                        .setTitle("选择要恢复的配置文件")
-                        .setMultiChoiceItems(availableChoices.toTypedArray(), null) { _, _, _ -> }
-                        .setPositiveButton("确定") { dialog, _ ->
-                            val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
-                            val selectedItemsList = ArrayList<String>()
-                            for (i in 0 until availableChoices.size) {
-                                if (selectedItems.get(i)) {
-                                    selectedItemsList.add(availableChoices[i])
-                                }
+                    .setTitle("选择要恢复的配置文件")
+                    .setMultiChoiceItems(availableChoices.toTypedArray(), null) { _, _, _ -> }
+                    .setPositiveButton("确定") { dialog, _ ->
+                        val selectedItems = (dialog as AlertDialog).listView.checkedItemPositions
+                        val selectedItemsList = ArrayList<String>()
+                        for (i in 0 until availableChoices.size) {
+                            if (selectedItems.get(i)) {
+                                selectedItemsList.add(availableChoices[i])
                             }
-                            if (selectedItemsList.isEmpty()) {
-                                Toasts.error(context, "没有选择要恢复的配置文件")
-                                return@setPositiveButton
-                            }
-                            confirmRestoreOverwrite(location, selectedItemsList.toTypedArray())
                         }
-                        .setNegativeButton("取消") { _, _ -> }
-                        .show()
+                        if (selectedItemsList.isEmpty()) {
+                            Toasts.error(context, "没有选择要恢复的配置文件")
+                            return@setPositiveButton
+                        }
+                        confirmRestoreOverwrite(location, selectedItemsList.toTypedArray())
+                    }
+                    .setNegativeButton("取消") { _, _ -> }
+                    .show()
             }
         } catch (e: Exception) {
             showErrorDialog(e)
@@ -210,7 +217,7 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
             }
         }
         if (overwriteList.isEmpty()) {
-            SyncUtils.async {
+            async {
                 executeRestoreTask(choices)
             }
             return
@@ -224,15 +231,15 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
             append("已存在的配置文件将被覆盖，确定要恢复吗？")
         }
         AlertDialog.Builder(context)
-                .setTitle("恢复配置文件")
-                .setMessage(message)
-                .setPositiveButton("确定") { _, _ ->
-                    SyncUtils.async {
-                        executeRestoreTask(choices)
-                    }
+            .setTitle("恢复配置文件")
+            .setMessage(message)
+            .setPositiveButton("确定") { _, _ ->
+                async {
+                    executeRestoreTask(choices)
                 }
-                .setNegativeButton("取消") { _, _ -> }
-                .show()
+            }
+            .setNegativeButton("取消") { _, _ -> }
+            .show()
     }
 
     @NonUiThread
@@ -245,18 +252,21 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
                 session.close()
                 mRestoreSession = null
                 // ask user to restart app
-                SyncUtils.runOnUiThread {
+                runOnUiThread {
                     AlertDialog.Builder(requireContext())
-                            .setTitle("恢复完成")
-                            .setMessage("恢复完成，部分功能需要重启应用才能生效，是否现在重启应用？")
-                            .setCancelable(false)
-                            .setPositiveButton("现在重启") { _, _ ->
-                                Thread.sleep(100)
-                                exitProcess(0)
-                                // AM will restart us on most platforms, we don't need to do anything
-                            }
-                            .setNegativeButton("稍后重启") { _, _ -> }
-                            .show()
+                        .setTitle("恢复完成")
+                        .setMessage("恢复完成，部分功能需要重启应用才能生效，是否现在重启应用？")
+                        .setCancelable(false)
+                        .setPositiveButton("现在重启") { _, _ ->
+                            mRestoreSession?.close()
+                            mRestoreSession = null
+                            cleanUpTmpFiles()
+                            Thread.sleep(100)
+                            exitProcess(0)
+                            // AM will restart us on most platforms, we don't need to do anything
+                        }
+                        .setNegativeButton("稍后重启") { _, _ -> }
+                        .show()
                 }
             } catch (e: Exception) {
                 showErrorDialog(e)
@@ -271,7 +281,7 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
         val name = "qauxv_backup_${sdf.format(Date())}.zip"
         // save to Android standard Download folder
         val downloadDir = Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-                ?: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
+            ?: context.getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS)
         return File(downloadDir, name).absolutePath
     }
 
@@ -345,18 +355,32 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
                     Toasts.error(context!!, "请选择操作类型")
                 }
             }
+        } else if (v.id == R.id.backupRestoreConfig_buttonBrowseFile) {
+            SafUtils.requestOpenFile(requireContext())
+                .setMimeType("application/zip")
+                .onResult { uri ->
+                    editTextRestoreLocation!!.setText(uri.toString())
+                    async {
+                        val file = copyContentToTmpCache(uri)
+                        if (file != null) {
+                            runOnUiThread {
+                                startRestoreProcedure(file.absolutePath)
+                            }
+                        }
+                    }
+                }.commit()
         }
     }
 
     @AnyThread
     private fun showErrorDialog(e: Throwable) {
-        SyncUtils.runOnUiThread {
+        runOnUiThread {
             val context = requireContext()
             CustomDialog.createFailsafe(context)
-                    .setMessage(e.toString())
-                    .setTitle("错误: " + Reflex.getShortClassName(e))
-                    .setCancelable(false)
-                    .ok().show();
+                .setMessage(e.toString())
+                .setTitle("错误: " + Reflex.getShortClassName(e))
+                .setCancelable(false)
+                .ok().show();
         }
     }
 
@@ -367,6 +391,40 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
         mBackupSession = null
         mRestoreSession?.close()
         mRestoreSession = null
+        async { cleanUpTmpFiles() }
+    }
+
+    private fun cleanUpTmpFiles() {
+        if (mTmpCacheFiles.isNotEmpty()) {
+            for (file in mTmpCacheFiles) {
+                if (file.isFile) {
+                    file.delete()
+                }
+            }
+        }
+    }
+
+    @NonUiThread
+    private fun copyContentToTmpCache(uri: Uri): File? {
+        try {
+            SafUtils.openInputStream(requireContext(), uri)
+                .use { input ->
+                    val time = System.currentTimeMillis()
+                    val dir = File(requireContext().cacheDir, "qa_cp_ext")
+                    if (!dir.exists()) {
+                        dir.mkdirs()
+                    }
+                    val file = File(dir, "tmp_$time.zip")
+                    mTmpCacheFiles.add(file)
+                    file.outputStream().use { output ->
+                        input.copyTo(output)
+                    }
+                    return file
+                }
+        } catch (e: Exception) {
+            FaultyDialog.show(requireContext(), e)
+            return null
+        }
     }
 
     private fun checkBadLocation(path: String): Boolean {
@@ -378,8 +436,10 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
         }
         if (path.startsWith("/proc/")) {
             // allow /proc/[pid]/fd/[fd], where [pid] may be self and thread-self
-            if (path.startsWith("/proc/self/fd/") || path.startsWith("/proc/thread-self/fd/")
-                    || path.matches("/proc/[0-9]+/fd/[0-9]+".toRegex())) {
+            if (path.startsWith("/proc/self/fd/")
+                || path.startsWith("/proc/thread-self/fd/")
+                || path.matches("/proc/[0-9]+/fd/[0-9]+".toRegex())
+            ) {
                 return false
             }
             return true

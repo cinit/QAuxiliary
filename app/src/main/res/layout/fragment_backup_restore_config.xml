@@ -158,6 +158,27 @@
                 android:textColor="@color/firstTextColor"
                 android:textSize="16sp" />
 
+            <Button
+                android:id="@+id/backupRestoreConfig_buttonBrowseFile"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:gravity="start|center_vertical"
+                android:paddingHorizontal="20dp"
+                android:text="浏览文件..."
+                android:textColor="?attr/colorAccent"
+                android:textSize="16sp" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:layout_marginLeft="20dp"
+                android:layout_marginRight="20dp"
+                android:text="注意：配置文件备份应该是一个压缩包(*.zip)，请勿解压。"
+                android:textColor="@color/thirdTextColor"
+                android:textSize="14sp" />
+
         </LinearLayout>
 
         <androidx.appcompat.widget.AppCompatButton
