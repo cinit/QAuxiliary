@@ -38,13 +38,18 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
 import androidx.core.view.ViewCompat;
+import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SafUtils;
 import io.github.qauxv.util.Toasts;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -71,7 +76,9 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
     private final RadioGroup dpiGroup;
     private final LinearLayout linearLayoutDpi;
     private final TextView textViewWarning;
-    private String targetIconPath;
+    private byte[] targetIconData;
+    @Nullable
+    private String targetIconPathHint;
     private Button saveBtn;
     private Bitmap currentIcon;
     private BitmapDrawable currentIconDrawable;
@@ -241,55 +248,37 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
                 Toasts.error(ctx, "找不到文件");
                 return;
             }
-            Bitmap bm = BitmapFactory.decodeFile(path);
-            if (bm == null) {
-                Toasts.error(ctx, "不支持此文件(格式)");
-                return;
+            try {
+                FileInputStream fin = new FileInputStream(file);
+                ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                byte[] buf = new byte[2048];
+                int len;
+                while ((len = fin.read(buf)) != -1) {
+                    bout.write(buf, 0, len);
+                }
+                fin.close();
+                byte[] arr = bout.toByteArray();
+                updateBitmapPreview(arr);
+            } catch (IOException e) {
+                FaultyDialog.show(ctx, "读取文件失败", e);
             }
-            long fileSize = file.length();
-            if (fileSize > 16 * 1024) {
-                textViewWarning.setText(String.format("该图片文件体积较大(%dbytes),可能导致卡顿", fileSize));
-                textViewWarning.setVisibility(View.VISIBLE);
-            } else {
-                textViewWarning.setVisibility(View.GONE);
-            }
-            currentIcon = bm;
-            targetIconPath = path;
-            currentIcon.setDensity(getCurrentSelectedDpi());
-            currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
-            prevImgView.setImageDrawable(currentIconDrawable);
-            useDefault = false;
-            linearLayoutDpi.setVisibility(View.VISIBLE);
         } else if (v == restoreDefBtn) {
             currentIcon = null;
             useDefault = true;
-            targetIconPath = null;
+            targetIconData = null;
             linearLayoutDpi.setVisibility(View.GONE);
             textViewWarning.setVisibility(View.GONE);
             prevImgView.setImageDrawable(ResUtils.loadDrawableFromAsset("repeat.png", ctx));
         } else if (v == saveBtn) {
-            if (targetIconPath != null) {
-                try {
-                    int dpi = getCurrentSelectedDpi();
-                    FileInputStream fin = new FileInputStream(targetIconPath);
-                    ByteArrayOutputStream bout = new ByteArrayOutputStream();
-                    byte[] buf = new byte[2048];
-                    int len;
-                    while ((len = fin.read(buf)) != -1) {
-                        bout.write(buf, 0, len);
-                    }
-                    fin.close();
-                    byte[] arr = bout.toByteArray();
-                    ConfigManager cfg = ConfigManager.getDefaultConfig();
-                    cfg.putBytes(qn_repeat_icon_data, arr);
-                    cfg.putInt(qn_repeat_icon_dpi, dpi);
-                    cfg.putString(qn_repeat_last_file, targetIconPath);
-                    cfg.save();
-                    sCachedRepeaterIcon = currentIcon;
-                    dialog.dismiss();
-                } catch (IOException e) {
-                    Toasts.error(ctx, e.toString());
-                }
+            if (targetIconData != null) {
+                int dpi = getCurrentSelectedDpi();
+                ConfigManager cfg = ConfigManager.getDefaultConfig();
+                cfg.putBytes(qn_repeat_icon_data, targetIconData);
+                cfg.putInt(qn_repeat_icon_dpi, dpi);
+                cfg.putString(qn_repeat_last_file, targetIconPathHint);
+                cfg.save();
+                sCachedRepeaterIcon = currentIcon;
+                dialog.dismiss();
             } else {
                 if (useDefault) {
                     ConfigManager cfg = ConfigManager.getDefaultConfig();
@@ -308,8 +297,47 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
                 }
             }
         } else if (v == browseBtn) {
-            Toasts.info(ctx, "暂不支持...请手动复制文件路径到文本框并加载");
+            SafUtils.requestOpenFile(ctx).setMimeType("image/*").onResult(uri -> {
+                        try (InputStream is = SafUtils.openInputStream(ctx, uri)) {
+                            ByteArrayOutputStream bout = new ByteArrayOutputStream();
+                            byte[] buf = new byte[2048];
+                            int len;
+                            while ((len = is.read(buf)) != -1) {
+                                bout.write(buf, 0, len);
+                            }
+                            byte[] arr = bout.toByteArray();
+                            targetIconPathHint = uri.toString();
+                            pathInput.setText(targetIconPathHint);
+                            updateBitmapPreview(arr);
+                        } catch (IOException e) {
+                            FaultyDialog.show(ctx, "打开文件失败", e);
+                        }
+                    }
+            ).commit();
         }
+    }
+
+    @UiThread
+    private void updateBitmapPreview(@NonNull byte[] data) {
+        Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
+        if (bm == null) {
+            Toasts.error(ctx, "不支持此文件(格式)");
+            return;
+        }
+        long fileSize = data.length;
+        if (fileSize > 16 * 1024) {
+            textViewWarning.setText(String.format("该图片文件体积较大(%dbytes),可能导致卡顿", fileSize));
+            textViewWarning.setVisibility(View.VISIBLE);
+        } else {
+            textViewWarning.setVisibility(View.GONE);
+        }
+        currentIcon = bm;
+        targetIconData = data;
+        currentIcon.setDensity(getCurrentSelectedDpi());
+        currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
+        prevImgView.setImageDrawable(currentIconDrawable);
+        useDefault = false;
+        linearLayoutDpi.setVisibility(View.VISIBLE);
     }
 
     @Override
