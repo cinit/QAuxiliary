@@ -91,8 +91,22 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
             val uin = it.get("uin") as Long
             val start = (it.get("startPos") as Short).toInt()
             val length = it.get("textLen") as Short
-            if (spannableString[start] == '@')
-                spannableString.setSpan(ProfileCardSpan(uin), start, start + length, Spannable.SPAN_EXCLUSIVE_INCLUSIVE)
+            if (start < spannableString.length) {
+                if (spannableString[start] == '@') {
+                    spannableString.setSpan(ProfileCardSpan(uin), start, start + length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            } else if (start == spannableString.length) {
+                // workaround for host bug: start index is at the end of the string
+                // there is a space at the end of the at string
+                val possibleStart = start - length - 1
+                if (possibleStart >= 0 && spannableString[possibleStart] == '@') {
+                    spannableString.setSpan(ProfileCardSpan(uin), possibleStart, possibleStart + length, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                }
+            } else {
+                Log.e("艾特信息超出范围")
+                Log.e("start:$start, length:$length")
+                Log.e("text:'${textView.text}', length:${textView.text.length}")
+            }
         }
         textView.text = spannableString
         textView.movementMethod = LinkMovementMethod.getInstance()
