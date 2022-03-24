@@ -96,6 +96,9 @@ class PendingFunctionFragment : BaseRootLayoutFragment() {
         Item("QQ视频通话旋转锁定", "可在通话界面设置旋转方向", null, true),
         Item("屏蔽聊天消息大字体", null, null, true),
         Item("禁用QQ公交卡", "禁止QQ在后台干扰NFC", null, true),
+        Item("阻挡QQ获取位置信息", "重定向到(0,0)或PEK中心", null, true),
+        Item("阻挡QQ检测权限未授予", "如 定位 联系人等隐私权限 ", null, true),
+        
     )
 
     private data class Item(val title: String, val desc: String?, val value: String? = null, val switch: Boolean = false)
