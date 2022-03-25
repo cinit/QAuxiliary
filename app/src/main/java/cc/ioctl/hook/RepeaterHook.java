@@ -25,6 +25,7 @@ import static cc.ioctl.util.LayoutHelper.dip2px;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static cc.ioctl.util.Reflex.setInstanceObject;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
+import static io.github.qauxv.util.Initiator._PttItemBuilder;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator._TextItemBuilder;
@@ -341,7 +342,7 @@ public class RepeaterHook extends BaseFunctionHook {
         }
         //end: text
         //begin: ptt
-        Method pttMethod = _TextItemBuilder().getDeclaredMethod("a",
+        Method pttMethod = _PttItemBuilder().getDeclaredMethod("a",
                 ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
         HookUtils.hookAfterIfEnabled(this, pttMethod, 51, param -> {
             ViewGroup convertView = (ViewGroup) param.getResult();
