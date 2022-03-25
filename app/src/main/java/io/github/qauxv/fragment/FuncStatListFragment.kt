@@ -34,6 +34,7 @@ import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.ui.ThemeAttrUtils
 import io.github.qauxv.R
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.ItemFuncStatusBinding
@@ -90,6 +91,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
     private val mAdapter: RecyclerView.Adapter<FuncStatViewHolder> = object : RecyclerView.Adapter<FuncStatViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FuncStatViewHolder {
             val binding = ItemFuncStatusBinding.inflate(LayoutInflater.from(parent.context), parent, false)
+            binding.root.setOnClickListener(mOnItemClickListener)
             return FuncStatViewHolder(binding)
         }
 
@@ -162,6 +164,18 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         }
     }
 
+    private val mOnItemClickListener = View.OnClickListener { v ->
+        val item = v.tag as? IUiItemAgentProvider
+        if (item != null) {
+            val identifier = item.itemAgentProviderUniqueIdentifier
+            SettingsUiFragmentHostActivity.startFragmentWithContext(
+                v.context,
+                FuncStatusDetailsFragment::class.java,
+                FuncStatusDetailsFragment.getBundleForLocation(identifier)
+            )
+        }
+    }
+
     private fun calculateUiItemRank(item: IUiItemAgentProvider): Int {
         // enabled +1
         val enabled = item is IDynamicHook && item.isEnabled
@@ -181,6 +195,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
             layoutManager = LinearLayoutManager(inflater.context, RecyclerView.VERTICAL, false)
             adapter = mAdapter
             LayoutHelper.initializeScrollbars(this)
+            isVerticalScrollBarEnabled = true
         }
         rootLayoutView = mRecyclerView
         return mRecyclerView!!
