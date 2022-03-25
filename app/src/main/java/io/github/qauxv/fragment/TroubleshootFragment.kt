@@ -41,6 +41,7 @@ import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
 import io.github.qauxv.R
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
 import io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin
 import io.github.qauxv.config.ConfigManager
@@ -80,23 +81,30 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
-                CategoryItem("缓存") {
-                    textItem("清除缓存", "清除模块缓存并重新计算适配数据", onClick = clickToClearCache)
-                },
-                CategoryItem("清除与重置（不可逆）") {
-                    textItem("重置模块设置", "不影响历史好友信息", onClick = clickToResetDefaultConfig)
-                    textItem("清除[已恢复]的历史记录", "删除当前帐号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
-                    textItem("清除所有的历史记录", "删除当前帐号下所有的历史好友记录", onClick = clickToClearAllFriends)
-                },
-                CategoryItem("测试") {
-                    textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
-                    textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
-                    textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
-                },
-                CategoryItem("调试信息") {
-                    description(generateDebugInfoString(), isTextSelectable = true)
-                }
+            CategoryItem("功能") {
+                textItem("功能异常列表", null, onClick = clickToShowFuncList)
+            },
+            CategoryItem("缓存") {
+                textItem("清除缓存", "清除模块缓存并重新计算适配数据", onClick = clickToClearCache)
+            },
+            CategoryItem("清除与重置（不可逆）") {
+                textItem("重置模块设置", "不影响历史好友信息", onClick = clickToResetDefaultConfig)
+                textItem("清除[已恢复]的历史记录", "删除当前帐号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
+                textItem("清除所有的历史记录", "删除当前帐号下所有的历史好友记录", onClick = clickToClearAllFriends)
+            },
+            CategoryItem("测试") {
+                textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
+                textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
+                textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
+            },
+            CategoryItem("调试信息") {
+                description(generateDebugInfoString(), isTextSelectable = true)
+            }
         )
+    }
+
+    private val clickToShowFuncList: (View) -> Unit = {
+        SettingsUiFragmentHostActivity.startFragmentWithContext(it.context, FuncStatListFragment::class.java, null)
     }
 
     private val clickToClearCache = confirmBeforeAction(

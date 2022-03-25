@@ -122,6 +122,11 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
     }
 
     @Override
+    public boolean isInitializationSuccessful() {
+        return isInitialized();
+    }
+
+    @Override
     public boolean initialize() {
         return true;
     }

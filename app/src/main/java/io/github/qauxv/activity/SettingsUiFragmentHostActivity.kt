@@ -201,10 +201,18 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
     private fun updateTitle(fragment: BaseSettingFragment) {
         SyncUtils.postDelayed(1) {
             val text: String? = fragment.title
+            val subtitle: String? = fragment.subtitle
             this.title = text
             supportActionBar?.let {
                 it.title = text
+                it.subtitle = subtitle
             }
+        }
+    }
+
+    open fun requestInvalidateActionBar() {
+        if (mTopVisibleFragment != null) {
+            updateTitle(mTopVisibleFragment!!)
         }
     }
 

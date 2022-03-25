@@ -40,6 +40,8 @@ abstract class BaseDecorator(
 
     override val isInitialized: Boolean get() = dispatcher.isInitialized
 
+    override val isInitializationSuccessful: Boolean get() = dispatcher.isInitializationSuccessful
+
     override val runtimeErrors: List<Throwable>
         get() {
             val myErrors = super.runtimeErrors

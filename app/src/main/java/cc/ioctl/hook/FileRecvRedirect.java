@@ -227,6 +227,11 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     }
 
     @Override
+    public boolean isInitializationSuccessful() {
+        return isInitialized();
+    }
+
+    @Override
     public boolean isEnabled() {
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(ConfigItems.qn_file_recv_redirect_enable);
     }
