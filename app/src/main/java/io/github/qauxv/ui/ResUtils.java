@@ -21,9 +21,9 @@
  */
 package io.github.qauxv.ui;
 
+import static io.github.qauxv.bridge.AppRuntimeHelper.getAppRuntime;
 import static io.github.qauxv.util.Initiator._ThemeUtil;
 import static io.github.qauxv.util.Initiator.load;
-import static io.github.qauxv.bridge.AppRuntimeHelper.getAppRuntime;
 
 import android.content.Context;
 import android.content.res.Configuration;
@@ -110,7 +110,7 @@ public class ResUtils {
                 "getUserCurrentThemeId", getAppRuntime(), load("mqq/app/AppRuntime"));
             return "1103".endsWith(themeId) || "2920".endsWith(themeId);
         } catch (Exception e) {
-            if (HostInfo.isTim()) {
+            if (HostInfo.isTim() || HostInfo.isQQHD()) {
                 return false;
             }
             Log.e(e);

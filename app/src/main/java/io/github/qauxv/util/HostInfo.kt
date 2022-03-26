@@ -32,6 +32,7 @@ import androidx.core.content.pm.PackageInfoCompat
 const val PACKAGE_NAME_QQ = "com.tencent.mobileqq"
 const val PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi"
 const val PACKAGE_NAME_QQ_LITE = "com.tencent.qqlite"
+const val PACKAGE_NAME_QQ_HD = "com.tencent.minihd.qq"
 const val PACKAGE_NAME_TIM = "com.tencent.tim"
 const val PACKAGE_NAME_SELF = "io.github.qauxv"
 
@@ -58,6 +59,7 @@ fun init(applicationContext: Application) {
             PACKAGE_NAME_TIM -> HostSpecies.TIM
             PACKAGE_NAME_QQ_LITE -> HostSpecies.QQ_Lite
             PACKAGE_NAME_QQ_INTERNATIONAL -> HostSpecies.QQ_International
+            PACKAGE_NAME_QQ_HD -> HostSpecies.QQ_HD
             PACKAGE_NAME_SELF -> HostSpecies.QAuxiliary
             else -> HostSpecies.Unknown
         },
@@ -126,6 +128,7 @@ enum class HostSpecies {
     QQ_Play,
     QQ_Lite,
     QQ_International,
+    QQ_HD,
     QAuxiliary,
     Unknown
 }

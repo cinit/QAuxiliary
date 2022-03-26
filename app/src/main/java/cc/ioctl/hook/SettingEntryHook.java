@@ -31,6 +31,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.view.View;
 import android.view.ViewGroup;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -104,7 +105,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                         activity.finish();
                     }
                 });
-                if (itemRef != null) {
+                if (itemRef != null && !HostInfo.isQQHD()) {
                     //modern age
                     ViewGroup list = (ViewGroup) itemRef.getParent();
                     ViewGroup.LayoutParams reflp;

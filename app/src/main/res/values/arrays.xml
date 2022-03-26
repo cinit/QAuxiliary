@@ -4,5 +4,6 @@
         <item>com.tencent.mobileqq</item>
         <item>com.tencent.tim</item>
         <item>com.tencent.qqlite</item>
+        <item>com.tencent.minihd.qq</item>
     </string-array>
 </resources>
