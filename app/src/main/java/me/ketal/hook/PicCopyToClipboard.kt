@@ -43,7 +43,9 @@ import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
+import java.io.BufferedInputStream
 import java.io.File
+import java.net.URLConnection
 
 @[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
 object PicCopyToClipboard : CommonSwitchFunctionHook() {
@@ -155,7 +157,11 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         // note: An error occurs when the host does not have a fileprovider
         val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
         val item = ClipData.Item(uri)
-        val clipData = ClipData("label", arrayOf("image/*"), item)
+        val mimeType = context.contentResolver.openInputStream(uri)?.use {
+            val stream = if (it is BufferedInputStream) it else BufferedInputStream(it)
+            URLConnection.guessContentTypeFromStream(stream)
+        }
+        val clipData = ClipData("label", arrayOf(mimeType), item)
         val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
         clipboardManager.setPrimaryClip(clipData)
     }
