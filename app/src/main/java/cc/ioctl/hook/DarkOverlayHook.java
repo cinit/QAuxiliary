@@ -84,11 +84,8 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean isEnabled() {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
-            return false;
-        }
-        return super.isEnabled();
+    public boolean isAvailable() {
+        return HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0);
     }
 
     private static class FindNightMask implements Step {
