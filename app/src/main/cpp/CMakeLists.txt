@@ -43,4 +43,4 @@ set_target_properties(qauxv PROPERTIES
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv c dl ${ANDROID_LIBS} dex_builder_static)
+target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dex_builder_static)
