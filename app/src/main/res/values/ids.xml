@@ -34,4 +34,5 @@
     <item name="setting2Activity_settingEntryItem" type="id" />
 
     <item name="XEditTextEx_onTextContextMenuItemInterceptor" type="id" />
+    <item name="ShareActionSheet_sharePictureWithExtApp" type="id" />
 </resources>
