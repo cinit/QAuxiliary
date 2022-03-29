@@ -37,7 +37,7 @@ import me.singleneuron.util.dump
 object DebugDump : BaseSwitchFunctionDecorator(), IStartActivityHookDecorator {
 
     override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
-        Log.d("debugDump: startActivity " + param.thisObject::class.java.name)
+        Log.d("debugDump: startActivity, this=" + param.thisObject)
         intent.dump()
         return false
     }
