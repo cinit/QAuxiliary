@@ -22,11 +22,8 @@
 
 package me.ketal.hook
 
-import android.content.ClipData
-import android.content.ClipboardManager
 import android.content.Context
 import android.view.View
-import androidx.core.content.FileProvider
 import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.tryOrFalse
 import io.github.qauxv.R
@@ -37,15 +34,14 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Initiator._PicItemBuilder
+import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
-import java.io.BufferedInputStream
 import java.io.File
-import java.net.URLConnection
 
 @[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
 object PicCopyToClipboard : CommonSwitchFunctionHook() {
@@ -71,7 +67,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val message = m.args[2]
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
-                copyToClipboard(context, getPicFile(message))
+                copyToClipboard(context, File(getPicPath(message)))
             }
             it.method { m ->
                 m.returnType.isArray
@@ -119,7 +115,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         }
     }
 
-    private fun getPicFile(message: Any): String {
+    private fun getPicPath(message: Any): String {
         return when (Reflex.getShortClassName(message)) {
             "MessageForPic" -> getFilePath(message)
             "MessageForLongMsg" -> {
@@ -151,18 +147,5 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
             File(path).exists()
         }
         return path
-    }
-
-    private fun copyToClipboard(context: Context, path: String) {
-        // note: An error occurs when the host does not have a fileprovider
-        val uri = FileProvider.getUriForFile(context, "${context.packageName}.fileprovider", File(path))
-        val item = ClipData.Item(uri)
-        val mimeType = context.contentResolver.openInputStream(uri)?.use {
-            val stream = if (it is BufferedInputStream) it else BufferedInputStream(it)
-            URLConnection.guessContentTypeFromStream(stream)
-        }
-        val clipData = ClipData("label", arrayOf(mimeType), item)
-        val clipboardManager = context.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
-        clipboardManager.setPrimaryClip(clipData)
     }
 }
