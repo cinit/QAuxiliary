@@ -9,7 +9,7 @@ public class SimpleAccount {
     public static final String _LOGINTIME = "_loginTime";
     public static final String _UIN = "_uin";
     private static final String tag = "SimpleAccount";
-    private HashMap attributes = new HashMap();
+    private HashMap<String, String> attributes = new HashMap<>();
 
     public static SimpleAccount parseSimpleAccount(String src) {
         throw new RuntimeException("Stub!");
@@ -61,18 +61,15 @@ public class SimpleAccount {
         this.attributes.put(key, value);
     }
 
-    public String toString() {
-        throw new RuntimeException("Stub!");
-    }
-
     public String toStoreString() {
         throw new RuntimeException("Stub!");
     }
 
-    public HashMap getAttributes() {
+    public HashMap<String, String> getAttributes() {
         return this.attributes;
     }
 
+    @Override
     public boolean equals(Object o) {
         if (o instanceof SimpleAccount) {
             return isSameAccount(this, (SimpleAccount) o);
