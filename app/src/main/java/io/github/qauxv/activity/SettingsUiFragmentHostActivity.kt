@@ -24,11 +24,13 @@ package io.github.qauxv.activity
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
+import cc.ioctl.util.ui.ThemeAttrUtils
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
@@ -60,6 +62,9 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
             AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode()) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
         }
         setTheme(ModuleThemeManager.getCurrentStyleId())
+        // update window background, I don't know why, but it's necessary
+        val bgColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(this, android.R.attr.windowBackground, 0)
+        window.setBackgroundDrawable(ColorDrawable(bgColor))
     }
 
     /**

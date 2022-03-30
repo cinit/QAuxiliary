@@ -6,7 +6,6 @@
         <item name="backgroundColor">@color/defaultThemeBackgroundColor</item>
         <item name="backgroundColorAlphaTitle">@color/defaultThemeBackgroundColorAlpha80</item>
         <!-- Customize your theme here. -->
-        <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowNoTitle">true</item>
         <!-- color forwarding -->
         <item name="colorAccent">@color/colorAccent</item>
