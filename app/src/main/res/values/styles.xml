@@ -26,6 +26,7 @@
         <item name="android:statusBarColor">?attr/backgroundColor</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowLightStatusBar">@bool/is_not_night_mode</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">@bool/is_not_night_mode</item>
         <item name="android:windowActionBar">false</item>
         <item name="android:windowTranslucentNavigation">false</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
@@ -183,6 +184,7 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowLightStatusBar">true</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="colorControlNormal">@color/firstTextColor</item>
         <!--<item name="colorControlNormal">@color/whiteTextColor</item> -->
     </style>
@@ -200,6 +202,7 @@
         <item name="android:statusBarColor">?attr/themeColor</item>
         <!-- <item name="colorControlNormal">@color/firstTextColor</item>  -->
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">true</item>
         <item name="colorControlNormal">@color/whiteTextColor</item>
     </style>
 
@@ -234,6 +237,7 @@
         <item name="android:windowTranslucentNavigation">true</item>
         <item name="android:windowTranslucentStatus">false</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
         <!-- <item name="colorControlNormal">@color/firstTextColor</item> -->
         <item name="colorControlNormal">@color/whiteTextColor</item>
     </style>
@@ -248,6 +252,7 @@
         <item name="colorControlNormal">@color/firstTextColor</item>
         <item name="android:windowDrawsSystemBarBackgrounds">true</item>
         <item name="android:windowLightStatusBar">false</item>
+        <item name="android:windowLightNavigationBar" tools:targetApi="o_mr1">false</item>
         <!-- <item name="colorControlNormal">@color/whiteTextColor</item>-->
     </style>
 
