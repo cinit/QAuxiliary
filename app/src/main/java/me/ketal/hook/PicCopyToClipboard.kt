@@ -62,12 +62,14 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 m.name == "a"
                     && m.parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, _ChatMessage()))
             }?.hookBefore(this) { m ->
-                val id = m.args[0]
-                val context = m.args[1] as Context
-                val message = m.args[2]
+                val (id, context, chatMessage) = m.args
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
-                copyToClipboard(context, File(getPicPath(message)))
+                val path = getPicPath(chatMessage)
+                if (path.size > 1) {
+                    // todo Alert users when multiple images are included
+                }
+                copyToClipboard(context as Context, File(path.first()))
             }
             it.method { m ->
                 m.returnType.isArray
@@ -75,7 +77,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
             }?.hookAfter(this) { param ->
                 val view = param.args[0] as View
                 val message = getMessage(view)
-                if (!hasPic(message)) return@hookAfter
+                val path = getPicPath(message)
+                if (path.isEmpty()) return@hookAfter
                 param.result = param.result.run {
                     this as Array<Any>
                     val clQQCustomMenuItem = javaClass.componentType
@@ -94,48 +97,27 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         } else getMessage(view.parent as View)
     }
 
-    private fun hasPic(message: Any): Boolean {
+    private fun getPicPath(message: Any): Array<String> {
         return when (Reflex.getShortClassName(message)) {
-            "MessageForPic" -> true
+            "MessageForPic" -> arrayOf(getFilePath(message))
             "MessageForLongMsg" -> {
                 val list = message.get("longMsgFragmentList") as List<Any>
-                list.any { hasPic(it) }
+                return list.filter { Reflex.getShortClassName(it) == "MessageForPic" }
+                    .map { getFilePath(it) }
+                    .toTypedArray()
             }
             "MessageForMixedMsg" -> {
                 val list = message.get("msgElemList") as List<Any>
-                list.any { hasPic(it) }
-            }
-            "MessageForStructing" -> {
-                val text = message.get("structingMsg").invoke("getXml") as String
-                // Log.d("structingMsg: $text")
-                // todo parse structingmsg
-                false
-            }
-            else -> false
-        }
-    }
-
-    private fun getPicPath(message: Any): String {
-        return when (Reflex.getShortClassName(message)) {
-            "MessageForPic" -> getFilePath(message)
-            "MessageForLongMsg" -> {
-                val list = message.get("longMsgFragmentList") as List<Any>
-                // todo Alert users when multiple images are included
-                val msg = list.first { Reflex.getShortClassName(it) == "MessageForPic" }
-                getFilePath(msg)
-            }
-            "MessageForMixedMsg" -> {
-                val list = message.get("msgElemList") as List<Any>
-                // todo Alert users when multiple images are included
-                val msg = list.first { Reflex.getShortClassName(it) == "MessageForPic" }
-                getFilePath(msg)
+                return list.filter { Reflex.getShortClassName(it) == "MessageForPic" }
+                    .map { getFilePath(it) }
+                    .toTypedArray()
             }
             "MessageForStructing" -> {
                 val text = message.get("structingMsg").invoke("getXml") as String
                 // todo parse structingmsg
-                ""
+                emptyArray()
             }
-            else -> throw UnsupportedOperationException("get pic from ${Reflex.getShortClassName(message)}")
+            else -> emptyArray()
         }
     }
 
