@@ -107,6 +107,11 @@ public class CustomSplash extends CommonConfigFunctionHook {
                 File f = new File(customPath);
                 if (f.exists() && f.isFile() && f.canRead()) {
                     param.setResult(new FileInputStream(f));
+                } else {
+                    byte[] bytes = RikkaCustomSplash.getCurrentSplashData();
+                    if (bytes != null) {
+                        param.setResult(new ByteArrayInputStream(bytes));
+                    }
                 }
             }
             if ("splash_logo.png".equals(fileName)) {
