@@ -29,6 +29,7 @@
     <color name="defaultThemeBackgroundColor">#FFFFFF</color>
     <color name="defaultThemeBackgroundColorAlpha80">#CCFFFFFF</color>
 
-    <color name="hostDefaultIconForegroundColor">#8D8D93</color>
+    <color name="hostShareSheetActionIconForegroundColorLight">#03081A</color>
+    <color name="hostShareSheetActionIconForegroundColorNight">#8D8D93</color>
 
 </resources>

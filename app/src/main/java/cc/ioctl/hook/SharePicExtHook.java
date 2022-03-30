@@ -44,6 +44,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
@@ -156,8 +157,9 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                 assert row2 != null;
                 Object item = ctorActionSheetItem.newInstance();
                 Parasitics.injectModuleResources(ctx.getResources());
+                int drawableId = ResUtils.isInNightMode() ? R.drawable.ic_launch_28dp_night : R.drawable.ic_launch_28dp_light;
                 Reflex.setInstanceObject(item, "id", int.class, R.id.ShareActionSheet_sharePictureWithExtApp);
-                Reflex.setInstanceObject(item, "icon", int.class, R.drawable.ic_launch_28dp_grey);
+                Reflex.setInstanceObject(item, "icon", int.class, drawableId);
                 Reflex.setInstanceObject(item, "label", String.class, "其他应用");
                 Reflex.setInstanceObject(item, "argus", String.class, picFile.getAbsolutePath());
                 row2.add(item);

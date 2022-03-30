@@ -2,7 +2,7 @@
     android:autoMirrored="true"
     android:height="28dp"
     android:width="28dp"
-    android:tint="@color/hostDefaultIconForegroundColor"
+    android:tint="@color/hostShareSheetActionIconForegroundColorNight"
     android:viewportHeight="24"
     android:viewportWidth="24">
     <path
