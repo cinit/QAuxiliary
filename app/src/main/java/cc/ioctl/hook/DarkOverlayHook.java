@@ -59,6 +59,9 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        if (!isAvailable()) {
+            return false;
+        }
         Method handleNightMask = DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__handleNightMask);
         HookUtils.hookAfterIfEnabled(this, handleNightMask, 49, param -> {
             if (fMask == null) {
@@ -184,6 +187,9 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean isPreparationRequired() {
+        if (!isAvailable()) {
+            return false;
+        }
         return FindNightMask.getNightMaskField() == null
                 || DexKit.isRunDexDeobfuscationRequired(DexKit.N_BASE_CHAT_PIE__handleNightMask);
     }
@@ -191,6 +197,9 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public Step[] makePreparationSteps() {
+        if (!isAvailable()) {
+            return null;
+        }
         return new Step[]{new DexDeobfStep(DexKit.N_BASE_CHAT_PIE__handleNightMask),
                 new FindNightMask()};
     }
