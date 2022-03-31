@@ -34,7 +34,6 @@ import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -51,13 +50,11 @@ import android.widget.TextView;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.DebugUtils;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
-import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
@@ -69,6 +66,7 @@ import io.github.qauxv.bridge.SessionInfoImpl;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.CustomMenu;
@@ -118,9 +116,8 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
         super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_FACADE});
     }
 
-    private static void showSavePttFileDialog(Activity context, final File ptt) {
-        CustomDialog dialog = CustomDialog.createFailsafe(context);
-        final Context ctx = dialog.getContext();
+    private static void showSavePttFileDialog(Activity activity, final File ptt) {
+        Context ctx = CommonContextWrapper.createAppCompatContext(activity);
         final EditText editText = new EditText(ctx);
         TextView tv = new TextView(ctx);
         tv.setText("格式为.slk/.amr 一般无法直接打开slk格式 而且大多数语音均为slk格式(转发语音可以看到格式) 请自行寻找软件进行转码");
@@ -135,15 +132,11 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
         }
         editText.setText(new File(lastSaveDir, DebugUtils.getPathTail(ptt)).getPath());
         editText.setTextSize(16);
-        int _5 = dip2px(ctx, 5);
-        editText.setPadding(_5, _5, _5, _5);
-        //editText.setBackgroundDrawable(new HighContrastBorder());
-        ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
         linearLayout.setOrientation(LinearLayout.VERTICAL);
         linearLayout.addView(tv, MATCH_PARENT, WRAP_CONTENT);
-        linearLayout.addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
-        final AlertDialog alertDialog = (AlertDialog) dialog
+        linearLayout.addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        final AlertDialog alertDialog = new AlertDialog.Builder(ctx)
                 .setTitle("输入保存路径(请自行转码)")
                 .setView(linearLayout)
                 .setPositiveButton("保存", null)
