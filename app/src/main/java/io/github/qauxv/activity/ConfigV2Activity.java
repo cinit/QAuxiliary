@@ -106,6 +106,12 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     public void updateActivationStatus() {
         boolean isHookEnabled = HookStatus.isModuleEnabled() || HostInfo.isInHostProcess();
         boolean isAbiMatch = CheckAbiVariantModel.collectAbiInfo(this).isAbiMatch;
+        if (isHookEnabled && HostInfo.isInModuleProcess() && !HookStatus.isZygoteHookMode()
+                && HookStatus.isTaiChiInstalled(this)
+                && HookStatus.getHookType() == HookStatus.HookType.APP_PATCH
+                && !"armAll".equals(BuildConfig.FLAVOR)) {
+            isAbiMatch = false;
+        }
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
         ImageView frameIcon = mainV2Binding.mainV2ActivationStatusIcon;
         TextView statusTitle = mainV2Binding.mainV2ActivationStatusTitle;
