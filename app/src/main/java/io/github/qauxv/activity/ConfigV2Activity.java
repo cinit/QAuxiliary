@@ -191,7 +191,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             case R.id.mainV2_troubleshoot: {
                 new AlertDialog.Builder(this)
                         .setTitle("你想要进入哪个App的故障排除")
-                        .setItems(new String[]{"QQ", "TIM", "QQ极速版"}, (dialog, which) -> {
+                        .setItems(new String[]{"QQ", "TIM", "QQ极速版", "QQ HD"}, (dialog, which) -> {
                             String pkg = null;
                             switch (which) {
                                 case 0: {
@@ -206,6 +206,10 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                                     pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
                                     break;
                                 }
+                                case 3: {
+                                    pkg = HookEntry.PACKAGE_NAME_QQ_HD;
+                                    break;
+                                }
                                 default: {
                                 }
                             }
@@ -213,8 +217,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                                 Intent intent = new Intent();
                                 intent.setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
                                 intent.setAction(Intent.ACTION_VIEW);
-                                intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD, JumpActivityEntryHook.JUMP_ACTION_START_ACTIVITY);
-                                intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_TARGET, SettingsUiFragmentHostActivity.class.getName());
+                                intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD,
+                                        JumpActivityEntryHook.JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY);
                                 try {
                                     startActivity(intent);
                                 } catch (ActivityNotFoundException e) {
