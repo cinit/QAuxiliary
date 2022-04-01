@@ -47,6 +47,7 @@ public class IoUtils {
      * @return a byte array containing all the bytes from the input stream
      * @throws IOException if an I/O error occurs
      */
+    @NonNull
     public static byte[] readFully(@NonNull InputStream is) throws IOException {
         Objects.requireNonNull(is, "is == null");
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
@@ -69,6 +70,7 @@ public class IoUtils {
      * @return a byte array containing all the bytes from the file
      * @throws IOException if an I/O error occurs
      */
+    @NonNull
     public static byte[] readFile(@NonNull File file) throws IOException {
         Objects.requireNonNull(file, "file == null");
         if (!file.exists()) {
@@ -83,8 +85,11 @@ public class IoUtils {
         try (InputStream is = new FileInputStream(file)) {
             int len;
             int offset = 0;
-            while ((len = is.read(buf, offset, size - offset)) != -1) {
+            while (offset < size && (len = is.read(buf, offset, size - offset)) != -1) {
                 offset += len;
+            }
+            if (offset != size) {
+                throw new IOException("Could not completely read file: " + file.getAbsolutePath() + ", expected: " + size + ", got: " + offset);
             }
         }
         return buf;
