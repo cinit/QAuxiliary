@@ -27,6 +27,7 @@ import android.content.Intent
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
@@ -76,6 +77,10 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         // update window background, I don't know why, but it's necessary
         val bgColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(this, android.R.attr.windowBackground, 0)
         window.setBackgroundDrawable(ColorDrawable(bgColor))
+        window.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
+                or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+        )
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
         mAppBarLayout.background = mAppToolBar.background
