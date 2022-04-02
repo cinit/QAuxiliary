@@ -69,6 +69,9 @@ import java.util.List;
  */
 public class Parasitics {
 
+    private Parasitics() {
+    }
+
     private static boolean __stub_hooked = false;
     private static long sResInjectBeginTime = 0;
     private static long sResInjectEndTime = 0;
@@ -90,7 +93,8 @@ public class Parasitics {
     }
 
     @MainProcess
-    @SuppressLint("PrivateApi")
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
     public static void injectModuleResources(Resources res) {
         if (res == null) {
             return;
@@ -107,7 +111,6 @@ public class Parasitics {
                     "get module path failed, loader=" + MainHook.class.getClassLoader());
             }
             AssetManager assets = res.getAssets();
-            @SuppressLint("DiscouragedPrivateApi")
             Method addAssetPath = AssetManager.class
                 .getDeclaredMethod("addAssetPath", String.class);
             addAssetPath.setAccessible(true);
@@ -143,7 +146,8 @@ public class Parasitics {
     }
 
     @MainProcess
-    @SuppressLint("PrivateApi")
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
     public static void initForStubActivity(Context ctx) {
         if (__stub_hooked) {
             return;
@@ -266,7 +270,7 @@ public class Parasitics {
                         boolean isTranslucent = false;
                         try {
                             Class<?> targetActivity = Class.forName(component.getClassName());
-                            if (targetActivity != null && (WindowIsTranslucent.class.isAssignableFrom(targetActivity))) {
+                            if (WindowIsTranslucent.class.isAssignableFrom(targetActivity)) {
                                 isTranslucent = true;
                             }
                         } catch (ClassNotFoundException ignored) {
@@ -297,6 +301,8 @@ public class Parasitics {
         }
 
         @Override
+        @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
+        @SuppressWarnings("JavaReflectionMemberAccess")
         public boolean handleMessage(Message msg) {
             if (msg.what == 100) { // LAUNCH_ACTIVITY
                 try {
@@ -304,6 +310,7 @@ public class Parasitics {
                     Field field_intent = record.getClass().getDeclaredField("intent");
                     field_intent.setAccessible(true);
                     Intent intent = (Intent) field_intent.get(record);
+                    assert intent != null;
                     Bundle bundle = null;
                     try {
                         Field fExtras = Intent.class.getDeclaredField("mExtras");
@@ -329,18 +336,19 @@ public class Parasitics {
                 Object clientTransaction = msg.obj;
                 try {
                     if (clientTransaction != null) {
-                        Method getCallbacks = Class
-                            .forName("android.app.servertransaction.ClientTransaction")
-                            .getDeclaredMethod("getCallbacks");
+                        Method getCallbacks =
+                                Class.forName("android.app.servertransaction.ClientTransaction")
+                                        .getDeclaredMethod("getCallbacks");
                         getCallbacks.setAccessible(true);
-                        List clientTransactionItems = (List) getCallbacks.invoke(clientTransaction);
+                        List<?> clientTransactionItems = (List<?>) getCallbacks.invoke(clientTransaction);
                         if (clientTransactionItems != null && clientTransactionItems.size() > 0) {
                             for (Object item : clientTransactionItems) {
-                                Class c = item.getClass();
+                                Class<?> c = item.getClass();
                                 if (c.getName().contains("LaunchActivityItem")) {
                                     Field fmIntent = c.getDeclaredField("mIntent");
                                     fmIntent.setAccessible(true);
                                     Intent wrapper = (Intent) fmIntent.get(item);
+                                    assert wrapper != null;
                                     Bundle bundle = null;
                                     try {
                                         Field fExtras = Intent.class.getDeclaredField("mExtras");
@@ -364,6 +372,7 @@ public class Parasitics {
                                                     "currentActivityThread");
                                                 currentActivityThread.setAccessible(true);
                                                 Object activityThread = currentActivityThread.invoke(null);
+                                                assert activityThread != null;
                                                 // Accessing hidden method Landroid/app/ClientTransactionHandler;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
                                                 // Accessing hidden method Landroid/app/ActivityThread;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
                                                 Object acr = activityThread.getClass()
@@ -409,8 +418,8 @@ public class Parasitics {
                 return mBase.newActivity(cl, className, intent);
             } catch (Exception e) {
                 if (ActProxyMgr.isModuleProxyActivity(className)) {
-                    return (Activity) Initiator.class.getClassLoader().loadClass(className)
-                        .newInstance();
+                    return (Activity) Initiator.class.getClassLoader()
+                            .loadClass(className).newInstance();
                 }
                 throw e;
             }
@@ -534,7 +543,7 @@ public class Parasitics {
 
         @Override
         public Activity startActivitySync(Intent intent, Bundle options) {
-            return super.startActivitySync(intent, options);
+            return mBase.startActivitySync(intent, options);
         }
 
         @Override
