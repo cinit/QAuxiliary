@@ -40,6 +40,7 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
@@ -48,6 +49,7 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.lifecycle.ActProxyMgr
+import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.DexKit
@@ -98,6 +100,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
             CategoryItem("调试信息") {
+                description(
+                    "PID: " + android.os.Process.myPid() +
+                        ", UID: " + android.os.Process.myUid() +
+                        ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+                        "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
+                        HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
+                )
                 description(generateDebugInfoString(), isTextSelectable = true)
             }
         )
