@@ -94,7 +94,8 @@ public class CliOper {
             "me.kyuubiran.",
             "me.singleneuron.",
             "io.github.qauxv.",
-            "xyz.nextalone."
+            "xyz.nextalone.",
+            "io.github.duzhaokun123."
         };
 
     }
