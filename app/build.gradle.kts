@@ -34,7 +34,6 @@ android {
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
-                enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
                 enableV4Signing = true
@@ -49,11 +48,8 @@ android {
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            tasks.forEach {
-                if (it.name.contains("lint")) {
-                    it.enabled = false
-                }
-            }
+            tasks.filter { it.name.toLowerCase().contains("lint") }
+                .forEach { it.enabled = false }
             kotlinOptions.suppressWarnings = true
         }
         getByName("debug") {
