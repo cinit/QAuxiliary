@@ -34,8 +34,8 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
 import me.ketal.util.HookUtil.findClass
 import me.ketal.util.HookUtil.getMethod
+import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.throwOrTrue
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -70,16 +70,18 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
                 tv?.setOnClickListener {
                     throwOrTrue {
                         Reflex.invokeVirtual(logic, "b")
-                        val b = Reflex.getInstanceObjectOrNull(logic, "b", View::class.java)
-                        if (b.visibility != 0) {
+                        val menu = logic.get("b", View::class.java)
+                            ?: logic.get("f", View::class.java) !!
+                        if (menu.height == 0 || menu.visibility != View.VISIBLE) {
+                            // show
                             Reflex.invokeVirtual(logic, "a")
                         } else {
+                            // hide
                             Reflex.invokeVirtual(logic, "a", true, Boolean::class.java)
                         }
                     }
                 }
             }
-        true
     }
 
     private fun findCancelTV(thisObject: Any, clazz: Class<*>): TextView? {

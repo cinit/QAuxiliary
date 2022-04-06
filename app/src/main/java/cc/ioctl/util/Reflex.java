@@ -1072,6 +1072,19 @@ public class Reflex {
         return null;
     }
 
+    @NonNull
+    public static Field findFirstDeclaredInstanceFieldByType(@NonNull Class<?> clazz, @NonNull Class<?> type) throws NoSuchFieldException {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(type, "type == null");
+        for (Field field : clazz.getDeclaredFields()) {
+            if (field.getType() == type && !Modifier.isStatic(field.getModifiers())) {
+                field.setAccessible(true);
+                return field;
+            }
+        }
+        throw new NoSuchFieldException("field of type " + type.getName() + " not found in " + clazz.getName());
+    }
+
     @Nullable
     public static Field findFirstDeclaredStaticFieldByTypeOrNull(@NonNull Class<?> clazz, @NonNull Class<?> type) {
         Objects.requireNonNull(clazz, "clazz == null");

@@ -41,6 +41,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     public static final String PACKAGE_NAME_QQ = "com.tencent.mobileqq";
     public static final String PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi";
     public static final String PACKAGE_NAME_QQ_LITE = "com.tencent.qqlite";
+    public static final String PACKAGE_NAME_QQ_HD = "com.tencent.minihd.qq";
     public static final String PACKAGE_NAME_TIM = "com.tencent.tim";
     public static final String PACKAGE_NAME_SELF = "io.github.qauxv";
     public static final String PACKAGE_NAME_XPOSED_INSTALLER = "de.robv.android.xposed.installer";
@@ -73,6 +74,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             }
             case PACKAGE_NAME_TIM:
             case PACKAGE_NAME_QQ:
+            case PACKAGE_NAME_QQ_HD:
             case PACKAGE_NAME_QQ_LITE: {
                 if (sInitZygoteStartupParam == null) {
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");

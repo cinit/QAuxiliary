@@ -21,23 +21,31 @@
  */
 package io.github.qauxv.core;
 
+import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
+import android.os.Bundle;
 import cc.ioctl.hook.FileRecvRedirect;
 import cc.ioctl.hook.GagInfoDisclosure;
 import cc.ioctl.hook.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.MuteQZoneThumbsUp;
 import cc.ioctl.hook.OptXListViewScrollBar;
 import cc.ioctl.hook.RevokeMsgHook;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigItems;
+import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
+import io.github.qauxv.util.Log;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import me.kyuubiran.hook.RemoveCameraButton;
 import xyz.nextalone.hook.RemoveSuperQQShow;
@@ -73,6 +81,9 @@ public class MainHook {
     public void performHook(Context ctx, Object step) {
         SyncUtils.initBroadcast(ctx);
         injectLifecycleForProcess(ctx);
+        if (HostInfo.isQQHD()) {
+            initForQQHDBasePadActivityMitigation();
+        }
         HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
         HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
         HookInstaller.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
@@ -122,6 +133,55 @@ public class MainHook {
                     dir = Reflex.getFirstNSFByType(step, director);
                 }
                 InjectDelayableHooks.step(dir);
+            }
+        }
+    }
+
+    private static void initForQQHDBasePadActivityMitigation() {
+        Class<?> kBasePadActivity = Initiator.load("mqq.app.BasePadActivity");
+        if (kBasePadActivity != null) {
+            try {
+                Method m = kBasePadActivity.getDeclaredMethod("startActivityForResult", Intent.class, int.class, Bundle.class);
+                final Method doStartActivityForResult = kBasePadActivity.getDeclaredMethod("doStartActivityForResult", Intent.class, int.class, Bundle.class);
+                doStartActivityForResult.setAccessible(true);
+                XposedBridge.hookMethod(m, new XC_MethodHook(51) {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) {
+                        Activity activity = (Activity) param.thisObject;
+                        Intent intent = (Intent) param.args[0];
+                        int requestCode = (int) param.args[1];
+                        Bundle options = (Bundle) param.args[2];
+                        String className = null;
+                        if (intent != null) {
+                            ComponentName component = intent.getComponent();
+                            if (component != null && HostInfo.getPackageName().equals(component.getPackageName())) {
+                                className = component.getClassName();
+                            }
+                        }
+                        if (className == null) {
+                            // nothing related to us
+                            return;
+                        }
+                        if (ActProxyMgr.isModuleProxyActivity(className)) {
+                            // call original method
+                            try {
+                                doStartActivityForResult.invoke(activity, intent, requestCode, options);
+                                param.setResult(null);
+                            } catch (IllegalAccessException e) {
+                                throw new AssertionError(e);
+                            } catch (InvocationTargetException ite) {
+                                Throwable cause = ite.getCause();
+                                if (cause != null) {
+                                    Log.e("doStartActivityForResult failed: " + cause.getMessage(), cause);
+                                } else {
+                                    Log.e("doStartActivityForResult failed: " + ite.getMessage(), ite);
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (NoSuchMethodException e) {
+                Log.e("initForQQHDBasePadActivityMitigation: startActivityForResult not found", e);
             }
         }
     }

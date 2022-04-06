@@ -29,7 +29,7 @@ import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Log
-import java.util.*
+import java.util.Arrays
 
 abstract class BaseHookDispatcher<T : IDynamicHook>(
         dexDeobfIndexes: IntArray?
@@ -41,6 +41,8 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
     private val mDexDeobfIndexes: IntArray? = dexDeobfIndexes
 
     override val isInitialized: Boolean get() = mInitialized
+
+    override val isInitializationSuccessful: Boolean get() = mInitializeResult
 
     abstract val decorators: Array<T>
 

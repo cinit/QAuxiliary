@@ -24,11 +24,10 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static cc.ioctl.util.LayoutHelper.dip2px;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.text.TextUtils;
 import android.view.View;
@@ -36,17 +35,15 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.LayoutHelper;
-import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
-import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
-import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -61,25 +58,21 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
     private CheckCommonGroup() {
     }
 
-    public static void onClick(Context ctx) {
-        CustomDialog dialog = CustomDialog.createFailsafe(ctx);
+    public static void onClick(Context baseContext) {
+        Context ctx = CommonContextWrapper.createAppCompatContext(baseContext);
         EditText editText = new EditText(ctx);
         editText.setTextSize(16);
-        int _5 = dip2px(ctx, 5);
-        editText.setPadding(_5, _5, _5, _5);
-        ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
-        linearLayout
-                .addView(editText,
-                        LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
-        AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入对方QQ号")
+        linearLayout.addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        AlertDialog alertDialog = new AlertDialog.Builder(ctx)
+                .setTitle("输入对方QQ号")
                 .setView(linearLayout)
                 .setCancelable(true)
                 .setPositiveButton("打开QQ号", null)
                 .setNegativeButton("取消", null)
                 .create();
         alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 .setOnClickListener(v -> {
                     String text = editText.getText().toString();
                     if (TextUtils.isEmpty(text)) {
@@ -98,9 +91,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
                     alertDialog.dismiss();
                     Class<?> browser = null;
                     try {
-                        browser = Class
-                                .forName(
-                                        "com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
+                        browser = Class.forName("com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
                         Intent intent = new Intent(ctx, browser);
                         intent.putExtra("fling_action_key", 2);
                         intent.putExtra("fling_code_key", ctx.hashCode());

@@ -37,7 +37,6 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.Log;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
@@ -65,17 +64,17 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
     @Override
     public boolean isEnabled() {
-        try {
-            Application app = HostInfo.getApplication();
-            if (HostInfo.isTim()) {
-                return false;
-            }
-            File dir = new File(app.getFilesDir().getAbsolutePath() + "/bubble_info");
-            return !dir.exists() || !dir.canRead();
-        } catch (Exception e) {
-            Log.e(e);
+        if (HostInfo.isTim()) {
             return false;
         }
+        Application app = HostInfo.getApplication();
+        for (String path : paths) {
+            File dir = new File(app.getFilesDir().getAbsolutePath() + path);
+            if (dir.exists()) {
+                return !dir.canRead();
+            }
+        }
+        return false;
     }
 
     @Override
@@ -119,6 +118,11 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
     @Override
     public boolean isInitialized() {
         return true;
+    }
+
+    @Override
+    public boolean isInitializationSuccessful() {
+        return isInitialized();
     }
 
     @Override

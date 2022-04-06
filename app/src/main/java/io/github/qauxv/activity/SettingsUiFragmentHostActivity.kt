@@ -24,11 +24,14 @@ package io.github.qauxv.activity
 
 import android.content.Context
 import android.content.Intent
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.WindowManager
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
+import cc.ioctl.util.ui.ThemeAttrUtils
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
@@ -71,6 +74,13 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         // we don't want the Fragment to be recreated
         super.doOnCreate(null)
         setContentView(R.layout.activity_settings_ui_host)
+        // update window background, I don't know why, but it's necessary
+        val bgColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(this, android.R.attr.windowBackground, 0)
+        window.setBackgroundDrawable(ColorDrawable(bgColor))
+        window.setSoftInputMode(
+            WindowManager.LayoutParams.SOFT_INPUT_STATE_UNSPECIFIED
+                or WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN
+        )
         mAppBarLayout = findViewById(R.id.topAppBarLayout)
         mAppToolBar = findViewById(R.id.topAppBar)
         mAppBarLayout.background = mAppToolBar.background
@@ -201,10 +211,18 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
     private fun updateTitle(fragment: BaseSettingFragment) {
         SyncUtils.postDelayed(1) {
             val text: String? = fragment.title
+            val subtitle: String? = fragment.subtitle
             this.title = text
             supportActionBar?.let {
                 it.title = text
+                it.subtitle = subtitle
             }
+        }
+    }
+
+    open fun requestInvalidateActionBar() {
+        if (mTopVisibleFragment != null) {
+            updateTitle(mTopVisibleFragment!!)
         }
     }
 

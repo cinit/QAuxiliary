@@ -72,6 +72,7 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
         Window window = getWindow();
         WindowManager.LayoutParams params = window.getAttributes();
         params.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_STATUS;
+        params.flags &= ~WindowManager.LayoutParams.FLAG_TRANSLUCENT_NAVIGATION;
         params.flags |= WindowManager.LayoutParams.FLAG_DRAWS_SYSTEM_BAR_BACKGROUNDS;
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             params.layoutInDisplayCutoutMode = WindowManager.LayoutParams.LAYOUT_IN_DISPLAY_CUTOUT_MODE_SHORT_EDGES;

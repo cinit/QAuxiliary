@@ -31,12 +31,22 @@ import io.github.qauxv.step.Step
 interface IDynamicHook {
 
     /**
+     * Check if the hook needs to initialize.
+     * Note that a hook may be required to initialize but not initialized successfully.
+     * If you want to check if the hook is initialized and successfully, use [isInitializationSuccessful] instead.
+     * Return true if the hook is ever attempted to initialize and you don't want [initialize] to be called again.
+     *
+     * @return true if the hook is initialized.
+     */
+    val isInitialized: Boolean
+
+    /**
      * Check if the hook is initialized and ready to be used.
      * If initialization is not successful, the hook should not be used, and this method should return false.
      *
      * @return true if the hook is initialized and usable.
      */
-    val isInitialized: Boolean
+    val isInitializationSuccessful: Boolean
 
     /**
      * Initialize the hook.

@@ -27,7 +27,7 @@ import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
-import java.util.*
+import java.util.Arrays
 
 abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {
 
@@ -37,6 +37,9 @@ abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {
 
     override val isInitialized: Boolean
         get() = mInitialized
+
+    override val isInitializationSuccessful: Boolean
+        get() = mInitializeResult
 
     override fun initialize(): Boolean {
         if (mInitialized) {

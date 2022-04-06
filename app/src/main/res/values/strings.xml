@@ -30,4 +30,5 @@
     <string name="tip">提示</string>
     <string name="send_to_ipad">发送到我的iPad</string>
     <string name="action_search">搜索</string>
+    <string name="action_copy_all">复制全部</string>
 </resources>

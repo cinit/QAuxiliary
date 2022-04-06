@@ -29,7 +29,6 @@ import static cc.ioctl.util.LayoutHelper.dip2sp;
 
 import android.content.Context;
 import android.graphics.drawable.Drawable;
-import android.graphics.drawable.StateListDrawable;
 import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -39,9 +38,6 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
-import cc.ioctl.util.ui.drawable.DummyDrawable;
-import cc.ioctl.util.ui.drawable.HcbBackgroundDrawable;
 import cc.ioctl.util.ui.drawable.HostStyleCommonItemBackground;
 import cc.ioctl.util.ui.widget.FunctionDummy;
 import io.github.qauxv.R;
@@ -141,13 +137,6 @@ public class HostStyledViewBuilder {
             vg.addView(root);
         }
         return root;
-    }
-
-    public static StateListDrawable getDialogClickableItemBackground() {
-        StateListDrawable sd = new StateListDrawable();
-        sd.addState(new int[]{android.R.attr.state_pressed}, new HcbBackgroundDrawable(0x40808080));
-        sd.addState(new int[]{}, new DummyDrawable());
-        return sd;
     }
 
     public static int getColorSkinBlack() {

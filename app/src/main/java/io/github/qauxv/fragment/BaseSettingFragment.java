@@ -36,6 +36,8 @@ import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 public abstract class BaseSettingFragment extends Fragment {
 
     private SettingsUiFragmentHostActivity mSettingsHostActivity = null;
+    @Nullable
+    private String mSubtitle = null;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -63,6 +65,18 @@ public abstract class BaseSettingFragment extends Fragment {
 
     @Nullable
     public abstract String getTitle();
+
+    @Nullable
+    public String getSubtitle() {
+        return mSubtitle;
+    }
+
+    protected void setSubtitle(@Nullable String title) {
+        mSubtitle = title;
+        if (mSettingsHostActivity != null) {
+            mSettingsHostActivity.requestInvalidateActionBar();
+        }
+    }
 
     public boolean doOnBackPressed() {
         return false;

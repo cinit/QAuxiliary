@@ -84,12 +84,12 @@ extern "C" jint MMKV_JNI_OnLoad(JavaVM *vm, void *reserved) {
         MMKVError("fail to get method id for onMMKVFileLengthError");
     }
     g_mmkvLogID =
-        env->GetStaticMethodID(g_cls, "mmkvLogImp", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;)V");
+            env->GetStaticMethodID(g_cls, "mmkvLogImp", "(ILjava/lang/String;ILjava/lang/String;Ljava/lang/String;)V");
     if (!g_mmkvLogID) {
         MMKVError("fail to get method id for mmkvLogImp");
     }
     g_callbackOnContentChange =
-        env->GetStaticMethodID(g_cls, "onContentChangedByOuterProcess", "(Ljava/lang/String;)V");
+            env->GetStaticMethodID(g_cls, "onContentChangedByOuterProcess", "(Ljava/lang/String;)V");
     if (!g_callbackOnContentChange) {
         MMKVError("fail to get method id for onContentChangedByOuterProcess()");
     }
@@ -712,6 +712,12 @@ MMKV_JNI void checkReSetCryptKey(JNIEnv *env, jobject instance, jstring cryptKey
     }
 }
 
+#    else
+
+MMKV_JNI jstring cryptKey(JNIEnv *env, jobject instance) {
+    return nullptr;
+}
+
 #    endif // MMKV_DISABLE_CRYPT
 
 MMKV_JNI void trim(JNIEnv *env, jobject instance) {
@@ -840,67 +846,67 @@ MMKV_JNI jlong restoreAll(JNIEnv *env, jobject obj, jstring srcDir/*, jstring ro
 } // namespace mmkv
 
 static JNINativeMethod g_methods[] = {
-    {"onExit", "()V", (void *) mmkv::onExit},
+        {"onExit", "()V", (void *) mmkv::onExit},
+        {"cryptKey", "()Ljava/lang/String;", (void *) mmkv::cryptKey},
 #    ifndef MMKV_DISABLE_CRYPT
-    {"cryptKey", "()Ljava/lang/String;", (void *) mmkv::cryptKey},
-    {"reKey", "(Ljava/lang/String;)Z", (void *) mmkv::reKey},
-    {"checkReSetCryptKey", "(Ljava/lang/String;)V", (void *) mmkv::checkReSetCryptKey},
+        {"reKey", "(Ljava/lang/String;)Z", (void *) mmkv::reKey},
+        {"checkReSetCryptKey", "(Ljava/lang/String;)V", (void *) mmkv::checkReSetCryptKey},
 #    endif
-    {"pageSize", "()I", (void *) mmkv::pageSize},
-    {"mmapID", "()Ljava/lang/String;", (void *) mmkv::mmapID},
-    {"version", "()Ljava/lang/String;", (void *) mmkv::version},
-    {"lock", "()V", (void *) mmkv::lock},
-    {"unlock", "()V", (void *) mmkv::unlock},
-    {"tryLock", "()Z", (void *) mmkv::tryLock},
-    {"allKeys", "()[Ljava/lang/String;", (void *) mmkv::allKeys},
-    {"removeValuesForKeys", "([Ljava/lang/String;)V", (void *) mmkv::removeValuesForKeys},
-    {"clearAll", "()V", (void *) mmkv::clearAll},
-    {"trim", "()V", (void *) mmkv::trim},
-    {"close", "()V", (void *) mmkv::close},
-    {"clearMemoryCache", "()V", (void *) mmkv::clearMemoryCache},
-    {"sync", "(Z)V", (void *) mmkv::sync},
-    {"isFileValid", "(Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::isFileValid},
-    {"ashmemFD", "()I", (void *) mmkv::ashmemFD},
-    {"ashmemMetaFD", "()I", (void *) mmkv::ashmemMetaFD},
-    {"jniInitialize", "(Ljava/lang/String;Ljava/lang/String;I)V", (void *) mmkv::jniInitialize},
-    {"getMMKVWithID", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)J", (void *) mmkv::getMMKVWithID},
-    {"getMMKVWithIDAndSize", "(Ljava/lang/String;IILjava/lang/String;)J", (void *) mmkv::getMMKVWithIDAndSize},
-    {"getDefaultMMKV", "(ILjava/lang/String;)J", (void *) mmkv::getDefaultMMKV},
-    {"getMMKVWithAshmemFD", "(Ljava/lang/String;IILjava/lang/String;)J", (void *) mmkv::getMMKVWithAshmemFD},
-    {"encodeBool", "(JLjava/lang/String;Z)Z", (void *) mmkv::encodeBool},
-    {"decodeBool", "(JLjava/lang/String;Z)Z", (void *) mmkv::decodeBool},
-    {"encodeInt", "(JLjava/lang/String;I)Z", (void *) mmkv::encodeInt},
-    {"decodeInt", "(JLjava/lang/String;I)I", (void *) mmkv::decodeInt},
-    {"encodeLong", "(JLjava/lang/String;J)Z", (void *) mmkv::encodeLong},
-    {"decodeLong", "(JLjava/lang/String;J)J", (void *) mmkv::decodeLong},
-    {"encodeFloat", "(JLjava/lang/String;F)Z", (void *) mmkv::encodeFloat},
-    {"decodeFloat", "(JLjava/lang/String;F)F", (void *) mmkv::decodeFloat},
-    {"encodeDouble", "(JLjava/lang/String;D)Z", (void *) mmkv::encodeDouble},
-    {"decodeDouble", "(JLjava/lang/String;D)D", (void *) mmkv::decodeDouble},
-    {"encodeString", "(JLjava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::encodeString},
-    {"decodeString", "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *) mmkv::decodeString},
-    {"encodeSet", "(JLjava/lang/String;[Ljava/lang/String;)Z", (void *) mmkv::encodeSet},
-    {"decodeStringSet", "(JLjava/lang/String;)[Ljava/lang/String;", (void *) mmkv::decodeStringSet},
-    {"encodeBytes", "(JLjava/lang/String;[B)Z", (void *) mmkv::encodeBytes},
-    {"decodeBytes", "(JLjava/lang/String;)[B", (void *) mmkv::decodeBytes},
-    {"containsKey", "(JLjava/lang/String;)Z", (void *) mmkv::containsKey},
-    {"count", "(J)J", (void *) mmkv::count},
-    {"totalSize", "(J)J", (void *) mmkv::totalSize},
-    {"actualSize", "(J)J", (void *) mmkv::actualSize},
-    {"removeValueForKey", "(JLjava/lang/String;)V", (void *) mmkv::removeValueForKey},
-    {"valueSize", "(JLjava/lang/String;Z)I", (void *) mmkv::valueSize},
-    {"setLogLevel", "(I)V", (void *) mmkv::setLogLevel},
-    {"setCallbackHandler", "(ZZ)V", (void *) mmkv::setCallbackHandler},
-    {"createNB", "(I)J", (void *) mmkv::createNB},
-    {"destroyNB", "(JI)V", (void *) mmkv::destroyNB},
-    {"writeValueToNB", "(JLjava/lang/String;JI)I", (void *) mmkv::writeValueToNB},
-    {"setWantsContentChangeNotify", "(Z)V", (void *) mmkv::setWantsContentChangeNotify},
-    {"checkContentChangedByOuterProcess", "()V", (void *) mmkv::checkContentChanged},
-    {"checkProcessMode", "(J)Z", (void *) mmkv::checkProcessMode},
-    {"backupOneToDirectory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::backupOne},
-    {"restoreOneMMKVFromDirectory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::restoreOne},
-    {"backupAllToDirectory", "(Ljava/lang/String;)J", (void *) mmkv::backupAll},
-    {"restoreAllFromDirectory", "(Ljava/lang/String;)J", (void *) mmkv::restoreAll},
+        {"pageSize", "()I", (void *) mmkv::pageSize},
+        {"mmapID", "()Ljava/lang/String;", (void *) mmkv::mmapID},
+        {"version", "()Ljava/lang/String;", (void *) mmkv::version},
+        {"lock", "()V", (void *) mmkv::lock},
+        {"unlock", "()V", (void *) mmkv::unlock},
+        {"tryLock", "()Z", (void *) mmkv::tryLock},
+        {"allKeys", "()[Ljava/lang/String;", (void *) mmkv::allKeys},
+        {"removeValuesForKeys", "([Ljava/lang/String;)V", (void *) mmkv::removeValuesForKeys},
+        {"clearAll", "()V", (void *) mmkv::clearAll},
+        {"trim", "()V", (void *) mmkv::trim},
+        {"close", "()V", (void *) mmkv::close},
+        {"clearMemoryCache", "()V", (void *) mmkv::clearMemoryCache},
+        {"sync", "(Z)V", (void *) mmkv::sync},
+        {"isFileValid", "(Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::isFileValid},
+        {"ashmemFD", "()I", (void *) mmkv::ashmemFD},
+        {"ashmemMetaFD", "()I", (void *) mmkv::ashmemMetaFD},
+        {"jniInitialize", "(Ljava/lang/String;Ljava/lang/String;I)V", (void *) mmkv::jniInitialize},
+        {"getMMKVWithID", "(Ljava/lang/String;ILjava/lang/String;Ljava/lang/String;)J", (void *) mmkv::getMMKVWithID},
+        {"getMMKVWithIDAndSize", "(Ljava/lang/String;IILjava/lang/String;)J", (void *) mmkv::getMMKVWithIDAndSize},
+        {"getDefaultMMKV", "(ILjava/lang/String;)J", (void *) mmkv::getDefaultMMKV},
+        {"getMMKVWithAshmemFD", "(Ljava/lang/String;IILjava/lang/String;)J", (void *) mmkv::getMMKVWithAshmemFD},
+        {"encodeBool", "(JLjava/lang/String;Z)Z", (void *) mmkv::encodeBool},
+        {"decodeBool", "(JLjava/lang/String;Z)Z", (void *) mmkv::decodeBool},
+        {"encodeInt", "(JLjava/lang/String;I)Z", (void *) mmkv::encodeInt},
+        {"decodeInt", "(JLjava/lang/String;I)I", (void *) mmkv::decodeInt},
+        {"encodeLong", "(JLjava/lang/String;J)Z", (void *) mmkv::encodeLong},
+        {"decodeLong", "(JLjava/lang/String;J)J", (void *) mmkv::decodeLong},
+        {"encodeFloat", "(JLjava/lang/String;F)Z", (void *) mmkv::encodeFloat},
+        {"decodeFloat", "(JLjava/lang/String;F)F", (void *) mmkv::decodeFloat},
+        {"encodeDouble", "(JLjava/lang/String;D)Z", (void *) mmkv::encodeDouble},
+        {"decodeDouble", "(JLjava/lang/String;D)D", (void *) mmkv::decodeDouble},
+        {"encodeString", "(JLjava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::encodeString},
+        {"decodeString", "(JLjava/lang/String;Ljava/lang/String;)Ljava/lang/String;", (void *) mmkv::decodeString},
+        {"encodeSet", "(JLjava/lang/String;[Ljava/lang/String;)Z", (void *) mmkv::encodeSet},
+        {"decodeStringSet", "(JLjava/lang/String;)[Ljava/lang/String;", (void *) mmkv::decodeStringSet},
+        {"encodeBytes", "(JLjava/lang/String;[B)Z", (void *) mmkv::encodeBytes},
+        {"decodeBytes", "(JLjava/lang/String;)[B", (void *) mmkv::decodeBytes},
+        {"containsKey", "(JLjava/lang/String;)Z", (void *) mmkv::containsKey},
+        {"count", "(J)J", (void *) mmkv::count},
+        {"totalSize", "(J)J", (void *) mmkv::totalSize},
+        {"actualSize", "(J)J", (void *) mmkv::actualSize},
+        {"removeValueForKey", "(JLjava/lang/String;)V", (void *) mmkv::removeValueForKey},
+        {"valueSize", "(JLjava/lang/String;Z)I", (void *) mmkv::valueSize},
+        {"setLogLevel", "(I)V", (void *) mmkv::setLogLevel},
+        {"setCallbackHandler", "(ZZ)V", (void *) mmkv::setCallbackHandler},
+        {"createNB", "(I)J", (void *) mmkv::createNB},
+        {"destroyNB", "(JI)V", (void *) mmkv::destroyNB},
+        {"writeValueToNB", "(JLjava/lang/String;JI)I", (void *) mmkv::writeValueToNB},
+        {"setWantsContentChangeNotify", "(Z)V", (void *) mmkv::setWantsContentChangeNotify},
+        {"checkContentChangedByOuterProcess", "()V", (void *) mmkv::checkContentChanged},
+        {"checkProcessMode", "(J)Z", (void *) mmkv::checkProcessMode},
+        {"backupOneToDirectory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::backupOne},
+        {"restoreOneMMKVFromDirectory", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;)Z", (void *) mmkv::restoreOne},
+        {"backupAllToDirectory", "(Ljava/lang/String;)J", (void *) mmkv::backupAll},
+        {"restoreAllFromDirectory", "(Ljava/lang/String;)J", (void *) mmkv::restoreAll},
 };
 
 static int registerNativeMethods(JNIEnv *env, jclass cls) {

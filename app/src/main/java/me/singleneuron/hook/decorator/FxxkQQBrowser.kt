@@ -58,7 +58,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
         Log.d("check1=$check1 check2=$check2 check3=$check3")*/
         return if (!url.isNullOrBlank()
                 && url.contains(Regex("http|https", RegexOption.IGNORE_CASE))
-                && !url.contains(Regex("qq.com|tenpay.com"))
+                && !url.contains(Regex("qq.com|tenpay.com|meeting.tencent.com"))
                 && intent.component?.shortClassName?.contains("QQBrowserActivity") == true
         ) {
             val customTabsIntent = CustomTabsIntent.Builder().apply {

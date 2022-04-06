@@ -48,10 +48,6 @@ public class FaultyDialog {
 
     public static void show(@NonNull Context ctx, @Nullable String title, @NonNull Throwable e, boolean cancelable) {
         Log.e(e);
-        if (!SyncUtils.isMainProcess()) {
-            // only show in main process
-            return;
-        }
         String t = TextUtils.isEmpty(title) ? Reflex.getShortClassName(e) : title;
         assert t != null;
         SyncUtils.runOnUiThread(() -> showImpl(ctx, t, e, cancelable));

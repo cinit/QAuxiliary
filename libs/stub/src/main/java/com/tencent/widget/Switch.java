@@ -40,47 +40,38 @@ public class Switch extends CompoundButton {
     }
 
     public void setSwitchPadding(int i2) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setSwitchMinWidth(int i2) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setThumbTextPadding(int i2) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setTrackDrawable(Drawable drawable) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setTrackResource(int i2) {
-        setTrackDrawable(getContext().getResources().getDrawable(i2));
         throw new RuntimeException("Stub!");
     }
 
     public void setThumbDrawable(Drawable drawable) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setThumbResource(int i2) {
-        setThumbDrawable(getContext().getResources().getDrawable(i2));
         throw new RuntimeException("Stub!");
     }
 
     public void setTextOn(CharSequence charSequence) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 
     public void setTextOff(CharSequence charSequence) {
-        requestLayout();
         throw new RuntimeException("Stub!");
     }
 }

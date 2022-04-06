@@ -32,6 +32,7 @@ public class HostInfo {
     public static final String PACKAGE_NAME_QQ = "com.tencent.mobileqq";
     public static final String PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi";
     public static final String PACKAGE_NAME_QQ_LITE = "com.tencent.qqlite";
+    public static final String PACKAGE_NAME_QQ_HD = "com.tencent.minihd.qq";
     public static final String PACKAGE_NAME_TIM = "com.tencent.tim";
     public static final String PACKAGE_NAME_SELF = "io.github.qauxv";
 
@@ -85,6 +86,10 @@ public class HostInfo {
 
     public static boolean isQQLite() {
         return PACKAGE_NAME_QQ_LITE.equals(getPackageName());
+    }
+
+    public static boolean isQQHD() {
+        return PACKAGE_NAME_QQ_HD.equals(getPackageName());
     }
 
     public static boolean isPlayQQ() {

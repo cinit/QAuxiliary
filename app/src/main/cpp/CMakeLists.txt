@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.10)
 project(qauxv)
 
 enable_language(CXX C)
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
 find_library( # Defines the name of the path variable that stores the
@@ -43,4 +43,4 @@ set_target_properties(qauxv PROPERTIES
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv c dl ${ANDROID_LIBS} dex_builder_static)
+target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dex_builder_static)
