@@ -126,7 +126,7 @@ dependencies {
 
     compileOnly("de.robv.android.xposed:api:82")
     implementation("io.noties.markwon:core:4.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     implementation("com.google.android.material:material:1.5.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
