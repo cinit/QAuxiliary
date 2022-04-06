@@ -38,7 +38,7 @@ public class CustomMenu {
                 //no direct constructor, reflex
                 Object item = createItem(clazz, id, title);
                 Field f;
-                f = Reflex.findField(clazz, int.class, "b");
+                f = Reflex.findFieldOrNull(clazz, int.class, "b");
                 if (f == null) {
                     f = Reflex.findField(clazz, int.class, "icon");
                 }
@@ -65,13 +65,13 @@ public class CustomMenu {
         }
         item = clazz.newInstance();
         Field f;
-        f = Reflex.findField(clazz, int.class, "id");
+        f = Reflex.findFieldOrNull(clazz, int.class, "id");
         if (f == null) {
             f = Reflex.findField(clazz, int.class, "a");
         }
         f.setAccessible(true);
         f.set(item, id);
-        f = Reflex.findField(clazz, String.class, "title");
+        f = Reflex.findFieldOrNull(clazz, String.class, "title");
         if (f == null) {
             f = Reflex.findField(clazz, String.class, "a");
         }
