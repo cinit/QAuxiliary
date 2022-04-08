@@ -80,7 +80,7 @@ jobs:
           KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
 
       - name: Show Artifacts MD5
-        run: md5sum ${{ env.APK_FILE_UNIVERSAL }}
+        run: md5sum ${{ env.APK_FILE_UNIVERSAL }} ${{ env.APK_FILE_ARM32 }} ${{ env.APK_FILE_ARM64 }} ${{ env.APK_FILE_ARMALL }}
 
       - name: Upload Artifacts(arm32)
         uses: actions/upload-artifact@v2

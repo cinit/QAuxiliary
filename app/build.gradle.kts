@@ -34,7 +34,6 @@ android {
                 storePassword = System.getenv("KEYSTORE_PASSWORD")
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
-                enableV1Signing = true
                 enableV2Signing = true
                 enableV3Signing = true
                 enableV4Signing = true
@@ -49,11 +48,8 @@ android {
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            tasks.forEach {
-                if (it.name.contains("lint")) {
-                    it.enabled = false
-                }
-            }
+            tasks.filter { it.name.toLowerCase().contains("lint") }
+                .forEach { it.enabled = false }
             kotlinOptions.suppressWarnings = true
         }
         getByName("debug") {
@@ -130,13 +126,13 @@ dependencies {
 
     compileOnly("de.robv.android.xposed:api:82")
     implementation("io.noties.markwon:core:4.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     implementation("com.google.android.material:material:1.5.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
     implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("com.github.kyuubiran:EzXHelper:0.7.8")
+    implementation("com.github.kyuubiran:EzXHelper:0.8.0")
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")

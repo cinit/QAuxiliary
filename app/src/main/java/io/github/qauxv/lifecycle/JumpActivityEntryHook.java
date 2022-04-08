@@ -33,6 +33,7 @@ import android.text.TextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
+import io.github.qauxv.fragment.TroubleshootFragment;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
@@ -49,7 +50,7 @@ public class JumpActivityEntryHook {
     public static final String JUMP_ACTION_TARGET = "qa_jump_action_target";
     public static final String JUMP_ACTION_START_ACTIVITY = "io.github.qauxv.START_ACTIVITY";
     public static final String JUMP_ACTION_SETTING_ACTIVITY = "io.github.qauxv.SETTING_ACTIVITY";
-    public static final String JUMP_ACTION_REQUEST_SKIP_DIALOG = "io.github.qauxv.REQUEST_SKIP_DIALOG";
+    public static final String JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY = "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY";
     private static boolean __jump_act_init = false;
 
     @MainProcess
@@ -94,6 +95,8 @@ public class JumpActivityEntryHook {
                                 Log.i("Unable to start Activity: " + e);
                             }
                         }
+                    } else if (JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY.equals(cmd)) {
+                        SettingsUiFragmentHostActivity.startFragmentWithContext(activity, TroubleshootFragment.class);
                     }
                 }
             });

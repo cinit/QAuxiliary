@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <item type="id" name="item_tts" />
     <item type="id" name="item_showPicMd5"/>
     <item type="id" name="item_copyToClipboard"/>
     <item type="id" name="rootBounceScrollView"/>

@@ -24,25 +24,23 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static cc.ioctl.util.LayoutHelper.dip2px;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.view.View;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.LayoutHelper;
-import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Entertainment;
-import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.io.IOException;
@@ -60,24 +58,20 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
     private AddAccount() {
     }
 
-    public static void onAddAccountClick(Context context) {
-        CustomDialog dialog = CustomDialog.createFailsafe(context);
-        Context ctx = dialog.getContext();
+    public static void onAddAccountClick(@NonNull Context baseContext) {
+        Context ctx = CommonContextWrapper.createAppCompatContext(baseContext);
         EditText editText = new EditText(ctx);
         editText.setTextSize(16);
-        int _5 = dip2px(context, 5);
-        editText.setPadding(_5, _5, _5, _5);
-        ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
-        linearLayout.addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
-        AlertDialog alertDialog = (AlertDialog) dialog
+        linearLayout.addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        AlertDialog alertDialog = new AlertDialog.Builder(ctx)
             .setTitle("输入要添加的QQ号")
             .setView(linearLayout)
             .setPositiveButton("添加", null)
             .setNegativeButton("取消", null)
             .create();
         alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener(v1 -> {
+        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v1 -> {
             String uinText = editText.getText().toString();
             long uin = -1;
             try {
@@ -85,22 +79,21 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
             } catch (NumberFormatException ignored) {
             }
             if (uin < 10000) {
-                Toasts.error(context, "QQ号无效");
+                Toasts.error(ctx, "QQ号无效");
                 return;
             }
             boolean success;
-            File f = new File(context.getFilesDir(), "user/u_" + uin + "_t");
+            File f = new File(ctx.getFilesDir(), "user/u_" + uin + "_t");
             try {
                 success = f.createNewFile();
             } catch (IOException e) {
-                Toasts.error(context,
-                    e.toString().replaceAll("java\\.(lang|io)\\.", ""));
+                Toasts.error(ctx, e.toString().replaceAll("java\\.(lang|io)\\.", ""));
                 return;
             }
             if (success) {
-                Toasts.success(context, "已添加");
+                Toasts.success(ctx, "已添加");
             } else {
-                Toasts.info(context, "该账号已存在");
+                Toasts.info(ctx, "该账号已存在");
                 return;
             }
             alertDialog.dismiss();

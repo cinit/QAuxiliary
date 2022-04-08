@@ -24,13 +24,12 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
-import static cc.ioctl.util.LayoutHelper.dip2px;
 import static cc.ioctl.util.LayoutHelper.newLinearLayoutParams;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Parcelable;
 import android.text.TextUtils;
@@ -39,15 +38,14 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.view.ViewCompat;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.Reflex;
-import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
-import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
@@ -65,17 +63,14 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
     private OpenProfileCard() {
     }
 
-    public static void onClick(Context ctx) {
-        CustomDialog dialog = CustomDialog.createFailsafe(ctx);
+    public static void onClick(Context baseContext) {
+        Context ctx = CommonContextWrapper.createAppCompatContext(baseContext);
         EditText editText = new EditText(ctx);
         editText.setTextSize(16);
-        int _5 = dip2px(ctx, 5);
-        editText.setPadding(_5, _5, _5, _5);
-        ViewCompat.setBackground(editText, new HighContrastBorder());
         LinearLayout linearLayout = new LinearLayout(ctx);
-        linearLayout
-                .addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, _5 * 2));
-        AlertDialog alertDialog = (AlertDialog) dialog.setTitle("输入对方QQ号")
+        linearLayout.addView(editText, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT));
+        AlertDialog alertDialog = new AlertDialog.Builder(ctx)
+                .setTitle("输入对方QQ号")
                 .setView(linearLayout)
                 .setCancelable(true)
                 .setPositiveButton("打开QQ号", null)
@@ -83,10 +78,10 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
                 .setNegativeButton("取消", null)
                 .create();
         alertDialog.show();
-        alertDialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        alertDialog.getButton(DialogInterface.BUTTON_POSITIVE)
                 .setOnClickListener(v -> {
                     String text = editText.getText().toString();
-                    if (text.equals("")) {
+                    if (TextUtils.isEmpty(text)) {
                         Toasts.error(ctx, "请输入QQ号");
                         return;
                     }
@@ -102,10 +97,10 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
                     alertDialog.dismiss();
                     openUserProfileCard(ctx, uin);
                 });
-        alertDialog.getButton(AlertDialog.BUTTON_NEUTRAL)
+        alertDialog.getButton(DialogInterface.BUTTON_NEUTRAL)
                 .setOnClickListener(v -> {
                     String text = editText.getText().toString();
-                    if (text.equals("")) {
+                    if (TextUtils.isEmpty(text)) {
                         Toasts.error(ctx, "请输入QQ群号");
                         return;
                     }

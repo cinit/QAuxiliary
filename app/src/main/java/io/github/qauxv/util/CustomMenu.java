@@ -21,13 +21,15 @@
  */
 package io.github.qauxv.util;
 
+import androidx.annotation.NonNull;
 import cc.ioctl.util.Reflex;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 
 public class CustomMenu {
 
-    public static Object createItem(Class<?> clazz, int id, String title, int icon) {
+    @NonNull
+    public static Object createItem(Class<?> clazz, int id, String title, int icon) throws ReflectiveOperationException {
         try {
             try {
                 Constructor initWithArgv = clazz.getConstructor(int.class, String.class, int.class);
@@ -36,7 +38,7 @@ public class CustomMenu {
                 //no direct constructor, reflex
                 Object item = createItem(clazz, id, title);
                 Field f;
-                f = Reflex.findField(clazz, int.class, "b");
+                f = Reflex.findFieldOrNull(clazz, int.class, "b");
                 if (f == null) {
                     f = Reflex.findField(clazz, int.class, "icon");
                 }
@@ -44,39 +46,37 @@ public class CustomMenu {
                 f.set(item, icon);
                 return item;
             }
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.w(e.toString());
             //sign... drop icon
             return createItem(clazz, id, title);
         }
     }
 
-    public static Object createItem(Class<?> clazz, int id, String title) {
+    @NonNull
+    public static Object createItem(Class<?> clazz, int id, String title) throws ReflectiveOperationException {
+        Object item;
         try {
-            Object item;
-            try {
-                Constructor initWithArgv = clazz.getConstructor(int.class, String.class);
-                return initWithArgv.newInstance(id, title);
-            } catch (NoSuchMethodException ignored) {
-            }
-            item = clazz.newInstance();
-            Field f;
-            f = Reflex.findField(clazz, int.class, "id");
-            if (f == null) {
-                f = Reflex.findField(clazz, int.class, "a");
-            }
-            f.setAccessible(true);
-            f.set(item, id);
-            f = Reflex.findField(clazz, String.class, "title");
-            if (f == null) {
-                f = Reflex.findField(clazz, String.class, "a");
-            }
-            f.setAccessible(true);
-            f.set(item, title);
-            return item;
-        } catch (Exception e) {
-            Log.e(e);
-            return null;
+            Constructor initWithArgv = clazz.getConstructor(int.class, String.class);
+            return initWithArgv.newInstance(id, title);
+        } catch (NoSuchMethodException ignored) {
+        } catch (IllegalAccessException e) {
+            throw new AssertionError(e);
         }
+        item = clazz.newInstance();
+        Field f;
+        f = Reflex.findFieldOrNull(clazz, int.class, "id");
+        if (f == null) {
+            f = Reflex.findField(clazz, int.class, "a");
+        }
+        f.setAccessible(true);
+        f.set(item, id);
+        f = Reflex.findFieldOrNull(clazz, String.class, "title");
+        if (f == null) {
+            f = Reflex.findField(clazz, String.class, "a");
+        }
+        f.setAccessible(true);
+        f.set(item, title);
+        return item;
     }
 }

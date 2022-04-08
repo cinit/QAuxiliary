@@ -21,6 +21,8 @@
  */
 package cc.ioctl.util;
 
+import android.view.View;
+import android.view.ViewGroup;
 import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.util.Log;
 import java.io.File;
@@ -34,30 +36,21 @@ import java.lang.reflect.Method;
  */
 public class DebugUtils {
 
-    public static final XC_MethodHook dummyHook = new XC_MethodHook(200) {
-        @Override
-        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-            super.beforeHookedMethod(param);
-        }
+    private DebugUtils() {
+        throw new AssertionError("no instance");
+    }
 
+    public static final XC_MethodHook INVOKE_RECORD = new XC_MethodHook(200) {
         @Override
         protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            super.afterHookedMethod(param);
-        }
-    };
-    public static final XC_MethodHook invokeRecord = new XC_MethodHook(200) {
-        @Override
-        protected void afterHookedMethod(MethodHookParam param)
-            throws IllegalAccessException, IllegalArgumentException {
             Member m = param.method;
-            StringBuilder ret = new StringBuilder(
-                m.getDeclaringClass().getSimpleName() + "->" + ((m instanceof Method) ? m.getName()
-                    : "<init>") + "(");
-            Class[] argt;
+            StringBuilder ret = new StringBuilder(m.getDeclaringClass().getSimpleName()
+                    + "->" + ((m instanceof Method) ? m.getName() : "<init>") + "(");
+            Class<?>[] argt;
             if (m instanceof Method) {
                 argt = ((Method) m).getParameterTypes();
             } else if (m instanceof Constructor) {
-                argt = ((Constructor) m).getParameterTypes();
+                argt = ((Constructor<?>) m).getParameterTypes();
             } else {
                 argt = new Class[0];
             }
@@ -69,13 +62,12 @@ public class DebugUtils {
             }
             ret.append(")=").append(param.getResult());
             Log.i(ret.toString());
-            ret = new StringBuilder(
-                "↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
+            ret = new StringBuilder("↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
             Field[] fs = m.getDeclaringClass().getDeclaredFields();
             for (int i = 0; i < fs.length; i++) {
                 fs[i].setAccessible(true);
                 ret.append(i < fs.length - 1 ? "├" : "↓").append(fs[i].getName()).append("=")
-                    .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
+                        .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
             }
             Log.i(ret.toString());
             Throwable t = new Throwable("Trace dump");
@@ -83,19 +75,18 @@ public class DebugUtils {
         }
     };
 
-    public static final XC_MethodHook invokeInterceptor = new XC_MethodHook(200) {
+    public static final XC_MethodHook INVOKE_INTERCEPTOR = new XC_MethodHook(200) {
         @Override
-        protected void beforeHookedMethod(MethodHookParam param)
-            throws IllegalAccessException, IllegalArgumentException {
+        protected void beforeHookedMethod(MethodHookParam param) throws ReflectiveOperationException {
             Member m = param.method;
             StringBuilder ret = new StringBuilder(
-                m.getDeclaringClass().getSimpleName() + "->" + ((m instanceof Method) ? m.getName()
-                    : "<init>") + "(");
-            Class[] argt;
+                    m.getDeclaringClass().getSimpleName()
+                            + "->" + ((m instanceof Method) ? m.getName() : "<init>") + "(");
+            Class<?>[] argt;
             if (m instanceof Method) {
                 argt = ((Method) m).getParameterTypes();
             } else if (m instanceof Constructor) {
-                argt = ((Constructor) m).getParameterTypes();
+                argt = ((Constructor<?>) m).getParameterTypes();
             } else {
                 argt = new Class[0];
             }
@@ -107,19 +98,60 @@ public class DebugUtils {
             }
             ret.append(")=").append(param.getResult());
             Log.i(ret.toString());
-            ret = new StringBuilder(
-                "↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
+            ret = new StringBuilder("↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
             Field[] fs = m.getDeclaringClass().getDeclaredFields();
             for (int i = 0; i < fs.length; i++) {
                 fs[i].setAccessible(true);
                 ret.append(i < fs.length - 1 ? "├" : "↓").append(fs[i].getName()).append("=")
-                    .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
+                        .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
             }
             Log.i(ret.toString());
             Throwable t = new Throwable("Trace dump");
             Log.i(t);
         }
     };
+
+    public static void dumpObject(Object obj) {
+        try {
+            StringBuilder ret = new StringBuilder("dump object: " + obj + "\n");
+            Field[] fs = obj.getClass().getDeclaredFields();
+            for (int i = 0; i < fs.length; i++) {
+                fs[i].setAccessible(true);
+                ret.append(i < fs.length - 1 ? "+-" : "--").append(fs[i].getName()).append("=")
+                        .append(en_toStr(fs[i].get(obj))).append("\n");
+            }
+            Log.d(ret.toString());
+        } catch (Exception e) {
+            Log.d(e);
+        }
+    }
+
+    public static void dumpViewHierarchy(View view) {
+        StringBuilder sb = new StringBuilder();
+        if (view == null) {
+            Log.d("view is null");
+        } else {
+            sb.append(view);
+            if (view instanceof ViewGroup) {
+                sb.append("\n");
+                dumpViewGroupHierarchyImpl((ViewGroup) view, 1, sb);
+            }
+            Log.d(sb.toString());
+        }
+    }
+
+    private static void dumpViewGroupHierarchyImpl(ViewGroup vg, int currentLevel, StringBuilder ret) {
+        if (vg == null) {
+            return;
+        }
+        for (int i = 0; i < vg.getChildCount(); i++) {
+            View v = vg.getChildAt(i);
+            ret.append(getRepeatString(" +", currentLevel)).append('[').append(i).append(']').append(v).append("\n");
+            if (v instanceof ViewGroup) {
+                dumpViewGroupHierarchyImpl((ViewGroup) v, currentLevel + 1, ret);
+            }
+        }
+    }
 
     public static String en_toStr(Object obj) {
         if (obj == null) {
@@ -134,17 +166,25 @@ public class DebugUtils {
         return str;
     }
 
+    private static String getRepeatString(String str, int count) {
+        StringBuilder ret = new StringBuilder();
+        for (int i = 0; i < count; i++) {
+            ret.append(str);
+        }
+        return ret.toString();
+    }
+
     public static String en(String str) {
         if (str == null) {
             return "null";
         }
         return "\"" + str.replace("\\", "\\\\").replace("\"", "\\\"")
-            .replace("\n", "\\n").replace("\r", "\\r") + "\"";
+                .replace("\n", "\\n").replace("\r", "\\r") + "\"";
     }
 
     public static String csvenc(String s) {
-        if (!s.contains("\"") && !s.contains(" ") && !s.contains(",") && !s.contains("\r") && !s
-            .contains("\n") && !s.contains("\t")) {
+        if (!s.contains("\"") && !s.contains(" ") && !s.contains(",")
+                && !s.contains("\r") && !s.contains("\n") && !s.contains("\t")) {
             return s;
         }
         return "\"" + s.replace("\"", "\"\"") + "\"";

@@ -71,6 +71,10 @@ public class LayoutHelper {
         return ret;
     }
 
+    public static LinearLayout.LayoutParams newLinearLayoutParams(int width, int height) {
+        return new LinearLayout.LayoutParams(width, height);
+    }
+
     public static LinearLayout.LayoutParams newLinearLayoutParams(int width, int height, int gravity, int left, int top,
                                                                   int right, int bottom) {
         LinearLayout.LayoutParams ret = new LinearLayout.LayoutParams(width, height);

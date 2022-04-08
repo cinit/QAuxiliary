@@ -26,20 +26,28 @@ import android.content.res.AssetManager;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import cc.ioctl.dialog.RikkaCustomSplash;
+import cc.ioctl.fragment.CustomSplashConfigFragment;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
+import io.github.qauxv.ui.ResUtils;
+import io.github.qauxv.util.IoUtils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.lang.reflect.Method;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 //自定义启动图
 @FunctionHookEntry
@@ -47,6 +55,15 @@ import kotlinx.coroutines.flow.MutableStateFlow;
 public class CustomSplash extends CommonConfigFunctionHook {
 
     public static final CustomSplash INSTANCE = new CustomSplash();
+
+    public static final String DIR_NANE_CONFIG_MISC = "qa_misc";
+    public static final String FILE_NAME_SPLASH_LIGHT = "splash_light.png";
+    public static final String FILE_NAME_SPLASH_DARK = "splash_dark.png";
+
+    private static final String CFG_KEY_CUSTOM_LIGHT_SPLASH = "custom_light_splash";
+    private static final String CFG_KEY_CUSTOM_DIFFERENT_DARK_SPLASH = "custom_different_dark_splash";
+
+    private MutableStateFlow<String> mStateFlowStatus = null;
 
     private static final byte[] TRANSPARENT_PNG = new byte[]{
             (byte) 0x89, (byte) 0x50, (byte) 0x4E, (byte) 0x47, (byte) 0x0D, (byte) 0x0A, (byte) 0x1A, (byte) 0x0A,
@@ -72,7 +89,10 @@ public class CustomSplash extends CommonConfigFunctionHook {
     @Nullable
     @Override
     public MutableStateFlow<String> getValueState() {
-        return null;
+        if (mStateFlowStatus == null) {
+            updateStateFlow();
+        }
+        return mStateFlowStatus;
     }
 
     @NonNull
@@ -85,8 +105,7 @@ public class CustomSplash extends CommonConfigFunctionHook {
     @Override
     public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
         return (agent, activity, view) -> {
-            RikkaCustomSplash dialog = new RikkaCustomSplash();
-            dialog.showDialog(activity);
+            SettingsUiFragmentHostActivity.startFragmentWithContext(activity, CustomSplashConfigFragment.class);
             return Unit.INSTANCE;
         };
     }
@@ -100,34 +119,98 @@ public class CustomSplash extends CommonConfigFunctionHook {
                     || "splash_big.jpg".equals(fileName)
                     || "splash/splash_simple.png".equals(fileName)
                     || "splash/splash_big_simple.png".equals(fileName)) {
-                String customPath = RikkaCustomSplash.getCurrentSplashPath();
-                if (customPath == null) {
-                    return;
-                }
-                File f = new File(customPath);
-                if (f.exists() && f.isFile() && f.canRead()) {
-                    param.setResult(new FileInputStream(f));
+                boolean isNowDark = ResUtils.isInNightMode();
+                InputStream is;
+                if (isNowDark) {
+                    is = openSplashDarkIfOverride();
                 } else {
-                    byte[] bytes = RikkaCustomSplash.getCurrentSplashData();
-                    if (bytes != null) {
-                        param.setResult(new ByteArrayInputStream(bytes));
-                    }
+                    is = openSplashLightIfOverride();
                 }
-            }
-            if ("splash_logo.png".equals(fileName)) {
+                if (is != null) {
+                    param.setResult(is);
+                }
+            } else if ("splash_logo.png".equals(fileName)) {
                 param.setResult(new ByteArrayInputStream(TRANSPARENT_PNG));
             }
         });
         return true;
     }
 
-    @Override
-    public boolean isEnabled() {
-        return RikkaCustomSplash.IsEnabled();
+    private void updateStateFlow() {
+        String state = isEnabled() ? "已开启" : "禁用";
+        if (mStateFlowStatus == null) {
+            mStateFlowStatus = StateFlowKt.MutableStateFlow(state);
+        } else {
+            mStateFlowStatus.setValue(state);
+        }
     }
 
     @Override
-    public void setEnabled(boolean enabled) {
-        //not supported.
+    public void setEnabled(boolean value) {
+        super.setEnabled(value);
+        updateStateFlow();
+    }
+
+    @Nullable
+    public InputStream openSplashInputStream(@NonNull String which) throws IOException {
+        File f = new File(HostInfo.getApplication().getFilesDir(), DIR_NANE_CONFIG_MISC + File.separator + which);
+        if (f.exists() && f.isFile()) {
+            return new FileInputStream(f);
+        }
+        return null;
+    }
+
+    @Nullable
+    public InputStream openSplashLightIfOverride() throws IOException {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        if (isEnabled() && cfg.getBoolean(CFG_KEY_CUSTOM_LIGHT_SPLASH, false)) {
+            return openSplashInputStream(FILE_NAME_SPLASH_LIGHT);
+        }
+        return null;
+    }
+
+    @Nullable
+    public InputStream openSplashDarkIfOverride() throws IOException {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        if (isEnabled() && cfg.getBoolean(CFG_KEY_CUSTOM_DIFFERENT_DARK_SPLASH, false)) {
+            return openSplashInputStream(FILE_NAME_SPLASH_DARK);
+        }
+        // for those who use a same splash for both light and dark
+        if (isEnabled() && cfg.getBoolean(CFG_KEY_CUSTOM_LIGHT_SPLASH, false)) {
+            return openSplashInputStream(FILE_NAME_SPLASH_LIGHT);
+        }
+        return null;
+    }
+
+    @NonNull
+    public File getDarkSplashFile() {
+        File dir = new File(HostInfo.getApplication().getFilesDir(), DIR_NANE_CONFIG_MISC);
+        return new File(IoUtils.mkdirsOrThrow(dir), FILE_NAME_SPLASH_DARK);
+    }
+
+    @NonNull
+    public File getLightSplashFile() {
+        File dir = new File(HostInfo.getApplication().getFilesDir(), DIR_NANE_CONFIG_MISC);
+        return new File(IoUtils.mkdirsOrThrow(dir), FILE_NAME_SPLASH_LIGHT);
+    }
+
+    public void setUseCustomLightSplash(boolean use) {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putBoolean(CFG_KEY_CUSTOM_LIGHT_SPLASH, use);
+    }
+
+    public boolean isUseCustomLightSplash() {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getBoolean(CFG_KEY_CUSTOM_LIGHT_SPLASH, false);
+    }
+
+    public void setUseDifferentDarkSplash(boolean use) {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putBoolean(CFG_KEY_CUSTOM_DIFFERENT_DARK_SPLASH, use);
+    }
+
+    public boolean isUseDifferentDarkSplash() {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getBoolean(CFG_KEY_CUSTOM_DIFFERENT_DARK_SPLASH, false);
     }
 }
