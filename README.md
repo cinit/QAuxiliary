@@ -12,6 +12,12 @@
 
 QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 
+## QAuxiliary-Modified
+修改内容: 
+- **增加 QQ通知进化**\
+  使用Xposed实现的 [QQ-Notify-Evolution](https://github.com/ichenhe/QQ-Notify-Evolution)\
+  `问就是女娲石的内源模式在新版本Android用不了, 所以自己敲成了Xposed的`
+
 ## 使用方法
 
 激活本模块后，在 QQ 或者 TIM 自带设置中点击 QAuxiliary 即可进入设置页面
