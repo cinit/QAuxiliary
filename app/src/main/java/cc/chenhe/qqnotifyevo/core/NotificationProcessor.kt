@@ -7,6 +7,7 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.graphics.Color
+import android.graphics.drawable.Drawable
 import android.os.Build
 import android.util.Log
 import androidx.annotation.RequiresApi
@@ -17,14 +18,16 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import cc.chenhe.qqnotifyevo.utils.*
-import nil.nadph.qnotified.activity.AboutActivity
-import nil.nadph.qnotified.startup.StartupInfo
+import io.github.qauxv.activity.ConfigV2Activity
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 abstract class NotificationProcessor(context: Context) {
 
     companion object {
+        lateinit var res_inject_ic_notify_qq: Drawable
+        lateinit var res_inject_ic_notify_qzone: Drawable
+
         private const val TAG = "QNotifyEvoXP"
 
         /**
@@ -656,9 +659,9 @@ abstract class NotificationProcessor(context: Context) {
                 avatarManager.getAvatar(conversation.name.hashCode())
                     ?.let { IconCompat.createWithBitmap(it) }
             )
-            .setIntent(
+            .setIntent( // just a placeholder, use any activity here is okay
                 context.packageManager.getLaunchIntentForPackage(tag.pkg)
-                    ?: Intent(context, AboutActivity::class.java).apply {
+                    ?: Intent(context, ConfigV2Activity::class.java).apply {
                         action = Intent.ACTION_MAIN
                     }
             )
@@ -711,9 +714,9 @@ abstract class NotificationProcessor(context: Context) {
     ) {
         builder.setSmallIcon(IconCompat.createWithBitmap((
             if (isQzone)
-                StartupInfo.res_inject_ic_notify_qzone
+                res_inject_ic_notify_qzone
             else
-                StartupInfo.res_inject_ic_notify_qq
+                res_inject_ic_notify_qq
             ).toBitmap()
         ))
     }
