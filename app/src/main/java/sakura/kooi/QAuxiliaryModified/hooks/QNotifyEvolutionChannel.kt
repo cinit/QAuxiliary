@@ -45,7 +45,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-class QNotifyEvolutionChannel  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
+object QNotifyEvolutionChannel  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "QQ通知进化"
     override val description: String = "使用 Xposed 实现的 QQ-Notify-Evolution" + if (isAvailable) "" else " [系统不支持]"
