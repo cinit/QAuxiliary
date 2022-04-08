@@ -73,37 +73,40 @@ class AboutFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
-                CategoryItem("版本") {
-                    textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
-                    textItem("构建时间", value = getBuildTimeString())
-                    if (!isInModuleProcess) {
-                        textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
-                    }
-                },
-                CategoryItem("隐私与协议") {
-                    textItem("用户协议与隐私政策") {
-                        SettingsUiFragmentHostActivity.startFragmentWithContext(
-                                context = requireContext(),
-                                fragmentClass = EulaFragment::class.java
-                        )
-                    }
-                },
-                CategoryItem("群组") {
-                    textItem("Telegram 频道", value = "@QAuxiliary") {
-                        openUrl("https://t.me/QAuxiliary")
-                    }
-                    textItem("Telegram 群组", value = "@QAuxiliaryChat") {
-                        openUrl("https://t.me/QAuxiliaryChat")
-                    }
-                },
-                CategoryItem("源代码") {
-                    textItem("GitHub", value = GITHUB_URL) {
-                        openUrl(GITHUB_URL)
-                    }
-                },
-                CategoryItem("开放源代码许可") {
-                    notices.forEach { this@CategoryItem.add(noticeToUiItem(it)) }
+            CategoryItem("") {
+                textItem("愿每个人都被这世界温柔以待", value = " :) ")
+            },
+            CategoryItem("版本") {
+                textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
+                textItem("构建时间", value = getBuildTimeString())
+                if (!isInModuleProcess) {
+                    textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
                 }
+            },
+            CategoryItem("隐私与协议") {
+                textItem("用户协议与隐私政策") {
+                    SettingsUiFragmentHostActivity.startFragmentWithContext(
+                        context = requireContext(),
+                        fragmentClass = EulaFragment::class.java
+                    )
+                }
+            },
+            CategoryItem("群组") {
+                textItem("Telegram 频道", value = "@QAuxiliary") {
+                    openUrl("https://t.me/QAuxiliary")
+                }
+                textItem("Telegram 群组", value = "@QAuxiliaryChat") {
+                    openUrl("https://t.me/QAuxiliaryChat")
+                }
+            },
+            CategoryItem("源代码") {
+                textItem("GitHub", value = GITHUB_URL) {
+                    openUrl(GITHUB_URL)
+                }
+            },
+            CategoryItem("开放源代码许可") {
+                notices.forEach { this@CategoryItem.add(noticeToUiItem(it)) }
+            }
         )
     }
 
@@ -125,60 +128,60 @@ class AboutFragment : BaseRootLayoutFragment() {
 
     private val notices: Array<LicenseNotice> by lazy {
         arrayOf(
-                LicenseNotice(
-                        "QNotified",
-                        "https://github.com/ferredoxin/QNotified",
-                        "Copyright (C) 2019-2021 ferredoxin",
-                        "AGPL-3.0 License with EULA"
-                ),
-                LicenseNotice(
-                        "Xposed",
-                        "https://github.com/rovo89/XposedBridge",
-                        "Copyright 2013 rovo89, Tungstwenty",
-                        "Apache License 2.0"
-                ),
-                LicenseNotice(
-                        "LSPosed",
-                        "https://github.com/LSPosed/LSPosed",
-                        "Copyright (C) 2021 LSPosed",
-                        "GPL-3.0 License"
-                ),
-                LicenseNotice(
-                        "CustoMIUIzer",
-                        "https://code.highspec.ru/Mikanoshi/CustoMIUIzer",
-                        "Mikanoshi",
-                        "GPL-3.0 License"
-                ),
-                LicenseNotice(
-                        "MMKV",
-                        "https://github.com/Tencent/MMKV",
-                        "Copyright (C) 2018 THL A29 Limited, a Tencent company.",
-                        "BSD 3-Clause License"
-                ),
-                LicenseNotice(
-                        "EzXHelper",
-                        "https://github.com/KyuubiRan/EzXHelper",
-                        "KyuubiRan",
-                        "Apache-2.0 License"
-                ),
-                LicenseNotice(
-                        "AndroidHiddenApiBypass",
-                        "https://github.com/LSPosed/AndroidHiddenApiBypass",
-                        "Copyright (C) 2021 LSPosed",
-                        "Apache License 2.0"
-                ),
-                LicenseNotice(
-                    "DexBuilder",
-                    "https://github.com/LSPosed/DexBuilder",
-                    "Copyright (C) 2021 LSPosed",
-                    "LGPL-3.0 License"
-                ),
-                LicenseNotice(
-                    "BiliRoaming",
-                    "https://github.com/yujincheng08/BiliRoaming",
-                    "yujincheng08",
-                    " GPL-3.0 License"
-                )
+            LicenseNotice(
+                "QNotified",
+                "https://github.com/ferredoxin/QNotified",
+                "Copyright (C) 2019-2021 ferredoxin",
+                "AGPL-3.0 License with EULA"
+            ),
+            LicenseNotice(
+                "Xposed",
+                "https://github.com/rovo89/XposedBridge",
+                "Copyright 2013 rovo89, Tungstwenty",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "LSPosed",
+                "https://github.com/LSPosed/LSPosed",
+                "Copyright (C) 2021 LSPosed",
+                "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "CustoMIUIzer",
+                "https://code.highspec.ru/Mikanoshi/CustoMIUIzer",
+                "Mikanoshi",
+                "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "MMKV",
+                "https://github.com/Tencent/MMKV",
+                "Copyright (C) 2018 THL A29 Limited, a Tencent company.",
+                "BSD 3-Clause License"
+            ),
+            LicenseNotice(
+                "EzXHelper",
+                "https://github.com/KyuubiRan/EzXHelper",
+                "KyuubiRan",
+                "Apache-2.0 License"
+            ),
+            LicenseNotice(
+                "AndroidHiddenApiBypass",
+                "https://github.com/LSPosed/AndroidHiddenApiBypass",
+                "Copyright (C) 2021 LSPosed",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "DexBuilder",
+                "https://github.com/LSPosed/DexBuilder",
+                "Copyright (C) 2021 LSPosed",
+                "LGPL-3.0 License"
+            ),
+            LicenseNotice(
+                "BiliRoaming",
+                "https://github.com/yujincheng08/BiliRoaming",
+                "yujincheng08",
+                " GPL-3.0 License"
+            )
         )
     }
 
@@ -209,17 +212,17 @@ class AboutFragment : BaseRootLayoutFragment() {
     }
 
     private fun noticeToUiItem(notice: LicenseNotice) = TextListItem(
-            title = notice.name,
-            summary = notice.license + ", " + notice.copyright,
-            onClick = {
-                openUrl(notice.url)
-            }
+        title = notice.name,
+        summary = notice.license + ", " + notice.copyright,
+        onClick = {
+            openUrl(notice.url)
+        }
     )
 
     private data class LicenseNotice(
-            val name: String,
-            val url: String,
-            val copyright: String,
-            val license: String
+        val name: String,
+        val url: String,
+        val copyright: String,
+        val license: String
     )
 }
