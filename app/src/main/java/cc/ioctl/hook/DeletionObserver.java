@@ -52,7 +52,6 @@ import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import java.lang.ref.WeakReference;
 import java.util.HashSet;
-import me.singleneuron.hook.AppCenterHookKt;
 
 @FunctionHookEntry
 public class DeletionObserver extends BasePersistBackgroundHook {
@@ -149,7 +148,6 @@ public class DeletionObserver extends BasePersistBackgroundHook {
     protected boolean initOnce() throws Exception {
         findAndHookMethod(load("com/tencent/widget/PinnedHeaderExpandableListView"),
             "setAdapter", ExpandableListAdapter.class, exfriendEntryHook);
-        AppCenterHookKt.initAppCenterHook();
         XposedHelpers.findAndHookMethod(load("com/tencent/mobileqq/activity/SplashActivity"), "doOnResume",
             new XC_MethodHook(700) {
                 boolean z = false;

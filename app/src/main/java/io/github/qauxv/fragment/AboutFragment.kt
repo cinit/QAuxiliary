@@ -40,12 +40,9 @@ import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
 import io.github.qauxv.activity.ConfigV2Activity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
-import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextListItem
-import io.github.qauxv.dsl.item.TextSwitchItem
-import io.github.qauxv.util.CliOper
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
@@ -90,11 +87,6 @@ class AboutFragment : BaseRootLayoutFragment() {
                                 fragmentClass = EulaFragment::class.java
                         )
                     }
-                    if (!isInModuleProcess) {
-                        add(TextSwitchItem("AppCenter 匿名统计",
-                                summary = "我们使用 Microsoft AppCenter 来匿名发送最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
-                                switchAgent = mAllowAppCenterStatics))
-                    }
                 },
                 CategoryItem("群组") {
                     textItem("Telegram 频道", value = "@QAuxiliary") {
@@ -130,18 +122,6 @@ class AboutFragment : BaseRootLayoutFragment() {
     }
 
     private val GITHUB_URL = "https://github.com/cinit/QAuxiliary"
-
-    private val mAllowAppCenterStatics: ISwitchCellAgent = object : ISwitchCellAgent {
-        override val isCheckable = true
-        override var isChecked: Boolean
-            get() = CliOper.isAppCenterAllowed()
-            set(value) {
-                CliOper.setAppCenterAllowed(value)
-                if (value) {
-                    CliOper.__init__(hostInfo.application)
-                }
-            }
-    }
 
     private val notices: Array<LicenseNotice> by lazy {
         arrayOf(
