@@ -77,7 +77,7 @@ class AboutFragment : BaseRootLayoutFragment() {
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
                 CategoryItem("版本") {
-                    textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
+                    textItem("模块版本", value = "Arks." + BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
                     textItem("构建时间", value = getBuildTimeString())
                     if (!isInModuleProcess) {
                         textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
@@ -197,7 +197,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                     "BiliRoaming",
                     "https://github.com/yujincheng08/BiliRoaming",
                     "yujincheng08",
-                    " GPL-3.0 License"
+                    "GPL-3.0 License"
                 )
         )
     }
