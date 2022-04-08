@@ -24,10 +24,7 @@ package me.singleneuron.util
 import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.github.qauxv.util.Log
-import me.singleneuron.base.bridge.CardMsgList
 import me.singleneuron.data.CardMsgCheckResult
 import java.io.BufferedReader
 import java.io.File
@@ -60,48 +57,6 @@ fun dumpIntent(intent: Intent) {
 }
 
 fun checkCardMsg(originString: String): CardMsgCheckResult {
-    try {
-        Log.d("origin string: $originString")
-        val string = decodePercent(originString)
-        Log.d("decode string: $string")
-        val blackListString = CardMsgList.getInstance().invoke()
-        val blackList = Gson().fromJson<HashMap<String, String>>(
-            blackListString,
-            object : TypeToken<HashMap<String, String>>() {}.type
-        )
-        Log.d(Gson().toJson(blackList))
-        for (rule in blackList) {
-            if (Regex(
-                    rule.value,
-                    setOf(RegexOption.IGNORE_CASE, RegexOption.DOT_MATCHES_ALL)
-                ).containsMatchIn(string)
-            ) {
-                return CardMsgCheckResult(false, rule.key)
-            }
-        }
-        return CardMsgCheckResult(true)
-    } catch (e: Exception) {
-        Log.e(e)
-        return CardMsgCheckResult(false, "Failed: $e")
-    }
+    return CardMsgCheckResult(true)
 }
 
-private fun decodePercent(string: String): String {
-    var produceString = string
-    val regex = Regex("""%[0-9a-fA-F]{2}""", RegexOption.IGNORE_CASE)
-    while (true) {
-        if (!regex.containsMatchIn(produceString)) return produceString
-        produceString = regex.replace(produceString) { matchResult ->
-            val hex = matchResult.value.substring(1)
-            try {
-                val char = Integer.valueOf(hex, 16).toChar().toString()
-                Log.d("replace $hex -> $char")
-                return@replace char
-            } catch (e: Exception) {
-                Log.e(e)
-                return@replace hex
-            }
-        }
-        Log.d("processing string: $produceString")
-    }
-}
