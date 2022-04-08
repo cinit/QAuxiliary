@@ -63,13 +63,6 @@ fastlane/screenshots
 fastlane/test_output
 fastlane/readme.md
 
-# Random icon cache
-app/src/main/res/drawable/icon.png
-app/src/main/res/drawable/icon.xml
-/app/src/main/res/drawable-anydpi-v26/icon.xml
-/app/src/main/res/drawable/icon_qa_background.xml
-/app/src/main/res/drawable/icon_qa_foreground.xml
-
 .settings
 .project
 .classpath
