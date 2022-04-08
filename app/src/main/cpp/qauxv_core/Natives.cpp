@@ -352,9 +352,7 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     jmethodID getInstance = env->GetStaticMethodID(cardMsgListClass,"checkCardMsg", "(Ljava/lang/String;)Lme/singleneuron/data/CardMsgCheckResult;");
     jobject result = env->CallStaticObjectMethod(cardMsgListClass,getInstance,msg);
     jclass cardMsgCheckResultClass = env->FindClass("me/singleneuron/data/CardMsgCheckResult");
-    jmethodID toString = env->GetMethodID(cardMsgCheckResultClass,"toString", "()Ljava/lang/String;");
     jmethodID getAccepted = env->GetMethodID(cardMsgCheckResultClass,"getAccept", "()Z");
-    auto resultString = (jstring) env->CallObjectMethod(result,toString);
     bool boolean = env->CallBooleanMethod(result, getAccepted);
     if (!boolean) {
         jmethodID getReason = env->GetMethodID(cardMsgCheckResultClass,
