@@ -10,6 +10,7 @@
 -keep class cn.lliiooll.** { *; }
 -keep class xyz.nextalone.** { *; }
 -keep class cc.ioctl.** { *; }
+-keep class sakura.kooi.** { *; }
 -keep class com.tencent.mmkv.** { *; }
 
 -keepclasseswithmembernames class * {

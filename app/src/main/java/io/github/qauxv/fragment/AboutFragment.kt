@@ -73,7 +73,7 @@ class AboutFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
-            CategoryItem("") {
+            CategoryItem("QAuxiliary Modified") {
                 textItem("愿每个人都被这世界温柔以待", value = " :) ")
             },
             CategoryItem("版本") {
@@ -100,7 +100,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 }
             },
             CategoryItem("源代码") {
-                textItem("GitHub", value = GITHUB_URL) {
+                textItem("GitHub", value = "@SakuraKoi/QAuxiliary-Modified") {
                     openUrl(GITHUB_URL)
                 }
             },
