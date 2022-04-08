@@ -77,7 +77,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 textItem("愿每个人都被这世界温柔以待", value = " :) ")
             },
             CategoryItem("版本") {
-                textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
+                textItem("模块版本", value = "Arks." + BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
                 textItem("构建时间", value = getBuildTimeString())
                 if (!isInModuleProcess) {
                     textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
@@ -124,7 +124,7 @@ class AboutFragment : BaseRootLayoutFragment() {
         ContextCompat.startActivity(requireContext(), intent, null)
     }
 
-    private val GITHUB_URL = "https://github.com/cinit/QAuxiliary"
+    private val GITHUB_URL = "https://github.com/SakuraKoi/QAuxiliary-Modified"
 
     private val notices: Array<LicenseNotice> by lazy {
         arrayOf(
@@ -180,7 +180,13 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "BiliRoaming",
                 "https://github.com/yujincheng08/BiliRoaming",
                 "yujincheng08",
-                " GPL-3.0 License"
+                "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "QQ-Notify-Evolution",
+                "https://github.com/ichenhe/QQ-Notify-Evolution",
+                "ichenhe",
+                "AGPL-3.0 License"
             )
         )
     }

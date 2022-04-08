@@ -160,8 +160,8 @@ androidComponents.onVariants { variant ->
     }
 }
 
-tasks.register<ReplaceIcon>("replaceIcon")
-tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
+//tasks.register<ReplaceIcon>("replaceIcon")
+//tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     if (name.contains("release", true)) {
