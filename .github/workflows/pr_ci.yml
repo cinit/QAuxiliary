@@ -3,6 +3,11 @@ name: main
 on:
   pull_request:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - '!.github/workflows/**'
+    
 
 jobs:
   build:
