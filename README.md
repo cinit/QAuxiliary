@@ -1,7 +1,7 @@
 <div align="center">
     <h1> QAuxiliary </h1>
 
-[![license](https://img.shields.io/github/license/cinit/QAuxiliary.svg)](https://www.gnu.org/licenses/agpl-3.0.html)
+[![license](https://img.shields.io/github/license/cinit/QAuxiliary.svg)](https://github.com/qwq233/License/blob/master/v2/LICENSE.md)
 [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Channel&color=0088cc)](https://t.me/QAuxiliary)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=CI&color=0088cc)](https://t.me/QAuxiliary_CI)
@@ -34,7 +34,7 @@ QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 ```
 版权所有©2022 gao_cai_sheng <qwq233@qwq2333.top, qwq2333.top>
 
-允许在其遵守 CC BY-NC-SA 4.0 协议的同时，每个人复制和分发此协议文档的逐字记录副本，且允许对其进行更改，但必须保留其版权信息与原作者。如果您提出申请特殊权限，协议作者可在其口头或书面授予任何人任何但不包括以盈利为目的的使用本协议的权利。
+允许在遵守 CC BY-NC-SA 4.0 协议的同时，复制和分发此协议文档的逐字记录副本，且允许对其进行更改，但必须保留其版权信息与原作者。如果您提出申请特殊权限，协议作者可在其口头或书面授予任何人任何但不包括以盈利为目的的使用本协议的权利。
 
 请务必仔细阅读和理解通用许可协议书中规定的所有权利和限制。在使用前，您需要仔细阅读并决定接受或不接受本协议的条款。除非或直至您接受本协议的条款，否则本作品及其相关副本、相关程序代码或相关资源不得在您的任何终端上下载、安装或使用。
 
