@@ -3,6 +3,10 @@ name: main
 on:
   push:
     branches: [ main ]
+    paths-ignore:
+      - '**.md'
+      - '.github/**'
+      - '!.github/workflows/**'
 
 jobs:
   build:
