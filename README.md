@@ -51,13 +51,13 @@ QAuxiliary 采用滚动更新方式发布新版本，我们总是推荐用户使
 
 QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
-- `CI` 版本为每 commit 自动更新，可能不包含外围文档或 CI 流程更新，不会编写任何更新文档或说明，
+- `CI` 版本为 commit 后自动触发更新，可能包含外围文档或 CI 流程更新，不会编写任何更新文档或说明，
   具体更新内容可在[Github](https://github.com/cinit/QAuxiliary/commits/master)
   自行查看，本更新由开源的流程自动编译发布，可能包含严重的功能及行为异常。
 
 - `推荐的CI` 版本为重大功能变更或长期积累更新，发布频率由开发组决定，包含上次`CI`
   版至今的所有功能更新及 Bug 修复，但可能不包括尚未稳定或正在开发中的功能；
-  `推荐的CI` 版本是被挑选出的推荐用户更新的 `CI` 版本 (如：功能添加或者修复重要 BUG)
+  `推荐的CI` 版本是被挑选出的推荐用户更新的 `CI` 版本 (如：添加功能或者修复重要 Bug)
 
 开发组不限制用户选择自己需要的版本，同时也不为任何版本产生的任何后果承担任何责任
 （详情请见[QAuxiliary EULA](https://github.com/cinit/QAuxiliary/blob/master/app/src/main/assets/eula.md)），
@@ -65,7 +65,7 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 - QAuxiliary 的版本号组成为`major.minor.bugfix.rev.commit`
 - 其中 major 为 主版本号，minor 为 次版本号，bugfix 为修正版本号；
-- 所有版本更新的`rev`为 commit 计数，`commit` 位都会是触发此次更新的 Commit 的 hash 的前 7 位。
+- 所有版本更新的`rev`为 commit 计数，`commit` 位都会是触发此次更新的 commit 的 hash 的前 7 位。
 
 1. [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=QAuxiliary频道&color=0088cc)](https://t.me/QAuxiliary) 将只发布 `推荐的CI` 版更新。
 
@@ -82,4 +82,4 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 - 由于项目的特殊性，我们不接受任何形式的捐赠，但是我们希望有更多的人能够参与本项目的开发
 
-## [QAuxiliary 最终用户许可协议](https://github.com/cinit/QAuxiliary/blob/master/app/src/main/assets/eula.txt)
+## [通用许可协议](https://github.com/qwq233/License/blob/master/v2/LICENSE.md)
