@@ -5,6 +5,7 @@ on:
     branches: [ main ]
     paths-ignore:
       - '**.md'
+      - '**.txt'
       - '.github/**'
       - '!.github/workflows/**'
 
