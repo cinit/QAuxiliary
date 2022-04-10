@@ -43,8 +43,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.throwOrTrue
 
-@FunctionHookEntry
-@UiItemAgentEntry
+//@FunctionHookEntry
+//@UiItemAgentEntry
 object QNotifyEvolutionChannel  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "QQ通知进化"

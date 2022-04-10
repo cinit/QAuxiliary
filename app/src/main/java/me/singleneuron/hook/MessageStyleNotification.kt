@@ -53,8 +53,8 @@ import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 import kotlin.collections.set
 
-@FunctionHookEntry
-@UiItemAgentEntry
+//@FunctionHookEntry
+//@UiItemAgentEntry
 object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
 
     override val name = "MessageStyle通知"
