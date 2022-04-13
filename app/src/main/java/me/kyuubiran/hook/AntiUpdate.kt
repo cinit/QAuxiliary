@@ -25,6 +25,8 @@ package me.kyuubiran.hook
 import com.github.kyuubiran.ezxhelper.utils.emptyParam
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.isNotStatic
+import com.github.kyuubiran.ezxhelper.utils.isPublic
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -37,10 +39,12 @@ object AntiUpdate : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽更新"
 
     override fun initOnce(): Boolean {
-        val clz = ClassHelper.UpgradeController1.clz ?: ClassHelper.UpgradeController2.clz ?: throw ClassNotFoundException("UpgradeController")
-
+        val clz = ClassHelper.UpgradeController1.clz
+            ?: ClassHelper.UpgradeController2.clz
+            ?: throw ClassNotFoundException("UpgradeController")
+        
         clz.findMethod {
-            emptyParam && name == "a" && returnType.name.contains("UpgradeDetailWrapper")
+            emptyParam && returnType.name.contains("UpgradeDetailWrapper") && isPublic && isNotStatic
         }.hookBefore { if (isEnabled) it.result = null }
         return true
     }
