@@ -50,6 +50,7 @@ import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -80,6 +81,11 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     public static final AioChatPieClipPasteHook INSTANCE = new AioChatPieClipPasteHook();
     private static final String MIME_IMAGE = "image/*";
 
+    public interface IOnContextMenuItemCallback {
+
+        boolean onInterceptContextMenuItem(@NonNull EditText editText, int i);
+    }
+
     private AioChatPieClipPasteHook() {
         super(SyncUtils.PROC_MAIN, new int[]{DexKit.N_BASE_CHAT_PIE__INIT});
     }
@@ -98,10 +104,28 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     @Override
     protected boolean initOnce() throws Exception {
+        // com.tencent.widget.XEditTextEx#onTextContextMenuItem(I)Z
+        Method m = Initiator.loadClass("com.tencent.widget.XEditTextEx")
+                .getDeclaredMethod("onTextContextMenuItem", int.class);
+        XposedBridge.hookMethod(m, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                EditText editText = (EditText) param.thisObject;
+                int id = (int) param.args[0];
+                Object cb = editText.getTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor);
+                if (cb instanceof IOnContextMenuItemCallback) {
+                    IOnContextMenuItemCallback callback = (IOnContextMenuItemCallback) cb;
+                    boolean result = callback.onInterceptContextMenuItem(editText, id);
+                    if (result) {
+                        param.setResult(true);
+                    }
+                }
+            }
+        });
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
-            Method m = Initiator.loadClass("com.tencent.widget.XEditTextEx")
+            Method m2 = Initiator.loadClass("com.tencent.widget.XEditTextEx")
                     .getDeclaredMethod("onCreateInputConnection", EditorInfo.class);
-            XposedBridge.hookMethod(m, new XC_MethodHook() {
+            XposedBridge.hookMethod(m2, new XC_MethodHook() {
                 @Override
                 protected void beforeHookedMethod(MethodHookParam param) {
                     EditText editText = (EditText) param.thisObject;
@@ -142,6 +166,21 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             }
             return payload;
         });
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
+            input.setTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor, (IOnContextMenuItemCallback) (editText, i) -> {
+                if (i == android.R.id.paste) {
+                    Pair<ClipDescription, Item> item = getClipDataItem0(getPrimaryClip(ctx));
+                    if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
+                        Uri uri = item.getSecond().getUri();
+                        if (uri != null && "content".equals(uri.getScheme())) {
+                            handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                            return true;
+                        }
+                    }
+                }
+                return false;
+            });
+        }
     }
 
     @Nullable
