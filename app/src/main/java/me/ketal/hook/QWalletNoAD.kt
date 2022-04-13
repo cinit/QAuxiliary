@@ -80,5 +80,22 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
                     }
                 })
             }
+        arrayOf("Lcom/qwallet/activity/QWalletHomeActivity;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V").getMethod(classLoader)
+            ?.hookAfter(this) {
+                val mAct = it.thisObject
+                val headerView = getFirstByType(mAct,"com.qwallet.view.QWalletHeaderView".clazz) as ViewGroup
+
+                headerView.viewTreeObserver.addOnGlobalLayoutListener(object :
+                    OnGlobalLayoutListener {
+                    override fun onGlobalLayout() {
+                        val webView =
+                            getFirstByType(headerView,
+                                "com.tencent.biz.ui.TouchWebView".clazz) as? View
+                                ?: return
+                        headerView.removeView(webView)
+                        headerView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                    }
+                })
+            }
     }
 }
