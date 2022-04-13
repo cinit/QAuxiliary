@@ -40,6 +40,7 @@ import java.util.*
 object ChatItemShowQQUin : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     override val name = "消息显示发送者QQ号和时间"
+    override val description = "可能导致聊天界面滑动掉帧"
     override fun initOnce() = isAvailable
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 

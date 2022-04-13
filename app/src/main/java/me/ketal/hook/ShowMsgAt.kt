@@ -49,6 +49,7 @@ import xyz.nextalone.util.method
 object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     override val name = "消息显示At对象"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
 

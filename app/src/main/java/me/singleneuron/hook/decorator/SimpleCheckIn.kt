@@ -35,6 +35,7 @@ import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
 object SimpleCheckIn : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name: String = "签到文本化"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 

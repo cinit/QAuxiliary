@@ -43,6 +43,7 @@ import org.json.JSONObject
 object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name = "小程序转链接分享（接收）"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 

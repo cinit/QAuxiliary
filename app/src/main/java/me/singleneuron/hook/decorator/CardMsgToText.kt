@@ -40,6 +40,7 @@ import io.github.qauxv.util.Log
 object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name = "卡片消息文本化"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 
