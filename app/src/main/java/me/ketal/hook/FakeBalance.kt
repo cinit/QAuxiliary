@@ -132,5 +132,29 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                     }
                 }
             }
+            
+        arrayOf("Lcom/qwallet/activity/QWalletHomeActivity;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V").getMethod(classLoader)
+            ?.hookAfter(this) {
+                val mAct = it.thisObject
+                val headerView = Reflex.getFirstByType(mAct, "com.qwallet.view.QWalletHeaderView".clazz) as ViewGroup
+                val headerClass = "com.qwallet.view.QWalletHeaderView".findClass(classLoader)
+                val numAnimClass = "com.tencent.mobileqq.activity.qwallet.widget.NumAnim".clazz
+                    ?: "com.tencent.mobileqq.qwallet.widget.NumAnim".clazz
+                for (f in headerClass.declaredFields) {
+                    if (f.type == numAnimClass) {
+                        f.isAccessible = true
+                        val numAnim = f.get(headerView)
+                        val tv = Reflex.getFirstByType(numAnim, TextView::class.java)
+                        tv.doAfterTextChanged { v ->
+                            if (isEnabled && v.toString() != money)
+                                tv.text = money
+                        }
+                        tv.setOnLongClickListener { v ->
+                            showDialog(v.context, tv)
+                            true
+                        }
+                    }
+                }
+            }
     }
 }
