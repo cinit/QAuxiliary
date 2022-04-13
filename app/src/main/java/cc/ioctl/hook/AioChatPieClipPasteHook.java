@@ -123,7 +123,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             }
         });
         if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
-            Method m2 = Initiator.loadClass("com.tencent.widget.XEditTextEx")
+            Method m2 = Initiator.loadClass("com.tencent.widget.XEditText")
                     .getDeclaredMethod("onCreateInputConnection", EditorInfo.class);
             XposedBridge.hookMethod(m2, new XC_MethodHook() {
                 @Override
