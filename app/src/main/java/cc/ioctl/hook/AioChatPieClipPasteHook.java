@@ -32,7 +32,6 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -41,11 +40,9 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.ViewCompat;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -58,12 +55,10 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.DexKit;
-import io.github.qauxv.util.Initiator;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import kotlin.Pair;
@@ -75,11 +70,6 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     public static final AioChatPieClipPasteHook INSTANCE = new AioChatPieClipPasteHook();
     private static final String MIME_IMAGE = "image/*";
-
-    public interface IOnContextMenuItemCallback {
-
-        boolean onInterceptContextMenuItem(@NonNull EditText editText, int i);
-    }
 
     private AioChatPieClipPasteHook() {
         super(SyncUtils.PROC_MAIN, new int[]{DexKit.N_BASE_CHAT_PIE__INIT});
@@ -99,24 +89,6 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     @Override
     protected boolean initOnce() throws Exception {
-        // com.tencent.widget.XEditTextEx#onTextContextMenuItem(I)Z
-        Method m = Initiator.loadClass("com.tencent.widget.XEditTextEx")
-                .getDeclaredMethod("onTextContextMenuItem", int.class);
-        XposedBridge.hookMethod(m, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-                EditText editText = (EditText) param.thisObject;
-                int id = (int) param.args[0];
-                Object cb = editText.getTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor);
-                if (cb instanceof IOnContextMenuItemCallback) {
-                    IOnContextMenuItemCallback callback = (IOnContextMenuItemCallback) cb;
-                    boolean result = callback.onInterceptContextMenuItem(editText, id);
-                    if (result) {
-                        param.setResult(true);
-                    }
-                }
-            }
-        });
         // init required dispatcher
         return InputButtonHookDispatcher.INSTANCE.initialize();
     }
@@ -127,34 +99,18 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
         int inputTextId = ctx.getResources().getIdentifier("input", "id", ctx.getPackageName());
         EditText input = aioRootView.findViewById(inputTextId);
         Objects.requireNonNull(input, "onInitBaseChatPie: findViewById R.id.input is null");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            input.setOnReceiveContentListener(new String[]{MIME_IMAGE}, (view, payload) -> {
-                ClipData clipData = payload.getClip();
-                Pair<ClipDescription, Item> item = getClipDataItem0(clipData);
-                if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
-                    Uri uri = item.getSecond().getUri();
-                    if (uri != null && "content".equals(uri.getScheme())) {
-                        handleSendUriPicture(ctx, session, uri, aioRootView, rt);
-                        return null;
-                    }
+        ViewCompat.setOnReceiveContentListener(input, new String[]{MIME_IMAGE}, (view, payload) -> {
+            ClipData clipData = payload.getClip();
+            Pair<ClipDescription, Item> item = getClipDataItem0(clipData);
+            if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
+                Uri uri = item.getSecond().getUri();
+                if (uri != null && "content".equals(uri.getScheme())) {
+                    handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                    return null;
                 }
-                return payload;
-            });
-        } else {
-            input.setTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor, (IOnContextMenuItemCallback) (editText, i) -> {
-                if (i == android.R.id.paste) {
-                    Pair<ClipDescription, Item> item = getClipDataItem0(getPrimaryClip(ctx));
-                    if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
-                        Uri uri = item.getSecond().getUri();
-                        if (uri != null && "content".equals(uri.getScheme())) {
-                            handleSendUriPicture(ctx, session, uri, aioRootView, rt);
-                            return true;
-                        }
-                    }
-                }
-                return false;
-            });
-        }
+            }
+            return payload;
+        });
     }
 
     @Nullable
