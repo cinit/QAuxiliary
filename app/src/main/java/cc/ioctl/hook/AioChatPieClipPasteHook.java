@@ -32,17 +32,24 @@ import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
+import androidx.core.view.inputmethod.EditorInfoCompat;
+import androidx.core.view.inputmethod.InputConnectionCompat;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -55,10 +62,12 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.Initiator;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Method;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import kotlin.Pair;
@@ -89,6 +98,28 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     @Override
     protected boolean initOnce() throws Exception {
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            Method m = Initiator.loadClass("com.tencent.widget.XEditTextEx")
+                    .getDeclaredMethod("onCreateInputConnection", EditorInfo.class);
+            XposedBridge.hookMethod(m, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    EditText editText = (EditText) param.thisObject;
+                    EditorInfo outAttrs = (EditorInfo) param.args[0];
+                    InputConnection ic = editText.onCreateInputConnection(outAttrs);
+
+                    // On SDK 30 and below, we manually configure the InputConnection here to use
+                    // ViewCompat.performReceiveContent. On S and above, the platform's BaseInputConnection
+                    // implementation calls View.performReceiveContent by default.
+                    String[] mimeTypes = ViewCompat.getOnReceiveContentMimeTypes(editText);
+                    if (mimeTypes != null) {
+                        EditorInfoCompat.setContentMimeTypes(outAttrs, mimeTypes);
+                        ic = InputConnectionCompat.createWrapper(editText, ic, outAttrs);
+                    }
+                    param.setResult(ic);
+                }
+            });
+        }
         // init required dispatcher
         return InputButtonHookDispatcher.INSTANCE.initialize();
     }
