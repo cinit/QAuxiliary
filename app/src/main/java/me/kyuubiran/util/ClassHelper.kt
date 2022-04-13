@@ -22,22 +22,18 @@
 
 package me.kyuubiran.util
 
-import com.github.kyuubiran.ezxhelper.utils.getFieldByClassOrObject
+import com.github.kyuubiran.ezxhelper.utils.findFieldOrNull
+import com.github.kyuubiran.ezxhelper.utils.loadClassOrNull
 
 enum class ClassHelper(private val clzName: String, private val indexes: Array<Int>) {
     UpgradeController1("com.tencent.mobileqq.upgrade.UpgradeController", arrayOf(1, 2)),
     UpgradeController2("com.tencent.mobileqq.app.upgrade.UpgradeController", arrayOf(1, 2));
 
-    private fun tryLoadOrNull(): Class<*>? {
-        runCatching {
-            return loadClass(this.clzName)
-        }
-        this.indexes.forEach { idx ->
-            runCatching {
-                return loadClass("${this.clzName}\$${idx}").getFieldByClassOrObject("this$0").type
-            }
-        }
-        return null
+    private fun tryLoadOrNull(): Class<*>? = loadClassOrNull(clzName) ?: run {
+        Array(indexes.size) { "${clzName}$${indexes[it]}" }
+            .mapNotNull { loadClassOrNull(it) }
+            .forEach { it.findFieldOrNull { name == "this$0" }?.let { f -> return@run f.type } }
+        null
     }
 
     val clz: Class<*>? by lazy { tryLoadOrNull() }

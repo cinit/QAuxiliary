@@ -42,7 +42,7 @@ object AntiUpdate : CommonSwitchFunctionHook() {
         val clz = ClassHelper.UpgradeController1.clz
             ?: ClassHelper.UpgradeController2.clz
             ?: throw ClassNotFoundException("UpgradeController")
-        
+
         clz.findMethod {
             emptyParam && returnType.name.contains("UpgradeDetailWrapper") && isPublic && isNotStatic
         }.hookBefore { if (isEnabled) it.result = null }

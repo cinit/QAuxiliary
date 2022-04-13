@@ -132,7 +132,7 @@ dependencies {
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
     implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("com.github.kyuubiran:EzXHelper:0.8.2")
+    implementation("com.github.kyuubiran:EzXHelper:0.8.4")
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
