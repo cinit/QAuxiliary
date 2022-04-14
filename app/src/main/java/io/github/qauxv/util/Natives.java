@@ -25,7 +25,6 @@ import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Build;
 import android.os.Build.VERSION;
-import android.os.Build.VERSION_CODES;
 import android.os.Process;
 import android.system.Os;
 import android.system.StructUtsname;
@@ -110,6 +109,12 @@ public class Natives {
     public static native long call(long addr);
 
     public static native long call(long addr, long argv);
+
+    public static native Object allocateInstanceImpl(Class<?> clazz);
+
+    public static native Object invokeNonVirtualImpl(String classSig, String methodName,
+                                                     String methodSig, Object obj, Object[] args)
+            throws InvocationTargetException;
 
     private static void registerNativeLibEntry(String soTailingName) {
         if (soTailingName == null || soTailingName.length() == 0) {
