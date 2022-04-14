@@ -101,7 +101,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                 val _ProfileCardInfo = (param.method as Method).parameterTypes[0]
                 val info = Reflex.getInstanceObjectOrNull(param.thisObject, "a", _ProfileCardInfo)
                 if (info != null) {
-                    val _Card = Initiator.load("com.tencent.mobileqq.data.Card")
+                    val _Card = Initiator.loadClass("com.tencent.mobileqq.data.Card")
                     val card = Reflex.getInstanceObjectOrNull(info, "a", _Card)
                     if (card != null) {
                         val f = _Card.getField("lCurrentStyleId")

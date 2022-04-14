@@ -53,7 +53,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
             param: XC_MethodHook.MethodHookParam
     ): Boolean {
         if (hostInfo.versionCode < QQVersion.QQ_8_0_0) return false
-        return if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+        return if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                         .isAssignableFrom(chatMessage.javaClass)
         ) {
             val arkAppMsg = Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message")

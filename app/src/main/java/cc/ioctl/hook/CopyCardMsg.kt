@@ -66,7 +66,7 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
         }
         //End: ArkApp
         //Begin: StructMsg
-        val cl_StructingMsgItemBuilder = Initiator.load(
+        val cl_StructingMsgItemBuilder = Initiator.loadClass(
                 "com/tencent/mobileqq/activity/aio/item/StructingMsgItemBuilder")
         XposedHelpers.findAndHookMethod(cl_StructingMsgItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
                 Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback)
@@ -117,13 +117,13 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
         val chatMessage = param.args[2]
         if (id == R_ID_COPY_CODE) {
             param.result = null
-            if (Initiator.load("com.tencent.mobileqq.data.MessageForStructing")
+            if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
                             .isAssignableFrom(chatMessage.javaClass)) {
                 val text = Reflex.invokeVirtual(
                         Reflex.getInstanceObjectOrNull(chatMessage, "structingMsg"), "getXml") as String
                 copyToClipboard(ctx, text)
                 Toasts.info(ctx, "复制成功")
-            } else if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+            } else if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                             .isAssignableFrom(chatMessage.javaClass)) {
                 val text = Reflex.invokeVirtual(
                         Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message"), "toAppXml"

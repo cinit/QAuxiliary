@@ -42,7 +42,7 @@ object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     private val levelClass
-        get() = _TroopMemberLevelView()
+        get() = _TroopMemberLevelView() ?: throw ClassNotFoundException("TroopMemberLevelView")
 
     override val isAvailable = levelClass != null
 
