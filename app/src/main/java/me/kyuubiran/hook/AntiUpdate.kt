@@ -23,10 +23,8 @@
 package me.kyuubiran.hook
 
 import com.github.kyuubiran.ezxhelper.utils.emptyParam
-import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import com.github.kyuubiran.ezxhelper.utils.isNotStatic
-import com.github.kyuubiran.ezxhelper.utils.isPublic
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -43,8 +41,8 @@ object AntiUpdate : CommonSwitchFunctionHook() {
             ?: ClassHelper.UpgradeController2.clz
             ?: throw ClassNotFoundException("UpgradeController")
 
-        clz.findMethod {
-            emptyParam && returnType.name.contains("UpgradeDetailWrapper") && isPublic && isNotStatic
+        clz.findAllMethods {
+            emptyParam && returnType.name.contains("UpgradeDetailWrapper") && name.length == 1
         }.hookBefore { if (isEnabled) it.result = null }
         return true
     }
