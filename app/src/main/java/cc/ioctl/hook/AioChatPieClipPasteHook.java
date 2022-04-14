@@ -127,10 +127,10 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                     .getDeclaredMethod("onCreateInputConnection", EditorInfo.class);
             XposedBridge.hookMethod(m2, new XC_MethodHook() {
                 @Override
-                protected void beforeHookedMethod(MethodHookParam param) {
+                protected void afterHookedMethod(MethodHookParam param) {
                     EditText editText = (EditText) param.thisObject;
                     EditorInfo outAttrs = (EditorInfo) param.args[0];
-                    InputConnection ic = editText.onCreateInputConnection(outAttrs);
+                    InputConnection ic = (InputConnection) param.getResult();
 
                     // On SDK 30 and below, we manually configure the InputConnection here to use
                     // ViewCompat.performReceiveContent. On S and above, the platform's BaseInputConnection
