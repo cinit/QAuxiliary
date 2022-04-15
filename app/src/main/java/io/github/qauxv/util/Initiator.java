@@ -21,11 +21,10 @@
  */
 package io.github.qauxv.util;
 
-import static cc.ioctl.util.HostInfo.PACKAGE_NAME_QQ;
-
 import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import java.util.HashMap;
 import mqq.app.AppRuntime;
 
 public class Initiator {
@@ -33,6 +32,7 @@ public class Initiator {
     private static ClassLoader sHostClassLoader;
     private static ClassLoader sPluginParentClassLoader;
     private static Class<?> kQQAppInterface = null;
+    private static final HashMap<String, Class<?>> sClassCache = new HashMap<>(16);
 
     private Initiator() {
         throw new AssertionError("No instance for you!");
@@ -63,9 +63,6 @@ public class Initiator {
             } else {
                 className = className.substring(0, className.length() - 1);
             }
-        }
-        if (className.startsWith(".")) {
-            className = PACKAGE_NAME_QQ + className;
         }
         try {
             return sPluginParentClassLoader.loadClass(className);
@@ -279,7 +276,7 @@ public class Initiator {
     }
 
     @Nullable
-    public static Class<?> findClassWithSynthetics(@NonNull String className, int... index) {
+    private static Class<?> findClassWithSyntheticsImpl(@NonNull String className, int... index) {
         Class<?> clazz = load(className);
         if (clazz != null) {
             return clazz;
@@ -294,6 +291,25 @@ public class Initiator {
                     }
                 }
             }
+        }
+        return null;
+    }
+
+    @Nullable
+    private static Class<?> findClassWithSynthetics(@NonNull String className, int... index) {
+        Class<?> cache = sClassCache.get(className);
+        if (cache != null) {
+            return cache;
+        }
+        Class<?> clazz = load(className);
+        if (clazz != null) {
+            sClassCache.put(className, clazz);
+            return clazz;
+        }
+        clazz = findClassWithSyntheticsImpl(className, index);
+        if (clazz != null) {
+            sClassCache.put(className, clazz);
+            return clazz;
         }
         Log.e("Initiator/E class " + className + " not found");
         return null;
@@ -310,24 +326,49 @@ public class Initiator {
 
     @Nullable
     public static Class<?> findClassWithSynthetics(@NonNull String className1, @NonNull String className2, int... index) {
-        Class<?> clazz = findClassWithSynthetics(className1, index);
+        String cacheKey = className1;
+        Class<?> cache = sClassCache.get(cacheKey);
+        if (cache != null) {
+            return cache;
+        }
+        Class<?> clazz = findClassWithSyntheticsImpl(className1, index);
         if (clazz != null) {
+            sClassCache.put(cacheKey, clazz);
             return clazz;
         }
-        return findClassWithSynthetics(className2, index);
+        clazz = findClassWithSyntheticsImpl(className2, index);
+        if (clazz != null) {
+            sClassCache.put(cacheKey, clazz);
+            return clazz;
+        }
+        Log.e("Initiator/E class " + className1 + " not found");
+        return null;
     }
 
     @Nullable
     public static Class<?> findClassWithSynthetics(@NonNull String className1, @NonNull String className2,
                                                    @NonNull String className3, int... index) {
-        Class<?> clazz = findClassWithSynthetics(className1, index);
+        String cacheKey = className1;
+        Class<?> cache = sClassCache.get(cacheKey);
+        if (cache != null) {
+            return cache;
+        }
+        Class<?> clazz = findClassWithSyntheticsImpl(className1, index);
         if (clazz != null) {
+            sClassCache.put(cacheKey, clazz);
             return clazz;
         }
-        clazz = findClassWithSynthetics(className2, index);
+        clazz = findClassWithSyntheticsImpl(className2, index);
         if (clazz != null) {
+            sClassCache.put(cacheKey, clazz);
             return clazz;
         }
-        return findClassWithSynthetics(className3, index);
+        clazz = findClassWithSyntheticsImpl(className3, index);
+        if (clazz != null) {
+            sClassCache.put(cacheKey, clazz);
+            return clazz;
+        }
+        Log.e("Initiator/E class " + className1 + " not found");
+        return null;
     }
 }
