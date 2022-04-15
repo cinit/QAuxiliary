@@ -868,11 +868,13 @@ public class Reflex {
     }
 
     /**
-     * Invoke a declared overridden instance method of an object directly.
+     * Invoke an instance method non-virtually (i.e. without calling the overridden method).
+     * <p>
+     * Note that only instance methods can be invoked, static methods not allowed.
      *
      * @param obj  the object to invoke the method on
      * @param m    the method to invoke, the method must be declared in the class which you want to invoke
-     * @param args the arguments to pass to the method
+     * @param args the arguments to pass to the method, may be null if the method has no arguments
      * @return the return value of the method
      * @throws IllegalArgumentException  if the arguments are not compatible with the method
      * @throws InvocationTargetException if the method throws an exception
@@ -922,6 +924,13 @@ public class Reflex {
         return Natives.invokeNonVirtualImpl(classSignature, m.getName(), methodSignature, obj, args);
     }
 
+    /**
+     * Allocate a object instance of the specified class without calling the constructor.
+     *
+     * @param clazz the class to allocate
+     * @return the allocated object
+     * @throws IllegalArgumentException if the class is not instantiable
+     */
     @NonNull
     public static <T> T allocateInstance(@NonNull Class<T> clazz) {
         Objects.requireNonNull(clazz, "clazz is null");

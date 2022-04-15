@@ -38,6 +38,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.Arrays;
 
 public class Natives {
@@ -110,8 +111,29 @@ public class Natives {
 
     public static native long call(long addr, long argv);
 
+    /**
+     * Allocate a object instance of the specified class without calling the constructor.
+     * <p>
+     * Do not use this directly, use {@link cc.ioctl.util.Reflex#allocateInstance(Class)} instead.
+     *
+     * @param clazz the class to allocate
+     * @return the allocated object
+     */
     public static native Object allocateInstanceImpl(Class<?> clazz);
 
+    /**
+     * Invoke an instance method non-virtually (i.e. without calling the overridden method).
+     * <p>
+     * Do not use this directly, use {@link cc.ioctl.util.Reflex#invokeNonVirtual(Object, Method, Object[])} instead.
+     *
+     * @param classSig   the class signature of the method, e.g. "Ljava/lang/String;"
+     * @param methodName the method name
+     * @param methodSig  the method signature, e.g. "(Ljava/lang/String;)Ljava/lang/String;"
+     * @param obj        the object to invoke the method on, must not be null
+     * @param args       the arguments to pass to the method, may be null if no arguments are passed
+     * @return the return value of the method
+     * @throws InvocationTargetException if the method threw an exception
+     */
     public static native Object invokeNonVirtualImpl(String classSig, String methodName,
                                                      String methodSig, Object obj, Object[] args)
             throws InvocationTargetException;
