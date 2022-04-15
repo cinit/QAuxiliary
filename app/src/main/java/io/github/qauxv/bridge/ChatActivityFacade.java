@@ -199,6 +199,41 @@ public class ChatActivityFacade {
             Log.e(e);
         }
     }
+    public static void sendReplyMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
+            @NonNull Object replyMsg){
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(replyMsg, "absStructMsg == null");
+        try{
+            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a", Initiator.load("com.tencent.mobileqq.app.QQAppInterface"),
+                    Initiator.load("com.tencent.mobileqq.data.ChatMessage"),
+                    Initiator.load("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+                    int.class,
+                    int.class,
+                    boolean.class);
+            invokeMethod.invoke(ReplyMsgSender,qqAppInterface,replyMsg,sessionInfo,0,0,false);
+        }catch (Exception e){
+            Log.e(e);
+        }
+    }
+    public static void sendMixedMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
+            @NonNull Object mixedMsg){
+        Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
+        Objects.requireNonNull(sessionInfo, "sessionInfo == null");
+        Objects.requireNonNull(mixedMsg, "absStructMsg == null");
+        try{
+            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a",
+                    Initiator.load("com.tencent.mobileqq.app.QQAppInterface"),
+                    Initiator.load("com.tencent.mobileqq.data.MessageForMixedMsg"),
+                    Initiator.load("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                    int.class);
+            invokeMethod.invoke(ReplyMsgSender,qqAppInterface,mixedMsg,sessionInfo,0);
+        }catch (Exception e){
+            Log.e(e);
+        }
+    }
 
     public static void repeatMessage(@NonNull AppRuntime app, @NonNull Parcelable session, @NonNull Object msg) {
         Objects.requireNonNull(app, "app == null");
@@ -268,6 +303,12 @@ public class ChatActivityFacade {
                     Toasts.error(HostInfo.getApplication(), e.toString().replace("java.lang.", ""));
                     Log.e(e);
                 }
+                break;
+            case "MessageForReplyText":
+                sendReplyMsg(app,session,msg);
+                break;
+            case "MessageForMixedMsg":
+                sendMixedMsg(app,session,msg);
                 break;
             default:
                 Toasts.error(HostInfo.getApplication(), "Unsupported msg type: " + getShortClassName(msg));
