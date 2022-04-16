@@ -48,8 +48,6 @@ android {
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            tasks.filter { it.name.toLowerCase().contains("lint") }
-                .forEach { it.enabled = false }
             kotlinOptions.suppressWarnings = true
         }
         getByName("debug") {
@@ -99,6 +97,9 @@ android {
     }
     buildFeatures {
         viewBinding = true
+    }
+    lint {
+        checkDependencies = true
     }
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
@@ -163,7 +164,9 @@ androidComponents.onVariants { variant ->
     }
 }
 
-tasks.register<ReplaceIcon>("replaceIcon")
+tasks.register<ReplaceIcon>("replaceIcon") {
+    projectDir.set(project.layout.projectDirectory)
+}
 tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
@@ -179,12 +182,13 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 }
 
 tasks.register("checkGitSubmodule") {
+    val projectDir = rootProject.projectDir
     doLast {
         listOf(
             "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
             "app/src/main/cpp/dex_builder"
         ).forEach {
-            val submoduleDir = File(rootProject.projectDir, it)
+            val submoduleDir = File(projectDir, it)
             if (!submoduleDir.exists()) {
                 throw IllegalStateException(
                     "submodule dir not found: $submoduleDir" +
@@ -196,16 +200,25 @@ tasks.register("checkGitSubmodule") {
 }
 tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
 
-val restartQQ = task("restartQQ").doLast {
+interface Injected {
+    @get:Inject
+    val eo: ExecOperations
+}
+
+val restartQQ = task("restartQQ") {
+    val eo = project.objects.newInstance<Injected>().eo
     val adbExecutable: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
-    exec {
-        commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
-    }
-    exec {
-        commandLine(
-            adbExecutable, "shell", "am", "start",
-            "$(pm resolve-activity --components com.tencent.mobileqq)"
-        )
+
+    doLast {
+        eo.exec {
+            commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
+        }
+        eo.exec {
+            commandLine(
+                adbExecutable, "shell", "am", "start",
+                "$(pm resolve-activity --components com.tencent.mobileqq)"
+            )
+        }
     }
 }
 

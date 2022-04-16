@@ -1,13 +1,19 @@
 import org.gradle.api.DefaultTask
+import org.gradle.api.file.DirectoryProperty
+import org.gradle.api.tasks.Internal
 import org.gradle.api.tasks.TaskAction
 import java.io.File
 
 abstract class ReplaceIcon : DefaultTask() {
+
+    @get:Internal
+    abstract val projectDir: DirectoryProperty
+
     @TaskAction
     fun run() {
-        val iconsDir = File(project.projectDir, "icons")
-        val drawableDir= File(project.projectDir, "src/main/res/drawable")
-        val adapter = File(project.projectDir, "src/main/res/drawable-anydpi-v26/icon.xml")
+        val iconsDir = File(projectDir.asFile.get(), "icons")
+        val drawableDir= File(projectDir.asFile.get(), "src/main/res/drawable")
+        val adapter = File(projectDir.asFile.get(), "src/main/res/drawable-anydpi-v26/icon.xml")
 
         // delete old icons: all files starting with `icon`
         drawableDir
