@@ -26,6 +26,7 @@ import android.content.Context
 import android.view.View
 import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.tryOrFalse
+import com.hicore.QQDecodeUtils.DecodeForEncPic
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -55,7 +56,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         val clsPicItemBuilder = _PicItemBuilder()
         val clsMixedMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder".clazz
         val clsStructingMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.StructingMsgItemBuilder".clazz
-        val clazz = arrayOf(clsPicItemBuilder, clsPicItemBuilder.superclass, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder)
+        val MarketFaceItemBuilder = "com.tencent.mobileqq.activity.aio.item.MarketFaceItemBuilder".clazz
+        val clazz = arrayOf(clsPicItemBuilder, clsPicItemBuilder.superclass, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder,MarketFaceItemBuilder)
         // copy pic
         clazz.filterNotNull().forEach {
             it.method { m ->
@@ -78,7 +80,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val view = param.args[0] as View
                 val message = getMessage(view)
                 val path = getPicPath(message)
-                if (path.isEmpty()) return@hookAfter
+                if (!Reflex.getShortClassName(message).equals( "MessageForMarketFace"))if (path.isEmpty()) return@hookAfter
+
                 param.result = param.result.run {
                     this as Array<Any>
                     val clQQCustomMenuItem = javaClass.componentType
@@ -116,6 +119,12 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val text = message.get("structingMsg").invoke("getXml") as String
                 // todo parse structingmsg
                 emptyArray()
+            }
+            "MessageForMarketFace" -> {
+                val tmpPath = DecodeForEncPic.decodeGifForLocalPath(message.get("mMarkFaceMessage").get("dwTabID") as Int,
+                    message.get("mMarkFaceMessage").get("sbufID") as ByteArray?
+                )
+                arrayOf(tmpPath)
             }
             else -> emptyArray()
         }
