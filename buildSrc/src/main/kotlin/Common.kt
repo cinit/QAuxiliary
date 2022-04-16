@@ -10,14 +10,14 @@ object Common {
         if (headFile.exists()) {
             var commitHash: String
             val strings = headFile.readText(Charsets.UTF_8).split(" ")
-            if (strings.size > 1) {
-                val refFilePath = ".git" + File.separator + strings[1];
+            commitHash = if (strings.size > 1) {
+                val refFilePath = ".git" + File.separator + strings[1]
                 // 根据HEAD读取当前指向的hash值，路径示例为：".git/refs/heads/master"
                 val refFile = File(project.rootProject.projectDir, refFilePath.replace("\n", "").replace("\r", ""));
                 // 索引文件内容为hash值+"\n"，
-                commitHash = refFile.readText(Charsets.UTF_8)
+                refFile.readText(Charsets.UTF_8)
             } else {
-                commitHash = strings[0]
+                strings[0]
             }
             commitHash = commitHash.trim()
             val repo = FileRepository(project.rootProject.file(".git"))
@@ -42,14 +42,14 @@ object Common {
         if (headFile.exists()) {
             var commitHash: String
             val strings = headFile.readText(Charsets.UTF_8).split(" ")
-            if (strings.size > 1) {
-                val refFilePath = ".git" + File.separator + strings[1];
+            commitHash = if (strings.size > 1) {
+                val refFilePath = ".git" + File.separator + strings[1]
                 // 根据HEAD读取当前指向的hash值，路径示例为：".git/refs/heads/master"
                 val refFile = File(project.rootProject.projectDir, refFilePath.replace("\n", "").replace("\r", ""));
                 // 索引文件内容为hash值+"\n"，
-                commitHash = refFile.readText(Charsets.UTF_8)
+                refFile.readText(Charsets.UTF_8)
             } else {
-                commitHash = strings[0]
+                strings[0]
             }
             commitHash = commitHash.trim()
             val repo = FileRepository(project.rootProject.file(".git"))
