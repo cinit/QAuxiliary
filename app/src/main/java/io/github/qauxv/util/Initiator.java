@@ -232,7 +232,7 @@ public class Initiator {
 
     public static Class<?> _C2CMessageManager() {
         return findClassWithSynthetics("com/tencent/imcore/message/C2CMessageManager",
-                "com/tencent/mobileqq/app/message/C2CMessageManager");
+                "com/tencent/mobileqq/app/message/C2CMessageManager", 1, 2);
     }
 
     public static Class<?> _AllInOne() {
