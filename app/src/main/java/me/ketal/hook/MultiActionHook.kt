@@ -61,8 +61,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         m?.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
-            baseChatPie =
-                Reflex.getFirstByType(it.thisObject, Initiator._BaseChatPie() as Class<*>)
+            baseChatPie = it.thisObject
             val count = rootView.childCount
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
