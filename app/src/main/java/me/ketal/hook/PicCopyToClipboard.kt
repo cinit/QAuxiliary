@@ -34,6 +34,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator._ChatMessage
+import io.github.qauxv.util.Initiator._MarketFaceItemBuilder
+import io.github.qauxv.util.Initiator._MixedMsgItemBuilder
 import io.github.qauxv.util.Initiator._PicItemBuilder
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
@@ -54,10 +56,13 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
 
     override fun initOnce() = tryOrFalse {
         val clsPicItemBuilder = _PicItemBuilder()
-        val clsMixedMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder".clazz
-        val clsStructingMsgItemBuilder = "com.tencent.mobileqq.activity.aio.item.StructingMsgItemBuilder".clazz
-        val MarketFaceItemBuilder = "com.tencent.mobileqq.activity.aio.item.MarketFaceItemBuilder".clazz
-        val clazz = arrayOf(clsPicItemBuilder, clsPicItemBuilder.superclass, clsMixedMsgItemBuilder, clsStructingMsgItemBuilder,MarketFaceItemBuilder)
+        val clazz = arrayOf(
+            clsPicItemBuilder,
+            clsPicItemBuilder.superclass,
+            _MixedMsgItemBuilder(),
+            "com.tencent.mobileqq.activity.aio.item.StructingMsgItemBuilder".clazz,
+            _MarketFaceItemBuilder()
+        )
         // copy pic
         clazz.filterNotNull().forEach {
             it.method { m ->
@@ -69,7 +74,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 m.result = null
                 val path = getPicPath(chatMessage)
                 if (path.size > 1) {
-                    // todo Alert users when multiple images are included
+                    // todo Let the user select one of the items to copy
                 }
                 copyToClipboard(context as Context, File(path.first()))
             }
@@ -80,7 +85,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 val view = param.args[0] as View
                 val message = getMessage(view)
                 val path = getPicPath(message)
-                if (!Reflex.getShortClassName(message).equals( "MessageForMarketFace"))if (path.isEmpty()) return@hookAfter
+                if (path.isEmpty()) return@hookAfter
 
                 param.result = param.result.run {
                     this as Array<Any>
@@ -121,9 +126,11 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 emptyArray()
             }
             "MessageForMarketFace" -> {
-                val tmpPath = DecodeForEncPic.decodeGifForLocalPath(message.get("mMarkFaceMessage").get("dwTabID") as Int,
+                val tmpPath = DecodeForEncPic.decodeGifForLocalPath(
+                    message.get("mMarkFaceMessage").get("dwTabID") as Int,
                     message.get("mMarkFaceMessage").get("sbufID") as ByteArray?
                 )
+                if (tmpPath.isEmpty()) return emptyArray()
                 arrayOf(tmpPath)
             }
             else -> emptyArray()

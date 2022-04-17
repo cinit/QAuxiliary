@@ -120,6 +120,14 @@ public class Initiator {
         return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.item.PicItemBuilder", 7, 6, 8, 3);
     }
 
+    public static Class<?> _MixedMsgItemBuilder() {
+        return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder", 2);
+    }
+
+    public static Class<?> _MarketFaceItemBuilder() {
+        return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.item.MarketFaceItemBuilder", 8, 10, 14, 15);
+    }
+
     public static Class<?> _TroopGagMgr() {
         return findClassWithSynthetics("com.tencent.mobileqq.troop.utils.TroopGagMgr", 1, 2);
     }
