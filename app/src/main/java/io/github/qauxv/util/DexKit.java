@@ -322,7 +322,7 @@ public class DexKit {
             String str = new String(Arrays.copyOfRange(key, 1, key.length));
             Log.d("doFindMethodFromNative: id " + i + ", key:" + str);
             long[] ms = helper.findMethodUsingString(
-                    str, true, -1, (short) 0, null, -1,
+                    str, true, -1, (short) -1, null, -1,
                     null, null, null, false);
             for (long methodIndex : ms) {
                 Executable m = helper.decodeMethodIndex(methodIndex);
