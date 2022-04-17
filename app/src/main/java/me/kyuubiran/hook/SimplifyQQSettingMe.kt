@@ -37,18 +37,21 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
-import io.github.qauxv.util.QQVersion.*
+import io.github.qauxv.util.QQVersion.QQ_8_4_1
+import io.github.qauxv.util.QQVersion.QQ_8_6_0
+import io.github.qauxv.util.QQVersion.QQ_8_6_5
+import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.requireMinQQVersion
 import me.kyuubiran.util.setViewZeroSize
-import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.throwOrTrue
-import java.util.*
+import java.util.SortedMap
 
 //侧滑栏精简
 @FunctionHookEntry
@@ -140,7 +143,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                         }
                         ret
                     } else {
-                        param.thisObject.get(underSettingsName, View::class.java) as LinearLayout
+                        param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
                     }
                     underSettingsLayout?.forEachIndexed { i, v ->
                         val tv = (v as LinearLayout)[1] as TextView
