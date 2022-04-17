@@ -22,6 +22,7 @@
 package io.github.qauxv.util;
 
 import static io.github.qauxv.util.Initiator._BaseChatPie;
+import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._TroopChatPie;
 import static io.github.qauxv.util.Initiator.load;
@@ -337,13 +338,9 @@ public class DexKit {
         if (methods.size() == 0) {
             return null;
         }
-        if (methods.size() == 1) {
-            ret = methods.iterator().next();
-        } else {
-            ret = a(i, methods, null);
-        }
+        ret = a(i, methods, null);
         if (ret == null) {
-            Log.i("Multiple classes candidates found, none satisfactory.");
+            Log.i(methods.size() + " classes candidates found for " + i + ", none satisfactory.");
             return null;
         }
         //
@@ -1240,11 +1237,18 @@ public class DexKit {
                 return (DexMethodDescriptor) __methods.toArray()[0];
             case N_BASE_CHAT_PIE__createMulti:
                 for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
                     String name = m.declaringClass.replace('/', '.');
-                    if (name
-                        .contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
+                    if (name.contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
                         || name.contains(_BaseChatPie().getName())) {
-                        return m;
+                        if (method.getParameterTypes()[0].equals(_ChatMessage())) {
+                            return m;
+                        }
                     }
                 }
                 break;
