@@ -37,6 +37,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Initiator._BaseChatPie
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
@@ -61,7 +62,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
         m?.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
-            baseChatPie = it.thisObject
+            baseChatPie = if (m.declaringClass.isAssignableFrom(_BaseChatPie())) it.thisObject
+                else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
             val count = rootView.childCount
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
