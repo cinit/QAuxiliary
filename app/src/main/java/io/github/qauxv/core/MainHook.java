@@ -32,6 +32,7 @@ import cc.ioctl.hook.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.MuteQZoneThumbsUp;
 import cc.ioctl.hook.OptXListViewScrollBar;
 import cc.ioctl.hook.RevokeMsgHook;
+import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
@@ -39,6 +40,7 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigItems;
+import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
@@ -56,6 +58,8 @@ import xyz.nextalone.hook.RemoveSuperQQShow;
 public class MainHook {
 
     private static MainHook SELF;
+
+    public static final String KEY_SAFE_MODE = "safe_mode";
 
     boolean third_stage_inited = false;
 
@@ -84,19 +88,26 @@ public class MainHook {
         if (HostInfo.isQQHD()) {
             initForQQHDBasePadActivityMitigation();
         }
-        HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
-        HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
-        HookInstaller.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
-        HookInstaller.allowEarlyInit(GagInfoDisclosure.INSTANCE);
-        HookInstaller.allowEarlyInit(CustomSplash.INSTANCE);
-        HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
-        HookInstaller.allowEarlyInit(RemoveSuperQQShow.INSTANCE);
-        HookInstaller.allowEarlyInit(FileRecvRedirect.INSTANCE);
-        HookInstaller.allowEarlyInit(OptXListViewScrollBar.INSTANCE);
+        boolean safeMode = ConfigManager.getDefaultConfig().getBooleanOrDefault(KEY_SAFE_MODE, false);
+        if (safeMode) {
+            LicenseStatus.sDisableCommonHooks = true;
+            Log.i("Safe mode enabled, disable hooks");
+        }
+        if (!safeMode) {
+            HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
+            HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
+            HookInstaller.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
+            HookInstaller.allowEarlyInit(GagInfoDisclosure.INSTANCE);
+            HookInstaller.allowEarlyInit(CustomSplash.INSTANCE);
+            HookInstaller.allowEarlyInit(RemoveCameraButton.INSTANCE);
+            HookInstaller.allowEarlyInit(RemoveSuperQQShow.INSTANCE);
+            HookInstaller.allowEarlyInit(FileRecvRedirect.INSTANCE);
+            HookInstaller.allowEarlyInit(OptXListViewScrollBar.INSTANCE);
+        }
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             JumpActivityEntryHook.initForJumpActivityEntry(ctx);
-            Class loadData = Initiator.load("com/tencent/mobileqq/startup/step/LoadData");
+            Class<?> loadData = Initiator.requireClass("com/tencent/mobileqq/startup/step/LoadData");
             Method doStep = null;
             for (Method method : loadData.getDeclaredMethods()) {
                 if (method.getReturnType().equals(boolean.class) && method.getParameterTypes().length == 0) {
@@ -110,7 +121,7 @@ public class MainHook {
                     if (third_stage_inited) {
                         return;
                     }
-                    Class director = Initiator._StartupDirector();
+                    Class<?> director = Initiator._StartupDirector();
                     Object dir = Reflex.getInstanceObjectOrNull(param.thisObject, "mDirector", director);
                     if (dir == null) {
                         dir = Reflex.getInstanceObjectOrNull(param.thisObject, "a", director);
@@ -118,13 +129,17 @@ public class MainHook {
                     if (dir == null) {
                         dir = Reflex.getFirstNSFByType(param.thisObject, director);
                     }
-                    InjectDelayableHooks.step(dir);
+                    if (safeMode) {
+                        SettingEntryHook.INSTANCE.initialize();
+                    } else {
+                        InjectDelayableHooks.step(dir);
+                    }
                     third_stage_inited = true;
                 }
             });
         } else {
-            if (LicenseStatus.hasUserAcceptEula()) {
-                Class director = Initiator._StartupDirector();
+            if (!safeMode && LicenseStatus.hasUserAcceptEula()) {
+                Class<?> director = Initiator._StartupDirector();
                 Object dir = Reflex.getInstanceObjectOrNull(step, "mDirector", director);
                 if (dir == null) {
                     dir = Reflex.getInstanceObjectOrNull(step, "a", director);

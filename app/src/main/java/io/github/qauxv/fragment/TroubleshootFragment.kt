@@ -44,10 +44,13 @@ import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
+import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin
 import io.github.qauxv.config.ConfigManager
+import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
@@ -83,6 +86,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
+            CategoryItem("安全模式") {
+                add(TextSwitchItem(title = "启用安全模式", summary = "停用所有功能，重启应用后生效", switchAgent = mSafeModeSwitch))
+            },
             CategoryItem("功能") {
                 textItem("功能异常列表", null, onClick = clickToShowFuncList)
             },
@@ -110,6 +116,25 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 description(generateDebugInfoString(), isTextSelectable = true)
             }
         )
+    }
+
+    private val mSafeModeSwitch: ISwitchCellAgent = object : ISwitchCellAgent {
+        override val isCheckable = true
+        override var isChecked: Boolean
+            get() {
+                return ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+            }
+            set(value) {
+                val oldValue = ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+                if (value != oldValue) {
+                    ConfigManager.getDefaultConfig().putBoolean(MainHook.KEY_SAFE_MODE, value).apply()
+                    if (isResumed) {
+                        context?.let {
+                            Toasts.info(it, "重启应用后生效")
+                        }
+                    }
+                }
+            }
     }
 
     private val clickToShowFuncList: (View) -> Unit = {

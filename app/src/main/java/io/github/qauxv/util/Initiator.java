@@ -51,6 +51,12 @@ public class Initiator {
         return sHostClassLoader;
     }
 
+    /**
+     * Load a class, if the class is not found, null will be returned.
+     *
+     * @param className The class name.
+     * @return The class, or null if not found.
+     */
     @Nullable
     public static Class<?> load(String className) {
         if (sPluginParentClassLoader == null || className == null || className.isEmpty()) {
@@ -71,6 +77,13 @@ public class Initiator {
         }
     }
 
+    /**
+     * Load a class, if the class is not found, a ClassNotFoundException will be thrown.
+     *
+     * @param className The class name.
+     * @return The class.
+     * @throws ClassNotFoundException If the class is not found.
+     */
     @NonNull
     public static Class<?> loadClass(String className) throws ClassNotFoundException {
         Class<?> ret = load(className);
@@ -78,6 +91,22 @@ public class Initiator {
             throw new ClassNotFoundException(className);
         }
         return ret;
+    }
+
+    /**
+     * Load a class, if the class is not found, an unsafe ClassNotFoundException will be thrown.
+     *
+     * @param className The class name.
+     * @return The class.
+     */
+    @NonNull
+    public static Class<?> requireClass(@NonNull String className) {
+        try {
+            return loadClass(className);
+        } catch (ClassNotFoundException e) {
+            IoUtils.unsafeThrow(e);
+            throw new AssertionError("Unreachable code");
+        }
     }
 
     public static Class<?> _QbossADImmersionBannerManager() {

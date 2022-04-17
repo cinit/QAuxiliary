@@ -32,7 +32,7 @@ import java.util.Date
 object LicenseStatus {
 
     @JvmField
-    val sDisableCommonHooks: Boolean = isBlacklisted()
+    var sDisableCommonHooks: Boolean = isBlacklisted()
 
     private const val qn_eula_status = "qa_eula_status" //typo, ignore it
     private const val qn_user_auth_status = "qn_user_auth_status"
