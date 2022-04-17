@@ -15,6 +15,8 @@ android {
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
+        resourceConfigurations += listOf("zh", "en")
+
         externalNativeBuild {
             cmake {
                 arguments += listOf(
