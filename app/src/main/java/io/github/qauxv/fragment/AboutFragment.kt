@@ -197,7 +197,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                     "BiliRoaming",
                     "https://github.com/yujincheng08/BiliRoaming",
                     "yujincheng08",
-                    " GPL-3.0 License"
+                    "GPL-3.0 License"
                 )
         )
     }
