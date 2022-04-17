@@ -16,7 +16,7 @@ val verCode = Common.getBuildVersionCode(rootProject)
 val verName = "1.2.2" + (Common.getGitHeadRefsSuffix(rootProject))
 val androidTargetSdkVersion by extra(32)
 val androidMinSdkVersion by extra(24)
-val androidCompileSdkVersion by extra(32)
+val androidCompileSdkVersion by extra(31)
 val androidBuildToolsVersion by extra("32.0.0")
 val androidCompileNdkVersion = Version.getNdkVersion(project)
 

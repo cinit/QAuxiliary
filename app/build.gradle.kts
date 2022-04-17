@@ -55,6 +55,7 @@ android {
         getByName("debug") {
             isShrinkResources = false
             isMinifyEnabled = false
+            isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
         }
     }
