@@ -47,27 +47,17 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> kAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity");
-        if (kAIOGalleryActivity != null) {
-            // for QQ >= 8.3.5
-            Class<?> kBrowserBaseScene = Initiator.loadClass("com.tencent.richmediabrowser.view.BrowserBaseScene");
-            Method onCreate = kBrowserBaseScene.getDeclaredMethod("onCreate");
-            Field fBgView = kBrowserBaseScene.getDeclaredField("bgView");
-            fBgView.setAccessible(true);
-            HookUtils.hookAfterIfEnabled(this, onCreate, param -> {
-                View v = (View) fBgView.get(param.thisObject);
-                v.setBackgroundColor(0x00000000);
-            });
-        }
-        Class<?> legacyAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity");
-        if (legacyAIOGalleryActivity != null) {
-            // for legacy QQ
-            // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
-            // source code from: ColorQQ by qiwu
-            Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_ABS_GAL_SCENE);
-            Method m = kAbstractGalleryScene.getDeclaredMethod("a", ViewGroup.class);
+        // for QQ >= 8.3.5
+        Class<?> kBrowserBaseScene = DexKit.doFindClass(DexKit.C_GalleryBaseScene);
+        if (kBrowserBaseScene != null) {
+            Method m;
+            try {
+                m = kBrowserBaseScene.getDeclaredMethod("a", ViewGroup.class);
+            } catch (NoSuchMethodException e) {
+                m = kBrowserBaseScene.getDeclaredMethod("onCreate");
+            }
             Field fv = null;
-            for (Field f : kAbstractGalleryScene.getDeclaredFields()) {
+            for (Field f : kBrowserBaseScene.getDeclaredFields()) {
                 if (f.getType().equals(View.class)) {
                     f.setAccessible(true);
                     fv = f;
@@ -83,13 +73,12 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
                 v.setBackgroundColor(0x00000000);
             });
         }
-
-        legacyAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.gallery.view.AIOGalleryActivity");
+        Class<?> legacyAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity");
         if (legacyAIOGalleryActivity != null) {
             // for legacy QQ
             // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
             // source code from: ColorQQ by qiwu
-            Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_GalleryBaseScene);
+            Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_ABS_GAL_SCENE);
             Method m = kAbstractGalleryScene.getDeclaredMethod("a", ViewGroup.class);
             Field fv = null;
             for (Field f : kAbstractGalleryScene.getDeclaredFields()) {
