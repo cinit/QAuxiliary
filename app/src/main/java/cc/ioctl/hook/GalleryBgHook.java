@@ -42,7 +42,7 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
     public static final GalleryBgHook INSTANCE = new GalleryBgHook();
 
     private GalleryBgHook() {
-        super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE});
+        super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE, DexKit.C_GalleryBaseScene});
     }
 
     @Override
@@ -65,6 +65,31 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
             // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
             // source code from: ColorQQ by qiwu
             Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_ABS_GAL_SCENE);
+            Method m = kAbstractGalleryScene.getDeclaredMethod("a", ViewGroup.class);
+            Field fv = null;
+            for (Field f : kAbstractGalleryScene.getDeclaredFields()) {
+                if (f.getType().equals(View.class)) {
+                    f.setAccessible(true);
+                    fv = f;
+                    break;
+                }
+            }
+            if (fv == null) {
+                throw new IllegalStateException("GalleryBgHook: targetView is null");
+            }
+            final Field targetView = fv;
+            HookUtils.hookAfterIfEnabled(this, m, param -> {
+                View v = (View) targetView.get(param.thisObject);
+                v.setBackgroundColor(0x00000000);
+            });
+        }
+
+        legacyAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.gallery.view.AIOGalleryActivity");
+        if (legacyAIOGalleryActivity != null) {
+            // for legacy QQ
+            // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
+            // source code from: ColorQQ by qiwu
+            Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_GalleryBaseScene);
             Method m = kAbstractGalleryScene.getDeclaredMethod("a", ViewGroup.class);
             Field fv = null;
             for (Field f : kAbstractGalleryScene.getDeclaredFields()) {

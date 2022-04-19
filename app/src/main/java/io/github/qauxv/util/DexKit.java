@@ -104,8 +104,9 @@ public class DexKit {
     public static final int C_FaceManager = 34;
     public static final int C_SmartDeviceProxyMgr = 35;
     public static final int C_AIOPictureView = 36;
+    public static final int C_GalleryBaseScene = 37;
     //the last index
-    public static final int DEOBF_NUM_C = 36;
+    public static final int DEOBF_NUM_C = 37;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -480,6 +481,8 @@ public class DexKit {
                 return "smartdeviceproxymgr";
             case C_AIOPictureView:
                 return "aiopictureview";
+            case C_GalleryBaseScene:
+                return "gallerybaseScene";
             case N_BASE_CHAT_PIE__INIT:
                 return "base_chat_pie__init";
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -636,6 +639,10 @@ public class DexKit {
                 break;
             case C_AIOPictureView:
                 ret = "com.tencent.mobileqq.richmediabrowser.view.AIOPictureView";
+                break;
+            case C_GalleryBaseScene:
+                // guess
+                ret = "com.tencent.mobileqq.gallery.view.GalleryBaseScene";
                 break;
             case N_BASE_CHAT_PIE__INIT:
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -916,6 +923,12 @@ public class DexKit {
                         0x32, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x4d, 0x6f, 0x73, 0x61, 0x69, 0x63, 0x45, 0x66,
                         0x66, 0x65, 0x63, 0x74
                     }};
+            case C_GalleryBaseScene:
+                return new byte[][]{
+                    new byte[]{
+                        0x10, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79, 0x42, 0x61, 0x73, 0x65, 0x53, 0x63, 0x65,
+                        0x6E, 0x65
+                    }};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1023,6 +1036,8 @@ public class DexKit {
                 return new int[]{4, 8, 11, 6};
             case N_Conversation_onCreate:
                 return new int[]{5, 7, 8, 6};
+            case C_GalleryBaseScene:
+                return new int[]{2};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1096,10 +1111,20 @@ public class DexKit {
                 break;
             case C_ABS_GAL_SCENE:
                 for (DexMethodDescriptor m : __methods) {
-                    Class clz = Initiator.load(m.declaringClass);
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     if (!Modifier.isAbstract(clz.getModifiers())) {
                         continue;
                     }
+                    for (Field f : clz.getDeclaredFields()) {
+                        if (f.getType().equals(View.class)) {
+                            return m;
+                        }
+                    }
+                }
+                break;
+            case C_GalleryBaseScene:
+                for (DexMethodDescriptor m : __methods) {
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     for (Field f : clz.getDeclaredFields()) {
                         if (f.getType().equals(View.class)) {
                             return m;
