@@ -119,4 +119,8 @@ public abstract class BaseSettingFragment extends Fragment {
     public int getLayoutPaddingBottom() {
         return mSettingsHostActivity.getLayoutPaddingBottom();
     }
+
+    public boolean isWrapContent() {
+        return true;
+    }
 }
