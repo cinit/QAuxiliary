@@ -872,7 +872,9 @@ public class DexKit {
             case C_AIOPictureView:
                 return new byte[][]{
                     new byte[]{0x0e, 0x41, 0x49, 0x4F, 0x50, 0x69, 0x63, 0x74, 0x75, 0x72, 0x65,
-                        0x56, 0x69, 0x65, 0x77}};
+                        0x56, 0x69, 0x65, 0x77},
+                    new byte[]{0x11, 0x41, 0x49, 0x4F, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79,
+                                0x50, 0x69, 0x63, 0x56, 0x69, 0x65, 0x77}};
             case N_FriendChatPie_updateUITitle:
                 return new byte[][]{
                     new byte[]{0x41, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x43, 0x68, 0x61, 0x74,
@@ -1020,7 +1022,7 @@ public class DexKit {
             case C_SmartDeviceProxyMgr:
                 return new int[]{5, 2};
             case C_AIOPictureView:
-                return new int[]{10, 4};
+                return new int[]{10, 4, 2};
             case N_FriendChatPie_updateUITitle:
                 return new int[]{4, 6, 2};
             case N_ProfileCardUtil_getCard:
