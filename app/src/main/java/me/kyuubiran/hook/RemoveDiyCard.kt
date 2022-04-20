@@ -30,7 +30,12 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.isTim
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
@@ -62,7 +67,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                             copeCard(card!!)
                             return@hookBefore
                         }
-                        it.result = null
+                        it.result = true
                     }
                 }
             }
