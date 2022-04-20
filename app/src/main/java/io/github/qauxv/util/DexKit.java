@@ -1361,6 +1361,8 @@ public class DexKit {
             case C_ClockInEntryHelper:
             case C_FaceManager:
             case C_AvatarUtil:
+            case N_AtPanel__refreshUI:
+            case N_AtPanel__showDialogAtView:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) {
@@ -1379,8 +1381,6 @@ public class DexKit {
             case C_IntimateDrawer:
             case C_HttpDownloader:
             case C_MultiMsg_Manager:
-            case N_AtPanel__refreshUI:
-            case N_AtPanel__showDialogAtView:
             case C_AIOPictureView:
                 //has superclass
                 for (DexMethodDescriptor m : __methods) {
