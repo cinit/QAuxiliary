@@ -30,6 +30,7 @@ import static cc.ioctl.util.Reflex.findField;
 import static cc.ioctl.util.Reflex.getFirstByType;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
+import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
@@ -374,14 +375,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                 dialog.show();
             }
         });
-        Class<?> cl_PttItemBuilder = load("com/tencent/mobileqq/activity/aio/item/PttItemBuilder");
-        if (cl_PttItemBuilder == null) {
-            Class<?> cref = load("com/tencent/mobileqq/activity/aio/item/PttItemBuilder$2");
-            try {
-                cl_PttItemBuilder = cref.getDeclaredField("this$0").getType();
-            } catch (NoSuchFieldException e) {
-            }
-        }
+        Class<?> cl_PttItemBuilder = _PicItemBuilder();
         findAndHookMethod(cl_PttItemBuilder, "a", int.class, Context.class,
                 load("com/tencent/mobileqq/data/ChatMessage"), new XC_MethodHook(60) {
                     @Override

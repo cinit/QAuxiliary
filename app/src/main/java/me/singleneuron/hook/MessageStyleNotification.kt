@@ -46,6 +46,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator._QQAppInterface
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
@@ -257,7 +258,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                     param.args[1] as Boolean &&
                                     (param.args[0] as Activity).isLaunchedFromBubble
                             )
-                                XposedHelpers.findAndHookMethod("com.tencent.mobileqq.app.QQAppInterface".clazz,
+                                XposedHelpers.findAndHookMethod(_QQAppInterface(),
                                         "removeNotification",
                                         object : XC_MethodHook() {
                                             override fun beforeHookedMethod(param: MethodHookParam) {

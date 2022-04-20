@@ -31,9 +31,16 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
+import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Toasts
-import xyz.nextalone.util.*
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.hookBeforeAllConstructors
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -73,7 +80,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
                 it.result = null
                 val fragment = getFirstByType(it.thisObject, clFragment)
                 val chatMessage = getFirstByType(fragment,
-                    "com.tencent.mobileqq.data.ChatMessage".clazz)
+                    _ChatMessage())
                 val text = when {
                     clMessageForStructing.isAssignableFrom(chatMessage.javaClass) -> {
                         chatMessage.get("structingMsg").invoke("getXml") as String

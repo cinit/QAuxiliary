@@ -23,6 +23,7 @@ package cc.ioctl.hook;
 
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static cc.ioctl.util.Reflex.getShortClassName;
+import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.content.Context;
@@ -91,8 +92,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
             return null;
         }
         try {
-            return Reflex.invokeStaticAny(cl_AIOUtils, v, View.class,
-                    load("com.tencent.mobileqq.data.ChatMessage"));
+            return Reflex.invokeStaticAny(cl_AIOUtils, v, View.class, _ChatMessage());
         } catch (NoSuchMethodException e) {
             return null;
         } catch (Exception e) {

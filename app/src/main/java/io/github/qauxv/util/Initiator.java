@@ -184,8 +184,6 @@ public class Initiator {
 
     public static Class<?> _ReplyItemBuilder(){return load("com.tencent.mobileqq.activity.aio.item.ReplyTextItemBuilder");}
 
-    public static Class<?> _MixedItemBuilder(){return load("com.tencent.mobileqq.activity.aio.item.MixedMsgItemBuilder");}
-
     public static Class<?> _TroopGiftAnimationController() {
         return findClassWithSynthetics("com.tencent.mobileqq.troopgift.TroopGiftAnimationController", 1);
     }

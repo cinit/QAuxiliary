@@ -24,7 +24,7 @@ package cc.ioctl.hook;
 import static cc.ioctl.util.LayoutHelper.dip2px;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static cc.ioctl.util.Reflex.setInstanceObject;
-import static io.github.qauxv.util.Initiator._MixedItemBuilder;
+import static io.github.qauxv.util.Initiator._MixedMsgItemBuilder;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator._PttItemBuilder;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
@@ -490,7 +490,7 @@ public class RepeaterHook extends BaseFunctionHook {
             });
             //end: reply
             //start: mixedMsg
-            Method mixedMethod = _MixedItemBuilder().getDeclaredMethod("a",
+            Method mixedMethod = _MixedMsgItemBuilder().getDeclaredMethod("a",
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookAfterIfEnabled(this, mixedMethod, 51, param -> {
                 ViewGroup relativeLayout = (ViewGroup) param.getResult();

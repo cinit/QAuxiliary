@@ -24,6 +24,7 @@ package io.github.qauxv.bridge;
 import static cc.ioctl.util.Reflex.getShortClassName;
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 import static io.github.qauxv.util.Initiator._BaseSessionInfo;
+import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 
@@ -206,9 +207,9 @@ public class ChatActivityFacade {
         Objects.requireNonNull(replyMsg, "absStructMsg == null");
         try{
             Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a", Initiator.load("com.tencent.mobileqq.app.QQAppInterface"),
-                    Initiator.load("com.tencent.mobileqq.data.ChatMessage"),
-                    Initiator.load("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a", _QQAppInterface(),
+                    _ChatMessage(),
+                    _BaseSessionInfo(),
                     int.class,
                     int.class,
                     boolean.class);
@@ -225,9 +226,9 @@ public class ChatActivityFacade {
         try{
             Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
             Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a",
-                    Initiator.load("com.tencent.mobileqq.app.QQAppInterface"),
+                    _QQAppInterface(),
                     Initiator.load("com.tencent.mobileqq.data.MessageForMixedMsg"),
-                    Initiator.load("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                    _SessionInfo(),
                     int.class);
             invokeMethod.invoke(ReplyMsgSender,qqAppInterface,mixedMsg,sessionInfo,0);
         }catch (Exception e){

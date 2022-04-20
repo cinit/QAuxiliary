@@ -22,7 +22,9 @@
 package cc.ioctl.hook;
 
 import static io.github.qauxv.util.Initiator._BaseSessionInfo;
+import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
+import static io.github.qauxv.util.Initiator._StickerInfo;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.app.AlertDialog;
@@ -104,18 +106,18 @@ public class CheatHook extends CommonSwitchFunctionHook {
                     Method, load("com.tencent.common.app.business.BaseQQAppInterface"),
                     Context.class, _BaseSessionInfo(),
                     load("com.tencent.mobileqq.data.Emoticon"),
-                    load("com.tencent.mobileqq.emoticon.StickerInfo"), hook);
+                    _StickerInfo(), hook);
         } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
             XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
                             ".sender.PicEmoticonInfoSender"),
-                    Method, load("com.tencent.mobileqq.app.QQAppInterface"),
+                    Method, _QQAppInterface(),
                     Context.class, _SessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"), hook);
+                    _StickerInfo(), hook);
         } else {
             XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PIC_EMOTICON_INFO),
-                    Method, load("com.tencent.mobileqq.app.QQAppInterface"),
+                    Method, _QQAppInterface(),
                     Context.class, _SessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    load("com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo"), hook);
+                    _StickerInfo(), hook);
         }
         return true;
     }
