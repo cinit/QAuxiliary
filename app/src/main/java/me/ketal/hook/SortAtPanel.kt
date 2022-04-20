@@ -28,9 +28,19 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.requireMinVersion
 import xyz.nextalone.data.TroopInfo
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry

@@ -1363,7 +1363,6 @@ public class DexKit {
             case C_ClockInEntryHelper:
             case C_FaceManager:
             case C_AvatarUtil:
-            case N_AtPanel__refreshUI:
             case N_AtPanel__showDialogAtView:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
@@ -1375,6 +1374,28 @@ public class DexKit {
                     }
                     if (Object.class != clz.getSuperclass()) {
                         continue;
+                    }
+                    return m;
+                }
+                break;
+            case N_AtPanel__refreshUI:
+                for (DexMethodDescriptor m : __methods) {
+                    Class clz = Initiator.load(m.declaringClass);
+                    if (clz.isEnum()) {
+                        continue;
+                    }
+                    if (Modifier.isAbstract(clz.getModifiers())) {
+                        continue;
+                    }
+                    if (Object.class != clz.getSuperclass()) {
+                        continue;
+                    }
+                    try {
+                        if (Void.class != m.getMethodInstance(Initiator.getHostClassLoader()).getReturnType()) {
+                            continue;
+                        }
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
                     }
                     return m;
                 }
