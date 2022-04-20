@@ -302,7 +302,7 @@ public class Initiator {
     }
 
     public static Class<?> _StickerInfo() {
-        return findClassWithSynthetics("com.tencent.mobileqq.emoticon.StickerInfo", "com.tencent.mobileqq.emoticon.EmojiStickerManager.StickerInfo");
+        return findClassWithSynthetics("com.tencent.mobileqq.emoticon.StickerInfo", "com.tencent.mobileqq.emoticon.EmojiStickerManager$StickerInfo");
     }
 
     public static Class<?> _TogetherControlHelper() {
