@@ -146,9 +146,9 @@ public class Natives {
             Class<?> xp = Class.forName(HybridClassLoader.getXposedBridgeClassName());
             try {
                 xp.getClassLoader()
-                    .loadClass("org.lsposed.lspd.nativebridge.NativeAPI")
-                    .getMethod("recordNativeEntrypoint", String.class)
-                    .invoke(null, soTailingName);
+                        .loadClass(HybridClassLoader.getObfuscatedLsposedNativeApiClassName())
+                        .getMethod("recordNativeEntrypoint", String.class)
+                        .invoke(null, soTailingName);
             } catch (ClassNotFoundException ignored) {
                 // not LSPosed, ignore
             } catch (NoSuchMethodException | IllegalArgumentException
