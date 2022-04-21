@@ -1259,7 +1259,6 @@ public class DexKit {
                 return (DexMethodDescriptor) __methods.toArray()[0];
             case N_LeftSwipeReply_Helper__reply:
             case N_FriendChatPie_updateUITitle:
-            case N_QQSettingMe_updateProfileBubble:
                 // NOTICE: this must only has one result
                 if (__methods.size() == 1) {
                     return (DexMethodDescriptor) __methods.toArray()[0];
@@ -1267,6 +1266,19 @@ public class DexKit {
                     // return null to avoid unexpected behavior
                     return null;
                 }
+            case N_QQSettingMe_updateProfileBubble:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (method.getReturnType().equals(void.class)) {
+                        return m;
+                    }
+                }
+                break;
             case N_BASE_CHAT_PIE__createMulti:
                 for (DexMethodDescriptor m : __methods) {
                     Method method;
