@@ -36,7 +36,9 @@ object Version {
             return null
         }
         val localProperties = Properties()
-        localProperties.load(localProp.inputStream())
+        localProp.inputStream().use {
+            localProperties.load(it)
+        }
         return localProperties.getProperty(propertyName, null)
     }
 
