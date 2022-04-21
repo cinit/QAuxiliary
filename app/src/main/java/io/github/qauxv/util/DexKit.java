@@ -1274,7 +1274,14 @@ public class DexKit {
                     } catch (Exception e) {
                         continue;
                     }
-                    if (method.getReturnType().equals(void.class)) {
+                    if (!method.getReturnType().equals(void.class)) {
+                        continue;
+                    }
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == 0) {
+                        return m;
+                    }
+                    if (argt.length == 1 && argt[0].getName().contains("QQSettingMeProfileBubbleBean")) {
                         return m;
                     }
                 }
