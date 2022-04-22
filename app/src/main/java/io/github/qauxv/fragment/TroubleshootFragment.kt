@@ -26,7 +26,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -113,7 +117,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
                         HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
                 )
-                description(generateDebugInfoString(), isTextSelectable = true)
+                description(generateDebugInfo(), isTextSelectable = true)
             }
         )
     }
@@ -266,8 +270,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         startActivity(intent)
     }
 
-    private fun generateDebugInfoString(): String {
-        val sb = StringBuilder()
+    private fun generateDebugInfo(): CharSequence {
+        val sb = SpannableStringBuilder()
         for (i in 1..DexKit.DEOBF_NUM_C) {
             try {
                 val tag = DexKit.a(i)
@@ -284,9 +288,16 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         currName = c.name
                     }
                 }
-                sb.append("  [$i]$shortName\n$orig\n= $currName")
+                val text = "  [$i]$shortName\n$orig\n= $currName"
+                when (currName) {
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(Color.BLUE), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    DexKit.NO_SUCH_METHOD.toString() -> {
+                        sb.append(text, ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    else -> sb.append(text)
+                }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -307,9 +318,16 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         currName = c.name
                     }
                 }
-                sb.append("  [$i]$shortName\n$orig\n= $currName")
+                val text = "  [$i]$shortName\n$orig\n= $currName"
+                when (currName) {
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(Color.BLUE), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    DexKit.NO_SUCH_METHOD.toString() -> {
+                        sb.append(text, ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    else -> sb.append(text)
+                }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -321,11 +339,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val currName = value.toString()
                 sb.append("  [$i]$shortName\n$currName")
             } catch (e: java.lang.Exception) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             i++
             sb.append("\n")
         }
-        return sb.toString()
+        return sb
     }
 }

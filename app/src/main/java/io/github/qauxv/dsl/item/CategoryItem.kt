@@ -51,7 +51,7 @@ open class CategoryItem(
     }
 
     open fun description(
-            text: String,
+            text: CharSequence,
             isTextSelectable: Boolean = false,
     ) = DescriptionItem(text, isTextSelectable).also {
         checkState()

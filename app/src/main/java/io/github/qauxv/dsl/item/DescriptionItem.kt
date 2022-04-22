@@ -29,8 +29,8 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.qauxv.dsl.cell.TextInfoCell
 
 class DescriptionItem(
-        val textString: String,
-        val textIsSelectable: Boolean = false,
+    private val textString: CharSequence,
+    private val textIsSelectable: Boolean = false,
 ) : DslTMsgListItemInflatable, TMsgListItem {
 
     class HeaderViewHolder(cell: TextInfoCell) : RecyclerView.ViewHolder(cell)

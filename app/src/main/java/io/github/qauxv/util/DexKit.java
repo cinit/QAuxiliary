@@ -62,7 +62,7 @@ public class DexKit {
     }
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
-    static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
+    public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
     static DexHelper helper = null;
 
     //WARN: NEVER change the index!
