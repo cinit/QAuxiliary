@@ -251,6 +251,10 @@ public class Initiator {
         return (Class<? extends AppRuntime>) kQQAppInterface;
     }
 
+    public static Class<?> _BaseQQAppInterface() {
+        return load("com/tencent/mobileqq/app/BaseQQAppInterface");
+    }
+
     public static Class<?> _BaseMessageManager() {
         return findClassWithSynthetics("com/tencent/imcore/message/BaseMessageManager",
                 "com/tencent/mobileqq/app/message/BaseMessageManager", 1, 2);
@@ -299,6 +303,10 @@ public class Initiator {
 
     public static Class<?> _BaseSessionInfo() {
         return findClassWithSynthetics("com/tencent/mobileqq/activity/aio/BaseSessionInfo", "com/tencent/mobileqq/activity/aio/SessionInfo");
+    }
+
+    public static Class<?> _Emoticon() {
+        return load("com.tencent.mobileqq.data.Emoticon");
     }
 
     public static Class<?> _StickerInfo() {

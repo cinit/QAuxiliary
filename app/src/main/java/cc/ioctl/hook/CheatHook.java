@@ -21,11 +21,12 @@
  */
 package cc.ioctl.hook;
 
+import static io.github.qauxv.util.Initiator._BaseQQAppInterface;
 import static io.github.qauxv.util.Initiator._BaseSessionInfo;
+import static io.github.qauxv.util.Initiator._Emoticon;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator._StickerInfo;
-import static io.github.qauxv.util.Initiator.load;
 
 import android.app.AlertDialog;
 import android.content.Context;
@@ -100,17 +101,17 @@ public class CheatHook extends CommonSwitchFunctionHook {
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_4_8)) {
             Method = "sendMagicEmoticon";
         }
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_88)) {
             XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
                             ".sender.PicEmoticonInfoSender"),
-                    Method, _QQAppInterface(),
-                    Context.class, _BaseSessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    _StickerInfo(), hook);
+                    Method, _BaseQQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
+        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
+            XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
+                            ".sender.PicEmoticonInfoSender"),
+                    Method, _QQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
         } else {
             XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PIC_EMOTICON_INFO),
-                    Method, _QQAppInterface(),
-                    Context.class, _SessionInfo(), load("com.tencent.mobileqq.data.Emoticon"),
-                    _StickerInfo(), hook);
+                    Method, _QQAppInterface(), Context.class, _SessionInfo(), _Emoticon(), _StickerInfo(), hook);
         }
         return true;
     }
