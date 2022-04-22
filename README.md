@@ -1,7 +1,6 @@
 <div align="center">
     <h1> QAuxiliary </h1>
 
-[![license](https://img.shields.io/github/license/cinit/QAuxiliary.svg)](https://github.com/qwq233/License/blob/master/v2/LICENSE.md)
 [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Channel&color=0088cc)](https://t.me/QAuxiliary)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=CI&color=0088cc)](https://t.me/QAuxiliary_CI)
