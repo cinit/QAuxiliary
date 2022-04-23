@@ -133,10 +133,8 @@ public class SimpleFlingInterceptLayout extends FrameLayout {
                 break;
             }
             case MotionEvent.ACTION_UP: {
-                Log.d("onInterceptTouchEvent: ACTION_UP");
                 if (mFlingState == FLING_STATE_ATTACHED) {
                     int x = (int) ev.getX();
-                    Log.d("onInterceptTouchEvent: x=" + x + " mPointDownX=" + mPointDownX);
                     if (x > mPointDownX + mThreshold) {
                         h.onFlingLeftToRight();
                     } else if (x < mPointDownX - mThreshold) {
