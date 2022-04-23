@@ -43,6 +43,7 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
+import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.R
@@ -271,6 +272,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private fun generateDebugInfo(): CharSequence {
+        val ctx = requireContext()
+        val colorError: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, R.attr.unusableColor, Color.RED)
+        val colorNotice: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, androidx.appcompat.R.attr.colorAccent, Color.BLUE)
         val sb = SpannableStringBuilder()
         for (i in 1..DexKit.DEOBF_NUM_C) {
             try {
@@ -290,14 +294,14 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 }
                 val text = "  [$i]$shortName\n$orig\n= $currName"
                 when (currName) {
-                    "(void*)0" -> sb.append(text, ForegroundColorSpan(Color.BLUE), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
                     DexKit.NO_SUCH_METHOD.toString() -> {
-                        sb.append(text, ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                        sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
                     else -> sb.append(text)
                 }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -320,14 +324,14 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 }
                 val text = "  [$i]$shortName\n$orig\n= $currName"
                 when (currName) {
-                    "(void*)0" -> sb.append(text, ForegroundColorSpan(Color.BLUE), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
                     DexKit.NO_SUCH_METHOD.toString() -> {
-                        sb.append(text, ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                        sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
                     else -> sb.append(text)
                 }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -339,7 +343,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val currName = value.toString()
                 sb.append("  [$i]$shortName\n$currName")
             } catch (e: java.lang.Exception) {
-                sb.append("  [$i]$e", ForegroundColorSpan(Color.RED), SPAN_EXCLUSIVE_EXCLUSIVE)
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             i++
             sb.append("\n")
