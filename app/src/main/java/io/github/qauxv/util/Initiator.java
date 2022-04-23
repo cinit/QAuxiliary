@@ -252,7 +252,7 @@ public class Initiator {
     }
 
     public static Class<?> _BaseQQAppInterface() {
-        return load("com/tencent/mobileqq/app/BaseQQAppInterface");
+        return load("com.tencent.common.app.business.BaseQQAppInterface");
     }
 
     public static Class<?> _BaseMessageManager() {
