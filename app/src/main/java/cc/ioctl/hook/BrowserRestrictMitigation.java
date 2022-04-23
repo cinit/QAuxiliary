@@ -22,19 +22,18 @@
 
 package cc.ioctl.hook;
 
-import android.app.Activity;
 import android.os.Bundle;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.Reflex;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Method;
 
@@ -45,7 +44,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
     public static final BrowserRestrictMitigation INSTANCE = new BrowserRestrictMitigation();
 
     private BrowserRestrictMitigation() {
-        super(SyncUtils.PROC_TOOL);
+        super(SyncUtils.PROC_TOOL, new int[]{DexKit.N_WebSecurityPluginV2_callback});
     }
 
     @NonNull
@@ -69,8 +68,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         // com.tencent.mobileqq.webview.WebSecurityPluginV2$1.callback(Bundle)V
-        Class<?> kWebSecurityPluginV2Inner1 = Initiator.load("com.tencent.mobileqq.webview.WebSecurityPluginV2$1");
-        Method callback = kWebSecurityPluginV2Inner1.getDeclaredMethod("callback", Bundle.class);
+        Method callback = DexKit.doFindMethod(DexKit.N_WebSecurityPluginV2_callback);
         HookUtils.hookBeforeIfEnabled(this, callback, param -> {
             Bundle bundle = (Bundle) param.args[0];
             if (bundle != null && bundle.getInt("result", -1) == 0) {
@@ -84,13 +82,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
                     bundle.putString("jumpUrl", "");
                     String msg = "阻止跳转, jumpResult: " + jumpResult + ", level: " + level
                             + ", operationBit: " + operationBit + ", jumpUrl: " + jumpUrl;
-                    // find a context to show the message
-                    Object that = Reflex.getFirstByType(param.thisObject, Initiator.load("com.tencent.mobileqq.webview.WebSecurityPluginV2"));
-                    Object pluginRuntime = Reflex.getInstanceObject(that, "mRuntime", null);
-                    Activity ctx = (Activity) Reflex.invokeVirtual(pluginRuntime, "a", Activity.class);
-                    if (ctx != null) {
-                        Toasts.show(ctx, msg);
-                    }
+                    Toasts.show(HostInfo.getApplication(), msg);
                 }
             }
         });

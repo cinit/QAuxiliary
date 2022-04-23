@@ -27,6 +27,7 @@ import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._TroopChatPie;
 import static io.github.qauxv.util.Initiator.load;
 
+import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -125,7 +126,8 @@ public class DexKit {
     public static final int N_Conversation_onCreate = 20015;
     public static final int N_QQSettingMe_onResume = 20016;
     public static final int N_BaseChatPie_mosaic = 20017;
-    public static final int DEOBF_NUM_N = 17;
+    public static final int N_WebSecurityPluginV2_callback = 20018;
+    public static final int DEOBF_NUM_N = 18;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -517,6 +519,8 @@ public class DexKit {
                 return "qqsettingme_onresume";
             case N_BaseChatPie_mosaic:
                 return "basechatpie_mosaic";
+            case N_WebSecurityPluginV2_callback:
+                return "websecuritypluginv2_callback";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -674,6 +678,9 @@ public class DexKit {
                 break;
             case N_Conversation_onCreate:
                 ret = "com/tencent/mobileqq/activity/home/Conversation";
+                break;
+            case N_WebSecurityPluginV2_callback:
+                ret = "com.tencent.mobileqq.webview.WebSecurityPluginV2$1";
                 break;
             default:
                 ret = null;
@@ -931,6 +938,12 @@ public class DexKit {
                         0x10, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79, 0x42, 0x61, 0x73, 0x65, 0x53, 0x63, 0x65,
                         0x6E, 0x65
                     }};
+            case N_WebSecurityPluginV2_callback:
+                return new byte[][]{
+                    new byte[]{
+                        0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
+                        0x72, 0x3D
+                    }};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1040,6 +1053,8 @@ public class DexKit {
                 return new int[]{5, 7, 8, 6};
             case C_GalleryBaseScene:
                 return new int[]{2};
+            case N_WebSecurityPluginV2_callback:
+                return new int[]{17, 10};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1488,6 +1503,20 @@ public class DexKit {
             case N_QQSettingMe_onResume:
                 for (DexMethodDescriptor m : __methods) {
                     if (m.declaringClass.endsWith("QQSettingMe")) {
+                        return m;
+                    }
+                }
+                break;
+            case N_WebSecurityPluginV2_callback:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == 1 && argt[0] == Bundle.class) {
                         return m;
                     }
                 }
