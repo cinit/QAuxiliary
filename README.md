@@ -75,6 +75,11 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 4. ![](https://img.shields.io/badge/LSPosed-ClickMe-blue?link=https://github.com/Xposed-Modules-Repo/io.github.qauxv/releases/) 将发布所有版本更新，其中`CI`版本更新将被标注为 Pre-release。
 </details>
 
+## 不会支持的功能
+
+- 抢红包及其他金钱相关功能
+- 群发消息
+
 ---
 
 ## 赞助
