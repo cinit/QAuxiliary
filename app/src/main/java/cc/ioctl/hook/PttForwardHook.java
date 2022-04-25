@@ -98,13 +98,13 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "语音转发";
+        return "语音转发及保存";
     }
 
     @Nullable
     @Override
     public String getDescription() {
-        return "长按语音消息";
+        return "长按语音消息可以转发或保存";
     }
 
     @NonNull
@@ -241,9 +241,9 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 Field f;
-                try{
+                try {
                     f = findField(param.thisObject.getClass(), Bundle.class, "a");
-                }catch (NoSuchFieldException ex){
+                } catch (NoSuchFieldException ex) {
                     f = Reflex.getFirstNSFFieldByType(param.thisObject.getClass(), Bundle.class);
                 }
                 f.setAccessible(true);
