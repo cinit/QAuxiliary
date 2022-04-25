@@ -19,28 +19,43 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package me.kyuubiran.hook
+
+package me.ketal.hook
 
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.DexMethodDescriptor
-import io.github.qauxv.util.Initiator
-import xyz.nextalone.util.replace
+import io.github.qauxv.util.Initiator._MessageRecord
+import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.invoke
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ShowSelfMsgByLeft : CommonSwitchFunctionHook() {
+object ShowSelfAnonMsgLeft : CommonSwitchFunctionHook() {
 
-    override val name = "自己的消息居左显示"
+    override val name = "自己的匿名消息居左显示"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        DexMethodDescriptor("Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setHearIconPosition(I)V")
-            .getMethodInstance(Initiator.getHostClassLoader())
-            .replace(this, null)
+        _MessageRecord().getDeclaredMethod("isSend")
+            .hookBefore(this) {
+                val data = MsgRecordData(it.thisObject)
+                if (AppRuntimeHelper.getAccount() == data.senderUin) {
+                    val chatMessage = data.msgRecord
+                    val extStr = chatMessage.invoke(
+                        "getExtInfoFromExtStr",
+                        "anonymous", String::class.java
+                    ) as String?
+                    val anonymous = extStr != null && extStr.isNotEmpty()
+                    if (anonymous) it.result = false
+                }
+
+            }
+
     }
 }
