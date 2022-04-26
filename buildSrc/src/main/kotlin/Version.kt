@@ -1,11 +1,11 @@
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
-import java.util.*
+import java.util.Properties
 
 object Version {
-    const val kotlin = "1.6.10"
-    const val ksp = "1.0.2"
+    const val kotlin = "1.6.21"
+    const val ksp = "1.0.5"
     val java = JavaVersion.VERSION_11
 
     private const val defaultNdkVersion = "23.1.7779620"
@@ -36,7 +36,9 @@ object Version {
             return null
         }
         val localProperties = Properties()
-        localProperties.load(localProp.inputStream())
+        localProp.inputStream().use {
+            localProperties.load(it)
+        }
         return localProperties.getProperty(propertyName, null)
     }
 

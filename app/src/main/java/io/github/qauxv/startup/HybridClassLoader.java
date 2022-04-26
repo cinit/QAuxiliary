@@ -30,6 +30,7 @@ import java.net.URL;
 public class HybridClassLoader extends ClassLoader {
 
     private static String sObfuscatedPackageName = null;
+    private static String sProbeLsposedNativeApiClassName = "Lorg/lsposed/lspd/nativebridge/NativeAPI;";
     private static final ClassLoader sBootClassLoader = Context.class.getClassLoader();
     private final ClassLoader clPreload;
     private final ClassLoader clBase;
@@ -102,6 +103,10 @@ public class HybridClassLoader extends ClassLoader {
 
     public static String getObfuscatedXposedApiPackage() {
         return sObfuscatedPackageName;
+    }
+
+    public static String getObfuscatedLsposedNativeApiClassName() {
+        return sProbeLsposedNativeApiClassName.replace('.', '/').substring(1, sObfuscatedPackageName.length() - 1);
     }
 
     public static String getXposedBridgeClassName() {

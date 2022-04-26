@@ -27,7 +27,7 @@ object LicenseStatus {
     @JvmField
     val sDisableCommonHooks: Boolean = isBlacklisted()
 
-    const val CURRENT_EULA_VERSION = 9
+    const val CURRENT_EULA_VERSION = 10
 
     @JvmStatic
     fun setEulaStatus(status: Int) {

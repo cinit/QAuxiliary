@@ -24,9 +24,11 @@ package cc.ioctl.hook;
 import static cc.ioctl.util.LayoutHelper.dip2px;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static cc.ioctl.util.Reflex.setInstanceObject;
+import static io.github.qauxv.util.Initiator._MixedMsgItemBuilder;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator._PttItemBuilder;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
+import static io.github.qauxv.util.Initiator._ReplyItemBuilder;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator._TextItemBuilder;
 
@@ -34,9 +36,11 @@ import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.os.Parcelable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageButton;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -46,6 +50,7 @@ import cc.ioctl.dialog.RepeaterIconSettingDialog;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod;
 import cc.ioctl.util.HostInfo;
+import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.base.ISwitchCellAgent;
@@ -57,6 +62,7 @@ import io.github.qauxv.bridge.ChatActivityFacade;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.ui.widget.LinearLayoutDelegate;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Method;
 import kotlin.Unit;
@@ -397,6 +403,190 @@ public class RepeaterHook extends BaseFunctionHook {
             rightIcon.setOnClickListener(l);
         });
         //end: ptt
+        if(HostInfo.isQQ() && HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)){
+            //start reply
+            Method replyMethod = _ReplyItemBuilder().getDeclaredMethod("a",
+                    ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
+            HookUtils.hookAfterIfEnabled(this, replyMethod, 51, param -> {
+                ViewGroup relativeLayout = (ViewGroup) param.getResult();
+                relativeLayout = (ViewGroup) relativeLayout.getParent();
+                Context ctx = relativeLayout.getContext();
+                if (ctx.getClass().getName().contains("ChatHistoryActivity") ||
+                        ctx.getClass().getName().contains("MultiForwardActivity")) {
+                    return;
+                }
+                int defSize = 45;
+                final AppRuntime app = getFirstNSFByType(param.thisObject, _QQAppInterface());
+                final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                boolean isSendFromLocal = (boolean) Reflex.invokeVirtual(param.args[0],"isSendFromLocal",boolean.class); //是否是自己发的消息
+                ImageButton imageButton =relativeLayout.findViewById(101);
+                if(imageButton==null) {
+                    //不存在则创建
+                    imageButton = new ImageButton(ctx);
+                    imageButton.setImageBitmap(RepeaterIconSettingDialog.getRepeaterIcon());
+                    imageButton.setBackgroundColor(Color.TRANSPARENT);
+
+                    imageButton.setAdjustViewBounds(true);
+                    imageButton.getBackground().setAlpha(100);
+                    imageButton.setMaxHeight(LayoutHelper.dip2px(ctx, defSize));
+                    imageButton.setMaxWidth(LayoutHelper.dip2px(ctx, defSize));
+                    imageButton.setId(101);
+                    relativeLayout.addView(imageButton);
+                }else {
+                    imageButton.setVisibility(View.VISIBLE);
+                }
+                View alignParent = findView("SelectableLinearLayout",relativeLayout);
+                RelativeLayout.LayoutParams llparam = new RelativeLayout.LayoutParams(LayoutHelper.dip2px(ctx, defSize), LayoutHelper.dip2px(ctx, defSize));
+                if (isSendFromLocal){
+                    llparam.removeRule(RelativeLayout.ALIGN_RIGHT);
+                    llparam.removeRule(RelativeLayout.ALIGN_TOP);
+                    llparam.removeRule(RelativeLayout.ALIGN_LEFT);
+
+                    llparam.addRule(RelativeLayout.ALIGN_LEFT,alignParent.getId());
+                    int width = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    int height = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    alignParent.measure(width,height);
+
+                    int AddedLength = alignParent.getTop();
+                    AddedLength += alignParent.getHeight()/2- LayoutHelper.dip2px(ctx,defSize)/2;
+
+                    int OffsetV = LayoutHelper.dip2px(ctx,35);
+
+                    ViewGroup.MarginLayoutParams mLParam = llparam;
+                    mLParam.leftMargin=-OffsetV;
+                    mLParam.topMargin =AddedLength;
+                }else {
+                    llparam.removeRule(RelativeLayout.ALIGN_RIGHT);
+                    llparam.removeRule(RelativeLayout.ALIGN_TOP);
+                    llparam.removeRule(RelativeLayout.ALIGN_LEFT);
+
+                    llparam.addRule(RelativeLayout.ALIGN_RIGHT,alignParent.getId());
+                    int width = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    int height = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    alignParent.measure(width,height);
+
+                    int AddedLength = alignParent.getTop();
+                    AddedLength += alignParent.getHeight()/2- LayoutHelper.dip2px(ctx,defSize)/2;
+
+                    int OffsetV = LayoutHelper.dip2px(ctx,35);
+                    ViewGroup.MarginLayoutParams mLParam = llparam;
+                    mLParam.rightMargin=-OffsetV;
+                    mLParam.topMargin =AddedLength;
+                }
+                imageButton.setLayoutParams(llparam);
+                View.OnClickListener r0 = view -> {
+                    try {
+                        ChatActivityFacade.repeatMessage(app, session, param.args[0]);
+                    } catch (Throwable e) {
+                        traceError(e);
+                        Toasts.error(HostInfo.getApplication(), e.toString());
+                    }
+                };
+                imageButton.setOnClickListener(r0);
+            });
+            //end: reply
+            //start: mixedMsg
+            Method mixedMethod = _MixedMsgItemBuilder().getDeclaredMethod("a",
+                    ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
+            HookUtils.hookAfterIfEnabled(this, mixedMethod, 51, param -> {
+                ViewGroup relativeLayout = (ViewGroup) param.getResult();
+                relativeLayout = (ViewGroup) relativeLayout.getParent();
+                Context ctx = relativeLayout.getContext();
+                if (ctx.getClass().getName().contains("ChatHistoryActivity") ||
+                        ctx.getClass().getName().contains("MultiForwardActivity")) {
+                    return;
+                }
+                int defSize = 45;
+                final AppRuntime app = getFirstNSFByType(param.thisObject, _QQAppInterface());
+                final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                String uin = "" + AppRuntimeHelper.getLongAccountUin();
+                boolean isSendFromLocal = Reflex.getInstanceObject(param.args[0], "senderuin", String.class).equals(uin); //是否是自己发的消息
+                ImageButton imageButton =relativeLayout.findViewById(101);
+                if(imageButton==null) {
+                    //不存在则创建
+                    imageButton = new ImageButton(ctx);
+                    imageButton.setImageBitmap(RepeaterIconSettingDialog.getRepeaterIcon());
+                    imageButton.setBackgroundColor(Color.TRANSPARENT);
+
+                    imageButton.setAdjustViewBounds(true);
+                    imageButton.getBackground().setAlpha(100);
+                    imageButton.setMaxHeight(LayoutHelper.dip2px(ctx, defSize));
+                    imageButton.setMaxWidth(LayoutHelper.dip2px(ctx, defSize));
+                    imageButton.setId(101);
+                    relativeLayout.addView(imageButton);
+                }else {
+                    imageButton.setVisibility(View.VISIBLE);
+                }
+                View alignParent = findView("MixedMsgLinearLayout",relativeLayout);
+                RelativeLayout.LayoutParams llparam = new RelativeLayout.LayoutParams(LayoutHelper.dip2px(ctx, defSize), LayoutHelper.dip2px(ctx, defSize));
+                if (isSendFromLocal){
+                    llparam.removeRule(RelativeLayout.ALIGN_RIGHT);
+                    llparam.removeRule(RelativeLayout.ALIGN_TOP);
+                    llparam.removeRule(RelativeLayout.ALIGN_LEFT);
+
+                    llparam.addRule(RelativeLayout.ALIGN_LEFT,alignParent.getId());
+                    int width = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    int height = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    alignParent.measure(width,height);
+
+                    int AddedLength = alignParent.getTop();
+                    AddedLength += alignParent.getHeight()/2- LayoutHelper.dip2px(ctx,defSize)/2;
+
+                    int OffsetV = LayoutHelper.dip2px(ctx,35);
+
+                    ViewGroup.MarginLayoutParams mLParam = llparam;
+                    mLParam.leftMargin=-OffsetV;
+                    mLParam.topMargin =AddedLength;
+                }else {
+                    llparam.removeRule(RelativeLayout.ALIGN_RIGHT);
+                    llparam.removeRule(RelativeLayout.ALIGN_TOP);
+                    llparam.removeRule(RelativeLayout.ALIGN_LEFT);
+
+                    llparam.addRule(RelativeLayout.ALIGN_RIGHT,alignParent.getId());
+                    int width = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    int height = View.MeasureSpec.makeMeasureSpec(0,
+                            View.MeasureSpec.UNSPECIFIED);
+                    alignParent.measure(width,height);
+
+                    int AddedLength = alignParent.getTop();
+                    AddedLength += alignParent.getHeight()/2- LayoutHelper.dip2px(ctx,defSize)/2;
+
+                    int OffsetV = LayoutHelper.dip2px(ctx,35);
+                    ViewGroup.MarginLayoutParams mLParam = llparam;
+                    mLParam.rightMargin=-OffsetV;
+                    mLParam.topMargin =AddedLength;
+                }
+                imageButton.setLayoutParams(llparam);
+                View.OnClickListener r0 = view -> {
+                    try {
+                        ChatActivityFacade.repeatMessage(app, session, param.args[0]);
+                    } catch (Throwable e) {
+                        traceError(e);
+                        Toasts.error(HostInfo.getApplication(), e.toString());
+                    }
+                };
+                imageButton.setOnClickListener(r0);
+            });
+            //end MixedMsg
+        }
         return true;
+    }
+    public static View findView(String Name, ViewGroup vg)
+    {
+        for(int i=0;i<vg.getChildCount();i++)
+        {
+            if(vg.getChildAt(i).getClass().getSimpleName().contains(Name))
+            {
+                return vg.getChildAt(i);
+            }
+        }
+        return null;
     }
 }

@@ -15,6 +15,8 @@ android {
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
+        resourceConfigurations += listOf("zh", "en")
+
         externalNativeBuild {
             cmake {
                 arguments += listOf(
@@ -48,13 +50,12 @@ android {
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
             }
-            tasks.filter { it.name.toLowerCase().contains("lint") }
-                .forEach { it.enabled = false }
             kotlinOptions.suppressWarnings = true
         }
         getByName("debug") {
             isShrinkResources = false
             isMinifyEnabled = false
+            isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
         }
     }
@@ -100,6 +101,9 @@ android {
     buildFeatures {
         viewBinding = true
     }
+    lint {
+        checkDependencies = true
+    }
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
             val outputFileName = "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
@@ -132,7 +136,7 @@ dependencies {
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
     implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("com.github.kyuubiran:EzXHelper:0.8.0")
+    implementation("com.github.kyuubiran:EzXHelper:0.8.8")
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
@@ -159,10 +163,13 @@ androidComponents.onVariants { variant ->
         }
     }
 }
-
-tasks.register<ReplaceIcon>("replaceIcon")
+/*
+tasks.register<ReplaceIcon>("replaceIcon") {
+    projectDir.set(project.layout.projectDirectory)
+    commitHash = Common.getGitHeadRefsSuffix(rootProject)
+}
 tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
-
+*/
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     if (name.contains("release", true)) {
         kotlinOptions {
@@ -176,12 +183,13 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 }
 
 tasks.register("checkGitSubmodule") {
+    val projectDir = rootProject.projectDir
     doLast {
         listOf(
             "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
             "app/src/main/cpp/dex_builder"
         ).forEach {
-            val submoduleDir = File(rootProject.projectDir, it)
+            val submoduleDir = File(projectDir, it)
             if (!submoduleDir.exists()) {
                 throw IllegalStateException(
                     "submodule dir not found: $submoduleDir" +
@@ -193,16 +201,25 @@ tasks.register("checkGitSubmodule") {
 }
 tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
 
-val restartQQ = task("restartQQ").doLast {
+interface Injected {
+    @get:Inject
+    val eo: ExecOperations
+}
+
+val restartQQ = task("restartQQ") {
+    val eo = project.objects.newInstance<Injected>().eo
     val adbExecutable: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
-    exec {
-        commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
-    }
-    exec {
-        commandLine(
-            adbExecutable, "shell", "am", "start",
-            "$(pm resolve-activity --components com.tencent.mobileqq)"
-        )
+
+    doLast {
+        eo.exec {
+            commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
+        }
+        eo.exec {
+            commandLine(
+                adbExecutable, "shell", "am", "start",
+                "$(pm resolve-activity --components com.tencent.mobileqq)"
+            )
+        }
     }
 }
 

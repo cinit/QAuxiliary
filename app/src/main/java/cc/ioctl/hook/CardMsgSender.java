@@ -72,7 +72,10 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
     @Nullable
     @Override
     public String getDescription() {
-        return "小心使用，可能会导致自己被封号";
+        return "小心使用，可能会导致自己被封号。"
+                + "注意 ‘发送卡片消息’ 和 ‘复制卡片消息’ 是两个不同的功能，两者无关。"
+                + "为防止本功能被滥用，在您使用代码发送卡片消息时，本软件会*不匿名地*向服务器报告您的 QQ 号以及发送的卡片消息，"
+                + "如果您介意，请关闭 ‘发送卡片消息’ 功能。";
     }
 
     @NonNull

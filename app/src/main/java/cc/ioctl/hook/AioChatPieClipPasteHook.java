@@ -37,10 +37,15 @@ import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.view.inputmethod.InputConnection;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.inputmethod.EditorInfoCompat;
+import androidx.core.view.inputmethod.InputConnectionCompat;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import de.robv.android.xposed.XC_MethodHook;
@@ -117,6 +122,28 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 }
             }
         });
+        if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.R) {
+            Method m2 = Initiator.loadClass("com.tencent.widget.XEditText")
+                    .getDeclaredMethod("onCreateInputConnection", EditorInfo.class);
+            XposedBridge.hookMethod(m2, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    EditText editText = (EditText) param.thisObject;
+                    EditorInfo outAttrs = (EditorInfo) param.args[0];
+                    InputConnection ic = (InputConnection) param.getResult();
+
+                    // On SDK 30 and below, we manually configure the InputConnection here to use
+                    // ViewCompat.performReceiveContent. On S and above, the platform's BaseInputConnection
+                    // implementation calls View.performReceiveContent by default.
+                    String[] mimeTypes = ViewCompat.getOnReceiveContentMimeTypes(editText);
+                    if (mimeTypes != null) {
+                        EditorInfoCompat.setContentMimeTypes(outAttrs, mimeTypes);
+                        ic = InputConnectionCompat.createWrapper(editText, ic, outAttrs);
+                    }
+                    param.setResult(ic);
+                }
+            });
+        }
         // init required dispatcher
         return InputButtonHookDispatcher.INSTANCE.initialize();
     }
@@ -127,20 +154,19 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
         int inputTextId = ctx.getResources().getIdentifier("input", "id", ctx.getPackageName());
         EditText input = aioRootView.findViewById(inputTextId);
         Objects.requireNonNull(input, "onInitBaseChatPie: findViewById R.id.input is null");
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            input.setOnReceiveContentListener(new String[]{MIME_IMAGE}, (view, payload) -> {
-                ClipData clipData = payload.getClip();
-                Pair<ClipDescription, Item> item = getClipDataItem0(clipData);
-                if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
-                    Uri uri = item.getSecond().getUri();
-                    if (uri != null && "content".equals(uri.getScheme())) {
-                        handleSendUriPicture(ctx, session, uri, aioRootView, rt);
-                        return null;
-                    }
+        ViewCompat.setOnReceiveContentListener(input, new String[]{MIME_IMAGE}, (view, payload) -> {
+            ClipData clipData = payload.getClip();
+            Pair<ClipDescription, Item> item = getClipDataItem0(clipData);
+            if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
+                Uri uri = item.getSecond().getUri();
+                if (uri != null && "content".equals(uri.getScheme())) {
+                    handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                    return null;
                 }
-                return payload;
-            });
-        } else {
+            }
+            return payload;
+        });
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) {
             input.setTag(R.id.XEditTextEx_onTextContextMenuItemInterceptor, (IOnContextMenuItemCallback) (editText, i) -> {
                 if (i == android.R.id.paste) {
                     Pair<ClipDescription, Item> item = getClipDataItem0(getPrimaryClip(ctx));

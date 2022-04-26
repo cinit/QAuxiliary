@@ -8,8 +8,32 @@
 #include "natives_utils.h"
 #include <android/log.h>
 
+#include <string>
+#include <vector>
+
 #include "Natives.h"
 #include "NativeMainHook.h"
+
+static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
+    if (obj == nullptr) {
+        jclass clazz = env->FindClass("java/lang/NullPointerException");
+        env->ThrowNew(clazz, msg);
+        return true;
+    }
+    return false;
+}
+
+#define requiresNonNullP(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return nullptr; ((void)0)
+
+static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
+    if (jstr == nullptr) {
+        return "";
+    }
+    int len = env->GetStringLength(jstr);
+    std::string str(len, 0);
+    env->GetStringUTFRegion(jstr, 0, len, &str[0]);
+    return str;
+}
 
 /*
  * Class:     io_github_qauxv_util_Natives
@@ -446,4 +470,267 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         NativeHook_initOnce();
     }
     return retCode;
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_qauxv_util_Natives_allocateInstanceImpl(JNIEnv *env, jclass, jclass targetClass) {
+    requiresNonNullP(targetClass, "targetClass is null");
+    return env->AllocObject(targetClass);
+}
+
+jobject wrapPrimitiveValue(JNIEnv *env, char type, const jvalue &jvalue) {
+    switch (type) {
+        case 'Z': {
+            jclass kBoolean = env->FindClass("java/lang/Boolean");
+            jmethodID cid = env->GetStaticMethodID(kBoolean, "valueOf", "(Z)Ljava/lang/Boolean;");
+            return env->CallStaticObjectMethod(kBoolean, cid, jvalue.z);
+        }
+        case 'B': {
+            jclass kByte = env->FindClass("java/lang/Byte");
+            jmethodID cid = env->GetStaticMethodID(kByte, "valueOf", "(B)Ljava/lang/Byte;");
+            return env->CallStaticObjectMethod(kByte, cid, jvalue.b);
+        }
+        case 'C': {
+            jclass kCharacter = env->FindClass("java/lang/Character");
+            jmethodID cid = env->GetStaticMethodID(kCharacter, "valueOf", "(C)Ljava/lang/Character;");
+            return env->CallStaticObjectMethod(kCharacter, cid, jvalue.c);
+        }
+        case 'S': {
+            jclass kShort = env->FindClass("java/lang/Short");
+            jmethodID cid = env->GetStaticMethodID(kShort, "valueOf", "(S)Ljava/lang/Short;");
+            return env->CallStaticObjectMethod(kShort, cid, jvalue.s);
+        }
+        case 'I': {
+            jclass kInteger = env->FindClass("java/lang/Integer");
+            jmethodID cid = env->GetStaticMethodID(kInteger, "valueOf", "(I)Ljava/lang/Integer;");
+            return env->CallStaticObjectMethod(kInteger, cid, jvalue.i);
+        }
+        case 'J': {
+            jclass kLong = env->FindClass("java/lang/Long");
+            jmethodID cid = env->GetStaticMethodID(kLong, "valueOf", "(J)Ljava/lang/Long;");
+            return env->CallStaticObjectMethod(kLong, cid, jvalue.j);
+        }
+        case 'F': {
+            jclass kFloat = env->FindClass("java/lang/Float");
+            jmethodID cid = env->GetStaticMethodID(kFloat, "valueOf", "(F)Ljava/lang/Float;");
+            return env->CallStaticObjectMethod(kFloat, cid, jvalue.f);
+        }
+        case 'D': {
+            jclass kDouble = env->FindClass("java/lang/Double");
+            jmethodID cid = env->GetStaticMethodID(kDouble, "valueOf", "(D)Ljava/lang/Double;");
+            return env->CallStaticObjectMethod(kDouble, cid, jvalue.d);
+        }
+        case 'V': {
+            return nullptr;
+        }
+        case 'L': {
+            return jvalue.l;
+        }
+        default: {
+            env->ThrowNew(env->FindClass("java/lang/AssertionError"),
+                          (std::string("unsupported primitive type: ") + std::to_string(type)).c_str());
+            return nullptr;
+        }
+    }
+}
+
+void extractWrappedValue(JNIEnv *env, jvalue &out, char type, jobject value) {
+    switch (type) {
+        case 'Z': {
+            jclass kBoolean = env->FindClass("java/lang/Boolean");
+            jmethodID cid = env->GetMethodID(kBoolean, "booleanValue", "()Z");
+            out.z = env->CallBooleanMethod(value, cid);
+            break;
+        }
+        case 'B': {
+            jclass kByte = env->FindClass("java/lang/Byte");
+            jmethodID cid = env->GetMethodID(kByte, "byteValue", "()B");
+            out.b = env->CallByteMethod(value, cid);
+            break;
+        }
+        case 'C': {
+            jclass kCharacter = env->FindClass("java/lang/Character");
+            jmethodID cid = env->GetMethodID(kCharacter, "charValue", "()C");
+            out.c = env->CallCharMethod(value, cid);
+            break;
+        }
+        case 'S': {
+            jclass kShort = env->FindClass("java/lang/Short");
+            jmethodID cid = env->GetMethodID(kShort, "shortValue", "()S");
+            out.s = env->CallShortMethod(value, cid);
+            break;
+        }
+        case 'I': {
+            jclass kInteger = env->FindClass("java/lang/Integer");
+            jmethodID cid = env->GetMethodID(kInteger, "intValue", "()I");
+            out.i = env->CallIntMethod(value, cid);
+            break;
+        }
+        case 'J': {
+            jclass kLong = env->FindClass("java/lang/Long");
+            jmethodID cid = env->GetMethodID(kLong, "longValue", "()J");
+            out.j = env->CallLongMethod(value, cid);
+            break;
+        }
+        case 'F': {
+            jclass kFloat = env->FindClass("java/lang/Float");
+            jmethodID cid = env->GetMethodID(kFloat, "floatValue", "()F");
+            out.f = env->CallFloatMethod(value, cid);
+            break;
+        }
+        case 'D': {
+            jclass kDouble = env->FindClass("java/lang/Double");
+            jmethodID cid = env->GetMethodID(kDouble, "doubleValue", "()D");
+            out.d = env->CallDoubleMethod(value, cid);
+            break;
+        }
+        case 'V': {
+            out.l = nullptr;
+            break;
+        }
+        case 'L': {
+            out.l = value;
+            break;
+        }
+        default: {
+            env->ThrowNew(env->FindClass("java/lang/AssertionError"),
+                          (std::string("unsupported primitive type: ") + std::to_string(type)).c_str());
+            break;
+        }
+    }
+}
+
+jobject transformArgumentsAndInvokeNonVirtual(JNIEnv *env, jmethodID method, jclass clazz,
+                                              const std::vector<char> &parameterShorts,
+                                              char returnTypeShort, jobject obj, jobjectArray args) {
+    int argc = int(parameterShorts.size());
+    auto *jargs = new jvalue[argc];
+    memset(jargs, 0, sizeof(jvalue) * argc);
+    for (int i = 0; i < argc; i++) {
+        extractWrappedValue(env, jargs[i], parameterShorts[i], env->GetObjectArrayElement(args, i));
+        if (env->ExceptionCheck()) {
+            delete[] jargs;
+            return nullptr;
+        }
+    }
+    jvalue ret;
+    memset(&ret, 0, sizeof(jvalue));
+    switch (returnTypeShort) {
+        case 'L': {
+            ret.l = env->CallNonvirtualObjectMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'Z': {
+            ret.z = env->CallNonvirtualBooleanMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'B': {
+            ret.b = env->CallNonvirtualByteMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'C': {
+            ret.c = env->CallNonvirtualCharMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'S': {
+            ret.s = env->CallNonvirtualShortMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'I': {
+            ret.i = env->CallNonvirtualIntMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'J': {
+            ret.j = env->CallNonvirtualLongMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'F': {
+            ret.f = env->CallNonvirtualFloatMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'D': {
+            ret.d = env->CallNonvirtualDoubleMethodA(obj, clazz, method, jargs);
+            break;
+        }
+        case 'V': {
+            env->CallNonvirtualVoidMethodA(obj, clazz, method, jargs);
+            ret.l = nullptr;
+            break;
+        }
+        default: {
+            env->ThrowNew(env->FindClass("java/lang/AssertionError"),
+                          (std::string("unsupported primitive type: ") + std::to_string(returnTypeShort)).c_str());
+            delete[] jargs;
+            return nullptr;
+        }
+    }
+    delete[] jargs;
+    // check for exceptions
+    if (env->ExceptionCheck()) {
+        // wrap exception with InvocationTargetException
+        jthrowable exception = env->ExceptionOccurred();
+        env->ExceptionClear();
+        jclass exceptionClass = env->FindClass("java/lang/reflect/InvocationTargetException");
+        jmethodID exceptionConstructor = env->GetMethodID(exceptionClass, "<init>", "(Ljava/lang/Throwable;)V");
+        jobject exceptionObject = env->NewObject(exceptionClass, exceptionConstructor, exception);
+        env->Throw((jthrowable) exceptionObject);
+        return nullptr;
+    }
+    // wrap return value
+    return wrapPrimitiveValue(env, returnTypeShort, ret);
+}
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
+                                                       jstring class_sig, jstring method_name, jstring method_sig,
+                                                       jobject obj, jobjectArray args) {
+    requiresNonNullP(class_sig, "class_sig is null");
+    requiresNonNullP(method_name, "method_name is null");
+    requiresNonNullP(method_sig, "method_sig is null");
+    requiresNonNullP(obj, "obj is null");
+    std::string classSig = getJstringToUtf8(env, class_sig);
+    std::string methodName = getJstringToUtf8(env, method_name);
+    std::string methodSignature = getJstringToUtf8(env, method_sig);
+    jclass targetClass = env->FindClass(classSig.c_str());
+    if (targetClass == nullptr) {
+        return nullptr;
+    }
+    jmethodID method = env->GetMethodID(targetClass, methodName.c_str(), methodSignature.c_str());
+    if (method == nullptr) {
+        return nullptr;
+    }
+    int argc = args == nullptr ? 0 : env->GetArrayLength(args);
+    // parse method signature
+    std::vector<char> paramShorts;
+    paramShorts.reserve(argc);
+    // skip first '('
+    for (int i = 1; i < methodSignature.length(); i++) {
+        if (methodSignature[i] == ')') {
+            break;
+        }
+        if (methodSignature[i] == 'L' || methodSignature[i] == '[') {
+            while (methodSignature[i] != ';') {
+                i++;
+            }
+        }
+        paramShorts.push_back(methodSignature[i]);
+    }
+    // find return type, start from last ')'
+    char returnTypeShort = 0;
+    for (auto i = methodSignature.length() - 1; i >= 0; i--) {
+        if (methodSignature[i] == ')') {
+            returnTypeShort = methodSignature[i - 1];
+            break;
+        }
+    }
+    if (returnTypeShort == '[') {
+        returnTypeShort = 'L';
+    }
+    if (paramShorts.size() != argc) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      "parameter count mismatch");
+        return nullptr;
+    }
+    // invoke
+    return transformArgumentsAndInvokeNonVirtual(env, method, targetClass, paramShorts, returnTypeShort, obj, args);
 }

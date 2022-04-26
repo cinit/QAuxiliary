@@ -21,18 +21,15 @@
  */
 package me.kyuubiran.hook
 
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.DexMethodDescriptor
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.LicenseStatus
+import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
-//自己的消息居左显示
 @FunctionHookEntry
 @UiItemAgentEntry
 object ShowSelfMsgByLeft : CommonSwitchFunctionHook() {
@@ -42,14 +39,8 @@ object ShowSelfMsgByLeft : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        val m = DexMethodDescriptor("Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setHearIconPosition(I)V")
+        DexMethodDescriptor("Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setHearIconPosition(I)V")
             .getMethodInstance(Initiator.getHostClassLoader())
-        XposedBridge.hookMethod(m, object : XC_MethodHook() {
-            override fun beforeHookedMethod(param: MethodHookParam?) {
-                if (LicenseStatus.sDisableCommonHooks) return
-                if (!isEnabled) return
-                param?.result = null
-            }
-        })
+            .replace(this, null)
     }
 }

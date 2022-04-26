@@ -26,7 +26,11 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
+import android.text.style.ForegroundColorSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -39,15 +43,19 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
+import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
+import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin
 import io.github.qauxv.config.ConfigManager
+import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
+import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
@@ -83,6 +91,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
+            CategoryItem("安全模式") {
+                add(TextSwitchItem(title = "启用安全模式", summary = "停用所有功能，重启应用后生效", switchAgent = mSafeModeSwitch))
+            },
             CategoryItem("功能") {
                 textItem("功能异常列表", null, onClick = clickToShowFuncList)
             },
@@ -107,9 +118,28 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
                         HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
                 )
-                description(generateDebugInfoString(), isTextSelectable = true)
+                description(generateDebugInfo(), isTextSelectable = true)
             }
         )
+    }
+
+    private val mSafeModeSwitch: ISwitchCellAgent = object : ISwitchCellAgent {
+        override val isCheckable = true
+        override var isChecked: Boolean
+            get() {
+                return ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+            }
+            set(value) {
+                val oldValue = ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+                if (value != oldValue) {
+                    ConfigManager.getDefaultConfig().putBoolean(MainHook.KEY_SAFE_MODE, value).apply()
+                    if (isResumed) {
+                        context?.let {
+                            Toasts.info(it, "重启应用后生效")
+                        }
+                    }
+                }
+            }
     }
 
     private val clickToShowFuncList: (View) -> Unit = {
@@ -241,8 +271,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         startActivity(intent)
     }
 
-    private fun generateDebugInfoString(): String {
-        val sb = StringBuilder()
+    private fun generateDebugInfo(): CharSequence {
+        val ctx = requireContext()
+        val colorError: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, R.attr.unusableColor, Color.RED)
+        val colorNotice: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, androidx.appcompat.R.attr.colorAccent, Color.BLUE)
+        val sb = SpannableStringBuilder()
         for (i in 1..DexKit.DEOBF_NUM_C) {
             try {
                 val tag = DexKit.a(i)
@@ -259,9 +292,16 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         currName = c.name
                     }
                 }
-                sb.append("  [$i]$shortName\n$orig\n= $currName")
+                val text = "  [$i]$shortName\n$orig\n= $currName"
+                when (currName) {
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    DexKit.NO_SUCH_METHOD.toString() -> {
+                        sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    else -> sb.append(text)
+                }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -282,9 +322,16 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         currName = c.name
                     }
                 }
-                sb.append("  [$i]$shortName\n$orig\n= $currName")
+                val text = "  [$i]$shortName\n$orig\n= $currName"
+                when (currName) {
+                    "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    DexKit.NO_SUCH_METHOD.toString() -> {
+                        sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
+                    }
+                    else -> sb.append(text)
+                }
             } catch (e: Throwable) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
@@ -296,11 +343,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val currName = value.toString()
                 sb.append("  [$i]$shortName\n$currName")
             } catch (e: java.lang.Exception) {
-                sb.append("  [$i]$e")
+                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             i++
             sb.append("\n")
         }
-        return sb.toString()
+        return sb
     }
 }

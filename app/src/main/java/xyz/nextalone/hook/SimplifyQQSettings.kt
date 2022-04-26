@@ -37,7 +37,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
 
     override val allItems =
-        setOf("手机号码", "达人", "安全", "模式选择", "通知", "记录", "隐私", "通用", "辅助", "免流量", "关于")
+        setOf("手机号码", "达人", "安全", "模式选择", "通知", "记录", "隐私", "通用", "辅助", "免流量", "关于", "收集清单", "共享清单", "保护设置", "隐私政策摘要")
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {

@@ -40,6 +40,7 @@ import io.github.qauxv.util.Log
 object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name = "卡片消息文本化"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 
@@ -50,7 +51,7 @@ object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDec
     ): Boolean {
         return try {
             var text: String
-            if (Initiator.load("com.tencent.mobileqq.data.MessageForStructing")
+            if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
                             .isAssignableFrom(chatMessage.javaClass)
             ) {
                 text = Reflex.invokeVirtual(
@@ -60,7 +61,7 @@ object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDec
                         ), "getXml", *arrayOfNulls(0)
                 ) as String
                 dumpCardMsg(chatMessage)
-            } else if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+            } else if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                             .isAssignableFrom(chatMessage.javaClass)
             ) {
                 text = Reflex.invokeVirtual(
@@ -89,14 +90,14 @@ private fun dumpCardMsg(chatMessage: Any) {
         Log.d("Start dump card message...")
         Log.d("chatMessage class: " + chatMessage::class.java.name)
 
-        if (Initiator.load("com.tencent.mobileqq.data.MessageForStructing")
+        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
                         .isAssignableFrom(chatMessage.javaClass)
         ) {
             val structingMsg = Reflex.getInstanceObjectOrNull(chatMessage, "structingMsg")
             Log.d("structingMsg class: " + structingMsg::class.java.name)
         }
 
-        if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                         .isAssignableFrom(chatMessage.javaClass)
         ) {
             val arkAppMessage = Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message")

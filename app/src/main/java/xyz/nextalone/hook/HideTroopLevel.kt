@@ -37,7 +37,7 @@ import xyz.nextalone.data.TroopInfo
 object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     override val name = "隐藏群聊群成员头衔"
-
+    override val description = "可能导致聊天界面滑动掉帧"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 

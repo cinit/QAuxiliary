@@ -27,6 +27,7 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CompoundButton
+import androidx.appcompat.app.AlertDialog
 import androidx.recyclerview.widget.RecyclerView
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.ISwitchCellAgent
@@ -34,6 +35,7 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.cell.TitleValueCell
 import io.github.qauxv.dsl.func.IDslItemNode
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 
@@ -61,19 +63,43 @@ class UiAgentItem(
 
     private val mCheckChangedListener = CompoundButton.OnCheckedChangeListener { btn, isChecked ->
         val agent = agentProvider.uiItemAgent
+        val funcName = agent.titleProvider.invoke(agent)
         val switchCellAgent = agent.switchProvider
+        val unsupported = agentProvider is IDynamicHook && !agentProvider.isAvailable
         switchCellAgent?.isChecked = isChecked
-        // if the function is enabled but not initialized, initialize it
-        if (agentProvider is IDynamicHook) {
-            val hook: IDynamicHook = agentProvider
-            val context = btn.context
-            if (hook.isEnabled && !hook.isInitialized) {
-                // we need to initialize the hook
-                HookInstaller.initializeHookForeground(context, hook)
+        val action = {
+            // if the function is enabled but not initialized, initialize it
+            if (agentProvider is IDynamicHook) {
+                val hook: IDynamicHook = agentProvider
+                val context = btn.context
+                if (hook.isEnabled && !hook.isInitialized) {
+                    // we need to initialize the hook
+                    HookInstaller.initializeHookForeground(context, hook)
+                }
+                if (hook.isApplicationRestartRequired) {
+                    Toasts.info(context, "重启 ${hostInfo.hostName} 生效")
+                }
             }
-            if (hook.isApplicationRestartRequired) {
-                Toasts.info(context, "重启 ${hostInfo.hostName} 生效")
-            }
+        }
+        if (unsupported && isChecked) {
+            val ctx = CommonContextWrapper.createAppCompatContext(btn.context)
+            // confirm
+            AlertDialog.Builder(ctx)
+                .setTitle("不支持的功能")
+                .setMessage("此功能（$funcName）暂不支持在 ${hostInfo.hostName} ${hostInfo.versionName} 上使用，仍然要开启吗？")
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    action()
+                }
+                .setNegativeButton(android.R.string.cancel) { _, _ ->
+                    btn.isChecked = false
+                }
+                .setOnCancelListener {
+                    btn.isChecked = false
+                }
+                .setCancelable(true)
+                .show()
+        } else {
+            action()
         }
     }
 

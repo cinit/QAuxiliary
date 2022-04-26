@@ -37,8 +37,10 @@ import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.children
+import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
+import com.hicore.ReflectUtil.MField
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -162,7 +164,13 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
     }
 
     private fun updateChatWordView(viewGroup: ViewGroup) {
-        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
+        val relativeLayout: RelativeLayout =
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80)) {
+                val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "drawer_top_sig_layout")
+                viewGroup.findViewById(getId)
+            } else {
+                viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
+            }
         // what accessibility service tells us does NOT match the view pragmatically does
         // call it ghost view for the time being...
         // TODO 2022-03-07 kill the ghost...
@@ -177,7 +185,13 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
     }
 
     private fun injectChatWordView(context: Context, viewGroup: ViewGroup) {
-        val relativeLayout = viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
+        val relativeLayout: RelativeLayout =
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80)) {
+                val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "drawer_top_sig_layout")
+                viewGroup.findViewById(getId)
+            } else {
+                viewGroup.findHostView<RelativeLayout>(getConfig(ChatWordsCount::class.java.simpleName))!!
+            }
         val textView = TextView(context)
         textView.text = getChatWords()
         textView.setTextColor(

@@ -59,7 +59,7 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
             val regexString = getExFriendCfg()?.getStringOrDefault(RegexAntiMeg::class.simpleName!!, "") ?: null
             if (regexString.isNullOrBlank()) return false
             return when {
-                Initiator.load("com.tencent.mobileqq.data.MessageForStructing")
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
                         .isAssignableFrom(data.javaClass) -> {
                     val text = Reflex.invokeVirtual(
                             Reflex.getInstanceObjectOrNull(data, "structingMsg"),
@@ -67,7 +67,7 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
                     ) as String
                     processMsg(data, text, regexString)
                 }
-                Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                         .isAssignableFrom(data.javaClass) -> {
                     val text = Reflex.invokeVirtual(
                             Reflex.getInstanceObjectOrNull(data, "ark_app_message"),
