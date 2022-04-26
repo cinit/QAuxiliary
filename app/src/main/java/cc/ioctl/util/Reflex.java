@@ -25,6 +25,8 @@ package cc.ioctl.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.DexMethodDescriptor;
+import io.github.qauxv.util.Natives;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -120,8 +122,7 @@ public class Reflex {
         return method.invoke(obj, argv);
     }
 
-
-    public static String paramsTypesToString(Class... c) {
+    public static String paramsTypesToString(Class<?>... c) {
         if (c == null) {
             return null;
         }
@@ -866,6 +867,85 @@ public class Reflex {
         }
     }
 
+    /**
+     * Invoke an instance method non-virtually (i.e. without calling the overridden method).
+     * <p>
+     * Note that only instance methods can be invoked, static methods not allowed.
+     *
+     * @param obj  the object to invoke the method on
+     * @param m    the method to invoke, the method must be declared in the class which you want to invoke
+     * @param args the arguments to pass to the method, may be null if the method has no arguments
+     * @return the return value of the method
+     * @throws IllegalArgumentException  if the arguments are not compatible with the method
+     * @throws InvocationTargetException if the method throws an exception
+     */
+    @Nullable
+    public static Object invokeNonVirtual(@NonNull Object obj, @NonNull Method m, Object[] args)
+            throws IllegalArgumentException, InvocationTargetException {
+        Objects.requireNonNull(obj, "obj is null");
+        Objects.requireNonNull(m, "m is null");
+        // check flags, not abstract, not static
+        if ((m.getModifiers() & (Modifier.ABSTRACT | Modifier.STATIC)) != 0) {
+            throw new IllegalArgumentException("invalid method modifiers: " + Modifier.toString(m.getModifiers()));
+        }
+        // check cast
+        if (!m.getDeclaringClass().isInstance(obj)) {
+            throw new IllegalArgumentException("obj of class " + obj.getClass().getName() + "is not an instance of " + m.getDeclaringClass().getName());
+        }
+        // check args
+        Class<?>[] argt = m.getParameterTypes();
+        if (argt.length != 0) {
+            if (args == null) {
+                throw new IllegalArgumentException("args is null, expected " + paramsTypesToString(argt));
+            }
+            if (argt.length != args.length) {
+                throw new IllegalArgumentException("args length is " + args.length + ", expected " + paramsTypesToString(argt));
+            }
+            for (int i = 0; i < argt.length; i++) {
+                Class<?> c = argt[i];
+                if (c.isPrimitive()) {
+                    if (args[i] == null) {
+                        throw new IllegalArgumentException("args[" + i + "] is null, expected " + c.getName());
+                    } else if (!getWrapperClassForPrimitive(c).isInstance(args[i])) {
+                        throw new IllegalArgumentException("args[" + i + "] of class " + args[i].getClass().getName()
+                                + " is not an instance of " + c.getName());
+                    }
+                } else {
+                    if (args[i] != null && !c.isInstance(args[i])) {
+                        throw new IllegalArgumentException("args[" + i + "] of class " + args[i].getClass().getName()
+                                + " is not an instance of " + c.getName());
+                    }
+                }
+            }
+        }
+        Class<?> declaringClass = m.getDeclaringClass();
+        String classSignature = DexMethodDescriptor.getTypeSig(declaringClass);
+        String methodSignature = DexMethodDescriptor.getMethodTypeSig(m);
+        return Natives.invokeNonVirtualImpl(classSignature, m.getName(), methodSignature, obj, args);
+    }
+
+    /**
+     * Allocate a object instance of the specified class without calling the constructor.
+     *
+     * @param clazz the class to allocate
+     * @return the allocated object
+     * @throws IllegalArgumentException if the class is not instantiable
+     */
+    @NonNull
+    public static <T> T allocateInstance(@NonNull Class<T> clazz) {
+        Objects.requireNonNull(clazz, "clazz is null");
+        if (clazz.isPrimitive()) {
+            throw new IllegalArgumentException("cannot allocate instance of primitive type: " + clazz.getName());
+        }
+        if (clazz.isArray()) {
+            throw new IllegalArgumentException("cannot allocate instance of array type: " + clazz.getName());
+        }
+        if (clazz.isInterface()) {
+            throw new IllegalArgumentException("cannot allocate instance of interface type: " + clazz.getName());
+        }
+        return (T) Natives.allocateInstanceImpl(clazz);
+    }
+
     public static Object getInstanceObjectOrNull(Object obj, String name) {
         return getInstanceObjectOrNull(obj, name, null);
     }
@@ -1275,6 +1355,45 @@ public class Reflex {
             }
         }
         return false;
+    }
+
+    @NonNull
+    public static Class<?> getWrapperClassForPrimitive(Class<?> primitiveClass) {
+        if (primitiveClass == null) {
+            throw new NullPointerException("primitiveClass == null");
+        }
+        if (primitiveClass.isPrimitive()) {
+            if (primitiveClass == int.class) {
+                return Integer.class;
+            }
+            if (primitiveClass == long.class) {
+                return Long.class;
+            }
+            if (primitiveClass == float.class) {
+                return Float.class;
+            }
+            if (primitiveClass == double.class) {
+                return Double.class;
+            }
+            if (primitiveClass == boolean.class) {
+                return Boolean.class;
+            }
+            if (primitiveClass == short.class) {
+                return Short.class;
+            }
+            if (primitiveClass == byte.class) {
+                return Byte.class;
+            }
+            if (primitiveClass == char.class) {
+                return Character.class;
+            }
+            if (primitiveClass == void.class) {
+                return Void.class;
+            }
+            throw new AssertionError("Unknown primitive class: " + primitiveClass);
+        } else {
+            throw new IllegalArgumentException("Not a primitive class: " + primitiveClass.getName());
+        }
     }
 
     @NonNull

@@ -26,7 +26,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.*
+import io.github.qauxv.util.Initiator._TroopChatPie
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -38,7 +42,7 @@ object CollapseTroopMessage : CommonSwitchFunctionHook("na_collapse_troop_messag
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.activity.aio.core.TroopChatPie".clazz?.method(
+        _TroopChatPie().method(
             "a",
             List::class.java,
             List::class.java

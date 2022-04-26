@@ -123,7 +123,9 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
             try {
                 field = DexFlow.guessFieldByNewInstance(dex, handleNightMask, View.class);
             } catch (Exception e) {
-                Log.e(e);
+                DarkOverlayHook.INSTANCE.traceError(e);
+                cache.putString(cache_night_mask_field, "Lio/github/qauxv/util/NoSuchClass;->mNoSuchField:V;");
+                cache.putInt(cache_night_mask_field_version_code, version);
                 return null;
             }
             if (field != null) {
@@ -140,8 +142,7 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
             return getNightMaskField() != null;
         }
 
-        @Override
-        public boolean isDone() {
+        public static boolean isDoneImpl() {
             try {
                 ConfigManager cache = ConfigManager.getCache();
                 int lastVersion = cache.getIntOrDefault(cache_night_mask_field_version_code, 0);
@@ -154,6 +155,11 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
                 Log.e(e);
                 return false;
             }
+        }
+
+        @Override
+        public boolean isDone() {
+            return isDoneImpl();
         }
 
         @Override
@@ -187,10 +193,7 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean isPreparationRequired() {
-        if (!isAvailable()) {
-            return false;
-        }
-        return FindNightMask.getNightMaskField() == null
+        return !FindNightMask.isDoneImpl()
                 || DexKit.isRunDexDeobfuscationRequired(DexKit.N_BASE_CHAT_PIE__handleNightMask);
     }
 

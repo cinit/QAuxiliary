@@ -22,8 +22,6 @@
 package me.ketal.hook
 
 import android.content.Context
-import android.graphics.Bitmap
-import android.graphics.BitmapFactory
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -37,11 +35,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Initiator._BaseChatPie
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.throwOrTrue
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -59,25 +56,18 @@ object MultiActionHook : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     private var baseChatPie: Any? = null
-    private var img: Bitmap? = null
-    private val recallBitmap: Bitmap?
-        get() {
-            if (img == null || img!!.isRecycled) img =
-                BitmapFactory.decodeStream(ResUtils.openAsset("recall.png"))
-            return img
-        }
 
     public override fun initOnce() = throwOrTrue {
         val m = DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__createMulti)
         m?.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
-            baseChatPie =
-                Reflex.getFirstByType(it.thisObject, Initiator._BaseChatPie() as Class<*>)
+            baseChatPie = if (m.declaringClass.isAssignableFrom(_BaseChatPie())) it.thisObject
+                else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
             val count = rootView.childCount
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
-                create(context, recallBitmap, enableTalkBack),
+                create(context, R.drawable.ic_recall, enableTalkBack),
                 count - 1
             )
             setMargin(rootView)
@@ -85,7 +75,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     }
 
     private fun recall() {
-        throwOrTrue {
+        runCatching {
             val clazz = DexKit.doFindClass(DexKit.C_MultiMsg_Manager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
             val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
@@ -146,13 +136,13 @@ object MultiActionHook : CommonSwitchFunctionHook(
         return true
     }
 
-    private fun create(context: Context, bitmap: Bitmap?, enableTalkBack: Boolean): ImageView {
+    private fun create(context: Context, resId: Int, enableTalkBack: Boolean): ImageView {
         val imageView = ImageView(context)
         if (enableTalkBack) {
             imageView.contentDescription = "撤回"
         }
         imageView.setOnClickListener { recall() }
-        imageView.setImageBitmap(bitmap)
+        imageView.setImageResource(resId)
         imageView.id = R.id.ketalRecallImageView
         return imageView
     }

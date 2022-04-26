@@ -25,9 +25,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
-import xyz.nextalone.util.clazz
+import io.github.qauxv.util.Initiator._TroopChatPie
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Method
@@ -41,17 +39,11 @@ object HideOnlineNumber : CommonSwitchFunctionHook("na_hide_online_number") {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        var clz = "com.tencent.mobileqq.activity.aio.core.TroopChatPie".clazz
-        if (hostInfo.versionCode <= QQVersion.QQ_8_4_8) {
-            clz = "com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie".clazz
-        }
-        if (clz != null) {
-            for (m: Method in clz.methods) {
-                val argt = m.parameterTypes
-                if (m.name == "a" && argt.size == 2 && argt[0] == String::class.java && argt[1] == Boolean::class.java) {
-                    m.hookBefore(this) {
-                        it.args[0] = ""
-                    }
+        for (m: Method in _TroopChatPie().methods) {
+            val argt = m.parameterTypes
+            if (m.name == "a" && argt.size == 2 && argt[0] == String::class.java && argt[1] == Boolean::class.java) {
+                m.hookBefore(this) {
+                    it.args[0] = ""
                 }
             }
         }

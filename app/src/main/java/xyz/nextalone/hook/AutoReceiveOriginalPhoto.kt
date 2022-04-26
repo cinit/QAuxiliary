@@ -27,9 +27,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinVersion
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
@@ -51,15 +53,16 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "m"
             requireMinQQVersion(QQVersion.QQ_8_6_0) -> "j"
             requireMinQQVersion(QQVersion.QQ_8_5_0) -> "h"
+            requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "t"
             else -> "I"
         }
         val clz = DexKit.doFindClass(DexKit.C_AIOPictureView)
-        val m: String = if (hostInfo.versionCode >= QQVersion.QQ_8_8_80) {
-            "h"
-        } else if (hostInfo.versionCode >= QQVersion.QQ_8_6_0) {
-            "g"
-        } else {
-            "f"
+        val m: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_8_80) -> "h"
+            requireMinQQVersion(QQVersion.QQ_8_6_0) -> "g"
+            requireMinQQVersion(QQVersion.QQ_8_5_0) -> "f"
+            requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "h"
+            else -> "I"
         }
         "L${clz?.name};->$m(Z)V".method.replace(this) {
             if (it.args[0] as Boolean) {
@@ -68,5 +71,8 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_3_5)
+    override val isAvailable: Boolean get() = requireMinVersion(
+        QQVersionCode = QQVersion.QQ_8_3_5,
+        PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_11
+    )
 }

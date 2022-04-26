@@ -53,15 +53,6 @@ object HideRedPoints : CommonSwitchFunctionHook() {
             (it.result as ImageView).isVisible = false
         }
 
-        // bottom red point
-        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
-                ?.replace(this, null)
-        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.method(
-                "a",
-                6,
-                Void.TYPE
-        )?.replace(this, null)
-
         // skin_tips_dot
         "com.tencent.theme.ResourcesFactory".clazz?.method {
             it.name == "createImageFromResourceStream" || it.name == "a" && it.parameterTypes.size == 7

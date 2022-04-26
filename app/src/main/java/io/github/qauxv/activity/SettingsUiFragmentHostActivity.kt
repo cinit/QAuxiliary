@@ -32,6 +32,7 @@ import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import cc.ioctl.util.ui.ThemeAttrUtils
+import cc.ioctl.util.ui.fling.SimpleFlingInterceptLayout
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
@@ -43,7 +44,7 @@ import io.github.qauxv.util.isInModuleProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
 import java.lang.Integer.max
 
-open class SettingsUiFragmentHostActivity : BaseActivity() {
+open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingInterceptLayout.SimpleOnFlingHandler {
 
     private val FRAGMENT_TAG = "SettingsUiFragmentHostActivity.FRAGMENT_TAG"
     private val FRAGMENT_SAVED_STATE_KEY = "SettingsUiFragmentHostActivity.FRAGMENT_SAVED_STATE_KEY"
@@ -52,6 +53,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
 
     private val mFragmentStack = ArrayList<BaseSettingFragment>(4)
     private var mTopVisibleFragment: BaseSettingFragment? = null
+    private lateinit var mFlingLayout: SimpleFlingInterceptLayout
     private lateinit var mAppBarLayout: AppBarLayout
     private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
     private var mAppBarLayoutHeight: Int = 0
@@ -87,6 +89,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
         setSupportActionBar(mAppToolBar)
         requestTranslucentStatusBar()
         HolidayHelper.setup(this)
+        mFlingLayout = findViewById(R.id.fragment_container)
+        mFlingLayout.onFlingHandler = this
         mAppBarLayout.addOnLayoutChangeListener { _, _, top, _, bottom, _, _, _, _ ->
             mAppBarLayoutHeight = bottom - top
             for (fragment in mFragmentStack) {
@@ -217,6 +221,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
                 it.title = text
                 it.subtitle = subtitle
             }
+            mFlingLayout.isInterceptEnabled = fragment.isWrapContent
         }
     }
 
@@ -301,6 +306,18 @@ open class SettingsUiFragmentHostActivity : BaseActivity() {
     override fun doOnDestroy() {
         super.doOnDestroy()
         HolidayHelper.onDestroy()
+    }
+
+    override fun isWrapContent(): Boolean {
+        return mTopVisibleFragment?.isWrapContent ?: true
+    }
+
+    override fun onFlingRightToLeft() {
+        // no-op
+    }
+
+    override fun onFlingLeftToRight() {
+        doOnBackPressed()
     }
 
     companion object {

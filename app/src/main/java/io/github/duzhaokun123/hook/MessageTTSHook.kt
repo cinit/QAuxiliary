@@ -46,7 +46,7 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
     lateinit var textToSpeech: TextToSpeech
 
     override val name: String
-        get() = "文字消息转语言 (使用系统 TTS)"
+        get() = "文字消息转语音 (使用系统 TTS)"
 
     override val description: String
         get() = "提示失败多半是没设置系统 TTS 引擎"

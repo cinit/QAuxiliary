@@ -463,8 +463,7 @@ public class SyncUtils {
                     int hookId = intent.getIntExtra("hook", -1);
                     if (hookId != -1 && (myType & targetType) != 0) {
                         IDynamicHook hook = HookInstaller.getHookById(hookId);
-                        if (hook != null && hook.isAvailable() && hook.isTargetProcess()
-                            && !hook.isPreparationRequired()) {
+                        if (hook != null && hook.isTargetProcess() && !hook.isPreparationRequired()) {
                             try {
                                 hook.initialize();
                             } catch (Throwable e) {
@@ -512,6 +511,9 @@ public class SyncUtils {
                     pi.type = type;
                     holder.result.add(pi);
                     holder.callback.onResponse(holder, pi);
+                    break;
+                default:
+                    Log.e("Unknown action: " + action);
                     break;
             }
         }

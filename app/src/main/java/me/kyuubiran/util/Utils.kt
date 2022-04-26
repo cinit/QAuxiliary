@@ -58,11 +58,11 @@ fun putObject(obj: Any, name: String, value: Any?, type: Class<*>? = null) {
 }
 
 fun loadClass(clzName: String): Class<*> {
-    return Initiator.load(clzName)
+    return Initiator.loadClass(clzName)
 }
 
 fun getMethods(clzName: String): Array<Method> {
-    return Initiator.load(clzName).declaredMethods
+    return Initiator.loadClass(clzName).declaredMethods
 }
 
 fun makeSpaceMsg(str: String): String {

@@ -86,7 +86,7 @@ class EulaFragment : BaseClipSettingFragment(), View.OnClickListener {
 
             val sb = SpannableStringBuilder()
             try {
-                sb.append(ResUtils.openAsset("eula.txt").readText())
+                sb.append(ResUtils.openAsset("eula.md").readText())
                 sb.append("\n\n")
                 sb.append(ResUtils.openAsset("privacy_license.txt").readText())
             } catch (e: IOException) {

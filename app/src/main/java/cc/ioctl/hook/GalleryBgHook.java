@@ -42,20 +42,34 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
     public static final GalleryBgHook INSTANCE = new GalleryBgHook();
 
     private GalleryBgHook() {
-        super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE});
+        super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE, DexKit.C_GalleryBaseScene});
     }
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> kAIOGalleryActivity = Initiator.load("com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity");
-        if (kAIOGalleryActivity != null) {
-            // for QQ >= 8.3.5
-            Class<?> kBrowserBaseScene = Initiator.loadClass("com.tencent.richmediabrowser.view.BrowserBaseScene");
-            Method onCreate = kBrowserBaseScene.getDeclaredMethod("onCreate");
-            Field fBgView = kBrowserBaseScene.getDeclaredField("bgView");
-            fBgView.setAccessible(true);
-            HookUtils.hookAfterIfEnabled(this, onCreate, param -> {
-                View v = (View) fBgView.get(param.thisObject);
+        // for QQ >= 8.3.5
+        Class<?> kBrowserBaseScene = DexKit.doFindClass(DexKit.C_GalleryBaseScene);
+        if (kBrowserBaseScene != null) {
+            Method m;
+            try {
+                m = kBrowserBaseScene.getDeclaredMethod("a", ViewGroup.class);
+            } catch (NoSuchMethodException e) {
+                m = kBrowserBaseScene.getDeclaredMethod("onCreate");
+            }
+            Field fv = null;
+            for (Field f : kBrowserBaseScene.getDeclaredFields()) {
+                if (f.getType().equals(View.class)) {
+                    f.setAccessible(true);
+                    fv = f;
+                    break;
+                }
+            }
+            if (fv == null) {
+                throw new IllegalStateException("GalleryBgHook: targetView is null");
+            }
+            final Field targetView = fv;
+            HookUtils.hookAfterIfEnabled(this, m, param -> {
+                View v = (View) targetView.get(param.thisObject);
                 v.setBackgroundColor(0x00000000);
             });
         }

@@ -43,6 +43,8 @@ import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.SyncUtils.async
 import io.github.qauxv.SyncUtils.runOnUiThread
+import io.github.qauxv.config.ConfigManager
+import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.CategoryDescription
 import io.github.qauxv.dsl.func.FragmentDescription
@@ -176,6 +178,12 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         super.onResume()
         if (!mTargetUiAgentNavId.isNullOrEmpty() && !mTargetUiAgentNavigated) {
             navigateToTargetUiAgentItem()
+        }
+        val safeMode = ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+        subtitle = if (safeMode) {
+            "安全模式（停用所有功能）"
+        } else {
+            null
         }
     }
 

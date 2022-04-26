@@ -30,7 +30,12 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.isTim
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
@@ -62,7 +67,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                             copeCard(card!!)
                             return@hookBefore
                         }
-                        it.result = null
+                        it.result = true
                     }
                 }
             }
@@ -101,7 +106,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                 val _ProfileCardInfo = (param.method as Method).parameterTypes[0]
                 val info = Reflex.getInstanceObjectOrNull(param.thisObject, "a", _ProfileCardInfo)
                 if (info != null) {
-                    val _Card = Initiator.load("com.tencent.mobileqq.data.Card")
+                    val _Card = Initiator.loadClass("com.tencent.mobileqq.data.Card")
                     val card = Reflex.getInstanceObjectOrNull(info, "a", _Card)
                     if (card != null) {
                         val f = _Card.getField("lCurrentStyleId")

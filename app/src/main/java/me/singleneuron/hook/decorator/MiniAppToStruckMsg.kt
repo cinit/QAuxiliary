@@ -43,6 +43,7 @@ import org.json.JSONObject
 object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name = "小程序转链接分享（接收）"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 
@@ -52,7 +53,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
             param: XC_MethodHook.MethodHookParam
     ): Boolean {
         if (hostInfo.versionCode < QQVersion.QQ_8_0_0) return false
-        return if (Initiator.load("com.tencent.mobileqq.data.MessageForArkApp")
+        return if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                         .isAssignableFrom(chatMessage.javaClass)
         ) {
             val arkAppMsg = Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message")

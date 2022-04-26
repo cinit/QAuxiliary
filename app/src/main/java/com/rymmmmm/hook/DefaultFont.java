@@ -57,12 +57,11 @@ public class DefaultFont extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> C_ChatMessage = Initiator.load("com.tencent.mobileqq.data.ChatMessage");
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
             if (m.getName().equals("a") && !Modifier.isStatic(m.getModifiers())
                 && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
-                if (argt.length == 2 && argt[0] != View.class && argt[1] == C_ChatMessage) {
+                if (argt.length == 2 && argt[0] != View.class && argt[1] == Initiator._ChatMessage()) {
                     HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
                 }
             }

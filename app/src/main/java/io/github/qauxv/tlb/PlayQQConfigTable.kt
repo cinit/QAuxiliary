@@ -23,7 +23,11 @@ package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
 import cc.ioctl.hook.VasProfileAntiCrash
-import io.github.qauxv.util.PlayQQVersion.*
+import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_10
+import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
+import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
+import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9_1
+import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.AutoMosaicName
 
 class PlayQQConfigTable : ConfigTableInterface {
@@ -40,13 +44,17 @@ class PlayQQConfigTable : ConfigTableInterface {
             )
 
     override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-            ReplyNoAtHook::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "m",
-            ),
+        ReplyNoAtHook::class.java.simpleName to mapOf(
+            PlayQQ_8_2_9 to "m",
+        ),
 
-            AutoMosaicName::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "r",
-            ),
+        AutoMosaicName::class.java.simpleName to mapOf(
+            PlayQQ_8_2_9 to "r",
+        ),
+
+        SortAtPanel.sessionInfoTroopUin to mapOf(
+            PlayQQ_8_2_11 to "a",
+        ),
     )
 
 }

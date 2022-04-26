@@ -36,6 +36,7 @@ import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
 object SimpleReceiptMessage : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDecorator {
 
     override val name = "回执消息文本化"
+    override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 

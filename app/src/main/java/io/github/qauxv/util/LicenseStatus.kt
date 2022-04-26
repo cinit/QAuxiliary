@@ -32,12 +32,12 @@ import java.util.Date
 object LicenseStatus {
 
     @JvmField
-    val sDisableCommonHooks: Boolean = isBlacklisted()
+    var sDisableCommonHooks: Boolean = isBlacklisted()
 
     private const val qn_eula_status = "qa_eula_status" //typo, ignore it
     private const val qn_user_auth_status = "qn_user_auth_status"
     private const val qn_user_auth_last_update = "qn_user_auth_last_update"
-    const val CURRENT_EULA_VERSION = 9
+    const val CURRENT_EULA_VERSION = 10
 
     @JvmStatic
     fun getEulaStatus(): Int {

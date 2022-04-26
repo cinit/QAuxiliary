@@ -22,10 +22,12 @@
 package io.github.qauxv.util;
 
 import static io.github.qauxv.util.Initiator._BaseChatPie;
+import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._TroopChatPie;
 import static io.github.qauxv.util.Initiator.load;
 
+import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -61,7 +63,7 @@ public class DexKit {
     }
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
-    static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
+    public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
     static DexHelper helper = null;
 
     //WARN: NEVER change the index!
@@ -103,8 +105,9 @@ public class DexKit {
     public static final int C_FaceManager = 34;
     public static final int C_SmartDeviceProxyMgr = 35;
     public static final int C_AIOPictureView = 36;
+    public static final int C_GalleryBaseScene = 37;
     //the last index
-    public static final int DEOBF_NUM_C = 36;
+    public static final int DEOBF_NUM_C = 37;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -123,7 +126,8 @@ public class DexKit {
     public static final int N_Conversation_onCreate = 20015;
     public static final int N_QQSettingMe_onResume = 20016;
     public static final int N_BaseChatPie_mosaic = 20017;
-    public static final int DEOBF_NUM_N = 17;
+    public static final int N_WebSecurityPluginV2_callback = 20018;
+    public static final int DEOBF_NUM_N = 18;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -322,7 +326,7 @@ public class DexKit {
             String str = new String(Arrays.copyOfRange(key, 1, key.length));
             Log.d("doFindMethodFromNative: id " + i + ", key:" + str);
             long[] ms = helper.findMethodUsingString(
-                    str, true, -1, (short) 0, null, -1,
+                    str, true, -1, (short) -1, null, -1,
                     null, null, null, false);
             for (long methodIndex : ms) {
                 Executable m = helper.decodeMethodIndex(methodIndex);
@@ -337,13 +341,9 @@ public class DexKit {
         if (methods.size() == 0) {
             return null;
         }
-        if (methods.size() == 1) {
-            ret = methods.iterator().next();
-        } else {
-            ret = a(i, methods, null);
-        }
+        ret = a(i, methods, null);
         if (ret == null) {
-            Log.i("Multiple classes candidates found, none satisfactory.");
+            Log.i(methods.size() + " classes candidates found for " + i + ", none satisfactory.");
             return null;
         }
         //
@@ -483,6 +483,8 @@ public class DexKit {
                 return "smartdeviceproxymgr";
             case C_AIOPictureView:
                 return "aiopictureview";
+            case C_GalleryBaseScene:
+                return "gallerybaseScene";
             case N_BASE_CHAT_PIE__INIT:
                 return "base_chat_pie__init";
             case N_BASE_CHAT_PIE__handleNightMask:
@@ -517,6 +519,8 @@ public class DexKit {
                 return "qqsettingme_onresume";
             case N_BaseChatPie_mosaic:
                 return "basechatpie_mosaic";
+            case N_WebSecurityPluginV2_callback:
+                return "websecuritypluginv2_callback";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -640,6 +644,10 @@ public class DexKit {
             case C_AIOPictureView:
                 ret = "com.tencent.mobileqq.richmediabrowser.view.AIOPictureView";
                 break;
+            case C_GalleryBaseScene:
+                // guess
+                ret = "com.tencent.mobileqq.gallery.view.GalleryBaseScene";
+                break;
             case N_BASE_CHAT_PIE__INIT:
             case N_BASE_CHAT_PIE__handleNightMask:
             case N_BASE_CHAT_PIE__updateSession:
@@ -670,6 +678,9 @@ public class DexKit {
                 break;
             case N_Conversation_onCreate:
                 ret = "com/tencent/mobileqq/activity/home/Conversation";
+                break;
+            case N_WebSecurityPluginV2_callback:
+                ret = "com.tencent.mobileqq.webview.WebSecurityPluginV2$1";
                 break;
             default:
                 ret = null;
@@ -868,7 +879,9 @@ public class DexKit {
             case C_AIOPictureView:
                 return new byte[][]{
                     new byte[]{0x0e, 0x41, 0x49, 0x4F, 0x50, 0x69, 0x63, 0x74, 0x75, 0x72, 0x65,
-                        0x56, 0x69, 0x65, 0x77}};
+                        0x56, 0x69, 0x65, 0x77},
+                    new byte[]{0x11, 0x41, 0x49, 0x4F, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79,
+                                0x50, 0x69, 0x63, 0x56, 0x69, 0x65, 0x77}};
             case N_FriendChatPie_updateUITitle:
                 return new byte[][]{
                     new byte[]{0x41, 0x46, 0x72, 0x69, 0x65, 0x6e, 0x64, 0x43, 0x68, 0x61, 0x74,
@@ -918,6 +931,18 @@ public class DexKit {
                     new byte[]{
                         0x32, 0x65, 0x6e, 0x61, 0x62, 0x6c, 0x65, 0x4d, 0x6f, 0x73, 0x61, 0x69, 0x63, 0x45, 0x66,
                         0x66, 0x65, 0x63, 0x74
+                    }};
+            case C_GalleryBaseScene:
+                return new byte[][]{
+                    new byte[]{
+                        0x10, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79, 0x42, 0x61, 0x73, 0x65, 0x53, 0x63, 0x65,
+                        0x6E, 0x65
+                    }};
+            case N_WebSecurityPluginV2_callback:
+                return new byte[][]{
+                    new byte[]{
+                        0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
+                        0x72, 0x3D
                     }};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
@@ -1010,7 +1035,7 @@ public class DexKit {
             case C_SmartDeviceProxyMgr:
                 return new int[]{5, 2};
             case C_AIOPictureView:
-                return new int[]{10, 4};
+                return new int[]{10, 4, 2};
             case N_FriendChatPie_updateUITitle:
                 return new int[]{4, 6, 2};
             case N_ProfileCardUtil_getCard:
@@ -1026,6 +1051,10 @@ public class DexKit {
                 return new int[]{4, 8, 11, 6};
             case N_Conversation_onCreate:
                 return new int[]{5, 7, 8, 6};
+            case C_GalleryBaseScene:
+                return new int[]{2};
+            case N_WebSecurityPluginV2_callback:
+                return new int[]{17, 10};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1099,10 +1128,20 @@ public class DexKit {
                 break;
             case C_ABS_GAL_SCENE:
                 for (DexMethodDescriptor m : __methods) {
-                    Class clz = Initiator.load(m.declaringClass);
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     if (!Modifier.isAbstract(clz.getModifiers())) {
                         continue;
                     }
+                    for (Field f : clz.getDeclaredFields()) {
+                        if (f.getType().equals(View.class)) {
+                            return m;
+                        }
+                    }
+                }
+                break;
+            case C_GalleryBaseScene:
+                for (DexMethodDescriptor m : __methods) {
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     for (Field f : clz.getDeclaredFields()) {
                         if (f.getType().equals(View.class)) {
                             return m;
@@ -1231,20 +1270,51 @@ public class DexKit {
                     }
                 }
                 break;
+            case C_TogetherControlHelper:
+                return (DexMethodDescriptor) __methods.toArray()[0];
             case N_LeftSwipeReply_Helper__reply:
             case N_FriendChatPie_updateUITitle:
+                // NOTICE: this must only has one result
+                if (__methods.size() == 1) {
+                    return (DexMethodDescriptor) __methods.toArray()[0];
+                } else {
+                    // return null to avoid unexpected behavior
+                    return null;
+                }
             case N_QQSettingMe_updateProfileBubble:
-            case C_TogetherControlHelper:
-                //NOTICE: this must only has one result
-
-                return (DexMethodDescriptor) __methods.toArray()[0];
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    if (!method.getReturnType().equals(void.class)) {
+                        continue;
+                    }
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == 0) {
+                        return m;
+                    }
+                    if (argt.length == 1 && argt[0].getName().contains("QQSettingMeProfileBubbleBean")) {
+                        return m;
+                    }
+                }
+                break;
             case N_BASE_CHAT_PIE__createMulti:
                 for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
                     String name = m.declaringClass.replace('/', '.');
-                    if (name
-                        .contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
+                    if (name.contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
                         || name.contains(_BaseChatPie().getName())) {
-                        return m;
+                        if (method.getParameterTypes()[0].equals(_ChatMessage())) {
+                            return m;
+                        }
                     }
                 }
                 break;
@@ -1327,6 +1397,7 @@ public class DexKit {
             case C_ClockInEntryHelper:
             case C_FaceManager:
             case C_AvatarUtil:
+            case N_AtPanel__showDialogAtView:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) {
@@ -1341,12 +1412,32 @@ public class DexKit {
                     return m;
                 }
                 break;
+            case N_AtPanel__refreshUI:
+                for (DexMethodDescriptor m : __methods) {
+                    Class clz = Initiator.load(m.declaringClass);
+                    if (clz.isEnum()) {
+                        continue;
+                    }
+                    if (Modifier.isAbstract(clz.getModifiers())) {
+                        continue;
+                    }
+                    if (Object.class != clz.getSuperclass()) {
+                        continue;
+                    }
+                    try {
+                        if (Void.class != m.getMethodInstance(Initiator.getHostClassLoader()).getReturnType()) {
+                            continue;
+                        }
+                    } catch (NoSuchMethodException e) {
+                        e.printStackTrace();
+                    }
+                    return m;
+                }
+                break;
             case C_GroupAppActivity:
             case C_IntimateDrawer:
             case C_HttpDownloader:
             case C_MultiMsg_Manager:
-            case N_AtPanel__refreshUI:
-            case N_AtPanel__showDialogAtView:
             case C_AIOPictureView:
                 //has superclass
                 for (DexMethodDescriptor m : __methods) {
@@ -1412,6 +1503,20 @@ public class DexKit {
             case N_QQSettingMe_onResume:
                 for (DexMethodDescriptor m : __methods) {
                     if (m.declaringClass.endsWith("QQSettingMe")) {
+                        return m;
+                    }
+                }
+                break;
+            case N_WebSecurityPluginV2_callback:
+                for (DexMethodDescriptor m : __methods) {
+                    Method method;
+                    try {
+                        method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    } catch (Exception e) {
+                        continue;
+                    }
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == 1 && argt[0] == Bundle.class) {
                         return m;
                     }
                 }

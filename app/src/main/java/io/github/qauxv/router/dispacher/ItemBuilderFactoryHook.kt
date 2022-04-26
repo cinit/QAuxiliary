@@ -56,7 +56,7 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
         for (m in DexKit.doFindClass(DexKit.C_ITEM_BUILDER_FAC)!!.methods) {
             if (m.returnType == Int::class.javaPrimitiveType) {
                 val argt = m.parameterTypes
-                if (argt.isNotEmpty() && argt[argt.size - 1] == Initiator.load("com.tencent.mobileqq.data.ChatMessage")) {
+                if (argt.isNotEmpty() && argt[argt.size - 1] == Initiator._ChatMessage()) {
                     getMsgType = m
                     break
                 }

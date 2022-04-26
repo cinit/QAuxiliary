@@ -34,7 +34,6 @@ import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.fragment.TroubleshootFragment;
-import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
@@ -76,13 +75,9 @@ public class JumpActivityEntryHook {
                         return;
                     }
                     if (JUMP_ACTION_SETTING_ACTIVITY.equals(cmd)) {
-                        if (LicenseStatus.sDisableCommonHooks) {
-                        } else {
-                            Intent realIntent = new Intent(intent);
-                            realIntent.setComponent(new ComponentName(activity,
-                                SettingsUiFragmentHostActivity.class));
-                            activity.startActivity(realIntent);
-                        }
+                        Intent realIntent = new Intent(intent);
+                        realIntent.setComponent(new ComponentName(activity, SettingsUiFragmentHostActivity.class));
+                        activity.startActivity(realIntent);
                     } else if (JUMP_ACTION_START_ACTIVITY.equals(cmd)) {
                         String target = intent.getStringExtra(JUMP_ACTION_TARGET);
                         if (!TextUtils.isEmpty(target)) {
