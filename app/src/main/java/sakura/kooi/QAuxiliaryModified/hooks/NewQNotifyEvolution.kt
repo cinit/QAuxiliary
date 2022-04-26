@@ -60,12 +60,14 @@ import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 
+// FIXME: current not working: channel not assigned or overwritten
+
 @FunctionHookEntry
 @UiItemAgentEntry
 object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "QQ通知进化"
-    override val description: String = "更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
+    override val description: String = "原生分渠道+对话泡 更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 
