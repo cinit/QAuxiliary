@@ -25,7 +25,7 @@ package io.github.qauxv.util
 object LicenseStatus {
 
     @JvmField
-    val sDisableCommonHooks: Boolean = isBlacklisted()
+    var sDisableCommonHooks: Boolean = isBlacklisted()
 
     const val CURRENT_EULA_VERSION = 10
 
