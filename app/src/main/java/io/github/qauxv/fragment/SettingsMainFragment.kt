@@ -22,6 +22,8 @@
 
 package io.github.qauxv.fragment
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
@@ -32,9 +34,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
-import android.view.inputmethod.InputMethodManager
 import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
@@ -46,11 +46,8 @@ import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.SyncUtils.async
 import io.github.qauxv.SyncUtils.runOnUiThread
-import io.github.qauxv.base.IUiItemAgent
-import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.MainHook
-import io.github.qauxv.databinding.SearchResultItemBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.CategoryDescription
 import io.github.qauxv.dsl.func.FragmentDescription
@@ -63,8 +60,6 @@ import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.SimpleListItem
 import io.github.qauxv.dsl.item.TMsgListItem
 import io.github.qauxv.dsl.item.UiAgentItem
-import io.github.qauxv.util.Log
-import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.MutableStateFlow
 
@@ -77,10 +72,13 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     private var mTargetUiAgentNavId: String? = null
     private var mTargetUiAgentNavigated: Boolean = false
 
+    // search
+    private var mSearchSubFragment: SearchOverlaySubFragment? = null
+    private var mSearchRootLayout: ViewGroup? = null
+    private var mSearchMenuItem: MenuItem? = null
+
     // DSL stuff below
     private var adapter: RecyclerView.Adapter<*>? = null
-    private var searchAdapter: SearchAdapter? = null
-    private var emptyAdapter: SearchAdapter? = null
     private var listLayoutManager: LinearLayoutManager? = null
     private var recyclerListView: RecyclerView? = null
     private var rootFrameLayout: FrameLayout? = null
@@ -163,7 +161,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
 
             override fun getItemViewType(position: Int) = itemTypeIds[position]
         }
-        searchAdapter = SearchAdapter(this)
+
         recyclerListView!!.adapter = adapter
 
         // collect all StateFlow and observe them in case of state change
@@ -345,7 +343,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
                         arrayOf(
                             FunctionEntryRouter.Locations.ANY_CAST_PREFIX, endNode.identifier
                         )
-                    )?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
+                    ) ?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
                     // jump to target fragment
                     val location: Array<String> = targetLocation
                     val fragmentClass = endNode.getTargetFragmentClass(location)
@@ -379,244 +377,124 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.main_settings_toolbar, menu)
+        menu.findItem(R.id.menu_item_action_search)?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                if (item.itemId == R.id.menu_item_action_search) {
+                    exitSearchMode()
+                }
+                return true
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_item_action_search) {
             // always use global search, or search in current fragment?
+            mSearchMenuItem = item
             val searchView = item.actionView as SearchView
-            searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    searchAdapter?.search(query)
-                    return false
-                }
-
-                override fun onQueryTextChange(newText: String): Boolean {
-                    searchAdapter?.search(newText)
-                    return false
-                }
-
-            })
-            searchView.setOnCloseListener {
-                Log.d("setOnCloseListener")
-                searchAdapter?.search(null)
-                false
-            }
+            enterSearchMode(searchView)
             return true
         }
         return super.onOptionsItemSelected(item)
     }
 
-    private class SearchAdapter(private val fragment: SettingsMainFragment) : RecyclerView.Adapter<SearchResultViewHolder>() {
-        private var currentKeyword: String = ""
-        private var lastSearchKeyword: String = ""
-        private val searchResults: ArrayList<SearchResult> = ArrayList()
-        private val allItemsContainer: List<SearchResult> by lazy {
-            FunctionEntryRouter.queryAnnotatedUiItemAgentEntries().map { SearchResult(it) }
+    override fun doOnBackPressed(): Boolean {
+        return if (mSearchSubFragment != null) {
+            mSearchMenuItem?.collapseActionView() ?: exitSearchMode()
+            true
+        } else {
+            super.doOnBackPressed()
         }
-
-        @NonUiThread
-        fun search(query: String?) {
-            if (query == lastSearchKeyword) return
-            currentKeyword = query ?: ""
-            // search is performed by calculating the score of each item and sort the result by the score
-            val keywords: List<String> = currentKeyword.replace("\r", "")
-                .replace("\n", "").replace("\t", "")
-                .split(" ").filter { it.isNotBlank() && it.isNotEmpty() }
-
-            // update the score of each item
-            allItemsContainer.forEach {
-                it.score = 0
-                keywords.forEach { keyword ->
-                    it.score += calculatePartialScoreBySingleKeyword(keyword, it.agent.uiItemAgent)
-                }
-            }
-            // find score > 0
-            searchResults.clear()
-            allItemsContainer.forEach {
-                if (it.score > 0) {
-                    searchResults.add(it)
-                }
-            }
-            // sort by score
-            searchResults.sortByDescending { it.score }
-            // update the item location if missing
-            searchResults.forEach {
-                if (it.location == null) {
-                    updateUiItemAgentLocation(it)
-                }
-            }
-            lastSearchKeyword = currentKeyword
-            // update the view
-            runOnUiThread { updateSearchResultForView() }
-        }
-
-        private fun updateSearchResultForView() {
-            runOnUiThread {
-                if(searchResults.isNotEmpty()) {
-                    fragment.recyclerListView!!.adapter = this
-                } else {
-                    // TODO: 2020-02-22 show empty view
-                    fragment.recyclerListView!!.adapter = fragment.adapter
-                }
-            }
-        }
-
-        private fun calculatePartialScoreBySingleKeyword(keyword: String, item: IUiItemAgent): Int {
-            var score = 0
-            val context = fragment.requireContext()
-            val title: String = item.titleProvider.invoke(item).replace(" ", "")
-            val summary: String? = item.summaryProvider?.invoke(item, context)?.replace(" ", "")?.replace("\n", "")
-            val extraKeywords: Array<String>? = item.extraSearchKeywordProvider?.invoke(item, context)
-            if (title == keyword) {
-                score += 80
-            } else if (title.contains(keyword, true)) {
-                score += 50
-            }
-            summary?.let {
-                if (it == keyword) {
-                    score += 40
-                } else if (it.contains(keyword, true)) {
-                    score += 20
-                }
-            }
-            extraKeywords?.let { words ->
-                words.forEach {
-                    if (it == keyword) {
-                        score += 10
-                    } else if (it.contains(keyword, true)) {
-                        score += 5
-                    }
-                }
-            }
-            return score
-        }
-
-        private fun updateUiItemAgentLocation(item: SearchResult) {
-            val agent = item.agent
-            val containerLocation: Array<String> = FunctionEntryRouter.resolveUiItemAnycastLocation(agent.uiItemLocation)
-                ?: agent.uiItemLocation
-            val fullLocation = arrayOf(*containerLocation, agent.itemAgentProviderUniqueIdentifier)
-            item.location = fullLocation
-            // translate the container location to human readable string
-            // e.g. arrayOf("home", "app", "search") -> "Home > App > Search" (and the the target item is "Item 0")
-            // get the DSL element of each level to get the title
-            // start from the first level
-            val currentLocation: ArrayList<String> = ArrayList()
-            var currentNode: IDslParentNode? = FunctionEntryRouter.settingsUiItemDslTree
-            for (i in containerLocation.indices) {
-                if (currentNode == null) {
-                    // we are lost!!! use raw identifier as the location
-                    currentLocation.add(containerLocation[i])
-                } else {
-                    val nextNode = currentNode.findChildById(containerLocation[i])
-                    if (nextNode == null) {
-                        currentNode = null
-                        // we are lost!!! use raw identifier as the location
-                        currentLocation.add(containerLocation[i])
-                    } else {
-                        nextNode.name?.let { currentLocation.add(it) }
-                        currentNode = if (nextNode is IDslParentNode) {
-                            nextNode
-                        } else {
-                            // this is the target item
-                            null
-                        }
-                    }
-                }
-            }
-            item.shownLocation = currentLocation.toTypedArray()
-        }
-
-        @UiThread
-        private fun navigateToTargetSearchResult(item: SearchResult) {
-            ConfigEntrySearchHistoryManager.addHistory(currentKeyword)
-            // todo: 2020-02-22 support history
-            // updateHistoryListForView()
-            if (item.location == null) {
-                updateUiItemAgentLocation(item)
-            }
-            // find containing fragment
-            val absFullLocation = item.location!!
-            val identifier = absFullLocation.last()
-            var container = absFullLocation.dropLast(1)
-            var targetFragmentLocation: Array<String>? = null
-            val context = fragment.requireContext()
-            var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
-            // lookup the parent container, until we find the parent is a fragment
-            while (true) {
-                if (node == null) {
-                    // we are lost!!!
-                    break
-                }
-                if (node is IDslFragmentNode) {
-                    // found
-                    targetFragmentLocation = container.toTypedArray()
-                    break
-                }
-                if (container.isEmpty()) {
-                    // we are lost!!!
-                    break
-                }
-                // not a fragment, keep looking up parent
-                container = container.dropLast(1)
-                // get current node
-                node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
-            }
-            if (targetFragmentLocation == null) {
-                // tell user we are lost
-                AlertDialog.Builder(context).apply {
-                    setTitle("Navigation Error")
-                    setMessage("We are lost, can't find the target fragment: " + absFullLocation.joinToString("."))
-                    setPositiveButton(android.R.string.ok) { _, _ -> }
-                    setCancelable(true)
-                }.show()
-            } else {
-                // hide IME
-                val imm = context.getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.hideSoftInputFromWindow(fragment.requireView().windowToken, 0)
-                val fragment = newInstance(targetFragmentLocation, identifier)
-                this.fragment.settingsHostActivity!!.presentFragment(fragment)
-            }
-        }
-
-        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchResultViewHolder {
-            return SearchResultViewHolder(SearchResultItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
-        }
-
-        override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
-            val item = searchResults[position]
-            bindSearchResultItem(holder.binding, item)
-        }
-
-        private fun bindSearchResultItem(binding: SearchResultItemBinding, item: SearchResult) {
-            val title: String = item.agent.uiItemAgent.titleProvider.invoke(item.agent.uiItemAgent)
-            val description: String = "[${item.score}] " +
-                (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, fragment.requireContext()).orEmpty())
-            binding.title.text = title
-            binding.summary.text = description
-            val locationString = item.shownLocation!!.joinToString(separator = " > ")
-            binding.description.text = locationString
-            binding.root.setTag(R.id.tag_searchResultItem, item)
-            binding.root.setOnClickListener { v ->
-                (v.getTag(R.id.tag_searchResultItem) as SearchResult?)
-                    ?.let {
-                        navigateToTargetSearchResult(it)
-                    }
-            }
-        }
-
-        override fun getItemCount() = searchResults.size
     }
 
-    private class SearchResultViewHolder(val binding: SearchResultItemBinding) : RecyclerView.ViewHolder(binding.root)
+    /**
+     * Enter search mode with animation
+     */
+    private fun enterSearchMode(searchView: SearchView) {
+        if (mSearchSubFragment == null) {
+            mSearchSubFragment = SearchOverlaySubFragment().also {
+                it.parent = this
+                it.context = this.requireContext()
+                it.settingsHostActivity = settingsHostActivity!!
 
-    private data class SearchResult(
-        val agent: IUiItemAgentProvider,
-        var score: Int = 0,
-        var location: Array<String>? = null,
-        var shownLocation: Array<String>? = null
-    )
+                mSearchRootLayout = it.onCreateView(requireActivity().layoutInflater, mSearchRootLayout, null) as ViewGroup
+                it.onResume()
+                // hide the recycler view and show the search view
+                recyclerListView!!.animate().alpha(0f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        recyclerListView!!.visibility = View.GONE
+                    }
+                }).start()
+                rootFrameLayout!!.addView(mSearchRootLayout)
+                mSearchRootLayout!!.alpha = 0f
+                mSearchRootLayout!!.animate().alpha(1f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        mSearchRootLayout!!.visibility = View.VISIBLE
+                    }
+                }).start()
+                searchView.setOnCloseListener {
+                    exitSearchMode()
+                    true
+                }
+                rootLayoutView = mSearchRootLayout
+                applyRootLayoutPaddingFor(mSearchRootLayout!!)
+            }
+        }
+        mSearchSubFragment!!.initForSearchView(searchView)
+    }
+
+    /**
+     * Exit search mode with animation
+     */
+    private fun exitSearchMode() {
+        mSearchSubFragment?.let { fragment ->
+            mSearchRootLayout!!.animate().alpha(0f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    rootFrameLayout!!.removeView(mSearchRootLayout)
+                    fragment.onDestroyView()
+                    mSearchRootLayout = null
+                    mSearchSubFragment = null
+                }
+            }).start()
+            recyclerListView!!.visibility = View.VISIBLE
+            recyclerListView!!.alpha = 0f
+            recyclerListView!!.animate().alpha(1f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    recyclerListView?.let { v ->
+                        v.alpha = 1f
+                    }
+                }
+            }).start()
+        }
+        rootLayoutView = recyclerListView
+        applyRootLayoutPaddingFor(recyclerListView!!)
+    }
+
+    /**
+     * Abort search mode without animation
+     */
+    private fun abortSearchMode() {
+        mSearchSubFragment?.let {
+            rootFrameLayout!!.removeView(mSearchRootLayout)
+            it.onDestroyView()
+            mSearchRootLayout = null
+            mSearchSubFragment = null
+        }
+        recyclerListView!!.apply {
+            alpha = 1f
+            visibility = View.VISIBLE
+        }
+        rootLayoutView = recyclerListView
+        applyRootLayoutPaddingFor(recyclerListView!!)
+    }
+
+    fun onNavigateToOtherFragment() {
+        abortSearchMode()
+    }
 
     companion object {
         const val TARGET_FRAGMENT_LOCATION = "SettingsMainFragment.TARGET_FRAGMENT_LOCATION"

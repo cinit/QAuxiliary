@@ -32,8 +32,8 @@ import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
-import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper
@@ -43,6 +43,7 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.FragmentSettingSearchBinding
@@ -54,10 +55,17 @@ import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.UiThread
 
 /**
- * The search fragment. It will cover the whole screen including the AppBarLayout.
+ * The search sub fragment of [SettingsMainFragment]
  */
-class SearchOverlayFragment : BaseClipSettingFragment() {
+class SearchOverlaySubFragment {
 
+    var parent: SettingsMainFragment? = null
+    var arguments: Bundle? = null
+    var context: Context? = null
+    var settingsHostActivity: SettingsUiFragmentHostActivity? = null
+    private var mView: View? = null
+
+    private var mSearchView: SearchView? = null
     private var binding: FragmentSettingSearchBinding? = null
     private var currentKeyword: String = ""
     private var lastSearchKeyword: String = ""
@@ -72,7 +80,37 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
         }
     }
 
-    override fun getTitle() = "搜索"
+    fun requireContext(): Context {
+        return context!!
+    }
+
+    fun requireActivity(): SettingsUiFragmentHostActivity {
+        return settingsHostActivity!!
+    }
+
+    fun requireView(): View {
+        return mView!!
+    }
+
+    fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        mView = doOnCreateView(inflater, container, savedInstanceState)
+        return mView
+    }
+
+    fun initForSearchView(searchView: SearchView) {
+        mSearchView = searchView
+        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+            override fun onQueryTextSubmit(query: String): Boolean {
+                search(query)
+                return false
+            }
+
+            override fun onQueryTextChange(newText: String): Boolean {
+                search(newText)
+                return false
+            }
+        })
+    }
 
     @UiThread
     fun updateSearchResultForView() {
@@ -101,7 +139,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     private val mOnSearchHistoryItemClickListener = View.OnClickListener {
         val keyword = (it as TextView).text.toString()
         if (keyword != currentKeyword && keyword.isNotEmpty()) {
-            binding?.searchKeyWords!!.setText(keyword)
+            mSearchView!!.setQuery(keyword, true)
             currentKeyword = keyword
         }
     }
@@ -130,7 +168,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
 
         companion object {
             @JvmStatic
-            fun newInstance(that: SearchOverlayFragment): SearchHistoryItemViewHolder {
+            fun newInstance(that: SearchOverlaySubFragment): SearchHistoryItemViewHolder {
                 val context = that.requireContext()
                 val v = TextView(context).apply {
                     textSize = 14f
@@ -168,7 +206,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
 
     private val mHistoryRecyclerAdapter = object : RecyclerView.Adapter<SearchHistoryItemViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHistoryItemViewHolder {
-            return SearchHistoryItemViewHolder.newInstance(this@SearchOverlayFragment)
+            return SearchHistoryItemViewHolder.newInstance(this@SearchOverlaySubFragment)
         }
 
         override fun onBindViewHolder(holder: SearchHistoryItemViewHolder, position: Int) {
@@ -184,7 +222,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     private fun bindSearchResultItem(binding: SearchResultItemBinding, item: SearchResult) {
         val title: String = item.agent.uiItemAgent.titleProvider.invoke(item.agent.uiItemAgent)
         val description: String = "[${item.score}] " +
-                (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext()).orEmpty())
+            (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext()).orEmpty())
         binding.title.text = title
         binding.summary.text = description
         val locationString = item.shownLocation!!.joinToString(separator = " > ")
@@ -201,12 +239,13 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     }
 
     @NonUiThread
-    private fun doFullTextFunctionSearch() {
-        val currKeyword = currentKeyword
+    fun search(query: String?) {
+        if (query == lastSearchKeyword) return
+        currentKeyword = query ?: ""
         // search is performed by calculating the score of each item and sort the result by the score
         val keywords: List<String> = currentKeyword.replace("\r", "")
-                .replace("\n", "").replace("\t", "")
-                .split(" ").filter { it.isNotBlank() && it.isNotEmpty() }
+            .replace("\n", "").replace("\t", "")
+            .split(" ").filter { it.isNotBlank() && it.isNotEmpty() }
         // update the score of each item
         allItemsContainer.forEach {
             it.score = 0
@@ -229,7 +268,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
                 updateUiItemAgentLocation(it)
             }
         }
-        lastSearchKeyword = currKeyword
+        lastSearchKeyword = currentKeyword
         // update the view
         SyncUtils.runOnUiThread { updateSearchResultForView() }
     }
@@ -267,7 +306,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     private fun updateUiItemAgentLocation(item: SearchResult) {
         val agent = item.agent
         val containerLocation: Array<String> = FunctionEntryRouter.resolveUiItemAnycastLocation(agent.uiItemLocation)
-                ?: agent.uiItemLocation
+            ?: agent.uiItemLocation
         val fullLocation = arrayOf(*containerLocation, agent.itemAgentProviderUniqueIdentifier)
         item.location = fullLocation
         // translate the container location to human readable string
@@ -301,10 +340,10 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     }
 
     private data class SearchResult(
-            val agent: IUiItemAgentProvider,
-            var score: Int = 0,
-            var location: Array<String>? = null,
-            var shownLocation: Array<String>? = null
+        val agent: IUiItemAgentProvider,
+        var score: Int = 0,
+        var location: Array<String>? = null,
+        var shownLocation: Array<String>? = null
     )
 
     @UiThread
@@ -353,11 +392,12 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
             val imm = requireActivity().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
             imm.hideSoftInputFromWindow(requireView().windowToken, 0)
             val fragment = SettingsMainFragment.newInstance(targetFragmentLocation, identifier)
+            parent!!.onNavigateToOtherFragment()
             settingsHostActivity!!.presentFragment(fragment)
         }
     }
 
-    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+    private fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         binding = FragmentSettingSearchBinding.inflate(inflater, container, false).apply {
             searchSettingSearchResultRecyclerView.apply {
                 adapter = mRecyclerAdapter
@@ -393,12 +433,6 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
                     setCancelable(true)
                 }.show()
             }
-            searchKeyWords.addTextChangedListener {
-                currentKeyword = it.toString()
-                if (currentKeyword != lastSearchKeyword) {
-                    SyncUtils.async { doFullTextFunctionSearch() }
-                }
-            }
         }
         updateHistoryListForView()
         updateSearchResultForView()
@@ -410,20 +444,11 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
         mHistoryRecyclerAdapter.notifyDataSetChanged()
     }
 
-    override fun onDestroyView() {
-        super.onDestroyView()
+    fun onDestroyView() {
         binding = null
+        mView = null
+        mSearchView = null
     }
 
-    override fun onResume() {
-        super.onResume()
-        binding?.let {
-            if (it.searchKeyWords.text.isEmpty()) {
-                it.searchKeyWords.requestFocus()
-                // show keyboard
-                val imm = requireContext().getSystemService(Context.INPUT_METHOD_SERVICE) as InputMethodManager
-                imm.showSoftInput(it.searchKeyWords, InputMethodManager.SHOW_IMPLICIT)
-            }
-        }
-    }
+    fun onResume() = Unit
 }
