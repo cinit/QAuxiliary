@@ -39,12 +39,12 @@ import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.getInputLayout
 import com.afollestad.materialdialogs.input.input
 import com.tencent.mobileqq.widget.BounceScrollView
-import io.github.qauxv.fragment.BaseClipSettingFragment
+import io.github.qauxv.fragment.BaseRootLayoutFragment
 import me.ketal.hook.LeftSwipeReplyHook
 import me.ketal.util.ignoreResult
 
 @SuppressLint("Registered")
-class ModifyLeftSwipeReplyFragment : BaseClipSettingFragment() {
+class ModifyLeftSwipeReplyFragment : BaseRootLayoutFragment() {
 
     override fun getTitle() = "修改消息左滑动作"
 
@@ -88,6 +88,7 @@ class ModifyLeftSwipeReplyFragment : BaseClipSettingFragment() {
             layoutParams = ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT)
             addView(ll, ViewGroup.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT))
         }
+        rootLayoutView = rootView
         return rootView
     }
 }
