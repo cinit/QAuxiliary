@@ -23,6 +23,7 @@
 package io.github.qauxv.fragment
 
 import android.content.Context
+import android.graphics.Color
 import android.graphics.Rect
 import android.os.Bundle
 import android.view.Gravity
@@ -30,6 +31,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.ImageView
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
@@ -98,18 +100,28 @@ class SearchOverlaySubFragment {
     }
 
     fun initForSearchView(searchView: SearchView) {
-        mSearchView = searchView
-        searchView.setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-            override fun onQueryTextSubmit(query: String): Boolean {
-                search(query)
-                return false
-            }
+        mSearchView = searchView.apply {
+            queryHint = "搜索..."
+            setOnQueryTextListener(object : SearchView.OnQueryTextListener {
+                override fun onQueryTextSubmit(query: String): Boolean {
+                    search(query)
+                    return false
+                }
 
-            override fun onQueryTextChange(newText: String): Boolean {
-                search(newText)
-                return false
+                override fun onQueryTextChange(newText: String): Boolean {
+                    return false
+                }
+            })
+
+            setIconifiedByDefault(false)
+            findViewById<ImageView>(androidx.appcompat.R.id.search_mag_icon).apply {
+                setImageDrawable(null)
             }
-        })
+            // hide search plate
+            findViewById<View>(androidx.appcompat.R.id.search_plate).apply {
+                setBackgroundColor(Color.TRANSPARENT)
+            }
+        }
     }
 
     @UiThread
