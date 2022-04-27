@@ -103,12 +103,10 @@ class SearchOverlaySubFragment {
         mSearchView = searchView.apply {
             queryHint = "搜索..."
             setOnQueryTextListener(object : SearchView.OnQueryTextListener {
-                override fun onQueryTextSubmit(query: String): Boolean {
-                    search(query)
-                    return false
-                }
+                override fun onQueryTextSubmit(query: String) = false
 
                 override fun onQueryTextChange(newText: String): Boolean {
+                    search(newText)
                     return false
                 }
             })
@@ -130,7 +128,9 @@ class SearchOverlaySubFragment {
             if (currentKeyword.isEmpty()) {
                 it.searchSettingNoResultLayout.visibility = View.GONE
                 it.searchSettingSearchResultLayout.visibility = View.GONE
-                it.searchSettingSearchHistoryLayout.visibility = View.VISIBLE
+                if (searchHistoryList.isNotEmpty()) {
+                    it.searchSettingSearchHistoryLayout.visibility = View.VISIBLE
+                }
             } else {
                 if (searchResults.isEmpty()) {
                     it.searchSettingNoResultLayout.visibility = View.VISIBLE
@@ -240,13 +240,11 @@ class SearchOverlaySubFragment {
         val locationString = item.shownLocation!!.joinToString(separator = " > ")
         binding.description.text = locationString
         binding.root.setTag(R.id.tag_searchResultItem, item)
-        binding.root.setOnClickListener(mSearchResultOnClickListener)
-    }
-
-    private val mSearchResultOnClickListener = View.OnClickListener { v ->
-        val item = v?.getTag(R.id.tag_searchResultItem) as SearchResult?
-        item?.let {
-            navigateToTargetSearchResult(it)
+        binding.root.setOnClickListener{ v ->
+            val result = v?.getTag(R.id.tag_searchResultItem) as SearchResult?
+            result?.let {
+                navigateToTargetSearchResult(it)
+            }
         }
     }
 
@@ -439,6 +437,7 @@ class SearchOverlaySubFragment {
                     setPositiveButton(android.R.string.ok) { _, _ ->
                         ConfigEntrySearchHistoryManager.clearHistoryList()
                         searchHistoryList = ConfigEntrySearchHistoryManager.historyList
+                        binding!!.searchSettingSearchHistoryLayout.visibility = View.GONE
                         mHistoryRecyclerAdapter.notifyDataSetChanged()
                     }
                     setNegativeButton(android.R.string.cancel) { _, _ -> }
@@ -453,6 +452,9 @@ class SearchOverlaySubFragment {
 
     private fun updateHistoryListForView() {
         searchHistoryList = ConfigEntrySearchHistoryManager.historyList
+        if (searchHistoryList.isEmpty()) {
+            binding!!.searchSettingSearchHistoryLayout.visibility = View.GONE
+        }
         mHistoryRecyclerAdapter.notifyDataSetChanged()
     }
 

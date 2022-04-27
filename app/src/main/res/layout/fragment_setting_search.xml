@@ -20,7 +20,6 @@
   ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
@@ -35,6 +34,7 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="top|start"
+            android:visibility="gone"
             android:orientation="vertical">
 
             <RelativeLayout
