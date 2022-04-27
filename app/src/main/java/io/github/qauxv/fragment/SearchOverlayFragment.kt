@@ -23,15 +23,24 @@
 package io.github.qauxv.fragment
 
 import android.content.Context
+import android.graphics.Rect
 import android.os.Bundle
+import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.view.inputmethod.InputMethodManager
+import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.addTextChangedListener
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cc.ioctl.util.LayoutHelper
+import com.google.android.flexbox.FlexDirection
+import com.google.android.flexbox.FlexWrap
+import com.google.android.flexbox.FlexboxLayoutManager
+import com.google.android.flexbox.JustifyContent
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IUiItemAgent
@@ -52,6 +61,7 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
     private var binding: FragmentSettingSearchBinding? = null
     private var currentKeyword: String = ""
     private var lastSearchKeyword: String = ""
+    private var searchHistoryList: List<String> = listOf()
     private val searchResults: ArrayList<SearchResult> = ArrayList()
     private val allItemsContainer: ArrayList<SearchResult> by lazy {
         val items = FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()
@@ -88,6 +98,59 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
 
     private class SearchResultViewHolder(val binding: SearchResultItemBinding) : RecyclerView.ViewHolder(binding.root)
 
+    private val mOnSearchHistoryItemClickListener = View.OnClickListener {
+        val keyword = (it as TextView).text.toString()
+        if (keyword != currentKeyword && keyword.isNotEmpty()) {
+            binding?.searchKeyWords!!.setText(keyword)
+            currentKeyword = keyword
+        }
+    }
+
+    private val mOnSearchHistoryItemLongClickListener = View.OnLongClickListener {
+        val keyword = (it as TextView).text.toString()
+        if (keyword.isNotEmpty()) {
+            AlertDialog.Builder(context!!)
+                .setTitle("删除搜索历史")
+                .setMessage("确定要删除搜索历史 '$keyword' 吗？")
+                .setPositiveButton("确定") { _, _ ->
+                    ConfigEntrySearchHistoryManager.removeHistory(keyword)
+                    updateHistoryListForView()
+                }
+                .setCancelable(true)
+                .setNegativeButton("取消", null)
+                .show()
+            true
+        } else {
+            false
+        }
+    }
+
+    private class SearchHistoryItemViewHolder(val context: Context, r: TextView) : RecyclerView.ViewHolder(r) {
+        val textView: TextView = r
+
+        companion object {
+            @JvmStatic
+            fun newInstance(that: SearchOverlayFragment): SearchHistoryItemViewHolder {
+                val context = that.requireContext()
+                val v = TextView(context).apply {
+                    textSize = 14f
+                    isClickable = true
+                    isLongClickable = true
+                    isFocusable = true
+                    gravity = Gravity.CENTER
+                    minHeight = LayoutHelper.dip2px(context, 32f)
+                    val dp16 = LayoutHelper.dip2px(context, 16f)
+                    setPadding(dp16, 0, dp16, 0)
+                    setTextColor(ResourcesCompat.getColor(context.resources, R.color.firstTextColor, context.theme))
+                    background = ResourcesCompat.getDrawable(context.resources, R.drawable.bg_item_light_grey_r16, context.theme)
+                    this.setOnClickListener(that.mOnSearchHistoryItemClickListener)
+                    this.setOnLongClickListener(that.mOnSearchHistoryItemLongClickListener)
+                }
+                return SearchHistoryItemViewHolder(context, v)
+            }
+        }
+    }
+
     private val mRecyclerAdapter = object : RecyclerView.Adapter<SearchResultViewHolder>() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchResultViewHolder {
             return SearchResultViewHolder(SearchResultItemBinding.inflate(LayoutInflater.from(parent.context), parent, false))
@@ -100,6 +163,21 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
 
         override fun getItemCount(): Int {
             return searchResults.size
+        }
+    }
+
+    private val mHistoryRecyclerAdapter = object : RecyclerView.Adapter<SearchHistoryItemViewHolder>() {
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): SearchHistoryItemViewHolder {
+            return SearchHistoryItemViewHolder.newInstance(this@SearchOverlayFragment)
+        }
+
+        override fun onBindViewHolder(holder: SearchHistoryItemViewHolder, position: Int) {
+            val keyword = searchHistoryList[position]
+            holder.textView.text = keyword
+        }
+
+        override fun getItemCount(): Int {
+            return searchHistoryList.size
         }
     }
 
@@ -231,6 +309,8 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
 
     @UiThread
     private fun navigateToTargetSearchResult(item: SearchResult) {
+        ConfigEntrySearchHistoryManager.addHistory(currentKeyword)
+        updateHistoryListForView()
         if (item.location == null) {
             updateUiItemAgentLocation(item)
         }
@@ -286,6 +366,33 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
                 }
                 id = R.id.fragmentMainRecyclerView // id is used to allow saving state
             }
+            searchSettingSearchHistoryRecyclerView.apply {
+                adapter = mHistoryRecyclerAdapter
+                layoutManager = FlexboxLayoutManager(inflater.context).apply {
+                    flexWrap = FlexWrap.WRAP
+                    flexDirection = FlexDirection.ROW
+                    justifyContent = JustifyContent.FLEX_START
+                }
+                val dp5 = LayoutHelper.dip2px(inflater.context, 5f)
+                addItemDecoration(object : RecyclerView.ItemDecoration() {
+                    override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
+                        outRect.set(dp5, dp5, dp5, dp5)
+                    }
+                })
+            }
+            searchSettingClearHistory.setOnClickListener {
+                AlertDialog.Builder(requireContext()).apply {
+                    setTitle("清除历史记录")
+                    setMessage("确定要清除历史记录吗？")
+                    setPositiveButton(android.R.string.ok) { _, _ ->
+                        ConfigEntrySearchHistoryManager.clearHistoryList()
+                        searchHistoryList = ConfigEntrySearchHistoryManager.historyList
+                        mHistoryRecyclerAdapter.notifyDataSetChanged()
+                    }
+                    setNegativeButton(android.R.string.cancel) { _, _ -> }
+                    setCancelable(true)
+                }.show()
+            }
             searchKeyWords.addTextChangedListener {
                 currentKeyword = it.toString()
                 if (currentKeyword != lastSearchKeyword) {
@@ -293,8 +400,14 @@ class SearchOverlayFragment : BaseClipSettingFragment() {
                 }
             }
         }
+        updateHistoryListForView()
         updateSearchResultForView()
         return binding!!.root
+    }
+
+    private fun updateHistoryListForView() {
+        searchHistoryList = ConfigEntrySearchHistoryManager.historyList
+        mHistoryRecyclerAdapter.notifyDataSetChanged()
     }
 
     override fun onDestroyView() {
