@@ -101,14 +101,10 @@ public class CheatHook extends CommonSwitchFunctionHook {
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_4_8)) {
             Method = "sendMagicEmoticon";
         }
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_88)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
             XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
                             ".sender.PicEmoticonInfoSender"),
                     Method, _BaseQQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
-        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-            XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
-                            ".sender.PicEmoticonInfoSender"),
-                    Method, _QQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
         } else {
             XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PIC_EMOTICON_INFO),
                     Method, _QQAppInterface(), Context.class, _SessionInfo(), _Emoticon(), _StickerInfo(), hook);
