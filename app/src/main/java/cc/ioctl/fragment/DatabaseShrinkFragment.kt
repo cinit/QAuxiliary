@@ -115,27 +115,35 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         if (mCurrentUin < 10000) {
             return
         }
-        val troops = TroopManagerHelper.getTroopInfoList()
-        troops?.let {
-            for (troop in it) {
-                val uin = troop.troopuin!!
-                val md5 = uinToMd5(uin)
-                mMd5ToUinLut[md5] = uin
-                mTroopName[uin] = troop.troopname
-            }
-        }
-        val friends = ExfriendManager.get(mCurrentUin).persons
-        friends?.let {
-            for (friend in it) {
-                val uin = friend.key.toString()
-                var nick = friend.value.remark
-                if (nick.isNullOrEmpty()) {
-                    nick = friend.value.nick
+        try {
+            val troops = TroopManagerHelper.getTroopInfoList()
+            troops?.let {
+                for (troop in it) {
+                    val uin = troop.troopuin!!
+                    val md5 = uinToMd5(uin)
+                    mMd5ToUinLut[md5] = uin
+                    mTroopName[uin] = troop.troopname
                 }
-                val md5 = uinToMd5(uin)
-                mMd5ToUinLut[md5] = uin
-                mFriendName[uin] = nick
             }
+        } catch (e: Exception) {
+            Log.e(e)
+        }
+        try {
+            val friends = ExfriendManager.get(mCurrentUin).persons
+            friends?.let {
+                for (friend in it) {
+                    val uin = friend.key.toString()
+                    var nick = friend.value.remark
+                    if (nick.isNullOrEmpty()) {
+                        nick = friend.value.nick
+                    }
+                    val md5 = uinToMd5(uin)
+                    mMd5ToUinLut[md5] = uin
+                    mFriendName[uin] = nick
+                }
+            }
+        } catch (e: Exception) {
+            Log.e(e)
         }
     }
 
