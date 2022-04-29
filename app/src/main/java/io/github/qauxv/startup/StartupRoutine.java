@@ -21,13 +21,17 @@
  */
 package io.github.qauxv.startup;
 
+import android.annotation.SuppressLint;
 import android.app.Application;
 import android.content.Context;
+import android.os.Build;
 import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Natives;
+import java.lang.reflect.Field;
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 public class StartupRoutine {
 
@@ -46,6 +50,7 @@ public class StartupRoutine {
      * @param bReserved   false, not used
      */
     public static void execPostStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
+        ensureHiddenApiAccess();
         // init all kotlin utils here
         EzXHelperInit.INSTANCE.initZygote(HookEntry.getInitZygoteStartupParam());
         EzXHelperInit.INSTANCE.initHandleLoadPackage(HookEntry.getLoadPackageParam());
@@ -56,5 +61,33 @@ public class StartupRoutine {
         Initiator.init(ctx.getClassLoader());
         Natives.load(ctx);
         MainHook.getInstance().performHook(ctx, step);
+    }
+
+    private static void ensureHiddenApiAccess() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P && !isHiddenApiAccessible()) {
+            android.util.Log.w("QAuxv", "Hidden API access not accessible, SDK_INT is " + Build.VERSION.SDK_INT);
+            HiddenApiBypass.setHiddenApiExemptions("L");
+        }
+    }
+
+    @SuppressLint({"BlockedPrivateApi", "PrivateApi"})
+    public static boolean isHiddenApiAccessible() {
+        Class<?> kContextImpl;
+        try {
+            kContextImpl = Class.forName("android.app.ContextImpl");
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+        Field mActivityToken = null;
+        Field mToken = null;
+        try {
+            mActivityToken = kContextImpl.getDeclaredField("mActivityToken");
+        } catch (NoSuchFieldException ignored) {
+        }
+        try {
+            mToken = kContextImpl.getDeclaredField("mToken");
+        } catch (NoSuchFieldException ignored) {
+        }
+        return mActivityToken != null || mToken != null;
     }
 }

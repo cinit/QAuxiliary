@@ -129,6 +129,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
     compileOnly("de.robv.android.xposed:api:82")
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
     implementation("io.noties.markwon:core:4.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     implementation("com.google.android.material:material:1.5.0")
