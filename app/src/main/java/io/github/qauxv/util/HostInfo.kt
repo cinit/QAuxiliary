@@ -23,6 +23,7 @@
 package io.github.qauxv.util
 
 import android.app.Application
+import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -111,6 +112,18 @@ val isInModuleProcess: Boolean
     get() = hostInfo.hostSpecies == HostSpecies.QAuxiliary
 
 val isInHostProcess: Boolean get() = !isInModuleProcess
+
+val isAndroidxFileProviderAvailable: Boolean by lazy {
+    val ctx = hostInfo.application
+    // check if androidx.core.content.FileProvider is available
+    val pm = ctx.packageManager
+    try {
+        pm.getProviderInfo(ComponentName(hostInfo.packageName, "androidx.core.content.FileProvider"), 0)
+        true
+    } catch (e: PackageManager.NameNotFoundException) {
+        false
+    }
+}
 
 data class HostInfoImpl(
     val application: Application,

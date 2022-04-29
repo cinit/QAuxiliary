@@ -80,6 +80,10 @@ public class HostInfo {
         return !isInModuleProcess();
     }
 
+    public static boolean isAndroidxFileProviderAvailable() {
+        return io.github.qauxv.util.HostInfo.isAndroidxFileProviderAvailable();
+    }
+
     public static boolean isTim() {
         return io.github.qauxv.util.HostInfo.isTim();
     }

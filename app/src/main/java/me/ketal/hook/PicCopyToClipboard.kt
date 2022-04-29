@@ -37,6 +37,7 @@ import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Initiator._MarketFaceItemBuilder
 import io.github.qauxv.util.Initiator._MixedMsgItemBuilder
 import io.github.qauxv.util.Initiator._PicItemBuilder
+import io.github.qauxv.util.isAndroidxFileProviderAvailable
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -53,6 +54,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
     override val description: String = "复制图片到剪贴板，可以在聊天窗口中粘贴使用"
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+
+    override val isAvailable: Boolean = isAndroidxFileProviderAvailable
 
     override fun initOnce() = tryOrFalse {
         val clsPicItemBuilder = _PicItemBuilder()
