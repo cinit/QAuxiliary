@@ -62,7 +62,7 @@ public class FriendDeletionNotification extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public String getDescription() {
-        return "不可以做舔狗";
+        return "检测到被删好友时将发出通知";
     }
 
     @NonNull
@@ -83,7 +83,7 @@ public class FriendDeletionNotification extends CommonSwitchFunctionHook {
         public static final ExFriendListEntry INSTANCE = new ExFriendListEntry();
 
         private ExFriendListEntry() {
-            super("历史好友", "勿做舔狗");
+            super("历史好友", "得不到的永远骚动, 被偏爱的都有恃无恐.");
         }
 
         @Nullable
