@@ -21,8 +21,8 @@
  */
 package io.github.qauxv.startup;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
-import android.os.Build;
 import android.util.Log;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -40,9 +40,9 @@ import java.lang.reflect.Method;
  */
 public class StartupHook {
 
-    public static StartupHook SELF;
-    static boolean sec_static_stage_inited = false;
-    private boolean first_stage_inited = false;
+    private static StartupHook sInstance;
+    private static boolean sSecondStageInit = false;
+    private boolean mFirstStageInit = false;
 
     private StartupHook() {
     }
@@ -55,9 +55,8 @@ public class StartupHook {
      * @param lpwReserved null, not used
      * @param bReserved   false, not used
      */
-    public static void execStartupInit(Context ctx, Object step, String lpwReserved,
-                                       boolean bReserved) {
-        if (sec_static_stage_inited) {
+    public static void execStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
+        if (sSecondStageInit) {
             return;
         }
         ClassLoader classLoader = ctx.getClassLoader();
@@ -72,10 +71,12 @@ public class StartupHook {
         System.setProperty(StartupHook.class.getName(), "true");
         injectClassLoader(classLoader);
         StartupRoutine.execPostStartupInit(ctx, step, lpwReserved, bReserved);
-        sec_static_stage_inited = true;
+        sSecondStageInit = true;
         deleteDirIfNecessaryNoThrow(ctx);
     }
 
+    @SuppressWarnings("JavaReflectionMemberAccess")
+    @SuppressLint("DiscouragedPrivateApi")
     private static void injectClassLoader(ClassLoader classLoader) {
         if (classLoader == null) {
             throw new NullPointerException("classLoader == null");
@@ -108,10 +109,10 @@ public class StartupHook {
     }
 
     public static StartupHook getInstance() {
-        if (SELF == null) {
-            SELF = new StartupHook();
+        if (sInstance == null) {
+            sInstance = new StartupHook();
         }
-        return SELF;
+        return sInstance;
     }
 
     @SuppressWarnings("ResultOfMethodCallIgnored")
@@ -161,13 +162,11 @@ public class StartupHook {
         Log.e("QAuxv", "Module.parent: " + StartupHook.class.getClassLoader().getParent());
         Log.e("QAuxv", "XposedBridge: " + XposedBridge.class.getClassLoader());
         Log.e("QAuxv", "SystemClassLoader: " + ClassLoader.getSystemClassLoader());
-        Log.e("QAuxv", "currentThread.getContextClassLoader(): " + Thread.currentThread()
-            .getContextClassLoader());
         Log.e("QAuxv", "Context.class: " + Context.class.getClassLoader());
     }
 
-    public void doInit(ClassLoader rtLoader) throws Throwable {
-        if (first_stage_inited) {
+    public void initialize(ClassLoader rtLoader) throws Throwable {
+        if (mFirstStageInit) {
             return;
         }
         try {
@@ -177,7 +176,7 @@ public class StartupHook {
                     try {
                         Context app;
                         Class<?> clz = param.thisObject.getClass().getClassLoader()
-                            .loadClass("com.tencent.common.app.BaseApplicationImpl");
+                                .loadClass("com.tencent.common.app.BaseApplicationImpl");
                         Field fsApp = null;
                         for (Field f : clz.getDeclaredFields()) {
                             if (f.getType() == clz) {
@@ -186,8 +185,7 @@ public class StartupHook {
                             }
                         }
                         if (fsApp == null) {
-                            throw new NoSuchFieldException(
-                                "field BaseApplicationImpl.sApplication not found");
+                            throw new NoSuchFieldException("field BaseApplicationImpl.sApplication not found");
                         }
                         app = (Context) fsApp.get(null);
                         execStartupInit(app, param.thisObject, null, false);
@@ -201,14 +199,13 @@ public class StartupHook {
             Method[] ms = loadDex.getDeclaredMethods();
             Method m = null;
             for (Method method : ms) {
-                if (method.getReturnType().equals(boolean.class)
-                    && method.getParameterTypes().length == 0) {
+                if (method.getReturnType().equals(boolean.class) && method.getParameterTypes().length == 0) {
                     m = method;
                     break;
                 }
             }
             XposedBridge.hookMethod(m, startup);
-            first_stage_inited = true;
+            mFirstStageInit = true;
         } catch (Throwable e) {
             if ((e + "").contains("com.bug.zqq")) {
                 return;
@@ -220,8 +217,7 @@ public class StartupHook {
             throw e;
         }
         try {
-            XposedHelpers
-                .findAndHookMethod(rtLoader.loadClass("com.tencent.mobileqq.qfix.QFixApplication"),
+            XposedHelpers.findAndHookMethod(rtLoader.loadClass("com.tencent.mobileqq.qfix.QFixApplication"),
                     "attachBaseContext", Context.class, new XC_MethodHook() {
                         @Override
                         public void beforeHookedMethod(MethodHookParam param) {

@@ -79,7 +79,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                 if (sInitZygoteStartupParam == null) {
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
-                StartupHook.getInstance().doInit(lpparam.classLoader);
+                StartupHook.getInstance().initialize(lpparam.classLoader);
                 break;
             }
             case PACKAGE_NAME_QQ_INTERNATIONAL: {
