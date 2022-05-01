@@ -21,10 +21,10 @@
  */
 package io.github.qauxv.bridge;
 
-import static io.github.qauxv.util.Initiator._QQAppInterface;
-import static io.github.qauxv.util.Initiator.load;
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 import static io.github.qauxv.bridge.ManagerHelper.getTroopManager;
+import static io.github.qauxv.util.Initiator._QQAppInterface;
+import static io.github.qauxv.util.Initiator.load;
 
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XposedHelpers;
@@ -34,6 +34,13 @@ import io.github.qauxv.util.Log;
 import java.lang.reflect.Modifier;
 
 public class ContactUtils {
+
+    private ContactUtils() {
+    }
+
+    public static String getTroopMemberNick(long troopUin, long memberUin) {
+        return getTroopMemberNick(String.valueOf(troopUin), String.valueOf(memberUin));
+    }
 
     public static String getTroopMemberNick(String troopUin, String memberUin) {
         if (troopUin != null && troopUin.length() > 0) {

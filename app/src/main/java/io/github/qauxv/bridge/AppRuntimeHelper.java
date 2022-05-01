@@ -28,6 +28,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import mqq.app.AppRuntime;
 import mqq.app.MobileQQ;
 
@@ -96,5 +97,14 @@ public class AppRuntimeHelper {
             Log.e(e);
             return null;
         }
+    }
+
+    private static Method sMethodGetServerTime = null;
+
+    public static long getServerTime() throws ReflectiveOperationException {
+        if (sMethodGetServerTime == null) {
+            sMethodGetServerTime = Initiator.loadClass("com.tencent.mobileqq.msf.core.NetConnInfoCenter").getDeclaredMethod("getServerTime");
+        }
+        return (Long) sMethodGetServerTime.invoke(null);
     }
 }

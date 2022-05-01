@@ -23,16 +23,22 @@ package io.github.qauxv.bridge;
 
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 
+import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.tlb.ConfigTable;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Modifier;
-import io.github.qauxv.tlb.ConfigTable;
+import java.util.List;
+import java.util.Objects;
 
 public class QQMessageFacade {
+
+    private QQMessageFacade() {
+    }
 
     public static Object get() {
         try {
@@ -92,6 +98,23 @@ public class QQMessageFacade {
             Log.e("revokeMessage failed: " + msg);
             Log.e(e);
             throw e;
+        }
+    }
+
+    public static void commitMessageRecordList(@NonNull List<Object> messages) throws ReflectiveOperationException {
+        commitMessageRecordList(messages, Objects.requireNonNull(AppRuntimeHelper.getAccount(), "account == null"));
+    }
+
+    public static void commitMessageRecordList(@NonNull List<Object> messages, @NonNull String account) throws ReflectiveOperationException {
+        // todo fix 860+
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+            Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "a", messages, account,
+                    List.class, String.class, void.class);
+        } else {
+            Reflex.invokeVirtualDeclaredOrdinalModifier(
+                    ManagerHelper.getQQMessageFacade(), 0, 4, false, Modifier.PUBLIC, 0,
+                    messages, account,
+                    List.class, String.class, void.class);
         }
     }
 }
