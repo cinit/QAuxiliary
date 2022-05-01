@@ -49,8 +49,12 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.FILE_CATEGORY
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val troopFileShowAdapter = "com.tencent.mobileqq.troop.data.TroopFileShowAdapter\$1"
-            .findClass(classLoader).getDeclaredField("this$0").type
+        val troopFileShowAdapter = try {
+            "com.tencent.mobileqq.troop.data.TroopFileShowAdapter\$1"
+                .findClass(classLoader).getDeclaredField("this$0").type
+        } catch (e: Throwable) {
+            "com.tencent.mobileqq.troop.data.TroopFileShowAdapter".findClass(classLoader)
+        }
         val infoClass = troopFileShowAdapter.declaredFields.find {
             it.type == List::class.java
         }?.actualTypeArguments?.get(0) as Class<*>
