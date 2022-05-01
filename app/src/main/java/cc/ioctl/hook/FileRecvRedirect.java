@@ -62,7 +62,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     private Field TARGET_FIELD = null;
 
     private FileRecvRedirect() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_APP_CONSTANTS});
+        super(SyncUtils.PROC_ANY & ~(SyncUtils.PROC_MSF | SyncUtils.PROC_UNITY | SyncUtils.PROC_MINI), new int[]{DexKit.C_APP_CONSTANTS});
     }
 
     @NonNull
