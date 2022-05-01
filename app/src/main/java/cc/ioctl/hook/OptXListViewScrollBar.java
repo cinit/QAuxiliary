@@ -68,7 +68,7 @@ public class OptXListViewScrollBar extends CommonConfigFunctionHook {
     private MutableStateFlow<String> mStateFlow = null;
 
     private OptXListViewScrollBar() {
-        super(SyncUtils.PROC_ANY);
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_QZONE | SyncUtils.PROC_TOOL);
     }
 
     @NonNull

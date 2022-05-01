@@ -56,7 +56,7 @@ import kotlin.collections.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
+object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF) {
 
     override val name = "MessageStyle通知"
     override val description = "致敬QQ Helper"

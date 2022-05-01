@@ -51,7 +51,7 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
     public static final CustomDeviceModel INSTANCE = new CustomDeviceModel();
 
     private CustomDeviceModel() {
-        super(SyncUtils.PROC_ANY);
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF | SyncUtils.PROC_QZONE);
     }
 
     @NonNull

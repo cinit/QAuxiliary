@@ -50,7 +50,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
     public static final BlockFluxThief INSTANCE = new BlockFluxThief();
 
     private BlockFluxThief() {
-        super(SyncUtils.PROC_ANY, new int[]{DexKit.C_ZipUtils_biz});
+        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_ZipUtils_biz});
     }
 
     static long requestUrlSizeBlocked(String url) throws IOException {
