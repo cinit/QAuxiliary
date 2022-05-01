@@ -49,7 +49,7 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "运行上传透明头像";
+        return "允许上传透明头像";
     }
 
     @NonNull
