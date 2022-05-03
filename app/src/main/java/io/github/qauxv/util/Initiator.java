@@ -62,7 +62,7 @@ public class Initiator {
         if (sPluginParentClassLoader == null || className == null || className.isEmpty()) {
             return null;
         }
-        if (className.contains("/")) {
+        if (className.endsWith(";") || className.contains("/")) {
             className = className.replace('/', '.');
             if (className.endsWith(";")) {
                 if (className.charAt(0) == 'L') {
