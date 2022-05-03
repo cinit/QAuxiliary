@@ -119,6 +119,9 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
         }
         Object pbMsgInfo = Initiator.loadClass("com.tencent.pb.onlinepush.OnlinePushTrans$PbMsgInfo").newInstance();
         byte[] wupBuffer = (byte[]) Reflex.invokeVirtual(toServiceMsg, "getWupBuffer", byte[].class);
+        if (wupBuffer == null || wupBuffer.length == 0) {
+            return;
+        }
         byte[] body = new byte[wupBuffer.length - 4];
         System.arraycopy(wupBuffer, 4, body, 0, body.length);
         Reflex.invokeVirtual(pbMsgInfo, "mergeFrom", body, byte[].class, Initiator.loadClass("com.tencent.mobileqq.pb.MessageMicro"));
