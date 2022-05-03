@@ -36,6 +36,7 @@ import cc.ioctl.hook.AioChatPieClipPasteHook;
 import cc.ioctl.hook.CardMsgSender;
 import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.util.HookUtils;
+import com.hicore.hook.ReplyMsgWithImg;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
@@ -70,6 +71,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
             CardMsgSender.INSTANCE,
             ChatTailHook.INSTANCE,
             AioChatPieClipPasteHook.INSTANCE,
+            ReplyMsgWithImg.INSTANCE,
     };
 
     @NonNull
