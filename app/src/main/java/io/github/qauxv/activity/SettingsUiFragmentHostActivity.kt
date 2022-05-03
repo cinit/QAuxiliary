@@ -60,10 +60,6 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
 
     override fun doOnEarlyCreate(savedInstanceState: Bundle?, isInitializing: Boolean) {
         super.doOnEarlyCreate(savedInstanceState, isInitializing)
-        if (!isInModuleProcess) {
-            // sync theme with host
-            AppCompatDelegate.setDefaultNightMode(ResUtils.getNightModeMasked())
-        }
         setTheme(ModuleThemeManager.getCurrentStyleId())
     }
 

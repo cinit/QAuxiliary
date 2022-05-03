@@ -32,7 +32,9 @@ import android.view.KeyEvent;
 import androidx.annotation.CallSuper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentManager;
+import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -67,6 +69,12 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     @CallSuper
     @Override
     protected void attachBaseContext(Context newBase) {
+        if (!HostInfo.isInModuleProcess()) {
+            // sync theme with host
+            // note that ResUtils.getNightModeMasked() is not what AppCompatDelegate.setDefaultNightMode requires
+            AppCompatDelegate.setDefaultNightMode(ResUtils.isInNightMode() ?
+                    AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+        }
         super.attachBaseContext(newBase);
         initLifecycleHooks();
         mStartupBridge = StartupDirectorBridge.getInstance();
