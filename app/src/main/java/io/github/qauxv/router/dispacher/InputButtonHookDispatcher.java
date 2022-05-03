@@ -102,7 +102,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                     int funBtnId = ctx.getResources().getIdentifier("fun_btn", "id", ctx.getPackageName());
                     View sendBtn = aioRootView.findViewById(funBtnId);
                     final AppRuntime qqApp = getFirstNSFByType(param.thisObject, Initiator._QQAppInterface());
-                    final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    final Parcelable session = getSessionInfo(param.thisObject);
                     Objects.requireNonNull(qqApp, "QQAppInterface is null");
                     Objects.requireNonNull(session, "SessionInfo is null");
                     boolean isInterceptorInstalled = false;
@@ -180,7 +180,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                             IBaseChatPieInitDecorator decorator = (IBaseChatPieInitDecorator) baseDecorator;
                             try {
                                 if (decorator.isEnabled()) {
-                                    decorator.onInitBaseChatPie(aioRootView, session, ctx, qqApp);
+                                    decorator.onInitBaseChatPie(chatPie, aioRootView, session, ctx, qqApp);
                                 }
                             } catch (Throwable e) {
                                 decorator.traceError(e);
@@ -200,5 +200,9 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
             }
         }
         return false;
+    }
+
+    public static Parcelable getSessionInfo(@NonNull Object baseChatPie) {
+        return getFirstNSFByType(baseChatPie, _SessionInfo());
     }
 }

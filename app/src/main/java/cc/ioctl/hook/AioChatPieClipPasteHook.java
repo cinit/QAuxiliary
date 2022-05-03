@@ -149,8 +149,8 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     }
 
     @Override
-    public void onInitBaseChatPie(@NonNull ViewGroup aioRootView, @NonNull Parcelable session,
-                                  @NonNull Context ctx, @NonNull AppRuntime rt) {
+    public void onInitBaseChatPie(@NonNull Object baseChatPie, @NonNull ViewGroup aioRootView,
+                                  @NonNull Parcelable session, @NonNull Context ctx, @NonNull AppRuntime rt) {
         int inputTextId = ctx.getResources().getIdentifier("input", "id", ctx.getPackageName());
         EditText input = aioRootView.findViewById(inputTextId);
         Objects.requireNonNull(input, "onInitBaseChatPie: findViewById R.id.input is null");

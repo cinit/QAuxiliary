@@ -62,12 +62,14 @@ public class Initiator {
         if (sPluginParentClassLoader == null || className == null || className.isEmpty()) {
             return null;
         }
-        className = className.replace('/', '.');
-        if (className.endsWith(";")) {
-            if (className.charAt(0) == 'L') {
-                className = className.substring(1, className.length() - 1);
-            } else {
-                className = className.substring(0, className.length() - 1);
+        if (className.contains("/")) {
+            className = className.replace('/', '.');
+            if (className.endsWith(";")) {
+                if (className.charAt(0) == 'L') {
+                    className = className.substring(1, className.length() - 1);
+                } else {
+                    className = className.substring(0, className.length() - 1);
+                }
             }
         }
         try {

@@ -30,6 +30,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 
 public class IoUtils {
@@ -160,5 +162,46 @@ public class IoUtils {
             os.write(data);
             os.flush();
         }
+    }
+
+    @NonNull
+    public static byte[] calculateFileMd5(@NonNull InputStream is) throws IOException {
+        Objects.requireNonNull(is, "is == null");
+        try (is) {
+            MessageDigest md = MessageDigest.getInstance("MD5");
+            byte[] buf = new byte[8192];
+            int len;
+            while ((len = is.read(buf)) != -1) {
+                md.update(buf, 0, len);
+            }
+            return md.digest();
+        } catch (NoSuchAlgorithmException e) {
+            throw new IOException("No MD5 algorithm found", e);
+        }
+    }
+
+    @NonNull
+    public static byte[] calculateFileMd5(@NonNull File file) throws IOException {
+        Objects.requireNonNull(file, "file == null");
+        try (InputStream is = new FileInputStream(file)) {
+            return calculateFileMd5(is);
+        }
+    }
+
+    private static final char[] HEX_LOWER_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
+    private static final char[] HEX_UPPER_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
+
+    @NonNull
+    public static String calculateFileMd5HexString(@NonNull File file, boolean upperCase) throws IOException {
+        Objects.requireNonNull(file, "file == null");
+        byte[] md5 = calculateFileMd5(file);
+        char[] hexDigits = upperCase ? HEX_UPPER_DIGITS : HEX_LOWER_DIGITS;
+        char[] hex = new char[md5.length * 2];
+        for (int i = 0; i < md5.length; i++) {
+            int b = md5[i] & 0xFF;
+            hex[i * 2] = hexDigits[b >>> 4];
+            hex[i * 2 + 1] = hexDigits[b & 0xF];
+        }
+        return new String(hex);
     }
 }
