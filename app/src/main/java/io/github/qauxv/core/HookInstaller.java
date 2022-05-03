@@ -24,6 +24,7 @@ package io.github.qauxv.core;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.RuntimeErrorTracer;
@@ -105,7 +106,7 @@ public class HookInstaller {
                                 pDialog[0].setMessage("正在初始化...");
                                 pDialog[0].show();
                             }
-                            pDialog[0].setMessage("QAuxiliary 正在初始化:\n" + name + "\n每个类一般不会超过一分钟");
+                            pDialog[0].setMessage("QAuxiliary " + BuildConfig.VERSION_NAME + " 正在初始化:\n" + name + "\n每个类一般不会超过一分钟");
                         });
                         s.step();
                     }
