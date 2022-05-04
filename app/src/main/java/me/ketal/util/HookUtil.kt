@@ -29,47 +29,68 @@ import io.github.qauxv.util.DexMethodDescriptor
 import io.github.qauxv.util.Initiator
 import java.lang.reflect.Field
 import java.lang.reflect.Method
+import kotlin.properties.ReadWriteProperty
+import kotlin.reflect.KProperty
 
-object HookUtil {
+internal fun String.findClass(classLoader: ClassLoader, init: Boolean = false): Class<*> =
+    Class.forName(this, init, classLoader)
 
-    internal fun String.findClass(classLoader: ClassLoader, init: Boolean = false): Class<*> =
-        Class.forName(this, init, classLoader)
-
-    internal fun String.getMethod(classLoader: ClassLoader = Initiator.getHostClassLoader()) =
-        try {
-            DexMethodDescriptor(this).getMethodInstance(classLoader)
-        } catch (e: Throwable) {
-            null
-        }
-
-    internal fun Array<String>.getMethod(classLoader: ClassLoader = Initiator.getHostClassLoader()): Method? {
-        this.forEach {
-            it.getMethod(classLoader)?.apply {
-                return this
-            }
-        }
-        return null
+internal fun String.getMethod(classLoader: ClassLoader = Initiator.getHostClassLoader()) =
+    try {
+        DexMethodDescriptor(this).getMethodInstance(classLoader)
+    } catch (e: Throwable) {
+        null
     }
 
-    internal fun String.getField(classLoader: ClassLoader = Initiator.getHostClassLoader()) =
-        try {
-            DexFieldDescriptor(this).getFieldInstance(classLoader)
-        } catch (e: Throwable) {
-            null
+internal fun Array<String>.getMethod(classLoader: ClassLoader = Initiator.getHostClassLoader()): Method? {
+    this.forEach {
+        it.getMethod(classLoader)?.apply {
+            return this
         }
+    }
+    return null
+}
 
-    internal fun Array<String>.getField(classLoader: ClassLoader = Initiator.getHostClassLoader()): Field? {
-        this.forEach {
-            it.getField(classLoader)?.apply {
-                return this
-            }
-        }
-        return null
+internal fun String.getField(classLoader: ClassLoader = Initiator.getHostClassLoader()) =
+    try {
+        DexFieldDescriptor(this).getFieldInstance(classLoader)
+    } catch (e: Throwable) {
+        null
     }
 
-    internal fun String.hookMethod(callback: XC_MethodHook) = getMethod()?.hookMethod(callback)
+internal fun Array<String>.getField(classLoader: ClassLoader = Initiator.getHostClassLoader()): Field? {
+    this.forEach {
+        it.getField(classLoader)?.apply {
+            return this
+        }
+    }
+    return null
+}
 
-    internal fun Method.hookMethod(callback: XC_MethodHook) {
-        XposedBridge.hookMethod(this, callback)
+internal fun String.hookMethod(callback: XC_MethodHook) = getMethod()?.hookMethod(callback)
+
+internal fun Method.hookMethod(callback: XC_MethodHook) {
+    XposedBridge.hookMethod(this, callback)
+}
+
+class FieldDelegate <T> (
+    private val obj: Any,
+    private val initializer: (KProperty<*>) -> Field
+) : ReadWriteProperty<Any?, T> {
+
+    override fun getValue(thisRef: Any?, property: KProperty<*>): T {
+        val field = initializer(property).apply { isAccessible = true }
+        return field.get(obj) as T
+    }
+
+    override fun setValue(thisRef: Any?, property: KProperty<*>, value: T) {
+        val field = initializer(property).apply { isAccessible = true }
+        field.set(obj, value)
     }
 }
+
+internal fun <T> field(obj: Any) = FieldDelegate<T>(obj) { property->
+    obj.javaClass.getDeclaredField(property.name)
+}
+
+internal fun <T> field(obj: Any, field: Field) = FieldDelegate<T>(obj) { field }

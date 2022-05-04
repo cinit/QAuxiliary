@@ -25,7 +25,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import me.ketal.util.HookUtil.getMethod
+import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
@@ -39,7 +39,7 @@ object HideAssistantRemoveTips : CommonSwitchFunctionHook("ketal_hide_assistant_
 
     override fun initOnce() = throwOrTrue {
         "Lcom/tencent/mobileqq/activity/ChatActivityUtils;->a(Landroid/content/Context;Ljava/lang/String;Landroid/view/View\$OnClickListener;Landroid/view/View\$OnClickListener;)Landroid/view/View;"
-            .getMethod()
-            ?.replace(this, null)
+            .method
+            .replace(this, null)
     }
 }

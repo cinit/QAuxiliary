@@ -41,8 +41,8 @@ import io.github.qauxv.util.hostInfo
 import me.ketal.base.PluginDelayableHook
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
-import me.ketal.util.HookUtil.findClass
-import me.ketal.util.HookUtil.getMethod
+import me.ketal.util.findClass
+import me.ketal.util.getMethod
 import me.ketal.util.ignoreResult
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
@@ -132,7 +132,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                     }
                 }
             }
-            
+
         arrayOf("Lcom/qwallet/activity/QWalletHomeActivity;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V").getMethod(classLoader)
             ?.hookAfter(this) {
                 val mAct = it.thisObject

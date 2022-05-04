@@ -31,8 +31,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.LicenseStatus
 import me.ketal.base.PluginDelayableHook
-import me.ketal.util.HookUtil.findClass
-import me.ketal.util.HookUtil.hookMethod
+import me.ketal.util.findClass
+import me.ketal.util.hookMethod
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Field
