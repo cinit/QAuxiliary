@@ -209,11 +209,10 @@ public class DexKit {
         }
         // find class from native
         DexMethodDescriptor m = doFindMethodFromNative(i);
-        if (m != null) {
-            Initiator.load(m.declaringClass);
+        if (m == null) {
+            // find class use legacy method
+            m = doFindMethodDesc(i);
         }
-        // find class use legacy method
-        m = doFindMethodDesc(i);
         if (m == null) {
             return null;
         }
