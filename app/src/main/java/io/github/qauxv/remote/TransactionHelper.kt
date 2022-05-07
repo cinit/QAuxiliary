@@ -36,7 +36,7 @@ import javax.net.ssl.HttpsURLConnection
 
 object TransactionHelper {
 
-    const val apiAddress = "https://api.qwq2333.top"
+    const val apiAddress = "https://api.qwq2333.top/qa"
 
     @Throws(IOException::class)
     private fun convertInputStreamToString(inputStream: InputStream): String? {
