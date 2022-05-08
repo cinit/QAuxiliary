@@ -80,6 +80,10 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     var windowHeight = -1
 
     override fun initOnce(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannels()
+        }
+
         XposedHelpers.findAndHookMethod("com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
             "a",
             Intent::class.java,
@@ -215,7 +219,6 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                 setChannelId(getChannelId(channelId))
                             }
                         }
-                        createNotificationChannels()
                         param.result = builder.build()
                     }
                 }
