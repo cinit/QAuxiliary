@@ -44,12 +44,6 @@ public class ConfigItems {
     public static final String qn_fake_bat_expr = "qn_fake_bat_expr";
     public static final String cfg_nice_user = "cfg_nice_user";
     public static final String cache_qn_prev_version = "cache_qn_prev_version";
-    public static final String qn_chat_tail = "qn_chat_tail";
-    public static final String qn_chat_tail_troops = "qn_chat_tail_troops";
-    public static final String qn_chat_tail_friends = "qn_chat_tail_friends";
-    public static final String qn_chat_tail_global = "qn_chat_tail_global";
-    public static final String qn_chat_tail_regex = "qn_chat_tail_regex";
-    public static final String qn_chat_tail_regex_text = "qn_chat_tail_regex_text";
     public static final String qn_script_global = "qn_script_global";
     public static final String qn_script_count = "qn_script_count";
     public static final String qn_script_code = "qn_script_code_";

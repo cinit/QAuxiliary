@@ -34,7 +34,6 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.ioctl.hook.AioChatPieClipPasteHook;
 import cc.ioctl.hook.CardMsgSender;
-import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.util.HookUtils;
 import com.hicore.hook.ReplyMsgWithImg;
 import io.github.qauxv.R;
@@ -69,7 +68,6 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
 
     private static final IBaseChatPieDecorator[] DECORATORS = {
             CardMsgSender.INSTANCE,
-            ChatTailHook.INSTANCE,
             AioChatPieClipPasteHook.INSTANCE,
             ReplyMsgWithImg.INSTANCE,
     };
