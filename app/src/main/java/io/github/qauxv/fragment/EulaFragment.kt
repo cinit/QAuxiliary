@@ -29,10 +29,18 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.*
+import android.widget.Button
+import android.widget.CheckBox
+import android.widget.LinearLayout
+import android.widget.ScrollView
+import android.widget.TextView
+import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.hook.FakeBatteryHook
-import cc.ioctl.util.LayoutHelper.*
+import cc.ioctl.util.LayoutHelper.MATCH_PARENT
+import cc.ioctl.util.LayoutHelper.WRAP_CONTENT
+import cc.ioctl.util.LayoutHelper.dip2px
+import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
@@ -49,7 +57,7 @@ import java.io.InputStream
 import java.io.InputStreamReader
 import java.nio.charset.StandardCharsets
 
-class EulaFragment : BaseClipSettingFragment(), View.OnClickListener {
+class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
     override fun getTitle() = "EULA"
 
@@ -142,6 +150,7 @@ class EulaFragment : BaseClipSettingFragment(), View.OnClickListener {
             }
         }
         scrollView.addView(ll)
+        rootLayoutView = scrollView
         return scrollView
     }
 

@@ -60,14 +60,14 @@ import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
-import io.github.qauxv.fragment.BaseClipSettingFragment;
+import io.github.qauxv.fragment.BaseRootLayoutFragment;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import me.kyuubiran.util.UtilsKt;
 
-public class ChatTailFragment extends BaseClipSettingFragment implements View.OnClickListener {
+public class ChatTailFragment extends BaseRootLayoutFragment implements View.OnClickListener {
 
     public static final String delimiter = "#msg#";
     private static int battery = 0;
@@ -193,6 +193,7 @@ public class ChatTailFragment extends BaseClipSettingFragment implements View.On
         ll.addView(dis, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         __ll.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         showStatus();
+        setRootLayoutView(bounceScrollView);
         return bounceScrollView;
     }
 

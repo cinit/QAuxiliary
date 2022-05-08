@@ -22,6 +22,8 @@
 
 package io.github.qauxv.fragment
 
+import android.animation.Animator
+import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
@@ -33,6 +35,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
+import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -69,6 +72,11 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     private var mTargetUiAgentNavId: String? = null
     private var mTargetUiAgentNavigated: Boolean = false
 
+    // search
+    private var mSearchSubFragment: SearchOverlaySubFragment? = null
+    private var mSearchRootLayout: ViewGroup? = null
+    private var mSearchMenuItem: MenuItem? = null
+
     // DSL stuff below
     private var adapter: RecyclerView.Adapter<*>? = null
     private var listLayoutManager: LinearLayoutManager? = null
@@ -83,12 +91,12 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     override fun onAttach(context: Context) {
         super.onAttach(context)
         val location: Array<String> = arguments?.getStringArray(TARGET_FRAGMENT_LOCATION)
-                ?: throw IllegalArgumentException("target fragment location is null")
+            ?: throw IllegalArgumentException("target fragment location is null")
         // fault, why start SettingsMainFragment but not no location?
         mFragmentLocations = location
         // find fragment description
         val desc = FunctionEntryRouter.findDescriptionByLocation(location)
-                ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
+            ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
         if (desc !is FragmentDescription) {
             throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
         }
@@ -131,8 +139,8 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         // init adapter
         adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
             override fun onCreateViewHolder(
-                    parent: ViewGroup,
-                    viewType: Int
+                parent: ViewGroup,
+                viewType: Int
             ): RecyclerView.ViewHolder {
                 val delegate = itemTypeDelegate[viewType]
                 val vh = delegate.createViewHolder(context, parent)
@@ -153,6 +161,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
 
             override fun getItemViewType(position: Int) = itemTypeIds[position]
         }
+
         recyclerListView!!.adapter = adapter
 
         // collect all StateFlow and observe them in case of state change
@@ -330,9 +339,11 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         } else if (endNode is IDslFragmentNode) {
             return SimpleListItem(endNode.identifier, endNode.name ?: endNode.toString(), null).apply {
                 onClickListener = {
-                    val targetLocation = FunctionEntryRouter.resolveUiItemAnycastLocation(arrayOf(
-                            FunctionEntryRouter.Locations.ANY_CAST_PREFIX, endNode.identifier))
-                            ?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
+                    val targetLocation = FunctionEntryRouter.resolveUiItemAnycastLocation(
+                        arrayOf(
+                            FunctionEntryRouter.Locations.ANY_CAST_PREFIX, endNode.identifier
+                        )
+                    ) ?: throw IllegalStateException("can not resolve anycast location for '${endNode.identifier}'")
                     // jump to target fragment
                     val location: Array<String> = targetLocation
                     val fragmentClass = endNode.getTargetFragmentClass(location)
@@ -366,17 +377,123 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
         super.onCreateOptionsMenu(menu, inflater)
         inflater.inflate(R.menu.main_settings_toolbar, menu)
+        menu.findItem(R.id.menu_item_action_search)?.setOnActionExpandListener(object : MenuItem.OnActionExpandListener {
+            override fun onMenuItemActionExpand(item: MenuItem): Boolean {
+                return true
+            }
+
+            override fun onMenuItemActionCollapse(item: MenuItem): Boolean {
+                if (item.itemId == R.id.menu_item_action_search) {
+                    exitSearchMode()
+                }
+                return true
+            }
+        })
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         if (item.itemId == R.id.menu_item_action_search) {
             // always use global search, or search in current fragment?
-            // TODO: 2022-02-10 support search in current fragment
-            val fragment = SearchOverlayFragment()
-            settingsHostActivity!!.presentFragment(fragment)
+            mSearchMenuItem = item
+            val searchView = item.actionView as SearchView
+            enterSearchMode(searchView)
             return true
         }
         return super.onOptionsItemSelected(item)
+    }
+
+    override fun doOnBackPressed(): Boolean {
+        return if (mSearchSubFragment != null) {
+            mSearchMenuItem?.collapseActionView() ?: exitSearchMode()
+            true
+        } else {
+            super.doOnBackPressed()
+        }
+    }
+
+    /**
+     * Enter search mode with animation
+     */
+    private fun enterSearchMode(searchView: SearchView) {
+        if (mSearchSubFragment == null) {
+            mSearchSubFragment = SearchOverlaySubFragment().also {
+                it.parent = this
+                it.context = this.requireContext()
+                it.settingsHostActivity = settingsHostActivity!!
+
+                mSearchRootLayout = it.onCreateView(requireActivity().layoutInflater, mSearchRootLayout, null) as ViewGroup
+                it.onResume()
+                // hide the recycler view and show the search view
+                recyclerListView!!.animate().alpha(0f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        recyclerListView!!.visibility = View.GONE
+                    }
+                }).start()
+                rootFrameLayout!!.addView(mSearchRootLayout)
+                mSearchRootLayout!!.alpha = 0f
+                mSearchRootLayout!!.animate().alpha(1f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                    override fun onAnimationEnd(animation: Animator) {
+                        mSearchRootLayout!!.visibility = View.VISIBLE
+                    }
+                }).start()
+                searchView.setOnCloseListener {
+                    exitSearchMode()
+                    true
+                }
+                rootLayoutView = mSearchRootLayout
+                applyRootLayoutPaddingFor(mSearchRootLayout!!)
+            }
+        }
+        mSearchSubFragment!!.initForSearchView(searchView)
+    }
+
+    /**
+     * Exit search mode with animation
+     */
+    private fun exitSearchMode() {
+        mSearchSubFragment?.let { fragment ->
+            mSearchRootLayout!!.animate().alpha(0f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    rootFrameLayout!!.removeView(mSearchRootLayout)
+                    fragment.onDestroyView()
+                    mSearchRootLayout = null
+                    mSearchSubFragment = null
+                }
+            }).start()
+            recyclerListView!!.visibility = View.VISIBLE
+            recyclerListView!!.alpha = 0f
+            recyclerListView!!.animate().alpha(1f).setDuration(300).setListener(object : AnimatorListenerAdapter() {
+                override fun onAnimationEnd(animation: Animator) {
+                    recyclerListView?.let { v ->
+                        v.alpha = 1f
+                    }
+                }
+            }).start()
+        }
+        rootLayoutView = recyclerListView
+        applyRootLayoutPaddingFor(recyclerListView!!)
+    }
+
+    /**
+     * Abort search mode without animation
+     */
+    private fun abortSearchMode() {
+        mSearchSubFragment?.let {
+            rootFrameLayout!!.removeView(mSearchRootLayout)
+            it.onDestroyView()
+            mSearchRootLayout = null
+            mSearchSubFragment = null
+        }
+        recyclerListView!!.apply {
+            alpha = 1f
+            visibility = View.VISIBLE
+        }
+        rootLayoutView = recyclerListView
+        applyRootLayoutPaddingFor(recyclerListView!!)
+    }
+
+    fun onNavigateToOtherFragment() {
+        abortSearchMode()
     }
 
     companion object {
@@ -397,7 +514,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         fun getBundleForLocation(location: Array<String>, targetUiAgentId: String? = null): Bundle {
             // check destination fragment
             val desc = FunctionEntryRouter.findDescriptionByLocation(location)
-                    ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
+                ?: throw IllegalArgumentException("unable to find fragment description by location: " + location.contentToString())
             if (desc !is FragmentDescription) {
                 throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
             }

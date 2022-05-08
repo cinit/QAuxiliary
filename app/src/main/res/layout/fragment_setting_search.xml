@@ -20,29 +20,9 @@
   ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
   -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:orientation="vertical">
-
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:orientation="horizontal">
-
-        <EditText
-            android:id="@+id/searchKeyWords"
-            android:layout_width="0dp"
-            android:layout_height="match_parent"
-            android:layout_weight="1"
-            android:layout_marginLeft="10dp"
-            android:layout_marginRight="10dp"
-            android:focusedByDefault="true"
-            android:hint="搜索关键词"
-            android:inputType="text"
-            tools:targetApi="o" />
-
-    </LinearLayout>
 
     <FrameLayout
         android:id="@+id/searchSetting_resultFrameContainer"
@@ -54,14 +34,50 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             android:gravity="top|start"
+            android:visibility="gone"
             android:orientation="vertical">
 
-            <TextView
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginStart="15dp"
+                    android:layout_alignParentStart="true"
+                    android:layout_alignParentTop="true"
+                    android:gravity="start|center_vertical"
+                    android:text="历史记录"
+                    android:textColor="@color/firstTextColor"
+                    android:textSize="16sp" />
+
+                <androidx.appcompat.widget.AppCompatImageView
+                    android:id="@+id/searchSetting_clearHistory"
+                    android:layout_width="36dp"
+                    android:layout_height="36dp"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_alignParentEnd="true"
+                    android:layout_alignParentTop="true"
+                    android:padding="6dp"
+                    android:background="@drawable/bg_ripple_r8"
+                    android:clickable="true"
+                    android:contentDescription="清除历史记录"
+                    android:focusable="true"
+                    android:foregroundGravity="center"
+                    android:src="@drawable/ic_close_24"
+                    android:tint="@color/thirdTextColor" />
+
+            </RelativeLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/searchSetting_searchHistoryRecyclerView"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="20dp"
-                android:gravity="center"
-                android:text="TODO: 2022-02-10 假装这里是历史记录" />
+                android:padding="5dp"
+                android:scrollbars="none" />
 
         </LinearLayout>
 

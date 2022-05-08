@@ -9,6 +9,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import io.github.qauxv.util.Log;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -19,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
  * <p>
  * See {@link io.github.qauxv.util.SafUtils} for more information.
  */
+@SuppressWarnings("FieldCanBeLocal")
 public class ShadowSafTransientActivity extends Activity {
 
     public static final String PARAM_TARGET_ACTION = "ShadowSafTransientActivity.PARAM_TARGET_ACTION";
@@ -65,12 +67,8 @@ public class ShadowSafTransientActivity extends Activity {
             case TARGET_ACTION_READ: {
                 intent = new Intent(Intent.ACTION_OPEN_DOCUMENT);
                 intent.addCategory(Intent.CATEGORY_OPENABLE);
-                if (mMimeType != null) {
-                    intent.setType(mMimeType);
-                } else {
-                    // any mine type
-                    intent.setType("*/*");
-                }
+                // any mine type
+                intent.setType(Objects.requireNonNullElse(mMimeType, "*/*"));
                 mOriginRequest = REQ_READ_FILE;
                 break;
             }
@@ -80,11 +78,7 @@ public class ShadowSafTransientActivity extends Activity {
                 if (mFileName != null) {
                     intent.putExtra(Intent.EXTRA_TITLE, mFileName);
                 }
-                if (mMimeType != null) {
-                    intent.setType(mMimeType);
-                } else {
-                    intent.setType("*/*");
-                }
+                intent.setType(Objects.requireNonNullElse(mMimeType, "*/*"));
                 mOriginRequest = REQ_WRITE_FILE;
                 break;
             }

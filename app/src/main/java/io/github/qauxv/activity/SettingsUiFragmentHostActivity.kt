@@ -62,7 +62,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
         super.doOnEarlyCreate(savedInstanceState, isInitializing)
         if (!isInModuleProcess) {
             // sync theme with host
-            AppCompatDelegate.setDefaultNightMode(if (ResUtils.isInNightMode()) AppCompatDelegate.MODE_NIGHT_YES else AppCompatDelegate.MODE_NIGHT_NO)
+            AppCompatDelegate.setDefaultNightMode(ResUtils.getNightModeMasked())
         }
         setTheme(ModuleThemeManager.getCurrentStyleId())
     }
@@ -188,7 +188,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
         val bundle = Bundle()
         val states = ArrayList<Fragment.SavedState?>(mFragmentStack.size)
         for (fragment in mFragmentStack) {
-            val s = supportFragmentManager.saveFragmentInstanceState(fragment);
+            val s = supportFragmentManager.saveFragmentInstanceState(fragment)
             states.add(s)
         }
         bundle.putParcelableArrayList(FRAGMENT_SAVED_STATE_KEY, states)
@@ -312,9 +312,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
         return mTopVisibleFragment?.isWrapContent ?: true
     }
 
-    override fun onFlingRightToLeft() {
-        // no-op
-    }
+    override fun onFlingRightToLeft() = Unit
 
     override fun onFlingLeftToRight() {
         doOnBackPressed()

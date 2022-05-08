@@ -409,6 +409,9 @@ public class RepeaterHook extends BaseFunctionHook {
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookAfterIfEnabled(this, replyMethod, 51, param -> {
                 ViewGroup relativeLayout = (ViewGroup) param.getResult();
+                if (relativeLayout == null) {
+                    return;
+                }
                 relativeLayout = (ViewGroup) relativeLayout.getParent();
                 Context ctx = relativeLayout.getContext();
                 if (ctx.getClass().getName().contains("ChatHistoryActivity") ||
@@ -494,6 +497,9 @@ public class RepeaterHook extends BaseFunctionHook {
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookAfterIfEnabled(this, mixedMethod, 51, param -> {
                 ViewGroup relativeLayout = (ViewGroup) param.getResult();
+                if (relativeLayout == null) {
+                    return;
+                }
                 relativeLayout = (ViewGroup) relativeLayout.getParent();
                 Context ctx = relativeLayout.getContext();
                 if (ctx.getClass().getName().contains("ChatHistoryActivity") ||

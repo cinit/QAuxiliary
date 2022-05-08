@@ -55,12 +55,12 @@ import io.github.qauxv.R;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.core.HookInstaller;
-import io.github.qauxv.fragment.BaseClipSettingFragment;
+import io.github.qauxv.fragment.BaseRootLayoutFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 
-public class FakeBatteryConfigFragment extends BaseClipSettingFragment implements View.OnClickListener {
+public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements View.OnClickListener {
 
     private TextView tvStatus;
     private Button btnApply, btnDisable;
@@ -147,6 +147,7 @@ public class FakeBatteryConfigFragment extends BaseClipSettingFragment implement
         ll.addView(dis, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         __ll.setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
         showStatus();
+        setRootLayoutView(bounceScrollView);
         return bounceScrollView;
     }
 
