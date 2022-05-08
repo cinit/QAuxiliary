@@ -54,7 +54,7 @@ import com.tencent.widget.XListView;
 import io.github.qauxv.R;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
-import io.github.qauxv.fragment.BaseClipSettingFragment;
+import io.github.qauxv.fragment.BaseRootLayoutFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
@@ -64,7 +64,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
-public class ExfriendListFragment extends BaseClipSettingFragment {
+public class ExfriendListFragment extends BaseRootLayoutFragment {
 
     private static final int R_ID_EXL_TITLE = 0x300AFF01;
     private static final int R_ID_EXL_SUBTITLE = 0x300AFF02;
@@ -116,30 +116,20 @@ public class ExfriendListFragment extends BaseClipSettingFragment {
         reload();
 
         XListView sdlv = new XListView(context, null);
-        sdlv.setFocusable(true);
         ViewGroup.LayoutParams mmlp = new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT);
-        RelativeLayout.LayoutParams mwllp = new RelativeLayout.LayoutParams(MATCH_PARENT,
-                WRAP_CONTENT);
-        RelativeLayout rl = new RelativeLayout(context);
-        rl.setId(R.id.rootMainLayout);
+        RelativeLayout.LayoutParams mwllp = new RelativeLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         sdlv.setId(R.id.rootMainList);
         mwllp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
         mwllp.addRule(RelativeLayout.CENTER_VERTICAL);
-
-        TextView tv = new TextView(context);
-        tv.setGravity(Gravity.CENTER);
-//        tv.setTextColor(ResUtils.skin_gray3);
-        tv.setTextSize(LayoutHelper.dip2sp(context, 14));
-        rl.addView(tv, mwllp);
-        rl.addView(sdlv, mmlp);
 
         sdlv.setDivider(null);
         long uin = AppRuntimeHelper.getLongAccountUin();
         ExfriendManager exm = ExfriendManager.get(uin);
         exm.clearUnreadFlag();
-        tv.setText("最后更新: " + getRelTimeStrSec(exm.getLastUpdateTimeSec()) + "\n长按列表可删除");
+        setSubtitle("最后更新: " + getRelTimeStrSec(exm.getLastUpdateTimeSec()));
         sdlv.setAdapter(adapter);
-        return rl;
+        setRootLayoutView(sdlv);
+        return sdlv;
     }
 
     public void reload() {

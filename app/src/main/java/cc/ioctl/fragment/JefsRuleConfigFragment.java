@@ -47,12 +47,12 @@ import cc.ioctl.util.ui.ViewBuilder;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
-import io.github.qauxv.fragment.BaseClipSettingFragment;
+import io.github.qauxv.fragment.BaseRootLayoutFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.UiThread;
 import java.text.ParseException;
 
-public class JefsRuleConfigFragment extends BaseClipSettingFragment implements View.OnClickListener {
+public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements View.OnClickListener {
 
     private static final JumpController jmpctl = JumpController.INSTANCE;
     private EditText rulesEt;
@@ -201,6 +201,7 @@ public class JefsRuleConfigFragment extends BaseClipSettingFragment implements V
         }
 
         goToDisplayMode();
+        setRootLayoutView(bounceScrollView);
         return bounceScrollView;
     }
 

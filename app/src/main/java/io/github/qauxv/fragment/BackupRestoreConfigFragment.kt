@@ -49,7 +49,7 @@ import java.util.Date
 import java.util.Locale
 import kotlin.system.exitProcess
 
-class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListener {
+class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
     override fun getTitle(): String = "备份与恢复"
 
@@ -91,6 +91,7 @@ class BackupRestoreConfigFragment : BaseClipSettingFragment(), View.OnClickListe
             backupRestoreConfigButtonNextStep.setOnClickListener(this@BackupRestoreConfigFragment)
             backupRestoreConfigButtonBrowseFile.setOnClickListener(this@BackupRestoreConfigFragment)
         }
+        rootLayoutView = binding!!.root
         return binding!!.root
     }
 

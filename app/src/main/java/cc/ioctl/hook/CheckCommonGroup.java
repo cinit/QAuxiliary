@@ -68,7 +68,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
                 .setTitle("输入对方QQ号")
                 .setView(linearLayout)
                 .setCancelable(true)
-                .setPositiveButton("打开QQ号", null)
+                .setPositiveButton("打开", null)
                 .setNegativeButton("取消", null)
                 .create();
         alertDialog.show();
@@ -89,7 +89,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
                         return;
                     }
                     alertDialog.dismiss();
-                    Class<?> browser = null;
+                    Class<?> browser;
                     try {
                         browser = Class.forName("com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
                         Intent intent = new Intent(ctx, browser);

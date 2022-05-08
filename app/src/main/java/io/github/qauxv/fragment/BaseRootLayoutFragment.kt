@@ -40,6 +40,11 @@ abstract class BaseRootLayoutFragment : BaseSettingFragment() {
         }
     }
 
+    protected fun applyRootLayoutPaddingFor(viewGroup: ViewGroup) {
+        viewGroup.clipToPadding = false
+        viewGroup.setPadding(viewGroup.paddingLeft, layoutPaddingTop, viewGroup.paddingRight, layoutPaddingBottom)
+    }
+
     override fun onLayoutPaddingsChanged() {
         super.onLayoutPaddingsChanged()
         applyPadding()

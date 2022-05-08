@@ -132,6 +132,7 @@ dependencies {
     implementation("io.noties.markwon:core:4.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
     implementation("com.google.android.material:material:1.5.0")
+    implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
