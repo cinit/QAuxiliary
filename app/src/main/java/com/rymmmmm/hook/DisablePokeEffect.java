@@ -61,7 +61,7 @@ public class DisablePokeEffect extends CommonSwitchFunctionHook {
             if (m.getName().equals("a") && argt.length == 3 && !Modifier.isStatic(m.getModifiers())) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> {
                     // param.setResult(null);// 此处不应为null
-                    if (param.getResult().getClass().isPrimitive()) {// 判断是boolean (基本类型)
+                    if (((Method) param.method).getReturnType() == boolean.class) {// 判断是boolean (基本类型)
                         param.setResult(false);
                     }
                 });
