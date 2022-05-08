@@ -20,9 +20,15 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
+@file:Suppress("DEPRECATION")
+
 package io.github.qauxv.fragment
 
+import android.database.ContentObserver
+import android.net.Uri
 import android.os.Bundle
+import android.os.Handler
+import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.Menu
 import android.view.MenuInflater
@@ -31,6 +37,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ScrollView
 import android.widget.TextView
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.util.LayoutHelper
 import io.github.qauxv.BuildConfig
@@ -47,6 +54,30 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     private var mFunction: IUiItemAgentProvider? = null
     private var mTextDetails: String? = null
+    private val observerPaths = HashSet<String>()
+
+    private val observer = object : ContentObserver(Handler()) {
+        override fun onChange(selfChange: Boolean, uri: Uri?) {
+            if (observerPaths.contains(uri?.path ?: "")) return
+            AlertDialog.Builder(requireActivity())
+                .setTitle("嘿！请不要截图日志")
+                .setMessage("由于截图的日志无法方便排查问题，请点击下方的“复制日志”按钮或在此界面右上角的复制按钮，将日志复制后进行反馈，感谢你的理解。")
+                .setPositiveButton("复制日志") { _, _ -> copyDebugLog() }
+                .setNegativeButton("取消", null)
+                .show()
+            uri?.path?.let { observerPaths.add(it) }
+        }
+    }
+
+    private fun copyDebugLog() {
+        mTextDetails?.let {
+            val ctx = requireContext()
+            if (!mTextDetails.isNullOrEmpty()) {
+                SystemServiceUtils.copyToClipboard(ctx, it)
+                Toasts.show(ctx, "已复制到剪贴板")
+            }
+        }
+    }
 
     override fun getTitle() = "功能详情"
 
@@ -71,6 +102,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
             return
         }
         subtitle = mFunction!!.uiItemAgent.let { it.titleProvider(it) }
+        requireActivity().contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, observer)
     }
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -98,13 +130,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
         return if (item.itemId == R.id.menu_item_copy_all) {
-            mTextDetails?.let {
-                val ctx = requireContext()
-                if (!mTextDetails.isNullOrEmpty()) {
-                    SystemServiceUtils.copyToClipboard(ctx, it)
-                    Toasts.show(ctx, "已复制到剪贴板")
-                }
-            }
+            copyDebugLog()
             true
         } else {
             super.onOptionsItemSelected(item)
@@ -132,6 +158,11 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
             }
         }
         return sb.toString()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        requireActivity().contentResolver.unregisterContentObserver(observer)
     }
 
     companion object {
