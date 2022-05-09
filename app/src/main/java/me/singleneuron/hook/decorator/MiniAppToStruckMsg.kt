@@ -47,7 +47,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = ItemBuilderFactoryHook
 
-    override fun doDecorate(
+    override fun onGetMsgTypeHook(
             result: Int,
             chatMessage: Any,
             param: XC_MethodHook.MethodHookParam

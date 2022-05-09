@@ -27,11 +27,18 @@ import io.github.qauxv.base.RuntimeErrorTracer
 
 interface IItemBuilderFactoryHookDecorator : IDynamicHook, RuntimeErrorTracer {
 
+    /**
+     * Called when the ItemBuilderFactory.getMsgType is called.
+     * @param result the original result
+     * @param chatMessage the chat message
+     * @param param the [XC_MethodHook.MethodHookParam] parameter to allow you to modify the result
+     * @return true to prevent the other hooks from being called
+     */
     @Throws(Throwable::class)
-    fun doDecorate(
-            result: Int,
-            chatMessage: Any,
-            param: XC_MethodHook.MethodHookParam
+    fun onGetMsgTypeHook(
+        result: Int,
+        chatMessage: Any,
+        param: XC_MethodHook.MethodHookParam
     ): Boolean
 
 }

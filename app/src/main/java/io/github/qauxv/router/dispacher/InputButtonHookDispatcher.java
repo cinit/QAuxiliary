@@ -164,7 +164,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                             if (decorator instanceof IInputButtonDecorator) {
                                 IInputButtonDecorator d = (IInputButtonDecorator) decorator;
                                 try {
-                                    if (d.isEnabled() && d.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
+                                    if (d.isEnabled() && d.onFunBtnLongClick(text, session, input, sendBtn, ctx1, qqApp)) {
                                         return true;
                                     }
                                 } catch (Throwable e) {

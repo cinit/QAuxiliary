@@ -86,12 +86,12 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
     }
 
     @Override
-    public boolean doDecorate(@NonNull String text,
-            @NonNull Parcelable session,
-            @NonNull EditText input,
-            @NonNull View sendBtn,
-            @NonNull Context ctx1,
-            @NonNull AppRuntime qqApp) throws Exception {
+    public boolean onFunBtnLongClick(@NonNull String text,
+                                     @NonNull Parcelable session,
+                                     @NonNull EditText input,
+                                     @NonNull View sendBtn,
+                                     @NonNull Context ctx1,
+                                     @NonNull AppRuntime qqApp) throws Exception {
         if (!isEnabled()) {
             return false;
         }
