@@ -22,8 +22,6 @@
 
 package cc.ioctl.fragment
 
-import android.app.Activity
-import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Typeface
 import android.os.Bundle
@@ -32,9 +30,13 @@ import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
@@ -45,20 +47,14 @@ import cc.ioctl.util.TroopManagerHelper
 import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.R
+import io.github.qauxv.SyncUtils
 import io.github.qauxv.SyncUtils.async
 import io.github.qauxv.SyncUtils.runOnUiThread
-import io.github.qauxv.activity.SettingsUiFragmentHostActivity
-import io.github.qauxv.base.ISwitchCellAgent
-import io.github.qauxv.base.IUiItemAgent
-import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
-import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.Toasts
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
@@ -70,6 +66,14 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
     private var mDatabase: SQLiteDatabase? = null
     private var mTableSizeDesc = HashMap<String, String>(16)
 
+    private var mTableListCache = ArrayList<String>()
+    private var mTableListCacheNeedInvalidate = true
+
+    private var mDatabaseName: String? = null
+    private var mDatabasePath: String? = null
+
+    private var mTableFilter: Int = 0
+
     // MD5 in upper case
     private val mMd5ToUinLut = HashMap<String, String>(16)
     private val mTroopName = HashMap<String, String>(16)
@@ -77,19 +81,25 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private val mIsCalcSize: AtomicBoolean = AtomicBoolean(false)
 
-    override fun getTitle() = "聊天记录数据库清理"
+    override fun getTitle() = mDatabaseName ?: "null"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+        mDatabasePath = arguments?.getString(KEY_TARGET_DATABASE_PATH)
+        if (mDatabasePath == null) {
+            finishFragment()
+            return
+        }
+        mDatabaseName = File(mDatabasePath!!).name
+    }
 
     override fun doOnCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val ctx = inflater.context
         mText = TextView(ctx).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.WRAP_CONTENT
-            )
+            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
             textSize = 14f
             typeface = Typeface.MONOSPACE
             setTextIsSelectable(true)
@@ -99,16 +109,137 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
             movementMethod = LinkMovementMethod.getInstance()
         }
         rootLayoutView = BounceScrollView(ctx, null).apply {
-            layoutParams = ViewGroup.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
-                ViewGroup.LayoutParams.MATCH_PARENT
-            )
+            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
             addView(mText)
         }
         val uin = AppRuntimeHelper.getLongAccountUin()
         mCurrentUin = uin
         loadUinMd5()
         return rootLayoutView!!
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        super.onCreateOptionsMenu(menu, inflater)
+        inflater.inflate(R.menu.database_view_options, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_database_filter -> {
+                showFilterDialog()
+                true
+            }
+            R.id.menu_calculate_size -> {
+                calculateItemCountForeground()
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
+
+    private fun calculateItemCountForeground() {
+        val ctx = requireContext()
+        val db = mDatabase ?: return
+        val tableList = getShowingTables()
+        mIsCalcSize.set(false)
+        if (mIsCalcSize.get()) {
+            return
+        }
+        // find unknown tables
+        val unknownTables = ArrayList<String>()
+        for (table in tableList) {
+            if (mTableSizeDesc[table] == null) {
+                unknownTables.add(table)
+            }
+        }
+        if (unknownTables.isEmpty()) {
+            return
+        }
+        // do async update
+        if (!mIsCalcSize.compareAndSet(false, true)) {
+            return
+        }
+        val dialog = AlertDialog.Builder(ctx)
+            .setTitle("COUNT(*)")
+            .setMessage("正在计算表的数据量，请稍候...")
+            .setCancelable(false)
+            .setNegativeButton("取消") { _, _ ->
+                mIsCalcSize.set(false)
+            }
+            .show()
+        async {
+            try {
+                for (i in 0 until unknownTables.size) {
+                    if (!mIsCalcSize.get()) {
+                        runOnUiThread { dialog.dismiss() }
+                        return@async
+                    } else {
+                        runOnUiThread {
+                            dialog.setMessage("${unknownTables[i]}\n${i + 1}/${unknownTables.size} ${(i + 1) * 100 / unknownTables.size}%")
+                        }
+                    }
+                    getTableSize(db, unknownTables[i])
+                }
+            } catch (e: Exception) {
+                if (isAdded) {
+                    runOnUiThread { FaultyDialog.show(requireContext(), e) }
+                }
+            } finally {
+                mIsCalcSize.set(false)
+                runOnUiThread {
+                    dialog.dismiss()
+                    if (isAdded) {
+                        updateStatus()
+                    }
+                }
+            }
+        }
+    }
+
+    private fun showFilterDialog() {
+        val ctx = requireContext()
+        val choicesNames: Array<String> = arrayOf("好友", "群组", "频道", "其他")
+        val choicesValues: IntArray = intArrayOf(CATEGORY_FRIENDS, CATEGORY_TROOPS, CATEGORY_GUILDS, CATEGORY_OTHERS)
+        AlertDialog.Builder(ctx).apply {
+            setTitle("筛选")
+            setMultiChoiceItems(
+                choicesNames, booleanArrayOf(
+                    (mTableFilter and CATEGORY_FRIENDS) != 0,
+                    (mTableFilter and CATEGORY_TROOPS) != 0,
+                    (mTableFilter and CATEGORY_GUILDS) != 0,
+                    (mTableFilter and CATEGORY_OTHERS) != 0
+                )
+            ) { _, _, _ -> }
+            setPositiveButton("确定") { d, _ ->
+                val dialog = d as AlertDialog
+                dialog.dismiss()
+                var filters = 0
+                val choices = dialog.listView.checkedItemPositions
+                for (i in choicesValues.indices) {
+                    if (choices[i]) {
+                        filters = filters or choicesValues[i]
+                    }
+                }
+                if (filters == (CATEGORY_FRIENDS or CATEGORY_TROOPS or CATEGORY_GUILDS or CATEGORY_OTHERS)) {
+                    filters = 0
+                }
+                mTableFilter = filters
+                updateStatus()
+                subtitle = if (mTableFilter != 0) {
+                    val types = ArrayList<String>()
+                    for (i in choicesValues.indices) {
+                        if (mTableFilter and choicesValues[i] != 0) {
+                            types.add(choicesNames[i])
+                        }
+                    }
+                    "筛选: " + types.joinToString(", ")
+                } else {
+                    null
+                }
+            }
+            setNegativeButton("取消") { _, _ -> }
+            setCancelable(true)
+        }.show()
     }
 
     private fun loadUinMd5() {
@@ -156,27 +287,9 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
     private fun updateStatus() {
         val ctx = requireContext()
         val sb = SpannableStringBuilder()
-        if (mCurrentUin < 10000) {
-            sb.append("无法获取当前账号，请先 ")
-            sb.appendClickable("选择账号") {
-                val editText = EditText(ctx)
-                AlertDialog.Builder(requireContext())
-                    .setTitle("请输入账号")
-                    .setView(editText)
-                    .setPositiveButton("确定") { _, _ ->
-                        val uin = editText.text.toString().toLongOrNull()
-                        if (uin != null) {
-                            mCurrentUin = uin
-                            updateStatus()
-                        } else {
-                            Toasts.error(ctx, "账号格式错误")
-                        }
-                    }
-            }
-            subtitle = "请先选择账号"
+        if (mDatabasePath == null) {
+            sb.append("mDatabasePath is null")
         } else {
-            subtitle = "当前账号：$mCurrentUin"
-            val uinStr = mCurrentUin.toString()
             if (mDatabase == null) {
                 try {
 //                    val factory = Reflex.newInstance(
@@ -191,9 +304,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 //                        wrapper as SQLiteDatabase
 //                    }
                     mDatabase = SQLiteDatabase.openDatabase(
-                        File(ctx.dataDir, "databases/slowtable_$mCurrentUin.db").absolutePath,
-                        null,
-                        SQLiteDatabase.OPEN_READWRITE
+                        mDatabasePath!!, null, SQLiteDatabase.OPEN_READWRITE
                     )
                 } catch (e: Exception) {
                     sb.append(Log.getStackTraceString(e))
@@ -201,21 +312,34 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
             }
             mDatabase?.let { database ->
                 try {
-                    val tableNames = ArrayList<String>()
-                    database.rawQuery("select name from sqlite_master where type=\"table\" and name like \"mr_%\"", null).use {
-                        while (it.moveToNext()) {
-                            val name = it.getString(0)
-                            tableNames.add(name)
+                    val databaseTables = ArrayList<String>()
+                    if (mTableListCacheNeedInvalidate) {
+                        Log.d("select * from sqlite_master where type='table'; START")
+                        database.rawQuery("select name from sqlite_master where type=\"table\"", null).use {
+                            while (it.moveToNext()) {
+                                val name = it.getString(0)
+                                if (name != "sqlite_sequence" && name != "android_metadata") {
+                                    databaseTables.add(name)
+                                }
+                            }
                         }
+                        Log.d("select * from sqlite_master where type='table'; END")
+                        mTableListCacheNeedInvalidate = false
+                        mTableListCache = databaseTables
+                    } else {
+                        databaseTables.addAll(mTableListCache)
                     }
-                    requestUpdateTableSizeIfUnknown(database, tableNames)
+                    val tableNames: ArrayList<String> = getShowingTables()
+                    if (tableNames.isEmpty()) {
+                        sb.append("No tables found.")
+                    }
                     for (table: String in tableNames) {
-                        val sizeDesc: String = mTableSizeDesc[table] ?: "COUNT(*)=<unknown>"
+                        val sizeDesc: String = mTableSizeDesc[table] ?: "COUNT(*)=???"
                         sb.apply {
                             append(table)
                             append("\n")
                             val parts = table.split("_")
-                            if (parts[0] == "mr") {
+                            if (parts[0] == "mr" && parts.size >= 3) {
                                 val md5 = parts[2]
                                 val uin = mMd5ToUinLut[md5]
                                 if (uin != null) {
@@ -233,6 +357,8 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                                 } else {
                                     append("<unknown> // $sizeDesc")
                                 }
+                            } else {
+                                append(sizeDesc)
                             }
                             append("\n[ ")
                             appendClickable("COUNT") {
@@ -258,38 +384,54 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         }
     }
 
-    private fun confirmAndExecuteSql(db: SQLiteDatabase, sql: String) {
-        val ctx = requireContext()
-        AlertDialog.Builder(ctx)
-            .setTitle("确定要执行该语句吗？")
-            .setMessage(sql)
-            .setPositiveButton("确定") { _, _ ->
-                val waitDialog = AlertDialog.Builder(ctx)
-                    .setTitle("请稍候")
-                    .setMessage(sql)
-                    .setCancelable(false)
-                    .show()
-                async {
-                    try {
-                        db.execSQL(sql)
-                        runOnUiThread {
-                            Toasts.success(ctx, "操作完成")
-                            updateStatus()
-                        }
-                    } catch (e: Exception) {
-                        runOnUiThread { FaultyDialog.show(ctx, e) }
-                    } finally {
-                        runOnUiThread { waitDialog.dismiss() }
+    private fun getShowingTables(): ArrayList<String> {
+        val databaseTables = mTableListCache
+        return if (mTableFilter != 0) {
+            ArrayList<String>().also {
+                for (tableName in databaseTables) {
+                    val category: Int = if (tableName.startsWith("mr_friend_")) {
+                        CATEGORY_FRIENDS
+                    } else if (tableName.startsWith("mr_troop_")) {
+                        CATEGORY_TROOPS
+                    } else if (tableName.startsWith("mr_guild_")) {
+                        CATEGORY_GUILDS
+                    } else {
+                        CATEGORY_OTHERS
+                    }
+                    if ((mTableFilter and category) != 0) {
+                        it.add(tableName)
                     }
                 }
             }
-            .setCancelable(true)
-            .setNegativeButton("取消", null)
-            .show()
+        } else {
+            databaseTables
+        }
+    }
+
+    private fun confirmAndExecuteSql(db: SQLiteDatabase, sql: String) {
+        val ctx = requireContext()
+        AlertDialog.Builder(ctx).setTitle("确定要执行该语句吗？").setMessage(sql).setPositiveButton("确定") { _, _ ->
+            val waitDialog = AlertDialog.Builder(ctx).setTitle("请稍候").setMessage(sql).setCancelable(false).show()
+            async {
+                try {
+                    db.execSQL(sql)
+                    runOnUiThread {
+                        mTableListCacheNeedInvalidate = true
+                        Toasts.success(ctx, "操作完成")
+                        updateStatus()
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread { FaultyDialog.show(ctx, e) }
+                } finally {
+                    runOnUiThread { waitDialog.dismiss() }
+                }
+            }
+        }.setCancelable(true).setNegativeButton("取消", null).show()
     }
 
     @NonUiThread
     private fun getTableSize(db: SQLiteDatabase, table: String): Long {
+        SyncUtils.requiresNonUiThread();
         if (!table.matches("[a-zA-Z0-9_]+".toRegex())) {
             throw IllegalArgumentException("Invalid table name: '$table'")
         }
@@ -308,62 +450,21 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         }
     }
 
-    private fun requestUpdateTableSizeIfUnknown(db: SQLiteDatabase, tables: ArrayList<String>) {
-        if (mIsCalcSize.get()) {
-            return
-        }
-        // find unknown tables
-        val unknownTables = ArrayList<String>()
-        for (table in tables) {
-            if (mTableSizeDesc[table] == null) {
-                unknownTables.add(table)
-            }
-        }
-        if (unknownTables.isEmpty()) {
-            return
-        }
-        // do async update
-        if (!mIsCalcSize.compareAndSet(false, true)) {
-            return
-        }
-        async {
-            try {
-                for (table in unknownTables) {
-                    getTableSize(db, table)
-                    runOnUiThread { updateStatus() }
-                }
-            } catch (e: Exception) {
-                if (isAdded) {
-                    runOnUiThread { FaultyDialog.show(requireContext(), e) }
-                }
-            } finally {
-                mIsCalcSize.set(false)
-            }
-        }
-    }
-
     override fun onDestroy() {
         mDatabase?.close()
         mDatabase = null
         super.onDestroy()
     }
 
-    @UiItemAgentEntry
-    object DatabaseShrinkItemEntry : IUiItemAgentProvider, IUiItemAgent {
-        override val titleProvider: (IUiItemAgent) -> String = { "清理聊天记录数据库" }
-        override val summaryProvider: ((IUiItemAgent, Context) -> String?)? = null
-        override val valueState: MutableStateFlow<String?>? = null
-        override val validator: ((IUiItemAgent) -> Boolean)? = null
-        override val switchProvider: ISwitchCellAgent? = null
-        override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit) = { _, activity, _ ->
-            SettingsUiFragmentHostActivity.startFragmentWithContext(activity, DatabaseShrinkFragment::class.java)
-        }
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
-        override val uiItemAgent: IUiItemAgent = this
-        override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
-    }
+    companion object {
 
-    private companion object {
+        const val KEY_TARGET_DATABASE_PATH = "target_database_path"
+
+        private const val CATEGORY_FRIENDS = 2
+        private const val CATEGORY_TROOPS = 4
+        private const val CATEGORY_GUILDS = 8
+        private const val CATEGORY_OTHERS = 256
+
         @JvmStatic
         private fun SpannableStringBuilder.appendSpanText(str: String, span: Any): SpannableStringBuilder {
             val start = length

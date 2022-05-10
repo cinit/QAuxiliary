@@ -31,4 +31,6 @@
     <string name="send_to_ipad">发送到我的iPad</string>
     <string name="action_search">搜索</string>
     <string name="action_copy_all">复制全部</string>
+    <string name="action_filter_items">筛选</string>
+    <string name="action_calculate_size">计算大小</string>
 </resources>
