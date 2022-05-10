@@ -238,7 +238,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
 
     static {
         try {
-            Class<?> clz = Class.forName("androidx.fragment.app.FragmentManagerImpl");
+            Class<?> clz = Class.forName("androidx.fragment.app.FragmentManager");
             fStateSaved = clz.getDeclaredField("mStateSaved");
             fStateSaved.setAccessible(true);
             fStopped = clz.getDeclaredField("mStopped");
