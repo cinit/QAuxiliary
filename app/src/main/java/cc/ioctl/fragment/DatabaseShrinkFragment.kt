@@ -198,8 +198,11 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private fun showFilterDialog() {
         val ctx = requireContext()
-        val choicesNames: Array<String> = arrayOf("好友", "群组", "频道", "其他")
-        val choicesValues: IntArray = intArrayOf(CATEGORY_FRIENDS, CATEGORY_TROOPS, CATEGORY_GUILDS, CATEGORY_OTHERS)
+        val choicesNames: Array<String> = arrayOf("好友", "群组", "频道", "群文件", "通话", "其他")
+        val choicesValues: IntArray = intArrayOf(
+            CATEGORY_FRIENDS, CATEGORY_TROOPS, CATEGORY_GUILDS,
+            CATEGORY_TROOP_FILE_TRANSFER_ITEM, CATEGORY_QQ_CALL, CATEGORY_OTHERS
+        )
         AlertDialog.Builder(ctx).apply {
             setTitle("筛选")
             setMultiChoiceItems(
@@ -207,7 +210,9 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                     (mTableFilter and CATEGORY_FRIENDS) != 0,
                     (mTableFilter and CATEGORY_TROOPS) != 0,
                     (mTableFilter and CATEGORY_GUILDS) != 0,
-                    (mTableFilter and CATEGORY_OTHERS) != 0
+                    (mTableFilter and CATEGORY_TROOP_FILE_TRANSFER_ITEM) != 0,
+                    (mTableFilter and CATEGORY_QQ_CALL) != 0,
+                    (mTableFilter and CATEGORY_OTHERS) != 0,
                 )
             ) { _, _, _ -> }
             setPositiveButton("确定") { d, _ ->
@@ -220,7 +225,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                         filters = filters or choicesValues[i]
                     }
                 }
-                if (filters == (CATEGORY_FRIENDS or CATEGORY_TROOPS or CATEGORY_GUILDS or CATEGORY_OTHERS)) {
+                if (filters == CATEGORY_MASK) {
                     filters = 0
                 }
                 mTableFilter = filters
@@ -395,6 +400,10 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                         CATEGORY_TROOPS
                     } else if (tableName.startsWith("mr_guild_")) {
                         CATEGORY_GUILDS
+                    } else if (tableName.startsWith("TroopFileTansferItemEntity")) {
+                        CATEGORY_TROOP_FILE_TRANSFER_ITEM
+                    } else if (tableName.startsWith("qc_")) {
+                        CATEGORY_QQ_CALL
                     } else {
                         CATEGORY_OTHERS
                     }
@@ -463,7 +472,11 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         private const val CATEGORY_FRIENDS = 2
         private const val CATEGORY_TROOPS = 4
         private const val CATEGORY_GUILDS = 8
+        private const val CATEGORY_TROOP_FILE_TRANSFER_ITEM = 16
+        private const val CATEGORY_QQ_CALL = 32
         private const val CATEGORY_OTHERS = 256
+        private const val CATEGORY_MASK = (CATEGORY_FRIENDS or CATEGORY_TROOPS or CATEGORY_GUILDS or
+            CATEGORY_TROOP_FILE_TRANSFER_ITEM or CATEGORY_QQ_CALL or CATEGORY_OTHERS)
 
         @JvmStatic
         private fun SpannableStringBuilder.appendSpanText(str: String, span: Any): SpannableStringBuilder {
