@@ -95,6 +95,11 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 if (wording == null || "" == wording) return@hookBefore
                 it.args[1] = wording
             }
+
+        "Lcom/tencent/mobileqq/guild/message/GuildRoamMessageEventFlowProcessor;->a(Lcom/tencent/qphone/base/remote/ToServiceMsg;Ltencent/im/group_pro_proto/synclogic/synclogic\$ChannelMsgRsp;Ljava/util/ArrayList;Ljava/lang/String;)V"
+            .method.hookBefore(this){
+                it.result = null
+            }
     }
 
     private fun getNickName(
