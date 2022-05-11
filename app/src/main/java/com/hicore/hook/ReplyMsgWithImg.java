@@ -107,8 +107,15 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
             int isTroop = SessionInfoImpl.getUinType(sessionInfo);
             if (isTroop == 1 || isTroop == 0) {
                 String path = (String) param.args[3];
-                if (isNowReplying(baseChatPie)) {
-                    EditText inputEditText = mInputEditText == null ? null : mInputEditText.get();
+                EditText inputEditText = mInputEditText == null ? null : mInputEditText.get();
+                if (inputEditText == null) {
+                    Toasts.error(ctx, "inputEditText is null");
+                    return;
+                }
+                // 1. 如果是回复消息，则总是由模块处理 mixed msg
+                // 2. 如果已输入文本，则表情由模块处理，以 mixed msg 发送
+                // 其余情况由宿主默认处理
+                if (isNowReplying(baseChatPie) || !inputEditText.getText().toString().isEmpty()) {
                     Objects.requireNonNull(inputEditText, "inputEditText or ref is null");
                     addEditText(inputEditText, "[PicUrl=" + path + "]");
                     param.setResult(true);
@@ -132,13 +139,14 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
             int isTroop = SessionInfoImpl.getUinType(sessionInfo);
             if (isTroop == 1 || isTroop == 0) {
                 List<String> l = (List<String>) param.args[1];
-                if (isNowReplying(chatPie)) {
+                EditText inputEditText = mInputEditText == null ? null : mInputEditText.get();
+                if (inputEditText == null) {
+                    Toasts.error(null, "inputEditText is null");
+                    return;
+                }
+                // 如果已包含 [PicUrl=xxx] 则总是由模块处理 mixed msg
+                if (isNowReplying(chatPie) || inputEditText.getText().toString().contains("[PicUrl=")) {
                     param.setResult(true);
-                    EditText inputEditText = mInputEditText == null ? null : mInputEditText.get();
-                    if (inputEditText == null) {
-                        Toasts.error(null, "inputEditText is null");
-                        return;
-                    }
                     for (String str : l) {
                         if (str.toLowerCase(Locale.ROOT).endsWith(".mp4")) {
                             continue;
@@ -162,7 +170,9 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         String className = message.getClass().getName();
         int istroop = Reflex.getInstanceObject(message, "istroop", int.class);
 
-        if (className.contains("MessageForReplyText") && (istroop == 1 || istroop == 0)) {
+        if ((className.contains("MessageForReplyText") || className.contains("MessageForText"))
+                && (istroop == 1 || istroop == 0)) {
+            boolean isReply = className.contains("MessageForReplyText");
             // 取出原始消息内容
             String text = Reflex.getInstanceObject(message, "msg", String.class);
             if (TextUtils.isEmpty(text)) {
@@ -184,8 +194,9 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                 MessageInfoList[] msgInfoList = initMessageData(text);
                 ArrayList<Object> recordList = new ArrayList<>();
 
-                recordList.add(copyReplyMessage(message));
-
+                if (isReply) {
+                    recordList.add(copyReplyMessage(message));
+                }
                 ArrayList<Object> atInfoList = new ArrayList<>();
                 String textMsg = "";
                 int length = 0;
