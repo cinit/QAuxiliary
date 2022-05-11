@@ -143,6 +143,11 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         return sCachedRepeaterIcon;
     }
 
+    public static int getDpiSet(){
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getIntOrDefault(qn_repeat_icon_dpi, 50);
+    }
+
     private static int getSelectedIdByDpi(int dpi) {
         switch (dpi) {
             case 640:

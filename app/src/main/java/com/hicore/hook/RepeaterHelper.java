@@ -55,11 +55,11 @@ public class RepeaterHelper {
                 imageButton = new ImageButton(context);
                 imageButton.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
                 RelativeLayout.LayoutParams param = new RelativeLayout.LayoutParams(
-                        LayoutHelper.dip2px(context, 50), LayoutHelper.dip2px(context, 50));
+                        LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()), LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()));
                 imageButton.setAdjustViewBounds(true);
                 imageButton.getBackground().setAlpha(0);
-                imageButton.setMaxHeight(LayoutHelper.dip2px(context, 35));
-                imageButton.setMaxWidth(LayoutHelper.dip2px(context, 35));
+                imageButton.setMaxHeight(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()));
+                imageButton.setMaxWidth(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()));
                 imageButton.setId(256667);
                 imageButton.setTag(ChatMsg);
                 imageButton.setOnClickListener(v -> {
@@ -86,7 +86,7 @@ public class RepeaterHelper {
                     param.removeRule(RelativeLayout.ALIGN_TOP);
                     param.removeRule(RelativeLayout.ALIGN_LEFT);
 
-                    param.addRule(RelativeLayout.ALIGN_LEFT, attachView.getId());
+                    param.addRule(RelativeLayout.LEFT_OF, attachView.getId());
                     int width = View.MeasureSpec.makeMeasureSpec(0,
                             View.MeasureSpec.UNSPECIFIED);
                     int height = View.MeasureSpec.makeMeasureSpec(0,
@@ -94,9 +94,9 @@ public class RepeaterHelper {
                     attachView.measure(width, height);
 
                     int AddedLength = attachView.getTop();
-                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context, 50) / 2;
+                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
 
-                    int OffsetV = LayoutHelper.dip2px(context, 35);
+                    int OffsetV = LayoutHelper.dip2px(context,12);
 
                     ViewGroup.MarginLayoutParams mLParam = param;
                     mLParam.leftMargin = -OffsetV;
@@ -105,16 +105,16 @@ public class RepeaterHelper {
                     param.removeRule(RelativeLayout.ALIGN_RIGHT);
                     param.removeRule(RelativeLayout.ALIGN_TOP);
                     param.removeRule(RelativeLayout.ALIGN_LEFT);
-                    param.addRule(RelativeLayout.ALIGN_RIGHT, attachView.getId());
+                    param.addRule(RelativeLayout.RIGHT_OF, attachView.getId());
                     int width = View.MeasureSpec.makeMeasureSpec(0,
                             View.MeasureSpec.UNSPECIFIED);
                     int height = View.MeasureSpec.makeMeasureSpec(0,
                             View.MeasureSpec.UNSPECIFIED);
                     attachView.measure(width, height);
                     int AddedLength = attachView.getTop();
-                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context, 50) / 2;
+                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
 
-                    int OffsetV = LayoutHelper.dip2px(context, 35);
+                    int OffsetV = LayoutHelper.dip2px(context,12);
                     ViewGroup.MarginLayoutParams mLParam = param;
                     mLParam.rightMargin = -OffsetV;
                     mLParam.topMargin = AddedLength;

@@ -129,7 +129,7 @@ public class RepeaterPlus extends BaseFunctionHook {
                 @NonNull
                 @Override
                 public Function1<IUiItemAgent, String> getTitleProvider() {
-                    return agent -> "消息+1Plus";
+                    return agent -> "消息+1 Plus";
                 }
             };
         }
