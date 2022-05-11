@@ -72,7 +72,7 @@ object SendTTSHook :
 
     override val description: String
         get() = "mp3 格式 电脑无法播放, 时长不正确, 有时无法播放\n" +
-            "用法 (长按"发送"发送, [languege]省略时使用上次选择的语言)\n" +
+            "用法 (长按\"发送\"发送, [languege]省略时使用上次选择的语言)\n" +
             "#tts [languege]\n" +
             "<text>"
 
