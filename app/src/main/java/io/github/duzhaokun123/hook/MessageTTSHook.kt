@@ -25,17 +25,22 @@ package io.github.duzhaokun123.hook
 import android.app.Activity
 import android.content.Context
 import android.speech.tts.TextToSpeech
+import android.view.LayoutInflater
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import io.github.duzhaokun123.util.TTS
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.databinding.Tts2DialogBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
@@ -43,8 +48,6 @@ import io.github.qauxv.util.Toasts
 @FunctionHookEntry
 @UiItemAgentEntry
 object MessageTTSHook: CommonSwitchFunctionHook() {
-    lateinit var textToSpeech: TextToSpeech
-
     override val name: String
         get() = "文字消息转语音 (使用系统 TTS)"
 
@@ -66,12 +69,13 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
                 break
             }
         }
-        textToSpeech = TextToSpeech(HostInfo.getApplication()) {
+        TTS.addInitCallback {
             if (it == TextToSpeech.ERROR) {
                 Toasts.error(HostInfo.getApplication(), "TTS 初始化失败")
                 traceError(RuntimeException("TTS init failed"))
             }
         }
+        TTS.init(HostInfo.getApplication())
         return true
     }
 
@@ -79,13 +83,15 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
         get() = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     private val getMenuItemCallBack = afterHookIfEnabled(60) { param ->
-       try {
+        try {
             val arr = param.result
             val clQQCustomMenuItem = arr.javaClass.componentType
-            val item_tts = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts, "TTS")
-            val ret = java.lang.reflect.Array.newInstance(clQQCustomMenuItem!!, java.lang.reflect.Array.getLength(arr) + 1)
+            val itemTts = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts, "TTS")
+            val itemTts2 = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts2, "TTS+")
+            val ret = java.lang.reflect.Array.newInstance(clQQCustomMenuItem!!, java.lang.reflect.Array.getLength(arr) + 2)
             System.arraycopy(arr, 0, ret, 0, java.lang.reflect.Array.getLength(arr))
-            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr), item_tts)
+            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr) - 1, itemTts)
+            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr), itemTts2)
             param.result = ret
         } catch (e: Throwable) {
             traceError(e)
@@ -97,12 +103,62 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
         val id = param.args[0] as Int
         val ctx = param.args[1] as Activity
         val chatMessage = param.args[2]
-        if (id != R.id.item_tts) return@afterHookIfEnabled
-        val r = textToSpeech.speak(Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "", TextToSpeech.QUEUE_FLUSH, null)
-        if (r == TextToSpeech.ERROR) {
-            Toasts.error(ctx, "TTS 请求失败")
+        when (id) {
+            R.id.item_tts -> {
+                val r = TTS.instance.speak(Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "", TextToSpeech.QUEUE_FLUSH, null)
+                if (r == TextToSpeech.ERROR) {
+                    Toasts.error(ctx, "TTS 请求失败")
+                }
+            }
+            R.id.item_tts2 -> {
+                val wc = CommonContextWrapper.createAppCompatContext(ctx)
+                val msg = Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: ""
+                val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
+                binding.etMsg.setText(msg)
+                binding.tvVoice.text = TTS.instance.voice.toString()
+                binding.btnSpeak.setOnClickListener {
+                    val r = TTS.instance.speak(binding.etMsg.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
+                    if (r == TextToSpeech.ERROR) {
+                        Toasts.error(ctx, "TTS 请求失败")
+                    }
+                }
+                binding.btnChange.setOnClickListener {
+                    val voices = TTS.instance.voices
+                    val byLocal = voices.groupBy { it.locale }
+                    val localKeys = byLocal.keys.toList().sortedBy { it.toLanguageTag() }
+                    AlertDialog.Builder(wc)
+                        .setTitle("local")
+                        .setItems(localKeys.map { it.toLanguageTag() }.toTypedArray()) { _, which ->
+                            val local = localKeys[which]
+                            val voices2 = byLocal[local]
+                            val names = voices2!!.map { it.name }.sorted().toTypedArray()
+                            AlertDialog.Builder(wc)
+                                .setTitle(local.toLanguageTag())
+                                .setItems(names) {_, which2 ->
+                                    val selectedVoice = voices2[which2]
+                                    AlertDialog.Builder(wc)
+                                        .setTitle(selectedVoice.name)
+                                        .setMessage(selectedVoice.toString())
+                                        .setPositiveButton("确定") { _, _ ->
+                                            val r = TTS.instance.setVoice(selectedVoice)
+                                            if (r == TextToSpeech.ERROR) {
+                                                Toasts.error(ctx, "TTS 请求失败")
+                                            } else {
+                                                binding.tvVoice.text = TTS.instance.voice.toString()
+                                            }
+                                        }.setNegativeButton(android.R.string.cancel, null)
+                                        .show()
+                                }.setNegativeButton(android.R.string.cancel, null)
+                                .show()
+                        }.setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }
+                AlertDialog.Builder(wc)
+                    .setView(binding.root)
+                    .setTitle("TTS 高级")
+                    .show()
+            }
         }
-
     }
 
 }
