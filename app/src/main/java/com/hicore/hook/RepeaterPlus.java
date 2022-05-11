@@ -32,6 +32,7 @@ import android.content.Context;
 import android.os.Parcelable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewTreeObserver.OnGlobalLayoutListener;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -48,6 +49,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.util.QQVersion;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -168,7 +170,19 @@ public class RepeaterPlus extends BaseFunctionHook {
                 return;
             }
             Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
-            RepeaterHelper.createRepeatIcon(baseChatItem, ChatMsg, session);
+            AtomicReference<OnGlobalLayoutListener> listenerContainer = new AtomicReference<>();
+            RelativeLayout finalBaseChatItem = baseChatItem;
+            listenerContainer.set(() -> {
+                try {
+                    RepeaterHelper.createRepeatIcon(finalBaseChatItem, ChatMsg, session);
+                    finalBaseChatItem.getViewTreeObserver().removeOnGlobalLayoutListener(listenerContainer.get());
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            });
+
+            finalBaseChatItem.getViewTreeObserver().addOnGlobalLayoutListener(listenerContainer.get());
+
         });
         return true;
     }
