@@ -23,6 +23,7 @@
 package io.github.duzhaokun123.hook
 
 import android.content.Context
+import android.media.MediaExtractor
 import android.os.Parcelable
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
@@ -124,12 +125,17 @@ object SendTTSHook :
 
             override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
                 TTS.instance.setOnUtteranceProgressListener(null)
-                SyncUtils.runOnUiThread {
-                    val time = TimeFormat.format1.format(System.currentTimeMillis())
-                    val save = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/$time.mp3")
-                    mp3.copyTo(save)
-                    ChatActivityFacade.sendPttMessage(qqApp, session, save.absolutePath)
-                    input.setText("")
+                runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
+                    .onFailure {
+                        Toasts.error(wc, "再试一下说不定就成了")
+                    }.onSuccess {
+                        it.release()
+                        SyncUtils.runOnUiThread {
+                            val time = TimeFormat.format1.format(System.currentTimeMillis())
+                            val save = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/$time.mp3")
+                            mp3.copyTo(save)
+                            ChatActivityFacade.sendPttMessage(qqApp, session, save.absolutePath)
+                            input.setText("")
 //                    runCatching {
 //                        val r = mp3ToSilk(mp3.absolutePath, silk.absolutePath)
 //                        if (r) {
@@ -153,7 +159,8 @@ object SendTTSHook :
 //                            input.setText("")
 //                        }
 //                    }
-                }
+                        }
+                    }
             }
         })
         TTS.instance.synthesizeToFile(toSend, null, mp3, "send_tts")
