@@ -115,7 +115,7 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
                 val msg = Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: ""
                 val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
                 binding.etMsg.setText(msg)
-                binding.tvVoice.text = TTS.instance.voice.toString()
+                binding.tvVoice.text = TTS.instance.voice?.toString() ?: "null"
                 binding.btnSpeak.setOnClickListener {
                     val r = TTS.instance.speak(binding.etMsg.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
                     if (r == TextToSpeech.ERROR) {
