@@ -22,6 +22,8 @@
 
 package cc.ioctl.fragment
 
+import android.annotation.SuppressLint
+import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.graphics.Typeface
 import android.os.Bundle
@@ -36,16 +38,16 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.TextView
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
+import androidx.recyclerview.widget.RecyclerView
+import cc.ioctl.hook.OpenProfileCard
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.TroopManagerHelper
 import cc.ioctl.util.ui.FaultyDialog
-import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.SyncUtils.async
@@ -55,6 +57,7 @@ import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.Toasts
+import xyz.nextalone.util.SystemServiceUtils
 import java.io.File
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
@@ -62,7 +65,8 @@ import java.util.concurrent.atomic.AtomicBoolean
 class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private var mCurrentUin: Long = 0
-    private var mText: TextView? = null
+    private var mRecyclerView: RecyclerView? = null
+    private val mTextItemList = ArrayList<SpannableStringBuilder>()
     private var mDatabase: SQLiteDatabase? = null
     private var mTableSizeDesc = HashMap<String, String>(16)
 
@@ -98,24 +102,57 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View {
         val ctx = inflater.context
-        mText = TextView(ctx).apply {
-            layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT)
-            textSize = 14f
-            typeface = Typeface.MONOSPACE
-            setTextIsSelectable(true)
-            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
-            val dp8 = LayoutHelper.dip2px(ctx, 8f)
-            setPadding(dp8, dp8, dp8, dp8)
-            movementMethod = LinkMovementMethod.getInstance()
-        }
-        rootLayoutView = BounceScrollView(ctx, null).apply {
+        mRecyclerView = RecyclerView(ctx).apply {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)
-            addView(mText)
+            layoutManager = androidx.recyclerview.widget.LinearLayoutManager(ctx)
+            adapter = mAdapter
         }
+        rootLayoutView = mRecyclerView
         val uin = AppRuntimeHelper.getLongAccountUin()
         mCurrentUin = uin
         loadUinMd5()
         return rootLayoutView!!
+    }
+
+    class TextViewHolder(ctx: Context) : RecyclerView.ViewHolder(TextView(ctx)) {
+        init {
+            val tv = itemView as TextView
+            tv.apply {
+                textSize = 14f
+                typeface = Typeface.MONOSPACE
+                setTextIsSelectable(true)
+                setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+                val dp8 = LayoutHelper.dip2px(ctx, 8f)
+                setPadding(dp8, dp8, dp8, dp8)
+                movementMethod = LinkMovementMethod.getInstance()
+                this.tag = this
+            }
+        }
+
+        val textView: TextView get() = itemView as TextView
+    }
+
+    private val mAdapter = object : RecyclerView.Adapter<TextViewHolder>() {
+
+        private val NO_ITEMS: SpannableStringBuilder by lazy {
+            SpannableStringBuilder("No items")
+        }
+
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): TextViewHolder {
+            return TextViewHolder(parent.context)
+        }
+
+        override fun onBindViewHolder(holder: TextViewHolder, position: Int) {
+            if (mTextItemList.size == 0) {
+                holder.textView.text = NO_ITEMS
+            } else {
+                holder.textView.text = mTextItemList[position]
+            }
+        }
+
+        override fun getItemCount(): Int {
+            return Math.max(mTextItemList.size, 1)
+        }
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -281,6 +318,11 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         } catch (e: Exception) {
             Log.e(e)
         }
+        val specialUin = arrayOf("9999", "9987", "9986", "9915")
+        for (uin in specialUin) {
+            val md5 = uinToMd5(uin)
+            mMd5ToUinLut[md5] = uin
+        }
     }
 
     override fun onResume() {
@@ -288,12 +330,15 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         updateStatus()
     }
 
+    @SuppressLint("NotifyDataSetChanged")
     @UiThread
     private fun updateStatus() {
         val ctx = requireContext()
-        val sb = SpannableStringBuilder()
+        mTextItemList.clear()
         if (mDatabasePath == null) {
+            val sb = SpannableStringBuilder()
             sb.append("mDatabasePath is null")
+            mTextItemList.add(sb)
         } else {
             if (mDatabase == null) {
                 try {
@@ -312,7 +357,8 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                         mDatabasePath!!, null, SQLiteDatabase.OPEN_READWRITE
                     )
                 } catch (e: Exception) {
-                    sb.append(Log.getStackTraceString(e))
+                    mTextItemList.add(SpannableStringBuilder(Log.getStackTraceString(e)))
+                    Log.e(e)
                 }
             }
             mDatabase?.let { database ->
@@ -335,36 +381,51 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                         databaseTables.addAll(mTableListCache)
                     }
                     val tableNames: ArrayList<String> = getShowingTables()
-                    if (tableNames.isEmpty()) {
-                        sb.append("No tables found.")
-                    }
                     for (table: String in tableNames) {
+                        val sb = SpannableStringBuilder()
+                        mTextItemList.add(sb)
                         val sizeDesc: String = mTableSizeDesc[table] ?: "COUNT(*)=???"
                         sb.apply {
-                            append(table)
-                            append("\n")
                             val parts = table.split("_")
                             if (parts[0] == "mr" && parts.size >= 3) {
                                 val md5 = parts[2]
                                 val uin = mMd5ToUinLut[md5]
                                 if (uin != null) {
-                                    var ext: String? = null
+                                    append(table)
+                                    append("\n")
                                     if (parts[1] == "troop") {
-                                        ext = mTroopName[uin]
+                                        appendClickable(uin, clickToOpenTroopProfile(uin))
+                                        mTroopName[uin]?.let {
+                                            append(" // ")
+                                            append(it)
+                                        }
                                     } else if (parts[1] == "friend") {
-                                        ext = mFriendName[uin]
-                                    }
-                                    if (ext != null) {
-                                        append("$uin // $sizeDesc // $ext")
+                                        appendClickable(uin, clickToOpenFriendProfile(uin))
+                                        mFriendName[uin]?.let {
+                                            append(" // ")
+                                            append(it)
+                                        }
                                     } else {
-                                        append("$uin")
+                                        append(uin)
                                     }
                                 } else {
-                                    append("<unknown> // $sizeDesc")
+                                    if (md5.matches("[0-9a-fA-F]{32}".toRegex())) {
+                                        // add a link to search md5
+                                        append("mr_")
+                                        append(parts[1])
+                                        append("_")
+                                        appendClickable(md5, clickToCopyText(md5))
+                                        for (i in 3 until parts.size) {
+                                            append("_")
+                                            append(parts[i])
+                                        }
+                                    }
                                 }
                             } else {
-                                append(sizeDesc)
+                                append(table)
                             }
+                            append("\n")
+                            append(sizeDesc)
                             append("\n[ ")
                             appendClickable("COUNT") {
                                 async {
@@ -378,14 +439,16 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                             appendClickable("DROP") {
                                 confirmAndExecuteSql(database, "DROP TABLE '$table';")
                             }
-                            append(" ]\n\n")
+                            append(" ]")
                         }
                     }
                 } catch (e: Exception) {
-                    sb.append(Log.getStackTraceString(e))
+                    mTextItemList.add(SpannableStringBuilder(Log.getStackTraceString(e)))
+                    Log.e(e)
                 }
             }
-            mText!!.text = sb
+            // we actually don't know what has changed, so we need to call notifyDataSetChanged()
+            mAdapter.notifyDataSetChanged()
         }
     }
 
@@ -465,6 +528,10 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         super.onDestroy()
     }
 
+    private fun clickToCopyText(text: String): (View) -> Unit = {
+        SystemServiceUtils.copyToClipboard(it.context, text)
+    }
+
     companion object {
 
         const val KEY_TARGET_DATABASE_PATH = "target_database_path"
@@ -475,8 +542,36 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         private const val CATEGORY_TROOP_FILE_TRANSFER_ITEM = 16
         private const val CATEGORY_QQ_CALL = 32
         private const val CATEGORY_OTHERS = 256
-        private const val CATEGORY_MASK = (CATEGORY_FRIENDS or CATEGORY_TROOPS or CATEGORY_GUILDS or
-            CATEGORY_TROOP_FILE_TRANSFER_ITEM or CATEGORY_QQ_CALL or CATEGORY_OTHERS)
+        private const val CATEGORY_MASK =
+            (CATEGORY_FRIENDS or CATEGORY_TROOPS or CATEGORY_GUILDS or CATEGORY_TROOP_FILE_TRANSFER_ITEM or CATEGORY_QQ_CALL or CATEGORY_OTHERS)
+
+        @JvmStatic
+        private fun clickToOpenFriendProfile(uin: String): ((View) -> Unit) {
+            val longUin = try {
+                uin.toLong()
+            } catch (e: Exception) {
+                -1L
+            }
+            if (longUin < 10000) {
+                return {}
+            } else {
+                return { OpenProfileCard.openUserProfileCard(it.context, uin.toLong()) }
+            }
+        }
+
+        @JvmStatic
+        private fun clickToOpenTroopProfile(uin: String): ((View) -> Unit) {
+            val longUin = try {
+                uin.toLong()
+            } catch (e: Exception) {
+                -1L
+            }
+            if (longUin < 10000) {
+                return {}
+            } else {
+                return { OpenProfileCard.openTroopProfileActivity(it.context, uin) }
+            }
+        }
 
         @JvmStatic
         private fun SpannableStringBuilder.appendSpanText(str: String, span: Any): SpannableStringBuilder {
