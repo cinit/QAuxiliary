@@ -22,6 +22,9 @@
 
 package io.github.qauxv.remote
 
+import com.google.gson.Gson
+import com.google.gson.annotations.SerializedName
+import com.google.gson.reflect.TypeToken
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
@@ -46,14 +49,14 @@ object TransactionHelper {
     const val apiAddress = "https://api.qwq2333.top/qa"
 
     // in ms, 15min
-    const val COOLDOWN_TIME = 15 * 60 * 1000L
+    private const val COOLDOWN_TIME = 15 * 60 * 1000L
 
     // 3 times in a cooldown time
-    const val MAX_ACTION_COUNT_PER_COOLDOWN = 3
+    private const val MAX_ACTION_COUNT_PER_COOLDOWN = 3
 
-    const val KEY_LAST_ACTION_COOLDOWN_TIME = "last_action_cooldown_time"
-    const val KEY_LAST_ACTION_COUNT_IN_COOLDOWN = "last_card_msg_action_count_in_cooldown"
-    const val KEY_MSG_SYNC_LIST = "card_msg_sync_list"
+    private const val KEY_LAST_ACTION_COOLDOWN_TIME = "last_action_cooldown_time"
+    private const val KEY_LAST_ACTION_COUNT_IN_COOLDOWN = "last_card_msg_action_count_in_cooldown"
+    private const val KEY_MSG_SYNC_LIST = "card_msg_sync_list"
 
     private val sIsSyncThreadRunning: AtomicBoolean by lazy { AtomicBoolean(false) }
     private val sCardMsgHistoryLock: Any = Object()
@@ -120,13 +123,13 @@ object TransactionHelper {
                     val cfg = ConfigManager.getDefaultConfig()
                     cfg.putInt(KEY_LAST_ACTION_COUNT_IN_COOLDOWN, cfg.getIntOrDefault(KEY_LAST_ACTION_COUNT_IN_COOLDOWN, 0) + 1)
                     // then allow to send
-                    val r = CardMsgSendRecord.createNewRecord(uin, msg)
+                    val r = CardMsgSendRecord(uin, msg)
                     notifyNewCardMsgRecord(r)
                     null
                 }
             } else {
                 // everything is ok
-                val r = CardMsgSendRecord.createNewRecord(uin, msg)
+                val r = CardMsgSendRecord(uin, msg)
                 notifyNewCardMsgRecord(r)
                 ConfigManager.getDefaultConfig().putLong(KEY_LAST_ACTION_COOLDOWN_TIME, System.currentTimeMillis())
                 ConfigManager.getDefaultConfig().putInt(KEY_LAST_ACTION_COUNT_IN_COOLDOWN, 1)
@@ -201,12 +204,16 @@ object TransactionHelper {
                     val request = JSONObject()
                     request.put("uin", r.uin)
                     request.put("msg", r.msg)
-                    request.put("time", r.time)
-                    request.put("uuid", r.uuid)
                     os.writeBytes(request.toString())
                     os.flush()
                     os.close()
-                    val resp = JSONObject(convertInputStreamToString(conn.inputStream)!!)
+                    val resp = JSONObject(convertInputStreamToString(
+                        if (conn.responseCode >= 400) {
+                            conn.errorStream
+                        } else {
+                            conn.inputStream
+                        }
+                    )!!)
                     if (resp.getInt("code") == 200) {
                         if (BuildConfig.DEBUG) {
                             Log.d("syncCardMsgHistory/requestSyncCardMsgHistory: ${r.uuid} $resp")
@@ -239,12 +246,11 @@ object TransactionHelper {
     /**
      * [time] in ms
      */
-    data class CardMsgSendRecord(val uin: Long, val msg: String, val time: Long, val uuid: String) {
-        companion object {
-            fun createNewRecord(uin: Long, msg: String): CardMsgSendRecord {
-                return CardMsgSendRecord(uin, msg, System.currentTimeMillis(), UUID.randomUUID().toString())
-            }
-        }
+    data class CardMsgSendRecord(
+        @SerializedName("uin") val uin: Long,
+        @SerializedName("msg") val msg: String,
+        @SerializedName("time") val time: Long = System.currentTimeMillis(),
+        @SerializedName("uuid") val uuid: String = UUID.randomUUID().toString()) {
 
         override fun toString(): String {
             return "CardMsgSendRecord(uin=$uin, msg='$msg', time=$time, uuid='$uuid')"
@@ -261,30 +267,11 @@ object TransactionHelper {
         } else {
             list
         }
-        val json = JSONArray()
-        for (item in items) {
-            val jsonItem = JSONObject()
-            jsonItem.put("uin", item.uin)
-            jsonItem.put("msg", item.msg)
-            jsonItem.put("time", item.time)
-            jsonItem.put("uuid", item.uuid)
-            json.put(jsonItem)
-        }
-        return json.toString()
+        return Gson().toJsonTree(items, object : TypeToken<List<CardMsgSendRecord?>?>() {}.type).asJsonArray.toString()
     }
 
     @Throws(JSONException::class)
-    fun deserializeCardMsgSendRecordListFromJson(json: String): ArrayList<CardMsgSendRecord> {
-        val jsonArray = JSONArray(json)
-        val list = ArrayList<CardMsgSendRecord>()
-        for (i in 0 until jsonArray.length()) {
-            val jsonItem = jsonArray.getJSONObject(i)
-            val uin = jsonItem.getLong("uin")
-            val msg = jsonItem.getString("msg")
-            val time = jsonItem.getLong("time")
-            val uuid = jsonItem.getString("uuid")
-            list.add(CardMsgSendRecord(uin, msg, time, uuid))
-        }
-        return list
-    }
+    fun deserializeCardMsgSendRecordListFromJson(json: String): ArrayList<CardMsgSendRecord> =
+        Gson().fromJson(json, object : TypeToken<List<CardMsgSendRecord?>?>() {}.type)
+
 }
