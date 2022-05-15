@@ -57,8 +57,16 @@ import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.Toasts
+import org.json.JSONObject
 import xyz.nextalone.util.SystemServiceUtils
+import java.io.BufferedReader
+import java.io.BufferedWriter
 import java.io.File
+import java.io.IOException
+import java.io.InputStreamReader
+import java.io.OutputStreamWriter
+import java.net.HttpURLConnection
+import java.net.URL
 import java.security.MessageDigest
 import java.util.concurrent.atomic.AtomicBoolean
 
@@ -414,7 +422,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                                         append("mr_")
                                         append(parts[1])
                                         append("_")
-                                        appendClickable(md5, clickToCopyText(md5))
+                                        appendClickable(md5, clickToSearchMd5Online(md5))
                                         for (i in 3 until parts.size) {
                                             append("_")
                                             append(parts[i])
@@ -530,6 +538,82 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private fun clickToCopyText(text: String): (View) -> Unit = {
         SystemServiceUtils.copyToClipboard(it.context, text)
+    }
+
+    private fun clickToSearchMd5Online(md5: String): (View) -> Unit {
+        return lambda@{
+            if (!md5.matches("[a-fA-F0-9]{32}".toRegex())) {
+                return@lambda
+            }
+            val ctx = requireContext()
+            val waitDialog = AlertDialog.Builder(ctx)
+                .setTitle("正在查询")
+                .setMessage("$md5\n通常不会超过一分钟")
+                .setCancelable(false)
+                .setNegativeButton("取消", null)
+                .show()
+            async {
+                try {
+                    val conn = URL("https://api.ioctl.cc/rpc/a4687597-5ef4-4f55-9626-3086728692fb/numeric10md5lookup_test")
+                        .openConnection() as HttpURLConnection
+                    conn.requestMethod = "POST"
+                    conn.doOutput = true
+                    conn.doInput = true
+                    conn.setRequestProperty("Content-Type", "application/json")
+                    conn.setRequestProperty("Accept", "application/json")
+                    conn.connect()
+                    val out = conn.outputStream
+                    val writer = BufferedWriter(OutputStreamWriter(out, "UTF-8"))
+                    writer.write("{\"h\":\"$md5\"}")
+                    writer.flush()
+                    writer.close()
+                    val inp = conn.inputStream
+                    val reader = BufferedReader(InputStreamReader(inp, "UTF-8"))
+                    val respBuffer = StringBuilder()
+                    var line: String
+                    while (true) {
+                        line = reader.readLine() ?: break
+                        respBuffer.append(line)
+                    }
+                    reader.close()
+                    inp.close()
+                    conn.disconnect()
+                    val resp = respBuffer.toString()
+                    val json = JSONObject(resp.toString())
+                    val code = json.getInt("code")
+                    if (code == 0) {
+                        val plain = json.getString("result")
+                        // check if the md5 is correct
+                        val testMd5 = uinToMd5(plain)
+                        if (testMd5 != md5) {
+                            throw IOException("md5 not match, got result=$plain, expected=$md5, testMd5=$testMd5")
+                        }
+                        mMd5ToUinLut[md5] = plain
+                    } else {
+                        runOnUiThread {
+                            AlertDialog.Builder(ctx).apply {
+                                setTitle("查询失败")
+                                setMessage("$md5\n$resp")
+                                setNeutralButton("复制 MD5") { _, _ ->
+                                    SystemServiceUtils.copyToClipboard(ctx, md5)
+                                }
+                                setPositiveButton("确定", null)
+                                show()
+                            }
+                        }
+                    }
+                } catch (e: Exception) {
+                    runOnUiThread {
+                        FaultyDialog.show(ctx, "查询失败", e.toString())
+                    }
+                } finally {
+                    runOnUiThread {
+                        waitDialog.dismiss()
+                        updateStatus()
+                    }
+                }
+            }
+        }
     }
 
     companion object {
