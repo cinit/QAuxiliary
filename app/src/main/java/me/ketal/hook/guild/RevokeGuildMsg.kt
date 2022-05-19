@@ -96,9 +96,11 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 it.args[1] = wording
             }
 
-        "Lcom/tencent/mobileqq/guild/message/GuildRoamMessageEventFlowProcessor;->a(Lcom/tencent/qphone/base/remote/ToServiceMsg;Ltencent/im/group_pro_proto/synclogic/synclogic\$ChannelMsgRsp;Ljava/util/ArrayList;Ljava/lang/String;)V"
+        "Lcom/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl;->processUpdateEvent(Lcom/tencent/imcore/message/BaseMsgProxy;Lcom/tencent/mobileqq/data/MessageRecord;Lcom/tencent/mobileqq/data/MessageRecord;)Z"
             .method.hookBefore(this){
-                it.result = null
+                if (it.args[1].get("msgtype") as Int != it.args[2].get("msgtype") as Int) {
+                    it.result = true
+                }
             }
     }
 
