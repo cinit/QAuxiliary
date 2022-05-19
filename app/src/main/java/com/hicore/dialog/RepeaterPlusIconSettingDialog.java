@@ -28,6 +28,9 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.text.Editable;
+import android.text.TextWatcher;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.widget.Button;
@@ -38,12 +41,14 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
 import android.widget.TextView;
+import android.widget.TextView.OnEditorActionListener;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.view.ViewCompat;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
@@ -58,7 +63,7 @@ import java.io.IOException;
 import java.io.InputStream;
 
 public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
-        DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
+        DialogInterface.OnClickListener, TextWatcher,
         CompoundButton.OnCheckedChangeListener {
 
     public static final String qn_repeat_icon_data = "qn_repeat_plus_icon_data";
@@ -73,9 +78,9 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     private final EditText pathInput;
     private final ImageView prevImgView;
     private final CheckBox specDpi;
-    private final RadioGroup dpiGroup;
     private final LinearLayout linearLayoutDpi;
     private final TextView textViewWarning;
+    private final EditText InputDPI;
     private byte[] targetIconData;
     @Nullable
     private String targetIconPathHint;
@@ -91,7 +96,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         ctx = dialog.getContext();
         dialog.setCanceledOnTouchOutside(false);
         @SuppressLint("InflateParams") View v = LayoutInflater.from(ctx)
-                .inflate(R.layout.select_repeater_icon_dialog, null);
+                .inflate(R.layout.select_repeater_icon_dialog_plus, null);
         loadBtn = v.findViewById(R.id.selectRepeaterIcon_buttonLoadFile);
         loadBtn.setOnClickListener(this);
         browseBtn = v.findViewById(R.id.selectRepeaterIcon_buttonBrowseImg);
@@ -103,11 +108,13 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         ViewCompat.setBackground(prevImgView, new DebugDrawable(ctx));
         specDpi = v.findViewById(R.id.selectRepeaterIcon_checkBoxSpecifyDpi);
         specDpi.setOnCheckedChangeListener(this);
-        dpiGroup = v.findViewById(R.id.selectRepeaterIcon_RadioGroupDpiList);
-        dpiGroup.setOnCheckedChangeListener(this);
+
         pathInput = v.findViewById(R.id.selectRepeaterIcon_editTextIconLocation);
         linearLayoutDpi = v.findViewById(R.id.selectRepeaterIcon_linearLayoutDpi);
         textViewWarning = v.findViewById(R.id.selectRepeaterIcon_textViewWarnMsg);
+        InputDPI = v.findViewById(R.id.selectRepeaterIcon_InputDpi);
+        InputDPI.addTextChangedListener(this);
+        InputDPI.setText(String.valueOf(getDpiSet()));
         dialog.setView(v);
     }
 
@@ -148,25 +155,6 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         return cfg.getIntOrDefault(qn_repeat_icon_dpi, 50);
     }
 
-    private static int getSelectedIdByDpi(int dpi) {
-        switch (dpi) {
-            case 640:
-                return R.id.selectRepeaterIcon_RadioButtonXxxhdpi;
-            case 480:
-                return R.id.selectRepeaterIcon_RadioButtonXxhdpi;
-            case 320:
-                return R.id.selectRepeaterIcon_RadioButtonXhdpi;
-            case 240:
-                return R.id.selectRepeaterIcon_RadioButtonHdpi;
-            case 160:
-                return R.id.selectRepeaterIcon_RadioButtonMdpi;
-            case 120:
-                return R.id.selectRepeaterIcon_RadioButtonLdpi;
-            default:
-                return 0;
-        }
-    }
-
     public static void createAndShowDialog(Context ctx) {
         new RepeaterPlusIconSettingDialog(ctx).show();
     }
@@ -198,39 +186,16 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
             linearLayoutDpi.setVisibility(View.GONE);
         } else {
             linearLayoutDpi.setVisibility(View.VISIBLE);
-            int id = getSelectedIdByDpi(dpi);
-            if (id == 0) {
-                specDpi.setChecked(false);
-                dpiGroup.setVisibility(View.GONE);
-            } else {
-                dpiGroup.check(id);
-            }
         }
         currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
         prevImgView.setImageDrawable(currentIconDrawable);
         return dialog;
     }
-
-    private int getCurrentSelectedDpi() {
-        if (!specDpi.isChecked()) {
-            return 0;
-        }
-        int id = dpiGroup.getCheckedRadioButtonId();
-        switch (id) {
-            case R.id.selectRepeaterIcon_RadioButtonXxxhdpi:
-                return 640;
-            case R.id.selectRepeaterIcon_RadioButtonXxhdpi:
-                return 480;
-            case R.id.selectRepeaterIcon_RadioButtonXhdpi:
-                return 320;
-            case R.id.selectRepeaterIcon_RadioButtonHdpi:
-                return 240;
-            case R.id.selectRepeaterIcon_RadioButtonMdpi:
-                return 160;
-            case R.id.selectRepeaterIcon_RadioButtonLdpi:
-                return 120;
-            default:
-                return 0;
+    private int getCurrentDPI(){
+        try{
+            return Integer.parseInt(InputDPI.getText().toString());
+        }catch (Exception e){
+            return 45;
         }
     }
 
@@ -276,7 +241,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
             prevImgView.setImageDrawable(ResUtils.loadDrawableFromAsset("repeat.png", ctx));
         } else if (v == saveBtn) {
             if (targetIconData != null) {
-                int dpi = getCurrentSelectedDpi();
+                int dpi = getCurrentDPI();
                 ConfigManager cfg = ConfigManager.getDefaultConfig();
                 cfg.putBytes(qn_repeat_icon_data, targetIconData);
                 cfg.putInt(qn_repeat_icon_dpi, dpi);
@@ -295,7 +260,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                     sCachedRepeaterIcon = null;
                 } else {
                     ConfigManager cfg = ConfigManager.getDefaultConfig();
-                    cfg.putInt(qn_repeat_icon_dpi, getCurrentSelectedDpi());
+                    cfg.putInt(qn_repeat_icon_dpi, getCurrentDPI());
                     cfg.save();
                     dialog.dismiss();
                     sCachedRepeaterIcon = null;
@@ -338,17 +303,17 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         }
         currentIcon = bm;
         targetIconData = data;
-        currentIcon.setDensity(getCurrentSelectedDpi());
+        currentIcon.setDensity(getCurrentDPI());
         currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
         prevImgView.setImageDrawable(currentIconDrawable);
         useDefault = false;
         linearLayoutDpi.setVisibility(View.VISIBLE);
     }
-
     @Override
-    public void onCheckedChanged(RadioGroup group, int checkedId) {
-        if (currentIcon != null) {
-            currentIcon.setDensity(getCurrentSelectedDpi());
+    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+        if (buttonView == specDpi) {
+            InputDPI.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            currentIcon.setDensity(getCurrentDPI());
             if (currentIconDrawable != null) {
                 currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
                 prevImgView.setImageDrawable(currentIconDrawable);
@@ -357,10 +322,19 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     }
 
     @Override
-    public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-        if (buttonView == specDpi) {
-            dpiGroup.setVisibility(isChecked ? View.VISIBLE : View.GONE);
-            currentIcon.setDensity(getCurrentSelectedDpi());
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+
+    }
+
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {
+
+    }
+
+    @Override
+    public void afterTextChanged(Editable s) {
+        if (currentIcon != null) {
+            currentIcon.setDensity(getCurrentDPI());
             if (currentIconDrawable != null) {
                 currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
                 prevImgView.setImageDrawable(currentIconDrawable);
