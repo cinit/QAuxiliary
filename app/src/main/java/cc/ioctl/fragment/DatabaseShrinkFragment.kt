@@ -43,6 +43,7 @@ import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
+import cc.ioctl.hook.OpenFriendChatHistory
 import cc.ioctl.hook.OpenProfileCard
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.LayoutHelper
@@ -428,6 +429,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                         }
                         sb.apply {
                             val parts = table.split("_")
+                            var shouldShowFriendChatHistory: Long = 0
                             if (parts[0] == "mr" && parts.size >= 3) {
                                 val md5 = parts[2]
                                 val uin = mMd5ToUinLut[md5]
@@ -446,6 +448,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                                             append(" // ")
                                             append(it)
                                         }
+                                        shouldShowFriendChatHistory = uin.toLong()
                                     } else {
                                         append(uin)
                                     }
@@ -479,6 +482,12 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                             append(" | ")
                             appendClickable("DROP") {
                                 confirmAndExecuteSql(database, "DROP TABLE '$table';")
+                            }
+                            if (shouldShowFriendChatHistory >= 10000) {
+                                append(" | ")
+                                appendClickable("VIEW") {
+                                    OpenFriendChatHistory.startFriendChatHistoryActivity(ctx, shouldShowFriendChatHistory)
+                                }
                             }
                             append(" ]")
                         }
