@@ -33,4 +33,5 @@
     <string name="action_copy_all">复制全部</string>
     <string name="action_filter_items">筛选</string>
     <string name="action_calculate_size">计算大小</string>
+    <string name="action_refresh">刷新</string>
 </resources>

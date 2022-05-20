@@ -31,6 +31,9 @@ import android.text.SpannableStringBuilder
 import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.LayoutInflater
+import android.view.Menu
+import android.view.MenuInflater
+import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
@@ -64,6 +67,27 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
     private val DATABASE_ALLOW_DELETE_REGEX: String = "(chat\\.trace|toggleFeature\\.db)"
 
     override fun getTitle() = "聊天记录数据库清理"
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setHasOptionsMenu(true)
+    }
+
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.database_file_list_options, menu)
+    }
+
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        return when (item.itemId) {
+            R.id.menu_refresh -> {
+                if (isAdded) {
+                    updateStatus()
+                }
+                true
+            }
+            else -> super.onOptionsItemSelected(item)
+        }
+    }
 
     override fun doOnCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

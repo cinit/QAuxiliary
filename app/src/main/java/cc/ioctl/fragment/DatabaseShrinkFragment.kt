@@ -76,7 +76,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
     private var mRecyclerView: RecyclerView? = null
     private val mTextItemList = ArrayList<SpannableStringBuilder>()
     private var mDatabase: SQLiteDatabase? = null
-    private var mTableSizeDesc = HashMap<String, String>(16)
+    private var mTableSizeLongOrErrorString = HashMap<String, Any>(16)
 
     private var mTableListCache = ArrayList<String>()
     private var mTableListCacheNeedInvalidate = true
@@ -193,7 +193,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         // find unknown tables
         val unknownTables = ArrayList<String>()
         for (table in tableList) {
-            if (mTableSizeDesc[table] == null) {
+            if (mTableSizeLongOrErrorString[table] == null) {
                 unknownTables.add(table)
             }
         }
@@ -373,7 +373,6 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                 try {
                     val databaseTables = ArrayList<String>()
                     if (mTableListCacheNeedInvalidate) {
-                        Log.d("select * from sqlite_master where type='table'; START")
                         database.rawQuery("select name from sqlite_master where type=\"table\"", null).use {
                             while (it.moveToNext()) {
                                 val name = it.getString(0)
@@ -382,17 +381,51 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                                 }
                             }
                         }
-                        Log.d("select * from sqlite_master where type='table'; END")
                         mTableListCacheNeedInvalidate = false
                         mTableListCache = databaseTables
                     } else {
                         databaseTables.addAll(mTableListCache)
                     }
-                    val tableNames: ArrayList<String> = getShowingTables()
+                    val tableNames: ArrayList<String> = ArrayList(getShowingTables())
+                    // sort with COUNT(*), DESC
+                    tableNames.sortWith { o1, o2 ->
+                        val r1: Any? = mTableSizeLongOrErrorString[o1]
+                        val r2: Any? = mTableSizeLongOrErrorString[o2]
+                        val count1: Long = if (r1 == null) {
+                            Int.MAX_VALUE.toLong() - 2L
+                        } else {
+                            if (r1 is Long) {
+                                r1
+                            } else {
+                                Int.MAX_VALUE.toLong()
+                            }
+                        }
+                        val count2: Long = if (r2 == null) {
+                            Int.MAX_VALUE.toLong() - 2L
+                        } else {
+                            if (r2 is Long) {
+                                r2
+                            } else {
+                                Int.MAX_VALUE.toLong()
+                            }
+                        }
+                        if (count1 > count2) {
+                            -1
+                        } else if (count1 < count2) {
+                            1
+                        } else {
+                            0
+                        }
+                    }
                     for (table: String in tableNames) {
                         val sb = SpannableStringBuilder()
                         mTextItemList.add(sb)
-                        val sizeDesc: String = mTableSizeDesc[table] ?: "COUNT(*)=???"
+                        val v: Any? = mTableSizeLongOrErrorString[table]
+                        val sizeDesc: String = if (v is Long) {
+                            "COUNT(*)=${v}"
+                        } else {
+                            v?.toString() ?: "COUNT(*)=???"
+                        }
                         sb.apply {
                             val parts = table.split("_")
                             if (parts[0] == "mr" && parts.size >= 3) {
@@ -522,10 +555,10 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                     size = it.getLong(0)
                 }
             }
-            mTableSizeDesc[table] = "COUNT(*)=$size"
+            mTableSizeLongOrErrorString[table] = java.lang.Long.valueOf(size)
             size
         } catch (e: Exception) {
-            mTableSizeDesc[table] = e.toString()
+            mTableSizeLongOrErrorString[table] = e.toString()
             -1L
         }
     }
