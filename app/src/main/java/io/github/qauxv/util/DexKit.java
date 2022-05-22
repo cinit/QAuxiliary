@@ -64,6 +64,7 @@ public class DexKit {
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
+    public static final String KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = "dex_deobfs_backend_dexbuilder";
     static DexHelper helper = null;
 
     //WARN: NEVER change the index!
@@ -137,6 +138,10 @@ public class DexKit {
         return helper;
     }
 
+    public static boolean isUseDexBuilderAsBackend() {
+        return ConfigManager.getDefaultConfig().getBoolean(KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, true);
+    }
+
     /**
      * Run the dex deobfuscation.
      *
@@ -207,8 +212,11 @@ public class DexKit {
         if (ret != null) {
             return ret;
         }
-        // find class from native
-        DexMethodDescriptor m = doFindMethodFromNative(i);
+        DexMethodDescriptor m = null;
+        if (isUseDexBuilderAsBackend()) {
+            // find class from native
+            m = doFindMethodFromNative(i);
+        }
         if (m == null) {
             // find class use legacy method
             m = doFindMethodDesc(i);
@@ -259,14 +267,16 @@ public class DexKit {
         if (i / 10000 == 0) {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
-        try {
-            // find method from native
-            DexMethodDescriptor m = doFindMethodFromNative(i);
-            if (m != null) {
-                return m.getMethodInstance(Initiator.getHostClassLoader());
+        if (isUseDexBuilderAsBackend()) {
+            try {
+                // find method from native
+                DexMethodDescriptor m = doFindMethodFromNative(i);
+                if (m != null) {
+                    return m.getMethodInstance(Initiator.getHostClassLoader());
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore
             }
-        } catch (NoSuchMethodException e) {
-            // ignore
         }
         DexMethodDescriptor m = doFindMethodDesc(i);
         if (m == null || NO_SUCH_METHOD.toString().equals(m.toString())) {

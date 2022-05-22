@@ -35,6 +35,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.util.ExfriendManager
@@ -109,6 +110,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
+            },
+            CategoryItem("反混淆") {
+                textItem(
+                    "切换反混淆后端", "如非必要请不要更改",
+                    value = if (isUseDexBuilderAsDexDeobfsBackend) "DexBuilder" else "Legacy",
+                    onClick = clickToSwitchDexDeobfsBackend
+                )
             },
             CategoryItem("调试信息") {
                 description(
@@ -270,6 +278,46 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val intent = Intent(requireContext(), browser)
         startActivity(intent)
     }
+
+    private val clickToSwitchDexDeobfsBackend = View.OnClickListener {
+        val ctx = requireContext()
+        val useDexBuilder = isUseDexBuilderAsDexDeobfsBackend
+        val optionText = arrayOf("DexBuilder(默认)", "Legacy")
+        val current = if (useDexBuilder) 0 else 1
+        AlertDialog.Builder(ctx)
+            .setTitle("选择反混淆后端")
+            .setSingleChoiceItems(optionText, current) { _, _ -> }
+            .setNegativeButton("取消", null)
+            .setPositiveButton("确定") { d, _ ->
+                val dialog = d as AlertDialog
+                val which = dialog.listView.checkedItemPosition
+                if (which == -1) {
+                    return@setPositiveButton
+                }
+                val useDexBuilder = which == 0
+                if (useDexBuilder != isUseDexBuilderAsDexDeobfsBackend) {
+                    // clear cache and restart
+                    isUseDexBuilderAsDexDeobfsBackend = useDexBuilder
+                    ConfigManager.getCache().apply {
+                        clear()
+                        save()
+                    }
+                    Thread.sleep(100)
+                    exitProcess(0)
+                }
+            }
+            .setCancelable(true)
+            .show()
+    }
+
+    private var isUseDexBuilderAsDexDeobfsBackend: Boolean
+        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault(DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, true)
+        set(value) {
+            ConfigManager.getDefaultConfig().apply {
+                putBoolean(DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, value)
+                save()
+            }
+        }
 
     private fun generateDebugInfo(): CharSequence {
         val ctx = requireContext()
