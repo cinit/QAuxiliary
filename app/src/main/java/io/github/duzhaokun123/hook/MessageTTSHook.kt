@@ -25,9 +25,7 @@ package io.github.duzhaokun123.hook
 import android.app.Activity
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import android.view.LayoutInflater
 import android.view.View
-import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
@@ -37,7 +35,6 @@ import io.github.duzhaokun123.util.TTS
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
-import io.github.qauxv.databinding.Tts2DialogBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
@@ -103,60 +100,14 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
         val id = param.args[0] as Int
         val ctx = param.args[1] as Activity
         val chatMessage = param.args[2]
+        val wc = CommonContextWrapper.createAppCompatContext(ctx)
         when (id) {
             R.id.item_tts -> {
-                val r = TTS.instance.speak(Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "", TextToSpeech.QUEUE_FLUSH, null)
-                if (r == TextToSpeech.ERROR) {
-                    Toasts.error(ctx, "TTS 请求失败")
-                }
+                TTS.speak(wc, Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "")
             }
             R.id.item_tts2 -> {
-                val wc = CommonContextWrapper.createAppCompatContext(ctx)
                 val msg = Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: ""
-                val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
-                binding.etMsg.setText(msg)
-                binding.tvVoice.text = TTS.instance.voice?.toString() ?: "null"
-                binding.btnSpeak.setOnClickListener {
-                    val r = TTS.instance.speak(binding.etMsg.text.toString(), TextToSpeech.QUEUE_FLUSH, null)
-                    if (r == TextToSpeech.ERROR) {
-                        Toasts.error(ctx, "TTS 请求失败")
-                    }
-                }
-                binding.btnChange.setOnClickListener {
-                    val voices = TTS.instance.voices
-                    val byLocal = voices.groupBy { it.locale }
-                    val localKeys = byLocal.keys.toList().sortedBy { it.toLanguageTag() }
-                    AlertDialog.Builder(wc)
-                        .setTitle("local")
-                        .setItems(localKeys.map { it.toLanguageTag() }.toTypedArray()) { _, which ->
-                            val local = localKeys[which]
-                            val voices2 = byLocal[local]
-                            val names = voices2!!.map { it.name }.sorted().toTypedArray()
-                            AlertDialog.Builder(wc)
-                                .setTitle(local.toLanguageTag())
-                                .setItems(names) {_, which2 ->
-                                    val selectedVoice = voices2[which2]
-                                    AlertDialog.Builder(wc)
-                                        .setTitle(selectedVoice.name)
-                                        .setMessage(selectedVoice.toString())
-                                        .setPositiveButton("确定") { _, _ ->
-                                            val r = TTS.instance.setVoice(selectedVoice)
-                                            if (r == TextToSpeech.ERROR) {
-                                                Toasts.error(ctx, "TTS 请求失败")
-                                            } else {
-                                                binding.tvVoice.text = TTS.instance.voice.toString()
-                                            }
-                                        }.setNegativeButton(android.R.string.cancel, null)
-                                        .show()
-                                }.setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                        }.setNegativeButton(android.R.string.cancel, null)
-                        .show()
-                }
-                AlertDialog.Builder(wc)
-                    .setView(binding.root)
-                    .setTitle("TTS 高级")
-                    .show()
+                TTS.showConfigDialog(wc, msg)
             }
         }
     }

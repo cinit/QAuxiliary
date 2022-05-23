@@ -24,7 +24,11 @@ package io.github.duzhaokun123.util
 
 import android.content.Context
 import android.speech.tts.TextToSpeech
-import kotlin.properties.Delegates
+import android.view.LayoutInflater
+import androidx.appcompat.app.AlertDialog
+import io.github.qauxv.databinding.Tts2DialogBinding
+import io.github.qauxv.util.Toasts
+import java.io.File
 
 object TTS {
     lateinit var instance: TextToSpeech
@@ -47,5 +51,83 @@ object TTS {
             return
         }
         initCallbacks.add(callback)
+    }
+
+    fun checkInit(wc: Context): Boolean {
+        if (initResult != TextToSpeech.SUCCESS) {
+            AlertDialog.Builder(wc)
+                .setTitle("TTS 未正常初始化")
+                .setMessage("检查 系统设置 -> 无障碍 -> 文字转语言(TTS)")
+                .show()
+        }
+        return initResult == TextToSpeech.SUCCESS
+    }
+
+    fun checkTTSRequestResult(wc: Context, result: Int) {
+        if (result == TextToSpeech.ERROR) {
+            AlertDialog.Builder(wc)
+                .setTitle("TTS 请求失败")
+                .setNegativeButton("TTS 设置") { _, _ ->
+                    showConfigDialog(wc, "")
+                }.show()
+        }
+    }
+
+    fun speak(wc: Context, text: String): Boolean {
+        if (!checkInit(wc)) return false
+        val r = instance.speak(text, TextToSpeech.QUEUE_FLUSH, null)
+        checkTTSRequestResult(wc, r)
+        return r == TextToSpeech.SUCCESS
+    }
+
+    fun toFile(wc: Context, text: String, file: File, utteranceId: String): Boolean {
+        if (!checkInit(wc)) return false
+        val r = instance.synthesizeToFile(text, null, file, utteranceId)
+        checkTTSRequestResult(wc, r)
+        return r == TextToSpeech.SUCCESS
+    }
+
+    fun showConfigDialog(wc: Context, text: String = "") {
+        val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
+        binding.etMsg.setText(text)
+        binding.tvVoice.text = instance.voice?.toString() ?: "null"
+        binding.btnSpeak.setOnClickListener {
+            speak(wc, binding.etMsg.text.toString())
+        }
+        binding.btnChange.setOnClickListener {
+            val voices = instance.voices
+            val byLocal = voices.groupBy { it.locale }
+            val localKeys = byLocal.keys.toList().sortedBy { it.toLanguageTag() }
+            AlertDialog.Builder(wc)
+                .setTitle("local")
+                .setItems(localKeys.map { it.toLanguageTag() }.toTypedArray()) { _, which ->
+                    val local = localKeys[which]
+                    val voices2 = byLocal[local]
+                    val names = voices2!!.map { it.name }.sorted().toTypedArray()
+                    AlertDialog.Builder(wc)
+                        .setTitle(local.toLanguageTag())
+                        .setItems(names) {_, which2 ->
+                            val selectedVoice = voices2[which2]
+                            AlertDialog.Builder(wc)
+                                .setTitle(selectedVoice.name)
+                                .setMessage(selectedVoice.toString())
+                                .setPositiveButton("确定") { _, _ ->
+                                    val r = instance.setVoice(selectedVoice)
+                                    if (r == TextToSpeech.ERROR) {
+                                        Toasts.error(wc, "TTS 请求失败")
+                                    } else {
+                                        binding.tvVoice.text = instance.voice.toString()
+                                    }
+                                }.setNegativeButton(android.R.string.cancel, null)
+                                .show()
+                        }.setNegativeButton(android.R.string.cancel, null)
+                        .show()
+                }.setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
+        AlertDialog.Builder(wc)
+            .setView(binding.root)
+            .setTitle("TTS 设置")
+            .show()
     }
 }

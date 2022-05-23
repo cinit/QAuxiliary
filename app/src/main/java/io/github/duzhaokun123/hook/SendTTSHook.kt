@@ -62,6 +62,7 @@ object SendTTSHook :
             DexKit.N_BASE_CHAT_PIE__INIT
         )
     ), IInputButtonDecorator {
+
     //TODO: mp3 to silk
 //    lateinit var voiceRedPacketHelperImpl: Any
 //    lateinit var getRecorderParam: Method
@@ -116,26 +117,43 @@ object SendTTSHook :
         val mp3 = File(wc.externalCacheDir, "send_tts/mp3")
 //        val silk = File(wc.externalCacheDir, "send_tts/silk")
         mp3.parentFile!!.mkdirs()
-        TTS.instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-            override fun onStart(utteranceId: String?) {}
+        var tryCount = 0
+        fun trySend(retry: Boolean = false) {
+            if (tryCount != 0 && tryCount % 5 == 0 && retry.not()) {
+                AlertDialog.Builder(wc)
+                    .setTitle("发送失败 (tryCount=$tryCount)")
+                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试")
+                    .setNegativeButton("TTS 设置") { _, _ ->
+                        TTS.showConfigDialog(wc, toSend)
+                    }.setPositiveButton("重试") { _, _, ->
+                        trySend(true)
+                    }.show()
+                return
+            }
+            tryCount++
+            TTS.instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                override fun onStart(utteranceId: String?) {}
 
-            override fun onDone(utteranceId: String?) {}
+                override fun onDone(utteranceId: String?) {}
 
-            override fun onError(utteranceId: String?) {}
+                override fun onError(utteranceId: String?) {}
 
-            override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
-                TTS.instance.setOnUtteranceProgressListener(null)
-                runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
-                    .onFailure {
-                        Toasts.error(wc, "再试一下说不定就成了")
-                    }.onSuccess {
-                        it.release()
-                        SyncUtils.runOnUiThread {
-                            val time = TimeFormat.format1.format(System.currentTimeMillis())
-                            val save = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/$time.mp3")
-                            mp3.copyTo(save)
-                            ChatActivityFacade.sendPttMessage(qqApp, session, save.absolutePath)
-                            input.setText("")
+                override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
+                    TTS.instance.setOnUtteranceProgressListener(null)
+                    runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
+                        .onFailure {
+                            SyncUtils.runOnUiThread {
+                                trySend()
+                            }
+                        }.onSuccess {
+                            it.release()
+                            SyncUtils.runOnUiThread {
+                                val time = TimeFormat.format1.format(System.currentTimeMillis())
+                                val save = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/$time.mp3")
+                                mp3.copyTo(save)
+                                ChatActivityFacade.sendPttMessage(qqApp, session, save.absolutePath)
+                                input.setText("")
+                                Toasts.success(wc, "发送成功 (tryCount=$tryCount)")
 //                    runCatching {
 //                        val r = mp3ToSilk(mp3.absolutePath, silk.absolutePath)
 //                        if (r) {
@@ -159,11 +177,13 @@ object SendTTSHook :
 //                            input.setText("")
 //                        }
 //                    }
+                            }
                         }
-                    }
-            }
-        })
-        TTS.instance.synthesizeToFile(toSend, null, mp3, "send_tts")
+                }
+            })
+            TTS.toFile(wc, toSend, mp3, "send_tts")
+        }
+        trySend()
         return true
     }
 
