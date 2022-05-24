@@ -104,6 +104,7 @@ android {
     lint {
         checkDependencies = true
     }
+    namespace = "io.github.qauxv"
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
             val outputFileName = "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"

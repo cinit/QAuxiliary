@@ -1,8 +1,8 @@
 import com.android.build.gradle.BaseExtension
 
 plugins {
-    id("com.android.application") version "7.1.3" apply false
-    id("com.android.library") version "7.1.3" apply false
+    id("com.android.application") version "7.2.0" apply false
+    id("com.android.library") version "7.2.0" apply false
     id("org.jetbrains.kotlin.android") version Version.kotlin apply false
 }
 
