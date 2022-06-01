@@ -28,11 +28,14 @@ import java.lang.reflect.Field;
 
 public class CustomMenu {
 
+    private CustomMenu() {
+    }
+
     @NonNull
     public static Object createItem(Class<?> clazz, int id, String title, int icon) throws ReflectiveOperationException {
         try {
             try {
-                Constructor initWithArgv = clazz.getConstructor(int.class, String.class, int.class);
+                Constructor<?> initWithArgv = clazz.getConstructor(int.class, String.class, int.class);
                 return initWithArgv.newInstance(id, title, icon);
             } catch (NoSuchMethodException unused) {
                 //no direct constructor, reflex
@@ -57,7 +60,7 @@ public class CustomMenu {
     public static Object createItem(Class<?> clazz, int id, String title) throws ReflectiveOperationException {
         Object item;
         try {
-            Constructor initWithArgv = clazz.getConstructor(int.class, String.class);
+            Constructor<?> initWithArgv = clazz.getConstructor(int.class, String.class);
             return initWithArgv.newInstance(id, title);
         } catch (NoSuchMethodException ignored) {
         } catch (IllegalAccessException e) {
@@ -78,5 +81,16 @@ public class CustomMenu {
         f.setAccessible(true);
         f.set(item, title);
         return item;
+    }
+
+    public static void checkArrayElementNonNull(Object[] array) {
+        if (array == null) {
+            throw new NullPointerException("array is null");
+        }
+        for (int i = 0; i < array.length; i++) {
+            if (array[i] == null) {
+                throw new NullPointerException("array[" + i + "] is null, length=" + array.length);
+            }
+        }
     }
 }

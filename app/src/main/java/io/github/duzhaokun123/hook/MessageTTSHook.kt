@@ -44,7 +44,7 @@ import io.github.qauxv.util.Toasts
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageTTSHook: CommonSwitchFunctionHook() {
+object MessageTTSHook : CommonSwitchFunctionHook() {
     override val name: String
         get() = "文字消息转语音 (使用系统 TTS)"
 
@@ -53,7 +53,8 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         val cl_ArkAppItemBuilder = Initiator._TextItemBuilder()
-        XposedHelpers.findAndHookMethod(cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
+        XposedHelpers.findAndHookMethod(
+            cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
             Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback
         )
         for (m in cl_ArkAppItemBuilder!!.declaredMethods) {
@@ -81,14 +82,14 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
 
     private val getMenuItemCallBack = afterHookIfEnabled(60) { param ->
         try {
-            val arr = param.result
-            val clQQCustomMenuItem = arr.javaClass.componentType
-            val itemTts = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts, "TTS")
-            val itemTts2 = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts2, "TTS+")
-            val ret = java.lang.reflect.Array.newInstance(clQQCustomMenuItem!!, java.lang.reflect.Array.getLength(arr) + 2)
-            System.arraycopy(arr, 0, ret, 0, java.lang.reflect.Array.getLength(arr))
-            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr) - 1, itemTts)
-            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr), itemTts2)
+            val original: Array<Any> = param.result as Array<Any>
+            val originLength = original.size
+            val itemClass = original.javaClass.componentType!!
+            val ret: Array<Any?> = java.lang.reflect.Array.newInstance(itemClass, originLength + 2) as Array<Any?>
+            System.arraycopy(original, 0, ret, 0, originLength)
+            ret[originLength] = CustomMenu.createItem(itemClass, R.id.item_tts, "TTS")
+            ret[originLength + 1] = CustomMenu.createItem(itemClass, R.id.item_tts2, "TTS+")
+            CustomMenu.checkArrayElementNonNull(ret)
             param.result = ret
         } catch (e: Throwable) {
             traceError(e)
