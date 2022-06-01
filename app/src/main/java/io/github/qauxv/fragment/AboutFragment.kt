@@ -91,8 +91,8 @@ class AboutFragment : BaseRootLayoutFragment() {
                         )
                     }
                     if (!isInModuleProcess) {
-                        add(TextSwitchItem("AppCenter 匿名统计",
-                                summary = "我们使用 Microsoft AppCenter 来匿名发送最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
+                        add(TextSwitchItem("AppCenter 匿名统计与崩溃收集",
+                                summary = "我们使用 Microsoft AppCenter 来匿名地收集崩溃信息和最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
                                 switchAgent = mAllowAppCenterStatics))
                     }
                 },
