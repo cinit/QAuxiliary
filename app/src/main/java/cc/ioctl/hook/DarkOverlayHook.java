@@ -48,6 +48,8 @@ import java.lang.reflect.Method;
 public class DarkOverlayHook extends CommonSwitchFunctionHook {
 
     public static final DarkOverlayHook INSTANCE = new DarkOverlayHook();
+
+    private static final String NO_SUCH_FIELD_STUB = "Lio/github/qauxv/util/NoSuchClass;->mNoSuchField:V;";
     private static final String cache_night_mask_field = "cache_night_mask_field";
     private static final String cache_night_mask_field_version_code = "cache_night_mask_field_version_code";
 
@@ -55,32 +57,23 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
         super();
     }
 
-    static Field fMask = null;
-
     @Override
     protected boolean initOnce() throws Exception {
         if (!isAvailable()) {
             return false;
         }
         Method handleNightMask = DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__handleNightMask);
+        DexFieldDescriptor desc = FindNightMask.getNightMaskField();
+        if (desc == null) {
+            return false;
+        }
+        Field fMask = desc.getFieldInstance(Initiator.getHostClassLoader());
+        fMask.setAccessible(true);
         HookUtils.hookAfterIfEnabled(this, handleNightMask, 49, param -> {
-            if (fMask == null) {
-                DexFieldDescriptor desc = FindNightMask.getNightMaskField();
-                if (desc == null) {
-                    Log.e("FindNightMask/E getNightMaskField return null");
-                    return;
-                }
-                fMask = desc.getFieldInstance(Initiator.getHostClassLoader());
-                if (fMask != null) {
-                    fMask.setAccessible(true);
-                }
-            }
-            if (fMask != null) {
-                Object chatPie = param.thisObject;
-                View mask = (View) fMask.get(chatPie);
-                if (mask != null) {
-                    mask.setVisibility(View.GONE);
-                }
+            Object chatPie = param.thisObject;
+            View mask = (View) fMask.get(chatPie);
+            if (mask != null) {
+                mask.setVisibility(View.GONE);
             }
         });
         return true;
@@ -104,6 +97,9 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
                     fieldName = name;
                 }
             }
+            if (NO_SUCH_FIELD_STUB.equals(fieldName)) {
+                return null;
+            }
             if (fieldName != null) {
                 return new DexFieldDescriptor(fieldName);
             }
@@ -124,7 +120,7 @@ public class DarkOverlayHook extends CommonSwitchFunctionHook {
                 field = DexFlow.guessFieldByNewInstance(dex, handleNightMask, View.class);
             } catch (Exception e) {
                 DarkOverlayHook.INSTANCE.traceError(e);
-                cache.putString(cache_night_mask_field, "Lio/github/qauxv/util/NoSuchClass;->mNoSuchField:V;");
+                cache.putString(cache_night_mask_field, NO_SUCH_FIELD_STUB);
                 cache.putInt(cache_night_mask_field_version_code, version);
                 return null;
             }
