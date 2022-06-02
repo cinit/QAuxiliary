@@ -61,9 +61,6 @@ public class HookInstaller {
     }
 
     public static void allowEarlyInit(@NonNull IDynamicHook hook) {
-        if (hook == null) {
-            return;
-        }
         try {
             if (hook.isTargetProcess() && hook.isEnabled() && !hook.isPreparationRequired() && !hook.isInitialized()) {
                 hook.initialize();

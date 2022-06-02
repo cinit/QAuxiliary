@@ -22,6 +22,7 @@
 
 package io.github.qauxv.hook
 
+import io.github.qauxv.BuildConfig
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -99,7 +100,7 @@ abstract class BaseFunctionHook(
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault("$mHookKey.enabled", mDefaultEnabled)
+        get() = enableAllHook() || ConfigManager.getDefaultConfig().getBooleanOrDefault("$mHookKey.enabled", mDefaultEnabled)
         set(value) {
             ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
         }
@@ -116,5 +117,9 @@ abstract class BaseFunctionHook(
             mErrors.add(e)
         }
         Log.e(e)
+    }
+
+    private fun enableAllHook(): Boolean {
+        return BuildConfig.DEBUG && ConfigManager.getDefaultConfig().getBooleanOrDefault("EnableAllHook.enabled", false)
     }
 }
