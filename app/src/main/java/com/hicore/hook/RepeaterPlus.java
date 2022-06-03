@@ -161,7 +161,7 @@ public class RepeaterPlus extends BaseFunctionHook {
             if (context.getClass().getName().contains("MultiForwardActivity")) {
                 return;
             }
-            List MessageRecoreList = MField.GetField(param.thisObject, "a", List.class);
+            List MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
             if (MessageRecoreList == null) {
                 return;
             }
