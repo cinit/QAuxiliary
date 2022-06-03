@@ -50,6 +50,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
 
     override fun initOnce() = throwOrTrue {
         val method: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "O0"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "m"
             requireMinQQVersion(QQVersion.QQ_8_6_0) -> "j"
             requireMinQQVersion(QQVersion.QQ_8_5_0) -> "h"
@@ -58,6 +59,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         }
         val clz = DexKit.doFindClass(DexKit.C_AIOPictureView)
         val m: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "a1"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "h"
             requireMinQQVersion(QQVersion.QQ_8_6_0) -> "g"
             requireMinQQVersion(QQVersion.QQ_8_5_0) -> "f"
