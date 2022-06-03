@@ -25,6 +25,7 @@ package com.hicore.hook;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
@@ -61,8 +62,9 @@ public class DisablePopOutEmoticon extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Initiator.loadClass("com.tencent.mobileqq.popanim.util.PopOutEmoticonUtil")
-                        .getDeclaredMethod("a", int.class, Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonInfo"), int.class),
+                Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.popanim.util.PopOutEmoticonUtil"),
+                        boolean.class, false,
+                        int.class, Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonInfo"), int.class),
                 param -> param.setResult(false));
         return true;
     }
