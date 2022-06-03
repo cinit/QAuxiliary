@@ -22,14 +22,15 @@
 
 package me.ketal.hook
 
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookBefore
-import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -41,8 +42,13 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/open/agent/QrAgentLoginManager\$2;->a(Z)V"
-            .method.hookBefore(this) {
+        Initiator.loadClass("com/tencent/open/agent/QrAgentLoginManager$2").declaredMethods
+            .findMethod {
+                returnType == Void.TYPE &&
+                    parameterTypes.size == 1 &&
+                    parameterTypes[0] == Boolean::class.java
+            }
+            .hookBefore(this) {
                 it.args[0] = false
             }
     }
