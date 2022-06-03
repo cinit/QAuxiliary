@@ -25,6 +25,7 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
@@ -32,6 +33,7 @@ import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -100,28 +102,26 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                 }
             }
         }
-        when {
-            hostInfo.versionCode >= QQVersion.QQ_8_5_5 -> {
-                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(
-                    this,
-                    callback
-                )
-                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/coreui/pluspanel/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(
-                    this,
-                    callback
-                )
+        val kPlusPanelViewBinder: Class<*>? = Initiator.load("com/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder");
+        if (kPlusPanelViewBinder != null) {
+            // assert QQ.version >= QQVersion.QQ_8_5.0
+            val methods = kPlusPanelViewBinder.declaredMethods
+            val targetMethods = Array<Method?>(2) { null }
+            var i = 0
+            for (method in methods) {
+                if (method.returnType == Void.TYPE) {
+                    val params = method.parameterTypes
+                    if (params.size == 3 && params[0] == java.util.ArrayList::class.java) {
+                        targetMethods[i++] = method
+                    }
+                }
             }
-            hostInfo.versionCode == QQVersion.QQ_8_5_0 -> {
-                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->a(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(
-                    this,
-                    callback
-                )
-                "Lcom/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder;->b(Ljava/util/ArrayList;Lcom/tencent/mobileqq/activity/aio/PanelAdapter;Lcom/tencent/mobileqq/emoticonview/EmoticonPagerRadioGroup;)V".method.hookBefore(
-                    this,
-                    callback
-                )
-            }
-            hostInfo.versionCode >= QQVersion.QQ_8_4_8 -> {
+            // if more than 2 methods, then IndexOutOfBoundsException, if less than 2 methods, then NullPointerException
+            targetMethods[0]!!.hookBefore(this, callback)
+            targetMethods[1]!!.hookBefore(this, callback)
+        } else {
+            // assert QQ.version <= QQVersion.QQ_8_4_8
+            if (hostInfo.versionCode >= QQVersion.QQ_8_4_8) {
                 "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/ArrayList;)V".method.hookBefore(
                     this,
                     callback
@@ -130,8 +130,7 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                     this,
                     callback
                 )
-            }
-            else -> {
+            } else {
                 "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/List;)V".method.hookBefore(
                     this,
                     callback
