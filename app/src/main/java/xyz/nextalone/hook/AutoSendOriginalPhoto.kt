@@ -31,6 +31,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -46,7 +47,8 @@ object AutoSendOriginalPhoto :
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        "Lcom.tencent.mobileqq.activity.aio.photo.PhotoListPanel;->a(Z)V".method.hookAfter(this) {
+        val method = if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "Z" else "a"
+        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
             sendOriginPhotoCheckbox?.isChecked = true
