@@ -88,9 +88,11 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         "每日打卡",         //每日打卡 [0,1,0,0,0,1,4,0,14] || [0,1,0,0,0,1,4,0,1,14,1]
         "王卡免流量特权",   //开通王卡 [0,1,0,0,0,1,4,0,15] || [0,1,0,0,0,1,4,0,1,15,1]
         "厘米秀",
+        "等级"
     )
 
     private val keyWords: SortedMap<String, String> = sortedMapOf(
+        "级" to "等级",
         "间" to "夜间模式",
         "达" to "登录达人",
         "天" to "登录达人",
