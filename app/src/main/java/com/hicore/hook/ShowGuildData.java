@@ -26,12 +26,14 @@ import android.view.View;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -58,7 +60,7 @@ public class ShowGuildData extends CommonSwitchFunctionHook {
     protected boolean initOnce() throws Exception {
         HookUtils.hookAfterIfEnabled(this,
                 Initiator.loadClass("com.tencent.mobileqq.guild.setting.popup.GuildMainSettingDialogFragment")
-                        .getDeclaredMethod("o"),
+                        .getDeclaredMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "mk" : "o"),
                 param -> {
                     View v = Reflex.getInstanceObject(param.thisObject, "o", RelativeLayout.class);
                     v.setVisibility(View.VISIBLE);
