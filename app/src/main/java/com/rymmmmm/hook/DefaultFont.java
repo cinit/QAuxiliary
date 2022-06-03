@@ -24,11 +24,13 @@ package com.rymmmmm.hook;
 import android.view.View;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -58,8 +60,9 @@ public class DefaultFont extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
-            if (m.getName().equals("a") && !Modifier.isStatic(m.getModifiers())
-                && m.getReturnType() == void.class) {
+            if (m.getName().equals(HostInfo.requireMinPlayQQVersion(QQVersion.QQ_8_8_93) ? "m0" : "a")
+                    && !Modifier.isStatic(m.getModifiers())
+                    && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
                 if (argt.length == 2 && argt[0] != View.class && argt[1] == Initiator._ChatMessage()) {
                     HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
