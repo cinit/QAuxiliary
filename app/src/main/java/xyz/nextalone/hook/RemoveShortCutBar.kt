@@ -25,6 +25,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.method
@@ -33,20 +35,20 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveShortCutBar : CommonSwitchFunctionHook() {
+object RemoveShortCutBar : CommonSwitchFunctionHook(intArrayOf(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)) {
 
     override val name = "隐藏文本框上方快捷方式"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce() = throwOrTrue {
-        val methodName = if (requireMinQQVersion(QQVersion.QQ_8_6_0))
-            "Lcom/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper;->g()V"
-        else "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V"
-        methodName.method.replace(
-            this,
-            null
-        )
+        val kTroopAppShortcutBarHelper = Initiator.load("com/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper");
+        if (kTroopAppShortcutBarHelper != null) {
+            val resumeAppShorcutBar = DexKit.getMethodDescFromCache(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)
+            resumeAppShorcutBar!!.getMethodInstance(Initiator.getHostClassLoader()).replace(this, null)
+        } else {
+            "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V".method.replace(this, null)
+        }
     }
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_5)

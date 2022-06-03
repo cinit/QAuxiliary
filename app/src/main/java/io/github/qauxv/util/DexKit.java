@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -128,7 +129,8 @@ public class DexKit {
     public static final int N_QQSettingMe_onResume = 20016;
     public static final int N_BaseChatPie_mosaic = 20017;
     public static final int N_WebSecurityPluginV2_callback = 20018;
-    public static final int DEOBF_NUM_N = 18;
+    public static final int N_TroopAppShortcutBarHelper_resumeAppShorcutBar = 20019;
+    public static final int DEOBF_NUM_N = 19;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -530,6 +532,8 @@ public class DexKit {
                 return "basechatpie_mosaic";
             case N_WebSecurityPluginV2_callback:
                 return "websecuritypluginv2_callback";
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return "TroopAppShortcutBarHelper_resumeAppShorcutBar";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -690,6 +694,9 @@ public class DexKit {
                 break;
             case N_WebSecurityPluginV2_callback:
                 ret = "com.tencent.mobileqq.webview.WebSecurityPluginV2$1";
+                break;
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                ret = "com.tencent.mobileqq.activity.aio.helper.TroopAppShortcutBarHelper";
                 break;
             default:
                 ret = null;
@@ -953,6 +960,8 @@ public class DexKit {
                         0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
                         0x72, 0x3D
                     }};
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return new byte[][]{forFiniteString8("resumeAppShorcutBar")};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1064,6 +1073,8 @@ public class DexKit {
                 return new int[]{2};
             case N_WebSecurityPluginV2_callback:
                 return new int[]{17, 10};
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return new int[]{7, 8, 4, 6};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1530,6 +1541,16 @@ public class DexKit {
                     }
                 }
                 break;
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if (m.declaringClass.contains("TroopAppShortcutBarHelper")) {
+                        return m;
+                    }
+                }
+                return null;
+            }
         }
         return null;
     }
@@ -1881,4 +1902,27 @@ public class DexKit {
         }
     }
 
+    @NonNull
+    public static byte[] forFiniteString8(@NonNull String str, int len) {
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        if (u8.length > 127 || len > 127) {
+            throw new IllegalArgumentException("String too long");
+        }
+        byte[] result = new byte[len + 1];
+        result[0] = (byte) u8.length;
+        System.arraycopy(u8, 0, result, 1, u8.length);
+        return result;
+    }
+
+    @NonNull
+    public static byte[] forFiniteString8(@NonNull String str) {
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        if (u8.length > 127) {
+            throw new IllegalArgumentException("String too long");
+        }
+        byte[] result = new byte[u8.length + 1];
+        result[0] = (byte) u8.length;
+        System.arraycopy(u8, 0, result, 1, u8.length);
+        return result;
+    }
 }
