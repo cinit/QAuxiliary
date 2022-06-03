@@ -107,7 +107,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         Class<?> kiv2OnItemClickListener = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet$OnItemClickListener");
         // using kv3OnItemClickListenerV2 = com.tencent.mobileqq.widget.share.ShareActionSheet.OnItemClickListenerV2
         Method miv2OnItemClick = kiv2OnItemClickListener.getDeclaredMethod("onItemClick", kActionSheetItem, kiShareActionSheet);
-        Method showActionSheetForPic = kAIOPictureView.getDeclaredMethod("a",
+        Method showActionSheetForPic = Reflex.findSingleMethod(kAIOPictureView, void.class, false,
                 Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureData"),
                 Initiator.loadClass("com.tencent.richmediabrowser.model.RichMediaBrowserInfo")
         );
