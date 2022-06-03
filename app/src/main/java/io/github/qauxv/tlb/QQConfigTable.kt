@@ -23,7 +23,34 @@ package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
 import cc.ioctl.hook.VasProfileAntiCrash
-import io.github.qauxv.util.QQVersion.*
+import io.github.qauxv.util.QQVersion.QQ_8_1_3
+import io.github.qauxv.util.QQVersion.QQ_8_1_5
+import io.github.qauxv.util.QQVersion.QQ_8_2_6
+import io.github.qauxv.util.QQVersion.QQ_8_3_6
+import io.github.qauxv.util.QQVersion.QQ_8_4_1
+import io.github.qauxv.util.QQVersion.QQ_8_4_10
+import io.github.qauxv.util.QQVersion.QQ_8_4_5
+import io.github.qauxv.util.QQVersion.QQ_8_4_8
+import io.github.qauxv.util.QQVersion.QQ_8_5_0
+import io.github.qauxv.util.QQVersion.QQ_8_5_5
+import io.github.qauxv.util.QQVersion.QQ_8_6_0
+import io.github.qauxv.util.QQVersion.QQ_8_6_5
+import io.github.qauxv.util.QQVersion.QQ_8_7_0
+import io.github.qauxv.util.QQVersion.QQ_8_7_5
+import io.github.qauxv.util.QQVersion.QQ_8_8_0
+import io.github.qauxv.util.QQVersion.QQ_8_8_11
+import io.github.qauxv.util.QQVersion.QQ_8_8_17
+import io.github.qauxv.util.QQVersion.QQ_8_8_20
+import io.github.qauxv.util.QQVersion.QQ_8_8_23
+import io.github.qauxv.util.QQVersion.QQ_8_8_3
+import io.github.qauxv.util.QQVersion.QQ_8_8_33
+import io.github.qauxv.util.QQVersion.QQ_8_8_35
+import io.github.qauxv.util.QQVersion.QQ_8_8_38
+import io.github.qauxv.util.QQVersion.QQ_8_8_50
+import io.github.qauxv.util.QQVersion.QQ_8_8_68
+import io.github.qauxv.util.QQVersion.QQ_8_8_80
+import io.github.qauxv.util.QQVersion.QQ_8_8_83
+import io.github.qauxv.util.QQVersion.QQ_8_8_93
 import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.RemovePlayTogether
 import me.kyuubiran.hook.SimplifyQQSettingMe
@@ -89,16 +116,17 @@ class QQConfigTable : ConfigTableInterface {
 
             // 打卡
             RemovePlayTogether.ClockInEntryHelper to mapOf(
-                    QQ_8_4_8 to "d",
-                    QQ_8_8_20 to "f",
+                QQ_8_4_8 to "d",
+                QQ_8_8_20 to "f",
+                QQ_8_8_93 to "n",
             ),
 
             // 一起嗨
             RemovePlayTogether.TogetherControlHelper to mapOf(
-                    QQ_8_4_1 to "h",
-                    QQ_8_4_8 to "g",
-                    QQ_8_8_20 to "n"
+                QQ_8_4_1 to "h",
+                QQ_8_4_8 to "g",
+                QQ_8_8_20 to "n",
+                QQ_8_8_93 to "q",
             )
     )
-
 }
