@@ -23,11 +23,17 @@ package xyz.nextalone.hook
 
 import android.app.Activity
 import android.view.View
+import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Initiator
 import xyz.nextalone.base.MultiItemDelayableHook
-import xyz.nextalone.util.*
+import xyz.nextalone.util.hide
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.replace
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -41,7 +47,10 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->a(IIII)V".method.hookAfter(this) {
+        Reflex.findSingleMethod(
+            Initiator.loadClass("com/tencent/mobileqq/activity/QQSettingSettingActivity"),
+            Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE
+        ).hookAfter(this) {
             val activity = it.thisObject as Activity
             val viewId: Int = it.args[0].toString().toInt()
             val strId: Int = it.args[1].toString().toInt()
@@ -54,6 +63,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
             }
         }
         if (activeItems.contains("免流量")) {
+            // TODO: support 8.8.93
             try {
                 "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->a()V".method.replace(
                     this,
