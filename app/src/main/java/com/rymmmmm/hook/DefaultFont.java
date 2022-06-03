@@ -60,7 +60,7 @@ public class DefaultFont extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
-            if (m.getName().equals(HostInfo.requireMinPlayQQVersion(QQVersion.QQ_8_8_93) ? "m0" : "a")
+            if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a")
                     && !Modifier.isStatic(m.getModifiers())
                     && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
