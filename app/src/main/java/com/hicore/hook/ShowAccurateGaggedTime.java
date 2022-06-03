@@ -69,8 +69,8 @@ public class ShowAccurateGaggedTime extends CommonSwitchFunctionHook {
                     param.setResult(secondToTime(time));
                 });
 
-        HookUtils.hookBeforeIfEnabled(this, Reflex.findMethod(Initiator._TroopGagMgr(),
-                String.class, "a", Context.class, long.class, long.class), param -> {
+        HookUtils.hookBeforeIfEnabled(this, Reflex.findSingleMethod(Initiator._TroopGagMgr(),
+                String.class, false, Context.class, long.class, long.class), param -> {
             long time = (long) param.args[1];
             if (time <= 0) {
                 param.setResult("[0秒]");
