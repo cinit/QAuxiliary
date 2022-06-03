@@ -25,6 +25,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -79,7 +80,7 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
             // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
             // source code from: ColorQQ by qiwu
             Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_ABS_GAL_SCENE);
-            Method m = kAbstractGalleryScene.getDeclaredMethod("a", ViewGroup.class);
+            Method m = Reflex.findSingleMethod(kAbstractGalleryScene, void.class, false, ViewGroup.class);
             Field fv = null;
             for (Field f : kAbstractGalleryScene.getDeclaredFields()) {
                 if (f.getType().equals(View.class)) {
