@@ -78,7 +78,8 @@ class QQConfigTable : ConfigTableInterface {
                     QQ_8_6_5 to "c",
                     QQ_8_7_0 to "b",
                     QQ_8_8_11 to "R",
-                    QQ_8_8_17 to "S"
+                    QQ_8_8_17 to "S",
+                    QQ_8_8_93 to "Y0",
             ),
 
             SortAtPanel.sessionInfoTroopUin to mapOf(

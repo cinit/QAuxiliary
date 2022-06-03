@@ -118,7 +118,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
 
     @Throws(Exception::class)
     override fun initOnce() = throwOrTrue {
-        val clz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMe")
+        val clz = Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
         XposedBridge.hookAllConstructors(clz, object : XC_MethodHook() {
             override fun afterHookedMethod(param: MethodHookParam) {
                 if (LicenseStatus.sDisableCommonHooks) return
@@ -132,7 +132,6 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                         param.thisObject.get(midContentName, View::class.java) as LinearLayout
                     }
                     //底端部分 设置 夜间模式 达人 等
-                    val underSettingsName = if (requireMinQQVersion(QQ_8_6_0)) "l" else "h"
                     val underSettingsLayout = if (requireMinQQVersion(QQ_8_6_5)) {
                         val parent = midContentListLayout?.parent?.parent as ViewGroup
                         var ret: LinearLayout? = null
@@ -143,6 +142,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                         }
                         ret
                     } else {
+                        val underSettingsName = if (requireMinQQVersion(QQ_8_6_0)) "l" else "h"
                         param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
                     }
                     underSettingsLayout?.forEachIndexed { i, v ->
