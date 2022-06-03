@@ -93,7 +93,7 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
         for (Method mi : clz.getDeclaredMethods()) {
             if (mi.getReturnType().equals(boolean.class) && mi.getParameterTypes().length == 1) {
                 String name = mi.getName();
-                if (name.equals("a") || name.equals("z") || name.equals("W")) {
+                if (name.equals("c") || name.equals("a") || name.equals("z") || name.equals("W")) {
                     isFlashPic = mi;
                     break;
                 }
