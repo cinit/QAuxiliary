@@ -48,7 +48,9 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._QQAppInterface
 import io.github.qauxv.util.LicenseStatus
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -72,18 +74,19 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN o
     var windowHeight = -1
 
     override fun initOnce(): Boolean {
-        XposedHelpers.findAndHookMethod("com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
-                "a",
-                Intent::class.java,
-                Bitmap::class.java,
-                String::class.java,
-                String::class.java,
-                String::class.java,
-                object : XC_MethodHook() {
-                    override fun afterHookedMethod(param: MethodHookParam) {
-                        if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
-                        runCatching {
-                            val intent = param.args[0] as Intent
+        XposedHelpers.findAndHookMethod(
+            "com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
+            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "e" else "a",
+            Intent::class.java,
+            Bitmap::class.java,
+            String::class.java,
+            String::class.java,
+            String::class.java,
+            object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
+                    runCatching {
+                        val intent = param.args[0] as Intent
                             val context = hostInfo.application as Context
                             val uin = intent.getStringExtra("uin")
                                     ?: intent.getStringExtra("param_uin")!!
