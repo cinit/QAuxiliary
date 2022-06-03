@@ -28,6 +28,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.hookAfter
@@ -63,17 +65,24 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
             }
         }
         if (activeItems.contains("免流量")) {
-            // TODO: support 8.8.93
-            try {
-                "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->a()V".method.replace(
+            // if() CUOpenCardGuideMng guideEntry
+            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+                "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->p5()V".method.replace(
                     this,
                     null
                 )
-            } catch (e: Throwable) {
-                "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->b()V".method.replace(
-                    this,
-                    null
-                )
+            } else {
+                try {
+                    "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->a()V".method.replace(
+                        this,
+                        null
+                    )
+                } catch (e: Throwable) {
+                    "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->b()V".method.replace(
+                        this,
+                        null
+                    )
+                }
             }
         }
     }
