@@ -25,6 +25,7 @@ package com.hicore.hook;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
@@ -63,8 +64,8 @@ public class IgnorePhoneCallState extends CommonSwitchFunctionHook {
                 param -> param.setResult(false));
 
         HookUtils.hookBeforeIfEnabled(this,
-                Initiator.loadClass("com.tencent.av.camera.QavCameraUsage")
-                        .getDeclaredMethod("a", Context.class, boolean.class),
+                Reflex.findSingleMethod(Initiator.loadClass("com.tencent.av.camera.QavCameraUsage"),
+                        boolean.class, false, Context.class, boolean.class),
                 param -> param.setResult(false));
         return true;
     }
