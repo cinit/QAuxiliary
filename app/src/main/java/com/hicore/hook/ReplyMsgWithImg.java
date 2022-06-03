@@ -123,9 +123,11 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
             }
         });
 
-        HookUtils.hookBeforeIfEnabled(this, Initiator.loadClass("com.tencent.mobileqq.activity.aio.photo.PhotoListPanel")
-                .getDeclaredMethod("a", Initiator._BaseChatPie(), List.class, boolean.class), param -> {
-            Log.d("ReplyMsgWithImg PhotoListPanel.a");
+        HookUtils.hookBeforeIfEnabled(this, Reflex.findSingleMethod(
+                Initiator.loadClass("com.tencent.mobileqq.activity.aio.photo.PhotoListPanel"),
+                boolean.class, false,
+                Initiator._BaseChatPie(), List.class, boolean.class), param -> {
+            // Log.d("ReplyMsgWithImg PhotoListPanel.a");
             Object chatPie = param.args[0];
             if (chatPie == null) {
                 chatPie = mBaseChatPie == null ? null : mBaseChatPie.get();
