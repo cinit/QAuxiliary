@@ -278,21 +278,26 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
     }
 
     private Object getMessage(String uin, int istroop, long shmsgseq, long msgUid) {
-        List list = null;
+        List<?> list = null;
         try {
-            //todo fix 860+
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
-                list = (List) Reflex.invokeVirtual(mQQMsgFacade, "b", uin, istroop, shmsgseq,
-                        msgUid,
+            // message is query by shmsgseq, not by time ---> queryMessagesByShmsgseqFromDB
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "D0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "b",
+                        uin, istroop, shmsgseq, msgUid,
                         String.class, int.class, long.class, long.class,
                         List.class);
             } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
-                list = (List) Reflex.invokeVirtual(mQQMsgFacade, "a", uin, istroop, shmsgseq,
-                        msgUid,
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "a",
+                        uin, istroop, shmsgseq, msgUid,
                         String.class, int.class, long.class, long.class,
                         List.class);
             } else {
-                list = (List) Reflex.invokeVirtualDeclaredOrdinal(mQQMsgFacade, 0, 2, false,
+                list = (List<?>) Reflex.invokeVirtualDeclaredOrdinal(mQQMsgFacade, 0, 2, false,
                         uin, istroop, shmsgseq, msgUid, String.class, int.class, long.class, long.class, List.class);
             }
         } catch (Exception e) {
