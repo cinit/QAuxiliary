@@ -39,6 +39,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
+import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
@@ -217,16 +218,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
         }
         List<Object> list = new ArrayList<>();
         list.add(revokeGreyTip);
-        //todo fix 860+
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
-            Reflex.invokeVirtual(mQQMsgFacade, "a", list, AppRuntimeHelper.getAccount(), List.class,
-                    String.class,
-                    void.class);
-        } else {
-            Reflex.invokeVirtualDeclaredOrdinalModifier(mQQMsgFacade, 0, 4, false,
-                    Modifier.PUBLIC, 0,
-                    list, AppRuntimeHelper.getAccount(), List.class, String.class, void.class);
-        }
+        QQMessageFacade.commitMessageRecordList(list, AppRuntimeHelper.getAccount());
     }
 
     private Bundle createTroopMemberHighlightItem(String memberUin) {

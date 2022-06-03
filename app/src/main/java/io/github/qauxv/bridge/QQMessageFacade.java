@@ -106,8 +106,15 @@ public class QQMessageFacade {
     }
 
     public static void commitMessageRecordList(@NonNull List<Object> messages, @NonNull String account) throws ReflectiveOperationException {
-        // todo fix 860+
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+        Objects.requireNonNull(messages, "messages == null");
+        Objects.requireNonNull(account, "account == null");
+        if (messages.isEmpty()) {
+            return;
+        }
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+            Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "h", messages, account,
+                    List.class, String.class, void.class);
+        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
             Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "a", messages, account,
                     List.class, String.class, void.class);
         } else {
