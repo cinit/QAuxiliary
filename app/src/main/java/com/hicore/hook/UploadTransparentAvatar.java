@@ -25,6 +25,7 @@ package com.hicore.hook;
 import android.graphics.Bitmap;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
@@ -33,6 +34,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -73,8 +75,9 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
                 }
             }
         });
+        var methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "i" : "a";
         Method hookMethod = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.pic.compress.Utils"),
-                boolean.class, "a", String.class, Bitmap.class, int.class, String.class,
+                boolean.class, methodName, String.class, Bitmap.class, int.class, String.class,
                 Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));
         HookUtils.hookBeforeAlways(this, hookMethod, param -> {
             // 自己进行图像转换, 不给QQ把透明背景扣掉的机会
