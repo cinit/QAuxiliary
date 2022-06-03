@@ -80,8 +80,10 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
                 param -> onOnlinePushPbPushTransMsg(param.args[0], param.args[1], param.args[2])
         );
         HookUtils.hookBeforeIfEnabled(this,
-                Initiator.loadClass("com.tencent.mobileqq.app.message.SystemMessageProcessor")
-                        .getDeclaredMethod("a", int.class, Initiator.loadClass("tencent.mobileim.structmsg.structmsg$StructMsg"), int.class),
+                Reflex.findSingleMethod(
+                        Initiator.loadClass("com.tencent.mobileqq.app.message.SystemMessageProcessor"),
+                        void.class, false,
+                        int.class, Initiator.loadClass("tencent.mobileim.structmsg.structmsg$StructMsg"), int.class),
                 param -> onProcessGroupSystemMsg((int) param.args[0], param.args[1], (int) param.args[2])
         );
 
