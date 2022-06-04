@@ -14,9 +14,9 @@ val apiCode by extra(93)
 val verCode = Common.getBuildVersionCode(rootProject)
 // versionName = major.minor.bugfix.rev.commit
 val verName = "1.2.5" + (Common.getGitHeadRefsSuffix(rootProject))
-val androidTargetSdkVersion by extra(32)
+val androidTargetSdkVersion by extra(33)
 val androidMinSdkVersion by extra(24)
-val androidCompileSdkVersion by extra(31)
+val androidCompileSdkVersion by extra(32)
 val androidBuildToolsVersion by extra("32.0.0")
 val androidCompileNdkVersion = Version.getNdkVersion(project)
 
