@@ -61,46 +61,46 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
     throw NoSuchMethodException("No such method $name in $this")
 }
 
-internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.declaredMethods.run {
-    this.forEach {
+internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.run {
+    this.declaredMethods.forEach {
         if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsTypes $argsTypes ")
+    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes $argsTypes ")
 }
 
-internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = (this.declaredMethods + this.methods).run {
-    this.forEach {
+internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.run {
+    (this.declaredMethods + this.methods).forEach {
         if (name == it.name && returnType == it.returnType && it.parameterTypes.contentEquals(argsTypes)) {
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsTypes $argsTypes")
+    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes $argsTypes")
 }
 
 internal fun Class<*>.method(
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
-    this.forEach {
+): Method? = this.run {
+    this.declaredMethods.forEach {
         if (condition(it)) {
             return it
         }
     }
-    throw NoSuchMethodException("No such method in $this")
+    throw NoSuchMethodException("No such method in ${this.simpleName}")
 }
 
 internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
-    this.forEach {
+): Method? = this.run {
+    this.declaredMethods.forEach {
         if (it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it
         }
     }
-    throw NoSuchMethodException("No such method in $this with returnType $returnType and argsSize $size")
+    throw NoSuchMethodException("No such method in ${this.simpleName} with returnType $returnType and argsSize $size")
 }
 
 internal fun Class<*>.method(
@@ -108,13 +108,13 @@ internal fun Class<*>.method(
     size: Int,
     returnType: Class<*>?,
     condition: (method: Method) -> Boolean = { true }
-): Method? = this.declaredMethods.run {
-    this.forEach {
+): Method? = this.run {
+    this.declaredMethods.forEach {
         if (it.name == name && it.returnType == returnType && it.parameterTypes.size == size && condition(it)) {
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsSize $size")
+    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsSize $size")
 }
 
 internal val Member.isStatic: Boolean
