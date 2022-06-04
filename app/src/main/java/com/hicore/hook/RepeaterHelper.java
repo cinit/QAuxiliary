@@ -11,6 +11,7 @@ import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
 import com.hicore.messageUtils.QQEnvUtils;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.util.Toasts;
 import java.util.HashMap;
 
@@ -50,7 +51,7 @@ public class RepeaterHelper {
         Context context = baseChatItem.getContext();
         String clzName = ChatMsg.getClass().getSimpleName();
         if (supportMessageTypes.containsKey(clzName)) {
-            ImageButton imageButton = baseChatItem.findViewById(256667);
+            ImageButton imageButton = baseChatItem.findViewById(88486666);
             if (imageButton == null) {
                 imageButton = new ImageButton(context);
                 imageButton.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
@@ -60,7 +61,7 @@ public class RepeaterHelper {
                 imageButton.getBackground().setAlpha(0);
                 imageButton.setMaxHeight(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()));
                 imageButton.setMaxWidth(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()));
-                imageButton.setId(256667);
+                imageButton.setId(88486666);
                 imageButton.setTag(ChatMsg);
                 imageButton.setOnClickListener(v -> {
                     try {
@@ -71,60 +72,38 @@ public class RepeaterHelper {
                 });
                 baseChatItem.addView(imageButton, param);
             } else {
-                if (imageButton.getVisibility() != View.VISIBLE) {
-                    imageButton.setVisibility(View.VISIBLE);
-                }
+                imageButton.setVisibility(View.VISIBLE);
                 imageButton.setTag(ChatMsg);
-            }
+                imageButton.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
 
+            }
             RelativeLayout.LayoutParams param = (RelativeLayout.LayoutParams) imageButton.getLayoutParams();
             String attachName = supportMessageTypes.get(clzName);
             View attachView = findView(attachName, baseChatItem);
             if (attachView != null) {
                 if (isSendFromLocal) {
-                    param.removeRule(RelativeLayout.ALIGN_RIGHT);
-                    param.removeRule(RelativeLayout.ALIGN_TOP);
-                    param.removeRule(RelativeLayout.ALIGN_LEFT);
-
+                    param.removeRule(RelativeLayout.RIGHT_OF);
                     param.addRule(RelativeLayout.LEFT_OF, attachView.getId());
-                    int width = View.MeasureSpec.makeMeasureSpec(0,
-                            View.MeasureSpec.UNSPECIFIED);
-                    int height = View.MeasureSpec.makeMeasureSpec(0,
-                            View.MeasureSpec.UNSPECIFIED);
-                    attachView.measure(width, height);
-
                     int AddedLength = attachView.getTop();
                     AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-
                     int OffsetV = LayoutHelper.dip2px(context,12);
-
-                    ViewGroup.MarginLayoutParams mLParam = param;
-                    mLParam.leftMargin = -OffsetV;
-                    mLParam.topMargin = AddedLength;
+                    param.leftMargin = -OffsetV;
+                    param.topMargin = AddedLength;
                 } else {
-                    param.removeRule(RelativeLayout.ALIGN_RIGHT);
-                    param.removeRule(RelativeLayout.ALIGN_TOP);
-                    param.removeRule(RelativeLayout.ALIGN_LEFT);
+                    param.removeRule(RelativeLayout.LEFT_OF);
                     param.addRule(RelativeLayout.RIGHT_OF, attachView.getId());
-                    int width = View.MeasureSpec.makeMeasureSpec(0,
-                            View.MeasureSpec.UNSPECIFIED);
-                    int height = View.MeasureSpec.makeMeasureSpec(0,
-                            View.MeasureSpec.UNSPECIFIED);
-                    attachView.measure(width, height);
                     int AddedLength = attachView.getTop();
                     AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-
                     int OffsetV = LayoutHelper.dip2px(context,12);
-                    ViewGroup.MarginLayoutParams mLParam = param;
-                    mLParam.rightMargin = -OffsetV;
-                    mLParam.topMargin = AddedLength;
+                    param.rightMargin = -OffsetV;
+                    param.topMargin = AddedLength;
                 }
                 imageButton.setLayoutParams(param);
             }
         } else {
-            ImageButton imageButton = baseChatItem.findViewById(256666);
+            ImageButton imageButton = baseChatItem.findViewById(88486666);
             if (imageButton != null) {
-                baseChatItem.removeView(imageButton);
+                imageButton.setVisibility(View.GONE);
             }
         }
     }
