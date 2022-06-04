@@ -74,7 +74,6 @@ public class RepeaterHelper {
             } else {
                 imageButton.setVisibility(View.VISIBLE);
                 imageButton.setTag(ChatMsg);
-                imageButton.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
 
             }
             RelativeLayout.LayoutParams param = (RelativeLayout.LayoutParams) imageButton.getLayoutParams();

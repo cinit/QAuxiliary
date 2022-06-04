@@ -37,10 +37,12 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HookUtils.BeforeHookedMethod;
 import cc.ioctl.util.HostInfo;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -184,6 +186,10 @@ public class RepeaterPlus extends BaseFunctionHook {
             finalBaseChatItem.getViewTreeObserver().addOnGlobalLayoutListener(listenerContainer.get());
 
         });
+
+        HookUtils.hookBeforeIfEnabled(this, MMethod.FindMethod("com.tencent.mobileqq.data.ChatMessage", "isFollowMessage", boolean.class, new Class[0]), param -> param.setResult(false));
+
+
         return true;
     }
 
