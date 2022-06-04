@@ -36,6 +36,7 @@ public class RepeaterHelper {
         supportMessageTypes.put("MessageForArkFlashChat", "ArkAppRootLayout");
         supportMessageTypes.put("MessageForShortVideo", "RelativeLayout");
         supportMessageTypes.put("MessageForPokeEmo", "RelativeLayout");
+        supportMessageTypes.put("MessageForStructing", "RelativeLayout");
     }
 
     public static void createRepeatIcon(RelativeLayout baseChatItem, Object ChatMsg, Object session) throws Exception {
@@ -50,7 +51,8 @@ public class RepeaterHelper {
 
         Context context = baseChatItem.getContext();
         String clzName = ChatMsg.getClass().getSimpleName();
-        if (supportMessageTypes.containsKey(clzName)) {
+
+        if (supportMessageTypes.containsKey(clzName) && checkIsAvailStruct(ChatMsg)) {
             ImageButton imageButton = baseChatItem.findViewById(88486666);
             if (imageButton == null) {
                 imageButton = new ImageButton(context);
@@ -105,6 +107,17 @@ public class RepeaterHelper {
                 imageButton.setVisibility(View.GONE);
             }
         }
+    }
+    private static boolean checkIsAvailStruct(Object msg) throws Exception {
+        if (msg.getClass().getSimpleName().equals("MessageForStructing")){
+            Object struct = MField.GetField(msg,"structingMsg");
+            if (struct != null){
+                int id = MField.GetField(struct,"mMsgServiceID");
+                return id == 5;
+            }
+            return false;
+        }
+        return true;
     }
 
     public static View findView(String Name, ViewGroup vg) {

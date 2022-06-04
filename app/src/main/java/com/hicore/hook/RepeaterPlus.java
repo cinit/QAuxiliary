@@ -49,6 +49,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicReference;
@@ -179,7 +180,7 @@ public class RepeaterPlus extends BaseFunctionHook {
                     RepeaterHelper.createRepeatIcon(finalBaseChatItem, ChatMsg, session);
                     finalBaseChatItem.getViewTreeObserver().removeOnGlobalLayoutListener(listenerContainer.get());
                 } catch (Exception e) {
-                    e.printStackTrace();
+                    Log.e(e);
                 }
             });
 
