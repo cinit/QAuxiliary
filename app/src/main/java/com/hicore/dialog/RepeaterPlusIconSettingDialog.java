@@ -33,19 +33,23 @@ import android.text.TextWatcher;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
+import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
 import android.widget.RadioGroup;
+import android.widget.RadioGroup.LayoutParams;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.core.view.ViewCompat;
+import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
 import de.robv.android.xposed.XposedBridge;
@@ -189,6 +193,14 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         }
         currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
         prevImgView.setImageDrawable(currentIconDrawable);
+
+        ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) prevImgView.getLayoutParams();
+        params.width = LayoutHelper.dip2px(ctx,getCurrentDPI());
+        params.height = LayoutHelper.dip2px(ctx,getCurrentDPI());
+        prevImgView.setLayoutParams(params);
+
+        prevImgView.setMaxHeight(LayoutHelper.dip2px(ctx,getCurrentDPI()));
+        prevImgView.setMaxWidth(LayoutHelper.dip2px(ctx,getCurrentDPI()));
         return dialog;
     }
     private int getCurrentDPI(){
@@ -334,10 +346,15 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     @Override
     public void afterTextChanged(Editable s) {
         if (currentIcon != null) {
-            currentIcon.setDensity(getCurrentDPI());
             if (currentIconDrawable != null) {
                 currentIconDrawable = new BitmapDrawable(ctx.getResources(), currentIcon);
                 prevImgView.setImageDrawable(currentIconDrawable);
+                prevImgView.setMaxHeight(LayoutHelper.dip2px(ctx,getCurrentDPI()));
+                prevImgView.setMaxWidth(LayoutHelper.dip2px(ctx,getCurrentDPI()));
+                ViewGroup.LayoutParams params = (ViewGroup.LayoutParams) prevImgView.getLayoutParams();
+                params.width = LayoutHelper.dip2px(ctx,getCurrentDPI());
+                params.height = LayoutHelper.dip2px(ctx,getCurrentDPI());
+                prevImgView.setLayoutParams(params);
             }
         }
     }
