@@ -57,8 +57,8 @@ public class DisableEnterEffect extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         for (Method m : Initiator._TroopEnterEffectController().getDeclaredMethods()) {
-            if (m.getName().equals("a") && !Modifier.isStatic(m.getModifiers())
-                && m.getReturnType() == void.class) {
+            if ((m.getName().equals("a") || m.getName().equals("l")) && !Modifier.isStatic(m.getModifiers())
+                    && m.getParameterTypes().length == 0 && m.getReturnType() == void.class) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
                 return true;
             }
