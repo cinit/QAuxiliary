@@ -25,7 +25,9 @@ package me.ketal.hook
 import android.content.Context
 import android.view.View
 import cc.ioctl.util.Reflex
-import com.github.kyuubiran.ezxhelper.utils.tryOrFalse
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
+import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
 import com.hicore.QQDecodeUtils.DecodeForEncPic
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -44,7 +46,6 @@ import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
-import xyz.nextalone.util.method
 import java.io.File
 
 @[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
@@ -57,7 +58,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
 
     override val isAvailable: Boolean = isAndroidxFileProviderAvailable
 
-    override fun initOnce() = tryOrFalse {
+    override fun initOnce() = tryOrLogFalse {
         val clsPicItemBuilder = _PicItemBuilder()
         val clazz = arrayOf(
             clsPicItemBuilder,
@@ -68,10 +69,10 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         )
         // copy pic
         clazz.filterNotNull().forEach {
-            it.method { m ->
-                m.name == "a"
-                    && m.parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, _ChatMessage()))
-            }?.hookBefore(this) { m ->
+            it.findMethod {
+                name == "a"
+                    && parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, _ChatMessage()))
+            }.hookBefore(this) { m ->
                 val (id, context, chatMessage) = m.args
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
@@ -81,9 +82,9 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 }
                 copyToClipboard(context as Context, File(path.first()))
             }
-            it.method { m ->
-                m.returnType.isArray
-                    && m.parameterTypes.contentEquals(arrayOf(View::class.java))
+            it.findMethodOrNull {
+                returnType.isArray
+                    && parameterTypes.contentEquals(arrayOf(View::class.java))
             }?.hookAfter(this) { param ->
                 val view = param.args[0] as View
                 val message = getMessage(view)
@@ -124,7 +125,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                     .toTypedArray()
             }
             "MessageForStructing" -> {
-                val text = message.get("structingMsg").invoke("getXml") as String
+                val text = message.get("structingMsg")?.invoke("getXml") as String
                 // todo parse structingmsg
                 emptyArray()
             }
