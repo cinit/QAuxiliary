@@ -17,7 +17,7 @@ QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 激活本模块后，在 QQ 或者 TIM 自带设置中点击 QAuxiliary 即可进入设置页面
 
 - Android >= 7.0
-- QQ >= 8.0.0, TIM >= 2.2.0
+- QQ >= 8.0.0, TIM >= 2.2.0, QQLite >= 4.0, QQ HD >= 5.9.3
 
 ## 一切开发旨在学习，请勿用于非法用途
 
