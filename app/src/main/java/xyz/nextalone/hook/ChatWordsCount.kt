@@ -113,12 +113,10 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 val viewGroup = it.args[2] as ViewGroup
                 updateChatWordView(viewGroup)
             }
-        } else {
-            // for older version
-            DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)?.hookAfter(this) {
-                val viewGroup = it.thisObject.get("a", ViewGroup::class.java) as ViewGroup
-                updateChatWordView(viewGroup)
-            }
+        }
+        DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)?.hookAfter(this) {
+            val viewGroup = it.thisObject.get(ViewGroup::class.java) as ViewGroup
+            updateChatWordView(viewGroup)
         }
         DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookAfter(this)
         {
