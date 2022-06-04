@@ -58,7 +58,7 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method $name in $this")
 }
 
 internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.declaredMethods.run {
@@ -67,7 +67,7 @@ internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTyp
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsTypes $argsTypes ")
 }
 
 internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = (this.declaredMethods + this.methods).run {
@@ -76,7 +76,7 @@ internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, varar
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsTypes $argsTypes")
 }
 
 internal fun Class<*>.method(
@@ -87,7 +87,7 @@ internal fun Class<*>.method(
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method in $this")
 }
 
 internal fun Class<*>.method(
@@ -100,7 +100,7 @@ internal fun Class<*>.method(
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method in $this with returnType $returnType and argsSize $size")
 }
 
 internal fun Class<*>.method(
@@ -114,7 +114,7 @@ internal fun Class<*>.method(
             return it
         }
     }
-    return null
+    throw NoSuchMethodException("No such method $name in $this with returnType $returnType and argsSize $size")
 }
 
 internal val Member.isStatic: Boolean
