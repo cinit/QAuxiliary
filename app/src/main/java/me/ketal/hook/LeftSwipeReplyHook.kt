@@ -27,7 +27,6 @@ import android.graphics.BitmapFactory
 import android.view.View
 import android.widget.ImageView
 import cc.ioctl.util.Reflex
-import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -92,10 +91,10 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
     override fun initOnce() = throwOrTrue {
         val replyMethod = DexKit.doFindMethod(DexKit.N_LeftSwipeReply_Helper__reply)
         val hookClass = replyMethod!!.declaringClass
-        var methodName = if (isTim()) "L" else "a"
-        XposedHelpers.findMethodBestMatch(
+        Reflex.findSingleMethod(
             hookClass,
-            methodName,
+            Void.TYPE,
+            false,
             Float::class.java,
             Float::class.java
         ).hookBefore(this) {
@@ -122,7 +121,7 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
             DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__chooseMsg)!!.invoke(baseChatPie, message)
             it.result = null
         }
-        methodName = if (isTim()) getConfig(LeftSwipeReplyHook::class.java.simpleName) else "a"
+        val methodName = if (isTim()) getConfig(LeftSwipeReplyHook::class.java.simpleName) else "a"
         Reflex.findMethod(hookClass, Int::class.java, methodName)
             .hookAfter(this) {
                 if (replyDistance <= 0) {
