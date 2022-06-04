@@ -58,7 +58,8 @@ internal fun Class<*>.method(name: String): Method? = this.declaredMethods.run {
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in $this")
+    Log.w(NoSuchMethodException("No such method $name in $this"))
+    null
 }
 
 internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.run {
@@ -67,7 +68,8 @@ internal fun Class<*>.method(name: String, returnType: Class<*>?, vararg argsTyp
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes $argsTypes ")
+    Log.w(NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes " + argsTypes.joinToString()))
+    null
 }
 
 internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, vararg argsTypes: Class<*>?): Method? = this.run {
@@ -76,7 +78,8 @@ internal fun Class<*>.methodWithSuper(name: String, returnType: Class<*>?, varar
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes $argsTypes")
+    Log.w(NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsTypes " + argsTypes.joinToString()))
+    null
 }
 
 internal fun Class<*>.method(
@@ -87,7 +90,8 @@ internal fun Class<*>.method(
             return it
         }
     }
-    throw NoSuchMethodException("No such method in ${this.simpleName}")
+    Log.w(NoSuchMethodException("No such method in ${this.simpleName}"))
+    null
 }
 
 internal fun Class<*>.method(
@@ -100,7 +104,8 @@ internal fun Class<*>.method(
             return it
         }
     }
-    throw NoSuchMethodException("No such method in ${this.simpleName} with returnType $returnType and argsSize $size")
+    Log.w(NoSuchMethodException("No such method in ${this.simpleName} with returnType $returnType and argsSize $size"))
+    null
 }
 
 internal fun Class<*>.method(
@@ -114,7 +119,8 @@ internal fun Class<*>.method(
             return it
         }
     }
-    throw NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsSize $size")
+    Log.w(NoSuchMethodException("No such method $name in ${this.simpleName} with returnType $returnType and argsSize $size"))
+    null
 }
 
 internal val Member.isStatic: Boolean
