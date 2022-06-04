@@ -41,7 +41,7 @@ object HideOnlineNumber : CommonSwitchFunctionHook("na_hide_online_number") {
 
     override fun initOnce() = throwOrTrue {
         _TroopChatPie().method {
-            it.name == "a" && it.parameterTypes.contentEquals(arrayOf(String::class.java, Boolean::class.java))
+            it.parameterTypes.contentEquals(arrayOf(String::class.java, Boolean::class.java))
         }!!.hookBefore(this) {
             it.args[0] = ""
         }
