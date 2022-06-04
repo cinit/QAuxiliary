@@ -94,6 +94,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
     private val keyWords: SortedMap<String, String> = sortedMapOf(
         "级" to "等级",
         "间" to "夜间模式",
+        "等级" to "登录达人",
         "达" to "登录达人",
         "天" to "登录达人",
         "播" to "开播啦鹅",
