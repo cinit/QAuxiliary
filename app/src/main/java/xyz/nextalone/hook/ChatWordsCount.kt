@@ -69,7 +69,7 @@ import java.util.Date
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intArrayOf(DexKit.N_QQSettingMe_onResume)) {
+object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intArrayOf(DexKit.N_QQSettingMe_onResume, DexKit.N_ChatActivityFacade_sendMsgButton)) {
 
     override val name = "聊天字数统计"
     override val valueState: MutableStateFlow<String?>? = null
@@ -120,11 +120,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 updateChatWordView(viewGroup)
             }
         }
-        Initiator._ChatActivityFacade().method(
-            "a",
-            6,
-            LongArray::class.java
-        )?.hookAfter(this)
+        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookAfter(this)
         {
             val isToday = Date().today == getExFriendCfg()!!.getStringOrDefault(timeCfg, "")
             if (isToday) {
@@ -181,7 +177,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
             injectChatWordView(viewGroup.context, ghostFrameLayout)
             textView = (relativeLayout.parent as ViewGroup).findViewById(io.github.qauxv.R.id.chat_words_count)
         }
-        textView?.text = getChatWords()
+        textView!!.text = getChatWords()
     }
 
     private fun injectChatWordView(context: Context, viewGroup: ViewGroup) {

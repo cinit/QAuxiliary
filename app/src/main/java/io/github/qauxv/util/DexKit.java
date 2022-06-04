@@ -130,7 +130,8 @@ public class DexKit {
     public static final int N_BaseChatPie_mosaic = 20017;
     public static final int N_WebSecurityPluginV2_callback = 20018;
     public static final int N_TroopAppShortcutBarHelper_resumeAppShorcutBar = 20019;
-    public static final int DEOBF_NUM_N = 19;
+    public static final int N_ChatActivityFacade_sendMsgButton = 20020;
+    public static final int DEOBF_NUM_N = 20;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -534,6 +535,8 @@ public class DexKit {
                 return "websecuritypluginv2_callback";
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
                 return "TroopAppShortcutBarHelper_resumeAppShorcutBar";
+            case N_ChatActivityFacade_sendMsgButton:
+                return "ChatActivityFacade_sendMsgButton";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -551,6 +554,7 @@ public class DexKit {
                 ret = "com/tencent/mobileqq/utils/DialogUtil";
                 break;
             case C_FACADE:
+            case N_ChatActivityFacade_sendMsgButton:
                 ret = "com/tencent/mobileqq/activity/ChatActivityFacade";
                 break;
             case C_FLASH_PIC_HELPER:
@@ -952,16 +956,18 @@ public class DexKit {
                 return new byte[][]{
                     new byte[]{
                         0x10, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79, 0x42, 0x61, 0x73, 0x65, 0x53, 0x63, 0x65,
-                        0x6E, 0x65
+                            0x6E, 0x65
                     }};
             case N_WebSecurityPluginV2_callback:
                 return new byte[][]{
-                    new byte[]{
-                        0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
-                        0x72, 0x3D
-                    }};
+                        new byte[]{
+                                0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
+                                0x72, 0x3D
+                        }};
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
                 return new byte[][]{forFiniteString8("resumeAppShorcutBar")};
+            case N_ChatActivityFacade_sendMsgButton:
+                return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -977,7 +983,8 @@ public class DexKit {
             case C_DIALOG_UTIL:
                 return new int[]{1, 4, 3};
             case C_FACADE:
-                return new int[]{2, 6, 3};
+            case N_ChatActivityFacade_sendMsgButton:
+                return new int[]{2, 6, 3, 7};
             case C_FLASH_PIC_HELPER:
                 return new int[]{1, 3};
             case C_BASE_PIC_DL_PROC:
@@ -1551,6 +1558,22 @@ public class DexKit {
                 }
                 return null;
             }
+            case N_ChatActivityFacade_sendMsgButton:
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("ChatActivityFacade")) {
+                        Method method;
+                        try {
+                            method = m.getMethodInstance(Initiator.getHostClassLoader());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        Class<?>[] argt = method.getParameterTypes();
+                        if (argt.length == 6) {
+                            return m;
+                        }
+                    }
+                }
+                break;
         }
         return null;
     }
