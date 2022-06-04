@@ -28,6 +28,7 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -48,7 +49,7 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "回赞界面一键20赞";
+        return "一键20赞";
     }
 
     @NonNull
@@ -73,6 +74,16 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
                 });
             }
         }
+
+        Method onClickOnProfileCard = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.profilecard.base.component.AbsProfileHeaderComponent"), "handleVoteBtnClickForGuestProfile",
+                Initiator.loadClass("com.tencent.mobileqq.data.Card"));
+        HookUtils.hookBeforeIfEnabled(this,onClickOnProfileCard,param -> {
+            for (int i = 0; i < 19; i++) {
+                XposedBridge.invokeOriginalMethod(param.method,param.thisObject,param.args);
+            }
+        });
+
+
         return true;
     }
 }
