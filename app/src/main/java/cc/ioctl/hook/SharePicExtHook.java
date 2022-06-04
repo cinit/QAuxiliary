@@ -206,7 +206,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
     });
 
     @Nullable
-    private static String guessMimeType(@NonNull File file) {
+    public static String guessMimeType(@NonNull File file) {
         try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
             return URLConnection.guessContentTypeFromStream(in);
         } catch (IOException e) {
