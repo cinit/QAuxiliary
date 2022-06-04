@@ -42,9 +42,8 @@ object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         // bottom red point
-        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
-            ?.replace(this, null)
-        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.method(
+        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")!!.replace(this, null)
+        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz!!.method(
             "a",
             6,
             Void.TYPE

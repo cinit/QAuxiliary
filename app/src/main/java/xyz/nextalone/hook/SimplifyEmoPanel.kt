@@ -47,7 +47,7 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
     override fun initOnce() = throwOrTrue {
         ("com.tencent.mobileqq.emoticonview.BasePanelView".clazz
             ?: "com.tencent.mobileqq.emoticonview.EmoticonPanelController".clazz
-            )?.method("initTabView")?.hookBefore(
+            )!!.method("initTabView")?.hookBefore(
                 this
             ) {
                 val mutableList: MutableList<*> =

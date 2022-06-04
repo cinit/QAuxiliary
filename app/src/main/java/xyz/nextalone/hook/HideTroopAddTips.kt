@@ -39,6 +39,6 @@ object HideTroopAddTips : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce(): Boolean = throwOrTrue {
-        "com.tencent.mobileqq.troopAddFrd.Scene".clazz?.method("f")?.replace(this, 0)
+        "com.tencent.mobileqq.troopAddFrd.Scene".clazz!!.method("f")!!.replace(this, 0)
     }
 }

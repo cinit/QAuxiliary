@@ -36,6 +36,7 @@ import xyz.nextalone.util.throwOrTrue
 object TrimMessage : CommonSwitchFunctionHook() {
 
     override val name = "移除消息前后的空格"
+    override val description = "类似Telegram"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
@@ -44,7 +45,7 @@ object TrimMessage : CommonSwitchFunctionHook() {
             "a",
             6,
             LongArray::class.java
-        )?.hookBefore(this) {
+        )!!.hookBefore(this) {
             it.args[3] = (it.args[3] as String).trim()
         }
     }

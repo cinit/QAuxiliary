@@ -46,7 +46,7 @@ object CollapseTroopMessage : CommonSwitchFunctionHook("na_collapse_troop_messag
             "a",
             List::class.java,
             List::class.java
-        )?.hookAfter(this) {
+        )!!.hookAfter(this) {
             var picMd5: CharSequence
             var text: CharSequence
             val list = (it.result as List<*>).toMutableList()

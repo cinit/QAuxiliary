@@ -40,8 +40,8 @@ object RemoveIntimateDrawer : CommonSwitchFunctionHook("kr_remove_intimate_drawe
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindClass(DexKit.C_IntimateDrawer)?.method {
+        DexKit.doFindClass(DexKit.C_IntimateDrawer)!!.method {
             it.returnType == View::class.java && it.parameterTypes.isEmpty()
-        }?.replace(this, null)
+        }!!.replace(this, null)
     }
 }

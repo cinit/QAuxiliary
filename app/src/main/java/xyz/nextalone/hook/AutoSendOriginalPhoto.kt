@@ -22,6 +22,7 @@
 package xyz.nextalone.hook
 
 import android.app.Activity
+import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import io.github.qauxv.SyncUtils
@@ -48,18 +49,16 @@ object AutoSendOriginalPhoto :
 
     override fun initOnce() = throwOrTrue {
         val method = if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "Z" else "a"
-        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
+        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)!!.hookAfter(this) {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
             sendOriginPhotoCheckbox?.isChecked = true
         }
         if (requireMinQQVersion(QQVersion.QQ_8_2_0)) {
-            "Lcom.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity;->onCreate(Landroid/os/Bundle;)V".method.hookAfter(
-                this
-            ) {
+            "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz!!.method("onCreate", Void.TYPE, Bundle::class.java)!!.hookAfter(this) {
                 val ctx = it.thisObject as Activity
-                val checkBox = ctx.findHostView<CheckBox>("h1y")
-                checkBox?.isChecked = true
+                val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
+                sendOriginPhotoCheckbox?.isChecked = true
             }
         }
     }

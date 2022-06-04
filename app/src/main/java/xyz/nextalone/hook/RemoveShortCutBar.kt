@@ -29,6 +29,7 @@ import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -47,7 +48,7 @@ object RemoveShortCutBar : CommonSwitchFunctionHook(intArrayOf(DexKit.N_TroopApp
             val resumeAppShorcutBar = DexKit.getMethodDescFromCache(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)
             resumeAppShorcutBar!!.getMethodInstance(Initiator.getHostClassLoader()).replace(this, null)
         } else {
-            "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V".method.replace(this, null)
+            "com.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper".clazz!!.method("h", 0, Void.TYPE)!!.replace(this, null)
         }
     }
 

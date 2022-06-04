@@ -27,7 +27,11 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -49,9 +53,11 @@ object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_
             methodName = "b"
             titleName = "a"
         }
-        "com/tencent/widget/PopupMenuDialog".clazz?.method(methodName,
+        "com/tencent/widget/PopupMenuDialog".clazz!!.method(
+            methodName,
             4,
-            "com.tencent.widget.PopupMenuDialog".clazz)?.hookBefore(this) {
+            "com.tencent.widget.PopupMenuDialog".clazz
+        )!!.hookBefore(this) {
             val list = (it.args[1] as List<*>).toMutableList()
             val iterator = list.iterator()
             while (iterator.hasNext()) {

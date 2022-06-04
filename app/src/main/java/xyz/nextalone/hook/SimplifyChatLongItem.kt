@@ -72,19 +72,19 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
             if (activeItems.contains(str))
                 it.result = null
         }
-        "com.tencent.mobileqq.utils.dialogutils.QQCustomMenuImageLayout".clazz?.declaredMethods.run {
-            this?.forEach { method ->
+        "com.tencent.mobileqq.utils.dialogutils.QQCustomMenuImageLayout".clazz!!.declaredMethods.run {
+            this.forEach { method ->
                 if (method.name == "setMenu") {
                     val customMenu = method.parameterTypes[0].name
                     runCatching {
                         customMenu.clazz?.method {
                             it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java, Int::class.java))
-                        }?.hookBefore(this@SimplifyChatLongItem, callback)
+                        }!!.hookBefore(this@SimplifyChatLongItem, callback)
                     }
                     runCatching {
                         customMenu.clazz?.method {
                             it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java))
-                        }?.hookBefore(this@SimplifyChatLongItem, callback)
+                        }!!.hookBefore(this@SimplifyChatLongItem, callback)
                     }
                     return@forEach
                 }
