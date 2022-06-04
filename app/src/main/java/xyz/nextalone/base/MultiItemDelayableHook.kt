@@ -81,7 +81,7 @@ abstract class MultiItemDelayableHook constructor(keyName: String) :
     var activeItems
         get() = try {
             itemsConfigKeys.getOrDefault(defaultItems)?.toMutableList()?.filter {
-                allItems.isEmpty() || it in allItems
+                items.isEmpty() || it in items
             } ?: mutableListOf()
         } catch (e: ClassCastException) {
             itemsConfigKeys.remove()
