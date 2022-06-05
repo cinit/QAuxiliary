@@ -45,7 +45,11 @@ import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
 internal val String.clazz: Class<*>?
-    get() = Initiator.load(this)
+    get() = Initiator.load(this).also {
+        if (it == null) {
+            Log.e(ClassNotFoundException("Class $this not found"))
+        }
+    }
 
 internal val String.method: Method
     get() = DexMethodDescriptor(
