@@ -131,7 +131,7 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
             Reflex.setInstanceObject(item, "argus", String.class, filePath);
             row2.add(item);
         });
-        return false;
+        return true;
     }
 
     private final XC_MethodHook mItemClickHandler = HookUtils.afterIfEnabled(this, param -> {
