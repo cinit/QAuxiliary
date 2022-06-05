@@ -41,7 +41,7 @@ object HideChatVipImage : CommonSwitchFunctionHook("na_hide_chat_vip_image_kt") 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz!!.hookAfterAllConstructors {
+        "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz?.hookAfterAllConstructors {
             val ctx = it.thisObject as RelativeLayout
             ctx.findHostView<ImageView>("jp0")!!.alpha = 0F
         }

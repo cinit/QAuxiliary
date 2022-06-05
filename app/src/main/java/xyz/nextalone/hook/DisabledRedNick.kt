@@ -43,7 +43,7 @@ object DisabledRedNick : CommonSwitchFunctionHook("na_disable_red_nick_kt",
 
     override fun initOnce() = throwOrTrue {
         if (!isSimpleUi) {
-            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)!!.hookBefore(this) {
+            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookBefore(this) {
                 val navAIO = it.thisObject.get(
                     "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz
                 ) as RelativeLayout

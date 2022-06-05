@@ -29,7 +29,6 @@ import io.github.qauxv.util.Initiator._TroopChatPie
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
-import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -42,7 +41,7 @@ object HideOnlineNumber : CommonSwitchFunctionHook("na_hide_online_number") {
     override fun initOnce() = throwOrTrue {
         _TroopChatPie().method {
             it.parameterTypes.contentEquals(arrayOf(String::class.java, Boolean::class.java))
-        }!!.hookBefore(this) {
+        }?.hookBefore(this) {
             it.args[0] = ""
         }
     }

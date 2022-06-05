@@ -38,7 +38,7 @@ object HideOnlineStatus : CommonSwitchFunctionHook("na_hide_online_status_kt") {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz!!.hookAfterAllConstructors {
+        "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz?.hookAfterAllConstructors {
             val ctx = it.thisObject as RelativeLayout
             ctx.findHostView<LinearLayout>("j65")!!.hide()
         }

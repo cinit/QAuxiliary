@@ -35,6 +35,7 @@ import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
+import xyz.nextalone.util.replace
 import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 
@@ -48,7 +49,7 @@ object HideRedPoints : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean = throwOrTrue {
         // unknown red point
-        "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz!!.method(
+        "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method(
             if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "getRedPoint" else "a", 1, ImageView::class.java
         ) {
             it.parameterTypes[0] == Int::class.java
@@ -57,7 +58,7 @@ object HideRedPoints : CommonSwitchFunctionHook() {
         }
 
         // skin_tips_dot
-        "com.tencent.theme.ResourcesFactory".clazz!!.method {
+        "com.tencent.theme.ResourcesFactory".clazz?.method {
             it.name == "createImageFromResourceStream" || it.name == "a" && it.parameterTypes.size == 7
         }?.hookAfter(this) {
             if (!it.args[3].toString().contains("skin_tips_dot")) return@hookAfter

@@ -49,19 +49,19 @@ object AutoSendOriginalPhoto :
 
     override fun initOnce() = throwOrTrue {
         val method = if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "Z" else "a"
-        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz!!.method(method, Void.TYPE, Boolean::class.java)!!.hookAfter(this) {
+        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
             sendOriginPhotoCheckbox?.isChecked = true
         }
         if (requireMinQQVersion(QQVersion.QQ_8_2_0)) {
             val newPhotoOnCreate =
-                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz!!.method("doOnCreate", Boolean::class.java, Bundle::class.java)
-                    ?: "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz!!.method("onCreate", Void.TYPE, Bundle::class.java)
-            newPhotoOnCreate!!.hookAfter(this) {
+                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz?.method("doOnCreate", Boolean::class.java, Bundle::class.java)
+                    ?: "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz?.method("onCreate", Void.TYPE, Bundle::class.java)
+            newPhotoOnCreate?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
-                val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
-                sendOriginPhotoCheckbox?.isChecked = true
+                val checkBox = ctx.findHostView<CheckBox>("h1y")
+                checkBox?.isChecked = true
             }
         }
     }

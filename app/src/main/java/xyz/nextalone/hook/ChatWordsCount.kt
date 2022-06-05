@@ -114,11 +114,11 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 updateChatWordView(viewGroup)
             }
         }
-        DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)!!.hookAfter(this) {
+        DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)?.hookAfter(this) {
             val viewGroup = it.thisObject.get(ViewGroup::class.java) as ViewGroup
             updateChatWordView(viewGroup)
         }
-        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)!!.hookAfter(this)
+        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookAfter(this)
         {
             val isToday = Date().today == getExFriendCfg()!!.getStringOrDefault(timeCfg, "")
             if (isToday) {
@@ -142,7 +142,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
             ) {
                 it.parameterTypes.contains(Initiator._StickerInfo())
             }
-        sendEmoMethod!!.hookAfter(
+        sendEmoMethod?.hookAfter(
             this
         ) {
             val isToday = Date().today == getExFriendCfg()!!.getStringOrDefault(timeCfg, "")

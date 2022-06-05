@@ -35,12 +35,11 @@ import xyz.nextalone.util.throwOrTrue
 object TrimMessage : CommonSwitchFunctionHook() {
 
     override val name = "移除消息前后的空格"
-    override val description = "类似Telegram"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
+        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookBefore(this) {
             it.args[3] = (it.args[3] as String).trim()
         }
     }

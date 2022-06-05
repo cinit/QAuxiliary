@@ -55,14 +55,15 @@ object SimplifyBottomTab : MultiItemDelayableHook("na_simplify_bottom_tab_kt") {
     override val enableCustom = false
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("addFrame")!!.hookBefore(this) {
-            val clzName = (it.args[it.args.size - 2] as Class<*>).name
-            val index = clzNames.values.indexOf(clzName)
-            if (index == -1) return@hookBefore
-            if (items[index] in activeItems) {
-                it.result = null
+        "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("addFrame")
+            ?.hookBefore(this) {
+                val clzName = (it.args[it.args.size - 2] as Class<*>).name
+                val index = clzNames.values.indexOf(clzName)
+                if (index == -1) return@hookBefore
+                if (items[index] in activeItems) {
+                    it.result = null
+                }
             }
-        }
     }
 
     override val isAvailable: Boolean
