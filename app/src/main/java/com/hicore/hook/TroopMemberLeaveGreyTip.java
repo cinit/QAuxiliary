@@ -35,7 +35,6 @@ import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -110,7 +109,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
 //                actionUin = 1;
 //            }
 //        }
-        Log.d("onOnlinePushPbPushTransMsg actionUin=" + actionUin + ", userUin=" + userUin + ", troopUin=" + troopUin + ", msgType=" + msgType);
+//        Log.d("onOnlinePushPbPushTransMsg actionUin=" + actionUin + ", userUin=" + userUin + ", troopUin=" + troopUin + ", msgType=" + msgType);
         commitTroopMemberLeaveGreyTip(troopUin, userUin, 3, actionUin);
     }
 
@@ -141,7 +140,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
             byte opType = msgData[9];
             long opUin = getLongData(msgData, 10);
 
-            Log.d("onProcessGroupSystemMsg troopUin=" + troopUin + ", memberUin=" + memberUin + ", opType=" + opType + ", opUin=" + opUin);
+//            Log.d("onProcessGroupSystemMsg troopUin=" + troopUin + ", memberUin=" + memberUin + ", opType=" + opType + ", opUin=" + opUin);
             commitTroopMemberLeaveGreyTip(troopUin, memberUin, opType, opUin);
         }
     }
