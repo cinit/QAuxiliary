@@ -51,6 +51,9 @@ internal val String.clazz: Class<*>?
         }
     }
 
+internal val ArrayList<String>.clazz: Class<*>
+    get() = firstNotNullOf { it.clazz }
+
 internal val String.method: Method
     get() = DexMethodDescriptor(
         this.replace(".", "/").replace(" ", "")
