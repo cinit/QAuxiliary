@@ -132,7 +132,8 @@ public class DexKit {
     public static final int N_TroopAppShortcutBarHelper_resumeAppShorcutBar = 20019;
     public static final int N_ChatActivityFacade_sendMsgButton = 20020;
     public static final int N_FriendsStatusUtil_isChatAtTop = 20021;
-    public static final int DEOBF_NUM_N = 21;
+    public static final int N_VipUtils_getUserStatus = 20022;
+    public static final int DEOBF_NUM_N = 22;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -540,6 +541,8 @@ public class DexKit {
                 return "ChatActivityFacade_sendMsgButton";
             case N_FriendsStatusUtil_isChatAtTop:
                 return "FriendsStatusUtil_isChatAtTop";
+            case N_VipUtils_getUserStatus:
+                return "VipUtils_getUserStatus";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -707,6 +710,9 @@ public class DexKit {
                 break;
             case N_FriendsStatusUtil_isChatAtTop:
                 ret = "com.tencent.mobileqq.app.utils.FriendsStatusUtil";
+                break;
+            case N_VipUtils_getUserStatus:
+                ret = "com.tencent.mobileqq.utils.VipUtils";
                 break;
             default:
                 ret = null;
@@ -976,6 +982,9 @@ public class DexKit {
                 return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
             case N_FriendsStatusUtil_isChatAtTop:
                 return new byte[][]{forFiniteString8("isChatAtTop result is:")};
+            case N_VipUtils_getUserStatus:
+                return new byte[][]{forFiniteString8("getUserStatus Friends is null")};
+
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1079,6 +1088,7 @@ public class DexKit {
             case N_QQSettingMe_onResume:
                 return new int[]{4, 6, 8, 7};
             case N_VIP_UTILS_getPrivilegeFlags:
+            case N_VipUtils_getUserStatus:
                 return new int[]{16, 11, 12, 14, 4, 2, 3};
             case N_TroopChatPie_showNewTroopMemberCount:
                 return new int[]{4, 8, 11, 6};
@@ -1311,6 +1321,7 @@ public class DexKit {
                 return (DexMethodDescriptor) __methods.toArray()[0];
             case N_LeftSwipeReply_Helper__reply:
             case N_FriendChatPie_updateUITitle:
+            case N_VipUtils_getUserStatus:
                 // NOTICE: this must only has one result
                 if (__methods.size() == 1) {
                     return (DexMethodDescriptor) __methods.toArray()[0];
