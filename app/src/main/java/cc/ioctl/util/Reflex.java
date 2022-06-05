@@ -1134,6 +1134,25 @@ public class Reflex {
         return candidateMethod;
     }
 
+    /**
+     * Finds a method with the given return type and parameter types.
+     *
+     * @param clazz      the class to search in
+     * @param returnType the return type of the method, or null to match any return type
+     * @param withSuper  whether to search in superclasses
+     * @param paramTypes the parameter types of the method
+     * @return the method, or null if no matching method is found
+     */
+    @Nullable
+    public static Method findSingleMethodOrNull(@NonNull Class<?> clazz, @Nullable Class<?> returnType,
+                                                boolean withSuper, @NonNull Class<?>... paramTypes) {
+        try {
+            return findSingleMethod(clazz, returnType, withSuper, paramTypes);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
     @NonNull
     public static Object newInstance(@NonNull Class<?> clazz, Object... argsAndTypes) throws ReflectiveOperationException {
         int argc = argsAndTypes.length / 2;
