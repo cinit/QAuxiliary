@@ -87,8 +87,8 @@ public class QQMessageFacade {
             Reflex.invokeVirtual(msgCache, methodName, true, boolean.class, void.class);
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
                 Reflex.invokeVirtualDeclaredFixedModifierOrdinal(mgr, Modifier.PUBLIC, 0,
-                    Initiator._BaseMessageManager(), 4, 7, true, msg2, Initiator._MessageRecord(),
-                    void.class);
+                        Initiator._BaseMessageManager(), HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? 5 : 4, 7, true, msg2, Initiator._MessageRecord(),
+                        void.class);
             } else {
                 Reflex.invokeVirtualDeclaredFixedModifierOrdinal(mgr, Modifier.PUBLIC, 0,
                     Initiator._BaseMessageManager(), 2, 4, true, msg2, Initiator._MessageRecord(),
