@@ -79,8 +79,8 @@ public class QQMessageFacade {
             t -= 1 + 10f * Math.random();
             Reflex.setInstanceObject(msg2, "time", t);
             Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(),
-                DexKit.doFindClass(DexKit.C_MessageCache));
-            String methodName = "b"; //Default method name for QQ
+                    DexKit.doFindClass(DexKit.C_MessageCache));
+            String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "z2" : "b"; //Default method name for QQ
             if (HostInfo.isTim()) {
                 methodName = ConfigTable.INSTANCE.getConfig(QQMessageFacade.class.getSimpleName());
             }
