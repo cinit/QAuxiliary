@@ -131,7 +131,8 @@ public class DexKit {
     public static final int N_WebSecurityPluginV2_callback = 20018;
     public static final int N_TroopAppShortcutBarHelper_resumeAppShorcutBar = 20019;
     public static final int N_ChatActivityFacade_sendMsgButton = 20020;
-    public static final int DEOBF_NUM_N = 20;
+    public static final int N_FriendsStatusUtil_isChatAtTop = 20021;
+    public static final int DEOBF_NUM_N = 21;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -537,6 +538,8 @@ public class DexKit {
                 return "TroopAppShortcutBarHelper_resumeAppShorcutBar";
             case N_ChatActivityFacade_sendMsgButton:
                 return "ChatActivityFacade_sendMsgButton";
+            case N_FriendsStatusUtil_isChatAtTop:
+                return "FriendsStatusUtil_isChatAtTop";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -701,6 +704,9 @@ public class DexKit {
                 break;
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
                 ret = "com.tencent.mobileqq.activity.aio.helper.TroopAppShortcutBarHelper";
+                break;
+            case N_FriendsStatusUtil_isChatAtTop:
+                ret = "com.tencent.mobileqq.app.utils.FriendsStatusUtil";
                 break;
             default:
                 ret = null;
@@ -968,6 +974,8 @@ public class DexKit {
                 return new byte[][]{forFiniteString8("resumeAppShorcutBar")};
             case N_ChatActivityFacade_sendMsgButton:
                 return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
+            case N_FriendsStatusUtil_isChatAtTop:
+                return new byte[][]{forFiniteString8("isChatAtTop result is:")};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1082,6 +1090,8 @@ public class DexKit {
                 return new int[]{17, 10};
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
                 return new int[]{7, 8, 4, 6};
+            case N_FriendsStatusUtil_isChatAtTop:
+                return new int[]{8};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1571,6 +1581,13 @@ public class DexKit {
                         if (argt.length == 6) {
                             return m;
                         }
+                    }
+                }
+                break;
+            case N_FriendsStatusUtil_isChatAtTop:
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("FriendsStatusUtil")) {
+                        return m;
                     }
                 }
                 break;
