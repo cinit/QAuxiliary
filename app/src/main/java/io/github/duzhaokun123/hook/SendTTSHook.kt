@@ -63,6 +63,8 @@ object SendTTSHook :
         )
     ), IInputButtonDecorator {
 
+    const val MI_TTS = "com.xiaomi.mibrain.speech"
+
     //TODO: mp3 to silk
 //    lateinit var voiceRedPacketHelperImpl: Any
 //    lateinit var getRecorderParam: Method
@@ -89,6 +91,8 @@ object SendTTSHook :
             if (it == TextToSpeech.ERROR) {
                 Toasts.error(HostInfo.getApplication(), "TTS 初始化失败")
                 traceError(RuntimeException("TTS init failed"))
+            } else if (TTS.packageName == MI_TTS) {
+                traceError(RuntimeException("init with xiaomi tts ($MI_TTS), which may not work"))
             }
         }
         TTS.init(HostInfo.getApplication())
@@ -123,10 +127,11 @@ object SendTTSHook :
         mp3.parentFile!!.mkdirs()
         var tryCount = 0
         fun trySend(retry: Boolean = false) {
-            if (tryCount % 5 == 0 && retry.not()) {
+            if (tryCount != 0 && tryCount % 5 == 0 && retry.not()) {
                 AlertDialog.Builder(wc)
                     .setTitle("发送失败 (tryCount=$tryCount)")
-                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试")
+                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试\n" +
+                        "不要使用 xiaomi 的 TTS 引擎 ($MI_TTS), 因为它的 mp3 文件无法播放")
                     .setNegativeButton("TTS 设置") { _, _ ->
                         TTS.showConfigDialog(wc, toSend)
                     }.setPositiveButton("重试") { _, _, ->
@@ -147,7 +152,7 @@ object SendTTSHook :
                     runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
                         .onFailure {
                             SyncUtils.runOnUiThread {
-                                trySend(true)
+                                trySend()
                             }
                         }.onSuccess {
                             it.release()

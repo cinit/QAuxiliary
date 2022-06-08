@@ -32,6 +32,9 @@ import java.io.File
 
 object TTS {
     lateinit var instance: TextToSpeech
+        private set
+    lateinit var packageName : String
+        private set
     private var isInit = false
     private var initResult: Int? = null
     private var initCallbacks = mutableListOf<(Int) -> Unit>()
@@ -41,6 +44,7 @@ object TTS {
         isInit = true
         instance = TextToSpeech(context) { status ->
             initResult = status
+            packageName = instance.defaultEngine
             initCallbacks.removeAll { it(status); true }
         }
     }
