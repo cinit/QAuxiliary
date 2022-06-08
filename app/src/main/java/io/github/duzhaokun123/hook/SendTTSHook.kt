@@ -75,7 +75,11 @@ object SendTTSHook :
         get() = "mp3 格式 电脑无法播放, 时长不正确, 有时无法播放\n" +
             "用法 (长按\"发送\"发送, [languege]省略时使用上次选择的语言)\n" +
             "#tts [languege]\n" +
-            "<text>"
+            "<text>\n" +
+            "\n" +
+            "Example:\n" +
+            "#tts zh-CN\n" +
+            "你好"
 
     override val dispatcher: IDynamicHook
         get() = InputButtonHookDispatcher.INSTANCE
@@ -119,7 +123,7 @@ object SendTTSHook :
         mp3.parentFile!!.mkdirs()
         var tryCount = 0
         fun trySend(retry: Boolean = false) {
-            if (tryCount != 0 && tryCount % 5 == 0 && retry.not()) {
+            if (tryCount % 5 == 0 && retry.not()) {
                 AlertDialog.Builder(wc)
                     .setTitle("发送失败 (tryCount=$tryCount)")
                     .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试")
@@ -143,7 +147,7 @@ object SendTTSHook :
                     runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
                         .onFailure {
                             SyncUtils.runOnUiThread {
-                                trySend()
+                                trySend(true)
                             }
                         }.onSuccess {
                             it.release()

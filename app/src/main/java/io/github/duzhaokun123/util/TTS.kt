@@ -91,6 +91,7 @@ object TTS {
         val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
         binding.etMsg.setText(text)
         binding.tvVoice.text = instance.voice?.toString() ?: "null"
+        binding.tvPackage.text = instance.defaultEngine
         binding.btnSpeak.setOnClickListener {
             speak(wc, binding.etMsg.text.toString())
         }
