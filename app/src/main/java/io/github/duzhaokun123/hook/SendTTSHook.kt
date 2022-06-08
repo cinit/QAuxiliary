@@ -130,8 +130,8 @@ object SendTTSHook :
             if (tryCount != 0 && tryCount % 5 == 0 && retry.not()) {
                 AlertDialog.Builder(wc)
                     .setTitle("发送失败 (tryCount=$tryCount)")
-                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试\n" +
-                        "不要使用 xiaomi 的 TTS 引擎 ($MI_TTS), 因为它的 mp3 文件无法播放")
+                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试" +
+                        ("\n* 不要使用 MIUI 自带的 \"系统语音引擎\", 因为它的 mp3 文件无法播放".takeIf { TTS.packageName == MI_TTS } ?: ""))
                     .setNegativeButton("TTS 设置") { _, _ ->
                         TTS.showConfigDialog(wc, toSend)
                     }.setPositiveButton("重试") { _, _, ->
