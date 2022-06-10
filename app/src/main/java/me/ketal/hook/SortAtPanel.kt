@@ -71,8 +71,8 @@ object SortAtPanel : CommonSwitchFunctionHook(
             }
         refreshUI?.hookBefore(this) {
             if (isSort == true) return@hookBefore
-            val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo())
-            val troopInfo = TroopInfo(getTroopUin(sessionInfo))
+            val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo()) ?: throw IllegalStateException("sessionInfo is null")
+            val troopInfo = TroopInfo(getTroopUin(sessionInfo) ?: throw IllegalStateException("troopUin is null"))
             val list = getFirstByType(it.args[0], MutableList::class.java) as MutableList<Any>
             val isAdmin = "0" == getMemberUin(list[0])
             val admin = mutableListOf<Any>()
