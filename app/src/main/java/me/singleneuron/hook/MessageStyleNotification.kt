@@ -130,7 +130,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN o
                                 if (personInCache == null) {
                                     val builder = Person.Builder()
                                             .setName(title)
-                                            .setIcon(IconCompat.createWithBitmap(bitmap))
+                                            .setIcon(IconCompat.createWithBitmap(bitmap!!))
                                     if (title.contains("[特别关心]")) {
                                         builder.setImportant(true)
                                     }
@@ -182,7 +182,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN o
 
                                 val bubbleData = NotificationCompat.BubbleMetadata.Builder(
                                         bubbleIntent,
-                                        person.icon ?: IconCompat.createWithBitmap(bitmap)
+                                        person.icon ?: IconCompat.createWithBitmap(bitmap!!)
                                 )
                                         .setDesiredHeight(600)
                                         .build()

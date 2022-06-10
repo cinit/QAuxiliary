@@ -4,8 +4,8 @@ import java.io.File
 import java.util.Properties
 
 object Version {
-    const val kotlin = "1.6.21"
-    const val ksp = "1.0.5"
+    const val kotlin = "1.7.0"
+    const val ksp = "1.0.6"
     val java = JavaVersion.VERSION_11
 
     private const val defaultNdkVersion = "23.1.7779620"

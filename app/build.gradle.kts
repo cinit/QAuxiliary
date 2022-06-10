@@ -121,7 +121,7 @@ dependencies {
     implementation(projects.libs.mmkv)
     ksp(projects.libs.ksp)
     // androidx
-    implementation("androidx.core:core-ktx:1.7.0")
+    implementation("androidx.core:core-ktx:1.8.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.browser:browser:1.4.0")
     val lifecycleVersion = "2.4.1"
@@ -133,7 +133,7 @@ dependencies {
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
     implementation("io.noties.markwon:core:4.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
-    implementation("com.google.android.material:material:1.6.0")
+    implementation("com.google.android.material:material:1.6.1")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
@@ -228,6 +228,7 @@ val restartQQ = task("restartQQ") {
         }
     }
 }
+
 
 tasks.whenTaskAdded {
     when (name) {

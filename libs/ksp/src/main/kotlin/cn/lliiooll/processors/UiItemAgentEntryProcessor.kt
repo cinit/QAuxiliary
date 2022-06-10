@@ -1,6 +1,12 @@
 package cn.lliiooll.processors
 
-import com.google.devtools.ksp.processing.*
+import com.google.devtools.ksp.processing.CodeGenerator
+import com.google.devtools.ksp.processing.Dependencies
+import com.google.devtools.ksp.processing.KSPLogger
+import com.google.devtools.ksp.processing.Resolver
+import com.google.devtools.ksp.processing.SymbolProcessor
+import com.google.devtools.ksp.processing.SymbolProcessorEnvironment
+import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.AnnotationSpec
@@ -8,7 +14,7 @@ import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
 import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
-import com.squareup.kotlinpoet.ksp.toTypeName
+import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 
 @KotlinPoetKspPreview
@@ -40,7 +46,7 @@ class UiItemAgentEntryProcessor(
                     }
                     val isJava = ksClassDeclaration.containingFile?.filePath?.endsWith(".java") == true
                     // logger.warn("Processing >>> $ksClassDeclaration,isJava = $isJava")
-                    val typeName = ksClassDeclaration.asStarProjectedType().toTypeName()
+                    val typeName = ksClassDeclaration.toClassName()
                     val format = StringBuilder("\n%T").run {
                         if (isJava) append(".INSTANCE")
                         if (index == symbols.lastIndex) append("\n") else append(",")
