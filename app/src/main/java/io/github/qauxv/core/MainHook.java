@@ -44,6 +44,7 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.lifecycle.ShadowFileProvider;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
@@ -77,8 +78,15 @@ public class MainHook {
         if (SyncUtils.isMainProcess()) {
             Parasitics.injectModuleResources(ctx.getApplicationContext().getResources());
         }
-        if (SyncUtils.isTargetProcess(SyncUtils.PROC_MAIN | SyncUtils.PROC_PEAK)) {
+        if (SyncUtils.isTargetProcess(SyncUtils.PROC_MAIN | SyncUtils.PROC_PEAK | SyncUtils.PROC_TOOL)) {
             Parasitics.initForStubActivity(ctx);
+        }
+        if (SyncUtils.isTargetProcess(SyncUtils.PROC_MAIN | SyncUtils.PROC_TOOL)) {
+            try {
+                ShadowFileProvider.initHookForFileProvider();
+            } catch (ReflectiveOperationException e) {
+                Log.e(e);
+            }
         }
     }
 

@@ -268,6 +268,7 @@ public class Parasitics {
                         && hostApp.getPackageName().equals(component.getPackageName())
                         && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
                         boolean isTranslucent = false;
+                        boolean isToolProcess = "io.github.qauxv.activity.ShadowShareFileAgentActivity".equals(component.getClassName());
                         try {
                             Class<?> targetActivity = Class.forName(component.getClassName());
                             if (WindowIsTranslucent.class.isAssignableFrom(targetActivity)) {
@@ -276,9 +277,14 @@ public class Parasitics {
                         } catch (ClassNotFoundException ignored) {
                         }
                         Intent wrapper = new Intent();
-                        wrapper.setClassName(component.getPackageName(),
-                            isTranslucent ? ActProxyMgr.STUB_TRANSLUCENT_ACTIVITY
-                                : ActProxyMgr.STUB_DEFAULT_ACTIVITY);
+                        String proxyClassName = ActProxyMgr.STUB_DEFAULT_ACTIVITY;
+                        if (isTranslucent) {
+                            proxyClassName = ActProxyMgr.STUB_TRANSLUCENT_ACTIVITY;
+                        }
+                        if (isToolProcess) {
+                            proxyClassName = ActProxyMgr.STUB_TOOL_ACTIVITY;
+                        }
+                        wrapper.setClassName(component.getPackageName(), proxyClassName);
                         wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, raw);
                         args[index] = wrapper;
                     }

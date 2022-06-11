@@ -31,6 +31,7 @@ public class ActProxyMgr {
 
     public static final String STUB_DEFAULT_ACTIVITY = "com.tencent.mobileqq.activity.photo.CameraPreviewActivity";
     public static final String STUB_TRANSLUCENT_ACTIVITY = "cooperation.qlink.QlinkStandardDialogActivity";
+    public static final String STUB_TOOL_ACTIVITY = "cooperation.qqindividuality.QQIndividualityProxyActivity";
     @MagicConstant
     public static final String ACTIVITY_PROXY_INTENT = "io.github.qauxv.lifecycle.ActProxyMgr.ACTIVITY_PROXY_INTENT";
 
