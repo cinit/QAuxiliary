@@ -34,4 +34,5 @@
     <string name="action_filter_items">筛选</string>
     <string name="action_calculate_size">计算大小</string>
     <string name="action_refresh">刷新</string>
+    <string name="action_share_as_file">以文件分享至其他应用</string>
 </resources>

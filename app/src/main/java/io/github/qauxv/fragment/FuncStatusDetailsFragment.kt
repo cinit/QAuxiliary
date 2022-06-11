@@ -24,10 +24,12 @@
 
 package io.github.qauxv.fragment
 
+import android.content.Intent
 import android.database.ContentObserver
 import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
+import android.os.ParcelFileDescriptor
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.Menu
@@ -41,15 +43,21 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.Reflex
+import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
+import io.github.qauxv.activity.ShadowShareFileAgentActivity
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.MemoryFileUtils
+import io.github.qauxv.util.Natives
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.SystemServiceUtils
+import java.io.IOException
 
 class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
@@ -78,8 +86,55 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         mTextDetails?.let {
             val ctx = requireContext()
             if (!mTextDetails.isNullOrEmpty()) {
-                SystemServiceUtils.copyToClipboard(ctx, it)
-                Toasts.show(ctx, "已复制到剪贴板")
+                val copy = {
+                    SystemServiceUtils.copyToClipboard(ctx, it)
+                    Toasts.show(ctx, "已复制到剪贴板")
+                }
+                if (it.length > 1024) {
+                    AlertDialog.Builder(ctx)
+                        .setTitle("日志较长")
+                        .setMessage("日志较长，建议使用文件方式分享（点击右上角的以文件分享按钮）")
+                        .setPositiveButton("仍然复制") { _, _ -> copy() }
+                        .setNegativeButton("取消", null)
+                        .setCancelable(true)
+                        .create()
+                        .show()
+                } else {
+                    copy()
+                }
+            }
+        }
+    }
+
+    private fun shareDebugLogAsFile() {
+        mTextDetails?.let {
+            val ctx = requireContext()
+            if (!mTextDetails.isNullOrEmpty()) {
+                val name = "${Reflex.getShortClassName(mFunction)}-${System.currentTimeMillis()}.txt"
+                val bytes = it.toByteArray()
+                var fd: Int = -1
+                try {
+                    fd = MemoryFileUtils.createMemoryFile(name, bytes.size)
+                    val r = Natives.write(fd, bytes, 0, bytes.size)
+                    if (r != bytes.size) {
+                        throw IOException("write error, expected: ${bytes.size}, actual: $r")
+                    }
+                    Natives.lseek(fd, 0, 0)
+                    val intent = Intent(Intent.ACTION_SEND)
+                    intent.type = "text/plain"
+                    intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                    intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    val pfd = ParcelFileDescriptor.fromFd(fd)
+                    ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, name, "text/plain", pfd)
+                    Natives.close(fd)
+                } catch (e: Exception) {
+                    FaultyDialog.show(ctx, e)
+                    runCatching {
+                        if (fd != -1) {
+                            Natives.close(fd)
+                        }
+                    }
+                }
             }
         }
     }
@@ -134,11 +189,18 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
     }
 
     override fun onOptionsItemSelected(item: MenuItem): Boolean {
-        return if (item.itemId == R.id.menu_item_copy_all) {
-            copyDebugLog()
-            true
-        } else {
-            super.onOptionsItemSelected(item)
+        return when (item.itemId) {
+            R.id.menu_item_copy_all -> {
+                copyDebugLog()
+                true
+            }
+            R.id.menu_item_share_as_file -> {
+                shareDebugLogAsFile()
+                true
+            }
+            else -> {
+                super.onOptionsItemSelected(item)
+            }
         }
     }
 
