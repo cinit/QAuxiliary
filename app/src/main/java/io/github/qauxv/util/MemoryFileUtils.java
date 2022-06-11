@@ -23,6 +23,7 @@
 package io.github.qauxv.util;
 
 import androidx.annotation.NonNull;
+import cc.ioctl.util.HostInfo;
 import java.io.IOException;
 import java.util.Objects;
 
@@ -32,7 +33,16 @@ public class MemoryFileUtils {
         throw new AssertionError("no instance");
     }
 
+    static boolean sInitialized = false;
+
     public static int createMemoryFile(@NonNull String name, int size) throws IOException {
+        if (!sInitialized) {
+            int rc = nativeInitializeTmpDir(HostInfo.getApplication().getCacheDir().getAbsolutePath());
+            if (rc != 0) {
+                throw new IOException("nativeInitializeTmpDir failed: " + rc);
+            }
+            sInitialized = true;
+        }
         Objects.requireNonNull(name);
         if (size < 0) {
             throw new IllegalArgumentException("size must be >= 0");
@@ -45,4 +55,6 @@ public class MemoryFileUtils {
     }
 
     private static native int nativeCreateMemoryFile0(String name, int size);
+
+    private static native int nativeInitializeTmpDir(String cacheDir);
 }

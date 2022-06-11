@@ -24,4 +24,13 @@ int ashmem_create_region(const char *name, size_t size);
  */
 int copy_file_to_memfd(int fd, const char *name);
 
+/**
+ * create a file in memory
+ * @param dir  the directory to create the file and then unlink if memfd is not supported
+ * @param name  the name of the file, for debug purpose
+ * @param size  the size of the file
+ * @return  memfd fd if success, -errno on failure
+ */
+int create_in_memory_file(const char *dir, const char *name, size_t size);
+
 #endif //RPCPROTOCOL_SHARED_MEMORY_H

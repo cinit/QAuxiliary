@@ -14,6 +14,7 @@
 #include <linux/memfd.h>
 #include <cerrno>
 #include <cstring>
+#include <cstdio>
 
 #define ASHMEM_NAME_DEF "dev/ashmem"
 #define ASHMEM_NOT_PURGED 0
@@ -134,6 +135,42 @@ int ashmem_create_region(const char *name, size_t size) {
     close(fd);
     errno = save_errno;
     return -save_errno;
+}
+
+int create_in_memory_file(const char *dir, const char *name, size_t size) {
+    if (dir == nullptr || name == nullptr) {
+        return -EINVAL;
+    }
+    if (has_memfd_support()) {
+        return memfd_create_region_post_q(name, size);
+    }
+    // no memfd support, fallback to open+unlink
+    // check dir writable
+    if (access(dir, W_OK) != 0) {
+        return -errno;
+    }
+    char path[PATH_MAX] = {};
+    snprintf(path, PATH_MAX, "%s/%s", dir, name);
+    // create file
+    int fd = TEMP_FAILURE_RETRY(open(path, O_RDWR | O_CREAT | O_CLOEXEC | O_EXCL, 0600));
+    if (fd < 0) {
+        return -errno;
+    }
+    // unlink file
+    if (TEMP_FAILURE_RETRY(unlink(path)) != 0) {
+        int save_errno = errno;
+        close(fd);
+        errno = save_errno;
+        return -save_errno;
+    }
+    // truncate file
+    if (TEMP_FAILURE_RETRY(ftruncate(fd, size)) != 0) {
+        int save_errno = errno;
+        close(fd);
+        errno = save_errno;
+        return -save_errno;
+    }
+    return fd;
 }
 
 int copy_file_to_memfd(int fd, const char *name) {

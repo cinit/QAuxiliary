@@ -4,8 +4,10 @@
 #include <memory.h>
 #include <malloc.h>
 #include <unistd.h>
+#include <fcntl.h>
 #include <sys/prctl.h>
 #include <sys/mman.h>
+#include <sys/stat.h>
 #include "natives_utils.h"
 #include <android/log.h>
 
@@ -813,8 +815,40 @@ Java_io_github_qauxv_util_Natives_close(JNIEnv *env, jclass, jint fd) {
     }
 }
 
+static char sTmpDir[PATH_MAX] = {};
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_MemoryFileUtils_nativeInitializeTmpDir(JNIEnv *env, jclass, jstring jcacheDir) {
+    if (jcacheDir == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "cacheDir is null");
+        return -EINVAL;
+    }
+    const char *cacheDir = env->GetStringUTFChars(jcacheDir, nullptr);
+    if (cacheDir == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "failed to allocate memory");
+        return -ENOMEM;
+    }
+    if (access(cacheDir, W_OK) != 0) {
+        return -errno;
+    }
+    std::string cacheDirStr = cacheDir;
+    env->ReleaseStringUTFChars(jcacheDir, cacheDir);
+    std::string tmpDir = cacheDirStr + "/.tmp";
+    if (access(tmpDir.c_str(), W_OK) != 0) {
+        if (mkdir(tmpDir.c_str(), 0700) != 0) {
+            return -errno;
+        }
+    }
+    strncpy(sTmpDir, tmpDir.c_str(), sizeof(sTmpDir));
+    return 0;
+}
+
 extern "C" JNIEXPORT jint JNICALL
 Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, jclass, jstring name, jint size) {
+    if (strlen(sTmpDir) == 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), "tmpDir is not initialized");
+        return -EINVAL;
+    }
     if (name == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "name is null");
         return -1;
@@ -829,7 +863,7 @@ Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, j
         env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
         return -1;
     }
-    int fd = ashmem_create_region(namePtr, (size_t) size);
+    int fd = create_in_memory_file(sTmpDir, namePtr, (size_t) size);
     env->ReleaseStringUTFChars(name, namePtr);
     if (fd < 0) {
         int err = -fd;
