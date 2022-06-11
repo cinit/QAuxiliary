@@ -33,7 +33,8 @@ add_library(qauxv SHARED
         qauxv_core/version.c
         qauxv_core/NativeHookEntry.cc
         qauxv_core/NativeMainHook.cc
-        qauxv_core/biliroaming.cc)
+        qauxv_core/biliroaming.cc
+        qauxv_core/shared_memory.cpp)
 
 set_target_properties(qauxv PROPERTIES
         CXX_EXTENSIONS OFF

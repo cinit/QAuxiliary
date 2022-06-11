@@ -69,6 +69,10 @@ public class Natives {
     public static final int PROT_GROWSUP = 0x02000000;	/* Extend change to start of
 					   growsup vma (mprotect only).  */
 
+    public static final int SEEK_SET = 0;        /* Set file offset to OFFSET.  */
+    public static final int SEEK_CUR = 1;        /* Set file offset to current plus OFFSET.  */
+    public static final int SEEK_END = 2;        /* Set file offset to end plus OFFSET.  */
+
     private Natives() {
         throw new AssertionError("No instance for you!");
     }
@@ -84,6 +88,22 @@ public class Natives {
     public static void mread(long ptr, int len, byte[] buf) {
         mread(ptr, len, buf, 0);
     }
+
+    public static native int write(int fd, byte[] buf, int offset, int len) throws IOException;
+
+    public static int write(int fd, byte[] buf, int len) throws IOException {
+        return write(fd, buf, 0, len);
+    }
+
+    public static native int read(int fd, byte[] buf, int offset, int len) throws IOException;
+
+    public static int read(int fd, byte[] buf, int len) throws IOException {
+        return read(fd, buf, 0, len);
+    }
+
+    public static native long lseek(int fd, long offset, int whence) throws IOException;
+
+    public static native void close(int fd) throws IOException;
 
     public static native long malloc(int size);
 
@@ -110,6 +130,10 @@ public class Natives {
     public static native long call(long addr);
 
     public static native long call(long addr, long argv);
+
+    public static native int getProcessDumpableState() throws IOException;
+
+    public static native void setProcessDumpableState(int dumpable) throws IOException;
 
     /**
      * Allocate a object instance of the specified class without calling the constructor.

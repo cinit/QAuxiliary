@@ -4,6 +4,7 @@
 #include <memory.h>
 #include <malloc.h>
 #include <unistd.h>
+#include <sys/prctl.h>
 #include <sys/mman.h>
 #include "natives_utils.h"
 #include <android/log.h>
@@ -13,6 +14,7 @@
 
 #include "Natives.h"
 #include "NativeMainHook.h"
+#include "shared_memory.h"
 
 static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
     if (obj == nullptr) {
@@ -24,6 +26,8 @@ static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
 }
 
 #define requiresNonNullP(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return nullptr; ((void)0)
+#define requiresNonNullV(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return; ((void)0)
+#define requiresNonNullZ(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return 0; ((void)0)
 
 static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
     if (jstr == nullptr) {
@@ -735,4 +739,150 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
     }
     // invoke
     return transformArgumentsAndInvokeNonVirtual(env, method, targetClass, paramShorts, returnTypeShort, obj, args);
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_write(JNIEnv *env, jclass clazz, jint fd, jbyteArray buf, jint offset, jint len) {
+    requiresNonNullZ(buf, "buf is null");
+    if (fd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("fd is negative: ") + std::to_string(fd)).c_str());
+        return 0;
+    }
+    int arrayLen = env->GetArrayLength(buf);
+    if (offset < 0 || len < 0 || offset + len > arrayLen) {
+        env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"),
+                      (std::string("offset or len is out of bounds: ") + std::to_string(offset) + " "
+                              + std::to_string(len) + " " + std::to_string(arrayLen)).c_str());
+        return 0;
+    }
+    jbyte *bufPtr = env->GetByteArrayElements(buf, nullptr);
+    if (bufPtr == nullptr) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
+        return 0;
+    }
+    ssize_t written = write(fd, bufPtr + offset, len);
+    int err = errno;
+    env->ReleaseByteArrayElements(buf, bufPtr, JNI_ABORT);
+    if (written < 0) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return 0;
+    }
+    return (jint) written;
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_read(JNIEnv *env, jclass, jint fd, jbyteArray buf, jint offset, jint len) {
+    requiresNonNullZ(buf, "buf is null");
+    if (fd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("fd is negative: ") + std::to_string(fd)).c_str());
+        return 0;
+    }
+    int arrayLen = env->GetArrayLength(buf);
+    if (offset < 0 || len < 0 || offset + len > arrayLen) {
+        env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"),
+                      (std::string("offset or len is out of bounds: ") + std::to_string(offset)
+                              + " " + std::to_string(len) + " " + std::to_string(arrayLen)).c_str());
+        return 0;
+    }
+    jbyte *bufPtr = env->GetByteArrayElements(buf, nullptr);
+    if (bufPtr == nullptr) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
+        return 0;
+    }
+    ssize_t r = read(fd, bufPtr + offset, len);
+    int err = errno;
+    env->ReleaseByteArrayElements(buf, bufPtr, 0);
+    if (r < 0) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return 0;
+    }
+    return (jint) r;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_qauxv_util_Natives_close(JNIEnv *env, jclass, jint fd) {
+    if (fd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("fd is negative: ") + std::to_string(fd)).c_str());
+        return;
+    }
+    if (close(fd) < 0) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(errno));
+    }
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, jclass, jstring name, jint size) {
+    if (name == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "name is null");
+        return -1;
+    }
+    if (size < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("size is negative: ") + std::to_string(size)).c_str());
+        return -1;
+    }
+    const char *namePtr = env->GetStringUTFChars(name, nullptr);
+    if (namePtr == nullptr) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
+        return -1;
+    }
+    int fd = ashmem_create_region(namePtr, (size_t) size);
+    env->ReleaseStringUTFChars(name, namePtr);
+    if (fd < 0) {
+        int err = -fd;
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    } else {
+        return fd;
+    }
+}
+
+extern "C" JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_getProcessDumpableState(JNIEnv *env, jclass) {
+    int dumpable = prctl(PR_GET_DUMPABLE);
+    if (dumpable < 0) {
+        int err = errno;
+        const char *msg = strerror(err);
+        env->ThrowNew(env->FindClass("java/io/IOException"), msg);
+        return -1;
+    }
+    return dumpable;
+}
+
+extern "C" JNIEXPORT void JNICALL
+Java_io_github_qauxv_util_Natives_setProcessDumpableState(JNIEnv *env, jclass, jint dumpable) {
+    if (dumpable < 0 || dumpable > 2) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("dumpable is out of bounds: ") + std::to_string(dumpable)).c_str());
+        return;
+    }
+    if (prctl(PR_SET_DUMPABLE, dumpable, 0, 0, 0) < 0) {
+        int err = errno;
+        const char *msg = strerror(err);
+        env->ThrowNew(env->FindClass("java/io/IOException"), msg);
+    }
+}
+
+extern "C" JNIEXPORT jlong JNICALL
+Java_io_github_qauxv_util_Natives_lseek(JNIEnv *env, jclass, jint fd, jlong offset, jint whence) {
+    if (fd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("fd is negative: ") + std::to_string(fd)).c_str());
+        return -1;
+    }
+    if (whence < 0 || whence > 2) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("whence is invalid: ") + std::to_string(whence)).c_str());
+        return -1;
+    }
+    off_t result = lseek(fd, (int64_t) offset, whence);
+    if (result < 0) {
+        int err = errno;
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    }
+    return (jlong) result;
 }
