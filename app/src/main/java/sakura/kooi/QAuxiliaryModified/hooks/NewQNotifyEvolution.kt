@@ -321,7 +321,7 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannels() {
         val notificationChannels: List<NotificationChannel> = getNotificationChannels()
-        val notificationChannelGroup = NotificationChannelGroup("qq_evolution", "QQ通知进化")
+        val notificationChannelGroup = NotificationChannelGroup("qq_evolution_plus", "QQ通知进化 Plus")
         val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java);
         if (notificationChannels.any {
                     notificationChannel -> notificationManager.getNotificationChannel(notificationChannel.id) == null
