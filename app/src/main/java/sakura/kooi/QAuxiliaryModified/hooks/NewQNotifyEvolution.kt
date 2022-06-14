@@ -147,6 +147,7 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                 if (title.contains("[特别关心]")) {
                                     builder.setImportant(true)
                                     channelId = NotifyChannel.FRIEND_SPECIAL
+                                    title = title.removePrefix("[特别关心]")
                                 }
                                 person = builder.build()
                                 personCache[notificationId] = person
