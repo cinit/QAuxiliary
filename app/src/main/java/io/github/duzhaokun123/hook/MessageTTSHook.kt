@@ -31,20 +31,20 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import io.github.duzhaokun123.util.TTS
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageTTSHook: CommonSwitchFunctionHook() {
-    lateinit var textToSpeech: TextToSpeech
-
+object MessageTTSHook : CommonSwitchFunctionHook() {
     override val name: String
         get() = "文字消息转语音 (使用系统 TTS)"
 
@@ -53,7 +53,8 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         val cl_ArkAppItemBuilder = Initiator._TextItemBuilder()
-        XposedHelpers.findAndHookMethod(cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
+        XposedHelpers.findAndHookMethod(
+            cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
             Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback
         )
         for (m in cl_ArkAppItemBuilder!!.declaredMethods) {
@@ -66,12 +67,13 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
                 break
             }
         }
-        textToSpeech = TextToSpeech(HostInfo.getApplication()) {
+        TTS.addInitCallback {
             if (it == TextToSpeech.ERROR) {
                 Toasts.error(HostInfo.getApplication(), "TTS 初始化失败")
                 traceError(RuntimeException("TTS init failed"))
             }
         }
+        TTS.init(HostInfo.getApplication())
         return true
     }
 
@@ -79,13 +81,15 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
         get() = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     private val getMenuItemCallBack = afterHookIfEnabled(60) { param ->
-       try {
-            val arr = param.result
-            val clQQCustomMenuItem = arr.javaClass.componentType
-            val item_tts = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_tts, "TTS")
-            val ret = java.lang.reflect.Array.newInstance(clQQCustomMenuItem!!, java.lang.reflect.Array.getLength(arr) + 1)
-            System.arraycopy(arr, 0, ret, 0, java.lang.reflect.Array.getLength(arr))
-            java.lang.reflect.Array.set(ret, java.lang.reflect.Array.getLength(arr), item_tts)
+        try {
+            val original: Array<Any> = param.result as Array<Any>
+            val originLength = original.size
+            val itemClass = original.javaClass.componentType!!
+            val ret: Array<Any?> = java.lang.reflect.Array.newInstance(itemClass, originLength + 2) as Array<Any?>
+            System.arraycopy(original, 0, ret, 0, originLength)
+            ret[originLength] = CustomMenu.createItem(itemClass, R.id.item_tts, "TTS")
+            ret[originLength + 1] = CustomMenu.createItem(itemClass, R.id.item_tts2, "TTS+")
+            CustomMenu.checkArrayElementNonNull(ret)
             param.result = ret
         } catch (e: Throwable) {
             traceError(e)
@@ -97,12 +101,16 @@ object MessageTTSHook: CommonSwitchFunctionHook() {
         val id = param.args[0] as Int
         val ctx = param.args[1] as Activity
         val chatMessage = param.args[2]
-        if (id != R.id.item_tts) return@afterHookIfEnabled
-        val r = textToSpeech.speak(Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "", TextToSpeech.QUEUE_FLUSH, null)
-        if (r == TextToSpeech.ERROR) {
-            Toasts.error(ctx, "TTS 请求失败")
+        val wc = CommonContextWrapper.createAppCompatContext(ctx)
+        when (id) {
+            R.id.item_tts -> {
+                TTS.speak(wc, Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "")
+            }
+            R.id.item_tts2 -> {
+                val msg = Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: ""
+                TTS.showConfigDialog(wc, msg)
+            }
         }
-
     }
 
 }

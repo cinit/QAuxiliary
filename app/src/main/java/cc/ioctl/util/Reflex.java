@@ -1086,6 +1086,73 @@ public class Reflex {
         return findMethodOrNull(clazz, null, name, paramTypes);
     }
 
+    /**
+     * Finds a method with the given return type and parameter types.
+     *
+     * @param clazz      the class to search in
+     * @param returnType the return type of the method, or null to match any return type
+     * @param withSuper  whether to search in superclasses
+     * @param paramTypes the parameter types of the method
+     * @return the method
+     * @throws NoSuchMethodException if no matching method is found, or more than one matching method is found
+     */
+    @NonNull
+    public static Method findSingleMethod(@NonNull Class<?> clazz, @Nullable Class<?> returnType,
+                                          boolean withSuper, @NonNull Class<?>... paramTypes) throws NoSuchMethodException {
+        Objects.requireNonNull(clazz, "clazz == null");
+        int argc = paramTypes.length;
+        Class<?> current = clazz;
+        Method candidateMethod = null;
+        do {
+            Method[] methods = current.getDeclaredMethods();
+            loop:
+            for (Method method : methods) {
+                if (returnType == null || returnType == method.getReturnType()) {
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == argc) {
+                        for (int ii = 0; ii < argt.length; ii++) {
+                            if (!argt[ii].equals(paramTypes[ii])) {
+                                continue loop;
+                            }
+                        }
+                        if (candidateMethod != null) {
+                            throw new NoSuchMethodException("Multiple methods " + clazz.getName() + ".*" + Arrays.toString(paramTypes) +
+                                    (returnType == null ? "" : " with return type " + returnType.getName()) + " found");
+                        } else {
+                            candidateMethod = method;
+                            candidateMethod.setAccessible(true);
+                        }
+                    }
+                }
+            }
+            current = current.getSuperclass();
+        } while ((candidateMethod == null && withSuper) && current != null && current != Object.class);
+        if (candidateMethod == null) {
+            throw new NoSuchMethodException("No method " + clazz.getName() + ".*" + Arrays.toString(paramTypes) +
+                    (returnType == null ? "" : " with return type " + returnType.getName()) + " found");
+        }
+        return candidateMethod;
+    }
+
+    /**
+     * Finds a method with the given return type and parameter types.
+     *
+     * @param clazz      the class to search in
+     * @param returnType the return type of the method, or null to match any return type
+     * @param withSuper  whether to search in superclasses
+     * @param paramTypes the parameter types of the method
+     * @return the method, or null if no matching method is found
+     */
+    @Nullable
+    public static Method findSingleMethodOrNull(@NonNull Class<?> clazz, @Nullable Class<?> returnType,
+                                                boolean withSuper, @NonNull Class<?>... paramTypes) {
+        try {
+            return findSingleMethod(clazz, returnType, withSuper, paramTypes);
+        } catch (NoSuchMethodException e) {
+            return null;
+        }
+    }
+
     @NonNull
     public static Object newInstance(@NonNull Class<?> clazz, Object... argsAndTypes) throws ReflectiveOperationException {
         int argc = argsAndTypes.length / 2;

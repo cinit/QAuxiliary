@@ -30,7 +30,12 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._MessageRecord
 import me.singleneuron.data.MsgRecordData
 import mqq.app.AppRuntime
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -50,16 +55,16 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 val senderUin = MsgRecordData(msgRecord).senderUin!!
 
                 val opInfo = event.get("op_info")
-                if (opInfo.invoke("has") != true) return@hookBefore
+                if (opInfo?.invoke("has") != true) return@hookBefore
                 val operatorTinyid = opInfo.get("operator_tinyid")
-                if (operatorTinyid.invoke("has") != true) return@hookBefore
+                if (operatorTinyid?.invoke("has") != true) return@hookBefore
                 val operatorId = operatorTinyid.invoke("get").toString()
                 if (operatorId == "0") return@hookBefore
                 val selfTinyId = appRuntime.invoke(
                     "getRuntimeService",
                     "com.tencent.mobileqq.qqguildsdk.api.IGPSService".clazz!!,
                     Class::class.java
-                ).invoke("getSelfTinyId")
+                )?.invoke("getSelfTinyId")
 
                 val revokerNick = getNickName(appRuntime, operatorId, msgRecord)
                 val authorNick = getNickName(appRuntime, senderUin, msgRecord)
@@ -94,6 +99,13 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 )
                 if (wording == null || "" == wording) return@hookBefore
                 it.args[1] = wording
+            }
+
+        "Lcom/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl;->processUpdateEvent(Lcom/tencent/imcore/message/BaseMsgProxy;Lcom/tencent/mobileqq/data/MessageRecord;Lcom/tencent/mobileqq/data/MessageRecord;)Z"
+            .method.hookBefore(this){
+                if (it.args[1].get("msgtype") as Int != it.args[2].get("msgtype") as Int) {
+                    it.result = true
+                }
             }
     }
 

@@ -23,6 +23,7 @@ package com.rymmmmm.hook;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -51,7 +52,7 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
     public static final CustomDeviceModel INSTANCE = new CustomDeviceModel();
 
     private CustomDeviceModel() {
-        super(SyncUtils.PROC_ANY);
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF | SyncUtils.PROC_QZONE);
     }
 
     @NonNull
@@ -85,27 +86,42 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         Class<?> Clz = Initiator.load("android.os.Build");
-        Field manufacturer = XposedHelpers.findField(Clz, "MANUFACTURER");
-        Field model = XposedHelpers.findField(Clz, "MODEL");
-        manufacturer.setAccessible(true);
-        model.setAccessible(true);
-        manufacturer.set(Clz.newInstance(), RikkaCustomDeviceModelDialog.getCurrentDeviceManufacturer());
-        model.set(Clz.newInstance(), RikkaCustomDeviceModelDialog.getCurrentDeviceModel());
+        Field manufacturerField = XposedHelpers.findField(Clz, "MANUFACTURER");
+        Field modelField = XposedHelpers.findField(Clz, "MODEL");
+        manufacturerField.setAccessible(true);
+        modelField.setAccessible(true);
+        final String targetManufacturer = RikkaCustomDeviceModelDialog.getCurrentDeviceManufacturer();
+        final String targetModel = RikkaCustomDeviceModelDialog.getCurrentDeviceModel();
+        if (TextUtils.isEmpty(targetModel) || TextUtils.isEmpty(targetManufacturer)) {
+            // enabled but null?
+            return false;
+        }
+        manufacturerField.set(Clz.newInstance(), targetManufacturer);
+        modelField.set(Clz.newInstance(), targetModel);
         //hook 替换QQ获取缓存里的设备信息
         Class<?> devInfoManager = Initiator.load("com.tencent.mobileqq.Pandora.deviceInfo.DeviceInfoManager");
-        if (devInfoManager == null) devInfoManager = Initiator.load("com.tencent.mobileqq.pandora.deviceinfo.DeviceInfoManager");
-        if (devInfoManager != null){
-            Method getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager,"getModel", Context.class);
-            if (getMODEL == null) getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager,"h", Context.class);
-            if (getMODEL != null){
+        if (devInfoManager == null) {
+            devInfoManager = Initiator.load("com.tencent.mobileqq.pandora.deviceinfo.DeviceInfoManager");
+        }
+        if (devInfoManager != null) {
+            Method getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager, "getModel", Context.class);
+            if (getMODEL == null) {
+                getMODEL = XposedHelpers.findMethodExactIfExists(devInfoManager, "h", Context.class);
+            }
+            if (getMODEL != null) {
                 XposedBridge.hookMethod(getMODEL, new XC_MethodReplacement() {
                     @Override
-                    protected Object replaceHookedMethod(MethodHookParam param) throws Throwable {
-                        return RikkaCustomDeviceModelDialog.getCurrentDeviceModel();
+                    protected Object replaceHookedMethod(MethodHookParam param) {
+                        return targetModel;
                     }
                 });
             }
         }
+        return true;
+    }
+
+    @Override
+    public boolean isApplicationRestartRequired() {
         return true;
     }
 
@@ -116,6 +132,6 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
 
     @Override
     public void setEnabled(boolean enabled) {
-        //not supported.
+        // not supported.
     }
 }

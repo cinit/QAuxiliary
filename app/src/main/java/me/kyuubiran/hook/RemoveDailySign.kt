@@ -58,6 +58,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
                     if (hostInfo.packageName != HostInfo.PACKAGE_NAME_QQ) return
                     try {
                         val dailySignName = when {
+                            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "c0"
                             requireMinQQVersion(QQVersion.QQ_8_8_17) -> "O"
                             requireMinQQVersion(QQVersion.QQ_8_8_11) -> "N"
                             hostInfo.versionCode == QQVersion.QQ_8_6_0 -> "b"

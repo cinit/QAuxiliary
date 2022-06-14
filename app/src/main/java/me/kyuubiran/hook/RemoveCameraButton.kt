@@ -30,6 +30,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -39,10 +41,16 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
     override val name: String = "屏蔽消息界面相机/小世界图标"
 
     override fun initOnce() = throwOrTrue {
-        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java)) }.hookBefore {
+        findMethod(Initiator._ConversationTitleBtnCtrl()) {
+            name == (if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "G" else "a")
+                && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
+        }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
-        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "a" && returnType == Void.TYPE && parameterTypes.isEmpty() }.hookBefore {
+        findMethod(Initiator._ConversationTitleBtnCtrl()) {
+            name == (if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "F" else "a")
+                && returnType == Void.TYPE && parameterTypes.isEmpty()
+        }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
     }

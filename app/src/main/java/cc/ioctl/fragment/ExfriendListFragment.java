@@ -26,11 +26,9 @@ import static android.widget.LinearLayout.LayoutParams.WRAP_CONTENT;
 import static cc.ioctl.util.DateTimeUtil.getIntervalDspMs;
 import static cc.ioctl.util.DateTimeUtil.getRelTimeStrSec;
 
-import android.annotation.TargetApi;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Color;
-import android.os.Build;
 import android.os.Bundle;
 import android.view.Gravity;
 import android.view.LayoutInflater;
@@ -43,26 +41,34 @@ import android.widget.RelativeLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.content.res.ResourcesCompat;
+import cc.ioctl.hook.OpenFriendChatHistory;
 import cc.ioctl.hook.OpenProfileCard;
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.data.EventRecord;
 import cc.ioctl.util.data.FriendRecord;
+import cc.ioctl.util.ui.FaultyDialog;
 import com.tencent.widget.XListView;
 import io.github.qauxv.R;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.fragment.BaseRootLayoutFragment;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.UiThread;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
+import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import xyz.nextalone.util.SystemServiceUtils;
 
 public class ExfriendListFragment extends BaseRootLayoutFragment {
 
@@ -105,7 +111,7 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
     @Nullable
     @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-            @Nullable Bundle savedInstanceState) {
+                               @Nullable Bundle savedInstanceState) {
         Context context = inflater.getContext();
         try {
             face = FaceImpl.getInstance();
@@ -116,7 +122,6 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
         reload();
 
         XListView sdlv = new XListView(context, null);
-        ViewGroup.LayoutParams mmlp = new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT);
         RelativeLayout.LayoutParams mwllp = new RelativeLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
         sdlv.setId(R.id.rootMainList);
         mwllp.addRule(RelativeLayout.ALIGN_PARENT_TOP);
@@ -206,7 +211,6 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
     }
 
 
-    @TargetApi(Build.VERSION_CODES.JELLY_BEAN)
     private View inflateItemView(Context context, EventRecord ev) {
         int tmp;
         RelativeLayout rlayout = new RelativeLayout(context);
@@ -269,30 +273,66 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
         rlayout.addView(stat, statlp);
 
         rlayout.setClickable(true);
-        rlayout.setOnClickListener(v -> {
-            long uin = ((EventRecord) v.getTag()).operand;
-            OpenProfileCard.openUserProfileCard(v.getContext(), uin);
-        });
-        rlayout.setOnLongClickListener(v -> {
-            try {
-                CustomDialog dialog = CustomDialog.createFailsafe(context);
-                dialog.setTitle("删除记录");
-                dialog.setCancelable(true);
-                dialog.setMessage("确认删除历史记录(" + ((EventRecord) v.getTag())._remark + ")");
-                dialog.setPositiveButton("确认", (dialog12, which) -> {
-                    dialog12.dismiss();
-                    exm.getEvents().values().remove(v.getTag());
-                    exm.saveConfigure();
-                    reload();
-                    adapter.notifyDataSetChanged();
-                });
-                dialog.setNegativeButton("取消", (dialog1, which) -> dialog1.dismiss());
-                dialog.show();
-            } catch (Exception e) {
-                Log.e(e);
-            }
-            return true;
-        });
+        rlayout.setOnClickListener(mOnListItemClickListener);
+        rlayout.setOnLongClickListener(mOnListItemLongClickListener);
         return rlayout;
+    }
+
+    private final View.OnClickListener mOnListItemClickListener = v -> {
+        long uin = ((EventRecord) v.getTag()).operand;
+        OpenProfileCard.openUserProfileCard(v.getContext(), uin);
+    };
+
+    private final View.OnLongClickListener mOnListItemLongClickListener = v -> {
+        Context ctx = CommonContextWrapper.createAppCompatContext(v.getContext());
+        EventRecord r = (EventRecord) Objects.requireNonNull(v.getTag(), "v.getTag() == null");
+        // long click menu
+        String[] options = new String[]{"复制 QQ 号", "删除记录", "查看本地聊天记录"};
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setTitle("操作");
+        builder.setItems(options, (dialog, which) -> {
+            switch (which) {
+                case 0: {
+                    SystemServiceUtils.copyToClipboard(ctx, String.valueOf(r.operand));
+                    Toasts.show(ctx, "已复制 QQ 号");
+                    break;
+                }
+                case 1: {
+                    confirmAndDeleteRecord(ctx, r);
+                    break;
+                }
+                case 2: {
+                    OpenFriendChatHistory.startFriendChatHistoryActivity(ctx, r.operand);
+                    break;
+                }
+                default:
+                    break;
+            }
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.setCancelable(true);
+        builder.show();
+        return true;
+    };
+
+    @UiThread
+    private void confirmAndDeleteRecord(Context context, EventRecord r) {
+        try {
+            CustomDialog dialog = CustomDialog.createFailsafe(context);
+            dialog.setTitle("删除记录");
+            dialog.setCancelable(true);
+            dialog.setMessage("确认删除历史记录(" + r._remark + ")");
+            dialog.setPositiveButton("确认", (dialog12, which) -> {
+                dialog12.dismiss();
+                exm.getEvents().values().remove(r);
+                exm.saveConfigure();
+                reload();
+                adapter.notifyDataSetChanged();
+            });
+            dialog.setNegativeButton("取消", (dialog1, which) -> dialog1.dismiss());
+            dialog.show();
+        } catch (Exception e) {
+            FaultyDialog.show(context, e);
+        }
     }
 }

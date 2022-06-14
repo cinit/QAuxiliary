@@ -62,7 +62,8 @@ public class CheatHook extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PNG_FRAME_UTIL), "a", int.class,
+        var method = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "d" : "a";
+        XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PNG_FRAME_UTIL), method, int.class,
                 new XC_MethodHook(43) {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) {

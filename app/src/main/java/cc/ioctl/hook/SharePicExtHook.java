@@ -107,7 +107,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         Class<?> kiv2OnItemClickListener = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet$OnItemClickListener");
         // using kv3OnItemClickListenerV2 = com.tencent.mobileqq.widget.share.ShareActionSheet.OnItemClickListenerV2
         Method miv2OnItemClick = kiv2OnItemClickListener.getDeclaredMethod("onItemClick", kActionSheetItem, kiShareActionSheet);
-        Method showActionSheetForPic = kAIOPictureView.getDeclaredMethod("a",
+        Method showActionSheetForPic = Reflex.findSingleMethod(kAIOPictureView, void.class, false,
                 Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureData"),
                 Initiator.loadClass("com.tencent.richmediabrowser.model.RichMediaBrowserInfo")
         );
@@ -206,7 +206,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
     });
 
     @Nullable
-    private static String guessMimeType(@NonNull File file) {
+    public static String guessMimeType(@NonNull File file) {
         try (BufferedInputStream in = new BufferedInputStream(new FileInputStream(file))) {
             return URLConnection.guessContentTypeFromStream(in);
         } catch (IOException e) {

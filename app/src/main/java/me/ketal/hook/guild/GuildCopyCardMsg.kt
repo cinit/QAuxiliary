@@ -83,10 +83,10 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
                     _ChatMessage())
                 val text = when {
                     clMessageForStructing.isAssignableFrom(chatMessage.javaClass) -> {
-                        chatMessage.get("structingMsg").invoke("getXml") as String
+                        chatMessage.get("structingMsg")?.invoke("getXml") as String
                     }
                     clMessageForArkApp.isAssignableFrom(chatMessage.javaClass) -> {
-                        chatMessage.get("ark_app_message").invoke("toAppXml") as String
+                        chatMessage.get("ark_app_message")?.invoke("toAppXml") as String
                     }
                     else -> return@hookBefore
                 }

@@ -30,11 +30,13 @@ import mqq.app.AppRuntime
 
 interface IInputButtonDecorator : IBaseChatPieDecorator {
 
+    /**
+     * Called when the R.id.fun_btn is long clicked.
+     * Return true to consume the event, false to pass it on to other decorators.
+     */
     @Throws(Throwable::class)
-    fun doDecorate(text: String,
-                   session: Parcelable,
-                   input: EditText,
-                   sendBtn: View,
-                   ctx1: Context,
-                   qqApp: AppRuntime): Boolean
+    fun onFunBtnLongClick(
+        text: String, session: Parcelable, input: EditText, sendBtn: View,
+        ctx1: Context, qqApp: AppRuntime
+    ): Boolean
 }

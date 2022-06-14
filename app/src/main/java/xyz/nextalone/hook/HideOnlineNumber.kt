@@ -27,8 +27,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._TroopChatPie
 import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
-import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -39,13 +39,10 @@ object HideOnlineNumber : CommonSwitchFunctionHook("na_hide_online_number") {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        for (m: Method in _TroopChatPie().methods) {
-            val argt = m.parameterTypes
-            if (m.name == "a" && argt.size == 2 && argt[0] == String::class.java && argt[1] == Boolean::class.java) {
-                m.hookBefore(this) {
-                    it.args[0] = ""
-                }
-            }
+        _TroopChatPie().method {
+            it.parameterTypes.contentEquals(arrayOf(String::class.java, Boolean::class.java))
+        }?.hookBefore(this) {
+            it.args[0] = ""
         }
     }
 }

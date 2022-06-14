@@ -104,6 +104,7 @@ android {
     lint {
         checkDependencies = true
     }
+    namespace = "io.github.qauxv"
     applicationVariants.all {
         if (!this.buildType.isDebuggable) {
             val outputFileName = "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
@@ -121,7 +122,7 @@ dependencies {
     ksp(projects.libs.ksp)
     // androidx
     implementation("androidx.core:core-ktx:1.7.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.3")
+    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.browser:browser:1.4.0")
     val lifecycleVersion = "2.4.1"
     implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
@@ -129,15 +130,16 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
 
     compileOnly("de.robv.android.xposed:api:82")
+    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
     implementation("io.noties.markwon:core:4.6.2")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.1")
-    implementation("com.google.android.material:material:1.5.0")
+    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.2")
+    implementation("com.google.android.material:material:1.6.0")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
     implementation("com.google.code.gson:gson:2.9.0")
     implementation("com.afollestad.material-dialogs:core:3.3.0")
     implementation("com.afollestad.material-dialogs:input:3.3.0")
     implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("com.github.kyuubiran:EzXHelper:0.8.8")
+    implementation("com.github.kyuubiran:EzXHelper:0.9.3")
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")

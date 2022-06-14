@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/menu_database_filter"
+        android:icon="@drawable/ic_filter_list"
+        android:title="@string/action_filter_items"
+        app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_calculate_size"
+        android:icon="@drawable/ic_data_usage"
+        android:title="@string/action_calculate_size"
+        app:showAsAction="ifRoom" />
+</menu>

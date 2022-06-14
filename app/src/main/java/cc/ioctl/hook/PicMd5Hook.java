@@ -64,7 +64,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public String getDescription() {
-        return "长按图片消息点击MD5";
+        return "长按图片消息点击MD5, 可同时复制图片链接";
     }
 
     @NonNull

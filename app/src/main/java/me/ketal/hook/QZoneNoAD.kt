@@ -31,8 +31,8 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinVersion
 import me.ketal.base.PluginDelayableHook
-import me.ketal.util.HookUtil.getField
-import me.ketal.util.HookUtil.getMethod
+import me.ketal.util.getField
+import me.ketal.util.getMethod
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 

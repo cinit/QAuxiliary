@@ -62,12 +62,14 @@ public class Initiator {
         if (sPluginParentClassLoader == null || className == null || className.isEmpty()) {
             return null;
         }
-        className = className.replace('/', '.');
-        if (className.endsWith(";")) {
-            if (className.charAt(0) == 'L') {
-                className = className.substring(1, className.length() - 1);
-            } else {
-                className = className.substring(0, className.length() - 1);
+        if (className.endsWith(";") || className.contains("/")) {
+            className = className.replace('/', '.');
+            if (className.endsWith(";")) {
+                if (className.charAt(0) == 'L') {
+                    className = className.substring(1, className.length() - 1);
+                } else {
+                    className = className.substring(0, className.length() - 1);
+                }
             }
         }
         try {
@@ -419,4 +421,16 @@ public class Initiator {
         Log.e("Initiator/E class " + className1 + " not found");
         return null;
     }
+
+//    public static Class<?> _VoiceRedPacketHelperImpl() {
+//        return findClassWithSynthetics("com.tencent.mobileqq.qwallet.hb.grap.voice.impl.VoiceRedPacketHelperImpl");
+//    }
+//
+//    public static Class<?> _RecordParams() {
+//        return findClassWithSynthetics("com.tencent.mobileqq.utils.RecordParams");
+//    }
+//
+//    public static Class<?> _RecorderParam() {
+//        return findClassWithSynthetics("com.tencent.mobileqq.utils.RecordParams$RecorderParam");
+//    }
 }

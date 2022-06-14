@@ -27,6 +27,8 @@ import android.view.ViewGroup
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
@@ -50,8 +52,7 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         for (m in "com.tencent.mobileqq.activity.aio.BaseBubbleBuilder".clazz?.methods!!) {
-            //
-            if (m.name != "a") continue
+            if (m.name != "a" && (m.name != "q" && requireMinQQVersion(QQVersion.QQ_8_8_93))) continue
             if (m.returnType != View::class.java) continue
             if (!m.isPublic) continue
             if (m.parameterTypes.size != 6) continue

@@ -169,7 +169,7 @@ public class RepeaterHook extends BaseFunctionHook {
         //begin: pic
         for (Method m : _PicItemBuilder().getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
-            if (m.getReturnType() == View.class && m.getName().equalsIgnoreCase("a")) {
+            if (m.getReturnType() == View.class && m.getName().equalsIgnoreCase(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "F" : "a")) {
                 if (argt.length > 4 && argt[2] == View.class) {
                     getView = m;
                     listener2 = argt[4];
@@ -302,7 +302,7 @@ public class RepeaterHook extends BaseFunctionHook {
                 imageView4.setOnClickListener(r0);
             });
         } else {
-            Method m = _TextItemBuilder().getDeclaredMethod("a",
+            Method m = _TextItemBuilder().getDeclaredMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "F" : "a",
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookBeforeAndAfterIfEnabled(this, m, 50, new BeforeAndAfterHookedMethod() {
                 @Override
@@ -348,7 +348,7 @@ public class RepeaterHook extends BaseFunctionHook {
         }
         //end: text
         //begin: ptt
-        Method pttMethod = _PttItemBuilder().getDeclaredMethod("a",
+        Method pttMethod = _PttItemBuilder().getDeclaredMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "B0" : "a",
                 ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
         HookUtils.hookAfterIfEnabled(this, pttMethod, 51, param -> {
             ViewGroup convertView = (ViewGroup) param.getResult();
@@ -405,7 +405,7 @@ public class RepeaterHook extends BaseFunctionHook {
         //end: ptt
         if(HostInfo.isQQ() && HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)){
             //start reply
-            Method replyMethod = _ReplyItemBuilder().getDeclaredMethod("a",
+            Method replyMethod = _ReplyItemBuilder().getDeclaredMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "F" : "a",
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookAfterIfEnabled(this, replyMethod, 51, param -> {
                 ViewGroup relativeLayout = (ViewGroup) param.getResult();
@@ -493,7 +493,7 @@ public class RepeaterHook extends BaseFunctionHook {
             });
             //end: reply
             //start: mixedMsg
-            Method mixedMethod = _MixedMsgItemBuilder().getDeclaredMethod("a",
+            Method mixedMethod = _MixedMsgItemBuilder().getDeclaredMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "F" : "a",
                     ChatMessage, itemHolder, View.class, BaseChatItemLayout, listener2);
             HookUtils.hookAfterIfEnabled(this, mixedMethod, 51, param -> {
                 ViewGroup relativeLayout = (ViewGroup) param.getResult();

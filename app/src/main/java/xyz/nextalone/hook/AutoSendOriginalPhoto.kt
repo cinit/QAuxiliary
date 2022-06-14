@@ -22,6 +22,7 @@
 package xyz.nextalone.hook
 
 import android.app.Activity
+import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import io.github.qauxv.SyncUtils
@@ -31,6 +32,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -46,15 +48,17 @@ object AutoSendOriginalPhoto :
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        "Lcom.tencent.mobileqq.activity.aio.photo.PhotoListPanel;->a(Z)V".method.hookAfter(this) {
+        val method = if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "Z" else "a"
+        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
             sendOriginPhotoCheckbox?.isChecked = true
         }
         if (requireMinQQVersion(QQVersion.QQ_8_2_0)) {
-            "Lcom.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity;->onCreate(Landroid/os/Bundle;)V".method.hookAfter(
-                this
-            ) {
+            val newPhotoOnCreate =
+                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz?.method("doOnCreate", Boolean::class.java, Bundle::class.java)
+                    ?: "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz?.method("onCreate", Void.TYPE, Bundle::class.java)
+            newPhotoOnCreate?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
                 val checkBox = ctx.findHostView<CheckBox>("h1y")
                 checkBox?.isChecked = true

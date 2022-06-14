@@ -42,6 +42,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.Initiator;
+import java.io.File;
+import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -100,6 +102,10 @@ public class BaseApk extends CommonConfigFunctionHook {
                         String localFile = (String) param.args[0];
                         if (fileName.equals("base.apk")) {
                             PackageManager packageManager = HostInfo.getApplication().getPackageManager();
+                            File file = new File(localFile);
+                            if (!file.exists()) {
+                                throw new FileNotFoundException("file not found: path='" + localFile + "', name='" + fileName + "'");
+                            }
                             PackageInfo packageArchiveInfo = packageManager.getPackageArchiveInfo(localFile,
                                     PackageManager.GET_ACTIVITIES);
                             ApplicationInfo applicationInfo = packageArchiveInfo.applicationInfo;

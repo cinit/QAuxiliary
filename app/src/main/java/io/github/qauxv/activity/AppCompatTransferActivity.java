@@ -31,7 +31,6 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import io.github.qauxv.R;
 import io.github.qauxv.lifecycle.Parasitics;
@@ -58,11 +57,6 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
             windowState.setClassLoader(AppCompatTransferActivity.class.getClassLoader());
         }
         super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
     }
 
     protected void requestTranslucentStatusBar() {

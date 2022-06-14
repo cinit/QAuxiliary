@@ -34,8 +34,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.ioctl.hook.AioChatPieClipPasteHook;
 import cc.ioctl.hook.CardMsgSender;
-import cc.ioctl.hook.ChatTailHook;
 import cc.ioctl.util.HookUtils;
+import com.hicore.hook.ReplyMsgWithImg;
+import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
@@ -68,8 +69,9 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
 
     private static final IBaseChatPieDecorator[] DECORATORS = {
             CardMsgSender.INSTANCE,
-            ChatTailHook.INSTANCE,
             AioChatPieClipPasteHook.INSTANCE,
+            ReplyMsgWithImg.INSTANCE,
+            SendTTSHook.INSTANCE,
     };
 
     @NonNull
@@ -102,7 +104,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                     int funBtnId = ctx.getResources().getIdentifier("fun_btn", "id", ctx.getPackageName());
                     View sendBtn = aioRootView.findViewById(funBtnId);
                     final AppRuntime qqApp = getFirstNSFByType(param.thisObject, Initiator._QQAppInterface());
-                    final Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    final Parcelable session = getSessionInfo(param.thisObject);
                     Objects.requireNonNull(qqApp, "QQAppInterface is null");
                     Objects.requireNonNull(session, "SessionInfo is null");
                     boolean isInterceptorInstalled = false;
@@ -164,7 +166,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                             if (decorator instanceof IInputButtonDecorator) {
                                 IInputButtonDecorator d = (IInputButtonDecorator) decorator;
                                 try {
-                                    if (d.isEnabled() && d.doDecorate(text, session, input, sendBtn, ctx1, qqApp)) {
+                                    if (d.isEnabled() && d.onFunBtnLongClick(text, session, input, sendBtn, ctx1, qqApp)) {
                                         return true;
                                     }
                                 } catch (Throwable e) {
@@ -180,7 +182,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                             IBaseChatPieInitDecorator decorator = (IBaseChatPieInitDecorator) baseDecorator;
                             try {
                                 if (decorator.isEnabled()) {
-                                    decorator.onInitBaseChatPie(aioRootView, session, ctx, qqApp);
+                                    decorator.onInitBaseChatPie(chatPie, aioRootView, session, ctx, qqApp);
                                 }
                             } catch (Throwable e) {
                                 decorator.traceError(e);
@@ -200,5 +202,9 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
             }
         }
         return false;
+    }
+
+    public static Parcelable getSessionInfo(@NonNull Object baseChatPie) {
+        return getFirstNSFByType(baseChatPie, _SessionInfo());
     }
 }

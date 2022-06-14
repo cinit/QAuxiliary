@@ -30,6 +30,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -47,7 +49,9 @@ object HideRedPoints : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean = throwOrTrue {
         // unknown red point
-        "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method("a", 1, ImageView::class.java) {
+        "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method(
+            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "getRedPoint" else "a", 1, ImageView::class.java
+        ) {
             it.parameterTypes[0] == Int::class.java
         }?.hookAfter(this) {
             (it.result as ImageView).isVisible = false

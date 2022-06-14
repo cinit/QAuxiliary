@@ -45,7 +45,7 @@ object ForceSystemFile : BaseSwitchFunctionDecorator(), IStartActivityHookDecora
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = StartActivityHook
 
-    override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
+    override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         if (intent.component?.className?.contains("filemanager.activity.FMActivity") == true &&
                 (!intent.getBooleanExtra("is_decorated", false))) {
             val context = param.thisObject as Context

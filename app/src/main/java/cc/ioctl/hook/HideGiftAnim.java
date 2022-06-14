@@ -22,17 +22,17 @@
 package cc.ioctl.hook;
 
 import static io.github.qauxv.util.Initiator._TroopGiftAnimationController;
-import static io.github.qauxv.util.Initiator.load;
 
 import androidx.annotation.NonNull;
+import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.LicenseStatus;
+import io.github.qauxv.util.Initiator;
+import java.lang.reflect.Method;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -46,17 +46,9 @@ public class HideGiftAnim extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> clz = _TroopGiftAnimationController();
-        XposedHelpers.findAndHookMethod(clz, "a",
-                load("com/tencent/mobileqq/data/MessageForDeliverGiftTips"),
-                new XC_MethodHook(39) {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) {
-                        if (isEnabled() && !LicenseStatus.sDisableCommonHooks) {
-                            param.setResult(null);
-                        }
-                    }
-                });
+        Method playMaigcface = Reflex.findSingleMethod(_TroopGiftAnimationController(), void.class, false,
+                Initiator.loadClass("com/tencent/mobileqq/data/MessageForDeliverGiftTips"));
+        HookUtils.hookBeforeIfEnabled(this, playMaigcface, param -> param.setResult(null));
         return true;
     }
 
