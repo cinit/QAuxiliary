@@ -45,7 +45,7 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val dispatcher = StartActivityHook
 
-    override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
+    override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         if (intent.component?.className?.contains("NewPhotoListActivity") == true &&
                 intent.getIntExtra("uintype", -1) != -1 &&
                 (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false)) &&

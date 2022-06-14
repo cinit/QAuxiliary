@@ -38,7 +38,7 @@ object DisableQzoneSlideCamera : BaseSwitchFunctionDecorator(), IStartActivityHo
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
     override val dispatcher = StartActivityHook
 
-    override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
+    override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         if (intent.data?.toString()?.contains("qzoneSlideCamera") == true) {
             param.result = null
             return true

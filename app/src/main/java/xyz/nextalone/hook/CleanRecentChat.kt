@@ -33,15 +33,22 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.DexKit
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.requireMinQQVersion
 import me.kyuubiran.util.getDefaultCfg
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.putDefault
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CleanRecentChat : CommonSwitchFunctionHook() {
+object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsStatusUtil_isChatAtTop)) {
 
     override val name = "清理最近聊天"
 
@@ -52,7 +59,6 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
     private const val RecentAdapter = "com.tencent.mobileqq.activity.recent.RecentAdapter"
     private const val RecentUserBaseData = "com.tencent.mobileqq.activity.recent.RecentUserBaseData"
     private const val RecentBaseData = "com.tencent.mobileqq.activity.recent.RecentBaseData"
-    private const val FriendsStatusUtil = "com.tencent.mobileqq.app.utils.FriendsStatusUtil"
     private val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
@@ -98,23 +104,14 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
         try {
             val list = recentAdapter.get(List::class.java) as List<*>
             val chatSize = list.size
-            val method = try {
-                RecentAdapter.clazz?.method(
-                    "b",
-                    Void.TYPE,
-                    RecentBaseData.clazz,
-                    String::class.java,
-                    String::class.java
-                )
-            } catch (e: Throwable) {
-                RecentAdapter.clazz?.method(
-                    "b",
-                    Void.TYPE,
-                    RecentUserBaseData.clazz,
-                    String::class.java,
-                    String::class.java
-                )
-            }
+            val method = RecentAdapter.clazz?.method(
+                if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "A" else "b",
+                Void.TYPE,
+                arrayListOf(RecentUserBaseData, RecentBaseData).clazz,
+                String::class.java,
+                String::class.java
+            )
+
             method?.isAccessible = true
             var chatCurrentIndex = 0
 
@@ -137,8 +134,7 @@ object CleanRecentChat : CommonSwitchFunctionHook() {
 
     private fun isAtTop(app: Any?, str: String, i: Int): Boolean {
         return try {
-            FriendsStatusUtil.clazz?.method("a", Boolean::class.java, Initiator._QQAppInterface(), String::class.java, Int::class.java)
-                ?.invoke(null, app, str, i) as Boolean
+            DexKit.doFindMethod(DexKit.N_FriendsStatusUtil_isChatAtTop)?.invoke(null, app, str, i) as Boolean
         } catch (e: Throwable) {
             Log.e(e)
             false

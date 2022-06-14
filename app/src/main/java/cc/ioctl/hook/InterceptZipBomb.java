@@ -65,7 +65,7 @@ public class InterceptZipBomb extends CommonSwitchFunctionHook {
                 sizeSum += entries.nextElement().getSize();
             }
             zipFile.close();
-            if (sizeSum >= 104550400) {
+            if (sizeSum >= 104550400 && sizeSum > file.length() * 10) {
                 param.setResult(null);
                 Toasts.show(HostInfo.getApplication(),
                         String.format("已拦截 %s ,解压后大小异常: %s",

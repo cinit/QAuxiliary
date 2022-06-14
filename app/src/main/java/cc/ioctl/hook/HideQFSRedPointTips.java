@@ -69,8 +69,7 @@ public class HideQFSRedPointTips extends CommonSwitchFunctionHook {
         Class<?> kQFSRedPointTipsHelper = Initiator.loadClass("com.tencent.mobileqq.activity.qcircle.utils.QFSRedPointTipsHelper");
         Method showTips = null;
         for (Method method : kQFSRedPointTipsHelper.getDeclaredMethods()) {
-            if (method.getName().equals("a") && method.getParameterTypes().length == 3
-                    && !Modifier.isStatic(method.getModifiers())) {
+            if (method.getParameterTypes().length == 3 && !Modifier.isStatic(method.getModifiers())) {
                 showTips = method;
                 break;
             }

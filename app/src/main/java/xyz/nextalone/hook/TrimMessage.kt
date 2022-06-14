@@ -26,9 +26,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.DexKit
 import xyz.nextalone.util.hookBefore
-import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -40,11 +39,7 @@ object TrimMessage : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
-        Initiator._ChatActivityFacade().method(
-            "a",
-            6,
-            LongArray::class.java
-        )?.hookBefore(this) {
+        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookBefore(this) {
             it.args[3] = (it.args[3] as String).trim()
         }
     }

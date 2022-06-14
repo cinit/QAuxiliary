@@ -64,7 +64,7 @@ object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null)
                 }
                 for (decorator in decorators) {
                     try {
-                        if (decorator.isEnabled && decorator.doDecorate(intent, param)) {
+                        if (decorator.isEnabled && decorator.onStartActivityIntent(intent, param)) {
                             return
                         }
                     } catch (e: Throwable) {

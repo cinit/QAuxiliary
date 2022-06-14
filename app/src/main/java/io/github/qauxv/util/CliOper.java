@@ -62,10 +62,6 @@ public class CliOper {
 
         AppCenterFix.startAppCenter(app, appCenterToken);
         Crashes.setListener(new CrashesFilter());
-        long longAccount = AppRuntimeHelper.getLongAccountUin();
-        if (longAccount > 10000) {
-            AppCenter.setUserId(String.valueOf(longAccount));
-        }
         appCenterInit = true;
     }
 
@@ -87,17 +83,17 @@ public class CliOper {
         }
 
         private String[] qauxvPackageName = new String[]{
-            "cc.ioctl.",
-            "cn.lliiooll.",
-            "com.rymmmmm.",
-            "me.ketal.",
-            "me.kyuubiran.",
-            "me.singleneuron.",
-            "io.github.qauxv.",
-            "xyz.nextalone.",
-            "io.github.duzhaokun123."
+                "cc.ioctl.",
+                "cn.lliiooll.",
+                "com.rymmmmm.",
+                "me.ketal.",
+                "me.kyuubiran.",
+                "me.singleneuron.",
+                "io.github.qauxv.",
+                "xyz.nextalone.",
+                "io.github.duzhaokun123.",
+                "com.hicore.",
         };
-
     }
 
     public static void onLoad() {

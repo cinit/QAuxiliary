@@ -47,6 +47,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
@@ -64,6 +65,7 @@ public class DexKit {
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
+    public static final String KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = "dex_deobfs_backend_dexbuilder";
     static DexHelper helper = null;
 
     //WARN: NEVER change the index!
@@ -127,7 +129,11 @@ public class DexKit {
     public static final int N_QQSettingMe_onResume = 20016;
     public static final int N_BaseChatPie_mosaic = 20017;
     public static final int N_WebSecurityPluginV2_callback = 20018;
-    public static final int DEOBF_NUM_N = 18;
+    public static final int N_TroopAppShortcutBarHelper_resumeAppShorcutBar = 20019;
+    public static final int N_ChatActivityFacade_sendMsgButton = 20020;
+    public static final int N_FriendsStatusUtil_isChatAtTop = 20021;
+    public static final int N_VipUtils_getUserStatus = 20022;
+    public static final int DEOBF_NUM_N = 22;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -135,6 +141,10 @@ public class DexKit {
             helper = new DexHelper(dexClassLoader);
         }
         return helper;
+    }
+
+    public static boolean isUseDexBuilderAsBackend() {
+        return ConfigManager.getDefaultConfig().getBoolean(KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, true);
     }
 
     /**
@@ -207,13 +217,15 @@ public class DexKit {
         if (ret != null) {
             return ret;
         }
-        // find class from native
-        DexMethodDescriptor m = doFindMethodFromNative(i);
-        if (m != null) {
-            Initiator.load(m.declaringClass);
+        DexMethodDescriptor m = null;
+        if (isUseDexBuilderAsBackend()) {
+            // find class from native
+            m = doFindMethodFromNative(i);
         }
-        // find class use legacy method
-        m = doFindMethodDesc(i);
+        if (m == null) {
+            // find class use legacy method
+            m = doFindMethodDesc(i);
+        }
         if (m == null) {
             return null;
         }
@@ -260,14 +272,16 @@ public class DexKit {
         if (i / 10000 == 0) {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
-        try {
-            // find method from native
-            DexMethodDescriptor m = doFindMethodFromNative(i);
-            if (m != null) {
-                return m.getMethodInstance(Initiator.getHostClassLoader());
+        if (isUseDexBuilderAsBackend()) {
+            try {
+                // find method from native
+                DexMethodDescriptor m = doFindMethodFromNative(i);
+                if (m != null) {
+                    return m.getMethodInstance(Initiator.getHostClassLoader());
+                }
+            } catch (NoSuchMethodException e) {
+                // ignore
             }
-        } catch (NoSuchMethodException e) {
-            // ignore
         }
         DexMethodDescriptor m = doFindMethodDesc(i);
         if (m == null || NO_SUCH_METHOD.toString().equals(m.toString())) {
@@ -521,6 +535,14 @@ public class DexKit {
                 return "basechatpie_mosaic";
             case N_WebSecurityPluginV2_callback:
                 return "websecuritypluginv2_callback";
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return "TroopAppShortcutBarHelper_resumeAppShorcutBar";
+            case N_ChatActivityFacade_sendMsgButton:
+                return "ChatActivityFacade_sendMsgButton";
+            case N_FriendsStatusUtil_isChatAtTop:
+                return "FriendsStatusUtil_isChatAtTop";
+            case N_VipUtils_getUserStatus:
+                return "VipUtils_getUserStatus";
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -538,6 +560,7 @@ public class DexKit {
                 ret = "com/tencent/mobileqq/utils/DialogUtil";
                 break;
             case C_FACADE:
+            case N_ChatActivityFacade_sendMsgButton:
                 ret = "com/tencent/mobileqq/activity/ChatActivityFacade";
                 break;
             case C_FLASH_PIC_HELPER:
@@ -681,6 +704,15 @@ public class DexKit {
                 break;
             case N_WebSecurityPluginV2_callback:
                 ret = "com.tencent.mobileqq.webview.WebSecurityPluginV2$1";
+                break;
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                ret = "com.tencent.mobileqq.activity.aio.helper.TroopAppShortcutBarHelper";
+                break;
+            case N_FriendsStatusUtil_isChatAtTop:
+                ret = "com.tencent.mobileqq.app.utils.FriendsStatusUtil";
+                break;
+            case N_VipUtils_getUserStatus:
+                ret = "com.tencent.mobileqq.utils.VipUtils";
                 break;
             default:
                 ret = null;
@@ -936,14 +968,23 @@ public class DexKit {
                 return new byte[][]{
                     new byte[]{
                         0x10, 0x47, 0x61, 0x6C, 0x6C, 0x65, 0x72, 0x79, 0x42, 0x61, 0x73, 0x65, 0x53, 0x63, 0x65,
-                        0x6E, 0x65
+                            0x6E, 0x65
                     }};
             case N_WebSecurityPluginV2_callback:
                 return new byte[][]{
-                    new byte[]{
-                        0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
-                        0x72, 0x3D
-                    }};
+                        new byte[]{
+                                0x10, 0x63, 0x68, 0x65, 0x63, 0x6B, 0x20, 0x66, 0x69, 0x6E, 0x69, 0x73, 0x68, 0x20, 0x6A,
+                                0x72, 0x3D
+                        }};
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return new byte[][]{forFiniteString8("resumeAppShorcutBar")};
+            case N_ChatActivityFacade_sendMsgButton:
+                return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
+            case N_FriendsStatusUtil_isChatAtTop:
+                return new byte[][]{forFiniteString8("isChatAtTop result is:")};
+            case N_VipUtils_getUserStatus:
+                return new byte[][]{forFiniteString8("getUserStatus Friends is null")};
+
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -959,7 +1000,8 @@ public class DexKit {
             case C_DIALOG_UTIL:
                 return new int[]{1, 4, 3};
             case C_FACADE:
-                return new int[]{2, 6, 3};
+            case N_ChatActivityFacade_sendMsgButton:
+                return new int[]{2, 6, 3, 7};
             case C_FLASH_PIC_HELPER:
                 return new int[]{1, 3};
             case C_BASE_PIC_DL_PROC:
@@ -1046,6 +1088,7 @@ public class DexKit {
             case N_QQSettingMe_onResume:
                 return new int[]{4, 6, 8, 7};
             case N_VIP_UTILS_getPrivilegeFlags:
+            case N_VipUtils_getUserStatus:
                 return new int[]{16, 11, 12, 14, 4, 2, 3};
             case N_TroopChatPie_showNewTroopMemberCount:
                 return new int[]{4, 8, 11, 6};
@@ -1055,6 +1098,10 @@ public class DexKit {
                 return new int[]{2};
             case N_WebSecurityPluginV2_callback:
                 return new int[]{17, 10};
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
+                return new int[]{7, 8, 4, 6};
+            case N_FriendsStatusUtil_isChatAtTop:
+                return new int[]{8};
         }
         throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
@@ -1274,6 +1321,7 @@ public class DexKit {
                 return (DexMethodDescriptor) __methods.toArray()[0];
             case N_LeftSwipeReply_Helper__reply:
             case N_FriendChatPie_updateUITitle:
+            case N_VipUtils_getUserStatus:
                 // NOTICE: this must only has one result
                 if (__methods.size() == 1) {
                     return (DexMethodDescriptor) __methods.toArray()[0];
@@ -1517,6 +1565,39 @@ public class DexKit {
                     }
                     Class<?>[] argt = method.getParameterTypes();
                     if (argt.length == 1 && argt[0] == Bundle.class) {
+                        return m;
+                    }
+                }
+                break;
+            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if (m.declaringClass.contains("TroopAppShortcutBarHelper")) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            case N_ChatActivityFacade_sendMsgButton:
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("ChatActivityFacade")) {
+                        Method method;
+                        try {
+                            method = m.getMethodInstance(Initiator.getHostClassLoader());
+                        } catch (Exception e) {
+                            continue;
+                        }
+                        Class<?>[] argt = method.getParameterTypes();
+                        if (argt.length == 6) {
+                            return m;
+                        }
+                    }
+                }
+                break;
+            case N_FriendsStatusUtil_isChatAtTop:
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("FriendsStatusUtil")) {
                         return m;
                     }
                 }
@@ -1872,4 +1953,27 @@ public class DexKit {
         }
     }
 
+    @NonNull
+    public static byte[] forFiniteString8(@NonNull String str, int len) {
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        if (u8.length > 127 || len > 127) {
+            throw new IllegalArgumentException("String too long");
+        }
+        byte[] result = new byte[len + 1];
+        result[0] = (byte) u8.length;
+        System.arraycopy(u8, 0, result, 1, u8.length);
+        return result;
+    }
+
+    @NonNull
+    public static byte[] forFiniteString8(@NonNull String str) {
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        if (u8.length > 127) {
+            throw new IllegalArgumentException("String too long");
+        }
+        byte[] result = new byte[u8.length + 1];
+        result[0] = (byte) u8.length;
+        System.arraycopy(u8, 0, result, 1, u8.length);
+        return result;
+    }
 }

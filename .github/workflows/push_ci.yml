@@ -1,6 +1,7 @@
 name: main
 
 on:
+  workflow_dispatch:
   push:
     branches: [ main ]
     paths-ignore:
@@ -85,7 +86,18 @@ jobs:
           KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
 
       - name: Show Artifacts MD5
-        run: md5sum ${{ env.APK_FILE_UNIVERSAL }} ${{ env.APK_FILE_ARM32 }} ${{ env.APK_FILE_ARM64 }} ${{ env.APK_FILE_ARMALL }}
+        run: |
+          echo "### Build Success :rocket:" >> $GITHUB_STEP_SUMMARY
+          echo "|ABI|MD5|" >> $GITHUB_STEP_SUMMARY
+          echo "|:--------:|:----------|" >> $GITHUB_STEP_SUMMARY
+          arm32=($(md5sum ${{ env.APK_FILE_ARM32 }}))
+          echo "|arm32|$arm32" >> $GITHUB_STEP_SUMMARY
+          arm64=($(md5sum ${{ env.APK_FILE_ARM64 }}))
+          echo "|arm64|$arm64" >> $GITHUB_STEP_SUMMARY
+          armAll=($(md5sum ${{ env.APK_FILE_ARMALL }}))
+          echo "|armAll|$armAll" >> $GITHUB_STEP_SUMMARY
+          universal=($(md5sum ${{ env.APK_FILE_UNIVERSAL }}))
+          echo "|universal|$universal" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Artifacts(arm32)
         uses: actions/upload-artifact@v2

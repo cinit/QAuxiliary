@@ -51,7 +51,7 @@ public class HybridClassLoader extends ClassLoader {
             || name.startsWith("kotlin.") || name.startsWith("kotlinx.")
             || name.startsWith("com.tencent.mmkv.")
             || name.startsWith("com.android.tools.r8.")
-            || name.startsWith("com.google.android.material.")
+            || name.startsWith("com.google.android.")
             || name.startsWith("com.google.gson.")
             || name.startsWith("com.google.common.")
             || name.startsWith("com.microsoft.appcenter.")

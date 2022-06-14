@@ -22,6 +22,7 @@
 
 package cn.lliiooll.hook
 
+import cc.ioctl.util.Reflex
 import cn.lliiooll.msg.MessageManager
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -29,6 +30,7 @@ import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinQQVersion
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
@@ -45,24 +47,28 @@ object MessageInterception : BasePersistBackgroundHook() {
         }
         if (hostInfo.versionCode >= QQVersion.QQ_8_8_80) {
             // i don't know why hook 3 methods, but it works
-            Initiator._C2CMessageManager().methodWithSuper(
-                "a",
+            // I don't know why they should be null-tolerant, but the previous version was
+            Reflex.findSingleMethod(
+                Initiator._C2CMessageManager(),
                 Boolean::class.java,
+                true,
                 Initiator._MessageRecord(),
                 Boolean::class.java,
                 Boolean::class.java,
                 "com.tencent.imcore.message.Message".clazz,
                 Boolean::class.java
-            )?.hookAfter(this, callback)
-            Initiator._C2CMessageManager().methodWithSuper(
-                "a",
+            ).hookAfter(this, callback)
+            Reflex.findSingleMethod(
+                Initiator._C2CMessageManager(),
                 Boolean::class.java,
+                true,
                 Initiator._MessageRecord(),
                 Boolean::class.java,
                 Int::class.java
-            )?.hookAfter(this, callback)
+            ).hookAfter(this, callback)
+            // I don't know what will the 3rd method do
             Initiator._C2CMessageManager().methodWithSuper(
-                "d",
+                if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "A0" else "d",
                 Boolean::class.java,
                 Initiator._MessageRecord(),
             )?.hookAfter(this, callback)

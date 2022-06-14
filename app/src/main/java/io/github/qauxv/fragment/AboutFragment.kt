@@ -90,15 +90,6 @@ class AboutFragment : BaseRootLayoutFragment() {
                         fragmentClass = EulaFragment::class.java
                     )
                 }
-                if (!isInModuleProcess) {
-                    add(
-                        TextSwitchItem(
-                            "AppCenter 匿名统计",
-                            summary = "我们使用 Microsoft AppCenter 来匿名发送最常被人们使用的功能和一些使用习惯数据来使得 QAuxiliary 变得更加实用",
-                            switchAgent = mAllowAppCenterStatics
-                        )
-                    )
-                }
             },
             CategoryItem("群组") {
                 textItem("Telegram 频道", value = "@QAuxiliary") {
@@ -106,6 +97,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 }
                 textItem("Telegram 群组", value = "@QAuxiliaryChat") {
                     openUrl("https://t.me/QAuxiliaryChat")
+                    }
                 }
             },
             CategoryItem("源代码") {

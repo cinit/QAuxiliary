@@ -30,7 +30,7 @@ import static cc.ioctl.util.Reflex.findField;
 import static cc.ioctl.util.Reflex.getFirstByType;
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
-import static io.github.qauxv.util.Initiator._PicItemBuilder;
+import static io.github.qauxv.util.Initiator._PttItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
@@ -91,7 +91,6 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
 
     public static final int R_ID_PTT_FORWARD = 0x30EE77CB;
     public static final int R_ID_PTT_SAVE = 0x30EE77CC;
-    public static final String qn_enable_ptt_save = "qn_enable_ptt_save";
     public static final String qn_cache_ptt_save_last_parent_dir = "qn_cache_ptt_save_last_parent_dir";
     public static final PttForwardHook INSTANCE = new PttForwardHook();
 
@@ -375,8 +374,8 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                 dialog.show();
             }
         });
-        Class<?> cl_PttItemBuilder = _PicItemBuilder();
-        findAndHookMethod(cl_PttItemBuilder, "a", int.class, Context.class,
+        Class<?> kPttItemBuilder = _PttItemBuilder();
+        findAndHookMethod(kPttItemBuilder, "a", int.class, Context.class,
                 load("com/tencent/mobileqq/data/ChatMessage"), new XC_MethodHook(60) {
                     @Override
                     protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
@@ -415,7 +414,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                         }
                     }
                 });
-        for (Method m : cl_PttItemBuilder.getDeclaredMethods()) {
+        for (Method m : kPttItemBuilder.getDeclaredMethods()) {
             if (!m.getReturnType().isArray()) {
                 continue;
             }
@@ -425,36 +424,18 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                     Object arr = param.getResult();
                     Class<?> clQQCustomMenuItem = arr.getClass().getComponentType();
                     Object ret;
-                    if (isSavePttEnabled()) {
-                        Object item_forward = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_FORWARD, "转发");
-                        Object item_save = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_SAVE, "保存");
-                        ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 2);
-                        Array.set(ret, 0, Array.get(arr, 0));
-                        //noinspection SuspiciousSystemArraycopy
-                        System.arraycopy(arr, 1, ret, 2, Array.getLength(arr) - 1);
-                        Array.set(ret, 1, item_forward);
-                        Array.set(ret, Array.getLength(ret) - 1, item_save);
-                    } else {
-                        Object item_forward = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_FORWARD, "转发");
-                        ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 1);
-                        Array.set(ret, 0, Array.get(arr, 0));
-                        //noinspection SuspiciousSystemArraycopy
-                        System.arraycopy(arr, 1, ret, 2, Array.getLength(arr) - 1);
-                        Array.set(ret, 1, item_forward);
-                    }
+                    Object item_forward = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_FORWARD, "转发");
+                    Object item_save = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_SAVE, "保存");
+                    ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 2);
+                    Array.set(ret, 0, Array.get(arr, 0));
+                    //noinspection SuspiciousSystemArraycopy
+                    System.arraycopy(arr, 1, ret, 2, Array.getLength(arr) - 1);
+                    Array.set(ret, 1, item_forward);
+                    Array.set(ret, Array.getLength(ret) - 1, item_save);
                     param.setResult(ret);
                 });
             }
         }
         return true;
-    }
-
-    public boolean isSavePttEnabled() {
-        try {
-            return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_enable_ptt_save);
-        } catch (Exception e) {
-            Log.e(e);
-            return false;
-        }
     }
 }

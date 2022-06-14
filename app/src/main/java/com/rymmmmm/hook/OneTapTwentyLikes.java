@@ -27,6 +27,8 @@ import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -47,7 +49,7 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "回赞界面一键20赞";
+        return "一键20赞";
     }
 
     @NonNull
@@ -57,21 +59,31 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
-        for (Method m : Initiator.load("com.tencent.mobileqq.activity.VisitorsActivity").getDeclaredMethods()) {
+    public boolean initOnce() throws ReflectiveOperationException {
+        Method onClickVote = Reflex.findSingleMethod(Initiator._VoteHelper(), null, false,
+                Initiator.loadClass("com.tencent.mobileqq.data.CardProfile"), ImageView.class);
+        for (Method m : Initiator.loadClass("com.tencent.mobileqq.activity.VisitorsActivity").getDeclaredMethods()) {
             if (m.getName().equals("onClick")) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> {
                     View view = (View) param.args[0];
-                    Object tag = view.getTag();
-                    Object likeClickListener = getFirstByType(param.thisObject, Initiator._VoteHelper());
-                    Method onClick = likeClickListener.getClass().getDeclaredMethod("a",
-                        tag.getClass(), ImageView.class);
+                    Object profile = view.getTag();
+                    Object voteHelper = getFirstByType(param.thisObject, Initiator._VoteHelper());
                     for (int i = 0; i < 20; i++) {
-                        onClick.invoke(likeClickListener, tag, (ImageView) view);
+                        onClickVote.invoke(voteHelper, profile, (ImageView) view);
                     }
                 });
             }
         }
+
+        Method onClickOnProfileCard = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.profilecard.base.component.AbsProfileHeaderComponent"), "handleVoteBtnClickForGuestProfile",
+                Initiator.loadClass("com.tencent.mobileqq.data.Card"));
+        HookUtils.hookBeforeIfEnabled(this,onClickOnProfileCard,param -> {
+            for (int i = 0; i < 19; i++) {
+                XposedBridge.invokeOriginalMethod(param.method,param.thisObject,param.args);
+            }
+        });
+
+
         return true;
     }
 }

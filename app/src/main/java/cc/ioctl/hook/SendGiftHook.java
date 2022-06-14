@@ -25,6 +25,7 @@ import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -33,6 +34,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -64,8 +66,9 @@ public class SendGiftHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Method m = DexKit.doFindClass(DexKit.C_TROOP_GIFT_UTIL)
-                .getDeclaredMethod("a", Activity.class, String.class, String.class, Initiator._QQAppInterface());
+        Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_TROOP_GIFT_UTIL), "DexKit.C_TROOP_GIFT_UTIL"),
+                void.class, false,
+                Activity.class, String.class, String.class, Initiator._QQAppInterface());
         HookUtils.hookBeforeIfEnabled(this, m, 47, param -> param.setResult(null));
         return true;
     }

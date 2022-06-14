@@ -30,7 +30,7 @@ import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.ketal.util.HookUtil.getMethod
+import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
 abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) {
@@ -47,8 +47,8 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     override fun initOnce() = throwOrTrue {
         val classLoader =
             "Lcom/tencent/mobileqq/pluginsdk/PluginStatic;->getOrCreateClassLoader(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/ClassLoader;"
-                .getMethod()
-                ?.invoke(null, hostInfo.application, pluginID) as ClassLoader
+                .method
+                .invoke(null, hostInfo.application, pluginID) as ClassLoader
         startHook(classLoader)
     }
 

@@ -37,6 +37,7 @@ import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.io.Externalizable;
 import java.io.File;
@@ -268,7 +269,8 @@ public class ChatActivityFacade {
             case "MessageForPic":
                 try {
                     for (Method mi : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
-                        if (!mi.getName().equals("a") && !mi.getName().equals("b")) {
+                        if (!mi.getName().equals("a") && !mi.getName().equals("b")
+                                && (!mi.getName().equals("o0") && !HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93))) {
                             continue;
                         }
                         argt = mi.getParameterTypes();

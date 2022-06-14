@@ -27,8 +27,6 @@ import static io.github.qauxv.bridge.GreyTipBuilder.MSG_TYPE_TROOP_GAP_GRAY_TIPS
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
-import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.SyncUtils;
@@ -37,15 +35,13 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.GreyTipBuilder;
-import io.github.qauxv.bridge.ManagerHelper;
+import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -128,18 +124,7 @@ public class GagInfoDisclosure extends CommonSwitchFunctionHook {
                 Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
                 List<Object> list = new ArrayList<>();
                 list.add(msg);
-                //todo fix 860+
-                if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
-                    Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "a", list,
-                            AppRuntimeHelper.getAccount(),
-                            List.class, String.class, void.class);
-                } else {
-                    Reflex.invokeVirtualDeclaredOrdinalModifier(
-                            ManagerHelper.getQQMessageFacade(), 0, 4,
-                            false, Modifier.PUBLIC, 0,
-                            list, AppRuntimeHelper.getAccount(), List.class, String.class,
-                            void.class);
-                }
+                QQMessageFacade.commitMessageRecordList(list);
                 param.setResult(null);
             }
         });
@@ -173,18 +158,7 @@ public class GagInfoDisclosure extends CommonSwitchFunctionHook {
             Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
             List<Object> list = new ArrayList<>();
             list.add(msg);
-            //todo fix 860+
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
-                Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "a", list,
-                        AppRuntimeHelper.getAccount(),
-                        List.class, String.class, void.class);
-            } else {
-                Reflex.invokeVirtualDeclaredOrdinalModifier(
-                        ManagerHelper.getQQMessageFacade(), 0, 4,
-                        false, Modifier.PUBLIC, 0,
-                        list, AppRuntimeHelper.getAccount(), List.class, String.class,
-                        void.class);
-            }
+            QQMessageFacade.commitMessageRecordList(list);
             param.setResult(null);
         });
         return true;

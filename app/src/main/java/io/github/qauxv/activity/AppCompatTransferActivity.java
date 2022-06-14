@@ -31,12 +31,9 @@ import android.view.Window;
 import android.view.WindowInsets;
 import android.view.WindowManager;
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
-import cc.ioctl.util.Reflex;
 import io.github.qauxv.R;
 import io.github.qauxv.lifecycle.Parasitics;
-import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
 
@@ -60,12 +57,6 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
             windowState.setClassLoader(AppCompatTransferActivity.class.getClassLoader());
         }
         super.onRestoreInstanceState(savedInstanceState);
-    }
-
-    @Override
-    protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        CliOper.enterModuleActivity(Reflex.getShortClassName(this));
     }
 
     protected void requestTranslucentStatusBar() {

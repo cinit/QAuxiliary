@@ -32,8 +32,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
-import me.ketal.util.HookUtil.findClass
-import me.ketal.util.HookUtil.getMethod
+import me.ketal.util.findClass
+import me.ketal.util.getMethod
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue

@@ -21,11 +21,14 @@
  */
 package me.ketal.hook
 
+import android.content.Context
+import android.view.View
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import me.ketal.util.HookUtil.getMethod
+import io.github.qauxv.util.Initiator
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
@@ -38,8 +41,15 @@ object HideAssistantRemoveTips : CommonSwitchFunctionHook("ketal_hide_assistant_
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/activity/ChatActivityUtils;->a(Landroid/content/Context;Ljava/lang/String;Landroid/view/View\$OnClickListener;Landroid/view/View\$OnClickListener;)Landroid/view/View;"
-            .getMethod()
-            ?.replace(this, null)
+        val k = Initiator.loadClass("com/tencent/mobileqq/activity/ChatActivityUtils")
+        val showChatTopBar = findMethod(k, false) {
+            if (returnType == View::class.java) {
+                val params = parameterTypes
+                return@findMethod params.size == 4 && params[0] == Context::class.java && params[1] == String::class.java
+                    && params[2] == View.OnClickListener::class.java && params[3] == View.OnClickListener::class.java
+            }
+            return@findMethod false
+        }
+        showChatTopBar.replace(this, null)
     }
 }

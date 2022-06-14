@@ -28,7 +28,14 @@ import io.github.qauxv.base.RuntimeErrorTracer
 
 interface IStartActivityHookDecorator : IDynamicHook, RuntimeErrorTracer {
 
+    /**
+     * Called before when [android.content.Context.startActivity] is called with [Intent]
+     * @param intent the [Intent] to start activity
+     * @param param the [XC_MethodHook] hook parameter
+     * @return true if you don't want to call the other hooks
+     * Note: you need to call [XC_MethodHook.MethodHookParam.setResult] to prevent the original method to be called
+     */
     @Throws(Throwable::class)
-    fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean
+    fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean
 
 }

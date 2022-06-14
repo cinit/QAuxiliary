@@ -29,5 +29,5 @@ import mqq.app.AppRuntime
 
 interface IBaseChatPieInitDecorator : IBaseChatPieDecorator {
     @Throws(Throwable::class)
-    fun onInitBaseChatPie(aioRootView: ViewGroup, session: Parcelable, ctx: Context, rt: AppRuntime)
+    fun onInitBaseChatPie(baseChatPie: Any, aioRootView: ViewGroup, session: Parcelable, ctx: Context, rt: AppRuntime)
 }

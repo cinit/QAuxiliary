@@ -39,7 +39,15 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.isTim
 import me.ketal.util.findViewByType
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hide
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookAfterAllConstructors
+import xyz.nextalone.util.hostDrawable
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.isPublic
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -121,8 +129,7 @@ object HideSearch : CommonSwitchFunctionHook(
     private fun copeContacts() {
         "com.tencent.mobileqq.activity.contacts.base.SearchBarAssistant".clazz
             ?.hookAfterAllConstructors {
-                val searchView = it.thisObject
-                    .get("a", EditText::class.java)?.parent as View
+                val searchView = getFirstByType(it.thisObject, EditText::class.java)?.parent as View
                 searchView.isVisible = !isEnabled
             }
     }

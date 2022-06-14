@@ -91,14 +91,14 @@ class PendingFunctionFragment : BaseRootLayoutFragment() {
     }
 
     private val pendingFunctionList: Array<Item> = arrayOf(
-        Item("QQ电话与语音不冲突", "允许在QQ电话时播放语音和短视频", null, true),
+        Item("隐藏一起听歌", "隐藏QQ群顶栏一起听歌", null, true),
+        Item("屏蔽卡片消息 IP 探针", "可能导致部分卡片消息无法正常显示", null, true),
         Item("QQ电话关麦时解除占用", "再开麦时如麦被其他程序占用可能崩溃", null, true),
         Item("QQ视频通话旋转锁定", "可在通话界面设置旋转方向", null, true),
         Item("屏蔽聊天消息大字体", null, null, true),
         Item("禁用QQ公交卡", "禁止QQ在后台干扰NFC", null, true),
         Item("阻挡QQ获取位置信息", "重定向到(0,0)或PEK中心", null, true),
         Item("阻挡QQ检测权限未授予", "如 定位 联系人等隐私权限 ", null, true),
-        
     )
 
     private data class Item(val title: String, val desc: String?, val value: String? = null, val switch: Boolean = false)

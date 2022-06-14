@@ -30,6 +30,7 @@ import android.content.IntentFilter;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
@@ -337,6 +338,26 @@ public class SyncUtils {
 
     public static void post(@NonNull Runnable r) {
         postDelayed(r, 0L);
+    }
+
+    public static void requiresUiThread() {
+        requiresUiThread(null);
+    }
+
+    public static void requiresUiThread(@Nullable String msg) {
+        if (Looper.myLooper() != Looper.getMainLooper()) {
+            throw new IllegalStateException(msg == null ? "UI thread required" : msg);
+        }
+    }
+
+    public static void requiresNonUiThread() {
+        requiresNonUiThread(null);
+    }
+
+    public static void requiresNonUiThread(@Nullable String msg) {
+        if (Looper.myLooper() == Looper.getMainLooper()) {
+            throw new IllegalStateException(msg == null ? "non-UI thread required" : msg);
+        }
     }
 
     public static void addOnFileChangedListener(OnFileChangedListener l) {

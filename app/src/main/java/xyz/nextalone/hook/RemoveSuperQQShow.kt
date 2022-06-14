@@ -41,7 +41,9 @@ object RemoveSuperQQShow : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽主界面超级QQ秀图标"
 
     override fun initOnce() = throwOrTrue {
-        findMethod(Initiator._ConversationTitleBtnCtrl()) { name == "b" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java)) }.hookBefore {
+        findMethod(Initiator._ConversationTitleBtnCtrl()) {
+            (name == "b" || name == "D") && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
+        }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
     }

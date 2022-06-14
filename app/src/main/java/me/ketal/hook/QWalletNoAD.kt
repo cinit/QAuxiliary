@@ -35,8 +35,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
-import me.ketal.util.HookUtil.getField
-import me.ketal.util.HookUtil.getMethod
+import me.ketal.util.getField
+import me.ketal.util.getMethod
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
@@ -71,8 +71,7 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
                 headerView.viewTreeObserver.addOnGlobalLayoutListener(object :
                     OnGlobalLayoutListener {
                 override fun onGlobalLayout() {
-                    val webView =
-                            getFirstByType(headerView,
+                        val webView = getFirstByType(headerView,
                                 "com.tencent.biz.ui.TouchWebView".clazz) as? View
                                 ?: return
                         headerView.removeView(webView)

@@ -34,7 +34,7 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object FakeMultiWindowStatus : CommonSwitchFunctionHook(
-    SyncUtils.PROC_ANY
+    SyncUtils.PROC_MAIN or SyncUtils.PROC_PEAK or SyncUtils.PROC_TOOL
 ) {
     override val name = "伪装处于非多窗口模式"
     override val description = "用于分屏状态使用一些功能,例如扫码"

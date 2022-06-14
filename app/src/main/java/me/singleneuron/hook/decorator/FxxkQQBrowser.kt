@@ -49,7 +49,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
     override val dispatcher = StartActivityHook
 
     @SuppressLint("ResourceType")
-    override fun doDecorate(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
+    override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         val url = intent.getStringExtra("url")
         /*intent.dump()
         val check1 = !url.isNullOrBlank()

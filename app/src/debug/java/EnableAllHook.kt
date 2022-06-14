@@ -19,19 +19,17 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package xyz.nextalone.hook.testhook
 
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.method
-import xyz.nextalone.util.throwOrTrue
 
-object TestCommonDelayable : CommonSwitchFunctionHook("na_test_base_delayable_kt") {
+@UiItemAgentEntry
+object EnableAllHook : CommonSwitchFunctionHook() {
+    override val name: String = "启用所有功能"
 
-    override val name = ""
+    override fun initOnce(): Boolean = true
 
-    override val uiItemLocation: Array<String> = arrayOf()
-
-    override fun initOnce() = throwOrTrue {
-        "".method
-    }
+    override val uiItemLocation: Array<String>
+        get() = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
 }

@@ -21,8 +21,6 @@
  */
 package xyz.nextalone.hook
 
-import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -30,26 +28,35 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.*
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.isSimpleUi
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisabledRedNick : CommonSwitchFunctionHook("na_disable_red_nick_kt",
-    intArrayOf(DexKit.N_FriendChatPie_updateUITitle)) {
-
+object DisabledRedNick : CommonSwitchFunctionHook(
+    "na_disable_red_nick_kt",
+    intArrayOf(DexKit.N_FriendChatPie_updateUITitle, DexKit.N_VipUtils_getUserStatus)
+) {
+    var updating = false
     override val name = "隐藏会员红名"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
     override fun initOnce() = throwOrTrue {
         if (!isSimpleUi) {
+
+            DexKit.doFindMethod(DexKit.N_VipUtils_getUserStatus)?.hookBefore(this) {
+                if (updating) {
+                    it.result = -1
+                }
+            }
             DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookBefore(this) {
-                val navAIO = it.thisObject.get(
-                    "com.tencent.mobileqq.widget.navbar.NavBarAIO".clazz
-                ) as RelativeLayout
-                val linearLayout = navAIO.findHostView<LinearLayout>("e89")
-                linearLayout?.hide()
-                it.result = null
+                updating = true
+            }
+            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookAfter(this) {
+                updating = false
             }
         }
     }

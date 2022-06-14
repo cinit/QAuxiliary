@@ -23,7 +23,7 @@ QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 激活本模块后，在 QQ 或者 TIM 自带设置中点击 QAuxiliary 即可进入设置页面
 
 - Android >= 7.0
-- QQ >= 8.0.0, TIM >= 2.2.0
+- QQ >= 8.0.0, TIM >= 2.2.0, QQLite >= 4.0, QQ HD >= 5.9.3
 
 ## 一切开发旨在学习，请勿用于非法用途
 
@@ -85,6 +85,13 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 - 抢红包及其他金钱相关功能
 - 群发消息
+
+## 编译
+
+1. 安装 git, ccache, cmake, SDK 和 NDK, 版本参考 [Version.kt](buildSrc/src/main/kotlin/Version.kt);
+2. 将本仓库 clone 至本地，本仓库含有 git submodule 所以请使用 git clone 而不是下载源代码压缩包；
+3. 拉取子模块 MMKV 和 dex_builder, `git submodule init && git submodule update --recursive`;
+4. 使用 Gradle 编译安装包。
 
 ---
 

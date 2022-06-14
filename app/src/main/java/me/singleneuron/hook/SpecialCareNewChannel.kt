@@ -42,7 +42,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object SpecialCareNewChannel : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
+object SpecialCareNewChannel : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF) {
 
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "特别关心通知单独分组"
