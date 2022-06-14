@@ -97,7 +97,6 @@ class AboutFragment : BaseRootLayoutFragment() {
                 }
                 textItem("Telegram 群组", value = "@QAuxiliaryChat") {
                     openUrl("https://t.me/QAuxiliaryChat")
-                    }
                 }
             },
             CategoryItem("源代码") {
