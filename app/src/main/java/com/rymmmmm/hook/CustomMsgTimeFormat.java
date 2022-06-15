@@ -27,12 +27,14 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
@@ -87,7 +89,7 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
     public boolean initOnce() {
         for (Method m : DexKit.doFindClass(DexKit.C_TimeFormatterUtils).getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
-            if (m.getName().equals("a") && Modifier.isStatic(m.getModifiers())
+            if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "e" : "a") && Modifier.isStatic(m.getModifiers())
                     && argt.length == 3 && argt[2] == long.class) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> {
                     String result = formatTime((long) param.args[2]);
