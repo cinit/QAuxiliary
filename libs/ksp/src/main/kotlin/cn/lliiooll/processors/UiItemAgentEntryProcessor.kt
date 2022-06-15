@@ -13,11 +13,9 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 
-@KotlinPoetKspPreview
 class UiItemAgentEntryProcessor(
         private val codeGenerator: CodeGenerator,
         private val logger: KSPLogger
@@ -77,7 +75,6 @@ class UiItemAgentEntryProcessor(
     }
 }
 
-@KotlinPoetKspPreview
 class UiItemAgentEntryProcessorProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return UiItemAgentEntryProcessor(environment.codeGenerator, environment.logger)
