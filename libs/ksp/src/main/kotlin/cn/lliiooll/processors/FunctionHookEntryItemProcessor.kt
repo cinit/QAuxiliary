@@ -13,11 +13,9 @@ import com.squareup.kotlinpoet.AnnotationSpec
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
-import com.squareup.kotlinpoet.ksp.KotlinPoetKspPreview
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 
-@KotlinPoetKspPreview
 class FunctionHookEntryItemProcessor(
         private val codeGenerator: CodeGenerator,
         private val logger: KSPLogger
@@ -77,7 +75,6 @@ class FunctionHookEntryItemProcessor(
     }
 }
 
-@KotlinPoetKspPreview
 class FunctionItemProvider : SymbolProcessorProvider {
     override fun create(environment: SymbolProcessorEnvironment): SymbolProcessor {
         return FunctionHookEntryItemProcessor(environment.codeGenerator, environment.logger)
