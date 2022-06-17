@@ -22,7 +22,6 @@
 
 package com.hicore.hook;
 
-import android.app.Dialog;
 import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
@@ -33,9 +32,7 @@ import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import com.hicore.ReflectUtil.MMethod;
 import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -154,7 +151,12 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                             continue;
                         }
                         addEditText(inputEditText, "[PicUrl=" + str + "]");
-                        Reflex.invokeVirtual(param.thisObject, "a", true, boolean.class, void.class);
+                        Method resetStatus = Reflex.findMethodOrNull(param.thisObject.getClass(), void.class, "a", boolean.class);
+                        if (resetStatus == null) {
+                            resetStatus = Reflex.findMethodOrNull(param.thisObject.getClass(), void.class, "Z", boolean.class);
+                        }
+                        Objects.requireNonNull(resetStatus, "PhotoListPanel.resetStatus is null");
+                        resetStatus.invoke(param.thisObject, true);
                     }
                 }
             }
@@ -299,8 +301,10 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     }
 
     public static Object buildMessageForPic(Object sessionInfo, String picPath) throws ReflectiveOperationException, IOException {
-        Method method = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.activity.ChatActivityFacade"), "a",
-                Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), new Class[]{Initiator._QQAppInterface(), Initiator._SessionInfo(), String.class});
+        // \((final)? QQAppInterface qQAppInterface\, (final)? SessionInfo sessionInfo, String str\) \{
+        Method method = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.activity.ChatActivityFacade"),
+                Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), false,
+                Initiator._QQAppInterface(), Initiator._SessionInfo(), String.class);
         Object picMsg = method.invoke(null, AppRuntimeHelper.getQQAppInterface(), sessionInfo, picPath);
         String picMd5 = IoUtils.calculateFileMd5HexString(new File(picPath), true);
         Reflex.setInstanceObject(picMsg, "md5", picMd5);
@@ -311,10 +315,10 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     }
 
     public static Object buildMessageForText(String groupUin, String text) throws ReflectiveOperationException {
-        Method m = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"), "a",
-                Initiator.loadClass("com.tencent.mobileqq.data.MessageForText"),
-                new Class[]{Initiator.loadClass("com.tencent.common.app.AppInterface"), String.class, String.class, String.class, int.class, byte.class,
-                        byte.class, short.class, String.class});
+        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForText"), false,
+                Initiator.loadClass("com.tencent.common.app.AppInterface"),
+                String.class, String.class, String.class, int.class, byte.class, byte.class, short.class, String.class);
         return m.invoke(null, AppRuntimeHelper.getQQAppInterface(), "", groupUin, AppRuntimeHelper.getAccount(), 1, (byte) 0, (byte) 0, (short) 0, text);
     }
 
@@ -324,15 +328,8 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         if (smMessageRecordFactory_BuildMixedMsg == null) {
             Class<?> kMessageForMixedMsg = Initiator.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg");
             Class<?> kMessageRecordFactory = Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory");
-            Method m = HostInfo.getVersionCode() < 5670
-                    ? Reflex.findMethodOrNull(kMessageRecordFactory, kMessageForMixedMsg, "a",
-                    Initiator._QQAppInterface(), String.class, String.class, int.class)
-                    : Reflex.findMethodOrNull(kMessageRecordFactory, kMessageForMixedMsg, "g",
-                            Initiator._QQAppInterface(), String.class, String.class, int.class);
-            if (m == null) {
-                m = Reflex.findMethodOrNull(kMessageRecordFactory, kMessageForMixedMsg, "h",
-                        Initiator._QQAppInterface(), String.class, String.class, int.class);
-            }
+            Method m = Reflex.findSingleMethod(kMessageRecordFactory, kMessageForMixedMsg, false,
+                    Initiator._QQAppInterface(), String.class, String.class, int.class);
             m.setAccessible(true);
             smMessageRecordFactory_BuildMixedMsg = m;
         }
@@ -346,11 +343,11 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     // 图文消息发送
     public static void forwardMixedMsg(Object sessionInfo, Object messageRecord) throws ReflectiveOperationException {
         Class<?> kReplyMsgSender = Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender");
-        Method method = MMethod.FindMethod(kReplyMsgSender, "a", void.class,
-                new Class[]{Initiator._QQAppInterface(),
-                        Initiator.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
-                        Initiator._SessionInfo(), int.class});
-        Object instance = Reflex.invokeStatic(kReplyMsgSender, "a", kReplyMsgSender);
+        Method method = Reflex.findSingleMethod(kReplyMsgSender, void.class, false,
+                Initiator._QQAppInterface(),
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
+                Initiator._SessionInfo(), int.class);
+        Object instance = Reflex.findSingleMethod(kReplyMsgSender, kReplyMsgSender, false).invoke(null);
         method.invoke(instance, AppRuntimeHelper.getQQAppInterface(), messageRecord, sessionInfo, 0);
     }
 
@@ -375,21 +372,23 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         int isTroop = Reflex.getInstanceObject(courceMsg, "istroop", int.class);
         String uins = Reflex.getInstanceObject(courceMsg, "senderuin", String.class);
         Object appInterface = AppRuntimeHelper.getQQAppInterface();
-        Method sourceInfo = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.activity.aio.reply.ReplyMsgUtils"), "a",
-                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"),
-                new Class[]{Initiator._QQAppInterface(), Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), int.class, long.class, String.class});
+        Method sourceInfo = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.activity.aio.reply.ReplyMsgUtils"),
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), false,
+                Initiator._QQAppInterface(), Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), int.class, long.class, String.class);
         Object sourceInfoObj = sourceInfo.invoke(null, appInterface, courceMsg, 0, Long.parseLong(uins),
                 ContactUtils.getTroopName(Reflex.getInstanceObject(courceMsg, "frienduin", String.class)));
-        Method m = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"), "a",
-                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), new Class[]{Initiator._QQAppInterface(), String.class, int.class,
-                        Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), String.class});
+        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), false,
+                Initiator._QQAppInterface(), String.class, int.class,
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), String.class);
         Object msgObj = m.invoke(null, appInterface, troopUin, isTroop, sourceInfoObj, messageContent);
         return msgObj;
     }
 
     public static Object copyReplyMessage(Object source) throws ReflectiveOperationException {
-        Method m = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
-                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), "a", Initiator._QQAppInterface(), String.class, int.class,
+        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+                Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), false,
+                Initiator._QQAppInterface(), String.class, int.class,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), String.class);
         String uin = Reflex.getInstanceObject(source, "frienduin", String.class);
         Object sourceMsg = Reflex.getInstanceObject(source, "mSourceMsgInfo",
@@ -430,16 +429,22 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         Object helperProvider = sBaseChatPie_HelperProvider.get(baseChatPie);
         if (sIsNowReplyingMethod == null) {
             for (Method sm : helperProvider.getClass().getSuperclass().getSuperclass().getDeclaredMethods()) {
-                if (sm.getName().equals("a") && sm.getParameterTypes().length == 1 && sm.getParameterTypes()[0] == int.class) {
-                    if (sm.getReturnType() != Dialog.class && sm.getReturnType() != void.class && sm.getReturnType() != boolean.class) {
+                if (sm.getParameterTypes().length == 1 && sm.getParameterTypes()[0] == int.class) {
+                    if (sm.getReturnType() == Initiator.loadClass("com.tencent.mobileqq.activity.aio.helper.IHelper")) {
                         sIsNowReplyingMethod = sm;
                         break;
                     }
                 }
             }
         }
+        // HelperProvider.ID_AIO_REPLY = 119
         Object replyHelper = sIsNowReplyingMethod.invoke(helperProvider, 119);
-        Object sourceInfo = Reflex.invokeVirtual(replyHelper, "a", Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"));
+        Class<?> kSourceMsgInfo = Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo");
+        Method m = Reflex.findMethodOrNull(replyHelper.getClass(), kSourceMsgInfo, "a");
+        if (m == null) {
+            m = Reflex.findMethodOrNull(replyHelper.getClass(), kSourceMsgInfo, "d");
+        }
+        Object sourceInfo = m.invoke(replyHelper);
         return sourceInfo != null;
     }
 
