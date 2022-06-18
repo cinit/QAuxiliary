@@ -35,6 +35,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
@@ -66,8 +67,9 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
             val count = rootView.childCount
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
+            val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
-                create(context, R.drawable.ic_recall, enableTalkBack),
+                create(context, iconResId, enableTalkBack),
                 count - 1
             )
             setMargin(rootView)
