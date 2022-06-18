@@ -23,7 +23,10 @@ package xyz.nextalone.hook
 
 import android.app.Activity
 import android.view.View
+import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import cc.ioctl.util.Reflex
+import com.hicore.ReflectUtil.MField
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -31,6 +34,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -44,8 +48,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override val preferenceTitle = "精简设置菜单"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
 
-    override val allItems =
-        setOf("手机号码", "达人", "安全", "模式选择", "通知", "记录", "隐私", "通用", "辅助", "免流量", "关于", "收集清单", "共享清单", "保护设置", "隐私政策摘要")
+    override val allItems = setOf("手机号码", "达人", "安全", "模式选择", "通知", "记录", "隐私", "通用", "辅助", "免流量", "关于", "收集清单", "共享清单", "保护设置", "隐私政策摘要")
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {
@@ -67,20 +70,19 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
             if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
-                "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->p5()V".method.replace(
-                    this,
-                    null
-                )
+                "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("doOnCreate")?.hookAfter(this) {
+                    val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "cu_open_card_guide_entry")
+                    val cu = (it.thisObject as Activity).findViewById<RelativeLayout>(getId)
+                    (cu.parent as LinearLayout).removeView(cu)
+                }
             } else {
                 try {
-                    "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->a()V".method.replace(
-                        this,
-                        null
+                    "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("a", 0, Void.TYPE)?.replace(
+                        this, null
                     )
                 } catch (e: Throwable) {
-                    "Lcom/tencent/mobileqq/activity/QQSettingSettingActivity;->b()V".method.replace(
-                        this,
-                        null
+                    "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("b", 0, Void.TYPE)?.replace(
+                        this, null
                     )
                 }
             }
