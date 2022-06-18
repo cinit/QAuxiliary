@@ -53,6 +53,12 @@ public class DefaultFont extends CommonSwitchFunctionHook {
 
     @NonNull
     @Override
+    public String getDescription() {
+        return "禁用特殊字体, 以及大字体";
+    }
+
+    @NonNull
+    @Override
     public String[] getUiItemLocation() {
         return Simplify.UI_CHAT_MSG;
     }
