@@ -31,6 +31,7 @@ import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
@@ -66,35 +67,36 @@ public class QQMessageFacade {
         }
     }
 
-    public static void revokeMessage(Object msg) throws Exception {
+    public static void revokeMessage(Object msg) throws ReflectiveOperationException {
         if (msg == null) {
             throw new NullPointerException("msg == null");
         }
         int istroop = (int) Reflex.getInstanceObjectOrNull(msg, "istroop");
         Object mgr = getMessageManager(istroop);
         try {
-            Object msg2 = Reflex.invokeStaticAny(DexKit.doFindClass(DexKit.C_MSG_REC_FAC), msg,
-                Initiator._MessageRecord(), Initiator._MessageRecord());
-            long t = (long) Reflex.getInstanceObjectOrNull(msg2, "time");
-            t -= 1 + 10f * Math.random();
-            Reflex.setInstanceObject(msg2, "time", t);
-            Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(),
-                    DexKit.doFindClass(DexKit.C_MessageCache));
+            Class<?> kMessageCache = DexKit.loadClassFromCache(DexKit.C_MessageCache);
+            Objects.requireNonNull(kMessageCache, "kMessageCache == null");
+            Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(), kMessageCache);
+            // must call the method to set the field to true, otherwise the message will not be revoked
             String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "z2" : "b"; //Default method name for QQ
             if (HostInfo.isTim()) {
                 methodName = ConfigTable.INSTANCE.getConfig(QQMessageFacade.class.getSimpleName());
             }
+            // invoke-virtual BaseMessageManager->doMsgRevokeRequest(MessageRecord)V
             Reflex.invokeVirtual(msgCache, methodName, true, boolean.class, void.class);
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+                Method m = Reflex.findMethod(Initiator._BaseMessageManager(), void.class, "l", Initiator._MessageRecord());
+                m.invoke(mgr, msg);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
                 Reflex.invokeVirtualDeclaredFixedModifierOrdinal(mgr, Modifier.PUBLIC, 0,
-                    Initiator._BaseMessageManager(), 4, 7, true, msg2, Initiator._MessageRecord(),
-                    void.class);
+                        Initiator._BaseMessageManager(), 4, 7, true, msg, Initiator._MessageRecord(),
+                        void.class);
             } else {
                 Reflex.invokeVirtualDeclaredFixedModifierOrdinal(mgr, Modifier.PUBLIC, 0,
-                    Initiator._BaseMessageManager(), 2, 4, true, msg2, Initiator._MessageRecord(),
-                    void.class);
+                        Initiator._BaseMessageManager(), 2, 4, true, msg, Initiator._MessageRecord(),
+                        void.class);
             }
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.e("revokeMessage failed: " + msg);
             Log.e(e);
             throw e;
