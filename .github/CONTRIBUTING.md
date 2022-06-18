@@ -40,11 +40,11 @@
 
 9. 代码请务必格式化
 
-10. 将自己的代码放在自己的包里，，另外，应注意的是，如果你创建了自己的包，**一定要记得修改proguard-rules.pro**
+10. 将自己的代码放在自己的包里，，另外，应注意的是，如果你创建了自己的包，**一定要记得修改[proguard-rules.pro](app/proguard-rules.pro)**
 
 11. 除个别情况，必须添加代码头
 
-12. **在任何时候，您都不应该随意更改[build.gradle](build.gradle)，特别是升级 `com.android.tools.build:gradle` 版本**
+12. **在任何时候，您都不应该随意更改[build.gradle.kts](build.gradle.kts)，特别是升级 `com.android.tools.build:gradle` 版本**
 
 ## 其他
 
