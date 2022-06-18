@@ -23,13 +23,14 @@ package com.rymmmmm.hook;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.util.ArrayList;
 
 //屏蔽掉落小表情
 @FunctionHookEntry
@@ -55,14 +56,15 @@ public class DisableDropSticker extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
-        for (Method m : Initiator._ConfigHandler().getDeclaredMethods()) {
-            Class<?>[] argt = m.getParameterTypes();
-            if (m.getName().equals("f") && !Modifier.isStatic(m.getModifiers())
-                && argt.length == 1) {
-                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
-            }
-        }
+    public boolean isApplicationRestartRequired() {
+        return true;
+    }
+
+    @Override
+    public boolean initOnce() throws ReflectiveOperationException {
+        Class<?> kAioAnimationConfigHelper = Initiator.loadClass("com.tencent.mobileqq.activity.aio.anim.AioAnimationConfigHelper");
+        Method doParseRules = Reflex.findSingleMethod(kAioAnimationConfigHelper, ArrayList.class, false, org.xmlpull.v1.XmlPullParser.class);
+        HookUtils.hookBeforeIfEnabled(this, doParseRules, param -> param.setResult(new ArrayList<>()));
         return true;
     }
 }
