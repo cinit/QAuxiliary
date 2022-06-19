@@ -48,6 +48,8 @@ import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 
 @FunctionHookEntry
 public class SettingEntryHook extends BasePersistBackgroundHook {
@@ -58,8 +60,6 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     private static final int BG_TYPE_FIRST = 1;
     private static final int BG_TYPE_MIDDLE = 2;
     private static final int BG_TYPE_LAST = 3;
-
-    private int mLastItemViewId = 0;
 
     private SettingEntryHook() {
     }
@@ -78,8 +78,23 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 final Activity activity = (Activity) param.thisObject;
                 Resources res = activity.getResources();
                 Class<?> itemClass;
-                View itemRef;
-                itemRef = (View) Reflex.getInstanceObjectOrNull(activity, "a", load("com/tencent/mobileqq/widget/FormSimpleItem"));
+                View itemRef = null;
+                {
+                    Class<?> clz = load("com/tencent/mobileqq/widget/FormSimpleItem");
+                    if (clz != null) {
+                        // find a candidate view field
+                        for (Field f : activity.getClass().getDeclaredFields()) {
+                            if (f.getType() == clz && !Modifier.isStatic(f.getModifiers())) {
+                                f.setAccessible(true);
+                                View v = (View) f.get(activity);
+                                if (v != null && v.getParent() != null) {
+                                    itemRef = v;
+                                    break;
+                                }
+                            }
+                        }
+                    }
+                }
                 if (itemRef == null && (itemClass = load("com/tencent/mobileqq/widget/FormCommonSingleLineItem")) != null) {
                     itemRef = (View) Reflex.getInstanceObjectOrNull(activity, "a", itemClass);
                 }
@@ -134,6 +149,10 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     try {
                         if (account_switch > 0) {
                             View accountItem = (View) list.findViewById(account_switch).getParent();
+                            if (accountItem != null && accountItem.getParent() != null) {
+                                // fix up the parent for CHA
+                                list = (ViewGroup) accountItem.getParent();
+                            }
                             for (int i = 0; i < list.getChildCount(); i++) {
                                 if (list.getChildAt(i) == accountItem) {
                                     index = i + 1;
