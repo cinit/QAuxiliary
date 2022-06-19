@@ -52,7 +52,7 @@ public class DisableDropSticker extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.MAIN_UI_MSG;
+        return Simplify.UI_CHAT_MSG;
     }
 
     @Override
