@@ -325,6 +325,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val colorNotice: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, androidx.appcompat.R.attr.colorAccent, Color.BLUE)
         val sb = SpannableStringBuilder()
         for (i in 1..DexKit.DEOBF_NUM_C) {
+            if (i == 8 || i == 12) {
+                // hide red items to make users happy
+                continue
+            }
             try {
                 val tag = DexKit.a(i)
                 var orig = DexKit.c(i) ?: continue
