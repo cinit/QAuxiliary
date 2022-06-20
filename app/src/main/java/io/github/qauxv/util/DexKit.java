@@ -1391,10 +1391,11 @@ public class DexKit {
                     if ("onCardUpdate".equals(method.getName())) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(Initiator.load("com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"))) {
+                    Class<?> kVasProfileTemplateController = Initiator.load("com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController");
+                    if (kVasProfileTemplateController != null && method.getDeclaringClass().isAssignableFrom(kVasProfileTemplateController)) {
                         return m;
                     }
-                    if (method.getClass().isAssignableFrom(Initiator._FriendProfileCardActivity())) {
+                    if (method.getDeclaringClass().isAssignableFrom(Initiator._FriendProfileCardActivity())) {
                         return m;
                     }
                 }
