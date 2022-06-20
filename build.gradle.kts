@@ -13,7 +13,7 @@ tasks.register<Delete>("clean").configure {
 val apiCode by extra(93)
 val verCode = Common.getBuildVersionCode(rootProject)
 // versionName = major.minor.bugfix.rev.commit
-val verName = "1.2.6" + (Common.getGitHeadRefsSuffix(rootProject))
+val verName = "1.2.7" + (Common.getGitHeadRefsSuffix(rootProject))
 val androidTargetSdkVersion by extra(33)
 val androidMinSdkVersion by extra(24)
 val androidCompileSdkVersion by extra(32)
