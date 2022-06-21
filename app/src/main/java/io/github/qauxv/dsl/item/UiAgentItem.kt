@@ -119,6 +119,11 @@ class UiAgentItem(
         // value state observers are registered in the fragment, we only need to update the value
         val valueStateValue: String? = valueState?.value
         val switchAgent: ISwitchCellAgent? = agent.switchProvider
+        val hasError = if (agentProvider is IDynamicHook) {
+            val hook: IDynamicHook = agentProvider
+            (hook.isInitialized && !hook.isInitializationSuccessful) || hook.runtimeErrors.isNotEmpty()
+        } else false
+        cell.hasError = hasError
         if (switchAgent != null) {
             // has switch!!, must not both have a switch and a value
             var toBeShownAtSummary: CharSequence? = valueState?.value

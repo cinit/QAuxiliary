@@ -48,11 +48,10 @@ class TitleValueCell(
     val switchView: SwitchCompat
 
     private val dividerColor: Int
-    private val dividerPaint by lazy {
-        Paint().apply {
-            strokeWidth = 1.dp.toFloat()
-        }
-    }
+    private val dip1: Float = 1.dp.toFloat()
+    private val errorLineColor: Int
+
+    private val dividerPaint by lazy { Paint() }
 
     private val mCenterVertical = LayoutHelper.newFrameLayoutParamsRel(MATCH_PARENT, WRAP_CONTENT,
             Gravity.CENTER_VERTICAL or Gravity.START, 21.dp, 0, 21.dp, 0)
@@ -80,10 +79,12 @@ class TitleValueCell(
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
                     Gravity.TOP or Gravity.START, 21.dp, 34.dp, 70.dp, 6.dp))
         }
+        val valueTextColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent)
+        errorLineColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(context, R.attr.unusableColor, valueTextColor)
         // value text view
         valueView = TextView(context).apply {
             setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
-            setTextColor(ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent))
+            setTextColor(valueTextColor)
             visibility = GONE
         }.also {
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
@@ -105,6 +106,7 @@ class TitleValueCell(
         get() = titleView.text?.toString() ?: ""
         set(value) {
             titleView.text = value
+            invalidate()
         }
 
     var summary: CharSequence?
@@ -147,6 +149,15 @@ class TitleValueCell(
             }
         }
 
+    var hasError: Boolean = false
+        set(value) {
+            val needInvalidate = field != value
+            field = value
+            if (needInvalidate) {
+                invalidate()
+            }
+        }
+
     var hasDivider: Boolean = true
         set(value) {
             var needInvalidate = false
@@ -171,8 +182,19 @@ class TitleValueCell(
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
         if (hasDivider) {
+            dividerPaint.strokeWidth = dip1
             dividerPaint.color = dividerColor
             canvas.drawLine(0f, measuredHeight.toFloat(), measuredWidth.toFloat(), measuredHeight.toFloat(), dividerPaint)
+        }
+        if (hasError) {
+            dividerPaint.strokeWidth = dip1 * 2f
+            dividerPaint.color = errorLineColor
+            val textWidth = titleView.paint.measureText(titleView.text.toString())
+            val startX = titleView.left
+            // startY is baseline
+            val startY = titleView.baseline + titleView.top + dip1 * 2f
+            val endX = startX + textWidth
+            canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), startY.toFloat(), dividerPaint)
         }
     }
 }
