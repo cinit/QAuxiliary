@@ -62,7 +62,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 interface IUiItemAgent {
     val titleProvider: (IUiItemAgent) -> String
-    val summaryProvider: ((IUiItemAgent, Context) -> String?)?
+    val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?)?
     val valueState: MutableStateFlow<String?>?
     val validator: ((IUiItemAgent) -> Boolean)?
     val switchProvider: ISwitchCellAgent?

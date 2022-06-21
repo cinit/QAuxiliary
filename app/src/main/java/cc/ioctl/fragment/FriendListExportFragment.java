@@ -418,7 +418,7 @@ public class FriendListExportFragment extends BaseRootLayoutFragment {
 
         @Nullable
         @Override
-        public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+        public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
             return (agent, ctx) -> "支持 CSV/JSON 格式";
         }
 

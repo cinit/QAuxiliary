@@ -114,14 +114,14 @@ class UiAgentItem(
         cell.switchView.setOnCheckedChangeListener(null)
         val agent = agentProvider.uiItemAgent
         cell.title = agent.titleProvider.invoke(agent)
-        val description: String? = agent.summaryProvider?.invoke(agent, context)
+        val description: CharSequence? = agent.summaryProvider?.invoke(agent, context)
         val valueState = agent.valueState
         // value state observers are registered in the fragment, we only need to update the value
         val valueStateValue: String? = valueState?.value
         val switchAgent: ISwitchCellAgent? = agent.switchProvider
         if (switchAgent != null) {
             // has switch!!, must not both have a switch and a value
-            var toBeShownAtSummary: String? = valueState?.value
+            var toBeShownAtSummary: CharSequence? = valueState?.value
             if (valueStateValue.isNullOrEmpty()) {
                 toBeShownAtSummary = description
             }

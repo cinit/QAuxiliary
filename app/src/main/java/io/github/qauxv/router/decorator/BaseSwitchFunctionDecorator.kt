@@ -43,14 +43,14 @@ abstract class BaseSwitchFunctionDecorator(
     /**
      * Description of the function.
      */
-    open val description: String? = null
+    open val description: CharSequence? = null
 
     open val extraSearchKeywords: Array<String>? = null
 
     override val uiItemAgent: IUiItemAgent by lazy {
         object : IUiItemAgent {
             override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
-            override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> description }
+            override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
             override val valueState: MutableStateFlow<String?>? = null
             override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
             override val switchProvider: ISwitchCellAgent? by lazy {

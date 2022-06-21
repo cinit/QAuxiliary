@@ -107,8 +107,8 @@ class TitleValueCell(
             titleView.text = value
         }
 
-    var summary: String?
-        get() = summaryView.text.toString()
+    var summary: CharSequence?
+        get() = summaryView.text
         set(value) {
             summaryView.text = value
             summaryView.visibility = if (value.isNullOrEmpty()) GONE else VISIBLE

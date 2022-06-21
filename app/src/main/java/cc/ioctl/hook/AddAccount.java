@@ -108,7 +108,7 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
         return null;
     }
 

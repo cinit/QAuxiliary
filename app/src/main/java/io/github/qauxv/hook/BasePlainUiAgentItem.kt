@@ -33,10 +33,10 @@ import kotlinx.coroutines.flow.MutableStateFlow
  */
 abstract class BasePlainUiAgentItem(
         val title: String,
-        val description: String?,
+        val description: CharSequence?,
 ) : IUiItemAgent, IUiItemAgentProvider {
     override val titleProvider: (IUiItemAgent) -> String = { title }
-    override val summaryProvider: ((IUiItemAgent, Context) -> String?) = { _, _ -> description }
+    override val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?) = { _, _ -> description }
     override val valueState: MutableStateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent? = null

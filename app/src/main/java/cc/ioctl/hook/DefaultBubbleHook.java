@@ -170,7 +170,7 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
         return null;
     }
 

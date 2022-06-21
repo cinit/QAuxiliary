@@ -234,7 +234,7 @@ class SearchOverlaySubFragment {
     private fun bindSearchResultItem(binding: SearchResultItemBinding, item: SearchResult) {
         val title: String = item.agent.uiItemAgent.titleProvider.invoke(item.agent.uiItemAgent)
         val description: String = "[${item.score}] " +
-            (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext()).orEmpty())
+            (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext())?:"")
         binding.title.text = title
         binding.summary.text = description
         val locationString = item.shownLocation!!.joinToString(separator = " > ")
@@ -287,7 +287,7 @@ class SearchOverlaySubFragment {
         var score = 0
         val context = requireContext()
         val title: String = item.titleProvider.invoke(item).replace(" ", "")
-        val summary: String? = item.summaryProvider?.invoke(item, context)?.replace(" ", "")?.replace("\n", "")
+        val summary: String? = item.summaryProvider?.invoke(item, context)?.toString()?.replace(" ", "")?.replace("\n", "")
         val extraKeywords: Array<String>? = item.extraSearchKeywordProvider?.invoke(item, context)
         if (title == keyword) {
             score += 80
