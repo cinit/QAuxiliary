@@ -105,7 +105,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                     }
                 },
                 CategoryItem("源代码") {
-                    textItem("GitHub", value = GITHUB_URL) {
+                    textItem("GitHub", value = "cinit/QAuxiliary") {
                         openUrl(GITHUB_URL)
                     }
                 },

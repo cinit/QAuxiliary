@@ -90,10 +90,10 @@ object FunctionEntryRouter {
             category("host-ui", "净化设置") {
                 fragment("host-ui-main", "主页") {
                     category("ui-title", "标题栏")
-                    category("ui-msg", "消息")
+//                    category("ui-msg", "消息")
                     category("ui-contact", "联系人")
                     category("ui-operation-log", "动态")
-                    category("ui-other", "其他", false)
+//                    category("ui-other", "其他", false)
                 }
                 fragment("host-ui-sideswipe", "侧滑栏")
                 fragment("host-ui-chat", "聊天界面") {
