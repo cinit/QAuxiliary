@@ -22,6 +22,8 @@
 
 package me.kyuubiran.hook
 
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import com.github.kyuubiran.ezxhelper.utils.emptyParam
 import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
@@ -35,6 +37,23 @@ import me.kyuubiran.util.ClassHelper
 @UiItemAgentEntry
 object AntiUpdate : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽更新"
+
+    override val description: CharSequence by lazy {
+        SpannableStringBuilder().apply {
+            // red color
+            val text = "可能导致随机性闪退"
+            val color = 0xFFFF5252u.toInt()
+            val start = 0
+            val end = text.length
+            append(text)
+            setSpan(
+                ForegroundColorSpan(color),
+                start,
+                end,
+                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
 
     override fun initOnce(): Boolean {
         val clz = ClassHelper.UpgradeController1.clz
