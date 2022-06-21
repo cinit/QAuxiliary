@@ -22,6 +22,7 @@
 
 package xyz.nextalone.hook
 
+import android.content.Context
 import android.widget.ImageView
 import android.widget.RelativeLayout
 import com.afollestad.materialdialogs.MaterialDialog
@@ -83,13 +84,13 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
                             Toasts.showToast(dialog.context, Toasts.TYPE_INFO, text, Toasts.LENGTH_SHORT)
                             when (text) {
                                 "清理群消息" -> {
-                                    handler(recentAdapter, app, all = false, other = false, includeTopped)
+                                    handler(recentAdapter, app, all = false, other = false, includeTopped, dialog.context)
                                 }
                                 "清理其他消息" -> {
-                                    handler(recentAdapter, app, all = false, other = true, includeTopped)
+                                    handler(recentAdapter, app, all = false, other = true, includeTopped, dialog.context)
                                 }
                                 "清理所有消息" -> {
-                                    handler(recentAdapter, app, all = true, other = true, includeTopped)
+                                    handler(recentAdapter, app, all = true, other = true, includeTopped, dialog.context)
                                 }
                             }
                         }
@@ -100,7 +101,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
     }
 
 
-    private fun handler(recentAdapter: Any?, app: Any?, all: Boolean, other: Boolean, includeTopped: Boolean) {
+    private fun handler(recentAdapter: Any?, app: Any?, all: Boolean, other: Boolean, includeTopped: Boolean, context: Context) {
         try {
             val list = recentAdapter.get(List::class.java) as List<*>
             val chatSize = list.size
@@ -120,7 +121,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
                 val mUser = chatItem.get("mUser")
                 val uin = mUser.get("uin") as String
                 val type = (mUser.get("type") as Int).toInt()
-                val included = includeTopped || !isAtTop(app, uin, type)
+                val included = includeTopped || !isAtTop(app, uin, type, context)
                 if (included && ((type == 1) && !other || (type !in arrayListOf(0, 1) && other) || all)) {
                     method?.invoke(recentAdapter, chatItem, "删除", "2")
                     continue
@@ -132,12 +133,13 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
         }
     }
 
-    private fun isAtTop(app: Any?, str: String, i: Int): Boolean {
+    private fun isAtTop(app: Any?, str: String, i: Int, context: Context): Boolean {
         return try {
             DexKit.doFindMethod(DexKit.N_FriendsStatusUtil_isChatAtTop)?.invoke(null, app, str, i) as Boolean
         } catch (e: Throwable) {
             Log.e(e)
-            false
+            Toasts.error(context, "检测置顶失败, 请联系开发者")
+            true
         }
     }
 }
