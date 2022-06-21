@@ -35,7 +35,7 @@ import io.github.qauxv.router.dispacher.StartActivityHook
 object DisableQzoneSlideCamera : BaseSwitchFunctionDecorator(), IStartActivityHookDecorator {
 
     override val name = "屏蔽空间滑动相机"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_OPERATION_LOG
     override val dispatcher = StartActivityHook
 
     override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
