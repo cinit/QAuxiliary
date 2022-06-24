@@ -67,7 +67,7 @@ abstract class CommonConfigFunctionHook(
     /**
      * Description of the function.
      */
-    open val description: String? = null
+    open val description: CharSequence? = null
 
     override val targetProcesses = targetProc
 
@@ -76,7 +76,7 @@ abstract class CommonConfigFunctionHook(
     override val uiItemAgent: IUiItemAgent by lazy {
         object : IUiItemAgent {
             override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
-            override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> description }
+            override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
             override val valueState: MutableStateFlow<String?>?
                 get() = this@CommonConfigFunctionHook.valueState
             override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }

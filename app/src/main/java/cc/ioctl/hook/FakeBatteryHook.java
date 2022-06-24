@@ -407,7 +407,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
 
         @Nullable
         @Override
-        public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+        public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
             return null;
         }
 

@@ -113,7 +113,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
         return null;
     }
 

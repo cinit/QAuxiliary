@@ -205,7 +205,7 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, String> getSummaryProvider() {
+    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
         return null;
     }
 
