@@ -76,6 +76,9 @@ class AboutFragment : BaseRootLayoutFragment() {
 
     private val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(
+            CategoryItem("QAuxiliary") {
+                textItem("愿每个人都被这世界温柔以待", value = " :) ")
+            },
             CategoryItem("版本") {
                 textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
                 textItem("构建时间", value = getBuildTimeString())
