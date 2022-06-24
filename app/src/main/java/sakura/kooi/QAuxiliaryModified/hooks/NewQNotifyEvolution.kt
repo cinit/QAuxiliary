@@ -31,6 +31,7 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
@@ -41,6 +42,7 @@ import androidx.core.app.Person
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
+import cc.chenhe.qqnotifyevo.core.NotificationProcessor
 import cc.chenhe.qqnotifyevo.utils.NotifyChannel
 import cc.chenhe.qqnotifyevo.utils.getChannelId
 import cc.chenhe.qqnotifyevo.utils.getNotificationChannels
@@ -48,14 +50,15 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.lifecycle.Parasitics
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
-import org.jetbrains.annotations.NotNull
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -64,7 +67,7 @@ import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
+object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "QQ通知进化Plus"
     override val description: String = "更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
@@ -79,7 +82,13 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val personCache: HashMap<Int, Person> = HashMap()
     var windowHeight = -1
 
+    @Throws(Exception::class)
     override fun initOnce(): Boolean {
+        val res: Resources = hostInfo.application.resources
+        Parasitics.injectModuleResources(res)
+        NotificationProcessor.res_inject_ic_notify_qzone = res.getDrawable(R.drawable.ic_notify_qzone)
+        NotificationProcessor.res_inject_ic_notify_qq = res.getDrawable(R.drawable.ic_notify_qq)
+
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannels()
         }
@@ -323,8 +332,8 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         val notificationChannels: List<NotificationChannel> = getNotificationChannels()
         val notificationChannelGroup = NotificationChannelGroup("qq_evolution_plus", "QQ通知进化 Plus")
         val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java);
-        if (notificationChannels.any {
-                    notificationChannel -> notificationManager.getNotificationChannel(notificationChannel.id) == null
+        if (notificationChannels.any { notificationChannel ->
+                notificationManager.getNotificationChannel(notificationChannel.id) == null
             }) {
             Log.i("QNotifyEvolutionXp", "Creating channels...");
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)

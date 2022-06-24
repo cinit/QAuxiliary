@@ -21,15 +21,9 @@
  */
 package io.github.qauxv.startup;
 
-import android.content.res.Resources;
-import android.content.res.XModuleResources;
-import android.util.Log;
-import cc.chenhe.qqnotifyevo.core.NotificationProcessor;
-import de.robv.android.xposed.IXposedHookInitPackageResources;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.callbacks.XC_InitPackageResources.InitPackageResourcesParam;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import io.github.qauxv.R;
 import io.github.qauxv.util.hookstatus.HookStatusInit;
@@ -42,7 +36,7 @@ import io.github.qauxv.util.hookstatus.HookStatusInit;
  *
  * @author kinit
  */
-public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit, IXposedHookInitPackageResources {
+public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
     public static final String PACKAGE_NAME_QQ = "com.tencent.mobileqq";
     public static final String PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi";
@@ -146,25 +140,5 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit,
             throw new IllegalStateException("InitZygoteStartupParam is null");
         }
         return sInitZygoteStartupParam;
-    }
-
-    @Override
-    public void handleInitPackageResources(InitPackageResourcesParam resparam) throws Throwable {
-        Log.d("QNotifyEvoXP", "Resource inject: package " + resparam.packageName + " module="+getModulePath());
-        if (!PACKAGE_NAME_QQ.equals(resparam.packageName))
-            return;
-
-        XModuleResources modRes = XModuleResources.createInstance(getModulePath(), resparam.res);
-        try {
-            NotificationProcessor.res_inject_ic_notify_qzone = modRes.getDrawable(R.drawable.ic_notify_qzone);
-        } catch (Resources.NotFoundException e) {
-            Log.e("QNotifyEvoXP", "ic_notify_qzone cannot be found from XModuleResources, still try inject...");
-        }
-        try {
-            NotificationProcessor.res_inject_ic_notify_qq = modRes.getDrawable(R.drawable.ic_notify_qq);
-        } catch (Resources.NotFoundException e) {
-            Log.e("QNotifyEvoXP", "ic_notify_qq cannot be found from XModuleResources, still try inject...");
-        }
-        Log.i("QNotifyEvoXP", "Resource injected");
     }
 }
