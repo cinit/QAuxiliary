@@ -152,7 +152,8 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                             if (personInCache == null) {
                                 val builder = Person.Builder()
                                     .setName(title)
-                                    .setIcon(IconCompat.createWithBitmap(bitmap))
+                                    // FIXME: 2022-06-24 handle NPE if bitmap is null
+                                    .setIcon(IconCompat.createWithBitmap(bitmap!!))
                                 if (title.contains("[特别关心]")) {
                                     builder.setImportant(true)
                                     channelId = NotifyChannel.FRIEND_SPECIAL
@@ -206,7 +207,8 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
 
                             val bubbleData = NotificationCompat.BubbleMetadata.Builder(
                                 bubbleIntent,
-                                person.icon ?: IconCompat.createWithBitmap(bitmap)
+                                // FIXME: 2022-06-24 handle NPE if bitmap is null
+                                person.icon ?: IconCompat.createWithBitmap(bitmap!!)
                             )
                                 .setDesiredHeight(600)
                                 .build()
