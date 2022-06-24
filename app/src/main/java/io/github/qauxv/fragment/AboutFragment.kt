@@ -202,6 +202,12 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "https://github.com/yujincheng08/BiliRoaming",
                 "yujincheng08",
                 "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "QQ-Notify-Evolution",
+                "https://github.com/ichenhe/QQ-Notify-Evolution",
+                "ichenhe",
+                "AGPL-3.0 License"
             )
         )
     }
