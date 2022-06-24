@@ -67,7 +67,7 @@ import xyz.nextalone.util.method
 object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "QQ通知进化"
-    override val description: String = "原生分渠道+对话泡 更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
+    override val description: String = "更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 
@@ -80,6 +80,10 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     var windowHeight = -1
 
     override fun initOnce(): Boolean {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            createNotificationChannels()
+        }
+
         XposedHelpers.findAndHookMethod("com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
             "a",
             Intent::class.java,
@@ -215,7 +219,8 @@ object NewQNotifyEvolution  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                 setChannelId(getChannelId(channelId))
                             }
                         }
-                        createNotificationChannels()
+
+                        Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name);
                         param.result = builder.build()
                     }
                 }
