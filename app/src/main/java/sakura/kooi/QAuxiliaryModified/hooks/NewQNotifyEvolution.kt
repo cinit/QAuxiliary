@@ -44,6 +44,8 @@ import androidx.core.graphics.drawable.IconCompat
 import cc.chenhe.qqnotifyevo.utils.NotifyChannel
 import cc.chenhe.qqnotifyevo.utils.getChannelId
 import cc.chenhe.qqnotifyevo.utils.getNotificationChannels
+import cc.ioctl.util.Reflex
+import cc.ioctl.util.hookAfterIfEnabled
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -84,151 +86,145 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             createNotificationChannels()
         }
 
-        XposedHelpers.findAndHookMethod("com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
-            "a",
+        val buildNotification = Reflex.findSingleMethod(
+            "com.tencent.mobileqq.service.MobileQQServiceExtend".clazz!!,
+            android.app.Notification::class.java,
+            false,
             Intent::class.java,
             Bitmap::class.java,
             String::class.java,
             String::class.java,
-            String::class.java,
-            object : XC_MethodHook() {
-                @RequiresApi(Build.VERSION_CODES.O)
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
-                    runCatching {
-                        val intent = param.args[0] as Intent
-                        val context = hostInfo.application as Context
-                        val uin = intent.getStringExtra("uin")
-                            ?: intent.getStringExtra("param_uin")!!
-                        val isTroop = intent.getIntExtra(
-                            "uintype",
-                            intent.getIntExtra("param_uinType", -1)
-                        )
-                        if (isTroop != 0 && isTroop != 1 && isTroop != 3000) return@runCatching
-                        val bitmap = param.args[1] as Bitmap?
-                        var title = param.args[3] as String
-                        var text = param.args[4] as String
-                        val oldNotification = param.result as Notification
-                        val notificationId =
-                            intent.getIntExtra("KEY_NOTIFY_ID_FROM_PROCESSOR", -113)
-                        val messageStyle = NotificationCompat.MessagingStyle(
-                            Person.Builder().setName("我").build()
-                        )
-                        historyMessage[notificationId]?.forEach { it ->
-                            messageStyle.addMessage(it)
-                        }
+            String::class.java
+        )
+        hookAfterIfEnabled(buildNotification) { param ->
+            val intent = param.args[0] as Intent
+            val context = hostInfo.application as Context
+            val uin = intent.getStringExtra("uin")
+                ?: intent.getStringExtra("param_uin")!!
+            val isTroop = intent.getIntExtra(
+                "uintype",
+                intent.getIntExtra("param_uinType", -1)
+            )
+            if (isTroop != 0 && isTroop != 1 && isTroop != 3000) return@hookAfterIfEnabled
+            val bitmap = param.args[1] as Bitmap?
+            var title = param.args[3] as String
+            var text = param.args[4] as String
+            val oldNotification = param.result as Notification
+            val notificationId =
+                intent.getIntExtra("KEY_NOTIFY_ID_FROM_PROCESSOR", -113)
+            val messageStyle = NotificationCompat.MessagingStyle(
+                Person.Builder().setName("我").build()
+            )
+            historyMessage[notificationId]?.forEach { it ->
+                messageStyle.addMessage(it)
+            }
 
-                        title = numRegex.replace(title, "")
+            title = numRegex.replace(title, "")
 
-                        val person: Person
-                        var channelId: NotifyChannel;
+            val person: Person
+            var channelId: NotifyChannel
 
-                        if (isTroop == 1) {
-                            val sender = senderName.find(text)?.value?.replace(": ", "")
-                            text = senderName.replace(text, "")
-                            /*throwOrTrue {
-                                val senderUin = intent.getStringExtra("param_fromuin")
-                                bitmap = face.getBitmapFromCache(TYPE_USER,senderUin)
-                            }*/
-                            person = Person.Builder()
-                                .setName(sender)
-                                //.setIcon(IconCompat.createWithBitmap(bitmap))
-                                .build()
-                            messageStyle.conversationTitle = title
-                            messageStyle.isGroupConversation = true
-                            channelId = NotifyChannel.GROUP;
-                        } else {
-                            channelId = NotifyChannel.FRIEND
-                            val personInCache = personCache[notificationId]
-                            if (personInCache == null) {
-                                val builder = Person.Builder()
-                                    .setName(title)
-                                    // FIXME: 2022-06-24 handle NPE if bitmap is null
-                                    .setIcon(IconCompat.createWithBitmap(bitmap!!))
-                                if (title.contains("[特别关心]")) {
-                                    builder.setImportant(true)
-                                    channelId = NotifyChannel.FRIEND_SPECIAL
-                                    title = title.removePrefix("[特别关心]")
-                                }
-                                person = builder.build()
-                                personCache[notificationId] = person
-                            } else {
-                                person = personInCache
-                            }
-                        }
-
-                        val message = NotificationCompat.MessagingStyle.Message(text, oldNotification.`when`, person)
-                        messageStyle.addMessage(message)
-                        if (historyMessage[notificationId] == null) {
-                            historyMessage[notificationId] = ArrayList()
-                        }
-                        historyMessage[notificationId]?.add(message)
-
-                        //Log.d(historyMessage.toString())
-                        val builder = NotificationCompat.Builder(
-                            context,
-                            oldNotification
-                        )
-                            .setContentTitle(null)
-                            .setContentText(null)
-                            .setLargeIcon(null)
-                            .setStyle(messageStyle)
-                        if (isTroop == 1) {
-                            builder.setLargeIcon(bitmap)
-                        }
-                        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                            val newIntent = intent.clone() as Intent
-                            newIntent.component = ComponentName(
-                                context,
-                                activityName.clazz!!
-                            )
-                            newIntent.putExtra("key_mini_from", 2)
-                            newIntent.putExtra("minaio_height_ration", 1f)
-                            newIntent.putExtra("minaio_scaled_ration", 1f)
-                            newIntent.putExtra(
-                                "public_fragment_class",
-                                "com.tencent.mobileqq.activity.miniaio.MiniChatFragment"
-                            )
-                            val bubbleIntent = PendingIntent.getActivity(
-                                context,
-                                uin.toInt(),
-                                newIntent,
-                                PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
-                            )
-
-                            val bubbleData = NotificationCompat.BubbleMetadata.Builder(
-                                bubbleIntent,
-                                // FIXME: 2022-06-24 handle NPE if bitmap is null
-                                person.icon ?: IconCompat.createWithBitmap(bitmap!!)
-                            )
-                                .setDesiredHeight(600)
-                                .build()
-
-                            val shortcut =
-                                ShortcutInfoCompat.Builder(context, notificationId.toString())
-                                    .setIntent(intent)
-                                    .setLongLived(true)
-                                    .setShortLabel(title)
-                                    .setIcon(bubbleData.icon!!)
-                                    .build()
-
-                            ShortcutManagerCompat.pushDynamicShortcut(
-                                context,
-                                shortcut
-                            )
-                            builder.apply {
-                                setShortcutInfo(shortcut)
-                                bubbleMetadata = bubbleData
-                                setChannelId(getChannelId(channelId))
-                            }
-                        }
-
-                        Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name);
-                        param.result = builder.build()
+            if (isTroop == 1) {
+                val sender = senderName.find(text)?.value?.replace(": ", "")
+                text = senderName.replace(text, "")
+                /*throwOrTrue {
+                    val senderUin = intent.getStringExtra("param_fromuin")
+                    bitmap = face.getBitmapFromCache(TYPE_USER,senderUin)
+                }*/
+                person = Person.Builder()
+                    .setName(sender)
+                    //.setIcon(IconCompat.createWithBitmap(bitmap))
+                    .build()
+                messageStyle.conversationTitle = title
+                messageStyle.isGroupConversation = true
+                channelId = NotifyChannel.GROUP
+            } else {
+                channelId = NotifyChannel.FRIEND
+                val personInCache = personCache[notificationId]
+                if (personInCache == null) {
+                    val builder = Person.Builder()
+                        .setName(title)
+                        // FIXME: 2022-06-24 handle NPE if bitmap is null
+                        .setIcon(IconCompat.createWithBitmap(bitmap!!))
+                    if (title.contains("[特别关心]")) {
+                        builder.setImportant(true)
+                        channelId = NotifyChannel.FRIEND_SPECIAL
+                        title = title.removePrefix("[特别关心]")
                     }
+                    person = builder.build()
+                    personCache[notificationId] = person
+                } else {
+                    person = personInCache
                 }
             }
-        )
+
+            val message = NotificationCompat.MessagingStyle.Message(text, oldNotification.`when`, person)
+            messageStyle.addMessage(message)
+            if (historyMessage[notificationId] == null) {
+                historyMessage[notificationId] = ArrayList()
+            }
+            historyMessage[notificationId]?.add(message)
+
+            //Log.d(historyMessage.toString())
+            val builder = NotificationCompat.Builder(context, oldNotification)
+                .setContentTitle(null)
+                .setContentText(null)
+                .setLargeIcon(null)
+                .setStyle(messageStyle)
+            if (isTroop == 1) {
+                builder.setLargeIcon(bitmap)
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                val newIntent = intent.clone() as Intent
+                newIntent.component = ComponentName(
+                    context,
+                    activityName.clazz!!
+                )
+                newIntent.putExtra("key_mini_from", 2)
+                newIntent.putExtra("minaio_height_ration", 1f)
+                newIntent.putExtra("minaio_scaled_ration", 1f)
+                newIntent.putExtra(
+                    "public_fragment_class",
+                    "com.tencent.mobileqq.activity.miniaio.MiniChatFragment"
+                )
+                val bubbleIntent = PendingIntent.getActivity(
+                    context,
+                    uin.toLong().toInt(), // uin may be lager than Int.MAX_VALUE but small than 2^32-1
+                    newIntent,
+                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+                )
+
+                val bubbleData = NotificationCompat.BubbleMetadata.Builder(
+                    bubbleIntent,
+                    // FIXME: 2022-06-24 handle NPE if bitmap is null
+                    person.icon ?: IconCompat.createWithBitmap(bitmap!!)
+                )
+                    .setDesiredHeight(600)
+                    .build()
+
+                val shortcut =
+                    ShortcutInfoCompat.Builder(context, notificationId.toString())
+                        .setIntent(intent)
+                        .setLongLived(true)
+                        .setShortLabel(title)
+                        .setIcon(bubbleData.icon!!)
+                        .build()
+
+                ShortcutManagerCompat.pushDynamicShortcut(
+                    context,
+                    shortcut
+                )
+                builder.apply {
+                    setShortcutInfo(shortcut)
+                    bubbleMetadata = bubbleData
+                    setChannelId(getChannelId(channelId))
+                }
+            }
+
+            Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name);
+            param.result = builder.build()
+        }
+
         XposedHelpers.findAndHookMethod(
             "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz,
             "cancel", String::class.java, Int::class.javaPrimitiveType,
@@ -285,8 +281,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                 "removeNotification",
                                 object : XC_MethodHook() {
                                     override fun beforeHookedMethod(param: MethodHookParam) {
-                                        if (id == Thread.currentThread().id) param.result =
-                                            null
+                                        if (id == Thread.currentThread().id) param.result = null
                                     }
                                 }
                             ) else null
@@ -323,7 +318,8 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannels() {
         val notificationChannels: List<NotificationChannel> = getNotificationChannels()
-        val notificationChannelGroup = NotificationChannelGroup("qq_evolution_plus", "QQ通知进化 Plus")
+        // don't create new channel group since the old channel ids are still used
+        val notificationChannelGroup = NotificationChannelGroup("qq_evolution", "QQ通知进化 Plus")
         val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java);
         if (notificationChannels.any { notificationChannel ->
                 notificationManager.getNotificationChannel(notificationChannel.id) == null
