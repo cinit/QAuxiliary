@@ -5,6 +5,7 @@ import android.app.Notification
 import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
+import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
@@ -18,15 +19,26 @@ import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.graphics.drawable.IconCompat
 import androidx.core.graphics.drawable.toBitmap
 import cc.chenhe.qqnotifyevo.utils.*
+import io.github.qauxv.R
 import io.github.qauxv.activity.ConfigV2Activity
+import io.github.qauxv.lifecycle.Parasitics
+import io.github.qauxv.util.hostInfo
 import java.util.regex.Matcher
 import java.util.regex.Pattern
 
 abstract class NotificationProcessor(context: Context) {
 
     companion object {
-        lateinit var res_inject_ic_notify_qq: Drawable
-        lateinit var res_inject_ic_notify_qzone: Drawable
+        val res_inject_ic_notify_qq: Drawable by lazy {
+            val res: Resources = hostInfo.application.resources
+            Parasitics.injectModuleResources(res)
+            res.getDrawable(R.drawable.ic_notify_qq)
+        }
+        val res_inject_ic_notify_qzone: Drawable by lazy {
+            val res: Resources = hostInfo.application.resources
+            Parasitics.injectModuleResources(res)
+            res.getDrawable(R.drawable.ic_notify_qzone)
+        }
 
         private const val TAG = "QNotifyEvoXP"
 

@@ -31,7 +31,6 @@ import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
-import android.content.res.Resources
 import android.graphics.Bitmap
 import android.os.Build
 import android.util.Log
@@ -42,7 +41,6 @@ import androidx.core.app.Person
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import cc.chenhe.qqnotifyevo.core.NotificationProcessor
 import cc.chenhe.qqnotifyevo.utils.NotifyChannel
 import cc.chenhe.qqnotifyevo.utils.getChannelId
 import cc.chenhe.qqnotifyevo.utils.getNotificationChannels
@@ -50,13 +48,11 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import io.github.qauxv.R
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.lifecycle.Parasitics
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
@@ -84,11 +80,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        val res: Resources = hostInfo.application.resources
-        Parasitics.injectModuleResources(res)
-        NotificationProcessor.res_inject_ic_notify_qzone = res.getDrawable(R.drawable.ic_notify_qzone)
-        NotificationProcessor.res_inject_ic_notify_qq = res.getDrawable(R.drawable.ic_notify_qq)
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannels()
         }
