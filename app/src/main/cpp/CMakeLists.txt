@@ -26,6 +26,9 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-ty
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
+
+option(DEX_BUILDER_BUILD_SHARED "" OFF)
+option(ABSL_PROPAGATE_CXX_STD "" ON)
 add_subdirectory(dex_builder)
 
 add_library(qauxv SHARED
