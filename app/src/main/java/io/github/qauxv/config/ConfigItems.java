@@ -21,16 +21,8 @@
  */
 package io.github.qauxv.config;
 
-import android.content.Context;
-import androidx.annotation.NonNull;
-import cc.ioctl.util.ExfriendManager;
-import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
-import io.github.qauxv.util.Toasts;
-import java.io.File;
-import java.util.Objects;
 
 public class ConfigItems {
 
@@ -48,121 +40,6 @@ public class ConfigItems {
     public static final String qn_script_count = "qn_script_count";
     public static final String qn_script_code = "qn_script_code_";
     public static final String qn_script_enable_ = "qn_script_enable_";
-
-    public static final SwitchConfigItem qn_disable_hot_patch = new SwitchConfigItem() {
-        @Override
-        public boolean isValid() {
-            return true;
-        }
-
-        @Override
-        public boolean isEnabled() {
-            try {
-                Context ctx = HostInfo.getApplication();
-                return new File(ctx.getFilesDir(), "qn_disable_hot_patch").exists();
-            } catch (Throwable e) {
-                Toasts.error(HostInfo.getApplication(), e.toString());
-                return false;
-            }
-        }
-
-        @Override
-        public boolean sync() {
-            return true;
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            try {
-                Context ctx = HostInfo.getApplication();
-                File f = new File(ctx.getFilesDir(), "qn_disable_hot_patch");
-                if (enabled != f.exists()) {
-                    if (enabled) {
-                        f.createNewFile();
-                    } else {
-                        f.delete();
-                    }
-                }
-            } catch (Throwable e) {
-                Toasts.error(HostInfo.getApplication(), e.toString());
-            }
-        }
-
-
-    };
-
-    public static final SwitchConfigItem qn_notify_when_del = new SwitchConfigItem() {
-        @Override
-        public boolean isValid() {
-            try {
-                ExfriendManager.getCurrent();
-                return true;
-            } catch (IllegalArgumentException e) {
-                //not login
-                return false;
-            }
-        }
-
-        @Override
-        public boolean isEnabled() {
-            try {
-                ExfriendManager mgr = ExfriendManager.getCurrent();
-                return mgr.isNotifyWhenDeleted();
-            } catch (IllegalArgumentException e) {
-                //not login
-                return false;
-            }
-        }
-
-        @Override
-        public boolean sync() {
-            return true;
-        }
-
-        @Override
-        public void setEnabled(boolean enabled) {
-            try {
-                ExfriendManager mgr = ExfriendManager.getCurrent();
-                mgr.setNotifyWhenDeleted(enabled);
-            } catch (IllegalArgumentException e) {
-                Log.e(e);
-            }
-        }
-
-
-    };
-
-    public static final SwitchConfigItem bug_unlock_msg_length = switchConfigAtDefault(
-        "bug_unlock_msg_length", false);
-
-    @NonNull
-    private static SwitchConfigItem switchConfigAtDefault(final @NonNull String name,
-                                                          final boolean defVal) {
-        Objects.requireNonNull(name, "name");
-        return new SwitchConfigItem() {
-
-            @Override
-            public boolean isValid() {
-                return true;
-            }
-
-            @Override
-            public boolean sync() {
-                ConfigManager.getDefaultConfig().save();
-                return true;
-            }
-
-            @Override
-            public boolean isEnabled() {
-                return ConfigManager.getDefaultConfig().getBooleanOrDefault(name, defVal);
-            }
-
-            @Override
-            public void setEnabled(boolean enabled) {
-                ConfigManager.getDefaultConfig().putBoolean(name, enabled);
-            }
-        };
-    }
 
     @MainProcess
     public static void removePreviousCacheIfNecessary() {
