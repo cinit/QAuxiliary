@@ -26,6 +26,7 @@ body:
   - type: textarea
     attributes:
       label: Actual behaviour/实际行为
+      description: 如果含有截图，个人信息注意打码保护
       placeholder: Tell us what happens instead/实际上发生了什么
     validations:
       required: true
@@ -57,7 +58,7 @@ body:
   - type: textarea
     attributes:
       label: Logs/日志
-      description: For usage issues, please provide the log zip saved from manager; for activation issues, please provide [bugreport](https://developer.android.com/studio/debug/bug-report). Without log, the issue will be closed. /使用问题请提供从管理器保存的日志压缩包；激活问题请提供 [bugreport](https://developer.android.google.cn/studio/debug/bug-report?hl=zh-cn) 日志。无日志提交会被关闭。
-      placeholder: Upload logs by clicking the bar on the bottom. /点击文本框底栏上传日志文件。
+      description: 功能问题请先复现一次错误，然后在 模块设置界面-故障排查-功能异常列表 找到存在问题的功能，复制错误信息粘贴到此处；激活问题请提供 [bugreport](https://developer.android.google.cn/studio/debug/bug-report?hl=zh-cn) 日志。无日志提交会被关闭。
+      placeholder: Paste logs here or upload logs by clicking the bar on the bottom. /将日志粘贴到此处或者点击文本框底栏上传日志文件。
     validations:
       required: true
