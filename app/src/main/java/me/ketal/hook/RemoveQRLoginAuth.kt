@@ -22,6 +22,7 @@
 
 package me.ketal.hook
 
+import android.os.Bundle
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -45,8 +46,8 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
         Initiator.loadClass("com/tencent/open/agent/QrAgentLoginManager$2").declaredMethods
             .findMethod {
                 returnType == Void.TYPE &&
-                    parameterTypes.size == 1 &&
-                    parameterTypes[0] == Boolean::class.java
+                    (parameterTypes.size == 1 && parameterTypes[0] == Boolean::class.java
+                        || parameterTypes.size == 2 && parameterTypes[0] == Boolean::class.java && parameterTypes[1] == Bundle::class.java)
             }
             .hookBefore(this) {
                 it.args[0] = false
