@@ -74,6 +74,7 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
 }
 
 interface OnBubbleBuilder {
+    @Throws(Exception::class)
     fun onGetView(
         rootView: ViewGroup,
         chatMessage: MsgRecordData,

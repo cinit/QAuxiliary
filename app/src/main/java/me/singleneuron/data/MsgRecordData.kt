@@ -21,8 +21,10 @@
  */
 package me.singleneuron.data
 
+import cc.ioctl.util.Reflex
 import me.kyuubiran.util.getObjectOrNull
 import me.kyuubiran.util.putObject
+import java.lang.reflect.Field
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -64,16 +66,44 @@ data class MsgRecordData(val msgRecord: Any) {
             MSG_TYPE_POKE_EMO_MSG to "另类戳一戳",
             MSG_TYPE_UNITE_GRAY_NORMAL to "灰字消息"
         )
+
+        private var _msg: Field? = null
+        private var _msg2: Field? = null
+        private var _msgUid: Field? = null
+        private var _friendUin: Field? = null
+        private var _senderUin: Field? = null
+        private var _selfUin: Field? = null
+        private var _msgType: Field? = null
+        private var _extraFlag: Field? = null
+        private var _extStr: Field? = null
+        private var _time: Field? = null
+        private var _isRead: Field? = null
+        private var _isSend: Field? = null
+        private var _isTroop: Field? = null
+        private var _msgSeq: Field? = null
+        private var _shMsgSeq: Field? = null
+        private var _uniSeq: Field? = null
+        private var _msgData: Field? = null
     }
 
     //消息文本
     val msg: String?
         @Throws(NullPointerException::class)
-        get() = getObjectOrNull(msgRecord, "msg", String::class.java) as String?
+        get() {
+            if (_msg == null) {
+                _msg = Reflex.findField(msgRecord.javaClass, String::class.java, "msg")
+            }
+            return _msg!!.get(msgRecord) as String?
+        }
 
     //也是消息文本
     val msg2: String?
-        get() = getObjectOrNull(msgRecord, "msg2", String::class.java) as String?
+        get() {
+            if (_msg2 == null) {
+                _msg2 = Reflex.findField(msgRecord.javaClass, String::class.java, "msg2")
+            }
+            return _msg2!!.get(msgRecord) as String?
+        }
 
     //消息id
     //@Deprecated
@@ -81,73 +111,149 @@ data class MsgRecordData(val msgRecord: Any) {
         get() = getObjectOrNull(msgRecord, "msgId", Long::class.java) as Long?
 
     //消息uid
-    val msgUid: Long?
-        get() = getObjectOrNull(msgRecord, "msgUid", Long::class.java) as Long?
+    val msgUid: Long
+        get() {
+            if (_msgUid == null) {
+                _msgUid = Reflex.findField(msgRecord.javaClass, Long::class.java, "msgUid")
+            }
+            return _msgUid!!.getLong(msgRecord)
+        }
 
     //好友QQ [当为群聊聊天时 则为QQ群号]
     val friendUin: String?
-        get() = getObjectOrNull(msgRecord, "frienduin", String::class.java) as String?
+        get() {
+            if (_friendUin == null) {
+                _friendUin = Reflex.findField(msgRecord.javaClass, String::class.java, "frienduin")
+            }
+            return _friendUin!!.get(msgRecord) as String?
+        }
 
     //发送人QQ
     val senderUin: String?
-        get() = getObjectOrNull(msgRecord, "senderuin", String::class.java) as String?
+        get() {
+            if (_senderUin == null) {
+                _senderUin = Reflex.findField(msgRecord.javaClass, String::class.java, "senderuin")
+            }
+            return _senderUin!!.get(msgRecord) as String?
+        }
 
     //自己QQ
     val selfUin: String?
-        get() = getObjectOrNull(msgRecord, "selfuin", String::class.java) as String?
+        get() {
+            if (_selfUin == null) {
+                _selfUin = Reflex.findField(msgRecord.javaClass, String::class.java, "selfuin")
+            }
+            return _selfUin!!.get(msgRecord) as String?
+        }
 
     //消息类型
-    val msgType: Int?
-        get() = getObjectOrNull(msgRecord, "msgtype", Int::class.java) as Int?
+    val msgType: Int
+        get() {
+            if (_msgType == null) {
+                _msgType = Reflex.findField(msgRecord.javaClass, Int::class.java, "msgtype")
+            }
+            return _msgType!!.getInt(msgRecord)
+        }
+
     val readableMsgType: String?
-        get() = msgType?.let { if (MSG_TYPE_MAP[it] == null) msgType.toString() else MSG_TYPE_MAP[it] + "(${msgType.toString()})" }
+        get() = msgType.let { if (MSG_TYPE_MAP[it] == null) msgType.toString() else MSG_TYPE_MAP[it] + "(${msgType.toString()})" }
 
-    //额外flag
-    val extraFlag: Int?
-        get() = getObjectOrNull(msgRecord, "extraflag", Int::class.java) as Int?
+    //额外flag extraflag
+    val extraFlag: Int
+        get() {
+            if (_extraFlag == null) {
+                _extraFlag = Reflex.findField(msgRecord.javaClass, Int::class.java, "extraflag")
+            }
+            return _extraFlag!!.getInt(msgRecord)
+        }
 
-    //额外flag
+    //额外字符串 extStr
     val extStr: String?
-        get() = getObjectOrNull(msgRecord, "extStr", String::class.java) as String?
+        get() {
+            if (_extStr == null) {
+                _extStr = Reflex.findField(msgRecord.javaClass, String::class.java, "extStr")
+            }
+            return _extStr!!.get(msgRecord) as String?
+        }
 
     //时间戳
-    val time: Long?
-        get() = getObjectOrNull(msgRecord, "time", Long::class.java) as Long?
-    val readableTime: String?
-        get() = time?.let {
+    val time: Long
+        get() {
+            if (_time == null) {
+                _time = Reflex.findField(msgRecord.javaClass, Long::class.java, "time")
+            }
+            return _time!!.getLong(msgRecord)
+        }
+    val readableTime: String
+        get() = time.let {
             SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(it * 1000))
         }
 
     //是否已读
-    val isRead: Boolean?
-        get() = getObjectOrNull(msgRecord, "isread", Boolean::class.java) as Boolean?
+    val isRead: Boolean
+        get() {
+            if (_isRead == null) {
+                _isRead = Reflex.findField(msgRecord.javaClass, Boolean::class.java, "isread")
+            }
+            return _isRead!!.getBoolean(msgRecord)
+        }
 
     //是否发送
-    val isSend: Int?
-        get() = getObjectOrNull(msgRecord, "issend", Boolean::class.java) as Int?
+    val isSend: Boolean
+        get() {
+            if (_isSend == null) {
+                _isSend = Reflex.findField(msgRecord.javaClass, Boolean::class.java, "issend")
+            }
+            return _isSend!!.getBoolean(msgRecord)
+        }
 
     //是否群组
-    val isTroop: Int?
-        get() = getObjectOrNull(msgRecord, "istroop", Int::class.javaPrimitiveType) as Int?
+    val isTroop: Int
+        get() {
+            if (_isTroop == null) {
+                _isTroop = Reflex.findField(msgRecord.javaClass, Int::class.java, "istroop")
+            }
+            return _isTroop!!.getInt(msgRecord)
+        }
 
-    //未知
-    val msgSeq: Long?
-        get() = getObjectOrNull(msgRecord, "msgseq", Long::class.java) as Long?
+    //未知 msgseq
+    val msgSeq: Long
+        get() {
+            if (_msgSeq == null) {
+                _msgSeq = Reflex.findField(msgRecord.javaClass, Long::class.java, "msgseq")
+            }
+            return _msgSeq!!.getLong(msgRecord)
+        }
 
-    //未知
-    val shMsgSeq: Long?
-        get() = getObjectOrNull(msgRecord, "shmsgseq", Long::class.java) as Long?
+    //未知 shmsgseq
+    val shMsgSeq: Long
+        get() {
+            if (_shMsgSeq == null) {
+                _shMsgSeq = Reflex.findField(msgRecord.javaClass, Long::class.java, "shmsgseq")
+            }
+            return _shMsgSeq!!.getLong(msgRecord)
+        }
 
-    //未知
-    val uinSeq: Long?
-        get() = getObjectOrNull(msgRecord, "uinseq", Long::class.java) as Long?
+    //未知 uinseq
+    val uinSeq: Long
+        get() {
+            if (_uniSeq == null) {
+                _uniSeq = Reflex.findField(msgRecord.javaClass, Long::class.java, "uinseq")
+            }
+            return _uniSeq!!.getLong(msgRecord)
+        }
 
-    //消息data
+    //消息data msgData
     val msgData: ByteArray?
-        get() = getObjectOrNull(msgRecord, "msgData", ByteArray::class.java) as ByteArray?
+        get() {
+            if (_msgData == null) {
+                _msgData = Reflex.findField(msgRecord.javaClass, ByteArray::class.java, "msgData")
+            }
+            return _msgData!!.get(msgRecord) as ByteArray?
+        }
 
-    fun <T> get(fieldName: String): T {
-        return getObjectOrNull(msgRecord, "msgData", ByteArray::class.java) as T
+    inline fun <reified T> get(fieldName: String): T {
+        return getObjectOrNull(msgRecord, fieldName, T::class.java) as T
     }
 
     fun <T> set(fieldName: String, value: T) where T : Any {
@@ -160,19 +266,19 @@ data class MsgRecordData(val msgRecord: Any) {
         stringBuilder.apply {
             append("消息文本: $msg\n")
             msg2?.let { append("也是消息文本: $msg2\n") }
-            msgUid?.let { append("消息uid: $msgUid\n") }
+            msgUid.let { append("消息uid: $msgUid\n") }
             friendUin?.let { append("好友/群号:$friendUin\n") }
             senderUin?.let { append("发送人QQ: $senderUin\n") }
             selfUin?.let { append("自己QQ: $selfUin\n") }
-            msgType?.let { append("消息类型: $readableMsgType\n") }
-            extraFlag?.let { append("额外flag: ${extraFlag?.toString(16)}\n") }
-            readableTime?.let { append("时间戳: $readableTime\n") }
-            isRead?.let { append("是否已读: $isRead\n") }
-            isSend?.let { append("是否发送: $isSend\n") }
-            isTroop?.let { append("是否群组: $isTroop\n") }
-            msgSeq?.let { append("msgSeq：$msgSeq\n") }
-            shMsgSeq?.let { append("shMsgSeq: $shMsgSeq\n") }
-            uinSeq?.let { append("uinSeq: $uinSeq\n") }
+            msgType.let { append("消息类型: $readableMsgType\n") }
+            extraFlag.let { append("额外flag: ${extraFlag.toString(16)}\n") }
+            readableTime.let { append("时间戳: $readableTime\n") }
+            isRead.let { append("是否已读: $isRead\n") }
+            isSend.let { append("是否发送: $isSend\n") }
+            isTroop.let { append("是否群组: $isTroop\n") }
+            msgSeq.let { append("msgSeq：$msgSeq\n") }
+            shMsgSeq.let { append("shMsgSeq: $shMsgSeq\n") }
+            uinSeq.let { append("uinSeq: $uinSeq\n") }
         }
         return stringBuilder.toString()
     }
