@@ -50,6 +50,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
 
     override fun initOnce() = throwOrTrue {
         val method: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_8_98) -> "N0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "O0"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "m"
             requireMinQQVersion(QQVersion.QQ_8_6_0) -> "j"
@@ -57,8 +58,9 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "t"
             else -> "I"
         }
-        val clz = DexKit.doFindClass(DexKit.C_AIOPictureView)
+        val clz = DexKit.loadClassFromCache(DexKit.C_AIOPictureView)!!
         val m: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_8_98) -> "Z0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "a1"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "h"
             requireMinQQVersion(QQVersion.QQ_8_6_0) -> "g"
@@ -66,7 +68,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "h"
             else -> "I"
         }
-        "L${clz?.name};->$m(Z)V".method.replace(this) {
+        "L${clz.name};->$m(Z)V".method.replace(this) {
             if (it.args[0] as Boolean) {
                 it.thisObject.invoke(method)
             }
