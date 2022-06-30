@@ -22,6 +22,8 @@
 
 package xyz.nextalone.hook
 
+import android.text.SpannableStringBuilder
+import android.text.style.ForegroundColorSpan
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -36,10 +38,28 @@ object TrimMessage : CommonSwitchFunctionHook() {
 
     override val name = "移除消息前后的空格"
 
+    override val description: CharSequence by lazy {
+        SpannableStringBuilder().apply {
+            // red color
+            val text = "会导致部分小表情异常发出去变成乱码方块"
+            val color = 0xFFFF5252u.toInt()
+            val start = 0
+            val end = text.length
+            append(text)
+            setSpan(
+                ForegroundColorSpan(color),
+                start,
+                end,
+                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
+            )
+        }
+    }
+
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookBefore(this) {
+        DexKit.getMethodFromCache(DexKit.N_ChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
+            // TODO: 2022-06-30 处理小表情
             it.args[3] = (it.args[3] as String).trim()
         }
     }
