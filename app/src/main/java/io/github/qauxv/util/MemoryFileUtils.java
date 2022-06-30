@@ -43,7 +43,13 @@ public class MemoryFileUtils {
             }
             sInitialized = true;
         }
-        Objects.requireNonNull(name);
+        Objects.requireNonNull(name, "name is null");
+        if ("".equals(name)) {
+            throw new IllegalArgumentException("name cannot be empty");
+        }
+        if (".".equals(name) || "..".equals(name) || name.contains("/")) {
+            throw new IllegalArgumentException("invalid name: '" + name + "'");
+        }
         if (size < 0) {
             throw new IllegalArgumentException("size must be >= 0");
         }

@@ -149,8 +149,18 @@ int create_in_memory_file(const char *dir, const char *name, size_t size) {
     if (access(dir, W_OK) != 0) {
         return -errno;
     }
+    if (strlen(name) + strlen(dir) + 2 > PATH_MAX) {
+        return -ENAMETOOLONG;
+    }
     char path[PATH_MAX] = {};
     snprintf(path, PATH_MAX, "%s/%s", dir, name);
+    // check file not exist
+    if (access(path, F_OK) == 0) {
+        // unlink existing file
+        if (TEMP_FAILURE_RETRY(unlink(path)) != 0) {
+            return -errno;
+        }
+    }
     // create file
     int fd = TEMP_FAILURE_RETRY(open(path, O_RDWR | O_CREAT | O_CLOEXEC | O_EXCL, 0600));
     if (fd < 0) {
