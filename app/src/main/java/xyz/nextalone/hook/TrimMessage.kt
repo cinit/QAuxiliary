@@ -22,8 +22,6 @@
 
 package xyz.nextalone.hook
 
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -38,29 +36,47 @@ object TrimMessage : CommonSwitchFunctionHook() {
 
     override val name = "移除消息前后的空格"
 
-    override val description: CharSequence by lazy {
-        SpannableStringBuilder().apply {
-            // red color
-            val text = "会导致部分小表情异常发出去变成乱码方块"
-            val color = 0xFFFF5252u.toInt()
-            val start = 0
-            val end = text.length
-            append(text)
-            setSpan(
-                ForegroundColorSpan(color),
-                start,
-                end,
-                SpannableStringBuilder.SPAN_EXCLUSIVE_EXCLUSIVE
-            )
-        }
-    }
-
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
         DexKit.getMethodFromCache(DexKit.N_ChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
-            // TODO: 2022-06-30 处理小表情
-            it.args[3] = (it.args[3] as String).trim()
+            it.args[3] = trimMessage(it.args[3] as String)
         }
+    }
+
+    private fun trimMessage(message: String): String {
+        val charArray: CharArray = message.toCharArray()
+        val arrayList = ArrayList<String>()
+        var i = 0
+        while (i < charArray.size) {
+            val c = charArray[i]
+            if (c.code == 20 && i < charArray.size - 1) {
+                val c2 = charArray[i + 1]
+                if (c2.code in 1..254) {
+                    // 2-byte small emoticon, 254 in total
+                    arrayList.add(message.substring(i, i + 2))
+                    i += 2
+                } else if (c2.code == 255 && i < charArray.size - 4) {
+                    // 5-byte small emoticon
+                    arrayList.add(message.substring(i, i + 5))
+                    i += 5
+                } else {
+                    // possible broken emoticon, leave it as is
+                    arrayList.add(c.toString())
+                    i++
+                }
+            } else {
+                arrayList.add(c.toString())
+                i++
+            }
+        }
+        // remove first and last space
+        while (arrayList.size > 0 && arrayList[0] == " ") {
+            arrayList.removeFirst()
+        }
+        while (arrayList.size > 0 && arrayList[arrayList.size - 1] == " ") {
+            arrayList.removeLast()
+        }
+        return arrayList.joinToString("")
     }
 }
