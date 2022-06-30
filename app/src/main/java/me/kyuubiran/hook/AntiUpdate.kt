@@ -22,8 +22,11 @@
 
 package me.kyuubiran.hook
 
+import android.os.Message
 import android.text.SpannableStringBuilder
 import android.text.style.ForegroundColorSpan
+import cc.ioctl.util.Reflex
+import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.emptyParam
 import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
@@ -31,7 +34,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import me.kyuubiran.util.ClassHelper
+import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -59,10 +64,31 @@ object AntiUpdate : CommonSwitchFunctionHook() {
         val clz = ClassHelper.UpgradeController1.clz
             ?: ClassHelper.UpgradeController2.clz
             ?: throw ClassNotFoundException("UpgradeController")
-
-        clz.findAllMethods {
-            emptyParam && returnType.name.contains("UpgradeDetailWrapper") && name.length == 1
-        }.hookBefore { if (isEnabled) it.result = null }
+        val kUpgradeDetailWrapper = Initiator.load("com.tencent.mobileqq.upgrade.UpgradeDetailWrapper")
+            ?: Initiator.loadClass("com.tencent.mobileqq.app.upgrade.UpgradeDetailWrapper")
+        // dialog
+        val kConfigHandler = Initiator._ConfigHandler()
+        val candidates = ArrayList<Method>(4)
+        for (m in kConfigHandler.declaredMethods) {
+            if (m.returnType == Void.TYPE && m.parameterTypes.size == 1 && m.parameterTypes[0] == kUpgradeDetailWrapper) {
+                candidates.add(m)
+            }
+        }
+        if (candidates.isEmpty() || candidates.size > 3) {
+            throw IllegalStateException("ConfigHandler.showUpgradeIfNecessary candidates size is ${candidates.size}")
+        }
+        candidates.forEach { hookBeforeIfEnabled(it) { param -> param.result = null } }
+        // yellow bar
+        val kUpgradeBannerProcessor = Initiator.load("com.tencent.mobileqq.activity.recent.bannerprocessor.UpgradeBannerProcessor")
+        if (kUpgradeBannerProcessor != null) {
+            val method = Reflex.findSingleMethod(kUpgradeBannerProcessor, Void.TYPE, false, Message::class.java, Long::class.java, Boolean::class.java)
+            hookBeforeIfEnabled(method) { param -> param.result = null }
+        } else {
+            // older versions
+            clz.findAllMethods {
+                emptyParam && returnType == kUpgradeDetailWrapper && name.length == 1
+            }.hookBefore { if (isEnabled) it.result = null }
+        }
         return true
     }
 
