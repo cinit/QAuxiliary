@@ -52,7 +52,7 @@ internal val String.clazz: Class<*>?
     }
 
 internal val ArrayList<String>.clazz: Class<*>
-    get() = firstNotNullOf { it.clazz }
+    get() = firstNotNullOf { Initiator.load(it) }
 
 internal val String.method: Method
     get() = DexMethodDescriptor(

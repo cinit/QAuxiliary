@@ -25,25 +25,24 @@ package xyz.nextalone.hook
 import android.content.Context
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import cc.ioctl.util.ui.FaultyDialog
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
 import com.afollestad.materialdialogs.list.listItems
+import com.github.kyuubiran.ezxhelper.utils.isProtected
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.DexKit
-import io.github.qauxv.util.Log
-import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
-import io.github.qauxv.util.requireMinQQVersion
+import me.ketal.util.ignoreResult
 import me.kyuubiran.util.getDefaultCfg
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.method
 import xyz.nextalone.util.putDefault
 import xyz.nextalone.util.throwOrTrue
 
@@ -58,14 +57,15 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     private const val RecentAdapter = "com.tencent.mobileqq.activity.recent.RecentAdapter"
-    private const val RecentUserBaseData = "com.tencent.mobileqq.activity.recent.RecentUserBaseData"
+    private const val RecentUserBaseData1 = "com.tencent.mobileqq.activity.recent.RecentUserBaseData"
+    private const val RecentUserBaseData2 = "com.tencent.mobileqq.activity.recent.data.RecentUserBaseData"
     private const val RecentBaseData = "com.tencent.mobileqq.activity.recent.RecentBaseData"
     private val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_Conversation_onCreate)
-            ?.hookAfter(this) {
+        DexKit.getMethodFromCache(DexKit.N_Conversation_onCreate)!!
+            .hookAfter(this) {
                 val recentAdapter = it.thisObject.get(RecentAdapter.clazz)
                 val app = it.thisObject.get("mqq.app.AppRuntime".clazz)
                 val relativeLayout = it.thisObject.get(RelativeLayout::class.java)
@@ -84,16 +84,16 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
                             Toasts.showToast(dialog.context, Toasts.TYPE_INFO, text, Toasts.LENGTH_SHORT)
                             when (text) {
                                 "清理群消息" -> {
-                                    handler(recentAdapter, app, all = false, other = false, includeTopped, dialog.context)
+                                    handler(recentAdapter, app, all = false, other = false, includeTopped, contextWrapper)
                                 }
                                 "清理其他消息" -> {
-                                    handler(recentAdapter, app, all = false, other = true, includeTopped, dialog.context)
+                                    handler(recentAdapter, app, all = false, other = true, includeTopped, contextWrapper)
                                 }
                                 "清理所有消息" -> {
-                                    handler(recentAdapter, app, all = true, other = true, includeTopped, dialog.context)
+                                    handler(recentAdapter, app, all = true, other = true, includeTopped, contextWrapper)
                                 }
                             }
-                        }
+                        }.ignoreResult()
                     }
                     true
                 }
@@ -105,15 +105,16 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
         try {
             val list = recentAdapter.get(List::class.java) as List<*>
             val chatSize = list.size
-            val method = RecentAdapter.clazz?.method(
-                if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "A" else "b",
-                Void.TYPE,
-                arrayListOf(RecentUserBaseData, RecentBaseData).clazz,
-                String::class.java,
-                String::class.java
-            )
-
-            method?.isAccessible = true
+            val method = RecentAdapter.clazz!!.declaredMethods.single { m ->
+                val argt = m.parameterTypes
+                argt.size == 3
+                    && argt[0].name.let { it.endsWith(".RecentBaseData") || it.endsWith(".RecentUserBaseData") }
+                    && argt[1] == String::class.java
+                    && argt[2] == String::class.java
+                    && m.returnType == Void.TYPE
+                    && m.isProtected
+            }
+            method.isAccessible = true
             var chatCurrentIndex = 0
 
             for (chatIndex in 0 until chatSize) {
@@ -123,22 +124,23 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
                 val type = (mUser.get("type") as Int).toInt()
                 val included = includeTopped || !isAtTop(app, uin, type, context)
                 if (included && ((type == 1) && !other || (type !in arrayListOf(0, 1) && other) || all)) {
-                    method?.invoke(recentAdapter, chatItem, "删除", "2")
+                    method.invoke(recentAdapter, chatItem, "删除", "2")
                     continue
                 }
                 chatCurrentIndex++
             }
         } catch (e: Throwable) {
-            Log.e(e)
+            traceError(e)
+            FaultyDialog.show(context, "清理失败: handler", e)
         }
     }
 
     private fun isAtTop(app: Any?, str: String, i: Int, context: Context): Boolean {
         return try {
-            DexKit.doFindMethod(DexKit.N_FriendsStatusUtil_isChatAtTop)?.invoke(null, app, str, i) as Boolean
+            DexKit.getMethodFromCache(DexKit.N_FriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
         } catch (e: Throwable) {
-            Log.e(e)
-            Toasts.error(context, "检测置顶失败, 请联系开发者")
+            traceError(e)
+            FaultyDialog.show(context, "FriendsStatusUtil.isChatAtTop", e)
             true
         }
     }
