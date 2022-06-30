@@ -100,6 +100,10 @@ public class BaseApk extends CommonConfigFunctionHook {
                     try {
                         String fileName = (String) param.getResult();
                         String localFile = (String) param.args[0];
+                        if (!localFile.contains("/")) {
+                            // not a file path to upload, maybe someone has sent MessageForFile
+                            return;
+                        }
                         if (fileName.equals("base.apk")) {
                             PackageManager packageManager = HostInfo.getApplication().getPackageManager();
                             File file = new File(localFile);
