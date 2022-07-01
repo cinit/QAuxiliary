@@ -57,9 +57,9 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
         val check3 = intent.component?.shortClassName?.contains("QQBrowserActivity")
         Log.d("check1=$check1 check2=$check2 check3=$check3")*/
         return if (!url.isNullOrBlank()
-                && url.contains(Regex("http|https", RegexOption.IGNORE_CASE))
-                && !url.contains(Regex("qq.com|tenpay.com|meeting.tencent.com"))
-                && intent.component?.shortClassName?.contains("QQBrowserActivity") == true
+            && url.lowercase().let { it.startsWith("http://") || it.startsWith("https://") }
+            && !shouldUseInternalBrowserForUrl(url)
+            && intent.component?.shortClassName?.contains("QQBrowserActivity") == true
         ) {
             val customTabsIntent = CustomTabsIntent.Builder().apply {
                 if (ResUtils.isInNightMode()) {
@@ -92,6 +92,22 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
         } else {
             false
         }
+    }
+
+    private fun shouldUseInternalBrowserForUrl(url: String): Boolean {
+        val body = if (url.contains("://")) {
+            url.substring(url.indexOf("://") + 3)
+        } else {
+            url
+        }
+        val host = if (body.contains("/")) {
+            body.substring(0, body.indexOf("/"))
+        } else {
+            body
+        }.lowercase()
+        return host.endsWith("qq.com")
+            || host.endsWith("tenpay.com")
+            || host.endsWith("meeting.tencent.com");
     }
 
     @ColorInt
