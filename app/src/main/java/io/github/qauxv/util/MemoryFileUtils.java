@@ -35,6 +35,8 @@ public class MemoryFileUtils {
 
     static boolean sInitialized = false;
 
+    private static final int MAX_SIZE = 1024 * 1024 * 128; // 128M
+
     public static int createMemoryFile(@NonNull String name, int size) throws IOException {
         if (!sInitialized) {
             int rc = nativeInitializeTmpDir(HostInfo.getApplication().getCacheDir().getAbsolutePath());
@@ -52,6 +54,9 @@ public class MemoryFileUtils {
         }
         if (size < 0) {
             throw new IllegalArgumentException("size must be >= 0");
+        }
+        if (size > MAX_SIZE) {
+            throw new IOException("out of memory, requested size: " + size);
         }
         int result = nativeCreateMemoryFile0(name, size);
         if (result < 0) {
