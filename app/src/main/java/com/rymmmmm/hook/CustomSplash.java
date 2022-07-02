@@ -116,6 +116,7 @@ public class CustomSplash extends CommonConfigFunctionHook {
         HookUtils.hookBeforeIfEnabled(this, open, 53, param -> {
             String fileName = (String) param.args[0];
             if ("splash.jpg".equals(fileName)
+                    || "splash.png".equals(fileName)
                     || "splash_big.jpg".equals(fileName)
                     || "splash/splash_simple.png".equals(fileName)
                     || "splash/splash_big_simple.png".equals(fileName)) {
