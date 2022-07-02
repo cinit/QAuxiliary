@@ -880,7 +880,7 @@ public class Reflex {
      * @throws InvocationTargetException if the method throws an exception
      */
     @Nullable
-    public static Object invokeNonVirtual(@NonNull Object obj, @NonNull Method m, Object[] args)
+    public static Object invokeNonVirtual(@NonNull Object obj, @NonNull Method m, Object... args)
             throws IllegalArgumentException, InvocationTargetException {
         Objects.requireNonNull(obj, "obj is null");
         Objects.requireNonNull(m, "m is null");

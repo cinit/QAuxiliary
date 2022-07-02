@@ -699,7 +699,14 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
     std::string classSig = getJstringToUtf8(env, class_sig);
     std::string methodName = getJstringToUtf8(env, method_name);
     std::string methodSignature = getJstringToUtf8(env, method_sig);
-    jclass targetClass = env->FindClass(classSig.c_str());
+    jclass targetClass;
+    if (classSig.starts_with('L') && classSig.ends_with(';')) {
+        // remove leading 'L' and trailing ';'
+        std::string className = classSig.substr(1, classSig.size() - 2);
+        targetClass = env->FindClass(className.c_str());
+    } else {
+        targetClass = env->FindClass(classSig.c_str());
+    }
     if (targetClass == nullptr) {
         return nullptr;
     }
@@ -716,18 +723,32 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
         if (methodSignature[i] == ')') {
             break;
         }
-        if (methodSignature[i] == 'L' || methodSignature[i] == '[') {
+        if (methodSignature[i] == 'L') {
+            paramShorts.push_back('L');
             while (methodSignature[i] != ';') {
                 i++;
             }
+        } else if (methodSignature[i] == '[') {
+            paramShorts.push_back('L');
+            // it's an array, so we just skip the '['
+            while (methodSignature[i] == '[') {
+                i++;
+            }
+            // check if it's a primitive array
+            if (methodSignature[i] == 'L') {
+                while (methodSignature[i] != ';') {
+                    i++;
+                }
+            }
+        } else {
+            paramShorts.push_back(methodSignature[i]);
         }
-        paramShorts.push_back(methodSignature[i]);
     }
     // find return type, start from last ')'
     char returnTypeShort = 0;
     for (auto i = methodSignature.length() - 1; i >= 0; i--) {
         if (methodSignature[i] == ')') {
-            returnTypeShort = methodSignature[i - 1];
+            returnTypeShort = methodSignature[i + 1];
             break;
         }
     }
