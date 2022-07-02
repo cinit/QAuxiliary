@@ -919,9 +919,8 @@ public class Reflex {
             }
         }
         Class<?> declaringClass = m.getDeclaringClass();
-        String classSignature = DexMethodDescriptor.getTypeSig(declaringClass);
         String methodSignature = DexMethodDescriptor.getMethodTypeSig(m);
-        return Natives.invokeNonVirtualImpl(classSignature, m.getName(), methodSignature, obj, args);
+        return Natives.invokeNonVirtualImpl(declaringClass, m.getName(), methodSignature, obj, args);
     }
 
     /**

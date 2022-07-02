@@ -690,23 +690,15 @@ jobject transformArgumentsAndInvokeNonVirtual(JNIEnv *env, jmethodID method, jcl
 
 extern "C" JNIEXPORT jobject JNICALL
 Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
-                                                       jstring class_sig, jstring method_name, jstring method_sig,
+                                                       jclass klass, jstring method_name, jstring method_sig,
                                                        jobject obj, jobjectArray args) {
-    requiresNonNullP(class_sig, "class_sig is null");
+    requiresNonNullP(klass, "declaringClass is null");
     requiresNonNullP(method_name, "method_name is null");
     requiresNonNullP(method_sig, "method_sig is null");
     requiresNonNullP(obj, "obj is null");
-    std::string classSig = getJstringToUtf8(env, class_sig);
     std::string methodName = getJstringToUtf8(env, method_name);
     std::string methodSignature = getJstringToUtf8(env, method_sig);
-    jclass targetClass;
-    if (classSig.starts_with('L') && classSig.ends_with(';')) {
-        // remove leading 'L' and trailing ';'
-        std::string className = classSig.substr(1, classSig.size() - 2);
-        targetClass = env->FindClass(className.c_str());
-    } else {
-        targetClass = env->FindClass(classSig.c_str());
-    }
+    jclass targetClass = klass;
     if (targetClass == nullptr) {
         return nullptr;
     }

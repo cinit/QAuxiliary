@@ -158,7 +158,7 @@ public class Natives {
      * @return the return value of the method
      * @throws InvocationTargetException if the method threw an exception
      */
-    public static native Object invokeNonVirtualImpl(String classSig, String methodName,
+    public static native Object invokeNonVirtualImpl(Class<?> declaringClass, String methodName,
                                                      String methodSig, Object obj, Object[] args)
             throws InvocationTargetException;
 
