@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package me.ketal.hook
+package me.ketal.hook.troop
 
 import android.view.View
 import cc.ioctl.util.Reflex

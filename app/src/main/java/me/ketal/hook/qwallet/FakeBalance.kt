@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package me.ketal.hook
+package me.ketal.hook.qwallet
 
 import android.app.Activity
 import android.content.Context
