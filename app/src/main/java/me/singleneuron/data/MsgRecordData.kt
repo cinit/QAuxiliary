@@ -82,7 +82,7 @@ data class MsgRecordData(val msgRecord: Any) {
         private var _isTroop: Field? = null
         private var _msgSeq: Field? = null
         private var _shMsgSeq: Field? = null
-        private var _uniSeq: Field? = null
+        private var _uniseq: Field? = null
         private var _msgData: Field? = null
     }
 
@@ -199,12 +199,12 @@ data class MsgRecordData(val msgRecord: Any) {
         }
 
     //是否发送
-    val isSend: Boolean
+    val isSend: Int
         get() {
             if (_isSend == null) {
-                _isSend = Reflex.findField(msgRecord.javaClass, Boolean::class.java, "issend")
+                _isSend = Reflex.findField(msgRecord.javaClass, Int::class.java, "issend")
             }
-            return _isSend!!.getBoolean(msgRecord)
+            return _isSend!!.getInt(msgRecord)
         }
 
     //是否群组
@@ -235,12 +235,12 @@ data class MsgRecordData(val msgRecord: Any) {
         }
 
     //未知 uinseq
-    val uinSeq: Long
+    val uniseq: Long
         get() {
-            if (_uniSeq == null) {
-                _uniSeq = Reflex.findField(msgRecord.javaClass, Long::class.java, "uinseq")
+            if (_uniseq == null) {
+                _uniseq = Reflex.findField(msgRecord.javaClass, Long::class.java, "uniseq")
             }
-            return _uniSeq!!.getLong(msgRecord)
+            return _uniseq!!.getLong(msgRecord)
         }
 
     //消息data msgData
@@ -278,7 +278,7 @@ data class MsgRecordData(val msgRecord: Any) {
             isTroop.let { append("是否群组: $isTroop\n") }
             msgSeq.let { append("msgSeq：$msgSeq\n") }
             shMsgSeq.let { append("shMsgSeq: $shMsgSeq\n") }
-            uinSeq.let { append("uinSeq: $uinSeq\n") }
+            uniseq.let { append("uinSeq: $uniseq\n") }
         }
         return stringBuilder.toString()
     }
