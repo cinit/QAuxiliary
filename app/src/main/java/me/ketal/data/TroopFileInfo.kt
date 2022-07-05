@@ -27,6 +27,7 @@ class TroopFileInfo(info: Any) {
     val fileName: String
     val busId: Int
     val size: Long
+    val uploader: String
 
     init {
         // TroopFileInfo{TAG='TroopFileInfo', Id=UUID, str_file_path='/UUID',
@@ -41,6 +42,7 @@ class TroopFileInfo(info: Any) {
             fileName = substringAfter("str_file_name='").substringBefore("'")
             busId = substringAfter("uint32_bus_id=").substringBefore(",").toInt()
             size = substringAfter("uint64_file_size=").substringBefore(",").toLong()
+            uploader = substringAfter("uint32_upload_uin=").substringBefore(",")
         }
     }
 }

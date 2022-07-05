@@ -28,14 +28,14 @@ import android.view.View
 import android.widget.EditText
 import android.widget.TextView
 import com.github.kyuubiran.ezxhelper.utils.Log
+import com.github.kyuubiran.ezxhelper.utils.findFieldObjectAs
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.tencent.mobileqq.app.QQAppInterface
 import com.tencent.widget.SimpleTextView
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.bridge.TroopFileProtocol
 import io.github.qauxv.bridge.protocol.TroopFileGetOneFileInfoObserver
 import io.github.qauxv.bridge.protocol.TroopFileRenameObserver
@@ -48,7 +48,10 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
 import me.ketal.data.TroopFileInfo
 import me.ketal.util.findClass
+import xyz.nextalone.data.TroopInfo
 import xyz.nextalone.util.clazz
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
@@ -68,15 +71,30 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val args = it.parameterTypes
             it.returnType == Void.TYPE
                 && args[1].equals(View::class.java)
-        }?.hookBefore {
+        }?.hookBefore(this) {
+            val ctx = it.args[0]
             val obj = it.args[2] as Array<*>
             val booleans = obj[0] as BooleanArray
-            // move rename delete
-            booleans[1] = true // always show rename button
+            val fileInfo = TroopFileInfo(obj[1]!!)
+            val uploder = fileInfo.uploader
+            val gid = ctx.findFieldObjectAs<String> {
+                if (type != String::class.java) return@findFieldObjectAs false
+                isAccessible = true
+                runCatching { (get(ctx) as String).toLong() }.isSuccess
+            }
+            val troopInfo = TroopInfo(gid)
+            val account = AppRuntimeHelper.getAccount()
+            // the folder's size is 0, so it's a file
+            if (fileInfo.size > 0) {
+                if (account == uploder || account == troopInfo.troopOwnerUin || account in troopInfo.troopAdmin!!) {
+                    // move rename delete
+                    booleans[1] = true // show rename button if has permission
+                }
+            }
         }
 
         val updateRightMenuItem = "Lcom/tencent/mobileqq/troop/widget/TrooFileTextViewMenuBuilder;->updateRightMenuItem(ILjava/lang/Object;Lcom/tencent/widget/SwipRightMenuBuilder\$SwipRightMenuItem;Landroid/view/View\$OnClickListener;)Landroid/view/View;".method
-        updateRightMenuItem.hookAfter {
+        updateRightMenuItem.hookAfter(this) {
             val obj = it.args[1] as Array<*>
             val info = TroopFileInfo(obj[1]!!)
             val textview = it.result as SimpleTextView
