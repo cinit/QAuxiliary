@@ -1,5 +1,0 @@
-apply plugin: 'com.android.library'
-
-android {
-    namespace 'io.github.qauxv.stub'
-}

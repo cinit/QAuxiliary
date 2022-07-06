@@ -2,7 +2,7 @@ package io.github.qauxv.bridge.protocol
 
 import android.os.Bundle
 import com.tencent.biz.ProtoUtils
-import io.github.qauxv.oidb.oidb_0x6d6
+import tencent.im.oidb.cmd0x6d6.oidb_0x6d6
 
 abstract class TroopFileRenameObserver : ProtoUtils.TroopProtocolObserver() {
     protected abstract fun onResult(result: Boolean, code: Int, fileName: String, fileId: String)

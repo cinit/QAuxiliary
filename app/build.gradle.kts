@@ -117,7 +117,7 @@ android {
 }
 
 dependencies {
-    compileOnly(projects.libs.stub)
+    compileOnly(projects.libs.qqStub)
     implementation(projects.libs.mmkv)
     ksp(projects.libs.ksp)
     // androidx

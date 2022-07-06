@@ -27,10 +27,10 @@ import com.tencent.biz.ProtoUtils.TroopProtocolObserver
 import com.tencent.mobileqq.app.QQAppInterface
 import io.github.qauxv.bridge.protocol.TroopFileGetOneFileInfoObserver
 import io.github.qauxv.bridge.protocol.TroopFileRenameObserver
-import io.github.qauxv.oidb.group_file_common
-import io.github.qauxv.oidb.oidb_0x6d6
-import io.github.qauxv.oidb.oidb_0x6d8
 import mqq.app.AppRuntime
+import tencent.im.cs.group_file_common.group_file_common
+import tencent.im.oidb.cmd0x6d6.oidb_0x6d6
+import tencent.im.oidb.cmd0x6d8.oidb_0x6d8
 
 object TroopFileProtocol {
     fun getFileInfo(

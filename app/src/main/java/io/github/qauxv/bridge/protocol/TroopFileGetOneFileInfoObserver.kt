@@ -2,8 +2,8 @@ package io.github.qauxv.bridge.protocol
 
 import android.os.Bundle
 import com.tencent.biz.ProtoUtils
-import io.github.qauxv.oidb.group_file_common
-import io.github.qauxv.oidb.oidb_0x6d8
+import tencent.im.cs.group_file_common.group_file_common
+import tencent.im.oidb.cmd0x6d8.oidb_0x6d8
 
 abstract class TroopFileGetOneFileInfoObserver : ProtoUtils.TroopProtocolObserver() {
     protected abstract fun onResult(result: Boolean, code: Int, fileInfo: group_file_common.FileInfo?)

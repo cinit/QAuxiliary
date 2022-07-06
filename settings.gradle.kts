@@ -22,7 +22,7 @@ dependencyResolutionManagement {
 rootProject.name = "QAuxiliary"
 include(
     ":app",
-    ":libs:stub",
+    ":libs:qq-stub",
     ":libs:ksp",
     ":libs:mmkv"
 )

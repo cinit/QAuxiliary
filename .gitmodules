@@ -4,3 +4,6 @@
 [submodule "app/src/main/cpp/dex_builder"]
 	path = app/src/main/cpp/dex_builder
 	url = https://github.com/LSPosed/DexBuilder.git
+[submodule "libs/qq-stub"]
+	path = libs/qq-stub
+	url = https://github.com/LuckyPray/qq-stub
