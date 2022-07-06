@@ -76,7 +76,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val obj = it.args[2] as Array<*>
             val booleans = obj[0] as BooleanArray
             val fileInfo = TroopFileInfo(obj[1]!!)
-            val uploder = fileInfo.uploader
+            val uploader = fileInfo.uploader
             val gid = ctx.findFieldObjectAs<String> {
                 if (type != String::class.java) return@findFieldObjectAs false
                 isAccessible = true
@@ -86,7 +86,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val account = AppRuntimeHelper.getAccount()
             // the folder's size is 0, so it's a file
             if (fileInfo.size > 0) {
-                if (account == uploder || account == troopInfo.troopOwnerUin || account in troopInfo.troopAdmin!!) {
+                if (account == uploader || account == troopInfo.troopOwnerUin || account in troopInfo.troopAdmin!!) {
                     // move rename delete
                     booleans[1] = true // show rename button if has permission
                 }

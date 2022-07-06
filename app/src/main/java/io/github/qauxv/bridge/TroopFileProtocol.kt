@@ -45,7 +45,7 @@ object TroopFileProtocol {
         getFileInfoReqBody.str_file_id.set(fid)
         val reqBody = oidb_0x6d8.ReqBody()
         reqBody.file_info_req.set(getFileInfoReqBody)
-        startServlet(qQAppInterface, observer, reqBody.toByteArray(), "OidbSvc.0x6d8_0", 1752, 0)
+        startServlet(qQAppInterface, observer, reqBody.toByteArray(), "OidbSvc.0x6d8_0", 0x6d8, 0)
     }
 
     fun renameFile(
@@ -67,7 +67,7 @@ object TroopFileProtocol {
         val bundle = Bundle()
         bundle.putString("fileId", fileInfo.str_file_id.get())
         bundle.putString("fileName", name)
-        startServlet(qQAppInterface, troopFileRenameFolderObserver, reqBody.toByteArray(), "OidbSvc.0x6d6_4", 1750  , 4, bundle)
+        startServlet(qQAppInterface, troopFileRenameFolderObserver, reqBody.toByteArray(), "OidbSvc.0x6d6_4", 0x6d6  , 4, bundle)
     }
 
     private fun startServlet(
