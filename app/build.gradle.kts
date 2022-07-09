@@ -148,6 +148,18 @@ dependencies {
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 }
 
+val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
+val killQQ = tasks.register<Exec>("killQQ") {
+    group = "QAuxv"
+    commandLine(adb, "shell", "am", "force-stop", "com.tencent.mobileqq")
+    isIgnoreExitValue = true
+}
+val restartQQ = tasks.register<Exec>("restartQQ") {
+    group = "QAuxv"
+    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
+    isIgnoreExitValue = true
+}
+
 androidComponents.onVariants { variant ->
     val variantCapped = variant.name.capitalize()
     tasks.register("checkTargetNativeLibs$variantCapped") {
@@ -168,13 +180,36 @@ androidComponents.onVariants { variant ->
             }
         }
     }
+
+    task("installAndRestart${variantCapped}") {
+        group = "QAuxv"
+        dependsOn(":app:install$variantCapped", killQQ)
+        finalizedBy(restartQQ)
+    }
 }
 
 tasks.register<ReplaceIcon>("replaceIcon") {
-    projectDir.set(project.layout.projectDirectory)
+    group = "QAuxv"
+    projectDir.set(project.projectDir)
     commitHash = Common.getGitHeadRefsSuffix(rootProject)
+    config()
 }
 tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
+
+tasks.register<Delete>("cleanCxxIntermediates") {
+    group = "QAuxv"
+    delete(file(".cxx"))
+}.also { tasks.clean.get().dependsOn(it) }
+
+tasks.register<Delete>("cleanOldIcon") {
+    group = "QAuxv"
+    val drawableDir= File(projectDir, "src/main/res/drawable")
+    drawableDir
+        .listFiles()
+        ?.filter { it.isFile && it.name.startsWith("icon") }
+        ?.forEach(::delete)
+    delete(file("src/main/res/drawable-anydpi-v26/icon.xml"))
+}.also { tasks.clean.get().dependsOn(it) }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     if (name.contains("release", true)) {
@@ -189,6 +224,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 }
 
 tasks.register("checkGitSubmodule") {
+    group = "QAuxv"
     val projectDir = rootProject.projectDir
     doLast {
         listOf(
@@ -206,35 +242,3 @@ tasks.register("checkGitSubmodule") {
     }
 }
 tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
-
-interface Injected {
-    @get:Inject
-    val eo: ExecOperations
-}
-
-val restartQQ = task("restartQQ") {
-    val eo = project.objects.newInstance<Injected>().eo
-    val adbExecutable: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
-
-    doLast {
-        eo.exec {
-            commandLine(adbExecutable, "shell", "am", "force-stop", "com.tencent.mobileqq")
-        }
-        eo.exec {
-            commandLine(
-                adbExecutable, "shell", "am", "start",
-                "$(pm resolve-activity --components com.tencent.mobileqq)"
-            )
-        }
-    }
-}
-
-
-tasks.whenTaskAdded {
-    when (name) {
-        "installArm32Debug",
-        "installArm64Debug" -> {
-            finalizedBy(restartQQ)
-        }
-    }
-}
