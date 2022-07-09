@@ -38,6 +38,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import cc.ioctl.hook.OpenProfileCard
 import cc.ioctl.util.LayoutHelper
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap
@@ -73,6 +74,7 @@ class SearchOverlaySubFragment {
     private var lastSearchKeyword: String = ""
     private var searchHistoryList: List<String> = listOf()
     private val searchResults: ArrayList<SearchResult> = ArrayList()
+    private var mPossibleInputUin: Long = 0L
     private val allItemsContainer: ArrayList<SearchResult> by lazy {
         val items = FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()
         ArrayList<SearchResult>(items.size).apply {
@@ -86,11 +88,11 @@ class SearchOverlaySubFragment {
         return context!!
     }
 
-    fun requireActivity(): SettingsUiFragmentHostActivity {
+    private fun requireActivity(): SettingsUiFragmentHostActivity {
         return settingsHostActivity!!
     }
 
-    fun requireView(): View {
+    private fun requireView(): View {
         return mView!!
     }
 
@@ -132,7 +134,7 @@ class SearchOverlaySubFragment {
                     it.searchSettingSearchHistoryLayout.visibility = View.VISIBLE
                 }
             } else {
-                if (searchResults.isEmpty()) {
+                if (searchResults.isEmpty() && mPossibleInputUin < 10000L) {
                     it.searchSettingNoResultLayout.visibility = View.VISIBLE
                     it.searchSettingSearchResultLayout.visibility = View.GONE
                     it.searchSettingSearchHistoryLayout.visibility = View.GONE
@@ -207,12 +209,21 @@ class SearchOverlaySubFragment {
         }
 
         override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
-            val item = searchResults[position]
-            bindSearchResultItem(holder.binding, item)
+            if (mPossibleInputUin >= 10000L) {
+                if (position >= 2) {
+                    val item = searchResults[position - 2]
+                    bindSearchResultItem(holder.binding, item)
+                } else {
+                    bindSearchResultAsUin(holder.binding, mPossibleInputUin, position)
+                }
+            } else {
+                val item = searchResults[position]
+                bindSearchResultItem(holder.binding, item)
+            }
         }
 
         override fun getItemCount(): Int {
-            return searchResults.size
+            return searchResults.size + if (mPossibleInputUin >= 10000L) 2 else 0
         }
     }
 
@@ -234,16 +245,37 @@ class SearchOverlaySubFragment {
     private fun bindSearchResultItem(binding: SearchResultItemBinding, item: SearchResult) {
         val title: String = item.agent.uiItemAgent.titleProvider.invoke(item.agent.uiItemAgent)
         val description: String = "[${item.score}] " +
-            (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext())?:"")
+            (item.agent.uiItemAgent.summaryProvider?.invoke(item.agent.uiItemAgent, requireContext()) ?: "")
         binding.title.text = title
         binding.summary.text = description
         val locationString = item.shownLocation!!.joinToString(separator = " > ")
         binding.description.text = locationString
         binding.root.setTag(R.id.tag_searchResultItem, item)
-        binding.root.setOnClickListener{ v ->
+        binding.root.setOnClickListener { v ->
             val result = v?.getTag(R.id.tag_searchResultItem) as SearchResult?
             result?.let {
                 navigateToTargetSearchResult(it)
+            }
+        }
+    }
+
+    private fun bindSearchResultAsUin(binding: SearchResultItemBinding, uin: Long, uinType: Int) {
+        val title: String = when (uinType) {
+            0 -> "用户"
+            1 -> "群聊"
+            else -> "未知"
+        } + " $uin"
+        val description = "打开资料卡: $title"
+        binding.title.text = title
+        binding.summary.text = description
+        val locationString = ""
+        binding.description.text = locationString
+        binding.root.setTag(R.id.tag_searchResultItem, null)
+        binding.root.setOnClickListener { v ->
+            if (uinType == 0) {
+                OpenProfileCard.openUserProfileCard(v.context, uin)
+            } else if (uinType == 1) {
+                OpenProfileCard.openTroopProfileActivity(v.context, uin.toString())
             }
         }
     }
@@ -252,6 +284,7 @@ class SearchOverlaySubFragment {
     fun search(query: String?) {
         if (query == lastSearchKeyword) return
         currentKeyword = query ?: ""
+        mPossibleInputUin = tryParseUin(currentKeyword)
         // search is performed by calculating the score of each item and sort the result by the score
         val keywords: List<String> = currentKeyword.replace("\r", "")
             .replace("\n", "").replace("\t", "")
@@ -465,4 +498,12 @@ class SearchOverlaySubFragment {
     }
 
     fun onResume() = Unit
+
+    private fun tryParseUin(string: String): Long {
+        return try {
+            string.trim().toLong()
+        } catch (e: NumberFormatException) {
+            0L
+        }
+    }
 }
