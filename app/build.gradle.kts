@@ -1,3 +1,4 @@
+import com.android.build.gradle.internal.tasks.factory.dependsOn
 import java.util.UUID
 
 plugins {
@@ -193,13 +194,12 @@ tasks.register<ReplaceIcon>("replaceIcon") {
     projectDir.set(project.projectDir)
     commitHash = Common.getGitHeadRefsSuffix(rootProject)
     config()
-}
-tasks.getByName("preBuild").dependsOn(tasks.getByName("replaceIcon"))
+}.also { tasks.preBuild.dependsOn(it) }
 
 tasks.register<Delete>("cleanCxxIntermediates") {
     group = "QAuxv"
     delete(file(".cxx"))
-}.also { tasks.clean.get().dependsOn(it) }
+}.also { tasks.clean.dependsOn(it) }
 
 tasks.register<Delete>("cleanOldIcon") {
     group = "QAuxv"
@@ -209,7 +209,7 @@ tasks.register<Delete>("cleanOldIcon") {
         ?.filter { it.isFile && it.name.startsWith("icon") }
         ?.forEach(::delete)
     delete(file("src/main/res/drawable-anydpi-v26/icon.xml"))
-}.also { tasks.clean.get().dependsOn(it) }
+}.also { tasks.clean.dependsOn(it) }
 
 tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
     if (name.contains("release", true)) {
@@ -240,5 +240,4 @@ tasks.register("checkGitSubmodule") {
             }
         }
     }
-}
-tasks.getByName("preBuild").dependsOn(tasks.getByName("checkGitSubmodule"))
+}.also { tasks.preBuild.dependsOn(it) }
