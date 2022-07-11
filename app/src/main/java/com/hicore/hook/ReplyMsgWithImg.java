@@ -26,6 +26,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.Editable;
+import android.text.SpannableStringBuilder;
 import android.text.TextUtils;
 import android.view.ViewGroup;
 import android.widget.EditText;
@@ -77,8 +78,15 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
 
     @Nullable
     @Override
-    public String getDescription() {
-        return "回复消息发送时一并把图片带上，在不支持的版本上行为是 undefined behavior";
+    public CharSequence getDescription() {
+        SpannableStringBuilder sb = new SpannableStringBuilder();
+        sb.append("回复消息发送时一并把图片带上，在不支持的版本上行为是 undefined behavior. ");
+        String warn = "注意: 此功能会导致文本框上方的表情推荐点击无效，介意者慎用。";
+        int color = 0xFFFF5252;
+        int start = sb.length();
+        sb.append(warn);
+        sb.setSpan(new android.text.style.ForegroundColorSpan(color), start, sb.length(), android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+        return sb;
     }
 
     @NonNull
