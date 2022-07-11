@@ -72,6 +72,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     private const val CFG_KEY_CUSTOM_MSG_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_MSG_FORMAT"
     private const val CFG_KEY_CUSTOM_TIME_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_TIME_FORMAT"
+    private const val CFG_KEY_ENABLE_DETAIL_INFO = "ChatItemShowQQUin.CFG_KEY_ENABLE_DETAIL_INFO"
     private const val DEFAULT_MSG_FORMAT = "QQ: \${senderuin} Time: \${formatTime}"
     private const val DEFAULT_TIME_FORMAT = "MM-dd HH:mm:ss"
 
@@ -95,9 +96,16 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             ConfigManager.getDefaultConfig().putString(CFG_KEY_CUSTOM_TIME_FORMAT, value)
         }
 
+    private var mEnableDetailInfo: Boolean
+        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault(CFG_KEY_ENABLE_DETAIL_INFO, true)
+        set(value) {
+            ConfigManager.getDefaultConfig().putBoolean(CFG_KEY_ENABLE_DETAIL_INFO, value)
+        }
+
     private fun showConfigDialog(ctx: Context) {
         val timeFormat = mCurrentTimeFormat
         val msgFormat = mCurrentMsgFormat
+        val enableDetailInfo = mEnableDetailInfo
         val currEnabled = isEnabled
         val availablePlaceholders: Array<String> = arrayOf(
             "\${senderuin}", "\${frienduin}", "\${msgtype}", "\${readableMsgType}", "\${extraflag}", "\${extStr}",
@@ -108,6 +116,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             isChecked = currEnabled
             textSize = 16f
             text = "总开关(开启后才会生效)"
+        }
+        val detailInfoSwitch = SwitchCompat(ctx).apply {
+            isChecked = enableDetailInfo
+            textSize = 16f
+            text = "点击显示消息详细信息"
         }
         val tvMsgFmt: EditText = AppCompatEditText(ctx).apply {
             setText(msgFormat)
@@ -151,6 +164,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 setMargins(dp8, 0, dp8, 0)
             }
             addView(funcSwitch, lp)
+            addView(detailInfoSwitch, lp)
             TextView(ctx).apply {
                 text = "消息格式"
                 textSize = 12f
@@ -179,6 +193,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     isEnabled = newEnabled
                     valueState.value = if (newEnabled) "已开启" else "禁用"
                 }
+                mEnableDetailInfo = detailInfoSwitch.isChecked
                 mCurrentMsgFormat = tvMsgFmt.text.toString()
                 mCurrentTimeFormat = tvTimeFmt.text.toString()
                 if (!isInitialized && isEnabled) {
@@ -248,6 +263,6 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             pfnSetTailMessage =
                 "Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setTailMessage(ZLjava/lang/CharSequence;Landroid/view/View\$OnClickListener;)V".method
         }
-        pfnSetTailMessage.invoke(rootView, true, text, mOnTailMessageClickListener)
+        pfnSetTailMessage.invoke(rootView, true, text, if (mEnableDetailInfo) mOnTailMessageClickListener else null)
     }
 }
