@@ -51,7 +51,7 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.ui.CustomDialog
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.dispacher.OnBubbleBuilder
@@ -212,9 +212,20 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         try {
             val msg = AIOUtilsImpl.getChatMessage(it)!!
             val chatMessage = MsgRecordData(msg)
-            CustomDialog.createFailsafe(it.context)
+            val ctx = CommonContextWrapper.createAppCompatContext(it.context)
+            val text = AppCompatTextView(ctx).apply {
+                text = chatMessage.msgRecord.toString()
+                textSize = 16f
+                setTextIsSelectable(true)
+                isVerticalScrollBarEnabled = true
+                setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
+                val dp24 = LayoutHelper.dip2px(ctx, 24f)
+                setPadding(dp24, 0, dp24, 0)
+            }
+            AlertDialog.Builder(ctx)
                 .setTitle(Reflex.getShortClassName(chatMessage.msgRecord))
-                .setMessage(chatMessage.msgRecord.toString())
+                .setView(text)
+                .setCancelable(true)
                 .setPositiveButton("确认", null)
                 .show()
         } catch (e: Exception) {
