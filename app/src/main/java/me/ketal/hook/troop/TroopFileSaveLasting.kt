@@ -32,6 +32,7 @@ import io.github.qauxv.util.LicenseStatus
 import me.ketal.base.PluginDelayableHook
 import me.ketal.util.findClass
 import me.ketal.util.hookMethod
+import xyz.nextalone.util.invoke
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Field
 
@@ -44,8 +45,19 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.FILE_CATEGORY
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val infoClass = "com.tencent.mobileqq.troop.data.TroopFileInfo".findClass(classLoader)
-        val itemClass = "com.tencent.mobileqq.troop.data.TroopFileItem".findClass(classLoader)
+        val troopFileShowAdapter = try {
+            "com.tencent.mobileqq.troop.data.TroopFileShowAdapter\$1"
+                .findClass(classLoader).getDeclaredField("this$0").type
+        } catch (e: Throwable) {
+            "com.tencent.mobileqq.troop.data.TroopFileShowAdapter".findClass(classLoader)
+        }
+        val infoClass = troopFileShowAdapter.declaredFields.find {
+            it.type == List::class.java
+        }?.actualTypeArguments?.get(0) as Class<*>
+
+        val itemClass = troopFileShowAdapter.declaredFields.find {
+            it.type == Map::class.java
+        }?.actualTypeArguments?.get(1) as Class<*>
 
         itemClass.declaredMethods.find {
             it.returnType == Boolean::class.java
@@ -59,9 +71,11 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
                     val view = param.args[0] as View
                     tag = view.tag
                     val info = Reflex.getFirstByType(param.thisObject, infoClass)
-                    fields = infoClass.declaredFields
-                        .map { it.isAccessible = true; it }
-                        .filter { it.type == Int::class.java && it.get(info) == 102 }
+                    fields = infoClass.declaredFields.filter {
+                        it.isAccessible = true
+                        it.type == Int::class.java
+                            && it.get(info) == 102
+                    }
                     fields.forEach {
                         it.set(info, 114514)
                     }
@@ -82,4 +96,9 @@ object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") 
             }
         })
     }
+
+    private val Field.actualTypeArguments: Array<*>
+        get() {
+            return genericType.invoke("getActualTypeArguments") as Array<*>
+        }
 }
