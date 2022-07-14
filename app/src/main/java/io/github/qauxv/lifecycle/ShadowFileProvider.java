@@ -56,7 +56,7 @@ public class ShadowFileProvider {
     public static Cursor doOnQuery(@NonNull Uri uri, @Nullable String[] projection, @Nullable String selection,
                                    @Nullable String[] selectionArgs, @Nullable String sortOrder) {
         // ContentProvider has already checked granted permissions
-        Log.d("doQuery: " + uri);
+        // Log.d("doQuery: " + uri);
         String displayName = uri.getQueryParameter(DISPLAYNAME_FIELD);
         if (projection == null) {
             projection = COLUMNS;
@@ -134,7 +134,7 @@ public class ShadowFileProvider {
 
     public static ParcelFileDescriptor doOnOpenFile(@NonNull Uri uri, @NonNull String mode) throws FileNotFoundException {
         // ContentProvider has already checked granted permissions
-        Log.d("doOpenFile: " + uri);
+        // Log.d("doOpenFile: " + uri);
         String[] path = getUriPathHierarchy(uri);
         if (path.length == 4 && "qauxv".equals(path[0]) && "tmp".equals(path[1])) {
             String uuid = path[2];
@@ -217,7 +217,7 @@ public class ShadowFileProvider {
             protected void beforeHookedMethod(MethodHookParam param) {
                 Uri uri = (Uri) param.args[0];
                 String mode = (String) param.args[1];
-                Log.d("beforeHookedMethod: " + uri + " " + mode);
+                // Log.d("beforeHookedMethod: " + uri + " " + mode);
                 if (targetAuthority.equals(uri.getAuthority())) {
                     String[] path = getUriPathHierarchy(uri);
                     if (path.length != 0 && "qauxv".equals(path[0])) {
@@ -238,10 +238,10 @@ public class ShadowFileProvider {
                 String selection = (String) param.args[2];
                 String[] selectionArgs = (String[]) param.args[3];
                 String sortOrder = (String) param.args[4];
-                Log.d("beforeHookedMethod: " + uri + " " + Arrays.toString(projection) + " " + selection + " " + Arrays.toString(selectionArgs));
+                // Log.d("beforeHookedMethod: " + uri + " " + Arrays.toString(projection) + " " + selection + " " + Arrays.toString(selectionArgs));
                 if (targetAuthority.equals(uri.getAuthority())) {
                     String[] path = getUriPathHierarchy(uri);
-                    Log.d("path: " + Arrays.toString(path));
+                    // Log.d("path: " + Arrays.toString(path));
                     if (path.length != 0 && "qauxv".equals(path[0])) {
                         param.setResult(doOnQuery(uri, projection, selection, selectionArgs, sortOrder));
                     }
@@ -250,21 +250,21 @@ public class ShadowFileProvider {
         };
         if (supportOpenFile != null) {
             XposedBridge.hookMethod(supportOpenFile, hookOpenFile);
-            Log.d("hooked supportOpenFile");
+            // Log.d("hooked supportOpenFile");
         }
         if (androidxOpenFile != null) {
             XposedBridge.hookMethod(androidxOpenFile, hookOpenFile);
-            Log.d("hooked androidxOpenFile");
+            // Log.d("hooked androidxOpenFile");
         }
         if (supportQuery != null) {
             XposedBridge.hookMethod(supportQuery, hookQuery);
-            Log.d("hooked supportQuery");
+            // Log.d("hooked supportQuery");
         }
         if (androidxQuery != null) {
             XposedBridge.hookMethod(androidxQuery, hookQuery);
-            Log.d("hooked androidxQuery");
+            // Log.d("hooked androidxQuery");
         }
-        Log.d("proc: " + SyncUtils.getProcessName());
+        // Log.d("proc: " + SyncUtils.getProcessName());
         sIsHooked = true;
     }
 
