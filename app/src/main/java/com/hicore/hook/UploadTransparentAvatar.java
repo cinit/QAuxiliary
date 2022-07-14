@@ -51,7 +51,7 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "允许上传透明头像和表情";
+        return "允许上传透明头像和表情,上传不成功可尝试开启非会员贴表情";
     }
 
     @NonNull
@@ -76,7 +76,8 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
             }
         });
         var methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "i" : "a";
-        Method hookMethod = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.pic.compress.Utils"),
+        var clazzName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "com.tencent.mobileqq.pic.compress.e" : "com.tencent.mobileqq.pic.compress.Utils";
+        Method hookMethod = Reflex.findMethod(Initiator.loadClass(clazzName),
                 boolean.class, methodName, String.class, Bitmap.class, int.class, String.class,
                 Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));
         HookUtils.hookBeforeAlways(this, hookMethod, param -> {
