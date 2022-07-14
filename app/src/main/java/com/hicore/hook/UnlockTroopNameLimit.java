@@ -22,6 +22,9 @@
 
 package com.hicore.hook;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+import static io.github.qauxv.util.QQVersion.QQ_8_9_0;
+
 import android.text.Spanned;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -54,8 +57,9 @@ public class UnlockTroopNameLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        var clazzName = requireMinQQVersion(QQ_8_9_0) ? "n" : "EmojiFilter";
         HookUtils.hookBeforeIfEnabled(this,
-                Initiator.loadClass("com.tencent.mobileqq.activity.editservice.EditTroopMemberNickService$EmojiFilter")
+                Initiator.loadClass("com.tencent.mobileqq.activity.editservice.EditTroopMemberNickService$" + clazzName)
                         .getDeclaredMethod("filter", CharSequence.class, int.class, int.class, Spanned.class, int.class, int.class),
                 param -> param.setResult(null));
         return true;
