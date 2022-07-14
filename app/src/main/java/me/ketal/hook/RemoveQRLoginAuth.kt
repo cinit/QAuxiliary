@@ -22,7 +22,6 @@
 
 package me.ketal.hook
 
-import android.os.Bundle
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -30,6 +29,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.QQVersion.QQ_8_9_0
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
@@ -43,13 +43,11 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
     override fun initOnce() = throwOrTrue {
-        Initiator.loadClass("com/tencent/open/agent/QrAgentLoginManager$2").declaredMethods
+        val clazz = if (requireMinQQVersion(QQ_8_9_0)) "com/tencent/open/agent/QrAgentLoginManager\$a" else "com/tencent/open/agent/QrAgentLoginManager\$2"
+        Initiator.loadClass(clazz).declaredMethods
             .findMethod {
-                returnType == Void.TYPE &&
-                    (parameterTypes.size == 1 && parameterTypes[0] == Boolean::class.java
-                        || parameterTypes.size == 2 && parameterTypes[0] == Boolean::class.java && parameterTypes[1] == Bundle::class.java)
-            }
-            .hookBefore(this) {
+                returnType == Void.TYPE && parameterTypes.isNotEmpty() && parameterTypes[0] == Boolean::class.java
+            }.hookBefore(this) {
                 it.args[0] = false
             }
     }
