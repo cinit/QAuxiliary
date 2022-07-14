@@ -112,8 +112,10 @@ public class DexKit {
     public static final int C_GuildArkHelper = 39;
     public static final int C_ReplyMsgUtils = 40;
     public static final int C_ReplyMsgSender = 41;
+    public static final int C_PopOutEmoticonUtil = 42;
+    public static final int C_VipStatusManagerImpl = 43;
     //the last index
-    public static final int DEOBF_NUM_C = 41;
+    public static final int DEOBF_NUM_C = 43;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -618,6 +620,12 @@ public class DexKit {
             case N_PhotoListPanel_resetStatus:
                 ret = "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel";
                 break;
+            case C_PopOutEmoticonUtil:
+                ret = "com.tencent.mobileqq.popanim.util.PopOutEmoticonUtil";
+                break;
+            case C_VipStatusManagerImpl:
+                ret = "com.tencent.mobileqq.vip.VipStatusManagerImpl";
+                break;
             default:
                 ret = null;
         }
@@ -898,6 +906,10 @@ public class DexKit {
                 return new byte[][]{forFiniteString8("sendReplyMessage uniseq=0")};
             case N_PhotoListPanel_resetStatus:
                 return new byte[][]{forFiniteString8("resetStatus selectSize:")};
+            case C_PopOutEmoticonUtil:
+                return new byte[][]{forFiniteString8("supportPopOutEmoticon isC2C=")};
+            case C_VipStatusManagerImpl:
+                return new byte[][]{forFiniteString8("getPrivilegeFlags Friends is null")};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1026,6 +1038,10 @@ public class DexKit {
                 return new int[]{13};
             case N_PhotoListPanel_resetStatus:
                 return new int[]{7};
+            case C_PopOutEmoticonUtil:
+                return new int[]{11};
+            case C_VipStatusManagerImpl:
+                return new int[]{16};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1045,6 +1061,7 @@ public class DexKit {
             case C_ZipUtils_biz:
             case C_SmartDeviceProxyMgr:
             case C_ReplyMsgUtils:
+            case C_PopOutEmoticonUtil:
                 a:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);

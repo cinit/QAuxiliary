@@ -30,7 +30,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
+import java.util.Objects;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -39,6 +41,7 @@ public class DisablePopOutEmoticon extends CommonSwitchFunctionHook {
     public static final DisablePopOutEmoticon INSTANCE = new DisablePopOutEmoticon();
 
     private DisablePopOutEmoticon() {
+        super(new int[]{DexKit.C_PopOutEmoticonUtil});
     }
 
     @NonNull
@@ -62,7 +65,7 @@ public class DisablePopOutEmoticon extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.popanim.util.PopOutEmoticonUtil"),
+                Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_PopOutEmoticonUtil), "C_PopOutEmoticonUtil"),
                         boolean.class, false,
                         int.class, Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonInfo"), int.class),
                 param -> param.setResult(false));
