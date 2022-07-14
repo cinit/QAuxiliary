@@ -25,6 +25,7 @@ import static io.github.qauxv.util.Initiator._BaseChatPie;
 import static io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9;
 import static io.github.qauxv.util.QQVersion.QQ_8_1_3;
 import static io.github.qauxv.util.QQVersion.QQ_8_6_0;
+import static io.github.qauxv.util.QQVersion.QQ_8_9_0;
 import static io.github.qauxv.util.TIMVersion.TIM_3_1_1;
 
 import androidx.annotation.NonNull;
@@ -87,8 +88,9 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
-            Method m = new DexMethodDescriptor(
-                    "Lcom/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils;->a(Lcom/tencent/mobileqq/activity/aio/core/AIOContext;Lcom/tencent/mobileqq/activity/aio/BaseSessionInfo;Z)V").getMethodInstance(
+            var desc = HostInfo.requireMinQQVersion(QQ_8_9_0) ? "Lcom/tencent/mobileqq/activity/aio/rebuild/input/b;->a(Lcom/tencent/mobileqq/activity/aio/core/a;Lcom/tencent/mobileqq/activity/aio/q;Z)V"
+                    : "Lcom/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils;->a(Lcom/tencent/mobileqq/activity/aio/core/AIOContext;Lcom/tencent/mobileqq/activity/aio/BaseSessionInfo;Z)V";
+            Method m = new DexMethodDescriptor(desc).getMethodInstance(
                     Initiator.getHostClassLoader());
             HookUtils.hookBeforeIfEnabled(this, m, 49, param -> {
                 boolean p0 = (boolean) param.args[2];
