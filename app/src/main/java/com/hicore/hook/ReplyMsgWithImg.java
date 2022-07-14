@@ -40,11 +40,13 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.SessionInfoImpl;
+import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
+import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
@@ -68,6 +70,14 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     public static final ReplyMsgWithImg INSTANCE = new ReplyMsgWithImg();
 
     private ReplyMsgWithImg() {
+        super(new int[]{
+                DexKit.C_GuildHelperProvider,
+                DexKit.C_GuildArkHelper,
+                DexKit.C_MessageRecordFactory,
+                DexKit.C_ReplyMsgUtils,
+                DexKit.C_ReplyMsgSender,
+                DexKit.N_PhotoListPanel_resetStatus
+        });
     }
 
     @NonNull
@@ -98,10 +108,36 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     private WeakReference<EditText> mInputEditText = null;
     private WeakReference<Object> mBaseChatPie = null;
 
+    private static Class<?> kHelperProvider = null;
+    private static Class<?> kIHelper = null;
+    private static Class<?> kMessageRecordFactory = null;
+    private static Class<?> kReplyMsgUtils = null;
+    private static Class<?> kReplyMsgSender = null;
+    private static Method pfnPhotoListPanel_resetStatus = null;
+
     @Override
     protected boolean initOnce() throws Exception {
+        kHelperProvider = Initiator.load("com.tencent.mobileqq.activity.aio.helper.HelperProvider");
+        if (kHelperProvider == null) {
+            kHelperProvider = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_GuildHelperProvider), "DexKit.C_GuildHelperProvider").getSuperclass();
+            Objects.requireNonNull(kHelperProvider);
+        }
+        kIHelper = Initiator.load("com.tencent.mobileqq.activity.aio.helper.IHelper");
+        if (kIHelper == null) {
+            Class<?> kGuildArkHelper = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_GuildArkHelper), "DexKit.C_GuildArkHelper");
+            // expect 1 interface
+            Class<?>[] interfaces = kGuildArkHelper.getInterfaces();
+            if (interfaces.length != 1) {
+                throw new IllegalStateException("GuildArkHelper must implement only 1 interface: IHelper");
+            }
+            kIHelper = interfaces[0];
+        }
+        kMessageRecordFactory = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_MessageRecordFactory), "DexKit.C_MessageRecordFactory");
+        kReplyMsgUtils = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgUtils), "DexKit.C_ReplyMsgUtils");
+        kReplyMsgSender = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgSender), "DexKit.C_ReplyMsgSender");
+        pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.getMethodFromCache(DexKit.N_PhotoListPanel_resetStatus), "N_PhotoListPanel_resetStatus");
         Method sendCustomEmotion = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.emoticonview.sender.CustomEmotionSenderUtil"), void.class,
-                "sendCustomEmotion", Initiator._BaseQQAppInterface(), Context.class, Initiator.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+                "sendCustomEmotion", Initiator._BaseQQAppInterface(), Context.class, Initiator._BaseSessionInfo(),
                 String.class, boolean.class, boolean.class, boolean.class, String.class, Initiator.loadClass("com.tencent.mobileqq.emoticon.StickerInfo"),
                 String.class, Bundle.class);
         HookUtils.hookBeforeIfEnabled(this, sendCustomEmotion, param -> {
@@ -159,12 +195,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                             continue;
                         }
                         addEditText(inputEditText, "[PicUrl=" + str + "]");
-                        Method resetStatus = Reflex.findMethodOrNull(param.thisObject.getClass(), void.class, "a", boolean.class);
-                        if (resetStatus == null) {
-                            resetStatus = Reflex.findMethodOrNull(param.thisObject.getClass(), void.class, "Z", boolean.class);
-                        }
-                        Objects.requireNonNull(resetStatus, "PhotoListPanel.resetStatus is null");
-                        resetStatus.invoke(param.thisObject, true);
+                        pfnPhotoListPanel_resetStatus.invoke(param.thisObject, true);
                     }
                 }
             }
@@ -323,7 +354,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     }
 
     public static Object buildMessageForText(String groupUin, String text) throws ReflectiveOperationException {
-        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+        Method m = Reflex.findSingleMethod(kMessageRecordFactory,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForText"), false,
                 Initiator.loadClass("com.tencent.common.app.AppInterface"),
                 String.class, String.class, String.class, int.class, byte.class, byte.class, short.class, String.class);
@@ -335,7 +366,6 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     public static void buildAndSendMessageForMixedMsg(Object sessionInfo, String uin, List<Object> messageList) throws ReflectiveOperationException {
         if (smMessageRecordFactory_BuildMixedMsg == null) {
             Class<?> kMessageForMixedMsg = Initiator.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg");
-            Class<?> kMessageRecordFactory = Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory");
             Method m = Reflex.findSingleMethod(kMessageRecordFactory, kMessageForMixedMsg, false,
                     Initiator._QQAppInterface(), String.class, String.class, int.class);
             m.setAccessible(true);
@@ -350,7 +380,6 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
 
     // 图文消息发送
     public static void forwardMixedMsg(Object sessionInfo, Object messageRecord) throws ReflectiveOperationException {
-        Class<?> kReplyMsgSender = Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender");
         Method method = Reflex.findSingleMethod(kReplyMsgSender, void.class, false,
                 Initiator._QQAppInterface(),
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
@@ -380,12 +409,12 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         int isTroop = Reflex.getInstanceObject(courceMsg, "istroop", int.class);
         String uins = Reflex.getInstanceObject(courceMsg, "senderuin", String.class);
         Object appInterface = AppRuntimeHelper.getQQAppInterface();
-        Method sourceInfo = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.activity.aio.reply.ReplyMsgUtils"),
+        Method sourceInfo = Reflex.findSingleMethod(kReplyMsgUtils,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), false,
                 Initiator._QQAppInterface(), Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), int.class, long.class, String.class);
         Object sourceInfoObj = sourceInfo.invoke(null, appInterface, courceMsg, 0, Long.parseLong(uins),
                 ContactUtils.getTroopName(Reflex.getInstanceObject(courceMsg, "frienduin", String.class)));
-        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+        Method m = Reflex.findSingleMethod(kMessageRecordFactory,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), false,
                 Initiator._QQAppInterface(), String.class, int.class,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), String.class);
@@ -394,7 +423,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     }
 
     public static Object copyReplyMessage(Object source) throws ReflectiveOperationException {
-        Method m = Reflex.findSingleMethod(Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+        Method m = Reflex.findSingleMethod(kMessageRecordFactory,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText"), false,
                 Initiator._QQAppInterface(), String.class, int.class,
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo"), String.class);
@@ -427,7 +456,6 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
 
     // 判断当前输入框是否是正在回复某一条消息的状态
     public static boolean isNowReplying(@NonNull Object baseChatPie) throws ReflectiveOperationException {
-        Class<?> kHelperProvider = Initiator.loadClass("com.tencent.mobileqq.activity.aio.helper.HelperProvider");
         if (sBaseChatPie_HelperProvider == null) {
             Field f = Reflex.getFirstNSFFieldByType(Initiator._BaseChatPie(), kHelperProvider);
             Objects.requireNonNull(f, "BaseChatPie.?:HelperProvider not found");
@@ -438,7 +466,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         if (sIsNowReplyingMethod == null) {
             for (Method sm : helperProvider.getClass().getSuperclass().getSuperclass().getDeclaredMethods()) {
                 if (sm.getParameterTypes().length == 1 && sm.getParameterTypes()[0] == int.class) {
-                    if (sm.getReturnType() == Initiator.loadClass("com.tencent.mobileqq.activity.aio.helper.IHelper")) {
+                    if (sm.getReturnType() == kIHelper) {
                         sIsNowReplyingMethod = sm;
                         break;
                     }
@@ -459,7 +487,10 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     @Nullable
     @Override
     public Step[] makePreparationSteps() {
-        return InputButtonHookDispatcher.INSTANCE.makePreparationSteps();
+        return HookInstaller.stepsOf(
+                super.makePreparationSteps(),
+                InputButtonHookDispatcher.INSTANCE.makePreparationSteps()
+        );
     }
 
     @Override
@@ -469,6 +500,6 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
 
     @Override
     public boolean isPreparationRequired() {
-        return InputButtonHookDispatcher.INSTANCE.isPreparationRequired();
+        return InputButtonHookDispatcher.INSTANCE.isPreparationRequired() || super.isPreparationRequired();
     }
 }

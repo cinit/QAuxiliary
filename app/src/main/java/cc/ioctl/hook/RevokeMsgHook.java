@@ -71,7 +71,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
     private RevokeMsgHook() {
         //FIXME: is MSF really necessary?
         super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF,
-                new int[]{DexKit.C_MSG_REC_FAC, DexKit.C_CONTACT_UTILS});
+                new int[]{DexKit.C_MessageRecordFactory, DexKit.C_CONTACT_UTILS});
     }
 
     @NonNull
@@ -248,7 +248,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
             throws Exception {
         int msgtype = -2030;// MessageRecord.MSG_TYPE_TROOP_GAP_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,
@@ -263,7 +263,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
                                           String msg, long msgUid, long shmsgseq) throws Exception {
         int msgtype = -2031;// MessageRecord.MSG_TYPE_REVOKE_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MSG_REC_FAC), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,

@@ -78,7 +78,7 @@ public class DexKit {
     public static final int C_ABS_GAL_SCENE = 7;
     //public static final int C_FAV_EMO_ROAM_HANDLER = 8;
     public static final int C_FAV_EMO_CONST = 9;
-    public static final int C_MSG_REC_FAC = 10;
+    public static final int C_MessageRecordFactory = 10;
     public static final int C_CONTACT_UTILS = 11;
     //public static final int C_VIP_UTILS = 12;
     public static final int C_ARK_APP_ITEM_BUBBLE_BUILDER = 13;
@@ -108,8 +108,12 @@ public class DexKit {
     public static final int C_SmartDeviceProxyMgr = 35;
     public static final int C_AIOPictureView = 36;
     public static final int C_GalleryBaseScene = 37;
+    public static final int C_GuildHelperProvider = 38;
+    public static final int C_GuildArkHelper = 39;
+    public static final int C_ReplyMsgUtils = 40;
+    public static final int C_ReplyMsgSender = 41;
     //the last index
-    public static final int DEOBF_NUM_C = 37;
+    public static final int DEOBF_NUM_C = 41;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -133,7 +137,8 @@ public class DexKit {
     public static final int N_ChatActivityFacade_sendMsgButton = 20020;
     public static final int N_FriendsStatusUtil_isChatAtTop = 20021;
     public static final int N_VipUtils_getUserStatus = 20022;
-    public static final int DEOBF_NUM_N = 22;
+    public static final int N_PhotoListPanel_resetStatus = 20023;
+    public static final int DEOBF_NUM_N = 23;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -428,123 +433,7 @@ public class DexKit {
     }
 
     public static String a(int i) {
-        switch (i) {
-            case C_DIALOG_UTIL:
-                return "dialog_util";
-            case C_FACADE:
-                return "facade";
-            case C_FLASH_PIC_HELPER:
-                return "flash_helper";
-            case C_BASE_PIC_DL_PROC:
-                return "base_pic_dl_proc";
-            case C_ITEM_BUILDER_FAC:
-                return "item_builder_fac";
-            case C_AIO_UTILS:
-                return "aio_utils";
-            case C_ABS_GAL_SCENE:
-                return "abs_gal_sc";
-            case C_FAV_EMO_CONST:
-                return "fav_emo_const";
-            case C_MSG_REC_FAC:
-                return "msg_rec_fac";
-            case C_CONTACT_UTILS:
-                return "contact_utils";
-            case C_ARK_APP_ITEM_BUBBLE_BUILDER:
-                return "ark_app_item_bubble_builder";
-            case C_PNG_FRAME_UTIL:
-                return "png_frame_util";
-            case C_PIC_EMOTICON_INFO:
-                return "pic_emoticon_info";
-            case C_SIMPLE_UI_UTIL:
-                return "simple_ui_util";
-            case C_TROOP_GIFT_UTIL:
-                return "troop_gift_util";
-            case C_TEST_STRUCT_MSG:
-                return "test_struct_msg";
-            case C_QZONE_MSG_NOTIFY:
-                return "qzone_msg_notify";
-            case C_APP_CONSTANTS:
-                return "app_constants";
-            case C_CustomWidgetUtil:
-                return "CustomWidgetUtil";
-            case C_MessageCache:
-                return "MessageCache";
-            case C_ScreenShotHelper:
-                return "ScreenShotHelper";
-            case C_TimeFormatterUtils:
-                return "TimeFormatterUtils";
-            case C_TogetherControlHelper:
-                return "TogetherControlHelper";
-            case C_GroupAppActivity:
-                return "GroupAppActivity";
-            case C_ZipUtils_biz:
-                return "ZipUtils";
-            case C_IntimateDrawer:
-                return "IntimateDrawer";
-            case C_HttpDownloader:
-                return "http_downloader";
-            case C_MultiMsg_Manager:
-                return "multimsg_manager";
-            case C_ClockInEntryHelper:
-                return "clockinentryhelper";
-            case C_CaptureUtil:
-                return "captureutil";
-            case C_AvatarUtil:
-                return "avatarutil";
-            case C_FaceManager:
-                return "facemanager";
-            case C_SmartDeviceProxyMgr:
-                return "smartdeviceproxymgr";
-            case C_AIOPictureView:
-                return "aiopictureview";
-            case C_GalleryBaseScene:
-                return "gallerybaseScene";
-            case N_BASE_CHAT_PIE__INIT:
-                return "base_chat_pie__init";
-            case N_BASE_CHAT_PIE__handleNightMask:
-                return "base_chat_pie__handleNightMask";
-            case N_BASE_CHAT_PIE__updateSession:
-                return "base_chat_pie__updateSession";
-            case N_BASE_CHAT_PIE__createMulti:
-                return "base_chat_pie__createMulti";
-            case N_BASE_CHAT_PIE__chooseMsg:
-                return "base_chat_pie__chooseMsg";
-            case N_LeftSwipeReply_Helper__reply:
-                return "leftswipereply_helper__reply";
-            case N_AtPanel__showDialogAtView:
-                return "atpanel__showDialogAtView";
-            case N_AtPanel__refreshUI:
-                return "atpanel__refreshUI";
-            case N_FriendChatPie_updateUITitle:
-                return "friendchatpie_updateUITitle";
-            case N_ProfileCardUtil_getCard:
-                return "profileCardUtil_getCard";
-            case N_VasProfileTemplateController_onCardUpdate:
-                return "vasProfileTemplateController_onCardUpdate";
-            case N_QQSettingMe_updateProfileBubble:
-                return "qqsettingme_updateProfileBubble";
-            case N_VIP_UTILS_getPrivilegeFlags:
-                return "vip_utils_updateProfileBubble";
-            case N_TroopChatPie_showNewTroopMemberCount:
-                return "troopChatPie_showNewTroopMemberCount";
-            case N_Conversation_onCreate:
-                return "conversation_onCreate";
-            case N_QQSettingMe_onResume:
-                return "qqsettingme_onresume";
-            case N_BaseChatPie_mosaic:
-                return "basechatpie_mosaic";
-            case N_WebSecurityPluginV2_callback:
-                return "websecuritypluginv2_callback";
-            case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
-                return "TroopAppShortcutBarHelper_resumeAppShorcutBar";
-            case N_ChatActivityFacade_sendMsgButton:
-                return "ChatActivityFacade_sendMsgButton";
-            case N_FriendsStatusUtil_isChatAtTop:
-                return "FriendsStatusUtil_isChatAtTop";
-            case N_VipUtils_getUserStatus:
-                return "VipUtils_getUserStatus";
-        }
-        throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
+        return "DexKit.CACHE_" + i;
     }
 
     /**
@@ -581,8 +470,8 @@ public class DexKit {
             case C_FAV_EMO_CONST:
                 ret = "com/tencent/mobileqq/emosm/favroaming/FavEmoConstant";
                 break;
-            case C_MSG_REC_FAC:
-                ret = "com/tencent/mobileqq/service/message/MessageRecordFactory";
+            case C_MessageRecordFactory:
+                ret = "com.tencent.mobileqq.service.message.MessageRecordFactory";
                 break;
             case C_CONTACT_UTILS:
                 ret = "com/tencent/mobileqq/utils/ContactUtils";
@@ -714,6 +603,21 @@ public class DexKit {
             case N_VipUtils_getUserStatus:
                 ret = "com.tencent.mobileqq.utils.VipUtils";
                 break;
+            case C_GuildHelperProvider:
+                ret = "com.tencent.mobileqq.guild.chatpie.GuildHelperProvider";
+                break;
+            case C_GuildArkHelper:
+                ret = "com.tencent.mobileqq.guild.chatpie.helper.GuildArkHelper";
+                break;
+            case C_ReplyMsgUtils:
+                ret = "com.tencent.mobileqq.activity.aio.reply.ReplyMsgUtils";
+                break;
+            case C_ReplyMsgSender:
+                ret = "com.tencent.mobileqq.replymsg.ReplyMsgSender";
+                break;
+            case N_PhotoListPanel_resetStatus:
+                ret = "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel";
+                break;
             default:
                 ret = null;
         }
@@ -770,7 +674,7 @@ public class DexKit {
                     new byte[]{0x12, 0x68, 0x74, 0x74, 0x70, 0x73, 0x3A, 0x2F, 0x2F, 0x70, 0x2E,
                         0x71, 0x70, 0x69, 0x63, 0x2E},
                 };
-            case C_MSG_REC_FAC:
+            case C_MessageRecordFactory:
                 return new byte[][]{
                     new byte[]{0x2C, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x50, 0x69, 0x63, 0x4D,
                         0x65, 0x73, 0x73, 0x61, 0x67, 0x65}};
@@ -984,9 +888,19 @@ public class DexKit {
                 return new byte[][]{forFiniteString8("isChatAtTop result is:")};
             case N_VipUtils_getUserStatus:
                 return new byte[][]{forFiniteString8("getUserStatus Friends is null")};
-
+            case C_GuildHelperProvider:
+                return new byte[][]{forFiniteString8("onFoldStatus beginMoveFoldStatus:")};
+            case C_GuildArkHelper:
+                return new byte[][]{forFiniteString8("GuildArkHelper")};
+            case C_ReplyMsgUtils:
+                return new byte[][]{forFiniteString8("generateSourceInfo sender uin exception:")};
+            case C_ReplyMsgSender:
+                return new byte[][]{forFiniteString8("sendReplyMessage uniseq=0")};
+            case N_PhotoListPanel_resetStatus:
+                return new byte[][]{forFiniteString8("resetStatus selectSize:")};
+            default:
+                throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
-        throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
 
     /**
@@ -1014,8 +928,8 @@ public class DexKit {
                 return new int[]{1};
             case C_FAV_EMO_CONST:
                 return new int[]{3, 4, 5};
-            case C_MSG_REC_FAC:
-                return new int[]{4};
+            case C_MessageRecordFactory:
+                return new int[]{15, 4};
             case C_CONTACT_UTILS:
                 return new int[]{4};
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
@@ -1102,24 +1016,35 @@ public class DexKit {
                 return new int[]{7, 8, 4, 6};
             case N_FriendsStatusUtil_isChatAtTop:
                 return new int[]{8};
+            case C_GuildHelperProvider:
+                return new int[]{9};
+            case C_GuildArkHelper:
+                return new int[]{9};
+            case C_ReplyMsgUtils:
+                return new int[]{7};
+            case C_ReplyMsgSender:
+                return new int[]{13};
+            case N_PhotoListPanel_resetStatus:
+                return new int[]{7};
+            default:
+                throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
-        throw new IndexOutOfBoundsException("No class index for " + i + ",max = " + DEOBF_NUM_C);
     }
 
-    private static DexMethodDescriptor a(int i, HashSet<DexMethodDescriptor> __methods,
-                                         DexDeobfReport report) {
+    private static DexMethodDescriptor a(int i, HashSet<DexMethodDescriptor> __methods, DexDeobfReport report) {
         switch (i) {
             case C_DIALOG_UTIL:
             case C_FACADE:
             case C_AIO_UTILS:
             case C_CONTACT_UTILS:
-            case C_MSG_REC_FAC:
+            case C_MessageRecordFactory:
             case C_SIMPLE_UI_UTIL:
             case C_TROOP_GIFT_UTIL:
             case C_TEST_STRUCT_MSG:
             case C_TimeFormatterUtils:
             case C_ZipUtils_biz:
             case C_SmartDeviceProxyMgr:
+            case C_ReplyMsgUtils:
                 a:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
@@ -1158,8 +1083,7 @@ public class DexKit {
                     Class clz = Initiator.load(md.declaringClass);
                     for (Field f : clz.getDeclaredFields()) {
                         int m = f.getModifiers();
-                        if (Modifier.isStatic(m) && Modifier.isFinal(m) && f.getType()
-                            .equals(Pattern.class)) {
+                        if (Modifier.isStatic(m) && Modifier.isFinal(m) && f.getType().equals(Pattern.class)) {
                             return md;
                         }
                     }
@@ -1359,7 +1283,7 @@ public class DexKit {
                     }
                     String name = m.declaringClass.replace('/', '.');
                     if (name.contains("com.tencent.mobileqq.activity.aio.helper.AIOMultiActionHelper")
-                        || name.contains(_BaseChatPie().getName())) {
+                            || name.contains(_BaseChatPie().getName())) {
                         if (method.getParameterTypes()[0].equals(_ChatMessage())) {
                             return m;
                         }
@@ -1519,8 +1443,7 @@ public class DexKit {
                         if (argt.length == 1 && argt[0].equals(String.class)) {
                             return m;
                         }
-                        if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1]
-                            .equals(String.class)) {
+                        if (argt.length == 2 && argt[0].equals(load("mqq/app/AppRuntime")) && argt[1].equals(String.class)) {
                             return m;
                         }
                     }
@@ -1603,6 +1526,49 @@ public class DexKit {
                     }
                 }
                 break;
+            case C_GuildHelperProvider: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if (m.declaringClass.contains("com/tencent/mobileqq/guild/chatpie")) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            case C_GuildArkHelper: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if ("getTag".equals(m.name)) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            case C_ReplyMsgSender: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if (m.declaringClass.contains("com/tencent/mobileqq/replymsg/")) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            case N_PhotoListPanel_resetStatus: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if ("(Z)V".equals(m.signature)) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            default: {
+                //noinspection SwitchStatementWithouthDefaultBranch
+            }
         }
         return null;
     }
@@ -1617,8 +1583,7 @@ public class DexKit {
             record |= 1 << dexi;
             try {
                 for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi,
-                        loader);
+                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
                     if (ret != null && ret.size() > 0) {
                         return ret;
                     }
@@ -1665,8 +1630,7 @@ public class DexKit {
                     HashSet<URL> urls = new HashSet<>(3);
                     try {
                         Enumeration<URL> eu;
-                        eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name,
-                            String.class);
+                        eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name, String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
                                 URL url = eu.nextElement();
@@ -1678,13 +1642,11 @@ public class DexKit {
                     } catch (Throwable e) {
                         Log.e(e);
                     }
-                    if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass()
-                        .equals(DexClassLoader.class)
-                        && loader.getParent() != null) {
+                    if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass().equals(DexClassLoader.class)
+                            && loader.getParent() != null) {
                         try {
                             Enumeration<URL> eu;
-                            eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(),
-                                "findResources", name, String.class);
+                            eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources", name, String.class);
                             if (eu != null) {
                                 while (eu.hasMoreElements()) {
                                     URL url = eu.nextElement();
@@ -1741,8 +1703,7 @@ public class DexKit {
                 HashSet<URL> urls = new HashSet<>(3);
                 try {
                     Enumeration<URL> eu;
-                    eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name,
-                        String.class);
+                    eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name, String.class);
                     if (eu != null) {
                         while (eu.hasMoreElements()) {
                             URL url = eu.nextElement();
@@ -1754,13 +1715,10 @@ public class DexKit {
                 } catch (Throwable e) {
                     Log.e(e);
                 }
-                if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass()
-                    .equals(DexClassLoader.class)
-                    && loader.getParent() != null) {
+                if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass().equals(DexClassLoader.class) && loader.getParent() != null) {
                     try {
                         Enumeration<URL> eu;
-                        eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources",
-                            name, String.class);
+                        eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources", name, String.class);
                         if (eu != null) {
                             while (eu.hasMoreElements()) {
                                 URL url = eu.nextElement();
@@ -1820,7 +1778,7 @@ public class DexKit {
                 break;
             }
             if (buf[off - 2] == (byte) 26/*Opcodes.OP_CONST_STRING*/
-                || buf[off - 2] == (byte) 27)/* Opcodes.OP_CONST_STRING_JUMBO*/ {
+                    || buf[off - 2] == (byte) 27)/* Opcodes.OP_CONST_STRING_JUMBO*/ {
                 ret[0] = off - 2;
                 int opcodeOffset = ret[0];
                 if (buf[off - 2] == (byte) 27 && strIdx < 0x10000) {
@@ -1843,9 +1801,7 @@ public class DexKit {
      * @return ["abc","ab"]
      * @throws FileNotFoundException apk has no classesN.dex
      */
-    public static HashSet<DexMethodDescriptor> findMethodsByConstString(byte[] key, int i,
-                                                                        ClassLoader loader)
-        throws FileNotFoundException {
+    public static HashSet<DexMethodDescriptor> findMethodsByConstString(byte[] key, int i, ClassLoader loader) throws FileNotFoundException {
         String name;
         byte[] buf = new byte[4096];
         byte[] content;
@@ -1869,13 +1825,10 @@ public class DexKit {
         } catch (Throwable e) {
             Log.e(e);
         }
-        if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass()
-            .equals(DexClassLoader.class)
-            && loader.getParent() != null) {
+        if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass().equals(DexClassLoader.class) && loader.getParent() != null) {
             try {
                 Enumeration<URL> eu;
-                eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources", name,
-                    String.class);
+                eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources", name, String.class);
                 if (eu != null) {
                     while (eu.hasMoreElements()) {
                         URL url = eu.nextElement();
@@ -1907,8 +1860,7 @@ public class DexKit {
                 ArrayList<Integer> opcodeOffsets = a(content, key);
                 for (int j = 0; j < opcodeOffsets.size(); j++) {
                     try {
-                        DexMethodDescriptor desc = DexFlow
-                            .getDexMethodByOpOffset(content, opcodeOffsets.get(j), true);
+                        DexMethodDescriptor desc = DexFlow.getDexMethodByOpOffset(content, opcodeOffsets.get(j), true);
                         if (desc != null) {
                             rets.add(desc);
                         }

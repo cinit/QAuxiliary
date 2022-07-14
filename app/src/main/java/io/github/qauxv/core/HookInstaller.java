@@ -146,4 +146,17 @@ public class HookInstaller {
     public static void restartToTakeEffect(@Nullable Context context) {
         Toasts.info(context, "重启 " + HostInfo.getAppName() + " 生效");
     }
+
+    public static Step[] stepsOf(@Nullable Step[] a, @Nullable Step[] b) {
+        if (a == null) {
+            return b;
+        } else if (b == null) {
+            return a;
+        } else {
+            Step[] result = new Step[a.length + b.length];
+            System.arraycopy(a, 0, result, 0, a.length);
+            System.arraycopy(b, 0, result, a.length, b.length);
+            return result;
+        }
+    }
 }

@@ -54,7 +54,7 @@ public class GagInfoDisclosure extends CommonSwitchFunctionHook {
     private GagInfoDisclosure() {
         // TODO: 2020/6/12 Figure out whether MSF is really needed
         super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF,
-                new int[]{DexKit.C_MSG_REC_FAC});
+                new int[]{DexKit.C_MessageRecordFactory});
     }
 
     public static String getGagTimeString(long sec) {

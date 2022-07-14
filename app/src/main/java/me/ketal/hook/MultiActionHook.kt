@@ -47,7 +47,7 @@ import xyz.nextalone.util.throwOrTrue
 object MultiActionHook : CommonSwitchFunctionHook(
     intArrayOf(
         DexKit.C_MessageCache,
-        DexKit.C_MSG_REC_FAC,
+        DexKit.C_MessageRecordFactory,
         DexKit.N_BASE_CHAT_PIE__createMulti,
         DexKit.C_MultiMsg_Manager)
 ) {
