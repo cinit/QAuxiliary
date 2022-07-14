@@ -22,6 +22,10 @@
 
 package me.ketal.hook.guild
 
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.tencent.mobileqq.data.MessageRecord
+import com.tencent.mobileqq.guild.message.api.IGuildNicknameApi
+import com.tencent.mobileqq.qroute.QRoute
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -30,6 +34,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._MessageRecord
 import me.singleneuron.data.MsgRecordData
 import mqq.app.AppRuntime
+import tencent.im.group_pro_proto.common.common
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
@@ -51,15 +56,14 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 val thisObject = it.thisObject
                 val appRuntime = thisObject.get("appRuntime")!!
                 val msgRecord = it.args[0] ?: return@hookBefore
-                val event = it.args[1]
+                val event = it.args[1] as common.Event
                 val senderUin = MsgRecordData(msgRecord).senderUin!!
 
-                val opInfo = event.get("op_info")
-                if (opInfo?.invoke("has") != true) return@hookBefore
-                val operatorTinyid = opInfo.get("operator_tinyid")
-                if (operatorTinyid?.invoke("has") != true) return@hookBefore
-                val operatorId = operatorTinyid.invoke("get").toString()
-                if (operatorId == "0") return@hookBefore
+                val opInfo = event.op_info
+                if (!opInfo.has()) return@hookBefore
+                val operatorTinyid = opInfo.operator_tinyid
+                if (!operatorTinyid.has()) return@hookBefore
+                val operatorId = operatorTinyid.get().toString()
                 val selfTinyId = appRuntime.invoke(
                     "getRuntimeService",
                     "com.tencent.mobileqq.qqguildsdk.api.IGPSService".clazz!!,
@@ -101,12 +105,13 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 it.args[1] = wording
             }
 
-        "Lcom/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl;->processUpdateEvent(Lcom/tencent/imcore/message/BaseMsgProxy;Lcom/tencent/mobileqq/data/MessageRecord;Lcom/tencent/mobileqq/data/MessageRecord;)Z"
-            .method.hookBefore(this){
-                if (it.args[1].get("msgtype") as Int != it.args[2].get("msgtype") as Int) {
-                    it.result = true
-                }
+        "com/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl".clazz!!.findMethod {
+            name == "processUpdateEvent"
+        }.hookBefore(this) {
+            if (it.args[1].get("msgtype") != it.args[2].get("msgtype")) {
+                it.result = true
             }
+        }
     }
 
     private fun getNickName(
@@ -115,14 +120,8 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
         msg: Any
     ): String {
         val msgData = MsgRecordData(msg)
-        val apiClass = "com.tencent.mobileqq.guild.message.api.IGuildNicknameApi".clazz!!
-        val api = "Lcom/tencent/mobileqq/qroute/QRoute;->api(Ljava/lang/Class;)Lcom/tencent/mobileqq/qroute/QRouteApi;"
-            .method.invoke(null, apiClass)
-        val args = arrayOf(
-            appRuntime, msgData.friendUin!!, uin, msg,
-            AppRuntime::class.java,
-            String::class.java, String::class.java, _MessageRecord()
+        return QRoute.api(IGuildNicknameApi::class.java).getDisplayName(
+            appRuntime as AppRuntime, msgData.friendUin!!, uin, msg as MessageRecord
         )
-        return api.invoke("getDisplayName", *args) as String
     }
 }
