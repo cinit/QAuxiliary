@@ -305,7 +305,11 @@ public class Initiator {
     }
 
     public static Class<?> _BaseSessionInfo() {
-        return findClassWithSynthetics("com/tencent/mobileqq/activity/aio/BaseSessionInfo", "com/tencent/mobileqq/activity/aio/SessionInfo");
+        return findClassWithSynthetics(
+                "com/tencent/mobileqq/activity/aio/BaseSessionInfo",
+                "com/tencent/mobileqq/activity/aio/q", // maybe this looks worse
+                "com/tencent/mobileqq/activity/aio/SessionInfo"
+        );
     }
 
     public static Class<?> _Emoticon() {
