@@ -46,6 +46,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._QQAppInterface
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.QQVersion
@@ -75,7 +76,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN o
 
     override fun initOnce(): Boolean {
         XposedHelpers.findAndHookMethod(
-            "com.tencent.mobileqq.service.MobileQQServiceExtend".clazz,
+            Initiator._MobileQQServiceExtend()!!,
             if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "e" else "a",
             Intent::class.java,
             Bitmap::class.java,

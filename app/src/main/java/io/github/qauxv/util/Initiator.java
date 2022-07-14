@@ -24,6 +24,7 @@ package io.github.qauxv.util;
 import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import com.tencent.mobileqq.app.QQAppInterface;
 import java.util.HashMap;
 import mqq.app.AppRuntime;
 
@@ -327,6 +328,19 @@ public class Initiator {
 
     public static Class<?> _ClockInEntryHelper() {
         return load("com/tencent/mobileqq/activity/aio/helper/ClockInEntryHelper");
+    }
+
+    public static Class<?> _MobileQQServiceExtend() {
+        Class<?> clazz = load("com.tencent.mobileqq.service.MobileQQServiceExtend");
+        if (clazz == null) {
+            // com.tencent.mobileqq.app.QQAppInterface->mqqService
+            try {
+                clazz = QQAppInterface.class.getDeclaredField("mqqService").getType();
+            } catch (NoSuchFieldException e) {
+                // give up
+            }
+        }
+        return clazz;
     }
 
     @Nullable

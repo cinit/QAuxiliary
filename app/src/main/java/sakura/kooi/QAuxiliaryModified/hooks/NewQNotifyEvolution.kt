@@ -55,6 +55,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
@@ -87,7 +88,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         }
 
         val buildNotification = Reflex.findSingleMethod(
-            "com.tencent.mobileqq.service.MobileQQServiceExtend".clazz!!,
+            Initiator._MobileQQServiceExtend()!!,
             android.app.Notification::class.java,
             false,
             Intent::class.java,
@@ -98,7 +99,8 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         )
         hookAfterIfEnabled(buildNotification) { param ->
             val intent = param.args[0] as Intent
-            val context = hostInfo.application as Context
+            val context = hostInfo.application
+            // TODO: 2022-07-14 uin may be null
             val uin = intent.getStringExtra("uin")
                 ?: intent.getStringExtra("param_uin")!!
             val isTroop = intent.getIntExtra(
