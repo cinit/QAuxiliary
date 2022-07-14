@@ -1,5 +1,6 @@
 @file:Suppress("UnstableApiUsage")
 enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
+// enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 pluginManagement {
     repositories {
@@ -26,5 +27,3 @@ include(
     ":libs:ksp",
     ":libs:mmkv"
 )
-
-buildCache { local { removeUnusedEntriesAfterDays = 1 } }
