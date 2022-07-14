@@ -151,12 +151,12 @@ dependencies {
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
 val killQQ = tasks.register<Exec>("killQQ") {
-    group = "QAuxv"
+    group = "qauxv"
     commandLine(adb, "shell", "am", "force-stop", "com.tencent.mobileqq")
     isIgnoreExitValue = true
 }
 val restartQQ = tasks.register<Exec>("restartQQ") {
-    group = "QAuxv"
+    group = "qauxv"
     commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
     isIgnoreExitValue = true
 }
@@ -183,26 +183,26 @@ androidComponents.onVariants { variant ->
     }
 
     task("installAndRestart${variantCapped}") {
-        group = "QAuxv"
+        group = "qauxv"
         dependsOn(":app:install$variantCapped", killQQ)
         finalizedBy(restartQQ)
     }
 }
 
 tasks.register<ReplaceIcon>("replaceIcon") {
-    group = "QAuxv"
+    group = "qauxv"
     projectDir.set(project.projectDir)
     commitHash = Common.getGitHeadRefsSuffix(rootProject)
     config()
 }.also { tasks.preBuild.dependsOn(it) }
 
 tasks.register<Delete>("cleanCxxIntermediates") {
-    group = "QAuxv"
+    group = "qauxv"
     delete(file(".cxx"))
 }.also { tasks.clean.dependsOn(it) }
 
 tasks.register<Delete>("cleanOldIcon") {
-    group = "QAuxv"
+    group = "qauxv"
     val drawableDir= File(projectDir, "src/main/res/drawable")
     drawableDir
         .listFiles()
@@ -224,7 +224,7 @@ tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
 }
 
 tasks.register("checkGitSubmodule") {
-    group = "QAuxv"
+    group = "qauxv"
     val projectDir = rootProject.projectDir
     doLast {
         listOf(
