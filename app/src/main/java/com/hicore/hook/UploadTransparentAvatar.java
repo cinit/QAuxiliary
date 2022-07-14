@@ -51,7 +51,12 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "允许上传透明头像和表情,上传不成功可尝试开启非会员贴表情";
+        return "允许上传透明头像和表情";
+    }
+
+    @Override
+    public CharSequence getDescription() {
+        return "若上传不成功可尝试开启非会员贴表情";
     }
 
     @NonNull
