@@ -34,6 +34,7 @@ import io.github.qauxv.bridge.GreyTipBuilder;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -47,7 +48,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     public static final TroopMemberLeaveGreyTip INSTANCE = new TroopMemberLeaveGreyTip();
 
     private TroopMemberLeaveGreyTip() {
-        super(SyncUtils.PROC_MAIN);
+        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_SystemMessageProcessor, DexKit.C_OnlinePushPbPushTransMsg});
         // The MSF process is not required to be hooked, said by the original author.
     }
 
@@ -72,7 +73,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Initiator.loadClass("com.tencent.mobileqq.app.handler.receivesuccess.OnlinePushPbPushTransMsg")
+                Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_OnlinePushPbPushTransMsg), "OnlinePushPbPushTransMsg")
                         .getDeclaredMethod("a", Initiator.loadClass("com.tencent.mobileqq.app.MessageHandler"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.ToServiceMsg"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.FromServiceMsg")),
@@ -80,12 +81,11 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
         );
         HookUtils.hookBeforeIfEnabled(this,
                 Reflex.findSingleMethod(
-                        Initiator.loadClass("com.tencent.mobileqq.app.message.SystemMessageProcessor"),
+                        Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_SystemMessageProcessor), "C_SystemMessageProcessor"),
                         void.class, false,
                         int.class, Initiator.loadClass("tencent.mobileim.structmsg.structmsg$StructMsg"), int.class),
                 param -> onProcessGroupSystemMsg((int) param.args[0], param.args[1], (int) param.args[2])
         );
-
 
         return true;
     }

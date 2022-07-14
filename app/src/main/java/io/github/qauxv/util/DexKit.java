@@ -114,8 +114,10 @@ public class DexKit {
     public static final int C_ReplyMsgSender = 41;
     public static final int C_PopOutEmoticonUtil = 42;
     public static final int C_VipStatusManagerImpl = 43;
+    public static final int C_SystemMessageProcessor = 44;
+    public static final int C_OnlinePushPbPushTransMsg = 45;
     //the last index
-    public static final int DEOBF_NUM_C = 43;
+    public static final int DEOBF_NUM_C = 45;
 
     public static final int N_BASE_CHAT_PIE__INIT = 20001;
     public static final int N_BASE_CHAT_PIE__handleNightMask = 20002;
@@ -626,6 +628,12 @@ public class DexKit {
             case C_VipStatusManagerImpl:
                 ret = "com.tencent.mobileqq.vip.VipStatusManagerImpl";
                 break;
+            case C_SystemMessageProcessor:
+                ret = "com.tencent.mobileqq.app.message.SystemMessageProcessor";
+                break;
+            case C_OnlinePushPbPushTransMsg:
+                ret = "com.tencent.mobileqq.app.handler.receivesuccess.OnlinePushPbPushTransMsg";
+                break;
             default:
                 ret = null;
         }
@@ -910,6 +918,10 @@ public class DexKit {
                 return new byte[][]{forFiniteString8("supportPopOutEmoticon isC2C=")};
             case C_VipStatusManagerImpl:
                 return new byte[][]{forFiniteString8("getPrivilegeFlags Friends is null")};
+            case C_SystemMessageProcessor:
+                return new byte[][]{forFiniteString8("<---handleGetFriendSystemMsgResp : decode pb filtered")};
+            case C_OnlinePushPbPushTransMsg:
+                return new byte[][]{forFiniteString8("PbPushTransMsg muteGeneralFlag:")};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1042,6 +1054,9 @@ public class DexKit {
                 return new int[]{11};
             case C_VipStatusManagerImpl:
                 return new int[]{16};
+            case C_SystemMessageProcessor:
+            case C_OnlinePushPbPushTransMsg:
+                return new int[]{8};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1264,6 +1279,7 @@ public class DexKit {
             case N_FriendChatPie_updateUITitle:
             case N_VipUtils_getUserStatus:
             case C_VipStatusManagerImpl:
+            case C_SystemMessageProcessor:
                 // NOTICE: this must only has one result
                 if (__methods.size() == 1) {
                     return (DexMethodDescriptor) __methods.toArray()[0];
@@ -1569,6 +1585,16 @@ public class DexKit {
                 if (__methods.size() == 1) {
                     DexMethodDescriptor m = __methods.iterator().next();
                     if (m.declaringClass.contains("com/tencent/mobileqq/replymsg/")) {
+                        return m;
+                    }
+                }
+                return null;
+            }
+            case C_OnlinePushPbPushTransMsg: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    if (m.declaringClass.contains("/receivesuccess/")) {
                         return m;
                     }
                 }
