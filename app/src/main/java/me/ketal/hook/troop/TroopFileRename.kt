@@ -66,7 +66,11 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
 
     @Suppress("UNCHECKED_CAST")
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val builder = "com.tencent.mobileqq.troop.widget.TroopFileItemBuilder".findClass(classLoader)
+        val builder = if (requireMinQQVersion(QQVersion.QQ_8_9_0)) {
+            "com.tencent.mobileqq.troop.widget.g"
+        } else {
+            "com.tencent.mobileqq.troop.widget.TroopFileItemBuilder"
+        }.findClass(classLoader)
         builder.declaredMethods.find {
             val args = it.parameterTypes
             it.returnType == Void.TYPE
@@ -93,7 +97,8 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             }
         }
 
-        val updateRightMenuItem = "Lcom/tencent/mobileqq/troop/widget/TrooFileTextViewMenuBuilder;->updateRightMenuItem(ILjava/lang/Object;Lcom/tencent/widget/SwipRightMenuBuilder\$SwipRightMenuItem;Landroid/view/View\$OnClickListener;)Landroid/view/View;".method
+        val clazzName = if (requireMinQQVersion(QQVersion.QQ_8_9_0)) "c" else "TrooFileTextViewMenuBuilder"
+        val updateRightMenuItem = "Lcom/tencent/mobileqq/troop/widget/$clazzName;->updateRightMenuItem(ILjava/lang/Object;Lcom/tencent/widget/SwipRightMenuBuilder\$SwipRightMenuItem;Landroid/view/View\$OnClickListener;)Landroid/view/View;".method
         updateRightMenuItem.hookAfter(this) {
             val obj = it.args[1] as Array<*>
             val info = TroopFileInfo(obj[1]!!)
