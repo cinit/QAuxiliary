@@ -30,7 +30,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 
@@ -41,7 +41,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
     public static final UnlockLeftSlipLimit INSTANCE = new UnlockLeftSlipLimit();
     public static final String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "H" : "h";
     private UnlockLeftSlipLimit() {
-
+        super(new int[]{DexKit.N_LeftSwipeReply_Helper__reply});
     }
     @NonNull
     @Override
@@ -51,7 +51,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Method m = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.bubble.LeftSwipeReplyHelper"), methodName, boolean.class, new Class[0]);
+        Method m = MMethod.FindMethod(DexKit.doFindMethod(DexKit.N_LeftSwipeReply_Helper__reply).getDeclaringClass(), methodName, boolean.class, new Class[0]);
         HookUtils.hookBeforeIfEnabled(this, m, param -> {
             param.setResult(true);
         });
@@ -62,16 +62,5 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "允许各种消息左滑回复";
-    }
-
-    @Override
-    public boolean isAvailable() {
-        try {
-            Method m = MMethod.FindMethod(Initiator.loadClass("com.tencent.mobileqq.bubble.LeftSwipeReplyHelper"), methodName, boolean.class, new Class[0]);
-            return m != null;
-        } catch (Exception e) {
-            return false;
-        }
-
     }
 }
