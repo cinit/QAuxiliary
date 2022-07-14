@@ -269,8 +269,21 @@ public class Initiator {
     }
 
     public static Class<?> _C2CMessageProcessor() {
-        return findClassWithSynthetics("com/tencent/mobileqq/app/message/C2CMessageProcessor",
+        Class<?> k = findClassWithSynthetics("com/tencent/mobileqq/app/message/C2CMessageProcessor",
                 "com/tencent/imcore/message/C2CMessageProcessor", 4, 6, 1, 5, 7);
+        if (k == null) {
+            Class<?> kC2CMessageProcessorCallback = load("com.tencent.imcore.message.C2CMessageProcessorCallback");
+            if (kC2CMessageProcessorCallback != null) {
+                Class<?>[] interfaces = kC2CMessageProcessorCallback.getInterfaces();
+                if (interfaces.length == 1) {
+                    k = interfaces[0].getEnclosingClass();
+                    if (k != null) {
+                        sClassCache.put("com/tencent/imcore/message/C2CMessageProcessor", k);
+                    }
+                }
+            }
+        }
+        return k;
     }
 
     public static Class<?> _C2CMessageManager() {

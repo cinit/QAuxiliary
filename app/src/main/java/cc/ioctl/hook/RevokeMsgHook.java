@@ -287,7 +287,12 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
         List<?> list = null;
         try {
             // message is query by shmsgseq, not by time ---> queryMessagesByShmsgseqFromDB
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)) {
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "G0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
                 list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "D0",
                         uin, istroop, shmsgseq, msgUid,
                         String.class, int.class, long.class, long.class,
