@@ -81,6 +81,9 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
         mFriends_getFriendNick = Reflex.findMethod(kFriends, String.class, "getFriendNick");
         Class<?> kBuddyListItem = Initiator.load("com.tencent.mobileqq.activity.contacts.base.BuddyListItem");
         if (kBuddyListItem == null) {
+            kBuddyListItem = Initiator.load("com.tencent.mobileqq.activity.contacts.base.c");
+        }
+        if (kBuddyListItem == null) {
             kBuddyListItem = Initiator.loadClass("com.tencent.mobileqq.adapter.contacts.BuddyListItem");
         }
         fBuddyListItem_entry = Reflex.findFirstDeclaredInstanceFieldByType(kBuddyListItem, Initiator.loadClass("com.tencent.mobileqq.persistence.Entity"));
