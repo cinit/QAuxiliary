@@ -91,15 +91,27 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         Class<?> kAIOPictureView = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.view.AIOPictureView");
-        Class<?> kAIOBrowserBaseView = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.view.AIOBrowserBaseView");
+        Class<?> kAIOBrowserBaseView = Initiator.load("com.tencent.mobileqq.richmediabrowser.view.AIOBrowserBaseView");
+        if (kAIOBrowserBaseView == null) {
+            kAIOBrowserBaseView = kAIOPictureView.getSuperclass();
+            assert kAIOBrowserBaseView != null;
+        }
         Field contextOfAIOBrowserBaseView = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, Context.class);
         Class<?> kiShareActionSheet = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet");
-        Class<?> kShareActionSheetProxy = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheetProxy");
+        Class<?> kShareActionSheetProxy = Initiator.loadClassEither(
+                "com.tencent.mobileqq.widget.share.ShareActionSheetProxy",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.widget.share.c"
+        );
         Field fProxyImpl = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetProxy, kiShareActionSheet);
         Class<?> kActionSheetItem = Initiator.loadClass("com.tencent.mobileqq.utils.ShareActionSheetBuilder$ActionSheetItem");
         Constructor<?> ctorActionSheetItem = kActionSheetItem.getDeclaredConstructor();
         Class<?> kShareActionSheetV2 = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheetV2");
-        Class<?> kShareActionSheetImplV2 = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheetImplV2");
+        Class<?> kShareActionSheetImplV2 = Initiator.loadClassEither(
+                "com.tencent.mobileqq.widget.share.ShareActionSheetImplV2",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.widget.share.b"
+        );
         Field fImplV2Impl = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetImplV2, kShareActionSheetV2);
         Field fV2ItemListArray = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetV2, List[].class);
         fV2ItemListArray.setAccessible(true);
@@ -114,7 +126,11 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         Field fieldV2Listener = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetV2, kiv2OnItemClickListener);
         Field fieldActionSheet = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, kiShareActionSheet);
         // view model
-        Class<?> kAIOPictureModel = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureModel");
+        Class<?> kAIOPictureModel = Initiator.loadClassEither(
+                "com.tencent.mobileqq.richmediabrowser.model.AIOPictureModel",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.richmediabrowser.model.d"
+        );
         Class<?> kAIOPictureData = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureData");
         Constructor<?> ctorAIOPictureModel = kAIOPictureModel.getConstructor();
         Method getPictureFile = Reflex.findMethodByTypes_1(kAIOPictureModel, File.class, kAIOPictureData, int.class);
@@ -133,7 +149,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
             }
             assert ctx != null;
             if (actionSheet != null) {
-                if (kShareActionSheetProxy.isInstance(actionSheet)) {
+                if (kShareActionSheetProxy != null && kShareActionSheetProxy.isInstance(actionSheet)) {
                     actionSheet = fProxyImpl.get(actionSheet);
                 }
                 assert actionSheet != null;
@@ -173,7 +189,11 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         int id = (int) Reflex.getInstanceObject(item, "id", int.class);
         if (id == R.id.ShareActionSheet_sharePictureWithExtApp) {
             Class<?> kAIOPictureView = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.view.AIOPictureView");
-            Class<?> kAIOBrowserBaseView = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.view.AIOBrowserBaseView");
+            Class<?> kAIOBrowserBaseView = Initiator.load("com.tencent.mobileqq.richmediabrowser.view.AIOBrowserBaseView");
+            if (kAIOBrowserBaseView == null) {
+                kAIOBrowserBaseView = kAIOPictureView.getSuperclass();
+                assert kAIOBrowserBaseView != null;
+            }
             Field contextOfAIOBrowserBaseView = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, Context.class);
             Context ctx = (Context) contextOfAIOBrowserBaseView.get(Reflex.getFirstByType(param.thisObject, kAIOPictureView));
             assert ctx != null;

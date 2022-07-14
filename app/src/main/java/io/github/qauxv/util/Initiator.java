@@ -25,6 +25,7 @@ import android.os.Parcelable;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.tencent.mobileqq.app.QQAppInterface;
+import java.util.Arrays;
 import java.util.HashMap;
 import mqq.app.AppRuntime;
 
@@ -94,6 +95,17 @@ public class Initiator {
             throw new ClassNotFoundException(className);
         }
         return ret;
+    }
+
+    @NonNull
+    public static Class<?> loadClassEither(@NonNull String... classNames) throws ClassNotFoundException {
+        for (String className : classNames) {
+            Class<?> ret = load(className);
+            if (ret != null) {
+                return ret;
+            }
+        }
+        throw new ClassNotFoundException("Class not found for names: " + Arrays.toString(classNames));
     }
 
     /**
