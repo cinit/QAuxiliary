@@ -1263,6 +1263,7 @@ public class DexKit {
             case N_LeftSwipeReply_Helper__reply:
             case N_FriendChatPie_updateUITitle:
             case N_VipUtils_getUserStatus:
+            case C_VipStatusManagerImpl:
                 // NOTICE: this must only has one result
                 if (__methods.size() == 1) {
                     return (DexMethodDescriptor) __methods.toArray()[0];
