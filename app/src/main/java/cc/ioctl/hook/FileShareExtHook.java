@@ -82,6 +82,8 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         return FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG;
     }
 
+    private static Class<?> kFileBrowserManager = null;
+
     @Override
     protected boolean initOnce() throws Exception {
         // share sheet stuff
@@ -90,17 +92,32 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         Class<?> kiShareActionSheet = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet");
         // args
         Class<?> kFileBrowserModelBase = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.model.FileBrowserModelBase");
-        Class<?> kDefaultFileModel = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.model.DefaultFileModel");
-        Class<?> kIFileViewerAdapter = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.IFileViewerAdapter");
-        Class<?> kFileBrowserManager = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.FileBrowserManager");
+        Class<?> kDefaultFileModel = Initiator.loadClassEither(
+                "com.tencent.mobileqq.filemanager.fileviewer.model.DefaultFileModel",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.filemanager.fileviewer.model.b"
+        );
+        Class<?> kIFileViewerAdapter = Initiator.loadClassEither(
+                "com.tencent.mobileqq.filemanager.fileviewer.IFileViewerAdapter",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.filemanager.fileviewer.h"
+        );
+        kFileBrowserManager = Initiator.loadClassEither(
+                "com.tencent.mobileqq.filemanager.fileviewer.FileBrowserManager",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.filemanager.fileviewer.a"
+        );
         Field fieldFileBrowserManager_FileBrowserModelBase = Reflex.findFirstDeclaredInstanceFieldByType(kFileBrowserManager, kFileBrowserModelBase);
         Field fieldDefaultFileModel_IFileViewerAdapter = Reflex.findFirstDeclaredInstanceFieldByType(kDefaultFileModel, kIFileViewerAdapter);
         fieldDefaultFileModel_IFileViewerAdapter.setAccessible(true);
         fieldFileBrowserManager_FileBrowserModelBase.setAccessible(true);
         Method getFilePath = kIFileViewerAdapter.getDeclaredMethod("getFilePath");
         Method getShareSheetItemLists = Reflex.findSingleMethod(kFileBrowserManager, ArrayList[].class, false);
-        Method onItemClick = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.FileBrowserManager$2")
-                .getDeclaredMethod("onItemClick", kActionSheetItem, kiShareActionSheet);
+        Method onItemClick = Initiator.loadClassEither(
+                "com.tencent.mobileqq.filemanager.fileviewer.FileBrowserManager$2",
+                // QQ 8.9.0(3060)
+                "com.tencent.mobileqq.filemanager.fileviewer.a$b"
+        ).getDeclaredMethod("onItemClick", kActionSheetItem, kiShareActionSheet);
         XposedBridge.hookMethod(onItemClick, mItemClickHandler);
         HookUtils.hookAfterIfEnabled(this, getShareSheetItemLists, param -> {
             ArrayList<Object>[] results = (ArrayList<Object>[]) param.getResult();
@@ -138,7 +155,6 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         Object item = param.args[0];
         int id = (int) Reflex.getInstanceObject(item, "id", int.class);
         if (id == R.id.ShareActionSheet_shareFileWithExtApp) {
-            Class<?> kFileBrowserManager = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.FileBrowserManager");
             Object fileBrowserManager = Reflex.getFirstByType(param.thisObject, kFileBrowserManager);
             Context ctx = Reflex.getFirstByType(fileBrowserManager, Activity.class);
             assert ctx != null;
