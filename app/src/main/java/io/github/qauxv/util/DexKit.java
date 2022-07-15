@@ -1544,7 +1544,9 @@ public class DexKit {
                 // only 1 expected
                 if (__methods.size() == 1) {
                     DexMethodDescriptor m = __methods.iterator().next();
-                    if (m.declaringClass.contains("TroopAppShortcutBarHelper")) {
+                    if (m.declaringClass.contains("TroopAppShortcutBarHelper")
+                            || m.declaringClass.contains("ShortcutBarAIOHelper")
+                            || m.declaringClass.contains("/aio/helper/")) {
                         return m;
                     }
                 }

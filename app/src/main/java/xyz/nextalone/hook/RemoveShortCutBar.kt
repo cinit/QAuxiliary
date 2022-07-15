@@ -42,14 +42,9 @@ object RemoveShortCutBar : CommonSwitchFunctionHook(intArrayOf(DexKit.N_TroopApp
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce() = throwOrTrue {
-        val kTroopAppShortcutBarHelper = Initiator.load("com/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper");
-        if (kTroopAppShortcutBarHelper != null) {
-            val resumeAppShorcutBar = DexKit.getMethodDescFromCache(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)
-            resumeAppShorcutBar!!.getMethodInstance(Initiator.getHostClassLoader()).replace(this, null)
-        } else {
-            "Lcom.tencent.mobileqq.activity.aio.helper.ShortcutBarAIOHelper;->h()V".method.replace(this, null)
-        }
+        val resumeAppShorcutBar = DexKit.getMethodDescFromCache(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)
+        resumeAppShorcutBar!!.getMethodInstance(Initiator.getHostClassLoader()).replace(this, null)
     }
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_5)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_0)
 }
