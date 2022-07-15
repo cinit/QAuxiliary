@@ -40,42 +40,46 @@ import java.lang.reflect.Method
 object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi") {
 
     override val preferenceTitle = "精简加号菜单"
+    override val extraSearchKeywords: Array<String> = arrayOf("+号菜单")
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override val allItems = setOf(
-        "图片",
-        "拍摄",
-        "语音通话",
-        "视频通话",
-        "一起派对",
-        "戳一戳",
+        "王者好礼",
+        "超级粉丝团",
         "视频包厢",
+        "一起K歌",
+        "厘米秀",
+        "一起派对",
+        "一起听歌",
+        "一起玩",
+        "一起看",
+        "热图",
+
+        "礼物",
+        "送礼物",
+        "健康收集",
+        "直播间",
+        "坦白说",
+        "群课堂",
+        "腾讯文档",
+
+        "签到",
+        "拍摄",
+        "文件",
+        "戳一戳",
         "红包",
         "位置",
-        "文件",
-        "一起听歌",
+        "图片",
         "分享屏幕",
         "收藏",
-        "热图",
-        "一起玩",
+        "语音通话",
         "涂鸦",
+        "视频通话",
         "转账",
         "名片",
-        "送礼物",
-        "腾讯文档",
-        "厘米秀",
-        "一起K歌",
-        "礼物",
-        "直播间",
-        "签到",
         "匿名",
-        "群课堂",
-        "健康收集",
-        "一起看",
         "投票",
-        "收钱",
-        "坦白说",
-        "超级粉丝团"
+        "收钱"
     )
     override val defaultItems = setOf<String>()
 
