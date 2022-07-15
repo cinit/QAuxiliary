@@ -40,8 +40,9 @@ jobs:
         run: |
           sudo apt install -y ccache
           ccache -zp
-          ccache -o max_size=10G
+          ccache -o max_size=1G
           ccache -o hash_dir=false
+          ccache -o hard_link=true
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
       - name: Native Cache
         uses: actions/cache@v2
@@ -49,6 +50,7 @@ jobs:
           path: |
             ~/.cache/ccache
             ~/.ccache
+            app/build/.lto-cache
           key: ccache
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
@@ -57,7 +59,7 @@ jobs:
             ~/.gradle/caches
             ~/.gradle/wrapper
             !~/.gradle/caches/build-cache-*
-          key: gradle-deps-core-${{ hashFiles('**/build.gradle') }}
+          key: gradle-deps-core-${{ hashFiles('**/build.gradle.kts') }}
           restore-keys: |
             gradle-deps
       - name: Cache Gradle Build
@@ -65,6 +67,7 @@ jobs:
         with:
           path: |
             ~/.gradle/caches/build-cache-*
+            ~/.gradle/buildOutputCleanup/cache.properties
           key: gradle-builds-core-${{ github.sha }}
           restore-keys: |
             gradle-builds
@@ -73,6 +76,11 @@ jobs:
 
       - name: Build with Gradle
         run: |
+          [ $(du -s ~/.gradle/wrapper | awk '{ print $1 }') -gt 250000 ] && rm -rf ~/.gradle/wrapper/* || true
+          find ~/.gradle/caches -exec touch -d "2 days ago" {} + || true
+          echo 'org.gradle.caching=true' >> gradle.properties
+          echo 'org.gradle.parallel=true' >> gradle.properties
+          echo 'org.gradle.vfs.watch=true' >> gradle.properties
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:assembleRelease
           echo "APK_FILE_ARM32=$(find app/build/outputs/apk -name '*arm32.apk')" >> $GITHUB_ENV

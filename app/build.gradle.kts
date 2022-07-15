@@ -24,7 +24,8 @@ android {
                     "-DQAUXV_VERSION=$versionName",
                     "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
                     "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                    "-DNDK_CCACHE=ccache"
+                    "-DNDK_CCACHE=ccache",
+                    "-DANDROID_CCACHE=ccache"
                 )
                 targets += "qauxv"
             }
@@ -52,6 +53,15 @@ android {
                 signingConfig = signingConfigs.getByName("release")
             }
             kotlinOptions.suppressWarnings = true
+            val ltoCacheFlags = listOf(
+                "-flto=thin",
+                "-Wl,--thinlto-cache-policy,cache_size_bytes=300m",
+                "-Wl,--thinlto-cache-dir=${buildDir.absolutePath}/.lto-cache",
+            )
+            externalNativeBuild.cmake {
+                cFlags += ltoCacheFlags
+                cppFlags += ltoCacheFlags
+            }
         }
         getByName("debug") {
             isShrinkResources = false
