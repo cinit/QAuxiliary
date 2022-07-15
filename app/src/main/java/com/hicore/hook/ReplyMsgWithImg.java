@@ -76,7 +76,9 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                 DexKit.C_MessageRecordFactory,
                 DexKit.C_ReplyMsgUtils,
                 DexKit.C_ReplyMsgSender,
-                DexKit.N_PhotoListPanel_resetStatus
+                DexKit.N_PhotoListPanel_resetStatus,
+                DexKit.N_ContactUtils_getDiscussionMemberShowName,
+                DexKit.N_ContactUtils_getBuddyName,
         });
     }
 

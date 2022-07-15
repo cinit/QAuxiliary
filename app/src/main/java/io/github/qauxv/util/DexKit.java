@@ -142,7 +142,9 @@ public class DexKit {
     public static final int N_FriendsStatusUtil_isChatAtTop = 20021;
     public static final int N_VipUtils_getUserStatus = 20022;
     public static final int N_PhotoListPanel_resetStatus = 20023;
-    public static final int DEOBF_NUM_N = 23;
+    public static final int N_ContactUtils_getDiscussionMemberShowName = 20024;
+    public static final int N_ContactUtils_getBuddyName = 20025;
+    public static final int DEOBF_NUM_N = 25;
 
     public static DexHelper getHelper() {
         if (helper == null) {
@@ -634,6 +636,10 @@ public class DexKit {
             case C_OnlinePushPbPushTransMsg:
                 ret = "com.tencent.mobileqq.app.handler.receivesuccess.OnlinePushPbPushTransMsg";
                 break;
+            case N_ContactUtils_getDiscussionMemberShowName:
+            case N_ContactUtils_getBuddyName:
+                ret = "com.tencent.mobileqq.utils.ContactUtils";
+                break;
             default:
                 ret = null;
         }
@@ -922,6 +928,10 @@ public class DexKit {
                 return new byte[][]{forFiniteString8("<---handleGetFriendSystemMsgResp : decode pb filtered")};
             case C_OnlinePushPbPushTransMsg:
                 return new byte[][]{forFiniteString8("PbPushTransMsg muteGeneralFlag:")};
+            case N_ContactUtils_getDiscussionMemberShowName:
+                return new byte[][]{forFiniteString8("getDiscussionMemberShowName uin is null")};
+            case N_ContactUtils_getBuddyName:
+                return new byte[][]{forFiniteString8("getBuddyName()")};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1057,6 +1067,9 @@ public class DexKit {
             case C_SystemMessageProcessor:
             case C_OnlinePushPbPushTransMsg:
                 return new int[]{8};
+            case N_ContactUtils_getDiscussionMemberShowName:
+            case N_ContactUtils_getBuddyName:
+                return new int[]{16, 15, 14, 4, 10};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1607,6 +1620,36 @@ public class DexKit {
                     if ("(Z)V".equals(m.signature)) {
                         return m;
                     }
+                }
+                return null;
+            }
+            case N_ContactUtils_getDiscussionMemberShowName: {
+                // only 1 expected
+                if (__methods.size() == 1) {
+                    DexMethodDescriptor m = __methods.iterator().next();
+                    try {
+                        Method method = m.getMethodInstance(Initiator.getHostClassLoader());
+                        if (method.getReturnType() == String.class && Modifier.isStatic(method.getModifiers())
+                                && method.getParameterTypes().length == 3) {
+                            return m;
+                        }
+                    } catch (NoSuchMethodException e) {
+                        Log.e("N_ContactUtils_getDiscussionMemberShowName: getMethodInstance error", e);
+                    }
+                }
+                return null;
+            }
+            case N_ContactUtils_getBuddyName: {
+                // 2 expected, for same method
+                DexMethodDescriptor m = __methods.iterator().next();
+                try {
+                    Method method = m.getMethodInstance(Initiator.getHostClassLoader());
+                    if (method.getReturnType() == String.class && Modifier.isStatic(method.getModifiers())
+                            && method.getParameterTypes().length == 2) {
+                        return m;
+                    }
+                } catch (NoSuchMethodException e) {
+                    Log.e("N_ContactUtils_getBuddyName: getMethodInstance error", e);
                 }
                 return null;
             }

@@ -70,8 +70,11 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
 
     private RevokeMsgHook() {
         //FIXME: is MSF really necessary?
-        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF,
-                new int[]{DexKit.C_MessageRecordFactory, DexKit.C_CONTACT_UTILS});
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new int[]{
+                DexKit.C_MessageRecordFactory, DexKit.C_CONTACT_UTILS,
+                DexKit.N_ContactUtils_getDiscussionMemberShowName,
+                DexKit.N_ContactUtils_getBuddyName
+        });
     }
 
     @NonNull

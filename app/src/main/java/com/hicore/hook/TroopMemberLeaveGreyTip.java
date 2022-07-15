@@ -48,7 +48,12 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     public static final TroopMemberLeaveGreyTip INSTANCE = new TroopMemberLeaveGreyTip();
 
     private TroopMemberLeaveGreyTip() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_SystemMessageProcessor, DexKit.C_OnlinePushPbPushTransMsg});
+        super(SyncUtils.PROC_MAIN, new int[]{
+                DexKit.C_SystemMessageProcessor,
+                DexKit.C_OnlinePushPbPushTransMsg,
+                DexKit.N_ContactUtils_getDiscussionMemberShowName,
+                DexKit.N_ContactUtils_getBuddyName,
+        });
         // The MSF process is not required to be hooked, said by the original author.
     }
 

@@ -21,112 +21,130 @@
  */
 package io.github.qauxv.bridge;
 
-import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
-import static io.github.qauxv.bridge.ManagerHelper.getTroopManager;
-import static io.github.qauxv.util.Initiator._QQAppInterface;
-import static io.github.qauxv.util.Initiator.load;
-
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Objects;
+import mqq.app.AppRuntime;
 
 public class ContactUtils {
 
     private ContactUtils() {
     }
 
+    private static final String UNICODE_RLO = "\u202E";
+
+    @NonNull
+    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName, DexKit.N_ContactUtils_getBuddyName})
     public static String getTroopMemberNick(long troopUin, long memberUin) {
         return getTroopMemberNick(String.valueOf(troopUin), String.valueOf(memberUin));
     }
 
-    public static String getTroopMemberNick(String troopUin, String memberUin) {
-        if (troopUin != null && troopUin.length() > 0) {
-            try {
-                Object mTroopManager = getTroopManager();
-                Object troopMemberInfo = Reflex.invokeVirtualDeclaredOrdinal(mTroopManager, 0, 3, false,
-                    troopUin, memberUin, String.class, String.class, Initiator._TroopMemberInfo());
-                if (troopMemberInfo != null) {
-                    String troopnick = (String) XposedHelpers
-                        .getObjectField(troopMemberInfo, "troopnick");
-                    if (troopnick != null) {
-                        String ret = troopnick.replaceAll("\\u202E", "");
-                        if (ret.trim().length() > 0) {
-                            return ret;
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-                Log.e(e);
-            }
-            try {
-                String ret;//getDiscussionMemberShowName
-                Object nickname = Reflex.invokeStaticDeclaredOrdinalModifier(
-                    DexKit.doFindClass(DexKit.C_CONTACT_UTILS),
-                    2, 10, false, Modifier.PUBLIC, 0,
-                    getQQAppInterface(), troopUin, memberUin, _QQAppInterface(), String.class,
-                    String.class);
-                if (nickname instanceof String) {
-                    if (nickname != null
-                        && (ret = ((String) nickname).replaceAll("\\u202E", "")).trim().length() > 0) {
-                        return ret;
-                    }
-                } else {
-                    if (nickname != null
-                        && (ret = Reflex.getInstanceObject(nickname, "a", String.class)
-                        .replaceAll("\\u202E", "")).trim().length() > 0) {
+    @NonNull
+    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName, DexKit.N_ContactUtils_getBuddyName})
+    public static String getTroopMemberNick(@NonNull String troopUin, @NonNull String memberUin) {
+        Objects.requireNonNull(troopUin);
+        Objects.requireNonNull(memberUin);
+        AppRuntime app = AppRuntimeHelper.getQQAppInterface();
+        assert app != null;
+        try {
+            Object mTroopManager = ManagerHelper.getTroopManager();
+            Object troopMemberInfo = Reflex.invokeVirtualDeclaredOrdinal(mTroopManager, 0, 3, false,
+                    troopUin, memberUin,
+                    String.class, String.class,
+                    Initiator._TroopMemberInfo());
+            if (troopMemberInfo != null) {
+                String troopnick = (String) XposedHelpers.getObjectField(troopMemberInfo, "troopnick");
+                if (troopnick != null) {
+                    String ret = troopnick.replace(UNICODE_RLO, "");
+                    if (ret.trim().length() > 0) {
                         return ret;
                     }
                 }
-            } catch (ReflectiveOperationException e) {
-                Log.e(e);
             }
+        } catch (Exception | LinkageError e) {
+            Log.e(e);
         }
         try {
-            String ret;//getBuddyName
-            String nickname = null;
-            try {
-                nickname = (String) Reflex.invokeStaticDeclaredOrdinalModifier(
-                    DexKit.doFindClass(DexKit.C_CONTACT_UTILS), 1, 3, true, Modifier.PUBLIC, 0,
-                    getQQAppInterface(), memberUin, true, _QQAppInterface(), String.class,
-                    boolean.class, String.class);
-            } catch (Throwable e2) {
-                try {
-                    nickname = (String) Reflex.invokeStaticDeclaredOrdinalModifier(
-                        DexKit.doFindClass(DexKit.C_CONTACT_UTILS), 1, 4, true, Modifier.PUBLIC, 0,
-                        getQQAppInterface(), memberUin, true, _QQAppInterface(), String.class,
-                        boolean.class, String.class);
-                } catch (Throwable e3) {
-                    try {
-                        nickname = (String) Reflex.invokeStaticDeclaredOrdinalModifier(
-                            DexKit.doFindClass(DexKit.C_CONTACT_UTILS), 1, 2, false,
-                            Modifier.PUBLIC,
-                            0,
-                            getQQAppInterface(), memberUin, true,
-                            load("com.tencent.common.app.AppInterface"), String.class,
-                            boolean.class, String.class);
-                    } catch (Throwable e4) {
-                        e2.addSuppressed(e3);
-                        e2.addSuppressed(e4);
-                        Log.e(e2);
-                    }
+            String ret = getDiscussionMemberShowName(app, troopUin, memberUin);
+            if (ret != null) {
+                ret = ret.replace(UNICODE_RLO, "");
+                if (ret.trim().length() > 0) {
+                    return ret;
                 }
             }
-            if (nickname != null
-                && (ret = nickname.replaceAll("\\u202E", "")).trim().length() > 0) {
+        } catch (Exception | LinkageError e) {
+            Log.e(e);
+        }
+        try {
+            String ret;
+            String nickname = getBuddyName(app, memberUin);
+            if (nickname != null && (ret = nickname.replace(UNICODE_RLO, "")).trim().length() > 0) {
                 return ret;
             }
-        } catch (Throwable e) {
+        } catch (Exception | LinkageError e) {
             Log.e(e);
         }
         //**sigh**
         return memberUin;
     }
 
+    @Nullable
+    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName})
+    public static String getDiscussionMemberShowName(@NonNull AppRuntime app, @NonNull String troopUin, @NonNull String memberUin) {
+        Objects.requireNonNull(app, "app is null");
+        Objects.requireNonNull(troopUin, "troopUin is null");
+        Objects.requireNonNull(memberUin, "memberUin is null");
+        Method getDiscussionMemberShowName = DexKit.getMethodFromCache(DexKit.N_ContactUtils_getDiscussionMemberShowName);
+        if (getDiscussionMemberShowName == null) {
+            Log.e("getDiscussionMemberShowName but N_ContactUtils_getDiscussionMemberShowName not found");
+            return null;
+        }
+        try {
+            return (String) getDiscussionMemberShowName.invoke(null, app, troopUin, memberUin);
+        } catch (IllegalAccessException e) {
+            // should not happen
+            Log.e(e);
+            return null;
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            Log.e(Objects.requireNonNullElse(cause, e));
+            return null;
+        }
+    }
+
+    @Nullable
+    @DexDeobfs({DexKit.N_ContactUtils_getBuddyName})
+    public static String getBuddyName(@NonNull AppRuntime app, @NonNull String uin) {
+        Objects.requireNonNull(app, "app is null");
+        Objects.requireNonNull(uin, "uin is null");
+        Method getBuddyName = DexKit.getMethodFromCache(DexKit.N_ContactUtils_getBuddyName);
+        if (getBuddyName == null) {
+            Log.e("getBuddyName but N_ContactUtils_getBuddyName not found");
+            return null;
+        }
+        try {
+            return (String) getBuddyName.invoke(null, app, uin);
+        } catch (IllegalAccessException e) {
+            // should not happen
+            Log.e(e);
+            return null;
+        } catch (InvocationTargetException e) {
+            Throwable cause = e.getCause();
+            Log.e(Objects.requireNonNullElse(cause, e));
+            return null;
+        }
+    }
+
+    @NonNull
     public static String getTroopName(@NonNull String troopUin) {
         if (TextUtils.isEmpty(troopUin)) {
             return "";
