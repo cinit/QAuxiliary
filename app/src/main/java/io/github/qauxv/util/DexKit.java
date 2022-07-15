@@ -1013,7 +1013,7 @@ public class DexKit {
             case N_AtPanel__showDialogAtView:
                 return new int[]{12, 10, 4};
             case C_CustomWidgetUtil:
-                return new int[]{5, 4, 9};
+                return new int[]{20, 5, 4, 9};
             case C_ClockInEntryHelper:
                 return new int[]{6, 2};
             case C_CaptureUtil:
@@ -1374,7 +1374,7 @@ public class DexKit {
             case C_CustomWidgetUtil:
                 a:
                 for (DexMethodDescriptor m : __methods) {
-                    Class clz = Initiator.load(m.declaringClass);
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) {
                         continue;
                     }

@@ -36,6 +36,7 @@ import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Objects;
 
 /**
  * 显示具体消息数量
@@ -66,49 +67,49 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> clazz = DexKit.doFindClass(DexKit.C_CustomWidgetUtil);
-        for (Method m : clazz.getDeclaredMethods()) {
+        Class<?> kCustomWidgetUtil = DexKit.loadClassFromCache(DexKit.C_CustomWidgetUtil);
+        // target: com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil
+        // com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil is not what we want
+        Objects.requireNonNull(kCustomWidgetUtil, "CustomWidgetUtil.class is null");
+        Method updateCustomNoteTxt = null;
+        for (Method m : kCustomWidgetUtil.getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
             if (argt.length == 6 && Modifier.isStatic(m.getModifiers()) && m.getReturnType() == void.class) {
                 // TIM 3.1.1(1084) smali references
                 // updateCustomNoteTxt(Landroid/widget/TextView;IIIILjava/lang/String;)V
-                XposedBridge.hookMethod(m, new XC_MethodHook() {
-                    @Override
-                    protected void beforeHookedMethod(MethodHookParam param) {
-                        if (LicenseStatus.sDisableCommonHooks) {
-                            return;
-                        }
-                        if (!isEnabled()) {
-                            return;
-                        }
-                        param.args[4] = Integer.MAX_VALUE;
-                    }
-
-                    @Override
-                    protected void afterHookedMethod(MethodHookParam param) {
-                        if (LicenseStatus.sDisableCommonHooks) {
-                            return;
-                        }
-                        if (!isEnabled()) {
-                            return;
-                        }
-                        try {
-                            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
-                                TextView tv = (TextView) param.args[0];
-                                tv.setMaxWidth(Integer.MAX_VALUE);
-                                ViewGroup.LayoutParams lp = tv.getLayoutParams();
-                                lp.width = -2;
-                                tv.setLayoutParams(lp);
-                            }
-                        } catch (Throwable e) {
-                            traceError(e);
-                            throw e;
-                        }
-                    }
-                });
+                updateCustomNoteTxt = m;
                 break;
             }
         }
+        Objects.requireNonNull(updateCustomNoteTxt, "updateCustomNoteTxt not found");
+        XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
+            @Override
+            protected void beforeHookedMethod(MethodHookParam param) {
+                if (LicenseStatus.sDisableCommonHooks || !isEnabled()) {
+                    return;
+                }
+                param.args[4] = Integer.MAX_VALUE;
+            }
+
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                if (LicenseStatus.sDisableCommonHooks || !isEnabled()) {
+                    return;
+                }
+                try {
+                    if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
+                        TextView tv = (TextView) param.args[0];
+                        tv.setMaxWidth(Integer.MAX_VALUE);
+                        ViewGroup.LayoutParams lp = tv.getLayoutParams();
+                        lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                        tv.setLayoutParams(lp);
+                    }
+                } catch (Throwable e) {
+                    traceError(e);
+                    throw e;
+                }
+            }
+        });
         return true;
     }
 }
