@@ -6,7 +6,8 @@
     android:padding="3dp"
     android:gravity="left|top"
     android:orientation="horizontal"
-    tools:ignore="HardcodedText,RtlHardcoded">
+    tools:ignore="HardcodedText,RtlHardcoded"
+    tools:viewBindingIgnore="true">
 
     <TextView
         android:id="@+id/dialogClickableItemTitle"

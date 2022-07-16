@@ -1,27 +1,31 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-              android:orientation="vertical"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:padding="5dp">
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:padding="5dp"
+    android:orientation="vertical"
+    tools:viewBindingIgnore="true">
 
-    <TextView android:id="@+id/sLicenseItem_title"
-              android:textSize="16sp"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:padding="5dp"
-              android:textColor="?android:attr/textColorPrimary"
-              android:textIsSelectable="true"/>
+    <TextView
+        android:id="@+id/sLicenseItem_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:padding="5dp"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textIsSelectable="true"
+        android:textSize="16sp" />
 
-    <TextView android:id="@+id/sLicenseItem_licensePrev"
-              android:typeface="monospace"
-              android:textSize="14sp"
-              android:layout_width="match_parent"
-              android:layout_height="wrap_content"
-              android:layout_margin="5dp"
-              android:padding="5dp"
-              android:background="#30808080"
-              android:textColor="?android:attr/textColorPrimary"
-              android:textIsSelectable="true"/>
+    <TextView
+        android:id="@+id/sLicenseItem_licensePrev"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="5dp"
+        android:padding="5dp"
+        android:background="#30808080"
+        android:textColor="?android:attr/textColorPrimary"
+        android:textIsSelectable="true"
+        android:textSize="14sp"
+        android:typeface="monospace" />
 
 </LinearLayout>
