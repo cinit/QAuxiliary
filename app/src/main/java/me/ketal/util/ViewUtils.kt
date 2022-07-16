@@ -55,6 +55,6 @@ fun ViewGroup.findViewByCondition(condition: (view: View) -> Boolean): View? {
 }
 
 @Suppress("unused")
-inline fun MaterialDialog.ignoreResult() {
+fun MaterialDialog.ignoreResult() {
     // do nothing here, just ignore the result to make the lint happy
 }

@@ -56,7 +56,7 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
     override fun onReceive(data: MsgRecordData?): Boolean {
         try {
             if (data == null) return false
-            val regexString = getExFriendCfg()?.getStringOrDefault(RegexAntiMeg::class.simpleName!!, "") ?: null
+            val regexString = getExFriendCfg()?.getStringOrDefault(RegexAntiMeg::class.simpleName!!, "")
             if (regexString.isNullOrBlank()) return false
             return when {
                 Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
