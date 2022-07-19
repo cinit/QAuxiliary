@@ -23,8 +23,11 @@ package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
 import io.github.qauxv.bridge.QQMessageFacade
-import io.github.qauxv.util.TIMVersion.*
-import me.ketal.hook.LeftSwipeReplyHook
+import io.github.qauxv.util.TIMVersion.TIM_1_0_0
+import io.github.qauxv.util.TIMVersion.TIM_3_0_0
+import io.github.qauxv.util.TIMVersion.TIM_3_1_1
+import io.github.qauxv.util.TIMVersion.TIM_3_3_0
+import io.github.qauxv.util.TIMVersion.TIM_3_3_1
 import me.kyuubiran.hook.AutoMosaicName
 
 class TIMConfigTable : ConfigTableInterface {
@@ -45,11 +48,6 @@ class TIMConfigTable : ConfigTableInterface {
             ReplyNoAtHook::class.java.simpleName to mapOf(
                     TIM_3_1_1 to "wg",
                     TIM_3_3_0 to "wk",
-            ),
-
-            LeftSwipeReplyHook::class.java.simpleName to mapOf(
-                    TIM_3_1_1 to "Cg",
-                    TIM_3_3_0 to "Cn",
             ),
 
             AutoMosaicName::class.java.simpleName to mapOf(

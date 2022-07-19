@@ -29,19 +29,11 @@ import android.view.ViewGroup
 import android.widget.CompoundButton
 import android.widget.LinearLayout
 import androidx.core.view.plusAssign
-import cc.ioctl.util.HostStyledViewBuilder
 import cc.ioctl.util.ui.newListItemHookSwitchInit
 import cc.ioctl.util.ui.newListItemSwitch
-import com.afollestad.materialdialogs.MaterialDialog
-import com.afollestad.materialdialogs.WhichButton
-import com.afollestad.materialdialogs.actions.setActionButtonEnabled
-import com.afollestad.materialdialogs.input.getInputField
-import com.afollestad.materialdialogs.input.getInputLayout
-import com.afollestad.materialdialogs.input.input
 import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import me.ketal.hook.LeftSwipeReplyHook
-import me.ketal.util.ignoreResult
 
 @SuppressLint("Registered")
 class ModifyLeftSwipeReplyFragment : BaseRootLayoutFragment() {
@@ -53,35 +45,12 @@ class ModifyLeftSwipeReplyFragment : BaseRootLayoutFragment() {
         val ll = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL
             val hook = LeftSwipeReplyHook
-            val ctx = activity
-            this += newListItemHookSwitchInit(ctx, "总开关", "打开后才可使用以下功能", hook)
-            this += newListItemSwitch(ctx, "取消消息左滑动作", "取消取消，一定要取消", hook.isNoAction
+            this += newListItemHookSwitchInit(activity, "总开关", "打开后才可使用以下功能", hook)
+            this += newListItemSwitch(
+                activity, "取消消息左滑动作", "取消取消，一定要取消", hook.isNoAction
             ) { _: CompoundButton?, on: Boolean -> hook.isNoAction = on }
-            this += HostStyledViewBuilder.newListItemButton(ctx, "修改左滑消息灵敏度", "妈妈再也不用担心我误触了", null) {
-                val dialog = MaterialDialog(ctx).show {
-                    title(text = "输入响应消息左滑的距离")
-                    input(prefill = hook.replyDistance.toString(), waitForPositiveButton = false) { dialog, text ->
-                        val inputField = dialog.getInputField()
-                        val isValid = try {
-                            text.toString().toInt()
-                            true
-                        } catch (e: NumberFormatException) {
-                            false
-                        }
-                        inputField.error = if (isValid) null else "请输入有效的数据"
-                        dialog.setActionButtonEnabled(WhichButton.POSITIVE, isValid)
-                    }.ignoreResult()
-                    positiveButton(text = "确定") {
-                        val text = it.getInputField().text.toString()
-                        hook.replyDistance = text.toInt()
-                        it.dismiss()
-                    }
-                    negativeButton(text = "取消")
-                }
-                dialog.getInputLayout().addView(HostStyledViewBuilder.subtitle(ctx,
-                        "若显示为-1，代表为初始化，请先在消息界面使用一次消息左滑回复，即可获得初始阈值。\n当你修改出错时，输入一个小于0的值，即可使用默认值"), 0)
-            }
-            this += newListItemSwitch(ctx, "左滑多选消息", "娱乐功能，用途未知", hook.isMultiChose
+            this += newListItemSwitch(
+                activity, "左滑多选消息", "娱乐功能，用途未知", hook.isMultiChose
             ) { _: CompoundButton?, on: Boolean -> hook.isMultiChose = on }
         }
         val rootView = BounceScrollView(activity, null).apply {

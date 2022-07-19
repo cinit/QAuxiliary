@@ -33,13 +33,16 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.tlb.ConfigTable.getConfig
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.*
+import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.requireMinVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.data.ConfigData
 import me.ketal.ui.activity.ModifyLeftSwipeReplyFragment
-import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 
@@ -61,7 +64,6 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
 
     private val LEFT_SWIPE_NO_ACTION = ConfigData<Boolean>("ketal_left_swipe_noAction")
     private val LEFT_SWIPE_MULTI_CHOOSE = ConfigData<Boolean>("ketal_left_swipe_multiChoose")
-    private val LEFT_SWIPE_REPLY_DISTANCE = ConfigData<Int>("ketal_left_swipe_replyDistance")
     var isNoAction: Boolean
         get() = LEFT_SWIPE_NO_ACTION.getOrDefault(false)
         set(on) {
@@ -72,11 +74,7 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
         set(on) {
             LEFT_SWIPE_MULTI_CHOOSE.value = on
         }
-    var replyDistance: Int
-        get() = LEFT_SWIPE_REPLY_DISTANCE.getOrDefault(-1)
-        set(replyDistance) {
-            LEFT_SWIPE_REPLY_DISTANCE.value = replyDistance
-        }
+    // todo: put png in module and use it here
     private var img: Bitmap? = null
     private val multiBitmap: Bitmap?
         get() {
@@ -121,14 +119,5 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
             DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__chooseMsg)!!.invoke(baseChatPie, message)
             it.result = null
         }
-        val methodName = if (isTim()) getConfig(LeftSwipeReplyHook::class.java.simpleName) else "a"
-        Reflex.findMethod(hookClass, Int::class.java, methodName)
-            .hookAfter(this) {
-                if (replyDistance <= 0) {
-                    replyDistance = it.result as Int
-                } else {
-                    it.result = replyDistance
-                }
-            }
     }
 }
