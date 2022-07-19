@@ -27,6 +27,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -40,10 +41,9 @@ object HideMutualMark : CommonSwitchFunctionHook("na_hide_intimate_image_kt") {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/widget/navbar/NavBarAIO;->setTitleIconLeftForMutualMark(Lcom/tencent/mobileqq/mutualmark/info/MutualMarkForDisplayInfo;Lcom/tencent/mobileqq/mutualmark/info/MutualMarkForDisplayInfo;)V".method.replace(
-            this,
-            null
-        )
+        "com/tencent/mobileqq/widget/navbar/NavBarAIO".clazz!!
+            .method("setTitleIconLeftForMutualMark")!!
+            .replace(this, null)
     }
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5)
