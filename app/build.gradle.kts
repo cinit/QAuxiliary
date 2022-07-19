@@ -165,9 +165,16 @@ val killQQ = tasks.register<Exec>("killQQ") {
     commandLine(adb, "shell", "am", "force-stop", "com.tencent.mobileqq")
     isIgnoreExitValue = true
 }
-val restartQQ = tasks.register<Exec>("restartQQ") {
+val openQQ = tasks.register<Exec>("openQQ") {
     group = "qauxv"
     commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
+    isIgnoreExitValue = true
+}
+tasks.register<Exec>("openTroubleShooting") {
+    group = "qauxv"
+    commandLine(adb, "shell", "am", "start",
+        "-e", "qa_jump_action_cmd", "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY",
+        "com.tencent.mobileqq/.activity.JumpActivity")
     isIgnoreExitValue = true
 }
 
@@ -195,7 +202,7 @@ androidComponents.onVariants { variant ->
     task("installAndRestart${variantCapped}") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped", killQQ)
-        finalizedBy(restartQQ)
+        finalizedBy(openQQ)
     }
 }
 
