@@ -56,7 +56,7 @@ object HideSearch : CommonSwitchFunctionHook(
 
     override val name = "隐藏搜索编辑框"
 
-    override val description = "谨慎开启"
+    override val description = "不再维护，新版QQ谨慎开启"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
