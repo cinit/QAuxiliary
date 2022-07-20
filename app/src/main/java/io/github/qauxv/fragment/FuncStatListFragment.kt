@@ -110,11 +110,16 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
         val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
         val unsupported = item is IDynamicHook && !item.isAvailable
+        val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
         val tags = ArrayList<String>()
         var iconType = 0
         if (reportError) {
             iconType = 5
             tags.add("存在错误")
+        }
+        if (isDepError) {
+            iconType = 4
+            tags.add("依赖错误")
         }
         if (errorCount != 0) {
             iconType = max(iconType, 4)
