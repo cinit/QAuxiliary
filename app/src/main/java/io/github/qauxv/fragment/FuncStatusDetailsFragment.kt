@@ -162,7 +162,16 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
             return
         }
         subtitle = mFunction!!.uiItemAgent.let { it.titleProvider(it) }
+    }
+
+    override fun onResume() {
+        super.onResume()
         requireActivity().contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, observer)
+    }
+
+    override fun onPause() {
+        super.onPause()
+        requireActivity().contentResolver.unregisterContentObserver(observer)
     }
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
@@ -230,7 +239,6 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
     override fun onDestroy() {
         super.onDestroy()
         observerDialog = null
-        requireActivity().contentResolver.unregisterContentObserver(observer)
         activity?.window?.clearFlags(WindowManager.LayoutParams.FLAG_SECURE)
     }
 
