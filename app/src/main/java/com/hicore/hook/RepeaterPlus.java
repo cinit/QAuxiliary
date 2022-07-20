@@ -37,21 +37,21 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HookUtils.BeforeHookedMethod;
 import cc.ioctl.util.HostInfo;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.util.List;
+import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -148,7 +148,13 @@ public class RepeaterPlus extends BaseFunctionHook {
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod("com.tencent.mobileqq.activity.aio.ChatAdapter1", "getView", View.class, new Class[]{
+        Class<?> kChatAdapter1 = Initiator.load("com.tencent.mobileqq.activity.aio.ChatAdapter1");
+        if (kChatAdapter1 == null) {
+            Class<?> kGuildPieAdapter = Initiator.load("com.tencent.mobileqq.guild.chatpie.GuildPieAdapter");
+            kChatAdapter1 = kGuildPieAdapter == null ? null : kGuildPieAdapter.getSuperclass();
+        }
+        Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
+        HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod(kChatAdapter1, "getView", View.class, new Class[]{
                 int.class,
                 View.class,
                 ViewGroup.class
