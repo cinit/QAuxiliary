@@ -52,6 +52,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_8_80
 import io.github.qauxv.util.QQVersion.QQ_8_8_83
 import io.github.qauxv.util.QQVersion.QQ_8_8_93
 import io.github.qauxv.util.QQVersion.QQ_8_8_98
+import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.RemovePlayTogether
 import me.kyuubiran.hook.SimplifyQQSettingMe
@@ -110,6 +111,7 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_17 to "S",
             QQ_8_8_93 to "Y0",
             QQ_8_8_98 to "S0",
+            QQ_8_9_2 to "R0",
         ),
 
         SortAtPanel.sessionInfoTroopUin to mapOf(

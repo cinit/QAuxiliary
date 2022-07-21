@@ -30,12 +30,12 @@ import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
+import com.github.kyuubiran.ezxhelper.utils.getStaticObject
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
-import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
@@ -45,9 +45,11 @@ import io.github.qauxv.util.QQVersion.QQ_8_4_1
 import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import me.kyuubiran.util.setViewZeroSize
 import xyz.nextalone.base.MultiItemDelayableHook
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.throwOrTrue
@@ -135,7 +137,11 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                         param.thisObject.get(midContentName, View::class.java) as LinearLayout
                     }
                     //底端部分 设置 夜间模式 达人 等
-                    val underSettingsLayout = if (requireMinQQVersion(QQ_8_6_5)) {
+                    val (_, _, vg) = param.args
+                    val id = "${hostInfo.packageName}.R\$id".clazz?.getStaticObject("drawer_bottom_container")
+                    val underSettingsLayout = if (id is Int && vg is ViewGroup) {
+                        vg.findViewById(id)
+                    } else if (requireMinQQVersion(QQ_8_6_5)) {
                         val parent = midContentListLayout?.parent?.parent as ViewGroup
                         var ret: LinearLayout? = null
                         parent.forEach {
@@ -203,22 +209,5 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
             }
         }
         return false
-    }
-
-    //以下三个方法是曾经辉煌的MultiConfigItem和BaseMultiConfigDelayableHook最后的墓碑
-
-    fun hasConfig(name: String): Boolean {
-        val cfg = ConfigManager.getDefaultConfig()
-        return cfg.contains(this::class.java.simpleName + '$' + name)
-    }
-
-    fun setBooleanConfig(name: String, value: Boolean) {
-        val cfg = ConfigManager.getDefaultConfig()
-        cfg.putBoolean(this::class.java.simpleName + '$' + name, value)
-    }
-
-    fun getBooleanConfig(name: String): Boolean {
-        val cfg = ConfigManager.getDefaultConfig()
-        return cfg.getBooleanOrDefault(this::class.java.simpleName + '$' + name, false)
     }
 }
