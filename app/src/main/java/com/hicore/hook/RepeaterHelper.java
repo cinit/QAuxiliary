@@ -12,6 +12,7 @@ import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
 import com.hicore.messageUtils.QQEnvUtils;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.util.HashMap;
 
@@ -69,6 +70,7 @@ public class RepeaterHelper {
                         Repeater.Repeat(session, v.getTag());
                     } catch (Exception e) {
                         Toasts.error(null, e + "");
+                        Log.e(e);
                     }
                 });
                 baseChatItem.addView(imageButton, param);

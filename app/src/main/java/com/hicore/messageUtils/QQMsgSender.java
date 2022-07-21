@@ -9,6 +9,7 @@ import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.Utils.FileUtils;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.io.File;
 import java.lang.reflect.Method;
@@ -27,6 +28,7 @@ public class QQMsgSender {
             });
             CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), HostInfo.getApplication(), _Session, text, atList);
         } catch (Exception e) {
+            Log.e(e);
         }
     }
 
@@ -42,6 +44,7 @@ public class QQMsgSender {
                     QQEnvUtils.getAppRuntime(), _Session, picRecord, 0
             );
         } catch (Exception e) {
+            Log.e(e);
         }
     }
 
@@ -55,6 +58,7 @@ public class QQMsgSender {
                     });
             CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, structMsg);
         } catch (Throwable th) {
+            Log.e(th);
         }
     }
 
@@ -68,6 +72,7 @@ public class QQMsgSender {
                     });
             CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, arkAppMsg);
         } catch (Throwable th) {
+            Log.e(th);
         }
     }
 
@@ -89,6 +94,7 @@ public class QQMsgSender {
                                             MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"), String.class});
             CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, path);
         } catch (Exception e) {
+            Log.e(e);
         }
     }
 
@@ -118,6 +124,7 @@ public class QQMsgSender {
             }
 
         } catch (Exception e) {
+            Log.e(e);
         }
 
     }
@@ -152,6 +159,7 @@ public class QQMsgSender {
             }
 
         } catch (Exception e) {
+            Log.e(e);
         }
     }
     public static void sendAnimation(Object Session, int sevrID) {
@@ -165,7 +173,8 @@ public class QQMsgSender {
                         boolean.class, new Class[]{int.class, MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"), int.class}, sevrID,
                         Session, 0);
             }
-        } catch (Exception es) {
+        } catch (Exception e) {
+            Log.e(e);
         }
     }
 
@@ -177,6 +186,7 @@ public class QQMsgSender {
                     MClass.loadClass("com.tencent.mobileqq.data.MessageForShortVideo")
             }, QQEnvUtils.getAppRuntime(), _SessionInfo, ChatMessage);
         } catch (Exception e) {
+            Log.e(e);
         }
     }
 }
