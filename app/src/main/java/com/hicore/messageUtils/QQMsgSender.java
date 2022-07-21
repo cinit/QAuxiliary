@@ -99,9 +99,16 @@ public class QQMsgSender {
                     MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
                     int.class
             });
-            Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
-                    MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-            mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+                Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.d"), null,
+                        MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
+            }else {
+                Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
+                        MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
+            }
+
         } catch (Exception e) {
         }
 
@@ -111,15 +118,28 @@ public class QQMsgSender {
         try {
             Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
                     MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-            Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
-                    MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
-                    MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
-                    MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
-                    int.class,
-                    int.class,
-                    boolean.class
-            });
-            mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+                Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.d", null, void.class, new Class[]{
+                        MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                        MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
+                        MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+                        int.class,
+                        int.class,
+                        boolean.class
+                });
+                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
+            }else {
+                Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
+                        MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                        MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
+                        MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+                        int.class,
+                        int.class,
+                        boolean.class
+                });
+                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
+            }
+
         } catch (Exception e) {
         }
     }
