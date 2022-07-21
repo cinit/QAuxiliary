@@ -8,6 +8,7 @@ import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.Utils.FileUtils;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import java.io.File;
 import java.lang.reflect.Method;
@@ -93,17 +94,24 @@ public class QQMsgSender {
 
     public static void sendMix(Object _Session, Object mixRecord) {
         try {
-            Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
-                    MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
-                    MClass.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
-                    MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
-                    int.class
-            });
+
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+                Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.d", null, void.class, new Class[]{
+                        MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                        MClass.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
+                        MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                        int.class
+                });
                 Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.d"), null,
-                        MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+                        MClass.loadClass("com.tencent.mobileqq.replymsg.d"));
                 mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
             }else {
+                Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
+                        MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                        MClass.loadClass("com.tencent.mobileqq.data.MessageForMixedMsg"),
+                        MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                        int.class
+                });
                 Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
                         MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
                 mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
@@ -116,19 +124,22 @@ public class QQMsgSender {
 
     public static void sendReply(Object _Session, Object replyRecord) {
         try {
-            Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
-                    MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+                Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.d"), null,
+                        MClass.loadClass("com.tencent.mobileqq.replymsg.d"));
                 Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.d", null, void.class, new Class[]{
                         MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                         MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
-                        MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"),
+                        Initiator._BaseSessionInfo(),
                         int.class,
                         int.class,
                         boolean.class
                 });
                 mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
             }else {
+                Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
+                        MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
                 Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
                         MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                         MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
