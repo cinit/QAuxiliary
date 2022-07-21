@@ -65,7 +65,7 @@ import java.util.Locale
 @UiItemAgentEntry
 object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
-    override val name = "消息显示发送者QQ号和时间"
+    override val name = "消息显示 ID 和时间"
     override val description = "可能导致聊天界面滑动掉帧"
     override fun initOnce() = isAvailable
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
@@ -73,8 +73,8 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     private const val CFG_KEY_CUSTOM_MSG_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_MSG_FORMAT"
     private const val CFG_KEY_CUSTOM_TIME_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_TIME_FORMAT"
     private const val CFG_KEY_ENABLE_DETAIL_INFO = "ChatItemShowQQUin.CFG_KEY_ENABLE_DETAIL_INFO"
-    private const val DEFAULT_MSG_FORMAT = "QQ: \${senderuin} Time: \${formatTime}"
-    private const val DEFAULT_TIME_FORMAT = "MM-dd HH:mm:ss"
+    private const val DEFAULT_MSG_FORMAT = "\${shmsgseq}   \${formatTime}"
+    private const val DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
