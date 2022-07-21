@@ -79,7 +79,7 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG;
+        return FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY;
     }
 
     private static Class<?> kFileBrowserManager = null;
