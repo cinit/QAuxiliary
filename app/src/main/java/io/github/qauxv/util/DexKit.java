@@ -1451,6 +1451,24 @@ public class DexKit {
                 }
                 break;
             case C_GroupAppActivity:
+                //has superclass
+                for (DexMethodDescriptor m : __methods) {
+                    Class clz = Initiator.load(m.declaringClass);
+                    if (clz.isEnum()) {
+                        continue;
+                    }
+                    if (Modifier.isAbstract(clz.getModifiers())) {
+                        continue;
+                    }
+                    if (clz.getSuperclass() == Object.class) {
+                        continue;
+                    }
+                    if (Arrays.stream(clz.getDeclaredFields()).noneMatch(f -> f.getType().getName().endsWith("TroopAppShortcutContainer"))) {
+                        continue;
+                    }
+                    return m;
+                }
+                break;
             case C_IntimateDrawer:
             case C_HttpDownloader:
             case C_MultiMsg_Manager:
