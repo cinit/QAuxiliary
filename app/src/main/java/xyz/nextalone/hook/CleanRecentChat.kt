@@ -48,7 +48,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsStatusUtil_isChatAtTop)) {
+object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsStatusUtil_isChatAtTop, DexKit.N_Conversation_onCreate)) {
 
     override val name = "清理最近聊天"
 

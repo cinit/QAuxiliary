@@ -876,9 +876,7 @@ public class DexKit {
                         0x74, 0x20, 0x69, 0x6E, 0x66, 0x6F, 0x20, 0x69, 0x73, 0x20, 0x6E, 0x75,
                         0x6C, 0x6C}};
             case N_Conversation_onCreate:
-                return new byte[][]{
-                    new byte[]{0x0F, 0x52, 0x65, 0x63, 0x65, 0x6E, 0x74, 0x5F, 0x4F, 0x6E, 0x43,
-                        0x72, 0x65, 0x61, 0x74, 0x65}};
+                return new byte[][]{forFiniteString8("Recent_OnCreate")};
             case N_QQSettingMe_onResume:
                 return new byte[][]{
                     new byte[]{
