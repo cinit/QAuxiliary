@@ -756,9 +756,7 @@ public class DexKit {
                     new byte[]{0x11, 0x6F, 0x6E, 0x44, 0x72, 0x61, 0x77, 0x65, 0x72, 0x53, 0x74,
                         0x61, 0x72, 0x74, 0x4F, 0x70, 0x65, 0x6E}};
             case C_IntimateDrawer:
-                return new byte[][]{
-                    new byte[]{0x15, 0x69, 0x6E, 0x74, 0x69, 0x6D, 0x61, 0x74, 0x65, 0x5F, 0x72,
-                        0x65, 0x6C, 0x61, 0x74, 0x69, 0x6F, 0x6E, 0x73, 0x68, 0x69, 0x70}};
+                return new byte[][]{forFiniteString8("onDrawerOpened, needReqIntimateInfo: %s")};
             case C_ZipUtils_biz: {
                 return new byte[][]{
                     new byte[]{0x10, 0x2C, 0x5A, 0x69, 0x70, 0x45, 0x6E, 0x74, 0x72, 0x79, 0x20,
@@ -991,7 +989,7 @@ public class DexKit {
             case C_GroupAppActivity:
                 return new int[]{2, 11, 6};
             case C_IntimateDrawer:
-                return new int[]{6};
+                return new int[]{7, 6};
             case C_ZipUtils_biz:
                 return new int[]{1, 9, 5};
             case C_HttpDownloader:
