@@ -40,7 +40,9 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_mu
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_CONTACT
 
     override fun initOnce() = throwOrTrue {
-        "Lcom.tencent.mobileqq.activity.contacts.base.tabs.ContactsTabs;->a()V".method.hookAfter(
+        val contactsTabs = if(requireMinQQVersion(QQVersion.QQ_8_9_2)) "b" else "ContactsTabs"
+        val tabinfo = if (requireMinQQVersion(QQVersion.QQ_8_9_2)) "f" else "TabInfo"
+        "Lcom.tencent.mobileqq.activity.contacts.base.tabs.$contactsTabs;->a()V".method.hookAfter(
             this
         ) {
             val list = it.thisObject.get(ArrayList::class.java) as ArrayList<Any>
@@ -48,7 +50,7 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_mu
             list.clear()
             val stringList: ArrayList<String> = arrayListOf()
             val intList: ArrayList<Int> = arrayListOf()
-            val cls = "com.tencent.mobileqq.activity.contacts.base.tabs.TabInfo".clazz
+            val cls = "com.tencent.mobileqq.activity.contacts.base.tabs.$tabinfo".clazz
             tabList.forEach { obj ->
                 val str = obj.get(String::class.java) as String
                 if (str == "好友" && !activeItems.contains(str)) {
