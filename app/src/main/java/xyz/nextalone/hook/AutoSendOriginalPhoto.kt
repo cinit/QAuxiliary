@@ -48,7 +48,11 @@ object AutoSendOriginalPhoto :
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        val method = if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "Z" else "a"
+        val method = when {
+            requireMinQQVersion(QQVersion.QQ_8_9_2) -> "e0"
+            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "Z"
+            else -> "a"
+        }
         "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
