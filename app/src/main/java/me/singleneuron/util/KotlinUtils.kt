@@ -1,13 +1,13 @@
 /*
- * QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 dmca@ioctl.cc
- * https://github.com/ferredoxin/QNotified
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * https://github.com/cinit/QAuxiliary
  *
  * This software is non-free but opensource software: you can redistribute it
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,16 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * and eula along with this software.  If not, see
  * <https://www.gnu.org/licenses/>
- * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 package me.singleneuron.util
 
 import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
-import com.google.gson.Gson
-import com.google.gson.reflect.TypeToken
 import io.github.qauxv.util.Log
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.json.Json
 import me.singleneuron.base.bridge.CardMsgList
 import me.singleneuron.data.CardMsgCheckResult
 import java.io.BufferedReader
@@ -65,11 +65,7 @@ fun checkCardMsg(originString: String): CardMsgCheckResult {
         val string = decodePercent(originString)
         Log.d("decode string: $string")
         val blackListString = CardMsgList.getInstance().invoke()
-        val blackList = Gson().fromJson<HashMap<String, String>>(
-            blackListString,
-            object : TypeToken<HashMap<String, String>>() {}.type
-        )
-        Log.d(Gson().toJson(blackList))
+        val blackList = Json.decodeFromString<Map<String, String>>(blackListString)
         for (rule in blackList) {
             if (Regex(
                     rule.value,

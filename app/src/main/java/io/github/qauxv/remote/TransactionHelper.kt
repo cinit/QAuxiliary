@@ -22,16 +22,15 @@
 
 package io.github.qauxv.remote
 
-import com.google.gson.Gson
-import com.google.gson.annotations.SerializedName
-import com.google.gson.reflect.TypeToken
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.data.UserStatusConst
-import org.json.JSONArray
+import kotlinx.serialization.Serializable
+import kotlinx.serialization.builtins.ListSerializer
+import kotlinx.serialization.json.Json
 import org.json.JSONException
 import org.json.JSONObject
 import java.io.BufferedReader
@@ -175,9 +174,9 @@ object TransactionHelper {
             val json = cfg.getString(KEY_MSG_SYNC_LIST, null)
             items = if (json.isNullOrEmpty()) {
                 ArrayList()
-            } else {
+            } else ({
                 deserializeCardMsgSendRecordListFromJson(json)
-            }
+            }) as ArrayList<CardMsgSendRecord>
             items.removeIf { it.uuid == uuid }
             cfg.putString(KEY_MSG_SYNC_LIST, serializeCardMsgSendRecordListToJson(items))
         }
@@ -207,13 +206,15 @@ object TransactionHelper {
                     os.writeBytes(request.toString())
                     os.flush()
                     os.close()
-                    val resp = JSONObject(convertInputStreamToString(
-                        if (conn.responseCode >= 400) {
-                            conn.errorStream
-                        } else {
-                            conn.inputStream
-                        }
-                    )!!)
+                    val resp = JSONObject(
+                        convertInputStreamToString(
+                            if (conn.responseCode >= 400) {
+                                conn.errorStream
+                            } else {
+                                conn.inputStream
+                            }
+                        )!!
+                    )
                     if (resp.getInt("code") == 200) {
                         if (BuildConfig.DEBUG) {
                             Log.d("syncCardMsgHistory/requestSyncCardMsgHistory: ${r.uuid} $resp")
@@ -246,11 +247,13 @@ object TransactionHelper {
     /**
      * [time] in ms
      */
+    @Serializable
     data class CardMsgSendRecord(
-        @SerializedName("uin") val uin: Long,
-        @SerializedName("msg") val msg: String,
-        @SerializedName("time") val time: Long = System.currentTimeMillis(),
-        @SerializedName("uuid") val uuid: String = UUID.randomUUID().toString()) {
+        val uin: Long,
+        val msg: String,
+        val time: Long = System.currentTimeMillis(),
+        val uuid: String = UUID.randomUUID().toString()
+    ) {
 
         override fun toString(): String {
             return "CardMsgSendRecord(uin=$uin, msg='$msg', time=$time, uuid='$uuid')"
@@ -267,11 +270,11 @@ object TransactionHelper {
         } else {
             list
         }
-        return Gson().toJsonTree(items, object : TypeToken<List<CardMsgSendRecord?>?>() {}.type).asJsonArray.toString()
+        return Json.encodeToString(ListSerializer(CardMsgSendRecord.serializer()), list)
     }
 
     @Throws(JSONException::class)
     fun deserializeCardMsgSendRecordListFromJson(json: String): ArrayList<CardMsgSendRecord> =
-        Gson().fromJson(json, object : TypeToken<List<CardMsgSendRecord?>?>() {}.type)
+        Json.decodeFromString(ListSerializer(CardMsgSendRecord.serializer()), json) as ArrayList<CardMsgSendRecord>
 
 }

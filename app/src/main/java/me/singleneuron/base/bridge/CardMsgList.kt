@@ -1,13 +1,13 @@
 /*
- * QNotified - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 dmca@ioctl.cc
- * https://github.com/ferredoxin/QNotified
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * https://github.com/cinit/QAuxiliary
  *
  * This software is non-free but opensource software: you can redistribute it
  * and/or modify it under the terms of the GNU Affero General Public License
  * as published by the Free Software Foundation; either
  * version 3 of the License, or any later version and our eula as published
- * by ferredoxin.
+ * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
@@ -17,15 +17,16 @@
  * You should have received a copy of the GNU Affero General Public License
  * and eula along with this software.  If not, see
  * <https://www.gnu.org/licenses/>
- * <https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md>.
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 package me.singleneuron.base.bridge
 
 import androidx.annotation.NonNull
-import com.google.gson.Gson
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 import java.net.URL
 
 const val apiAddress = "https://2fa.qwq2333.top/card/BlackList"
@@ -55,7 +56,7 @@ fun getBuiltInRule(): String {
         "禁止音视频通话" to """ti\.qq\.com""",
         "禁止自动回复类卡片" to """com\.tencent\.autoreply"""
     )
-    return Gson().toJson(map)
+    return Json.encodeToString(map)
 }
 
 fun getBlackList(): String {
