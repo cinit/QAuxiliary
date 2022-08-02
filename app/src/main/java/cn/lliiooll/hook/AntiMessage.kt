@@ -26,6 +26,7 @@ import cn.lliiooll.msg.MessageReceiver
 import cn.lliiooll.util.MsgRecordUtil
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.singleneuron.data.MsgRecordData
@@ -50,7 +51,7 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         if (items.contains(data?.msgType)) {
             data?.msgRecord?.set("isread", true)
             return true
-        } else if (data?.msg?.startsWith("@全体成员 ") == true && items.contains(0)) {
+        } else if (data?.msg?.contains("@全体成员 ") == true && items.contains(0)) {
             data.msgRecord.set("isread", true)
             return true
         }
