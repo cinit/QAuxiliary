@@ -24,7 +24,6 @@ package io.github.qauxv.util;
 import android.app.Application;
 import cc.ioctl.hook.AppCenterFix;
 import cc.ioctl.util.HostInfo;
-import com.microsoft.appcenter.AppCenter;
 import com.microsoft.appcenter.analytics.Analytics;
 import com.microsoft.appcenter.crashes.AbstractCrashesListener;
 import com.microsoft.appcenter.crashes.Crashes;
@@ -93,6 +92,7 @@ public class CliOper {
                 "xyz.nextalone.",
                 "io.github.duzhaokun123.",
                 "com.hicore.",
+                "sakura.kooi.QAuxiliaryModified",
         };
     }
 
@@ -116,12 +116,12 @@ public class CliOper {
         if (longAccount != -1) {
             properties.put("Uin", String.valueOf(longAccount));
         }
-        Integer newHashCode = properties.hashCode();
+        int newHashCode = properties.hashCode();
         if (oldHashCode != null && oldHashCode.equals(newHashCode)) {
             return;
         }
         try {
-            configManager.putObject(LAST_TRACE_HASHCODE_CONFIG, newHashCode);
+            configManager.putInt(LAST_TRACE_HASHCODE_CONFIG, newHashCode);
             configManager.save();
         } catch (Exception e) {
             //ignored

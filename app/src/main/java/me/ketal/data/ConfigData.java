@@ -22,18 +22,12 @@
 
 package me.ketal.data;
 
-import static io.github.qauxv.config.MmkvConfigManagerImpl.TYPE_JSON;
-import static io.github.qauxv.config.MmkvConfigManagerImpl.TYPE_SUFFIX;
-
 import android.os.Looper;
 import cc.ioctl.util.HostInfo;
-import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
-import java.lang.reflect.Type;
 
 public class ConfigData<T> {
 
@@ -58,15 +52,6 @@ public class ConfigData<T> {
     }
 
     public T getValue() {
-        if (mgr.getInt(mKeyName.concat(TYPE_SUFFIX), 0) == TYPE_JSON) {
-            Type type = new TypeToken<T>() {
-            }.getType();
-            String json = mgr.getString(mKeyName);
-            if (json == null) {
-                return null;
-            }
-            return new Gson().fromJson(json, type);
-        }
         try {
             return (T) mgr.getObject(mKeyName);
         } catch (Exception e) {
@@ -100,15 +85,6 @@ public class ConfigData<T> {
 
     public T getOrDefault(T def) {
         try {
-            if (mgr.getInt(mKeyName.concat(TYPE_SUFFIX), 0) == TYPE_JSON) {
-                Type type = new TypeToken<T>() {
-                }.getType();
-                String json = mgr.getString(mKeyName);
-                if (json == null) {
-                    return def;
-                }
-                return new Gson().fromJson(json, type);
-            }
             return (T) mgr.getOrDefault(mKeyName, def);
         } catch (Exception e) {
             Log.e(e);

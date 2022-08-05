@@ -24,7 +24,6 @@ package io.github.qauxv.config;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.google.gson.Gson;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.base.annotation.InternalApi;
 import io.github.qauxv.util.Log;
@@ -445,20 +444,6 @@ public class MmkvConfigManagerImpl extends ConfigManager {
                     return null;
                 }
             }
-            case TYPE_JSON: {
-                String string = mmkv.getString(key, null);
-                String clazz = mmkv.getString(key.concat(CLASS_SUFFIX), null);
-                if (string == null || clazz == null) {
-                    return null;
-                }
-                try {
-                    Class<?> clazz2 = Class.forName(clazz);
-                    return new Gson().fromJson(string, clazz2);
-                } catch (Exception e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
             default:
                 return null;
         }
@@ -547,9 +532,7 @@ public class MmkvConfigManagerImpl extends ConfigManager {
                 throw new RuntimeException(e);
             }
         } else {
-            mmkv.putString(key, new Gson().toJson(v));
-            mmkv.putInt(key.concat(TYPE_SUFFIX), TYPE_JSON);
-            mmkv.putString(key.concat(CLASS_SUFFIX), v.getClass().getName());
+            throw new IllegalArgumentException("unsupported type" + v.getClass());
         }
         return this;
     }
