@@ -83,17 +83,20 @@
                 android:id="@+id/junkCode_copy"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_marginEnd="10dp"
                 android:layout_alignParentEnd="true"
+                android:layout_centerVertical="true"
                 android:text="复制" />
 
             <TextView
                 android:id="@+id/junkCode_invalidateTime"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
+                android:layout_margin="10dp"
                 android:layout_alignParentStart="true"
-                android:padding="10dp"
+                android:layout_centerVertical="true"
                 android:gravity="start"
-                android:text="过期时间: HH:MM:SS"
+                android:text="过期时间: HH:mm:ss"
                 android:textColor="@color/secondTextColor"
                 android:textSize="14sp" />
 

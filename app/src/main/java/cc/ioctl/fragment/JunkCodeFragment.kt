@@ -64,7 +64,9 @@ class JunkCodeFragment : BaseRootLayoutFragment(), Runnable {
         val timeRemainingMs = expireTime - now
         val remainPercentage = timeRemainingMs.toFloat() / (30L * 1000L).toFloat()
         if (tc != mLasttc) {
-            binding.junkCodeCode.text = code.toString()
+            // six digits
+            val codeStr = code.toString().padStart(6, '0')
+            binding.junkCodeCode.text = codeStr
         }
         binding.junkCodeInvalidateTime.text = "过期时间: " + mTimeFormat.format(expireTime) +
             " (剩余 " + (timeRemainingMs / 1000L).coerceAtLeast(1) + " 秒)"
@@ -99,6 +101,6 @@ class JunkCodeFragment : BaseRootLayoutFragment(), Runnable {
     private fun getCodeForTime(time: Long): String {
         val tc = (time / 1000L / 30L).toInt()
         val code = JunkCodeUtils.getJunkCode(tc)
-        return code.toString()
+        return code.toString().padStart(6, '0')
     }
 }
