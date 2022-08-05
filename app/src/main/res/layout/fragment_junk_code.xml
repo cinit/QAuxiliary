@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ QAuxiliary - An Xposed module for QQ/TIM
+  ~ Copyright (C) 2019-2022 qwq233@qwq2333.top
+  ~ https://github.com/cinit/QAuxiliary
+  ~
+  ~ This software is non-free but opensource software: you can redistribute it
+  ~ and/or modify it under the terms of the GNU Affero General Public License
+  ~ as published by the Free Software Foundation; either
+  ~ version 3 of the License, or any later version and our eula as published
+  ~ by QAuxiliary contributors.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+  ~ Affero General Public License for more details.
+  ~
+  ~ You should have received a copy of the GNU Affero General Public License
+  ~ and eula along with this software.  If not, see
+  ~ <https://www.gnu.org/licenses/>
+  ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+  -->
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fadeScrollbars="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/rootMainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="top|center_horizontal"
+        android:orientation="vertical">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_gravity="start"
+            android:orientation="horizontal">
+
+            <View
+                android:id="@+id/junkCode_progressBar"
+                android:layout_width="match_parent"
+                android:layout_height="4dp"
+                android:background="?attr/themeColor" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/junkCode_hint"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingRight="20dp"
+            android:paddingLeft="20dp"
+            android:gravity="start"
+            android:text="此动态验证码每 30 秒刷新一次，目前没有任何作用。"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/junkCode_code"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:fontFamily="monospace"
+            android:gravity="center"
+            android:text="******"
+            android:textColor="@color/firstTextColor"
+            android:textIsSelectable="true"
+            android:textSize="40dp"
+            tools:ignore="SpUsage" />
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="10dp"
+            android:gravity="center_vertical">
+
+            <Button
+                android:id="@+id/junkCode_copy"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:text="复制" />
+
+            <TextView
+                android:id="@+id/junkCode_invalidateTime"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentStart="true"
+                android:padding="10dp"
+                android:gravity="start"
+                android:text="过期时间: HH:MM:SS"
+                android:textColor="@color/secondTextColor"
+                android:textSize="14sp" />
+
+        </RelativeLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:paddingTop="10dp"
+            android:paddingBottom="10dp"
+            android:paddingLeft="20dp"
+            android:paddingRight="20dp"
+            android:gravity="start"
+            android:text="您可以将此动态验证码分享给任何人，因为它与您的账号或设备无关。\n相同版本的模块在任何设备上在同一时间总是显示相同的动态验证码。"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+    </LinearLayout>
+
+</ScrollView>

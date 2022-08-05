@@ -933,3 +933,15 @@ Java_io_github_qauxv_util_Natives_lseek(JNIEnv *env, jclass, jint fd, jlong offs
     }
     return (jlong) result;
 }
+
+extern "C" JNIEXPORT jint JNICALL
+Java_cc_ioctl_util_JunkCodeUtils_getJunkCode(JNIEnv *, jclass, jint jtc) {
+    auto tc = uint32_t(jtc);
+    const char *magic = "mIplOkwgxe3bzGc6g9K1BNJlXbuNmM+kYGWuoFGDOAZD1vHBEROCj+AN2TmBKXc0wEDLXgE+XgxL";
+    auto magic_len = strlen(magic);
+    uint32_t a32 = update_adler32(tc, reinterpret_cast<const uint8_t *>(magic), magic_len);
+    uint32_t o = a32 & 0xf;
+    // code should be in the range [0, 999999]
+    uint32_t code = (a32 >> o) % 1000000;
+    return jint(code);
+}

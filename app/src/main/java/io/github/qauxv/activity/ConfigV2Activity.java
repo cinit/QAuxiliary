@@ -42,6 +42,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
+import cc.ioctl.fragment.JunkCodeFragment;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
@@ -65,6 +66,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     private static final String ALIAS_ACTIVITY_NAME = "io.github.qauxv.activity.ConfigV2ActivityAlias";
     private MainV2NormalBinding mainV2Binding = null;
+    private boolean mHintLongPressed = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -101,6 +103,14 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         HolidayHelper.setup(this);
         updateActivationStatus();
         SyncUtils.postDelayed(3000, this::updateActivationStatus);
+        mainV2Binding.mainV2Help.setOnLongClickListener(v -> {
+            if (!mHintLongPressed) {
+                mHintLongPressed = true;
+            } else {
+                SettingsUiFragmentHostActivity.startActivityForFragment(this, JunkCodeFragment.class, null);
+            }
+            return true;
+        });
     }
 
     public void updateActivationStatus() {
