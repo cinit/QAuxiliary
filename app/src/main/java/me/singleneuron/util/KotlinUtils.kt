@@ -25,8 +25,7 @@ import android.content.Intent
 import android.view.View
 import android.view.ViewGroup
 import io.github.qauxv.util.Log
-import kotlinx.serialization.decodeFromString
-import kotlinx.serialization.json.Json
+import io.github.qauxv.util.decodeToDataClass
 import me.singleneuron.base.bridge.CardMsgList
 import me.singleneuron.data.CardMsgCheckResult
 import java.io.BufferedReader
@@ -65,7 +64,7 @@ fun checkCardMsg(originString: String): CardMsgCheckResult {
         val string = decodePercent(originString)
         Log.d("decode string: $string")
         val blackListString = CardMsgList.getInstance().invoke()
-        val blackList = Json.decodeFromString<Map<String, String>>(blackListString)
+        val blackList = blackListString.decodeToDataClass<Map<String, String>>()
         for (rule in blackList) {
             if (Regex(
                     rule.value,
@@ -84,7 +83,7 @@ fun checkCardMsg(originString: String): CardMsgCheckResult {
 
 private fun decodePercent(string: String): String {
     var produceString = string
-    val regex = Regex("""%[0-9a-fA-F]{2}""", RegexOption.IGNORE_CASE)
+    val regex = Regex("""%[\da-fA-F]{2}""", RegexOption.IGNORE_CASE)
     while (true) {
         if (!regex.containsMatchIn(produceString)) return produceString
         produceString = regex.replace(produceString) { matchResult ->

@@ -23,8 +23,8 @@
 package me.singleneuron.data
 
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.encodeToJson
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.json.Json
 import org.json.JSONObject
 
 @Serializable
@@ -32,11 +32,11 @@ data class StructMsgData(
     var prompt: String, var news: StructMsgNewsData, var config: StructMsgConfigData, var extra: String
 ) {
 
-    val app: String = "com.tencent.structmsg"
-    val desc: String = "新闻"
-    val view: String = "news"
-    val ver: String = "0.0.0.1"
-    val meta: Map<String, StructMsgNewsData> = mapOf(
+    var app: String = "com.tencent.structmsg"
+    var desc: String = "新闻"
+    var view: String = "news"
+    var ver: String = "0.0.0.1"
+    var meta: Map<String, StructMsgNewsData> = mapOf(
         "news" to news
     )
 
@@ -63,9 +63,9 @@ data class StructMsgData(
         }
     }
 
-    override fun toString(): String =
-        Json.encodeToString(serializer(), this)
-
+    override fun toString(): String = this.encodeToJson()
+    // {"app":"com.tencent.structmsg","desc":"新闻","view":"news","ver":"0.0.0.1","prompt":"[QQ小程序]哔哩哔哩","appID":"","sourceName":"","actionData":"","actionData_A":"","sourceUrl":"","meta":{"news":{"app_type":1,"appid":"100951776","desc":"把1000条蚊子幼虫放进风油精里，下一秒现场完全失控","jumpUrl":"https:\/\/b23.tv\/5dwJyj8?share_medium=android&share_source=qq&bbid=XX928359B161548F9208034E6FE89A65B3FDE&ts=1659704489837","preview":"pubminishare-30161.picsz.qpic.cn\/3c7f7d15-7e9f-4b09-bf64-1a8eb988fef2","tag":"哔哩哔哩","title":"哔哩哔哩"}},"config":{"autosize":true,"ctime":1659704502,"forward":true,"type":"normal"},"text":"","extraApps":[],"sourceAd":"","extra":"{\"app_type\":1,\"appid\":100951776,\"uin\":178772968}"}
+    // {"prompt":"[QQ小程序]哔哩哔哩","news":{"desc":"把1000条蚊子幼虫放进风油精里，下一秒现场完全失控","jumpUrl":"https://b23.tv/5dwJyj8?share_medium=android&share_source=qq&bbid=XX928359B161548F9208034E6FE89A65B3FDE&ts=1659704489837","preview":"pubminishare-30161.picsz.qpic.cn/3c7f7d15-7e9f-4b09-bf64-1a8eb988fef2","tag":"哔哩哔哩","title":"哔哩哔哩","appid":"100951776"},"config":{"ctime":1659704502},"extra":"{\"app_type\":1,\"appid\":100951776,\"uin\":178772968}"}
 }
 
 @Serializable
@@ -73,7 +73,7 @@ data class StructMsgNewsData(
     var desc: String, var jumpUrl: String, var preview: String, var tag: String, var title: String
 ) {
 
-    val app_type: Int = 1
+    var app_type: Int = 1
     var appid: String? = null
 
 }
@@ -83,8 +83,7 @@ data class StructMsgConfigData(
     var ctime: Long,
 ) {
 
-    val autosize: Boolean = true
-    val forward: Boolean = true
-    val type: String = "normal"
-
+    var autosize: Boolean = true
+    var forward: Boolean = true
+    var type: String = "normal"
 }

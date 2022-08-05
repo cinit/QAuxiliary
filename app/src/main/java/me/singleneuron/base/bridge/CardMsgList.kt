@@ -21,12 +21,10 @@
  */
 package me.singleneuron.base.bridge
 
-import androidx.annotation.NonNull
 import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
-import kotlinx.serialization.encodeToString
-import kotlinx.serialization.json.Json
+import io.github.qauxv.util.encodeToJson
 import java.net.URL
 
 const val apiAddress = "https://2fa.qwq2333.top/card/BlackList"
@@ -38,7 +36,6 @@ abstract class CardMsgList {
     companion object {
 
         @JvmStatic
-        @NonNull
         fun getInstance(): () -> String {
             //Todo
             return ::getBlackList
@@ -56,7 +53,7 @@ fun getBuiltInRule(): String {
         "禁止音视频通话" to """ti\.qq\.com""",
         "禁止自动回复类卡片" to """com\.tencent\.autoreply"""
     )
-    return Json.encodeToString(map)
+    return map.encodeToJson()
 }
 
 fun getBlackList(): String {

@@ -28,16 +28,14 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.data.UserStatusConst
+import io.github.qauxv.util.decodeToDataClass
+import io.github.qauxv.util.encodeToJson
 import kotlinx.serialization.Serializable
-import kotlinx.serialization.builtins.ListSerializer
-import kotlinx.serialization.json.Json
 import org.json.JSONException
 import org.json.JSONObject
-import java.io.BufferedReader
 import java.io.DataOutputStream
 import java.io.IOException
 import java.io.InputStream
-import java.io.InputStreamReader
 import java.net.URL
 import java.util.UUID
 import java.util.concurrent.atomic.AtomicBoolean
@@ -45,7 +43,7 @@ import javax.net.ssl.HttpsURLConnection
 
 object TransactionHelper {
 
-    const val apiAddress = "https://api.qwq2333.top/qa"
+    private const val apiAddress = "https://api.qwq2333.top/qa"
 
     // in ms, 15min
     private const val COOLDOWN_TIME = 15 * 60 * 1000L
@@ -61,16 +59,8 @@ object TransactionHelper {
     private val sCardMsgHistoryLock: Any = Object()
 
     @Throws(IOException::class)
-    private fun convertInputStreamToString(inputStream: InputStream): String? {
-        val bufferedReader = BufferedReader(InputStreamReader(inputStream))
-        var line: String? = ""
-        var result: String? = ""
-        while (bufferedReader.readLine().also { line = it } != null) {
-            result += line
-        }
-        inputStream.close()
-        return result
-    }
+    private fun convertInputStreamToString(inputStream: InputStream): String
+        = inputStream.bufferedReader().readText()
 
     @JvmStatic
     fun getUserStatus(uin: Long): Int {
@@ -84,7 +74,7 @@ object TransactionHelper {
             os.writeBytes("{\"uin\":$uin}")
             os.flush()
             os.close()
-            val resp = JSONObject(convertInputStreamToString(conn.inputStream)!!)
+            val resp = JSONObject(convertInputStreamToString(conn.inputStream))
             if (resp.getInt("code") == 200) {
                 resp.getInt("status")
             } else {
@@ -110,7 +100,7 @@ object TransactionHelper {
             if (LicenseStatus.isWhitelisted()) {
                 return null
             }
-            val historyList = getCardMsgHistory();
+            val historyList = getCardMsgHistory()
             if (historyList.size > 2) {
                 val lastSendTime = ConfigManager.getDefaultConfig().getLong(KEY_LAST_ACTION_COOLDOWN_TIME, 0L)
                 val countSinceLastCooldown = ConfigManager.getDefaultConfig().getInt(KEY_LAST_ACTION_COUNT_IN_COOLDOWN, 0)
@@ -169,15 +159,14 @@ object TransactionHelper {
 
     private fun deleteCardMsgRecord(uuid: String) {
         val cfg = ConfigManager.getDefaultConfig()
-        val items: ArrayList<CardMsgSendRecord>
         synchronized(sCardMsgHistoryLock) {
             val json = cfg.getString(KEY_MSG_SYNC_LIST, null)
-            items = if (json.isNullOrEmpty()) {
-                ArrayList()
-            } else ({
+            val items = if (json.isNullOrEmpty()) {
+                emptyList()
+            } else {
                 deserializeCardMsgSendRecordListFromJson(json)
-            }) as ArrayList<CardMsgSendRecord>
-            items.removeIf { it.uuid == uuid }
+            }
+            items.filter { it.uuid != uuid }
             cfg.putString(KEY_MSG_SYNC_LIST, serializeCardMsgSendRecordListToJson(items))
         }
     }
@@ -213,7 +202,7 @@ object TransactionHelper {
                             } else {
                                 conn.inputStream
                             }
-                        )!!
+                        )
                     )
                     if (resp.getInt("code") == 200) {
                         if (BuildConfig.DEBUG) {
@@ -253,12 +242,7 @@ object TransactionHelper {
         val msg: String,
         val time: Long = System.currentTimeMillis(),
         val uuid: String = UUID.randomUUID().toString()
-    ) {
-
-        override fun toString(): String {
-            return "CardMsgSendRecord(uin=$uin, msg='$msg', time=$time, uuid='$uuid')"
-        }
-    }
+    )
 
     @Throws(JSONException::class)
     fun serializeCardMsgSendRecordListToJson(list: List<CardMsgSendRecord>, maxCount: Int = 100): String {
@@ -270,11 +254,10 @@ object TransactionHelper {
         } else {
             list
         }
-        return Json.encodeToString(ListSerializer(CardMsgSendRecord.serializer()), list)
+        return items.encodeToJson()
     }
 
     @Throws(JSONException::class)
     fun deserializeCardMsgSendRecordListFromJson(json: String): ArrayList<CardMsgSendRecord> =
-        Json.decodeFromString(ListSerializer(CardMsgSendRecord.serializer()), json) as ArrayList<CardMsgSendRecord>
-
+        json.decodeToDataClass()
 }

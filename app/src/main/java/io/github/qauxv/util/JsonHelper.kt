@@ -20,31 +20,21 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package me.singleneuron.data
+package io.github.qauxv.util
 
-import io.github.qauxv.util.encodeToJson
-import kotlinx.serialization.Serializable
+import kotlinx.serialization.decodeFromString
+import kotlinx.serialization.encodeToString
+import kotlinx.serialization.json.Json
 
-@Serializable
-data class MiniAppArkData(
-    val desc: String,
-    val prompt: String,
-    val meta: Map<String, MiniAppArkDetailData>,
-    val config: ArkMsgConfigData,
-    val extra: String,
-) {
-    override fun toString(): String = this.encodeToJson()
+private val json = Json {
+    encodeDefaults = true
+    ignoreUnknownKeys = true
 }
 
-@Serializable
-class MiniAppArkDetailData(
-    val desc: String,
-    val preview: String,
-    val qqdocurl: String,
-    val title: String
-)
+internal inline fun <reified T> T.encodeToJson(): String {
+    return json.encodeToString(this)
+}
 
-@Serializable
-data class ArkMsgConfigData(
-    val ctime: Long = System.currentTimeMillis() / 1000
-)
+internal inline fun <reified T> String.decodeToDataClass(): T {
+    return json.decodeFromString(this)
+}

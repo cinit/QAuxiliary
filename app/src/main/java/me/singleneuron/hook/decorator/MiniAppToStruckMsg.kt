@@ -33,6 +33,7 @@ import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
 import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.decodeToDataClass
 import io.github.qauxv.util.hostInfo
 import me.singleneuron.data.MiniAppArkData
 import me.singleneuron.data.StructMsgData
@@ -60,7 +61,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
             val json = Reflex.invokeVirtual(arkAppMsg, "toAppXml", *arrayOfNulls(0)) as String
             val jsonObject = JSONObject(json)
             if (jsonObject.optString("app").contains("com.tencent.miniapp", true)) {
-                val miniAppArkData = MiniAppArkData.fromJson(json)
+                val miniAppArkData = json.decodeToDataClass<MiniAppArkData>()
                 val structMsgJson = StructMsgData.fromMiniApp(miniAppArkData).toString()
                 //Log.d(structMsgJson)
                 XposedHelpers.callMethod(arkAppMsg, "fromAppXml", structMsgJson)
