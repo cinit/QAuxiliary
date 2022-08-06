@@ -21,6 +21,16 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.android.tools.build.apkzlib.sign.SigningExtension
+import com.android.tools.build.apkzlib.sign.SigningOptions
+import com.android.tools.build.apkzlib.zfile.ZFiles
+import com.android.tools.build.apkzlib.zip.CompressionMethod
+import com.android.tools.build.apkzlib.zip.AlignmentRules
+import com.android.tools.build.apkzlib.zip.ZFile
+import com.android.tools.build.apkzlib.zip.ZFileOptions
+import java.io.FileInputStream
+import java.security.KeyStore
+import java.security.cert.X509Certificate
 import java.util.UUID
 
 plugins {
@@ -93,34 +103,6 @@ android {
             proguardFiles("proguard-rules.pro")
         }
     }
-    flavorDimensions += "abi"
-    productFlavors {
-        create("arm32") {
-            dimension = "abi"
-            ndk {
-                abiFilters.add("armeabi-v7a")
-            }
-        }
-        create("arm64") {
-            dimension = "abi"
-            ndk {
-                abiFilters.add("arm64-v8a")
-            }
-        }
-        create("armAll") {
-            dimension = "abi"
-            ndk {
-                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a"))
-            }
-        }
-        create("universal") {
-            dimension = "abi"
-            ndk {
-                abiFilters.addAll(listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64"))
-            }
-        }
-    }
-
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
@@ -139,15 +121,6 @@ android {
         checkDependencies = true
     }
     namespace = "io.github.qauxv"
-    applicationVariants.all {
-        if (!this.buildType.isDebuggable) {
-            val outputFileName = "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
-            outputs.all {
-                val output = this as? com.android.build.gradle.internal.api.BaseVariantOutputImpl
-                output?.outputFileName = outputFileName
-            }
-        }
-    }
 }
 
 dependencies {
@@ -189,11 +162,13 @@ val killQQ = tasks.register<Exec>("killQQ") {
     commandLine(adb, "shell", "am", "force-stop", "com.tencent.mobileqq")
     isIgnoreExitValue = true
 }
+
 val openQQ = tasks.register<Exec>("openQQ") {
     group = "qauxv"
     commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
     isIgnoreExitValue = true
 }
+
 tasks.register<Exec>("openTroubleShooting") {
     group = "qauxv"
     commandLine(adb, "shell", "am", "start",
@@ -223,7 +198,7 @@ androidComponents.onVariants { variant ->
         }
     }
 
-    task("installAndRestart${variantCapped}") {
+    task("installRestart${variantCapped}") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped", killQQ)
         finalizedBy(openQQ)
@@ -244,7 +219,7 @@ tasks.register<Delete>("cleanCxxIntermediates") {
 
 tasks.register<Delete>("cleanOldIcon") {
     group = "qauxv"
-    val drawableDir= File(projectDir, "src/main/res/drawable")
+    val drawableDir = File(projectDir, "src/main/res/drawable")
     drawableDir
         .listFiles()
         ?.filter { it.isFile && it.name.startsWith("icon") }
@@ -282,3 +257,108 @@ tasks.register("checkGitSubmodule") {
         }
     }
 }.also { tasks.preBuild.dependsOn(it) }
+
+
+val synthesizeDistReleaseApksCI by tasks.registering {
+    group = "build"
+    // use :app:assembleRelease output apk as input
+    dependsOn(":app:packageRelease")
+    inputs.files(tasks.named("packageRelease").get().outputs.files)
+    val srcApkDir = File(project.buildDir, "outputs" + File.separator + "apk" + File.separator + "release")
+    if (srcApkDir !in tasks.named("packageRelease").get().outputs.files) {
+        val msg = "srcApkDir should be in packageRelease outputs, srcApkDir: $srcApkDir, " +
+            "packageRelease outputs: ${tasks.named("packageRelease").get().outputs.files.files}"
+        throw IllegalStateException(msg)
+    }
+    // output name format: "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
+    val outputAbiVariants = mapOf(
+        "arm32" to arrayOf("armeabi-v7a"),
+        "arm64" to arrayOf("arm64-v8a"),
+        "armAll" to arrayOf("armeabi-v7a", "arm64-v8a"),
+        "universal" to arrayOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+    )
+    val versionName = android.defaultConfig.versionName
+    val outputDir = File(project.buildDir, "outputs" + File.separator + "ci")
+    // declare output files
+    outputAbiVariants.forEach { (variant, _) ->
+        val outputName = "QAuxv-v${versionName}-${variant}.apk"
+        outputs.file(File(outputDir, outputName))
+    }
+    val signConfig = android.signingConfigs.findByName("release")
+    val minSdk = android.defaultConfig.minSdk!!
+    doLast {
+        if (signConfig == null) {
+            logger.error("Task :app:synthesizeDistReleaseApksCI: No release signing config found, skip signing")
+        }
+        val requiredAbiList = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
+        outputDir.mkdir()
+        val options = ZFileOptions().apply {
+            alignmentRule = AlignmentRules.constantForSuffix(".so", 4096)
+            noTimestamps = true
+            autoSortFiles = true
+        }
+        if (!srcApkDir.exists()) {
+            throw IllegalStateException("input apk not found: ${srcApkDir.absolutePath}")
+        }
+        // srcApkDir should have one apk file
+        val srcApkFiles = srcApkDir.listFiles()?.filter { it.isFile && it.name.endsWith(".apk") } ?: emptyList()
+        if (srcApkFiles.size != 1) {
+            throw IllegalStateException("input apk should have one apk file, but found ${srcApkFiles.size}")
+        }
+        val inputApk = srcApkFiles.single()
+        val startTime = System.currentTimeMillis()
+        ZFile.openReadOnly(inputApk).use { srcApk ->
+            // check whether all required abis are in the apk
+            requiredAbiList.forEach { abi ->
+                val path = "lib/$abi/libqauxv.so"
+                if (srcApk.get(path) == null) {
+                    throw IllegalStateException("input apk should contain $path, but not found")
+                }
+            }
+            outputAbiVariants.forEach { (variant, abis) ->
+                val outputApk = File(outputDir, "QAuxv-v${versionName}-${variant}.apk")
+                if (outputApk.exists()) {
+                    outputApk.delete()
+                }
+                ZFiles.apk(outputApk, options).use { dstApk ->
+                    if (signConfig != null) {
+                        val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
+                        FileInputStream(signConfig.storeFile!!).use {
+                            keyStore.load(it, signConfig.storePassword!!.toCharArray())
+                        }
+                        val protParam = KeyStore.PasswordProtection(signConfig.keyPassword!!.toCharArray())
+                        val keyEntry = keyStore.getEntry(signConfig.keyAlias!!, protParam)
+                        val privateKey = keyEntry as KeyStore.PrivateKeyEntry
+                        val signingOptions = SigningOptions.builder()
+                            .setMinSdkVersion(minSdk)
+                            .setV1SigningEnabled(minSdk < 24)
+                            .setV2SigningEnabled(true)
+                            .setKey(privateKey.privateKey)
+                            .setCertificates(privateKey.certificate as X509Certificate)
+                            .setValidation(SigningOptions.Validation.ASSUME_INVALID)
+                            .build()
+                        SigningExtension(signingOptions).register(dstApk)
+                    }
+                    // add input apk to the output apk
+                    srcApk.entries().forEach { entry ->
+                        val cdh = entry.centralDirectoryHeader
+                        val name = cdh.name
+                        val isCompressed = cdh.compressionInfoWithWait.method != CompressionMethod.STORE
+                        if (name.startsWith("lib/")) {
+                            val abi = name.substring(4).split('/').first()
+                            if (abis.contains(abi)) {
+                                dstApk.add(name, entry.open(), isCompressed)
+                            }
+                        } else {
+                            // add all other entries to the output apk
+                            dstApk.add(name, entry.open(), isCompressed)
+                        }
+                    }
+                    dstApk.update()
+                }
+            }
+        }
+        val endTime = System.currentTimeMillis()
+        logger.info("Task :app:synthesizeDistReleaseApksCI: completed in ${endTime - startTime}ms")
+    }
+}

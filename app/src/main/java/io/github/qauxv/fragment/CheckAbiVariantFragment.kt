@@ -81,7 +81,7 @@ class CheckAbiVariantFragment : BaseRootLayoutFragment() {
             } else {
                 warnAbiMismatchBar.visibility = View.GONE
             }
-            val message = StringBuilder("当前模块使用的原生库为 " + BuildConfig.FLAVOR)
+            val message = StringBuilder("当前模块使用的原生库为 " + AbiUtils.getModuleFlavorName())
             if (AbiUtils.archStringToArchInt(Os.uname().machine) and (AbiUtils.ABI_X86 or AbiUtils.ABI_X86_64) != 0) {
                 message.append("\n").append("当前系统 uname machine 为 ").append(Os.uname().machine)
             }

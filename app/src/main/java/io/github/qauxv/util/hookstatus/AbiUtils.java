@@ -27,7 +27,7 @@ import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.BuildConfig;
+import io.github.qauxv.startup.HookEntry;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -49,6 +49,9 @@ public class AbiUtils {
     public static final int ABI_ARM64 = 1 << 1;
     public static final int ABI_X86 = 1 << 2;
     public static final int ABI_X86_64 = 1 << 3;
+
+    @Nullable
+    private static String sCachedModuleAbiFlavor;
 
     @Nullable
     public static String getApplicationActiveAbi(@NonNull String packageName) {
@@ -80,8 +83,62 @@ public class AbiUtils {
     }
 
     @NonNull
+    public static String getModuleFlavorName() {
+        if (sCachedModuleAbiFlavor != null) {
+            return sCachedModuleAbiFlavor;
+        }
+        String apkPath;
+        if (HostInfo.isInHostProcess()) {
+            apkPath = HookEntry.getModulePath();
+        } else {
+            // self process
+            apkPath = HostInfo.getApplication().getPackageCodePath();
+        }
+        if (!new File(apkPath).exists()) {
+            throw new IllegalStateException("getModuleFlavorName, apk not found: " + apkPath);
+        }
+        String[] abis;
+        try {
+            abis = getApkAbiList(apkPath);
+        } catch (Exception e) {
+            throw new RuntimeException("getModuleFlavorName, getApkAbiList failed: " + e.getMessage(), e);
+        }
+        int abiFlags = 0;
+        for (String abi : abis) {
+            switch (abi) {
+                case "armeabi-v7a":
+                    abiFlags |= ABI_ARM32;
+                    break;
+                case "arm64-v8a":
+                    abiFlags |= ABI_ARM64;
+                    break;
+                case "x86":
+                    abiFlags |= ABI_X86;
+                    break;
+                case "x86_64":
+                    abiFlags |= ABI_X86_64;
+                    break;
+                default:
+                    throw new IllegalStateException("getModuleFlavorName, unknown abi: " + abi);
+            }
+        }
+        if ((abiFlags & (ABI_ARM32 | ABI_ARM64 | ABI_X86 | ABI_X86_64)) == (ABI_ARM32 | ABI_ARM64 | ABI_X86 | ABI_X86_64)) {
+            sCachedModuleAbiFlavor = "universal";
+        } else if ((abiFlags & (ABI_ARM32 | ABI_ARM64)) == (ABI_ARM32 | ABI_ARM64)) {
+            sCachedModuleAbiFlavor = "armAll";
+        } else if (abiFlags == ABI_ARM32) {
+            sCachedModuleAbiFlavor = "arm32";
+        } else if (abiFlags == ABI_ARM64) {
+            sCachedModuleAbiFlavor = "arm64";
+        } else {
+            throw new IllegalStateException("getModuleFlavorName, unknown abi flags: " + abiFlags);
+        }
+        return sCachedModuleAbiFlavor;
+    }
+
+    @NonNull
     public static String[] queryModuleAbiList() {
-        switch (BuildConfig.FLAVOR) {
+        switch (getModuleFlavorName()) {
             case "arm32": {
                 return new String[]{"arm"};
             }
@@ -102,7 +159,7 @@ public class AbiUtils {
 
     public static int getModuleABI() {
         int abi;
-        switch (BuildConfig.FLAVOR) {
+        switch (getModuleFlavorName()) {
             case "arm32": {
                 abi = AbiUtils.ABI_ARM32;
                 break;

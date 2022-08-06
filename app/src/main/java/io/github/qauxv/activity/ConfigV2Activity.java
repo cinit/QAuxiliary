@@ -55,6 +55,7 @@ import io.github.qauxv.fragment.CheckAbiVariantModel;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.util.UiThread;
+import io.github.qauxv.util.hookstatus.AbiUtils;
 import io.github.qauxv.util.hookstatus.HookStatus;
 import me.ketal.ui.activity.QFileShareToIpadActivity;
 import me.ketal.util.ComponentUtilKt;
@@ -119,7 +120,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         if (isHookEnabled && HostInfo.isInModuleProcess() && !HookStatus.isZygoteHookMode()
                 && HookStatus.isTaiChiInstalled(this)
                 && HookStatus.getHookType() == HookStatus.HookType.APP_PATCH
-                && !"armAll".equals(BuildConfig.FLAVOR)) {
+                && !"armAll".equals(AbiUtils.getModuleFlavorName())) {
             isAbiMatch = false;
         }
         LinearLayout frameStatus = mainV2Binding.mainV2ActivationStatusLinearLayout;
