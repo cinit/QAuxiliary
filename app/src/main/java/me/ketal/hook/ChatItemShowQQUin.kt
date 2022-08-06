@@ -39,6 +39,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
+import cc.ioctl.hook.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
@@ -269,11 +270,20 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     override fun onGetView(rootView: ViewGroup, chatMessage: MsgRecordData, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        val text = formatTailMessage(chatMessage)
+        var text = formatTailMessage(chatMessage)
         if (!::pfnSetTailMessage.isInitialized) {
             pfnSetTailMessage =
                 "Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setTailMessage(ZLjava/lang/CharSequence;Landroid/view/View\$OnClickListener;)V".method
         }
+        if (FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPic(chatMessage)) {
+            text = "闪照 " + text
+        }
         pfnSetTailMessage.invoke(rootView, true, text, if (mEnableDetailInfo) mOnTailMessageClickListener else null)
+    }
+
+    private fun isFlashPic(chatMessage: MsgRecordData): Boolean {
+        val msgtype = chatMessage.msgType
+        return (msgtype == -2000 || msgtype == -2006) &&
+            chatMessage.getExtInfoFromExtStr("commen_flash_pic").isNotEmpty()
     }
 }

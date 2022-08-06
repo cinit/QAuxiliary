@@ -22,9 +22,11 @@
 package me.singleneuron.data
 
 import cc.ioctl.util.Reflex
+import io.github.qauxv.util.Initiator
 import me.kyuubiran.util.getObjectOrNull
 import me.kyuubiran.util.putObject
 import java.lang.reflect.Field
+import java.lang.reflect.Method
 import java.text.SimpleDateFormat
 import java.util.*
 
@@ -84,6 +86,7 @@ data class MsgRecordData(val msgRecord: Any) {
         private var _shMsgSeq: Field? = null
         private var _uniseq: Field? = null
         private var _msgData: Field? = null
+        private var _getExtInfoFromExtStr: Method? = null
     }
 
     //消息文本
@@ -260,7 +263,13 @@ data class MsgRecordData(val msgRecord: Any) {
         putObject(msgRecord, fieldName, value)
     }
 
-    @Throws(NullPointerException::class)
+    fun getExtInfoFromExtStr(key: String): String {
+        if (_getExtInfoFromExtStr == null) {
+            _getExtInfoFromExtStr = Reflex.findMethod(Initiator._MessageRecord(), String::class.java, "getExtInfoFromExtStr", String::class.java)
+        }
+        return _getExtInfoFromExtStr!!.invoke(msgRecord, key) as String
+    }
+
     override fun toString(): String {
         val stringBuilder = StringBuilder()
         stringBuilder.apply {
