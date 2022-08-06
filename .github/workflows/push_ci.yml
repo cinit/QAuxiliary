@@ -34,19 +34,20 @@ jobs:
       - name: Install ccache
         run: |
           sudo apt install -y ccache
-          ccache -zp
           ccache -o max_size=1G
           ccache -o hash_dir=false
           ccache -o hard_link=true
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
-      - name: Native Cache
+          ccache -zp
+      - name: Cache Native Build
         uses: actions/cache@v2
         with:
           path: |
             ~/.cache/ccache
             ~/.ccache
             app/build/.lto-cache
-          key: ccache
+          key: native-cache-${{ github.sha }}
+          restore-keys: native-cache-
       - name: Cache Gradle Dependencies
         uses: actions/cache@v2
         with:
@@ -76,13 +77,14 @@ jobs:
           echo 'org.gradle.caching=true' >> gradle.properties
           echo 'org.gradle.parallel=true' >> gradle.properties
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
+          echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:synthesizeDistReleaseApksCI
+          ccache -s
           echo "APK_FILE_ARM32=$(find app/build/outputs/ci -name '*arm32.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARM64=$(find app/build/outputs/ci -name '*arm64.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARMALL=$(find app/build/outputs/ci -name '*armAll.apk')" >> $GITHUB_ENV
           echo "APK_FILE_UNIVERSAL=$(find app/build/outputs/ci -name '*universal.apk')" >> $GITHUB_ENV
-          ccache -s
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}

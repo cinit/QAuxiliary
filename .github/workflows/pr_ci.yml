@@ -30,19 +30,20 @@ jobs:
       - name: Install ccache
         run: |
           sudo apt install -y ccache
-          ccache -zp
           ccache -o max_size=1G
           ccache -o hash_dir=false
           ccache -o hard_link=true
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
-      - name: Native Cache
+          ccache -zp
+      - name: Cache Native Build
         uses: actions/cache@v2
         with:
           path: |
             ~/.cache/ccache
             ~/.ccache
             app/build/.lto-cache
-          key: ccache
+          key: native-cache-${{ github.sha }}
+          restore-keys: native-cache-
 
       - name: Setup cmake
         run: |
