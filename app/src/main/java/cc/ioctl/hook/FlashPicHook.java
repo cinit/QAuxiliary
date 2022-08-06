@@ -21,7 +21,6 @@
  */
 package cc.ioctl.hook;
 
-import static cc.ioctl.util.Reflex.getShortClassName;
 import static io.github.qauxv.util.Initiator._MessageRecord;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
@@ -39,7 +38,6 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.DexKit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Objects;
 
 /**
@@ -50,10 +48,10 @@ import java.util.Objects;
 public class FlashPicHook extends CommonSwitchFunctionHook {
 
     public static final FlashPicHook INSTANCE = new FlashPicHook();
-    private static Field MsgRecord_msgtype = null;
-    private static Method MsgRecord_getExtInfoFromExtStr = null;
-    private static Field fBaseChatItemLayout = null;
-    private static Method setTailMessage = null;
+    private Field MsgRecord_msgtype = null;
+    private Method MsgRecord_getExtInfoFromExtStr = null;
+    private Field fBaseChatItemLayout = null;
+    private Method setTailMessage = null;
 
     private FlashPicHook() {
         super(new int[]{DexKit.C_FLASH_PIC_HELPER,
@@ -61,18 +59,9 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 DexKit.C_ITEM_BUILDER_FAC});
     }
 
-    public static boolean isFlashPic(Object msgRecord) {
+    public boolean isFlashPic(Object msgRecord) {
         try {
-            if (MsgRecord_msgtype == null) {
-                MsgRecord_msgtype = _MessageRecord().getField("msgtype");
-                MsgRecord_msgtype.setAccessible(true);
-            }
-            if (MsgRecord_getExtInfoFromExtStr == null) {
-                MsgRecord_getExtInfoFromExtStr = _MessageRecord()
-                        .getMethod("getExtInfoFromExtStr", String.class);
-                MsgRecord_getExtInfoFromExtStr.setAccessible(true);
-            }
-            int msgtype = (int) MsgRecord_msgtype.get(msgRecord);
+            int msgtype = MsgRecord_msgtype.getInt(msgRecord);
             return (msgtype == -2000 || msgtype == -2006)
                     && !TextUtils.isEmpty(
                     (String) MsgRecord_getExtInfoFromExtStr.invoke(msgRecord, "commen_flash_pic"));
@@ -82,13 +71,14 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
         }
     }
 
-    static String sn_ItemBuilderFactory = null;
-    static String sn_BasePicDownloadProcessor = null;
-    static String[] snarray_CheckStackClasses = null;
+    private String sn_ItemBuilderFactory = null;
+    private String sn_BasePicDownloadProcessor = null;
+    private String[] snarray_CheckStackClasses = null;
 
     @Override
     public boolean initOnce() throws Exception {
-        Class clz = DexKit.loadClassFromCache(DexKit.C_FLASH_PIC_HELPER);
+        Class<?> clz = DexKit.loadClassFromCache(DexKit.C_FLASH_PIC_HELPER);
+        Objects.requireNonNull(clz, "DexKit.C_FLASH_PIC_HELPER");
         Method isFlashPic = null;
         for (Method mi : clz.getDeclaredMethods()) {
             if (mi.getReturnType().equals(boolean.class) && mi.getParameterTypes().length == 1) {
@@ -99,40 +89,43 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 }
             }
         }
+        setTailMessage = XposedHelpers.findMethodExact(
+                load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"),
+                "setTailMessage", boolean.class, CharSequence.class,
+                View.OnClickListener.class);
+        Objects.requireNonNull(setTailMessage, "setTailMessage not found");
+        setTailMessage.setAccessible(true);
+        Class<?> kItemBuilderFactory = DexKit.loadClassFromCache(DexKit.C_ITEM_BUILDER_FAC);
+        Objects.requireNonNull(kItemBuilderFactory, "DexKit.C_ITEM_BUILDER_FAC");
+        sn_ItemBuilderFactory = kItemBuilderFactory.getName();
+        Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found");
+        sn_BasePicDownloadProcessor =
+                Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_BASE_PIC_DL_PROC), "DexKit.C_BASE_PIC_DL_PROC").getName();
+        Objects.requireNonNull(sn_BasePicDownloadProcessor, "sn_BasePicDownloadProcessor not found");
+        snarray_CheckStackClasses = new String[]{
+                Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found"),
+                Objects.requireNonNull(sn_BasePicDownloadProcessor, "sn_BasePicDownloadProcessor not found"),
+                "FlashPicItemBuilder"
+        };
+        MsgRecord_msgtype = _MessageRecord().getField("msgtype");
+        Objects.requireNonNull(MsgRecord_msgtype, "MsgRecord_msgtype not found");
+        MsgRecord_msgtype.setAccessible(true);
+        MsgRecord_getExtInfoFromExtStr = _MessageRecord()
+                .getMethod("getExtInfoFromExtStr", String.class);
+        Objects.requireNonNull(MsgRecord_getExtInfoFromExtStr, "MsgRecord_getExtInfoFromExtStr not found");
+        MsgRecord_getExtInfoFromExtStr.setAccessible(true);
         HookUtils.hookBeforeIfEnabled(this, isFlashPic, 52, param -> {
-            if (sn_BasePicDownloadProcessor == null) {
-                sn_BasePicDownloadProcessor = getShortClassName(
-                        DexKit.doFindClass(DexKit.C_BASE_PIC_DL_PROC));
-            }
-            if (sn_ItemBuilderFactory == null) {
-                sn_ItemBuilderFactory = getShortClassName(
-                        DexKit.doFindClass(DexKit.C_ITEM_BUILDER_FAC));
-            }
-            if (snarray_CheckStackClasses == null) {
-                snarray_CheckStackClasses = new String[]{
-                        Objects.requireNonNull(sn_ItemBuilderFactory),
-                        Objects.requireNonNull(sn_BasePicDownloadProcessor),
-                        "FlashPicItemBuilder"
-                };
-            }
             // TODO 2022-03-10 find a better way instead of checking the stack to improve performance
             if (checkIsCallingFromClass(snarray_CheckStackClasses, 4, 10)) {
+                // possible caller: (wrong)
+                // getItemViewType
+                // RecentBaseData.buildMessageBody
+                // EmoticonFromGroupManager
+                // com.tencent.mobileqq.activity.aio.core.msglist.a.a.b
+                // com.tencent.mobileqq.transfile.ChatImageDownloader.decodeByGif
                 param.setResult(false);
             }
         });
-        Class tmp;
-        Class mBaseBubbleBuilder$ViewHolder = load(
-                "com.tencent.mobileqq.activity.aio.BaseBubbleBuilder$ViewHolder");
-        if (mBaseBubbleBuilder$ViewHolder == null) {
-            tmp = load("com.tencent.mobileqq.activity.aio.BaseBubbleBuilder");
-            for (Method mi : tmp.getDeclaredMethods()) {
-                if (Modifier.isAbstract(mi.getModifiers())
-                        && mi.getParameterTypes().length == 0) {
-                    mBaseBubbleBuilder$ViewHolder = mi.getReturnType();
-                    break;
-                }
-            }
-        }
         Method m = null;
         for (Method mi : _PicItemBuilder().getDeclaredMethods()) {
             if (mi.getReturnType().equals(View.class) && mi.getParameterTypes().length == 5) {
@@ -140,8 +133,6 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 break;
             }
         }
-        final Method __tmnp_isF = isFlashPic;
-        final Class<?> __tmp_mBaseBubbleBuilder$ViewHolder = mBaseBubbleBuilder$ViewHolder;
         HookUtils.hookAfterIfEnabled(this, m, param -> {
             Object viewHolder = param.args[1];
             if (viewHolder == null) {
@@ -152,13 +143,6 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 fBaseChatItemLayout = Reflex.getFirstNSFFieldByType(viewHolder.getClass(),
                         load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"));
                 fBaseChatItemLayout.setAccessible(true);
-            }
-            if (setTailMessage == null) {
-                setTailMessage = XposedHelpers.findMethodExact(
-                        load("com.tencent.mobileqq.activity.aio.BaseChatItemLayout"),
-                        "setTailMessage", boolean.class, CharSequence.class,
-                        View.OnClickListener.class);
-                setTailMessage.setAccessible(true);
             }
             Object baseChatItemLayout = fBaseChatItemLayout.get(viewHolder);
             setTailMessage.invoke(baseChatItemLayout, isFlashPic(param.args[0]), "闪照", null);
