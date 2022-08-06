@@ -1,7 +1,9 @@
 import org.eclipse.jgit.api.Git
 import org.eclipse.jgit.internal.storage.file.FileRepository
 import org.gradle.api.Project
+import org.gradle.internal.os.OperatingSystem
 import java.io.File
+import java.nio.file.Paths
 
 object Common {
     fun getBuildVersionCode(project: Project): Int {
@@ -32,6 +34,16 @@ object Common {
             println("WARN: .git/HEAD does NOT exist")
             ".standalone"
         }
+    }
+
+    fun findInPath(executable: String): String? {
+        val pathEnv = System.getenv("PATH")
+        return pathEnv.split(File.pathSeparator).map { folder ->
+            Paths.get("${folder}${File.separator}${executable}${if (OperatingSystem.current().isWindows) ".exe" else ""}")
+                .toFile()
+        }.firstOrNull { path ->
+            path.exists()
+        }?.absolutePath
     }
 
     fun getBuildIdSuffix(): String {

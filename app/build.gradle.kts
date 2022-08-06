@@ -43,6 +43,14 @@ plugins {
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
 
+val ccacheExecutablePath = Common.findInPath("ccache")
+
+if (ccacheExecutablePath != null) {
+    println("Found ccache at $ccacheExecutablePath")
+} else {
+    println("No ccache found.")
+}
+
 android {
     defaultConfig {
         applicationId = "io.github.qauxv"
@@ -54,12 +62,16 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DQAUXV_VERSION=$versionName",
-                    "-DCMAKE_C_COMPILER_LAUNCHER=ccache",
-                    "-DCMAKE_CXX_COMPILER_LAUNCHER=ccache",
-                    "-DNDK_CCACHE=ccache",
-                    "-DANDROID_CCACHE=ccache"
+                    "-DQAUXV_VERSION=$versionName"
                 )
+                ccacheExecutablePath?.let {
+                    arguments += listOf(
+                        "-DCMAKE_C_COMPILER_LAUNCHER=$it",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=$it",
+                        "-DNDK_CCACHE=$it",
+                        "-DANDROID_CCACHE=$it"
+                    )
+                }
                 targets += "qauxv"
             }
         }
