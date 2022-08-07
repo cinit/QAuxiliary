@@ -23,10 +23,12 @@
 package cc.ioctl.fragment
 
 import cc.ioctl.hook.RevokeMsgHook
+import cc.ioctl.util.Reflex
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.fragment.BaseHierarchyFragment
+import java.util.Locale
 import kotlin.reflect.KMutableProperty
 
 class RevokeMsgConfigFragment : BaseHierarchyFragment() {
@@ -38,22 +40,22 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
             TextSwitchItem(
                 "总开关",
                 summary = "关闭后将不会拦截撤回消息",
-                switchAgent = forBoolean(RevokeMsgHook.INSTANCE::isEnabled)
+                switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, RevokeMsgHook.INSTANCE::isEnabled)
             ),
             TextSwitchItem(
                 "显示消息 shmsgseq",
                 summary = "在撤回提示灰字中显示被撤回消息的 shmsgseq",
-                switchAgent = forBoolean(RevokeMsgHook.INSTANCE, RevokeMsgHook::isShowShmsgseqEnabled, RevokeMsgHook::setShowShmsgseqEnabled)
+                switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, "isShowShmsgseqEnabled")
             ),
             TextSwitchItem(
                 "保留自己撤回的消息",
                 summary = null,
-                switchAgent = forBoolean(RevokeMsgHook.INSTANCE, RevokeMsgHook::isKeepSelfMsgEnabled, RevokeMsgHook::setKeepSelfMsgEnabled)
+                switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, "isKeepSelfMsgEnabled")
             )
         )
     }
 
-    private inline fun <reified T> forBoolean(
+    private inline fun <reified T> createSwitchAgent(
         this0: T,
         crossinline getter: (T) -> Boolean,
         crossinline setter: (T, Boolean) -> Unit
@@ -68,17 +70,33 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
         }
     }
 
-    private fun forBoolean(
-        property: KMutableProperty<Boolean>,
+    private fun <T : Any> createSwitchAgent(
+        owner: T,
+        property: KMutableProperty<Boolean>
     ): ISwitchCellAgent {
+        return createSwitchAgent(owner, property.name)
+    }
+
+    private fun <T : Any> createSwitchAgent(
+        owner: T,
+        name: String
+    ): ISwitchCellAgent {
+        if (!name.startsWith("is")) {
+            throw NoSuchMethodException("property name must start with 'is'")
+        }
+        val getterName = name
+        val setterName = "set" + name.substring(2).replaceFirstChar {
+            if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
+        }
+        val getter = Reflex.findMethod(owner.javaClass, java.lang.Boolean.TYPE, getterName)
+        val setter = Reflex.findMethod(owner.javaClass, java.lang.Void.TYPE, setterName, java.lang.Boolean.TYPE)
         return object : ISwitchCellAgent {
             override val isCheckable: Boolean = true
             override var isChecked: Boolean
-                get() = property.getter.call()
+                get() = getter.invoke(owner) as Boolean
                 set(value) {
-                    property.setter.call(value)
+                    setter.invoke(owner, value)
                 }
         }
     }
-
 }
