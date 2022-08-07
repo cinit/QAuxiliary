@@ -256,10 +256,12 @@ tasks.register("checkGitSubmodule") {
     val projectDir = rootProject.projectDir
     doLast {
         listOf(
-            "libs/mmkv/MMKV/Core".replace('/', File.separatorChar),
-            "app/src/main/cpp/dex_builder"
+            "libs/mmkv/MMKV/Core",
+            "libs/qq-stub",
+            "app/src/main/cpp/dex_builder",
+            "app/src/main/cpp/dex_builder/external/abseil"
         ).forEach {
-            val submoduleDir = File(projectDir, it)
+            val submoduleDir = File(projectDir, it.replace('/', File.separatorChar))
             if (!submoduleDir.exists()) {
                 throw IllegalStateException(
                     "submodule dir not found: $submoduleDir" +
