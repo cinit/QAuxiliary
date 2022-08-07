@@ -130,10 +130,12 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
         long msgUid = info.msgUid;
         long shmsgseq = info.shmsgseq;
         long time = info.time;
+        /*
         String selfUin = "" + getLongAccountUin();
         if (selfUin.equals(revokerUin)) {
             return;
         }
+         */
         String uin = istroop == 0 ? revokerUin : entityUin;
         Object msgObject = getMessage(uin, istroop, shmsgseq, msgUid);
         long id = getMessageUid(msgObject);
