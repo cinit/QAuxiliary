@@ -27,22 +27,28 @@ import static io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin;
 import static io.github.qauxv.util.Initiator._C2CMessageProcessor;
 import static io.github.qauxv.util.Initiator._QQMessageFacade;
 
+import android.app.Activity;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
+import android.view.View;
 import androidx.annotation.NonNull;
+import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.SyncUtils;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
+import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
+import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
-import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.DexKit;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
@@ -51,6 +57,11 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import kotlin.Unit;
+import kotlin.jvm.functions.Function3;
+import kotlin.jvm.internal.Intrinsics;
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 /**
  * @author fkzhang Created by fkzhang on 1/20/2016.
@@ -63,10 +74,14 @@ import java.util.Random;
  */
 @FunctionHookEntry
 @UiItemAgentEntry
-public class RevokeMsgHook extends CommonSwitchFunctionHook {
+public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     public static final RevokeMsgHook INSTANCE = new RevokeMsgHook();
     private Object mQQMsgFacade = null;
+
+    private MutableStateFlow<String> mState = null;
+    private static final String KEY_KEEP_SELF_REVOKE_MSG = "RevokeMsgHook.KEY_KEEP_SELF_REVOKE_MSG";
+    private static final String KEY_SHOW_SHMSGSEQ = "RevokeMsgHook.KEY_SHOW_SHMSGSEQ";
 
     private RevokeMsgHook() {
         //FIXME: is MSF really necessary?
@@ -87,6 +102,53 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
     @Override
     public String[] getUiItemLocation() {
         return Auxiliary.MESSAGE_CATEGORY;
+    }
+
+    @NonNull
+    @Override
+    public MutableStateFlow<String> getValueState() {
+        if (mState == null) {
+            mState = StateFlowKt.MutableStateFlow(getStateText());
+        }
+        Intrinsics.checkExpressionValueIsNotNull(mState, "mState ?: MutableStateFlow(getStateText())");
+        return mState;
+    }
+
+    private String getStateText() {
+        if (isEnabled()) {
+            return "已启用";
+        } else {
+            return "禁用";
+        }
+    }
+
+    @NonNull
+    @Override
+    public Function3<IUiItemAgent, Activity, View, Unit> getOnUiItemClickListener() {
+        return (agent, activity, view) -> {
+            SettingsUiFragmentHostActivity.startFragmentWithContext(activity, RevokeMsgConfigFragment.class, null);
+            return Unit.INSTANCE;
+        };
+    }
+
+    public boolean isKeepSelfMsgEnabled() {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getBoolean(KEY_KEEP_SELF_REVOKE_MSG, false);
+    }
+
+    public void setKeepSelfMsgEnabled(boolean enabled) {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putBoolean(KEY_KEEP_SELF_REVOKE_MSG, enabled);
+    }
+
+    public boolean isShowShmsgseqEnabled() {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        return cfg.getBoolean(KEY_SHOW_SHMSGSEQ, true);
+    }
+
+    public void setShowShmsgseqEnabled(boolean enabled) {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
+        cfg.putBoolean(KEY_SHOW_SHMSGSEQ, enabled);
     }
 
     @Override
@@ -130,8 +192,8 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
         long msgUid = info.msgUid;
         long shmsgseq = info.shmsgseq;
         long time = info.time;
-        String selfUin = "" + getLongAccountUin();
-        if (selfUin.equals(revokerUin)) {
+        String selfUin = String.valueOf(getLongAccountUin());
+        if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
             return;
         }
         String uin = istroop == 0 ? revokerUin : entityUin;
@@ -164,23 +226,29 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
                             hasMsgInfo = true;
                         }
                     }
-                    if (!hasMsgInfo) {
+                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
                         greyMsg += ", shmsgseq: " + shmsgseq;
                     }
                 } else {
-                    greyMsg += "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                    if (isShowShmsgseqEnabled()) {
+                        greyMsg += "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                    } else {
+                        greyMsg += "撤回了一条消息(没收到)";
+                    }
                 }
                 revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin, time + 1,
                         greyMsg, newMsgUid, shmsgseq);
                 addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
                         createTroopMemberHighlightItem(revokerUin));
             } else {
-                //被权限狗撤回(含管理,群主)
+                //被权限撤回(含管理,群主)
                 String revokerNick = ContactUtils.getTroopMemberNick(entityUin, revokerUin);
                 String authorNick = ContactUtils.getTroopMemberNick(entityUin, authorUin);
                 if (msgObject == null) {
-                    String greyMsg = "\"" + revokerNick + "\u202d\"撤回了\"" + authorNick + "\u202d\"的消息(没收到)"
-                            + ", shmsgseq: " + shmsgseq;
+                    String greyMsg = "\"" + revokerNick + "\u202d\"撤回了\"" + authorNick + "\u202d\"的消息(没收到)";
+                    if (isShowShmsgseqEnabled()) {
+                        greyMsg += ", shmsgseq: " + shmsgseq;
+                    }
                     revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin,
                             time + 1, greyMsg, newMsgUid, shmsgseq);
                     addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
@@ -200,7 +268,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
                             hasMsgInfo = true;
                         }
                     }
-                    if (!hasMsgInfo) {
+                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
                         greyMsg += ", shmsgseq: " + shmsgseq;
                     }
                     revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin,
@@ -215,7 +283,11 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
         } else {
             String greyMsg;
             if (msgObject == null) {
-                greyMsg = "对方撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                if (isShowShmsgseqEnabled()) {
+                    greyMsg = "对方撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                } else {
+                    greyMsg = "对方撤回了一条消息(没收到)";
+                }
             } else {
                 String message = getMessageContentStripped(msgObject);
                 int msgtype = getMessageType(msgObject);
@@ -226,7 +298,7 @@ public class RevokeMsgHook extends CommonSwitchFunctionHook {
                         greyMsg += ": " + message;
                     }
                 }
-                if (!hasMsgInfo) {
+                if (!hasMsgInfo && isShowShmsgseqEnabled()) {
                     greyMsg += ", shmsgseq: " + shmsgseq;
                 }
             }
