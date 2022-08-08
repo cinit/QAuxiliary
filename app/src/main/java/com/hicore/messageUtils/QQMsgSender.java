@@ -8,6 +8,7 @@ import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.Utils.FileUtils;
+import com.hicore.Utils.QClasses;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
@@ -138,7 +139,7 @@ public class QQMsgSender {
                 Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.d", null, void.class, new Class[]{
                         MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                         MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
-                        Initiator._BaseSessionInfo(),
+                        QClasses._BaseSessionInfo(),
                         int.class,
                         int.class,
                         boolean.class
