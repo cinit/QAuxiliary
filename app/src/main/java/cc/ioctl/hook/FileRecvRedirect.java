@@ -186,7 +186,11 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     public boolean CheckPathIsAvailable(String Path){
         File f = new File(Path);
         f = f.getParentFile();
-        return f != null && f.listFiles() != null;
+        if (f != null){
+            f.mkdirs();
+            return f.listFiles() != null;
+        }
+        return false;
     }
 
     public String getDefaultPath() {
