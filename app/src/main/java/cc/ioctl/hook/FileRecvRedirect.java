@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
@@ -101,6 +102,10 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
             start.setChecked(isEnabled());
 
             mRoot.addView(start);
+
+            TextView tv = new TextView(activity);
+            tv.setText("如果提示 目录可能无效 请检查是否已经给 " + HostInfo.getAppName() + " 授予了读写权限");
+            mRoot.addView(tv);
 
             EditText PathSet = new EditText(activity);
             PathSet.setText(getRedirectPath());
