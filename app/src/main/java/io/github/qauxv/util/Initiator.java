@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import com.tencent.mobileqq.app.QQAppInterface;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.Objects;
 import mqq.app.AppRuntime;
 
 public class Initiator {
@@ -331,11 +332,12 @@ public class Initiator {
     }
 
     public static Class<?> _BaseSessionInfo() {
-        return findClassWithSynthetics(
-                "com/tencent/mobileqq/activity/aio/BaseSessionInfo",
-                "com/tencent/mobileqq/activity/aio/q", // maybe this looks worse
-                "com/tencent/mobileqq/activity/aio/SessionInfo"
-        );
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+            Class<?> sessionInfo = findClassWithSynthetics("com/tencent/mobileqq/activity/aio/SessionInfo");
+            return sessionInfo.getSuperclass();
+        }else {
+            return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.BaseSessionInfo","com.tencent.mobileqq.activity.aio.SessionInfo");
+        }
     }
 
     public static Class<?> _Emoticon() {

@@ -2,13 +2,10 @@ package com.hicore.messageUtils;
 
 import android.content.Context;
 import android.os.Environment;
-import android.text.TextUtils;
 import cc.ioctl.util.HostInfo;
 import com.hicore.ReflectUtil.MClass;
-import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.Utils.FileUtils;
-import com.hicore.Utils.QClasses;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
@@ -139,7 +136,7 @@ public class QQMsgSender {
                 Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.d", null, void.class, new Class[]{
                         MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                         MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"),
-                        QClasses._BaseSessionInfo(),
+                        Initiator._BaseSessionInfo(),
                         int.class,
                         int.class,
                         boolean.class
@@ -171,7 +168,7 @@ public class QQMsgSender {
                         boolean.class, new Class[]{int.class, MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo")}, sevrID, Session);
             } else {
                 MMethod.CallMethod(null, MClass.loadClass("com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack"), "sendAniSticker",
-                        boolean.class, new Class[]{int.class, MClass.loadClass("com.tencent.mobileqq.activity.aio.BaseSessionInfo"), int.class}, sevrID,
+                        boolean.class, new Class[]{int.class, Initiator._BaseSessionInfo(), int.class}, sevrID,
                         Session, 0);
             }
         } catch (Exception e) {
