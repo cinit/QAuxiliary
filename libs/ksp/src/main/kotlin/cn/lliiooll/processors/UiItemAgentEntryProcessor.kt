@@ -63,9 +63,9 @@ class UiItemAgentEntryProcessor(
             addMember("%S", "AnnotatedUiItemAgentEntryList")
             build()
         }
-        val dependencies = Dependencies(true, *(symbols.map {
-            it.containingFile!!
-        }.toTypedArray()))
+        val dependencies = Dependencies(true, *Array(symbols.size) {
+            symbols[it].containingFile!!
+        })
         FileSpec.builder("io.github.qauxv.gen", "AnnotatedUiItemAgentEntryList")
                 .addAnnotation(annotationSpec)
                 .addFunction(mGetApi)

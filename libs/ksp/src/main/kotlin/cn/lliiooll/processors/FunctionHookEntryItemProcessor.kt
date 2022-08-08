@@ -37,7 +37,9 @@ class FunctionHookEntryItemProcessor(
                 add("return arrayOf(«")
                 symbols.forEachIndexed { index, ksClassDeclaration ->
                     if (simpleNameMap.contains(ksClassDeclaration.simpleName.asString())) {
-                        logger.error("Duplicate name in FunctionHookEntry's simpleName: ${ksClassDeclaration.qualifiedName?.asString() ?: "null"}, ${simpleNameMap[ksClassDeclaration.simpleName.asString()]}")
+                        logger.error("Duplicate name in FunctionHookEntry's simpleName: " +
+                            "${ksClassDeclaration.qualifiedName?.asString() ?: "null"}," +
+                            " ${simpleNameMap[ksClassDeclaration.simpleName.asString()]}")
                     } else {
                         simpleNameMap[ksClassDeclaration.simpleName.asString()] =
                                 ksClassDeclaration.qualifiedName?.asString() ?: "null"
@@ -63,9 +65,9 @@ class FunctionHookEntryItemProcessor(
             addMember("%S", "AnnotatedFunctionHookEntryList")
             build()
         }
-        val dependencies = Dependencies(true, *(symbols.map {
-            it.containingFile!!
-        }.toTypedArray()))
+        val dependencies = Dependencies(true, *Array(symbols.size) {
+            symbols[it].containingFile!!
+        })
         FileSpec.builder("io.github.qauxv.gen", "AnnotatedFunctionHookEntryList")
                 .addAnnotation(annotationSpec)
                 .addFunction(mGetApi)
