@@ -46,6 +46,20 @@
             android:text="浏览..."
             tools:ignore="RtlHardcoded" />
     </RelativeLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="双击复读"
+            android:id="@+id/RepeaterPlus_Check_DoubleClick"/>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="显示在右上角"
+            android:id="@+id/RepeaterPlus_Check_ShowInUpperRight"/>
+    </LinearLayout>
 
     <LinearLayout
         android:id="@+id/selectRepeaterIcon_linearLayoutDpi"

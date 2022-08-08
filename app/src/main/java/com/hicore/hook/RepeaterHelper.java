@@ -5,6 +5,7 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
+import android.widget.ImageView.ScaleType;
 import android.widget.RelativeLayout;
 import cc.ioctl.util.LayoutHelper;
 import com.hicore.ReflectUtil.MField;
@@ -38,7 +39,7 @@ public class RepeaterHelper {
         supportMessageTypes.put("MessageForPokeEmo", "RelativeLayout");
         supportMessageTypes.put("MessageForStructing", "RelativeLayout");
     }
-
+    private static volatile long click_time = 0;
     public static void createRepeatIcon(RelativeLayout baseChatItem, Object ChatMsg, Object session) throws Exception {
         boolean isSendFromLocal;
         int istroop = MField.GetField(ChatMsg, "istroop", int.class);
@@ -66,6 +67,13 @@ public class RepeaterHelper {
                 imageButton.setId(88486666);
                 imageButton.setTag(ChatMsg);
                 imageButton.setOnClickListener(v -> {
+                    if (RepeaterPlusIconSettingDialog.getIsDoubleClick()){
+                        try {
+                            if (System.currentTimeMillis() - 200 > click_time)return;
+                        }finally {
+                            click_time = System.currentTimeMillis();
+                        }
+                    }
                     try {
                         Repeater.Repeat(session, v.getTag());
                     } catch (Exception e) {
@@ -83,22 +91,42 @@ public class RepeaterHelper {
             String attachName = supportMessageTypes.get(clzName);
             View attachView = findView(attachName, baseChatItem);
             if (attachView != null) {
-                if (isSendFromLocal) {
-                    param.removeRule(RelativeLayout.RIGHT_OF);
-                    param.addRule(RelativeLayout.LEFT_OF, attachView.getId());
-                    int AddedLength = attachView.getTop();
-                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-                    int OffsetV = LayoutHelper.dip2px(context,12);
-                    param.leftMargin = -OffsetV;
-                    param.topMargin = AddedLength;
-                } else {
-                    param.removeRule(RelativeLayout.LEFT_OF);
-                    param.addRule(RelativeLayout.RIGHT_OF, attachView.getId());
-                    int AddedLength = attachView.getTop();
-                    AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-                    int OffsetV = LayoutHelper.dip2px(context,12);
-                    param.rightMargin = -OffsetV;
-                    param.topMargin = AddedLength;
+                if (RepeaterPlusIconSettingDialog.getIsShowUpper()){
+                    if (isSendFromLocal) {
+                        param.removeRule(RelativeLayout.ALIGN_RIGHT);
+                        param.removeRule(RelativeLayout.ALIGN_TOP);
+                        param.removeRule(RelativeLayout.ALIGN_LEFT);
+                        param.addRule(RelativeLayout.ALIGN_TOP, attachView.getId());
+                        param.addRule(RelativeLayout.ALIGN_LEFT, attachView.getId());
+                        param.leftMargin = -(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                        param.topMargin = -(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                    } else {
+                        param.removeRule(RelativeLayout.ALIGN_RIGHT);
+                        param.removeRule(RelativeLayout.ALIGN_TOP);
+                        param.removeRule(RelativeLayout.ALIGN_LEFT);
+                        param.addRule(RelativeLayout.ALIGN_TOP, attachView.getId());
+                        param.addRule(RelativeLayout.ALIGN_RIGHT, attachView.getId());
+                        param.rightMargin = - (LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                        param.topMargin = - (LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                    }
+                }else {
+                    if (isSendFromLocal) {
+                        param.removeRule(RelativeLayout.RIGHT_OF);
+                        param.addRule(RelativeLayout.LEFT_OF, attachView.getId());
+                        int AddedLength = attachView.getTop();
+                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
+                        int OffsetV = LayoutHelper.dip2px(context,12);
+                        param.leftMargin = -OffsetV;
+                        param.topMargin = AddedLength;
+                    } else {
+                        param.removeRule(RelativeLayout.LEFT_OF);
+                        param.addRule(RelativeLayout.RIGHT_OF, attachView.getId());
+                        int AddedLength = attachView.getTop();
+                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
+                        int OffsetV = LayoutHelper.dip2px(context,12);
+                        param.rightMargin = -OffsetV;
+                        param.topMargin = AddedLength;
+                    }
                 }
                 imageButton.setLayoutParams(param);
             }

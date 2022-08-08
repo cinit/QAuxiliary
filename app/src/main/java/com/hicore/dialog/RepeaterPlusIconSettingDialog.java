@@ -73,6 +73,10 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     public static final String qn_repeat_icon_data = "qn_repeat_plus_icon_data";
     public static final String qn_repeat_icon_dpi = "qn_repeat_plus_icon_dpi";
     public static final String qn_repeat_last_file = "qn_repeat_plus_last_file";
+    public static final String qn_repeat_double_click = "qn_repeat_plus_use_double_click";
+    public static final String qn_repeat_show_in_upper_righ = "qn_repeat_plus_show_in_upper_right";
+
+
     private static Bitmap sCachedRepeaterIcon;
     private final Context ctx;
     private final AlertDialog dialog;
@@ -85,6 +89,10 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     private final LinearLayout linearLayoutDpi;
     private final TextView textViewWarning;
     private final EditText InputDPI;
+    private final CheckBox check_double_click;
+    private final CheckBox check_showUpper;
+
+
     private byte[] targetIconData;
     @Nullable
     private String targetIconPathHint;
@@ -93,7 +101,10 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     private BitmapDrawable currentIconDrawable;
     private boolean useDefault;
 
+
+
     public RepeaterPlusIconSettingDialog(Context context) {
+        ConfigManager cfg = ConfigManager.getDefaultConfig();
         dialog = (AlertDialog) CustomDialog.createFailsafe(context).setTitle("自定义+1Plus图标")
                 .setPositiveButton("保存", this)
                 .setNegativeButton("取消", null).setCancelable(true).create();
@@ -117,11 +128,21 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         linearLayoutDpi = v.findViewById(R.id.selectRepeaterIcon_linearLayoutDpi);
         textViewWarning = v.findViewById(R.id.selectRepeaterIcon_textViewWarnMsg);
         InputDPI = v.findViewById(R.id.selectRepeaterIcon_InputDpi);
+        check_double_click = v.findViewById(R.id.RepeaterPlus_Check_DoubleClick);
+        check_double_click.setChecked(cfg.getBooleanOrFalse(qn_repeat_double_click));
+        check_showUpper = v.findViewById(R.id.RepeaterPlus_Check_ShowInUpperRight);
+        check_showUpper.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_upper_righ));
+
         InputDPI.addTextChangedListener(this);
         InputDPI.setText(String.valueOf(getDpiSet()));
         dialog.setView(v);
     }
-
+    public static boolean getIsDoubleClick(){
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_double_click);
+    }
+    public static boolean getIsShowUpper(){
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_upper_righ);
+    }
     public static Bitmap getRepeaterIcon() {
         if (sCachedRepeaterIcon != null) {
             return sCachedRepeaterIcon;
@@ -252,9 +273,11 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
             textViewWarning.setVisibility(View.GONE);
             prevImgView.setImageDrawable(ResUtils.loadDrawableFromAsset("repeat.png", ctx));
         } else if (v == saveBtn) {
+            ConfigManager cfg = ConfigManager.getDefaultConfig();
+            cfg.putBoolean(qn_repeat_double_click,check_double_click.isChecked());
+            cfg.putBoolean(qn_repeat_show_in_upper_righ,check_showUpper.isChecked());
             if (targetIconData != null) {
                 int dpi = getCurrentDPI();
-                ConfigManager cfg = ConfigManager.getDefaultConfig();
                 cfg.putBytes(qn_repeat_icon_data, targetIconData);
                 cfg.putInt(qn_repeat_icon_dpi, dpi);
                 cfg.putString(qn_repeat_last_file, targetIconPathHint);
@@ -263,7 +286,6 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                 dialog.dismiss();
             } else {
                 if (useDefault) {
-                    ConfigManager cfg = ConfigManager.getDefaultConfig();
                     cfg.remove(qn_repeat_icon_data);
                     cfg.remove(qn_repeat_icon_dpi);
                     cfg.remove(qn_repeat_last_file);
@@ -271,7 +293,6 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                     dialog.dismiss();
                     sCachedRepeaterIcon = null;
                 } else {
-                    ConfigManager cfg = ConfigManager.getDefaultConfig();
                     cfg.putInt(qn_repeat_icon_dpi, getCurrentDPI());
                     cfg.save();
                     dialog.dismiss();
