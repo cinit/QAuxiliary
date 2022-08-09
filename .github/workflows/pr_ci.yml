@@ -1,4 +1,4 @@
-name: main
+name: Pull Request Check
 
 on:
   pull_request:
@@ -8,7 +8,6 @@ on:
       - '**.txt'
       - '.github/**'
       - '!.github/workflows/**'
-    
 
 jobs:
   build:
@@ -78,5 +77,5 @@ jobs:
           echo 'org.gradle.caching=true' >> gradle.properties
           echo 'org.gradle.parallel=true' >> gradle.properties
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
-          ./gradlew :app:packageArm32Debug
+          ./gradlew :app:packageDebug
           ccache -s
