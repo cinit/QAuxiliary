@@ -22,6 +22,8 @@
 
 package cc.ioctl.util.ui;
 
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.Context;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
@@ -63,11 +65,17 @@ public class FaultyDialog {
 
     private static void showImpl(@NonNull Context ctx, @NonNull String title, @NonNull Throwable e, boolean cancelable) {
         Context c = CommonContextWrapper.createAppCompatContext(ctx);
+        String msg = Log.getStackTraceString(e);
         new AlertDialog.Builder(c)
                 .setTitle(title)
-                .setMessage(Log.getStackTraceString(e))
+                .setMessage(msg)
                 .setCancelable(cancelable)
                 .setPositiveButton(android.R.string.ok, null)
+                .setNeutralButton(android.R.string.copy, (dialog, which) -> {
+                    ClipboardManager clipboard = (ClipboardManager) c.getSystemService(Context.CLIPBOARD_SERVICE);
+                    ClipData clip = ClipData.newPlainText("error", msg);
+                    clipboard.setPrimaryClip(clip);
+                })
                 .show();
     }
 
