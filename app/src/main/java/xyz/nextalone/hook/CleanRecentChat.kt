@@ -131,17 +131,12 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
             }
         } catch (e: Throwable) {
             traceError(e)
-            FaultyDialog.show(context, "清理失败: handler", e)
+            FaultyDialog.show(context, "清理出错", e)
         }
     }
 
+    @Throws(ReflectiveOperationException::class)
     private fun isAtTop(app: Any?, str: String, i: Int, context: Context): Boolean {
-        return try {
-            DexKit.getMethodFromCache(DexKit.N_FriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
-        } catch (e: Throwable) {
-            traceError(e)
-            FaultyDialog.show(context, "FriendsStatusUtil.isChatAtTop", e)
-            true
-        }
+        return DexKit.getMethodFromCache(DexKit.N_FriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
     }
 }
