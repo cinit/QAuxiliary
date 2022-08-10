@@ -37,9 +37,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.tlb.ConfigTable;
-import io.github.qauxv.util.DexMethodDescriptor;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Objects;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -86,13 +87,24 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     // ^ 848 1492 createAtMsg
 
     @Override
-    public boolean initOnce() throws Exception {
+    public boolean initOnce() throws ReflectiveOperationException {
         if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
-            var desc = HostInfo.requireMinQQVersion(QQ_8_9_0) ? "Lcom/tencent/mobileqq/activity/aio/rebuild/input/b;->a(Lcom/tencent/mobileqq/activity/aio/core/a;Lcom/tencent/mobileqq/activity/aio/q;Z)V"
-                    : "Lcom/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils;->a(Lcom/tencent/mobileqq/activity/aio/core/AIOContext;Lcom/tencent/mobileqq/activity/aio/BaseSessionInfo;Z)V";
-            Method m = new DexMethodDescriptor(desc).getMethodInstance(
-                    Initiator.getHostClassLoader());
-            HookUtils.hookBeforeIfEnabled(this, m, 49, param -> {
+            Class<?> kInputUIUtils = Initiator.loadClass(HostInfo.requireMinQQVersion(QQ_8_9_0)
+                    ? "com/tencent/mobileqq/activity/aio/rebuild/input/b"
+                    : "com/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils"
+            );
+            Method method = null;
+            for (Method m : kInputUIUtils.getDeclaredMethods()) {
+                if (Modifier.isStatic(m.getModifiers()) && m.getReturnType() == void.class) {
+                    Class<?>[] argt = m.getParameterTypes();
+                    if (argt[1] == Initiator._BaseSessionInfo() && argt[2] == boolean.class) {
+                        method = m;
+                        break;
+                    }
+                }
+            }
+            Objects.requireNonNull(method, "InputUIUtils.a(AIOContext, BaseSessionInfo, boolean)V not found");
+            HookUtils.hookBeforeIfEnabled(this, method, 49, param -> {
                 boolean p0 = (boolean) param.args[2];
                 if (!p0) {
                     param.setResult(null);
