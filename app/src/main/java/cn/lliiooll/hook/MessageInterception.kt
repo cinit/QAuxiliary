@@ -68,7 +68,11 @@ object MessageInterception : BasePersistBackgroundHook() {
             ).hookAfter(this, callback)
             // I don't know what will the 3rd method do
             Initiator._C2CMessageManager().methodWithSuper(
-                if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "A0" else "d",
+                when {
+                    requireMinQQVersion(QQVersion.QQ_8_9_3) -> "E0"
+                    requireMinQQVersion(QQVersion.QQ_8_8_93) -> "A0"
+                    else -> "d"
+                },
                 Boolean::class.java,
                 Initiator._MessageRecord(),
             )?.hookAfter(this, callback)
