@@ -1513,14 +1513,14 @@ public class DexKit {
                 break;
             case N_Conversation_onCreate:
                 for (DexMethodDescriptor m : __methods) {
-                    if (m.declaringClass.endsWith("Conversation")) {
+                    if (m.declaringClass.contains("Conversation")) {
                         return m;
                     }
                 }
                 break;
             case N_QQSettingMe_onResume:
                 for (DexMethodDescriptor m : __methods) {
-                    if (m.declaringClass.endsWith("QQSettingMe")) {
+                    if (m.declaringClass.contains("QQSettingMe")) {
                         return m;
                     }
                 }
