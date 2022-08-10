@@ -132,7 +132,7 @@ public class ContactUtils {
             return null;
         }
         try {
-            return (String) getBuddyName.invoke(null, app, uin);
+            return (String) getBuddyName.invoke(null, app, uin, false);
         } catch (IllegalAccessException e) {
             // should not happen
             Log.e(e);

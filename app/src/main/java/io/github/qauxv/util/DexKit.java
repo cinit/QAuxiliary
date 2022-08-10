@@ -1647,7 +1647,7 @@ public class DexKit {
                 try {
                     Method method = m.getMethodInstance(Initiator.getHostClassLoader());
                     if (method.getReturnType() == String.class && Modifier.isStatic(method.getModifiers())
-                            && method.getParameterTypes().length == 2) {
+                            && method.getParameterTypes().length == 3) {
                         return m;
                     }
                 } catch (NoSuchMethodException e) {
