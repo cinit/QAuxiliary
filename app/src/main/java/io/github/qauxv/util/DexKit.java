@@ -762,9 +762,7 @@ public class DexKit {
                         0x64, 0x61, 0x74, 0x65, 0x53, 0x65, 0x73, 0x73, 0x69, 0x6F, 0x6E, 0x20,
                         0x65, 0x6E, 0x64}};
             case N_BASE_CHAT_PIE__createMulti:
-                return new byte[][]{
-                    new byte[]{0x0B, 0x63, 0x72, 0x65, 0x61, 0x74, 0x65, 0x4D, 0x75, 0x6C, 0x74,
-                        0x69}};
+                return new byte[][]{forFiniteString8("createMulti")};
             case N_BASE_CHAT_PIE__chooseMsg:
                 return new byte[][]{
                     new byte[]{0x19, 0x73, 0x65, 0x74, 0x20, 0x6C, 0x65, 0x66, 0x74, 0x20, 0x74,
@@ -1315,6 +1313,11 @@ public class DexKit {
                         if (method.getParameterTypes()[0].equals(_ChatMessage())) {
                             return m;
                         }
+                    }
+                    Class<?> klass = Initiator.load(m.declaringClass);
+                    if (klass != null && View.OnClickListener.class.isAssignableFrom(klass)
+                            && klass.getName().contains("com.tencent.mobileqq.activity.aio.helper")) {
+                        return m;
                     }
                 }
                 break;

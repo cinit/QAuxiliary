@@ -84,7 +84,10 @@ public class QQMessageFacade {
             }
             // invoke-virtual BaseMessageManager->doMsgRevokeRequest(MessageRecord)V
             Reflex.invokeVirtual(msgCache, methodName, true, boolean.class, void.class);
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_3)) {
+                Method m = Reflex.findMethod(Initiator._BaseMessageManager(), void.class, "o", Initiator._MessageRecord());
+                m.invoke(mgr, msg);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
                 Method m = Reflex.findMethod(Initiator._BaseMessageManager(), void.class, "l", Initiator._MessageRecord());
                 m.invoke(mgr, msg);
             } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0)) {
@@ -97,7 +100,7 @@ public class QQMessageFacade {
                         void.class);
             }
         } catch (ReflectiveOperationException e) {
-            Log.e("revokeMessage failed: " + msg);
+            Log.e("revokeMessage failed: " + e);
             Log.e(e);
             throw e;
         }

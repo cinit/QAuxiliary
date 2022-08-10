@@ -28,6 +28,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import cc.ioctl.util.Reflex
+import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.mobileqq.app.BaseActivity
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -59,8 +60,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
     private var baseChatPie: Any? = null
 
     public override fun initOnce() = throwOrTrue {
-        val m = DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__createMulti)
-        m?.hookAfter(this) {
+        val m = DexKit.getMethodFromCache(DexKit.N_BASE_CHAT_PIE__createMulti)!!
+        m.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
             baseChatPie = if (m.declaringClass.isAssignableFrom(_BaseChatPie())) it.thisObject
@@ -76,7 +77,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         }
     }
 
-    private fun recall() {
+    private fun recall(ctx: Context) {
         runCatching {
             val clazz = DexKit.doFindClass(DexKit.C_MultiMsg_Manager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
@@ -95,6 +96,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 Boolean::class.javaPrimitiveType
             )
             baseChatPie = null
+        }.onFailure {
+            FaultyDialog.show(ctx, it)
         }
     }
 
@@ -143,7 +146,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         if (enableTalkBack) {
             imageView.contentDescription = "撤回"
         }
-        imageView.setOnClickListener { recall() }
+        imageView.setOnClickListener { recall(it.context) }
         imageView.setImageResource(resId)
         imageView.id = R.id.ketalRecallImageView
         return imageView
