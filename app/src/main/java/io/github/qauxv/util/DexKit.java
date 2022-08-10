@@ -806,9 +806,7 @@ public class DexKit {
                         0x65, 0x50, 0x72, 0x6f, 0x78, 0x79, 0x4d, 0x67, 0x72, 0x20, 0x63, 0x72,
                         0x65, 0x61, 0x74, 0x65}};
             case N_AtPanel__refreshUI:
-                return new byte[][]{
-                    new byte[]{0x11, 0x72, 0x65, 0x73, 0x75, 0x6C, 0x74, 0x4C, 0x69, 0x73, 0x74,
-                        0x20, 0x3D, 0x20, 0x6E, 0x75, 0x6C, 0x6C}};
+                return new byte[][]{forFiniteString8("resultList = null")};
             case N_AtPanel__showDialogAtView:
                 return new byte[][]{
                     new byte[]{0x1b, 0x73, 0x68, 0x6F, 0x77, 0x44, 0x69, 0x61, 0x6C, 0x6F, 0x67,
@@ -1418,7 +1416,7 @@ public class DexKit {
                 break;
             case N_AtPanel__refreshUI:
                 for (DexMethodDescriptor m : __methods) {
-                    Class clz = Initiator.load(m.declaringClass);
+                    Class<?> clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) {
                         continue;
                     }
@@ -1429,11 +1427,11 @@ public class DexKit {
                         continue;
                     }
                     try {
-                        if (Void.class != m.getMethodInstance(Initiator.getHostClassLoader()).getReturnType()) {
+                        if (void.class != m.getMethodInstance(Initiator.getHostClassLoader()).getReturnType()) {
                             continue;
                         }
                     } catch (NoSuchMethodException e) {
-                        e.printStackTrace();
+                        Log.e(e);
                     }
                     return m;
                 }
