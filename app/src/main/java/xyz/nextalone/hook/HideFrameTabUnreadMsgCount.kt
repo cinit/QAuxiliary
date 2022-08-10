@@ -22,6 +22,8 @@
 
 package xyz.nextalone.hook
 
+import android.widget.TextView
+import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -44,11 +46,17 @@ object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook() {
         // bottom red point
         "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
             ?.replace(this, null)
-        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.method(
-            "a",
-            6,
-            Void.TYPE
-        )?.replace(this, null)
+        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.let {
+            Reflex.findSingleMethod(
+                it, Void.TYPE, false,
+                TextView::class.java,
+                Int::class.java,
+                String::class.java,
+                Int::class.java,
+                Int::class.java,
+                Int::class.java
+            ).replace(this, null)
+        }
         return true
     }
 }
