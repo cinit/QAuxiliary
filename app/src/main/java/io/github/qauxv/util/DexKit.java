@@ -52,6 +52,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Objects;
 import java.util.regex.Pattern;
 import me.iacn.biliroaming.utils.DexHelper;
 
@@ -1112,14 +1113,16 @@ public class DexKit {
                     }
                 }
                 break;
-            case C_ItemBuilderFactory:
+            case C_ItemBuilderFactory: {
                 for (DexMethodDescriptor m : __methods) {
-                    Class clz = Initiator.load(m.declaringClass);
-                    if (clz.getDeclaredFields().length > 30) {
+                    Class<?> clz = Initiator.load(m.declaringClass);
+                    Objects.requireNonNull(clz, "load class '" + m.declaringClass + "' failed");
+                    if (clz.getSuperclass() == Object.class && !Modifier.isAbstract(clz.getModifiers())) {
                         return m;
                     }
                 }
                 break;
+            }
             case C_ABS_GAL_SCENE:
                 for (DexMethodDescriptor m : __methods) {
                     Class<?> clz = Initiator.load(m.declaringClass);
