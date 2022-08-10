@@ -366,7 +366,7 @@ public class DexKit {
         if (methods.size() == 0) {
             return null;
         }
-        ret = a(i, methods, null);
+        ret = verifyTargetMethod(i, methods, null);
         if (ret == null) {
             Log.i(methods.size() + " classes candidates found for " + i + ", none satisfactory.");
             return null;
@@ -398,31 +398,13 @@ public class DexKit {
         } catch (Throwable ignored) {
         }
         try {
-            HashSet<DexMethodDescriptor> methods;
             ConfigManager cache = ConfigManager.getCache();
             DexDeobfReport report = new DexDeobfReport();
             report.target = i;
             report.version = ver;
-            methods = e(i, report);
-            if (methods == null || methods.size() == 0) {
-                report.v("No method candidate found.");
-                Log.i("Unable to deobf: " + c(i));
-                // save failed state
-                cache.putString("cache_" + a(i) + "_method", NO_SUCH_METHOD.toString());
-                cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
-                cache.save();
-                return null;
-            }
-            report.v(methods.size() + " method(s) found: " + methods);
-            if (methods.size() == 1) {
-                ret = methods.iterator().next();
-            } else {
-                ret = a(i, methods, report);
-            }
-            report.v("Final decision:" + (ret == null ? null : ret.toString()));
+            ret = searchVerifyDexMethodDesc(i, report);
             cache.putString("deobf_log_" + a(i), report.toString());
             if (ret == null) {
-                Log.i("Multiple classes candidates found, none satisfactory.");
                 // save failed state
                 cache.putString("cache_" + a(i) + "_method", NO_SUCH_METHOD.toString());
                 cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
@@ -1071,7 +1053,7 @@ public class DexKit {
         }
     }
 
-    private static DexMethodDescriptor a(int i, HashSet<DexMethodDescriptor> __methods, DexDeobfReport report) {
+    private static DexMethodDescriptor verifyTargetMethod(int i, HashSet<DexMethodDescriptor> __methods, DexDeobfReport report) {
         switch (i) {
             case C_DIALOG_UTIL:
             case C_FACADE:
@@ -1677,18 +1659,22 @@ public class DexKit {
     }
 
     @Nullable
-    private static HashSet<DexMethodDescriptor> e(int i, DexDeobfReport rep) {
+    private static DexMethodDescriptor searchVerifyDexMethodDesc(int i, DexDeobfReport rep) {
         ClassLoader loader = Initiator.getHostClassLoader();
-        int record = 0;
+        long record = 0;
         int[] qf = d(i);
         byte[][] keys = b(i);
         for (int dexi : qf) {
-            record |= 1 << dexi;
+            record |= 1L << dexi;
             try {
                 for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
-                    if (ret != null && ret.size() > 0) {
-                        return ret;
+                    HashSet<DexMethodDescriptor> rets = findMethodsByConstString(k, dexi, loader);
+                    if (rets != null && rets.size() > 0) {
+                        // verify
+                        DexMethodDescriptor method = verifyTargetMethod(i, rets, rep);
+                        if (method != null) {
+                            return method;
+                        }
                     }
                 }
             } catch (FileNotFoundException ignored) {
@@ -1696,7 +1682,7 @@ public class DexKit {
         }
         int dexi = 1;
         while (true) {
-            if ((record & (1 << dexi)) != 0) {
+            if ((record & (1L << dexi)) != 0) {
                 dexi++;
                 continue;
             }
@@ -1704,7 +1690,11 @@ public class DexKit {
                 for (byte[] k : keys) {
                     HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
                     if (ret != null && ret.size() > 0) {
-                        return ret;
+                        // verify
+                        DexMethodDescriptor method = verifyTargetMethod(i, ret, rep);
+                        if (method != null) {
+                            return method;
+                        }
                     }
                 }
             } catch (FileNotFoundException ignored) {
