@@ -56,7 +56,7 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     private FlashPicHook() {
         super(new int[]{DexKit.C_FLASH_PIC_HELPER,
                 DexKit.C_BASE_PIC_DL_PROC,
-                DexKit.C_ITEM_BUILDER_FAC});
+                DexKit.C_ItemBuilderFactory});
     }
 
     public boolean isFlashPic(Object msgRecord) {
@@ -95,8 +95,8 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 View.OnClickListener.class);
         Objects.requireNonNull(setTailMessage, "setTailMessage not found");
         setTailMessage.setAccessible(true);
-        Class<?> kItemBuilderFactory = DexKit.loadClassFromCache(DexKit.C_ITEM_BUILDER_FAC);
-        Objects.requireNonNull(kItemBuilderFactory, "DexKit.C_ITEM_BUILDER_FAC");
+        Class<?> kItemBuilderFactory = DexKit.loadClassFromCache(DexKit.C_ItemBuilderFactory);
+        Objects.requireNonNull(kItemBuilderFactory, "DexKit.C_ItemBuilderFactory");
         sn_ItemBuilderFactory = kItemBuilderFactory.getName();
         Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found");
         sn_BasePicDownloadProcessor =

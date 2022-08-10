@@ -73,7 +73,7 @@ public class DexKit {
     public static final int C_FACADE = 2;
     public static final int C_FLASH_PIC_HELPER = 3;
     public static final int C_BASE_PIC_DL_PROC = 4;
-    public static final int C_ITEM_BUILDER_FAC = 5;
+    public static final int C_ItemBuilderFactory = 5;
     public static final int C_AIO_UTILS = 6;
     public static final int C_ABS_GAL_SCENE = 7;
     //public static final int C_FAV_EMO_ROAM_HANDLER = 8;
@@ -446,7 +446,7 @@ public class DexKit {
             case C_BASE_PIC_DL_PROC:
                 ret = "com/tencent/mobileqq/transfile/BasePicDownloadProcessor";
                 break;
-            case C_ITEM_BUILDER_FAC:
+            case C_ItemBuilderFactory:
                 ret = "com/tencent/mobileqq/activity/aio/item/ItemBuilderFactory";
                 break;
             case C_AIO_UTILS:
@@ -655,7 +655,7 @@ public class DexKit {
                 return new byte[][]{
                     new byte[]{0x2C, 0x42, 0x61, 0x73, 0x65, 0x50, 0x69, 0x63, 0x44, 0x6F, 0x77,
                         0x6E, 0x6C}};
-            case C_ITEM_BUILDER_FAC:
+            case C_ItemBuilderFactory:
                 return new byte[][]{
                     new byte[]{0x24, 0x49, 0x74, 0x65, 0x6D, 0x42, 0x75, 0x69, 0x6C, 0x64, 0x65,
                         0x72, 0x20, 0x69, 0x73, 0x3A, 0x20, 0x44},
@@ -932,7 +932,7 @@ public class DexKit {
                 return new int[]{1, 3};
             case C_BASE_PIC_DL_PROC:
                 return new int[]{4, 7, 2};
-            case C_ITEM_BUILDER_FAC:
+            case C_ItemBuilderFactory:
                 return new int[]{11, 6, 1};
             case C_AIO_UTILS:
                 return new int[]{2, 11, 6};
@@ -1112,7 +1112,7 @@ public class DexKit {
                     }
                 }
                 break;
-            case C_ITEM_BUILDER_FAC:
+            case C_ItemBuilderFactory:
                 for (DexMethodDescriptor m : __methods) {
                     Class clz = Initiator.load(m.declaringClass);
                     if (clz.getDeclaredFields().length > 30) {

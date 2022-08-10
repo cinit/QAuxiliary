@@ -36,7 +36,7 @@ import java.lang.reflect.Method
 
 @FunctionHookEntry
 object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecorator>(
-        intArrayOf(DexKit.C_ITEM_BUILDER_FAC)
+        intArrayOf(DexKit.C_ItemBuilderFactory)
 ) {
 
     // register your decorator here
@@ -53,7 +53,7 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         var getMsgType: Method? = null
-        for (m in DexKit.doFindClass(DexKit.C_ITEM_BUILDER_FAC)!!.methods) {
+        for (m in DexKit.doFindClass(DexKit.C_ItemBuilderFactory)!!.methods) {
             if (m.returnType == Int::class.javaPrimitiveType) {
                 val argt = m.parameterTypes
                 if (argt.isNotEmpty() && argt[argt.size - 1] == Initiator._ChatMessage()) {
