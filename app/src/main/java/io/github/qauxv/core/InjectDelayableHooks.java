@@ -37,6 +37,7 @@ import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.step.Step;
@@ -135,7 +136,8 @@ public class InjectDelayableHooks {
                         }
                         String statusText;
                         try {
-                            statusText = "QAuxiliary 正在初始化:\n" + steps.get(j).getDescription() + "\n每个类一般不会超过一分钟";
+                            statusText = "QAuxiliary " + BuildConfig.VERSION_NAME + " 正在初始化:\n"
+                                    + steps.get(j).getDescription() + "\n每个类一般不会超过一分钟";
                         } catch (Throwable e22) {
                             statusText = e22.toString();
                         }
