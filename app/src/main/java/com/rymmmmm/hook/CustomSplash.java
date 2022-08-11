@@ -37,6 +37,7 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.ui.ResUtils;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -44,6 +45,9 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Map;
+import java.util.Objects;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -134,6 +138,24 @@ public class CustomSplash extends CommonConfigFunctionHook {
                 param.setResult(new ByteArrayInputStream(TRANSPARENT_PNG));
             }
         });
+        Class<?> kThemeSplashHelper = Initiator.load("com.tencent.mobileqq.splashad.config.ThemeSplashHelper");
+        if (kThemeSplashHelper != null) {
+            Method getSplashConfigMapByCId = null;
+            for (Method m : kThemeSplashHelper.getDeclaredMethods()) {
+                // static synthetic Map a(int i);
+                if (m.getReturnType() == Map.class && m.getModifiers() == (Modifier.STATIC | 0x00001000)) {
+                    Class<?>[] argt = m.getParameterTypes();
+                    if (argt.length == 1 && argt[0] == int.class) {
+                        if (getSplashConfigMapByCId != null) {
+                            throw new IllegalStateException("Too many ThemeSplashHelper.<synthetic>getSplashConfigMapByCId(I)Map");
+                        }
+                        getSplashConfigMapByCId = m;
+                    }
+                }
+            }
+            Objects.requireNonNull(getSplashConfigMapByCId, "ThemeSplashHelper.<synthetic>getSplashConfigMapByCId(I)Map");
+            HookUtils.hookBeforeIfEnabled(this, getSplashConfigMapByCId, 51, param -> param.setResult(null));
+        }
         return true;
     }
 
