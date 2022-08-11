@@ -76,8 +76,8 @@ public class Initiator {
             }
         }
         try {
-            return sPluginParentClassLoader.loadClass(className);
-        } catch (Throwable e) {
+            return sHostClassLoader.loadClass(className);
+        } catch (ClassNotFoundException e) {
             return null;
         }
     }
