@@ -152,6 +152,14 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
     }
 
     @Override
+    public void setEnabled(boolean value) {
+        super.setEnabled(value);
+        if (mState != null) {
+            mState.setValue(getStateText());
+        }
+    }
+
+    @Override
     public boolean initOnce() throws Exception {
         Method revokeMsg = null;
         for (Method m : _QQMessageFacade().getDeclaredMethods()) {

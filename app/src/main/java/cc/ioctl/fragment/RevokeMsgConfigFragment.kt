@@ -25,6 +25,7 @@ package cc.ioctl.fragment
 import cc.ioctl.hook.RevokeMsgHook
 import cc.ioctl.util.Reflex
 import io.github.qauxv.base.ISwitchCellAgent
+import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.fragment.BaseHierarchyFragment
@@ -40,7 +41,17 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
             TextSwitchItem(
                 "总开关",
                 summary = "关闭后将不会拦截撤回消息",
-                switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, RevokeMsgHook.INSTANCE::isEnabled)
+                switchAgent = object : ISwitchCellAgent {
+                    override var isChecked: Boolean
+                        get() = RevokeMsgHook.INSTANCE.isEnabled
+                        set(value) {
+                            RevokeMsgHook.INSTANCE.setEnabled(value)
+                            if (value && !RevokeMsgHook.INSTANCE.isInitialized) {
+                                HookInstaller.initializeHookForeground(requireContext(), RevokeMsgHook.INSTANCE)
+                            }
+                        }
+                    override val isCheckable: Boolean = true
+                }
             ),
             TextSwitchItem(
                 "显示消息 shmsgseq",
