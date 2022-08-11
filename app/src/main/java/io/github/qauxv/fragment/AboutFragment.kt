@@ -22,6 +22,9 @@
 
 package io.github.qauxv.fragment
 
+import android.content.ClipData
+import android.content.ClipboardManager
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
@@ -32,6 +35,7 @@ import android.view.MenuItem
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
+import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
@@ -80,10 +84,16 @@ class AboutFragment : BaseRootLayoutFragment() {
                 textItem("愿每个人都被这世界温柔以待", value = " :) ")
             },
             CategoryItem("版本") {
-                textItem("模块版本", value = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")")
+                val moduleVersionName = BuildConfig.VERSION_NAME + "(" + BuildConfig.VERSION_CODE + ")"
+                textItem("模块版本", value = moduleVersionName) {
+                    copyText(moduleVersionName)
+                }
                 textItem("构建时间", value = getBuildTimeString())
                 if (!isInModuleProcess) {
-                    textItem(hostInfo.hostName, value = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")")
+                    val hostVersionName = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")"
+                    textItem(hostInfo.hostName, value = hostVersionName) {
+                        copyText(hostVersionName)
+                    }
                 }
             },
             CategoryItem("隐私与协议") {
@@ -238,6 +248,16 @@ class AboutFragment : BaseRootLayoutFragment() {
             else -> {
                 super.onOptionsItemSelected(item)
             }
+        }
+    }
+
+    private fun copyText(str: String) {
+        if (str.isNotEmpty()) {
+            val ctx = requireContext()
+            val clipboard = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+            val clip = ClipData.newPlainText("text", str)
+            clipboard.setPrimaryClip(clip)
+            Toast.makeText(ctx, "已复制到剪贴板", Toast.LENGTH_SHORT).show()
         }
     }
 
