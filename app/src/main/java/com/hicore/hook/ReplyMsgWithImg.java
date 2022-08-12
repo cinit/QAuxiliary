@@ -56,6 +56,7 @@ import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
@@ -116,6 +117,10 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     private static Class<?> kReplyMsgUtils = null;
     private static Class<?> kReplyMsgSender = null;
     private static Method pfnPhotoListPanel_resetStatus = null;
+    private static Method sGetHelperMethod = null;
+    private static Field sBaseChatPie_HelperProvider = null;
+    // guessed name
+    private static Method mReplyHelper_getSourceInfo = null;
 
     @Override
     protected boolean initOnce() throws Exception {
@@ -138,6 +143,34 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         kReplyMsgUtils = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgUtils), "DexKit.C_ReplyMsgUtils");
         kReplyMsgSender = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgSender), "DexKit.C_ReplyMsgSender");
         pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.getMethodFromCache(DexKit.N_PhotoListPanel_resetStatus), "N_PhotoListPanel_resetStatus");
+
+        sBaseChatPie_HelperProvider = Reflex.getFirstNSFFieldByType(Initiator._BaseChatPie(), kHelperProvider);
+        sBaseChatPie_HelperProvider.setAccessible(true);
+        Objects.requireNonNull(sBaseChatPie_HelperProvider, "BaseChatPie.?:HelperProvider not found");
+
+        Class<?> kReplyHelper = Initiator.loadClass("com.tencent.mobileqq.activity.aio.helper.ReplyHelper");
+
+        Class<?> kSourceMsgInfo = Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo");
+        for (Method m : kReplyHelper.getDeclaredMethods()) {
+            if (m.getReturnType() == kSourceMsgInfo && m.getParameterTypes().length == 0 && m.getModifiers() == Modifier.PUBLIC) {
+                if ("a".equals(m.getName()) || "d".equals(m.getName()) || "h".equals(m.getName())) {
+                    mReplyHelper_getSourceInfo = m;
+                    break;
+                }
+            }
+        }
+        Objects.requireNonNull(mReplyHelper_getSourceInfo, "ReplyHelper.getSourceInfo not found");
+
+        for (Method sm : kHelperProvider.getSuperclass().getDeclaredMethods()) {
+            if (sm.getParameterTypes().length == 1 && sm.getParameterTypes()[0] == int.class) {
+                if (sm.getReturnType() == kIHelper) {
+                    sGetHelperMethod = sm;
+                    break;
+                }
+            }
+        }
+        Objects.requireNonNull(sGetHelperMethod, "HelperProvider.getHelper not found");
+
         Method sendCustomEmotion = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.emoticonview.sender.CustomEmotionSenderUtil"), void.class,
                 "sendCustomEmotion", Initiator._BaseQQAppInterface(), Context.class, Initiator._BaseSessionInfo(),
                 String.class, boolean.class, boolean.class, boolean.class, String.class, Initiator.loadClass("com.tencent.mobileqq.emoticon.StickerInfo"),
@@ -453,36 +486,12 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
         }
     }
 
-    private static Method sIsNowReplyingMethod = null;
-    private static Field sBaseChatPie_HelperProvider = null;
-
     // 判断当前输入框是否是正在回复某一条消息的状态
     public static boolean isNowReplying(@NonNull Object baseChatPie) throws ReflectiveOperationException {
-        if (sBaseChatPie_HelperProvider == null) {
-            Field f = Reflex.getFirstNSFFieldByType(Initiator._BaseChatPie(), kHelperProvider);
-            Objects.requireNonNull(f, "BaseChatPie.?:HelperProvider not found");
-            f.setAccessible(true);
-            sBaseChatPie_HelperProvider = f;
-        }
         Object helperProvider = sBaseChatPie_HelperProvider.get(baseChatPie);
-        if (sIsNowReplyingMethod == null) {
-            for (Method sm : helperProvider.getClass().getSuperclass().getSuperclass().getDeclaredMethods()) {
-                if (sm.getParameterTypes().length == 1 && sm.getParameterTypes()[0] == int.class) {
-                    if (sm.getReturnType() == kIHelper) {
-                        sIsNowReplyingMethod = sm;
-                        break;
-                    }
-                }
-            }
-        }
         // HelperProvider.ID_AIO_REPLY = 119
-        Object replyHelper = sIsNowReplyingMethod.invoke(helperProvider, 119);
-        Class<?> kSourceMsgInfo = Initiator.loadClass("com.tencent.mobileqq.data.MessageForReplyText$SourceMsgInfo");
-        Method m = Reflex.findMethodOrNull(replyHelper.getClass(), kSourceMsgInfo, "a");
-        if (m == null) {
-            m = Reflex.findMethodOrNull(replyHelper.getClass(), kSourceMsgInfo, "d");
-        }
-        Object sourceInfo = m.invoke(replyHelper);
+        Object replyHelper = sGetHelperMethod.invoke(helperProvider, 119);
+        Object sourceInfo = mReplyHelper_getSourceInfo.invoke(replyHelper);
         return sourceInfo != null;
     }
 
