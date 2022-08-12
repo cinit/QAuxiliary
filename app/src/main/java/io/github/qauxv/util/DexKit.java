@@ -1356,6 +1356,9 @@ public class DexKit {
             case C_CustomWidgetUtil:
                 a:
                 for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("/") && !m.declaringClass.contains("com/tencent/widget")) {
+                        continue;
+                    }
                     Class<?> clz = Initiator.load(m.declaringClass);
                     if (clz.isEnum()) {
                         continue;
