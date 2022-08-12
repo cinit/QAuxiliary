@@ -22,17 +22,18 @@
 package com.rymmmmm.hook;
 
 import android.view.View;
+import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.Objects;
 
 //强制使用默认字体
 @FunctionHookEntry
@@ -64,21 +65,39 @@ public class DefaultFont extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
+    public boolean initOnce() throws ReflectiveOperationException {
+        // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
+        ArrayList<Method> candidates = new ArrayList<>(2);
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
-            if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a") && !Modifier.isStatic(m.getModifiers())
-                    && m.getReturnType() == void.class) {
+            if (m.getModifiers() == Modifier.PROTECTED && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
                 if (argt.length == 2 && argt[0] != View.class && argt[1] == Initiator._ChatMessage()) {
-                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+                    candidates.add(m);
                 }
             }
         }
-        for (Method m : Initiator.load("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl").getDeclaredMethods()) {
-            if (m.getName().equals("enlargeTextMsg") && !Modifier.isStatic(m.getModifiers())) {
-                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+        if (candidates.size() != 2) {
+            throw new RuntimeException("expect 2 methods, got " + candidates.size());
+        }
+        // 8.8.88 a
+        // 8.8.93 q0
+        // 8.9.0 q0
+        // 8.9.2 q0
+        // 8.9.3 p0
+        Method method = null;
+        for (Method m : candidates) {
+            String name = m.getName();
+            if ("a".equals(name) || "p0".equals(name) || "q0".equals(name)) {
+                method = m;
+                break;
             }
         }
+        Objects.requireNonNull(method);
+        HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
+        // m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a") &&
+        Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
+                .getDeclaredMethod("enlargeTextMsg", TextView.class);
+        HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
         return true;
     }
 }
