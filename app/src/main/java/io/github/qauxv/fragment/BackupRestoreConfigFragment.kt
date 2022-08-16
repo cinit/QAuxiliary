@@ -353,7 +353,7 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
                     }
                 }
                 else -> {
-                    Toasts.error(context!!, "请选择操作类型")
+                    Toasts.error(requireContext(), "请选择操作类型")
                 }
             }
         } else if (v.id == R.id.backupRestoreConfig_buttonBrowseFile) {

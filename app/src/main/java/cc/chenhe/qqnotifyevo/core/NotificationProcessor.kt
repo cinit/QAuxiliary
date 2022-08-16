@@ -241,7 +241,6 @@ abstract class NotificationProcessor(context: Context) {
      * @param sbn 原始通知。
      * @return 优化后的通知。若未匹配到已知模式或消息内容被隐藏则返回 `null`.
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     fun resolveNotification(
         context: Context,
         packageName: String,
@@ -347,7 +346,6 @@ abstract class NotificationProcessor(context: Context) {
         return ticker != null && ticker == content && hideMsgPattern.matcher(ticker).matches()
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun tryResolveQzone(
         context: Context, tag: Tag, original: Notification, isQzone: Boolean, title: String?,
         ticker: String?, content: String?
@@ -396,7 +394,6 @@ abstract class NotificationProcessor(context: Context) {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun tryResolveGroupMsg(
         context: Context, tag: Tag, original: Notification, isMulti: Boolean, title: String?,
         ticker: String, content: String?
@@ -430,7 +427,6 @@ abstract class NotificationProcessor(context: Context) {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun tryResolvePrivateMsg(
         context: Context, tag: Tag, original: Notification, isMulti: Boolean,
         title: String?, ticker: String
@@ -462,7 +458,6 @@ abstract class NotificationProcessor(context: Context) {
         return null
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun tryResolveBindingMsg(
         context: Context, tag: Tag, original: Notification, title: String?,
         ticker: String, content: String?
@@ -545,7 +540,6 @@ abstract class NotificationProcessor(context: Context) {
      * @param notification 原有通知。
      * @return 通知的大图标。
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun getNotifyLargeIcon(context: Context, notification: Notification): Bitmap? {
         return notification.getLargeIcon()?.loadDrawable(context)?.toBitmap()
     }
@@ -559,7 +553,6 @@ abstract class NotificationProcessor(context: Context) {
      * @param largeIcon 大图标。
      * @param original  原始通知。
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun createNotification(
         context: Context,
         tag: Tag,
@@ -613,7 +606,6 @@ abstract class NotificationProcessor(context: Context) {
         return builder.build()
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     protected fun createQZoneNotification(
         context: Context, tag: Tag, conversation: Conversation,
         original: Notification
@@ -642,7 +634,6 @@ abstract class NotificationProcessor(context: Context) {
      * @param tag      来源标记。
      * @param original 原始通知。
      */
-    @RequiresApi(Build.VERSION_CODES.M)
     @SuppressLint("BinaryOperationInTimber")
     protected fun createConversationNotification(
         context: Context, tag: Tag, channel: NotifyChannel,
@@ -717,7 +708,6 @@ abstract class NotificationProcessor(context: Context) {
             .build()
     }
 
-    @RequiresApi(Build.VERSION_CODES.M)
     private fun setIcon(
         context: Context,
         builder: NotificationCompat.Builder,
