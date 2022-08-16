@@ -49,6 +49,7 @@ import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.lang.reflect.Field;
+import java.util.Locale;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -173,7 +174,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
                         field.setAccessible(true);
                         Object value = field.get(null);
                         String path = String.valueOf(value);
-                        if (path.toLowerCase().endsWith("file_recv/")) {
+                        if (path.toLowerCase(Locale.ROOT).endsWith("file_recv/")) {
                             TARGET_FIELD = field;
                             break;
                         }

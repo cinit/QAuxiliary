@@ -56,6 +56,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.Locale;
 
 public class RepeaterIconSettingDialog implements View.OnClickListener,
         DialogInterface.OnClickListener, RadioGroup.OnCheckedChangeListener,
@@ -326,7 +327,7 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
         }
         long fileSize = data.length;
         if (fileSize > 16 * 1024) {
-            textViewWarning.setText(String.format("该图片文件体积较大(%dbytes),可能导致卡顿", fileSize));
+            textViewWarning.setText(String.format(Locale.ROOT, "该图片文件体积较大(%dbytes),可能导致卡顿", fileSize));
             textViewWarning.setVisibility(View.VISIBLE);
         } else {
             textViewWarning.setVisibility(View.GONE);

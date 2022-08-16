@@ -108,7 +108,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
                     if (size != -1) {
                         if (size > maxSize) {
                             param.setResult(null);
-                            Toasts.show(null, String.format("已拦截异常图片加载, 大小: %s",
+                            Toasts.show(null, String.format(Locale.ROOT, "已拦截异常图片加载, 大小: %s",
                                     BugUtils.getSizeString(size)));
                         }
                     } else {

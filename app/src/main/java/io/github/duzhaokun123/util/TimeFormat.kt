@@ -23,7 +23,8 @@
 package io.github.duzhaokun123.util
 
 import android.icu.text.SimpleDateFormat
+import java.util.Locale
 
 object TimeFormat {
-    val format1 by lazy { SimpleDateFormat("yyyyMMddHHmmssSSSS") }
+    val format1 by lazy { SimpleDateFormat("yyyyMMddHHmmssSSSS", Locale.ROOT) }
 }

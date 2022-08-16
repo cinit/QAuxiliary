@@ -34,6 +34,7 @@ import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
+import java.util.Locale;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipFile;
 
@@ -68,7 +69,7 @@ public class InterceptZipBomb extends CommonSwitchFunctionHook {
             if (sizeSum >= 104550400 && sizeSum > file.length() * 10) {
                 param.setResult(null);
                 Toasts.show(HostInfo.getApplication(),
-                        String.format("已拦截 %s ,解压后大小异常: %s",
+                        String.format(Locale.ROOT, "已拦截 %s ,解压后大小异常: %s",
                                 file.getPath(), BugUtils.getSizeString(sizeSum)));
             }
         });

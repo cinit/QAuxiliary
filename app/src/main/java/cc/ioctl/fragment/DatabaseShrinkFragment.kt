@@ -69,6 +69,7 @@ import java.io.OutputStreamWriter
 import java.net.HttpURLConnection
 import java.net.URL
 import java.security.MessageDigest
+import java.util.Locale
 import java.util.concurrent.atomic.AtomicBoolean
 
 class DatabaseShrinkFragment : BaseRootLayoutFragment() {
@@ -731,7 +732,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                 val bytes = md5.digest(uin.toByteArray(Charsets.ISO_8859_1))
                 val sb = StringBuilder()
                 for (b in bytes) {
-                    sb.append(String.format("%02X", b))
+                    sb.append(String.format(Locale.ROOT, "%02X", b))
                 }
                 sb.toString()
             }

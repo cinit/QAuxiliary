@@ -55,6 +55,7 @@ import io.github.qauxv.util.Toasts
 import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import java.security.MessageDigest
+import java.util.Locale
 
 class DatabaseListFragment : BaseRootLayoutFragment() {
 
@@ -223,7 +224,7 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
                 val bytes = md5.digest(uin.toByteArray(Charsets.ISO_8859_1))
                 val sb = StringBuilder()
                 for (b in bytes) {
-                    sb.append(String.format("%02X", b))
+                    sb.append(String.format(Locale.ROOT, "%02X", b))
                 }
                 sb.toString()
             }
@@ -238,7 +239,7 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
                 result /= 1024
                 index++
             }
-            return "${String.format("%.2f", result)}${unit[index]}"
+            return "${String.format(Locale.ROOT, "%.2f", result)}${unit[index]}"
         }
     }
 }

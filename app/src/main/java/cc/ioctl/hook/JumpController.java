@@ -49,6 +49,7 @@ import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.Locale;
 import java.util.regex.Pattern;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
@@ -98,7 +99,7 @@ public class JumpController extends CommonConfigFunctionHook {
                 throw new ParseException("expected ',', got " + expr.charAt(1), idx + 1);
             }
             Rule r = new Rule();
-            String verb = expr.substring(0, 1).toUpperCase();
+            String verb = expr.substring(0, 1).toUpperCase(Locale.ROOT);
             switch (verb.charAt(0)) {
                 case 'A':
                     r.verb = JMP_ALLOW;
@@ -120,7 +121,7 @@ public class JumpController extends CommonConfigFunctionHook {
                 if (condition.charAt(1) != ':') {
                     throw new ParseException("expected ':', got " + condition.charAt(1), idx);
                 }
-                String type = condition.substring(0, 1).toUpperCase();
+                String type = condition.substring(0, 1).toUpperCase(Locale.ROOT);
                 switch (type.charAt(0)) {
                     case 'P': {
                         r.pkg = condition.substring(2);

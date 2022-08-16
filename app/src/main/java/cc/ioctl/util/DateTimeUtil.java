@@ -25,6 +25,7 @@ package cc.ioctl.util;
 import java.text.SimpleDateFormat;
 import java.util.Calendar;
 import java.util.Date;
+import java.util.Locale;
 
 public class DateTimeUtil {
 
@@ -38,19 +39,19 @@ public class DateTimeUtil {
         Date now = new Date(curr);
         Date t = new Date(timeMs);
         if (t.getYear() != now.getYear()) {
-            format = new SimpleDateFormat("yyyy/MM/dd HH:mm");
+            format = new SimpleDateFormat("yyyy/MM/dd HH:mm", Locale.ROOT);
             return format.format(t);
         }
         if (t.getMonth() == now.getMonth() && t.getDay() == now.getDay()) {
-            format = new SimpleDateFormat("HH:mm:ss");
+            format = new SimpleDateFormat("HH:mm:ss", Locale.ROOT);
             return format.format(t);
         }
         if ((curr - timeMs) / 1000f / 3600f / 24f < 6.0f) {
-            format = new SimpleDateFormat(" HH:mm");
+            format = new SimpleDateFormat(" HH:mm", Locale.ROOT);
             return "星期" + new String[]{"日", "一", "二", "三", "四", "五", "六"}[t.getDay()] + format
                 .format(t);
         }
-        format = new SimpleDateFormat("MM-dd HH:mm");
+        format = new SimpleDateFormat("MM-dd HH:mm", Locale.ROOT);
         return format.format(t);
     }
 
@@ -64,14 +65,14 @@ public class DateTimeUtil {
             case 4:
             case 3:
             case 2:
-                format = new SimpleDateFormat("MM-dd HH:mm");
+                format = new SimpleDateFormat("MM-dd HH:mm", Locale.ROOT);
                 break;
             case 1:
             case 0:
-                format = new SimpleDateFormat("HH:mm");
+                format = new SimpleDateFormat("HH:mm", Locale.ROOT);
                 break;
             default:
-                format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT);
                 break;
         }
         ret = format.format(t1);
@@ -79,14 +80,14 @@ public class DateTimeUtil {
             case 4:
             case 3:
             case 2:
-                format = new SimpleDateFormat("MM-dd HH:mm");
+                format = new SimpleDateFormat("MM-dd HH:mm", Locale.ROOT);
                 break;
             case 1:
             case 0:
-                format = new SimpleDateFormat("HH:mm");
+                format = new SimpleDateFormat("HH:mm", Locale.ROOT);
                 break;
             default:
-                format = new SimpleDateFormat("yyyy-MM-dd HH:mm");
+                format = new SimpleDateFormat("yyyy-MM-dd HH:mm", Locale.ROOT);
                 break;
         }
         ret = ret + " 至 " + format.format(t2);

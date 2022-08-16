@@ -40,6 +40,7 @@ import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Toasts;
+import java.util.Locale;
 
 public class RikkaBaseApkFormatDialog {
 
@@ -111,7 +112,7 @@ public class RikkaBaseApkFormatDialog {
                         .replace("%p", HostInfo.PACKAGE_NAME_SELF)
                         .replace("%v", BuildConfig.VERSION_NAME)
                         .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));
-                if (!format.toLowerCase().contains(".apk")) {
+                if (!format.toLowerCase(Locale.ROOT).contains(".apk")) {
                     result += "\n提示:你还没有输入.apk后缀哦";
                 }
                 preview.setText(result);

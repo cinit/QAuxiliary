@@ -189,7 +189,7 @@ data class MsgRecordData(val msgRecord: Any) {
         }
     val readableTime: String
         get() = time.let {
-            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.getDefault()).format(Date(it * 1000))
+            SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.ROOT).format(Date(it * 1000))
         }
 
     //是否已读

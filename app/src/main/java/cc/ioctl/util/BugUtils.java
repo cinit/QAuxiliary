@@ -22,9 +22,9 @@
 
 package cc.ioctl.util;
 
-import android.annotation.SuppressLint;
 import androidx.annotation.NonNull;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
 
 /**
@@ -57,8 +57,7 @@ public class BugUtils {
             long longValue = (Long) entry.getKey();
             String str = (String) entry.getValue();
             if (size >= longValue) {
-                @SuppressLint("DefaultLocale")
-                String format = String.format("%.2f", ((double) size) / ((double) longValue));
+                String format = String.format(Locale.ROOT, "%.2f", ((double) size) / ((double) longValue));
                 int indexOf = format.indexOf(".00");
                 if (indexOf != -1) {
                     return format.substring(0, indexOf) + str;

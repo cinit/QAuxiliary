@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Locale;
 
 public class DexFlow {
 
@@ -190,7 +191,7 @@ public class DexFlow {
             int opv = buf[insnsOff + 2 * i] & 0xff;
             int len = OPCODE_LENGTH_TABLE[opv];
             if (len == 0) {
-                throw new RuntimeException(String.format("Unrecognized opcode = 0x%02x", opv));
+                throw new RuntimeException(String.format(Locale.ROOT, "Unrecognized opcode = 0x%02x", opv));
             }
             if (opv == 0x22) {
                 //new-instance
@@ -311,7 +312,7 @@ public class DexFlow {
             int opv = buf[insnsOff + 2 * i] & 0xff;
             int len = OPCODE_LENGTH_TABLE[opv];
             if (len == 0) {
-                throw new RuntimeException(String.format("Unrecognized opcode = 0x%02x", opv));
+                throw new RuntimeException(String.format(Locale.ROOT, "Unrecognized opcode = 0x%02x", opv));
             }
             if (opv == 0x22) {
                 //new-instance
@@ -544,7 +545,7 @@ public class DexFlow {
             int opv = buf[insStart + i] & 0xff;
             int len = OPCODE_LENGTH_TABLE[opv];
             if (len == 0) {
-                Log.e(String.format("Unrecognized opcode = 0x%02x", opv));
+                Log.e(String.format(Locale.ROOT, "Unrecognized opcode = 0x%02x", opv));
                 return false;
             }
             i += 2 * len;
