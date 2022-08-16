@@ -40,6 +40,7 @@ import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
+import java.util.List;
 
 public class Natives {
 
@@ -184,7 +185,6 @@ public class Natives {
         }
     }
 
-    @SuppressWarnings("deprecation")
     @SuppressLint("UnsafeDynamicallyLoadedCode")
     public static void load(Context ctx) throws LinkageError {
         try {
@@ -192,6 +192,7 @@ public class Natives {
             return;
         } catch (UnsatisfiedLinkError ignored) {
         }
+        String abi = getAbiForLibrary();
         try {
             Class.forName(HybridClassLoader.getXposedBridgeClassName());
             // in host process
@@ -199,12 +200,12 @@ public class Natives {
                 String modulePath = HookEntry.getModulePath();
                 if (modulePath != null) {
                     // try direct memory map
-                    System.load(modulePath + "!/lib/" + Build.CPU_ABI + "/libqauxv.so");
+                    System.load(modulePath + "!/lib/" + abi + "/libqauxv.so");
                     Log.d("dlopen by mmap success");
                 }
             } catch (UnsatisfiedLinkError e1) {
                 // direct memory map load failed, extract and dlopen
-                File libname = extractNativeLibrary(ctx, "qauxv");
+                File libname = extractNativeLibrary(ctx, "qauxv", abi);
                 registerNativeLibEntry(libname.getName());
                 try {
                     System.load(libname.getAbsolutePath());
@@ -254,8 +255,7 @@ public class Natives {
      *
      * @param libraryName library name without "lib" or ".so", eg. "qauxv", "mmkv"
      */
-    static File extractNativeLibrary(Context ctx, String libraryName) throws IOError {
-        String abi = Build.CPU_ABI;
+    static File extractNativeLibrary(Context ctx, String libraryName, String abi) throws IOError {
         String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_CODE + "." + abi;
         File dir = new File(ctx.getFilesDir(), "qa_dyn_lib");
         if (!dir.isDirectory()) {
@@ -291,10 +291,28 @@ public class Natives {
                 fout.flush();
                 fout.close();
             } catch (IOException ioe) {
+                try {
+                    in.close();
+                } catch (IOException ignored) {
+                }
                 // rethrow as error
                 throw new IOError(ioe);
             }
         }
         return soFile;
+    }
+
+    public static String getAbiForLibrary() {
+        String[] supported = Process.is64Bit() ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
+        if (supported == null || supported.length == 0) {
+            throw new IllegalStateException("No supported ABI in this device");
+        }
+        List<String> abis = Arrays.asList("armeabi-v7a", "arm64-v8a", "x86", "x86_64");
+        for (String abi : supported) {
+            if (abis.contains(abi)) {
+                return abi;
+            }
+        }
+        throw new IllegalStateException("No supported ABI in " + Arrays.toString(supported));
     }
 }
