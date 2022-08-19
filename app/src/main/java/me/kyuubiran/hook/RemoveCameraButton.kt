@@ -47,14 +47,15 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
         }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
+
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
-            val methodName = when {
-                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "E"
-                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
-                else -> "a"
-            }
-            name == methodName
-                && returnType == Void.TYPE && parameterTypes.isEmpty()
+            val nameEqual = if (requireMinQQVersion(QQVersion.QQ_8_8_93))
+                (name == "E" || name == "F")
+            else
+                name == "a"
+
+            nameEqual && returnType == Void.TYPE && parameterTypes.isEmpty()
+
         }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
