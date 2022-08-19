@@ -135,6 +135,10 @@ public class Initiator {
         return findClassWithSynthetics("com.tencent.mobileqq.activity.ConversationTitleBtnCtrl", 1, 2, 4, 5, 6);
     }
 
+    public static Class<?> _ZPlanBadgeManagerImpl() {
+        return findClassWithSynthetics("com.tencent.mobileqq.zplan.aio.impl.ZPlanBadgeManagerImpl");
+    }
+
     public static Class<?> _ConfigHandler() {
         return findClassWithSynthetics("com.tencent.mobileqq.app.ConfigHandler", 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11);
     }
@@ -198,7 +202,9 @@ public class Initiator {
         return findClassWithSynthetics("com/tencent/mobileqq/activity/aio/item/PttItemBuilder", 2);
     }
 
-    public static Class<?> _ReplyItemBuilder(){return load("com.tencent.mobileqq.activity.aio.item.ReplyTextItemBuilder");}
+    public static Class<?> _ReplyItemBuilder() {
+        return load("com.tencent.mobileqq.activity.aio.item.ReplyTextItemBuilder");
+    }
 
     public static Class<?> _TroopGiftAnimationController() {
         return findClassWithSynthetics("com.tencent.mobileqq.troopgift.TroopGiftAnimationController", 1);
@@ -332,11 +338,11 @@ public class Initiator {
     }
 
     public static Class<?> _BaseSessionInfo() {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)) {
             Class<?> sessionInfo = findClassWithSynthetics("com/tencent/mobileqq/activity/aio/SessionInfo");
             return sessionInfo.getSuperclass();
-        }else {
-            return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.BaseSessionInfo","com.tencent.mobileqq.activity.aio.SessionInfo");
+        } else {
+            return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.BaseSessionInfo", "com.tencent.mobileqq.activity.aio.SessionInfo");
         }
     }
 
@@ -442,7 +448,7 @@ public class Initiator {
 
     @Nullable
     public static Class<?> findClassWithSynthetics(@NonNull String className1, @NonNull String className2,
-                                                   @NonNull String className3, int... index) {
+            @NonNull String className3, int... index) {
         String cacheKey = className1;
         Class<?> cache = sClassCache.get(cacheKey);
         if (cache != null) {
