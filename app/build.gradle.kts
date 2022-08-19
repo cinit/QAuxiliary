@@ -165,7 +165,7 @@ dependencies {
     implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0-RC")
+    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
