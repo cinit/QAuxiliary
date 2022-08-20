@@ -49,7 +49,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        val method: String = when {
+        val onDownloadOriginalPictureClick: String = when {
             requireMinQQVersion(QQVersion.QQ_8_8_98) -> "N0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "O0"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "m"
@@ -58,8 +58,9 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "t"
             else -> "I"
         }
-        val clz = DexKit.loadClassFromCache(DexKit.C_AIOPictureView)!!
-        val m: String = when {
+        val kAIOPictureView = DexKit.loadClassFromCache(DexKit.C_AIOPictureView)!!
+        val setXxxVisible: String = when {
+            requireMinQQVersion(QQVersion.QQ_8_9_5) -> "b1"
             requireMinQQVersion(QQVersion.QQ_8_8_98) -> "Z0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "a1"
             requireMinQQVersion(QQVersion.QQ_8_8_80) -> "h"
@@ -68,9 +69,9 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "h"
             else -> "I"
         }
-        "L${clz.name};->$m(Z)V".method.replace(this) {
+        "L${kAIOPictureView.name};->$setXxxVisible(Z)V".method.replace(this) {
             if (it.args[0] as Boolean) {
-                it.thisObject.invoke(method)
+                it.thisObject.invoke(onDownloadOriginalPictureClick)
             }
         }
     }
