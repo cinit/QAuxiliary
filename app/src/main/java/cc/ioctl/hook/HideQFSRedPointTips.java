@@ -32,6 +32,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -66,24 +67,29 @@ public class HideQFSRedPointTips extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Class<?> kQFSRedPointTipsHelper = Initiator.loadClass("com.tencent.mobileqq.activity.qcircle.utils.QFSRedPointTipsHelper");
-        Method showTips = null;
-        for (Method method : kQFSRedPointTipsHelper.getDeclaredMethods()) {
-            if (!Modifier.isStatic(method.getModifiers())) {
-                Class<?>[] argt = method.getParameterTypes();
-                if (argt.length == 3 || argt.length == 4) {
-                    showTips = method;
-                    break;
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_3)) {
+            // QQ has its QFSRedPointTipsHelper refactor in QQ 8.9.3+
+            // TODO: 2022-08-20 implement hook for QQ 8.9.3+
+        } else {
+            Class<?> kQFSRedPointTipsHelper = Initiator.loadClass("com.tencent.mobileqq.activity.qcircle.utils.QFSRedPointTipsHelper");
+            Method showTips = null;
+            for (Method method : kQFSRedPointTipsHelper.getDeclaredMethods()) {
+                if (!Modifier.isStatic(method.getModifiers())) {
+                    Class<?>[] argt = method.getParameterTypes();
+                    if (argt.length == 3 || argt.length == 4) {
+                        showTips = method;
+                        break;
+                    }
                 }
             }
+            Objects.requireNonNull(showTips, "QFSRedPointTipsHelper.showTips not found");
+            HookUtils.hookBeforeIfEnabled(this, showTips, p -> p.setResult(null));
         }
-        Objects.requireNonNull(showTips, "QFSRedPointTipsHelper.showTips not found");
-        HookUtils.hookBeforeIfEnabled(this, showTips, p -> p.setResult(null));
         return true;
     }
 
     @Override
     public boolean isAvailable() {
-        return !HostInfo.isTim();
+        return !HostInfo.isTim() && !HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_3);
     }
 }
