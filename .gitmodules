@@ -7,3 +7,6 @@
 [submodule "libs/qq-stub"]
 	path = libs/qq-stub
 	url = https://github.com/LuckyPray/qq-stub
+[submodule "libs/stub/qq-stub"]
+	path = libs/stub/qq-stub
+	url = https://github.com/LuckyPray/qq-stub

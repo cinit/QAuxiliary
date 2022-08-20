@@ -35,10 +35,8 @@ import java.util.UUID
 
 plugins {
     id("io.github.qauxv.application")
-    id("com.android.application")
-    id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
-    kotlin("plugin.serialization") version Version.kotlin
+    kotlin("plugin.serialization")
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
@@ -133,7 +131,7 @@ android {
 }
 
 dependencies {
-    compileOnly(projects.libs.qqStub)
+    compileOnly(projects.libs.stub)
     implementation(projects.libs.mmkv)
     ksp(projects.libs.ksp)
     // androidx
@@ -254,7 +252,7 @@ tasks.register("checkGitSubmodule") {
     doLast {
         listOf(
             "libs/mmkv/MMKV/Core",
-            "libs/qq-stub",
+            "libs/stub/qq-stub",
             "app/src/main/cpp/dex_builder",
             "app/src/main/cpp/dex_builder/external/abseil"
         ).forEach {
