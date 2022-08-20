@@ -8,6 +8,11 @@ object Version {
     const val ksp = "1.0.6"
     val java = JavaVersion.VERSION_11
 
+    const val compileSdkVersion = 32
+    const val minSdk = 24
+    const val targetSdk = 33
+    const val versionName = "1.2.14"
+
     private const val defaultNdkVersion = "25.0.8775105"
     private const val defaultCMakeVersion = "3.22.1"
 

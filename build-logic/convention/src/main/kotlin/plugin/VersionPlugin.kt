@@ -20,14 +20,12 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-plugins {
-    id("io.github.qauxv.version")
-    id("com.android.application") version "7.2.2" apply false
-    id("com.android.library") version "7.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.10" apply false
-    kotlin("plugin.serialization") version "1.7.10" apply false
-}
+package plugin
 
-tasks.register<Delete>("clean").configure {
-    delete(rootProject.buildDir)
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+
+class VersionPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+    }
 }

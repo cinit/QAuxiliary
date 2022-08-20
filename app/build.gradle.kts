@@ -24,8 +24,8 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
 import com.android.tools.build.apkzlib.zfile.ZFiles
-import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.AlignmentRules
+import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
 import java.io.FileInputStream
@@ -34,6 +34,7 @@ import java.security.cert.X509Certificate
 import java.util.UUID
 
 plugins {
+    id("io.github.qauxv.application")
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
@@ -52,12 +53,12 @@ if (ccacheExecutablePath != null) {
 }
 
 android {
+    namespace = "io.github.qauxv"
     defaultConfig {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
-        resourceConfigurations += listOf("zh", "en")
 
         externalNativeBuild {
             cmake {
@@ -84,8 +85,6 @@ android {
                 keyAlias = System.getenv("KEY_ALIAS")
                 keyPassword = System.getenv("KEY_PASSWORD")
                 enableV2Signing = true
-                enableV3Signing = true
-                enableV4Signing = true
             }
         }
     }
@@ -118,7 +117,6 @@ android {
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
-    kotlinOptions.jvmTarget = Version.java.toString()
 
     externalNativeBuild {
         cmake {
@@ -132,7 +130,6 @@ android {
     lint {
         checkDependencies = true
     }
-    namespace = "io.github.qauxv"
 }
 
 dependencies {
@@ -271,7 +268,6 @@ tasks.register("checkGitSubmodule") {
         }
     }
 }.also { tasks.preBuild.dependsOn(it) }
-
 
 val synthesizeDistReleaseApksCI by tasks.registering {
     group = "build"

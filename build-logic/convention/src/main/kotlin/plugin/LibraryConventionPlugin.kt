@@ -20,14 +20,25 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-plugins {
-    id("io.github.qauxv.version")
-    id("com.android.application") version "7.2.2" apply false
-    id("com.android.library") version "7.2.2" apply false
-    id("org.jetbrains.kotlin.android") version "1.7.10" apply false
-    kotlin("plugin.serialization") version "1.7.10" apply false
-}
+package plugin
 
-tasks.register<Delete>("clean").configure {
-    delete(rootProject.buildDir)
+import com.android.build.gradle.LibraryExtension
+import configureKotlinAndroid
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.kotlin.dsl.configure
+
+class LibraryConventionPlugin : Plugin<Project> {
+    override fun apply(target: Project) {
+        with(target) {
+            with(pluginManager) {
+                apply("com.android.library")
+                apply("org.jetbrains.kotlin.android")
+            }
+
+            extensions.configure<LibraryExtension> {
+                configureKotlinAndroid(this)
+            }
+        }
+    }
 }
