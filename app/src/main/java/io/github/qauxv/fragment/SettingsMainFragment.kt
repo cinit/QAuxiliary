@@ -251,6 +251,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         if (!isResumed) {
             return
         }
+        val context = requireContext()
         val fadeIn = AlphaAnimation(0f, 1f).apply {
             duration = 300
             fillAfter = true
@@ -264,7 +265,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
             isFocusableInTouchMode = false
             isClickable = false
             isLongClickable = false
-            setBackgroundColor(ResourcesCompat.getColor(context!!.resources, R.color.rippleColor, context!!.theme))
+            setBackgroundColor(ResourcesCompat.getColor(context.resources, R.color.rippleColor, context.theme))
         }
         val layoutParams = FrameLayout.LayoutParams(rect.width(), rect.height()).apply {
             setMargins(rect.left, rect.top, 0, 0)
