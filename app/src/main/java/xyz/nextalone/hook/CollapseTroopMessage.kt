@@ -27,6 +27,8 @@ import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._TroopChatPie
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
@@ -42,6 +44,10 @@ object CollapseTroopMessage : CommonSwitchFunctionHook("na_collapse_troop_messag
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
+        if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
+            // QQ has TroopMsgSameFold since QQ 8.5.0 (or maybe earlier)
+            return@throwOrTrue
+        }
         _TroopChatPie().method(
             "a",
             List::class.java,
