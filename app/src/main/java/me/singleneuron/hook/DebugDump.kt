@@ -25,6 +25,7 @@ import android.content.Intent
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
@@ -37,9 +38,16 @@ import me.singleneuron.util.dump
 object DebugDump : BaseSwitchFunctionDecorator(), IStartActivityHookDecorator {
 
     override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
-        Log.d("debugDump: startActivity, this=" + param.thisObject)
-        intent.dump()
+        // don't mess up with the log output if all functions are enable for unit tests
+        if (!isEnabledAllFunction()) {
+            Log.d("debugDump: startActivity, this=" + param.thisObject)
+            intent.dump()
+        }
         return false
+    }
+
+    private fun isEnabledAllFunction(): Boolean {
+        return ConfigManager.getDefaultConfig().getBooleanOrDefault("EnableAllHook.enabled", false)
     }
 
     override val name = "Activity堆栈转储"
