@@ -282,7 +282,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     private val clickToSwitchDexDeobfsBackend = View.OnClickListener {
         val ctx = requireContext()
         val useDexBuilder = isUseDexBuilderAsDexDeobfsBackend
-        val optionText = arrayOf("DexBuilder(默认)", "Legacy")
+        val optionText = arrayOf("DexBuilder(更快)", "Legacy(默认)")
         val current = if (useDexBuilder) 0 else 1
         AlertDialog.Builder(ctx)
             .setTitle("选择反混淆后端")
@@ -311,7 +311,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private var isUseDexBuilderAsDexDeobfsBackend: Boolean
-        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault(DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, true)
+        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault(
+            DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER,
+            DexKit.CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER
+        )
         set(value) {
             ConfigManager.getDefaultConfig().apply {
                 putBoolean(DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, value)

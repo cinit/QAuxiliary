@@ -67,6 +67,7 @@ public class DexKit {
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
     public static final String KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = "dex_deobfs_backend_dexbuilder";
+    public static final boolean CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = false;
     static DexHelper helper = null;
 
     //WARN: NEVER change the index!
@@ -156,7 +157,8 @@ public class DexKit {
     }
 
     public static boolean isUseDexBuilderAsBackend() {
-        return ConfigManager.getDefaultConfig().getBoolean(KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, true);
+        return ConfigManager.getDefaultConfig().getBoolean(KEY_DEX_DEOBFS_BACKEND_DEXBUILDER,
+                CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER);
     }
 
     /**
