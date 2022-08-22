@@ -30,6 +30,7 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.Handler
 import android.os.ParcelFileDescriptor
+import android.os.Process
 import android.provider.MediaStore
 import android.view.LayoutInflater
 import android.view.Menu
@@ -166,7 +167,9 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     override fun onResume() {
         super.onResume()
-        requireActivity().contentResolver.registerContentObserver(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, observer)
+        requireActivity().contentResolver.registerContentObserver(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI, true, observer
+        )
     }
 
     override fun onPause() {
@@ -213,27 +216,25 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         }
     }
 
-    private fun dumpStatus(func: IUiItemAgentProvider): String {
-        val sb = StringBuilder()
-        sb.append(BuildConfig.VERSION_NAME).append("\n")
-        sb.append(hostInfo.hostName).append(hostInfo.versionName).append('(').append(hostInfo.versionCode).append(')').append('\n')
-        sb.apply {
-            append(func.javaClass.name).append("\n")
-            if (func is IDynamicHook) {
-                val h: IDynamicHook = func
-                append("isInitialized: ").append(h.isInitialized).append("\n")
-                append("isInitializationSuccessful: ").append(h.isInitializationSuccessful).append("\n")
-                append("isEnabled: ").append(h.isEnabled).append("\n")
-                append("isAvailable: ").append(h.isAvailable).append("\n")
-                append("isPreparationRequired: ").append(h.isPreparationRequired).append("\n")
-                val errors: List<Throwable> = h.runtimeErrors
-                append("errors: ").append(errors.size).append("\n")
-                for (error in errors) {
-                    append(Log.getStackTraceString(error)).append("\n")
-                }
+    private fun dumpStatus(func: IUiItemAgentProvider) = buildString {
+        append(BuildConfig.VERSION_NAME).append("\n")
+        append(hostInfo.hostName).append(hostInfo.versionName)
+        append('(').append(hostInfo.versionCode).append(')').append('\n')
+        append("PID: ").append(Process.myPid()).append(", UID: ").append(Process.myUid()).append('\n')
+        append(func.javaClass.name).append("\n")
+        if (func is IDynamicHook) {
+            val h: IDynamicHook = func
+            append("isInitialized: ").append(h.isInitialized).append("\n")
+            append("isInitializationSuccessful: ").append(h.isInitializationSuccessful).append("\n")
+            append("isEnabled: ").append(h.isEnabled).append("\n")
+            append("isAvailable: ").append(h.isAvailable).append("\n")
+            append("isPreparationRequired: ").append(h.isPreparationRequired).append("\n")
+            val errors: List<Throwable> = h.runtimeErrors
+            append("errors: ").append(errors.size).append("\n")
+            for (error in errors) {
+                append(Log.getStackTraceString(error)).append("\n")
             }
         }
-        return sb.toString()
     }
 
     override fun onDestroy() {
@@ -255,9 +256,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
         @JvmStatic
         fun getBundleForLocation(targetUiAgentId: String): Bundle {
-            if (targetUiAgentId.isEmpty()) {
-                throw IllegalArgumentException("targetUiAgentId can not be empty")
-            }
+            require(targetUiAgentId.isNotEmpty()) { "targetUiAgentId can not be empty" }
             val bundle = Bundle()
             bundle.putString(TARGET_IDENTIFIER, targetUiAgentId)
             return bundle
