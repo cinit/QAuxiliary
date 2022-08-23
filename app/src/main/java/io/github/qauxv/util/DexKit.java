@@ -1898,24 +1898,27 @@ public class DexKit {
 
     @NonNull
     public static byte[] forFiniteString8(@NonNull String str, int len) {
-        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
-        if (u8.length > 127 || len > 127) {
+        // dex uses utf-8 encoded utf-16, s.t. even if the str is complete, str.length != str.bytes.length
+        if (len < 0 || len > 127 || str.length() > 127) {
             throw new IllegalArgumentException("String too long");
         }
-        byte[] result = new byte[len + 1];
-        result[0] = (byte) u8.length;
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        byte[] result = new byte[u8.length + 1];
+        result[0] = (byte) len;
         System.arraycopy(u8, 0, result, 1, u8.length);
         return result;
     }
 
     @NonNull
     public static byte[] forFiniteString8(@NonNull String str) {
-        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
-        if (u8.length > 127) {
+        // dex uses utf-8 encoded utf-16
+        int len = str.length();
+        if (len > 127) {
             throw new IllegalArgumentException("String too long");
         }
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[u8.length + 1];
-        result[0] = (byte) u8.length;
+        result[0] = (byte) len;
         System.arraycopy(u8, 0, result, 1, u8.length);
         return result;
     }
