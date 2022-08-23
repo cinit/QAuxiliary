@@ -677,7 +677,10 @@ public class DexKit {
             case C_SIMPLE_UI_UTIL:
                 return new byte[][]{forFiniteString8("key_simple_status_s", 21)};
             case C_TROOP_GIFT_UTIL:
-                return new byte[][]{forFiniteString8(".troop.send_giftT", 26)};
+                return new byte[][]{
+                        forFiniteString8(".troop.send_giftTroopUtils"),
+                        forFiniteString8(".troop.send_giftTroopMemberUtil")
+                };
             case C_TEST_STRUCT_MSG:
                 return new byte[][]{forFiniteString8("TestStructMsg", 13)};
             case C_QZONE_MSG_NOTIFY:
@@ -713,7 +716,8 @@ public class DexKit {
             case N_BASE_CHAT_PIE__chooseMsg:
                 return new byte[][]{forFiniteString8("set left text from cancel", 25)};
             case C_CustomWidgetUtil:
-                return new byte[][]{forFiniteString8("NEW ", 3)};
+                // forFiniteString8("NEW", 3), still use hex bytes for high collision reason
+                return new byte[][]{new byte[]{0x03, 0x4E, 0x45, 0x57, 0x00}};
             case C_HttpDownloader:
                 return new byte[][]{forFiniteString8("[reportHttpsResult] url=", 24)};
             case C_MultiMsg_Manager:
@@ -772,7 +776,7 @@ public class DexKit {
             case N_ChatActivityFacade_sendMsgButton:
                 return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
             case N_FriendsStatusUtil_isChatAtTop:
-                return new byte[][]{forFiniteString8("isChatAtTop result is:")};
+                return new byte[][]{forFiniteString8("isChatAtTop result is: ")};
             case N_VipUtils_getUserStatus:
                 return new byte[][]{forFiniteString8("getUserStatus Friends is null")};
             case C_GuildHelperProvider:
@@ -1147,6 +1151,7 @@ public class DexKit {
             case N_BASE_CHAT_PIE__handleNightMask:
             case N_BASE_CHAT_PIE__updateSession:
             case N_BaseChatPie_mosaic:
+            case N_BASE_CHAT_PIE__chooseMsg:
                 for (DexMethodDescriptor m : __methods) {
                     if (m.declaringClass.replace('/', '.').contains(_BaseChatPie().getName())) {
                         return m;
@@ -1178,11 +1183,7 @@ public class DexKit {
                     if (!method.getReturnType().equals(void.class)) {
                         continue;
                     }
-                    Class<?>[] argt = method.getParameterTypes();
-                    if (argt.length == 0) {
-                        return m;
-                    }
-                    if (argt.length == 1 && argt[0].getName().contains("QQSettingMeProfileBubbleBean")) {
+                    if (m.declaringClass.contains("QQSettingMe")) {
                         return m;
                     }
                 }
@@ -1397,7 +1398,7 @@ public class DexKit {
                     } catch (Exception e) {
                         continue;
                     }
-                    if (method.getClass().isAssignableFrom(_TroopChatPie())) {
+                    if (method.getDeclaringClass() == _TroopChatPie()) {
                         Class<?>[] argt = method.getParameterTypes();
                         if (argt.length == 0) {
                             return m;

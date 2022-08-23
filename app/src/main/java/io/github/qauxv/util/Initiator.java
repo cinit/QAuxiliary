@@ -330,6 +330,10 @@ public class Initiator {
     }
 
     public static Class<?> _TroopChatPie() {
+        // obfuscated:
+        // QQ 8.1.0, 8.2.7 (defpackage)
+        // Lite 4.0.1, 3.5.0
+        // not obfuscated: QQ 8.3.0+, TIM all, HD 5.9.3
         return findClassWithSynthetics("com.tencent.mobileqq.activity.aio.core.TroopChatPie", "com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie");
     }
 
