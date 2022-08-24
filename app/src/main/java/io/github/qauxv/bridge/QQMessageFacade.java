@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.tlb.ConfigTable;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;

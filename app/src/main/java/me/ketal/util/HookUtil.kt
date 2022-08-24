@@ -24,8 +24,8 @@ package me.ketal.util
 
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import io.github.qauxv.util.DexFieldDescriptor
-import io.github.qauxv.util.DexMethodDescriptor
+import io.github.qauxv.util.dexkit.DexFieldDescriptor
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.Initiator
 import java.lang.reflect.Field
 import java.lang.reflect.Method

@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.util;
+package io.github.qauxv.util.dexkit;
 
 import static io.github.qauxv.util.Initiator._BaseChatPie;
 import static io.github.qauxv.util.Initiator._ChatMessage;
@@ -38,6 +38,8 @@ import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 import io.github.qauxv.base.annotation.InternalApi;
 import io.github.qauxv.config.ConfigManager;
+import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;

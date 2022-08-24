@@ -26,7 +26,7 @@ import android.content.ContextWrapper
 import android.content.Intent
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator

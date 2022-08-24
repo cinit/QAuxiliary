@@ -21,7 +21,7 @@
  */
 package io.github.qauxv.step;
 
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 
 public class DexDeobfStep implements Step {
 

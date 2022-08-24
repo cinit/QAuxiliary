@@ -22,11 +22,11 @@
 
 package io.github.qauxv.hook
 
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.SyncUtils
 import java.util.Arrays
 
 abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {

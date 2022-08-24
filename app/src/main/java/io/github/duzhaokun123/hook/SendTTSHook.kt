@@ -33,7 +33,7 @@ import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HostInfo
 import io.github.duzhaokun123.util.TTS
 import io.github.duzhaokun123.util.TimeFormat
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -44,7 +44,7 @@ import io.github.qauxv.router.decorator.IInputButtonDecorator
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher
 import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
-import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Toasts
 import mqq.app.AppRuntime
 import java.io.File

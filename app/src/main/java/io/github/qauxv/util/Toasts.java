@@ -29,7 +29,6 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.SyncUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;

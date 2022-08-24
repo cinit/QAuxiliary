@@ -34,12 +34,12 @@ import cc.ioctl.util.BugUtils
 import cc.ioctl.util.ui.FaultyDialog
 import com.rymmmmm.hook.CustomSplash
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils.async
-import io.github.qauxv.SyncUtils.runOnUiThread
 import io.github.qauxv.databinding.FragmentCustomSplashConfigBinding
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.IoUtils
 import io.github.qauxv.util.SafUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.Toasts
 import java.io.File
 

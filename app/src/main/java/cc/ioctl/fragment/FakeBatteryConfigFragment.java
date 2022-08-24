@@ -52,7 +52,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.fragment.BaseRootLayoutFragment;

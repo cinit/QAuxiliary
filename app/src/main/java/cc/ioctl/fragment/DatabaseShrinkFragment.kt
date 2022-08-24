@@ -50,9 +50,9 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.TroopManagerHelper
 import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils
-import io.github.qauxv.SyncUtils.async
-import io.github.qauxv.SyncUtils.runOnUiThread
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.Log

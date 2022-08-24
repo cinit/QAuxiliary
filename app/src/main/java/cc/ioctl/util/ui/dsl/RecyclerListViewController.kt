@@ -31,12 +31,11 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TMsgListItem
 import io.github.qauxv.dsl.item.UiAgentItem
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.collect
 
 class RecyclerListViewController(
         val context: Context,

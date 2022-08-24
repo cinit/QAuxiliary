@@ -26,7 +26,7 @@ import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
 import android.os.Bundle;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Log;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;

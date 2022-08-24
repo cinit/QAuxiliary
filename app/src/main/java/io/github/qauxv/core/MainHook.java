@@ -38,7 +38,7 @@ import cc.ioctl.util.Reflex;
 import com.rymmmmm.hook.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.lifecycle.ActProxyMgr;

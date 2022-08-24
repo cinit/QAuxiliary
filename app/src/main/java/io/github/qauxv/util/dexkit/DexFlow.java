@@ -19,10 +19,12 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.util;
+package io.github.qauxv.util.dexkit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.github.qauxv.util.Log;
+import io.github.qauxv.util.NonUiThread;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;

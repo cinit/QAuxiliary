@@ -30,7 +30,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Log;
 

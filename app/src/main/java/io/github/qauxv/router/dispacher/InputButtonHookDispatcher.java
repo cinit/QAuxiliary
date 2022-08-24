@@ -45,7 +45,7 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.ui.TouchEventToLongClickAdapter;
 import io.github.qauxv.ui.widget.InterceptLayout;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;

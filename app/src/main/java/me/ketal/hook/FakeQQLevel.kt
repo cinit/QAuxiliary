@@ -40,7 +40,7 @@ import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.dexkit.DexKit
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
 import me.ketal.util.ignoreResult

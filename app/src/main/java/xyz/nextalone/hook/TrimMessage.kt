@@ -26,7 +26,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 

@@ -22,7 +22,6 @@
 
 package io.github.qauxv.util
 
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.remote.TransactionHelper.getUserStatus

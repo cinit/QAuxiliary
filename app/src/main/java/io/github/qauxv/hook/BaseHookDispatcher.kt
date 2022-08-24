@@ -22,13 +22,13 @@
 
 package io.github.qauxv.hook
 
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexKit
 import java.util.Arrays
 
 abstract class BaseHookDispatcher<T : IDynamicHook>(

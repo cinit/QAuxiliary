@@ -34,7 +34,7 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import java.io.File;

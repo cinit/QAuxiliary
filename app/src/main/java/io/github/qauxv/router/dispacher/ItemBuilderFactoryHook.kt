@@ -26,7 +26,7 @@ import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
-import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import me.singleneuron.hook.decorator.CardMsgToText
 import me.singleneuron.hook.decorator.MiniAppToStruckMsg

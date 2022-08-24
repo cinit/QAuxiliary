@@ -28,7 +28,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
 import com.tencent.common.app.BaseApplicationImpl;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.activity.BaseActivity;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;

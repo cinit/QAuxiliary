@@ -34,14 +34,14 @@ import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils.async
-import io.github.qauxv.SyncUtils.runOnUiThread
 import io.github.qauxv.config.BackupConfigSession
 import io.github.qauxv.config.RestoreConfigSession
 import io.github.qauxv.databinding.FragmentBackupRestoreConfigBinding
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.SafUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.UiThread
 import java.io.File

@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.step.Step;

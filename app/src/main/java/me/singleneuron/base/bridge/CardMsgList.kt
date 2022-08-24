@@ -21,9 +21,9 @@
  */
 package me.singleneuron.base.bridge
 
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.encodeToJson
 import java.net.URL
 

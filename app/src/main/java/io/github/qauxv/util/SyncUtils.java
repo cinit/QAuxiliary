@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv;
+package io.github.qauxv.util;
 
 import android.annotation.SuppressLint;
 import android.app.ActivityManager;
@@ -34,7 +34,6 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
-import io.github.qauxv.util.Log;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;

@@ -28,19 +28,16 @@ import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
 import android.os.Parcelable
 import android.view.WindowManager
-import androidx.appcompat.app.AppCompatDelegate
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.fling.SimpleFlingInterceptLayout
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
 import io.github.qauxv.ui.ModuleThemeManager
-import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.isInModuleProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
 import java.lang.Integer.max
 

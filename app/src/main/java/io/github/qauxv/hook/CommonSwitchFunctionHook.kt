@@ -25,9 +25,9 @@ package io.github.qauxv.hook
 import android.app.Activity
 import android.content.Context
 import android.view.View
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.util.SyncUtils
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**

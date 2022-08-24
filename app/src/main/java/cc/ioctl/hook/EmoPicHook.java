@@ -33,7 +33,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AIOUtilsImpl;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.LicenseStatus;
 import java.lang.reflect.Field;
 

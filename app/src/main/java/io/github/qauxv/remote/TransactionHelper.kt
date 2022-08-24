@@ -23,10 +23,10 @@
 package io.github.qauxv.remote
 
 import io.github.qauxv.BuildConfig
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.data.UserStatusConst
 import io.github.qauxv.util.decodeToDataClass
 import io.github.qauxv.util.encodeToJson

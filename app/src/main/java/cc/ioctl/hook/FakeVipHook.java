@@ -30,8 +30,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.DexKit;
-import io.github.qauxv.util.DexMethodDescriptor;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 

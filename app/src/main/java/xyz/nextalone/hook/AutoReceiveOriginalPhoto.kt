@@ -21,14 +21,14 @@
  */
 package xyz.nextalone.hook
 
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion

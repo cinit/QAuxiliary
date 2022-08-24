@@ -26,7 +26,6 @@ package cc.ioctl.util.ui
 
 import android.content.Context
 import android.widget.CompoundButton
-import io.github.qauxv.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.cell.TitleValueCell

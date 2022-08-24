@@ -38,9 +38,9 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CustomDialog
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getDefaultCfg
 import xyz.nextalone.util.findHostView

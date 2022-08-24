@@ -27,11 +27,11 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import io.github.qauxv.SyncUtils
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.DexMethodDescriptor
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.Toasts

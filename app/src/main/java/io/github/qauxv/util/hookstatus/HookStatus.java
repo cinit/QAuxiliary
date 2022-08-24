@@ -35,7 +35,7 @@ import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
 import java.util.HashMap;

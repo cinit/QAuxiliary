@@ -38,7 +38,7 @@ import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;

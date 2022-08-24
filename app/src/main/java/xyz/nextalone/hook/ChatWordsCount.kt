@@ -48,10 +48,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.tlb.ConfigTable.getConfig
 import io.github.qauxv.ui.CustomDialog
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getExFriendCfg

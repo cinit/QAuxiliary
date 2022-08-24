@@ -37,7 +37,7 @@ import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.DexKit
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
 import xyz.nextalone.util.hookAfter

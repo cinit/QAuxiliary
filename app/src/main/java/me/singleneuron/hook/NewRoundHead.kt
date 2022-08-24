@@ -30,6 +30,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.*
+import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry

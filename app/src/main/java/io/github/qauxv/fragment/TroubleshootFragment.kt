@@ -61,8 +61,8 @@ import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.hostInfo
 import kotlin.system.exitProcess
 

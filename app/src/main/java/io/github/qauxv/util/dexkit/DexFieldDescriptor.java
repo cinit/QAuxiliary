@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.util;
+package io.github.qauxv.util.dexkit;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;

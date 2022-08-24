@@ -46,7 +46,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;

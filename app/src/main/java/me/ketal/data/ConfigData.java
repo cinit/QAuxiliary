@@ -24,9 +24,9 @@ package me.ketal.data;
 
 import android.os.Looper;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 
 public class ConfigData<T> {

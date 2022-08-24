@@ -27,7 +27,6 @@ import android.view.View;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import io.github.qauxv.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -38,8 +37,9 @@ import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.DexKit;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.DexKit;
 import java.lang.reflect.InvocationTargetException;
 import mqq.app.AppRuntime;
 

@@ -34,9 +34,9 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
-import io.github.qauxv.util.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array

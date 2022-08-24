@@ -43,9 +43,9 @@ import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
 import io.github.qauxv.R
-import io.github.qauxv.SyncUtils
-import io.github.qauxv.SyncUtils.async
-import io.github.qauxv.SyncUtils.runOnUiThread
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.FunctionEntryRouter

@@ -31,7 +31,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.hook.BasePersistBackgroundHook;

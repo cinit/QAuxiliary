@@ -25,12 +25,9 @@ import android.content.Context
 import android.os.Looper
 import android.view.View
 import android.widget.Toast
-import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
-import de.robv.android.xposed.XC_MethodHook
-import io.github.qauxv.SyncUtils
-import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import java.lang.reflect.Method
 

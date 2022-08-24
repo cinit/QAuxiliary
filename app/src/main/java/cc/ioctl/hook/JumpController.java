@@ -33,7 +33,7 @@ import androidx.annotation.Nullable;
 import cc.ioctl.fragment.JefsRuleConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.SyncUtils;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
