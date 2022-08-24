@@ -148,7 +148,8 @@ public class DexKit {
 
     public static final Map<String, DexDeobfsBackend> backends = Map.of(
             LegacyDexDeobfs.INSTANCE.getId(), LegacyDexDeobfs.INSTANCE,
-            DexBuilderDexDeobfs.INSTANCE.getId(), DexBuilderDexDeobfs.INSTANCE
+            DexBuilderDexDeobfs.INSTANCE.getId(), DexBuilderDexDeobfs.INSTANCE,
+            DexKitDeobfs.INSTANCE.getId(), DexKitDeobfs.INSTANCE
     );
 
     public static DexDeobfsBackend getCurrentBackend() {

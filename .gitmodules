@@ -10,3 +10,6 @@
 [submodule "libs/stub/qq-stub"]
 	path = libs/stub/qq-stub
 	url = https://github.com/LuckyPray/qq-stub
+[submodule "app/src/main/cpp/dex_kit"]
+	path = app/src/main/cpp/dex_kit
+	url = https://github.com/LuckyPray/DexKit.git
