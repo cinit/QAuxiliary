@@ -31,7 +31,6 @@ import android.os.Bundle;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import cc.ioctl.util.HookUtilsKt;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import dalvik.system.DexClassLoader;
@@ -44,19 +43,17 @@ import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
-import java.lang.reflect.Executable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
-import me.iacn.biliroaming.utils.DexHelper;
 
 /**
  * I hadn't obfuscated the source code. I just don't want to name it, leaving it a()
@@ -68,9 +65,8 @@ public class DexKit {
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
-    public static final String KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = "dex_deobfs_backend_dexbuilder";
-    public static final boolean CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER = false;
-    static DexHelper helper = null;
+    public static final String KEY_DEX_DEOBFS_BACKEND = "dex_deobfs_backend";
+    public static final String DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER = LegacyDexDeobfs.INSTANCE.getId();
 
     //WARN: NEVER change the index!
     public static final int C_DIALOG_UTIL = 1;
@@ -150,17 +146,15 @@ public class DexKit {
     public static final int N_ContactUtils_getBuddyName = 20025;
     public static final int DEOBF_NUM_N = 25;
 
-    public static DexHelper getHelper() {
-        if (helper == null) {
-            ClassLoader dexClassLoader = HookUtilsKt.findDexClassLoader(Initiator.getHostClassLoader());
-            helper = new DexHelper(dexClassLoader);
-        }
-        return helper;
-    }
+    public static final Map<String, DexDeobfsBackend> backends = Map.of(
+            LegacyDexDeobfs.INSTANCE.getId(), LegacyDexDeobfs.INSTANCE,
+            DexBuilderDexDeobfs.INSTANCE.getId(), DexBuilderDexDeobfs.INSTANCE
+    );
 
-    public static boolean isUseDexBuilderAsBackend() {
-        return ConfigManager.getDefaultConfig().getBoolean(KEY_DEX_DEOBFS_BACKEND_DEXBUILDER,
-                CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER);
+    public static DexDeobfsBackend getCurrentBackend() {
+        var id = ConfigManager.getDefaultConfig()
+                .getString(KEY_DEX_DEOBFS_BACKEND, DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER);
+        return backends.get(id);
     }
 
     /**
@@ -233,15 +227,7 @@ public class DexKit {
         if (ret != null) {
             return ret;
         }
-        DexMethodDescriptor m = null;
-        if (isUseDexBuilderAsBackend()) {
-            // find class from native
-            m = doFindMethodFromNative(i);
-        }
-        if (m == null) {
-            // find class use legacy method
-            m = doFindMethodDesc(i);
-        }
+        DexMethodDescriptor m = getCurrentBackend().doFindMethodImpl(i);
         if (m == null) {
             return null;
         }
@@ -288,31 +274,7 @@ public class DexKit {
         if (i / 10000 == 0) {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
-        if (isUseDexBuilderAsBackend()) {
-            try {
-                // find method from native
-                DexMethodDescriptor m = doFindMethodFromNative(i);
-                if (m != null) {
-                    return m.getMethodInstance(Initiator.getHostClassLoader());
-                }
-            } catch (NoSuchMethodException e) {
-                // ignore
-            }
-        }
-        DexMethodDescriptor m = doFindMethodDesc(i);
-        if (m == null || NO_SUCH_METHOD.toString().equals(m.toString())) {
-            return null;
-        }
-        if (m.name.equals("<init>") || m.name.equals("<clinit>")) {
-            Log.i("doFindMethod(" + i + ") methodName == " + m.name + " , return null");
-            return null;
-        }
-        try {
-            return m.getMethodInstance(Initiator.getHostClassLoader());
-        } catch (NoSuchMethodException e) {
-            Log.e(e);
-            return null;
-        }
+        return getCurrentBackend().doFindMethod(i);
     }
 
     /**
@@ -340,89 +302,6 @@ public class DexKit {
             Log.e(e);
             return null;
         }
-    }
-
-    @Nullable
-    public static DexMethodDescriptor doFindMethodFromNative(int i) {
-        DexMethodDescriptor ret = getMethodDescFromCache(i);
-        if (ret != null) {
-            return ret;
-        }
-        DexHelper helper = getHelper();
-        byte[][] keys = b(i);
-        HashSet<DexMethodDescriptor> methods = new HashSet<>();
-        ConfigManager cache = ConfigManager.getCache();
-        for (byte[] key : keys) {
-            String str = new String(Arrays.copyOfRange(key, 1, key.length));
-            Log.d("doFindMethodFromNative: id " + i + ", key:" + str);
-            long[] ms = helper.findMethodUsingString(
-                    str, true, -1, (short) -1, null, -1,
-                    null, null, null, false);
-            for (long methodIndex : ms) {
-                Executable m = helper.decodeMethodIndex(methodIndex);
-                if (m instanceof Method) {
-                    methods.add(new DexMethodDescriptor((Method) m));
-                    Log.d("doFindMethodFromNative: id " + i + ", m:" + m);
-                } else {
-                    Log.i("find Constructor: " + m + ", but not support Constructor currently");
-                }
-            }
-        }
-        if (methods.size() == 0) {
-            return null;
-        }
-        ret = verifyTargetMethod(i, methods, null);
-        if (ret == null) {
-            Log.i(methods.size() + " classes candidates found for " + i + ", none satisfactory.");
-            return null;
-        }
-        //
-        cache.putString("cache_" + a(i) + "_method", ret.toString());
-        cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
-        cache.save();
-        return ret;
-    }
-
-    /**
-     * Run the dex deobfuscation. This method may take a long time and should only be called in background thread. Note
-     * that if a method is not found, its failed state will be cached.
-     *
-     * @param i the dex method index
-     * @return the target method descriptor, null if the target is not found.
-     * @see #isRunDexDeobfuscationRequired(int)
-     */
-    @Nullable
-    public static DexMethodDescriptor doFindMethodDesc(int i) {
-        DexMethodDescriptor ret = getMethodDescFromCache(i);
-        if (ret != null) {
-            return ret;
-        }
-        int ver = -1;
-        try {
-            ver = HostInfo.getVersionCode32();
-        } catch (Throwable ignored) {
-        }
-        try {
-            ConfigManager cache = ConfigManager.getCache();
-            DexDeobfReport report = new DexDeobfReport();
-            report.target = i;
-            report.version = ver;
-            ret = searchVerifyDexMethodDesc(i, report);
-            cache.putString("deobf_log_" + a(i), report.toString());
-            if (ret == null) {
-                // save failed state
-                cache.putString("cache_" + a(i) + "_method", NO_SUCH_METHOD.toString());
-                cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
-                cache.save();
-                return null;
-            }
-            cache.putString("cache_" + a(i) + "_method", ret.toString());
-            cache.putInt("cache_" + a(i) + "_code", HostInfo.getVersionCode32());
-            cache.save();
-        } catch (Exception e) {
-            Log.e(e);
-        }
-        return ret;
     }
 
     public static String a(int i) {
@@ -946,7 +825,7 @@ public class DexKit {
         }
     }
 
-    private static DexMethodDescriptor verifyTargetMethod(int i, HashSet<DexMethodDescriptor> __methods, DexDeobfReport report) {
+    static DexMethodDescriptor verifyTargetMethod(int i, HashSet<DexMethodDescriptor> __methods) {
         switch (i) {
             case C_DIALOG_UTIL:
             case C_FACADE:
@@ -1559,52 +1438,6 @@ public class DexKit {
     }
 
     @Nullable
-    private static DexMethodDescriptor searchVerifyDexMethodDesc(int i, DexDeobfReport rep) {
-        ClassLoader loader = Initiator.getHostClassLoader();
-        long record = 0;
-        int[] qf = d(i);
-        byte[][] keys = b(i);
-        for (int dexi : qf) {
-            record |= 1L << dexi;
-            try {
-                for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> rets = findMethodsByConstString(k, dexi, loader);
-                    if (rets != null && rets.size() > 0) {
-                        // verify
-                        DexMethodDescriptor method = verifyTargetMethod(i, rets, rep);
-                        if (method != null) {
-                            return method;
-                        }
-                    }
-                }
-            } catch (FileNotFoundException ignored) {
-            }
-        }
-        int dexi = 1;
-        while (true) {
-            if ((record & (1L << dexi)) != 0) {
-                dexi++;
-                continue;
-            }
-            try {
-                for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
-                    if (ret != null && ret.size() > 0) {
-                        // verify
-                        DexMethodDescriptor method = verifyTargetMethod(i, ret, rep);
-                        if (method != null) {
-                            return method;
-                        }
-                    }
-                }
-            } catch (FileNotFoundException ignored) {
-                return null;
-            }
-            dexi++;
-        }
-    }
-
-    @Nullable
     public static byte[] getClassDeclaringDex(String klass, @Nullable int[] qf) {
         ClassLoader loader = Initiator.getHostClassLoader();
         int record = 0;
@@ -1750,152 +1583,6 @@ public class DexKit {
                 return null;
             }
             dexi++;
-        }
-    }
-
-    public static ArrayList<Integer> a(byte[] buf, byte[] target) {
-        ArrayList<Integer> rets = new ArrayList<>();
-        int[] ret = new int[1];
-        ret[0] = DexFlow.arrayIndexOf(buf, target, 0, buf.length);
-        ret[0] = DexFlow.arrayIndexOf(buf, DexFlow.int2u4le(ret[0]), 0, buf.length);
-        int strIdx = (ret[0] - DexFlow.readLe32(buf, 0x3c)) / 4;
-        if (strIdx > 0xFFFF) {
-            target = DexFlow.int2u4le(strIdx);
-        } else {
-            target = DexFlow.int2u2le(strIdx);
-        }
-        int off = 0;
-        while (true) {
-            off = DexFlow.arrayIndexOf(buf, target, off + 1, buf.length);
-            if (off == -1) {
-                break;
-            }
-            if (buf[off - 2] == (byte) 26/*Opcodes.OP_CONST_STRING*/
-                    || buf[off - 2] == (byte) 27)/* Opcodes.OP_CONST_STRING_JUMBO*/ {
-                ret[0] = off - 2;
-                int opcodeOffset = ret[0];
-                if (buf[off - 2] == (byte) 27 && strIdx < 0x10000) {
-                    if (DexFlow.readLe32(buf, opcodeOffset + 2) != strIdx) {
-                        continue;
-                    }
-                }
-                rets.add(opcodeOffset);
-            }
-        }
-        return rets;
-    }
-
-    /**
-     * get ALL the possible class names
-     *
-     * @param key    the pattern
-     * @param i      C_XXXX
-     * @param loader to get dex file
-     * @return ["abc","ab"]
-     * @throws FileNotFoundException apk has no classesN.dex
-     */
-    public static HashSet<DexMethodDescriptor> findMethodsByConstString(byte[] key, int i, ClassLoader loader) throws FileNotFoundException {
-        String name;
-        byte[] buf = new byte[4096];
-        byte[] content;
-        if (i == 1) {
-            name = "classes.dex";
-        } else {
-            name = "classes" + i + ".dex";
-        }
-        HashSet<URL> urls = new HashSet<>(3);
-        try {
-            Enumeration<URL> eu;
-            eu = (Enumeration<URL>) Reflex.invokeVirtual(loader, "findResources", name, String.class);
-            if (eu != null) {
-                while (eu.hasMoreElements()) {
-                    URL url = eu.nextElement();
-                    if (url.toString().contains(HostInfo.getPackageName())) {
-                        urls.add(url);
-                    }
-                }
-            }
-        } catch (Throwable e) {
-            Log.e(e);
-        }
-        if (!loader.getClass().equals(PathClassLoader.class) && !loader.getClass().equals(DexClassLoader.class) && loader.getParent() != null) {
-            try {
-                Enumeration<URL> eu;
-                eu = (Enumeration<URL>) Reflex.invokeVirtual(loader.getParent(), "findResources", name, String.class);
-                if (eu != null) {
-                    while (eu.hasMoreElements()) {
-                        URL url = eu.nextElement();
-                        if (url.toString().contains(HostInfo.getPackageName())) {
-                            urls.add(url);
-                        }
-                    }
-                }
-            } catch (Throwable e) {
-                Log.e(e);
-            }
-        }
-        //log("dex" + i + ":" + url);
-        if (urls.size() == 0) {
-            throw new FileNotFoundException(name);
-        }
-        InputStream in;
-        try {
-            HashSet<DexMethodDescriptor> rets = new HashSet<>();
-            for (URL url : urls) {
-                in = url.openStream();
-                ByteArrayOutputStream baos = new ByteArrayOutputStream();
-                int ii;
-                while ((ii = in.read(buf)) != -1) {
-                    baos.write(buf, 0, ii);
-                }
-                in.close();
-                content = baos.toByteArray();
-                ArrayList<Integer> opcodeOffsets = a(content, key);
-                for (int j = 0; j < opcodeOffsets.size(); j++) {
-                    try {
-                        DexMethodDescriptor desc = DexFlow.getDexMethodByOpOffset(content, opcodeOffsets.get(j), true);
-                        if (desc != null) {
-                            rets.add(desc);
-                        }
-                    } catch (InternalError ignored) {
-                    }
-                }
-            }
-            return rets;
-        } catch (IOException e) {
-            Log.e(e);
-            return null;
-        }
-    }
-
-    public static class DexDeobfReport {
-
-        int target;
-        int version;
-        String result;
-        String log;
-        long time;
-
-        public DexDeobfReport() {
-            time = System.currentTimeMillis();
-        }
-
-        public void v(String str) {
-            if (log == null) {
-                log = str + "\n";
-            } else {
-                log = log + str + "\n";
-            }
-        }
-
-        @NonNull
-        @Override
-        public String toString() {
-            return "Deobf target: " + target + '\n' +
-                "Time: " + time + '\n' +
-                "Version code: " + version + '\n' +
-                "Result: " + result + '\n' +
-                log;
         }
     }
 

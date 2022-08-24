@@ -34,11 +34,12 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.step.Step;
+import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexFlow;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.LegacyDexDeobfs;
 import java.util.ArrayList;
 import java.util.HashSet;
 
@@ -119,8 +120,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements St
                     DexFlow.packUtf8("init Mini App, cost=")
             }) {
                 HashSet<DexMethodDescriptor> rets = new HashSet<>();
-                ArrayList<Integer> opcodeOffsets = DexKit
-                        .a(dex, key);
+                ArrayList<Integer> opcodeOffsets = LegacyDexDeobfs.a(dex, key);
                 for (int j = 0; j < opcodeOffsets.size(); j++) {
                     try {
                         DexMethodDescriptor desc = DexFlow

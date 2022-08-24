@@ -114,7 +114,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             CategoryItem("反混淆") {
                 textItem(
                     "切换反混淆后端", "如非必要请不要更改",
-                    value = if (isUseDexBuilderAsDexDeobfsBackend) "DexBuilder" else "Legacy",
+                    value = DexKit.getCurrentBackend().name,
                     onClick = clickToSwitchDexDeobfsBackend
                 )
             },
@@ -281,9 +281,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val clickToSwitchDexDeobfsBackend = View.OnClickListener {
         val ctx = requireContext()
-        val useDexBuilder = isUseDexBuilderAsDexDeobfsBackend
-        val optionText = arrayOf("DexBuilder(更快)", "Legacy(默认)")
-        val current = if (useDexBuilder) 0 else 1
+        val backends = DexKit.backends.values.map { it.id to it.name }
+        val optionText = Array(backends.size) { backends[it].second }
+        val current = backends.indexOfFirst { it.first == dexBuilderAsDexDeobfsBackend }
         AlertDialog.Builder(ctx)
             .setTitle("选择反混淆后端")
             .setSingleChoiceItems(optionText, current) { _, _ -> }
@@ -294,10 +294,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 if (which == -1) {
                     return@setPositiveButton
                 }
-                val useDexBuilder = which == 0
-                if (useDexBuilder != isUseDexBuilderAsDexDeobfsBackend) {
+                val newBackend = backends[which].first
+                if (newBackend != dexBuilderAsDexDeobfsBackend) {
+                    dexBuilderAsDexDeobfsBackend = newBackend
                     // clear cache and restart
-                    isUseDexBuilderAsDexDeobfsBackend = useDexBuilder
                     ConfigManager.getCache().apply {
                         clear()
                         save()
@@ -310,14 +310,14 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             .show()
     }
 
-    private var isUseDexBuilderAsDexDeobfsBackend: Boolean
-        get() = ConfigManager.getDefaultConfig().getBooleanOrDefault(
-            DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER,
-            DexKit.CFG_DEL_VAL_KEY_DEX_DEOBFS_BACKEND_DEXBUILDER
+    private var dexBuilderAsDexDeobfsBackend: String
+        get() = ConfigManager.getDefaultConfig().getStringOrDefault(
+            DexKit.KEY_DEX_DEOBFS_BACKEND,
+            DexKit.DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER
         )
         set(value) {
             ConfigManager.getDefaultConfig().apply {
-                putBoolean(DexKit.KEY_DEX_DEOBFS_BACKEND_DEXBUILDER, value)
+                putString(DexKit.KEY_DEX_DEOBFS_BACKEND, value)
                 save()
             }
         }
