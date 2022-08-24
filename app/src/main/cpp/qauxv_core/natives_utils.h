@@ -29,4 +29,6 @@ extern "C" jint MMKV_JNI_OnLoad(JavaVM *vm, void *reserved);
 
 extern "C" jint BILI_JNI_OnLoad(JavaVM *vm, void *reserved);
 
+extern "C" jint DexKit_JNI_OnLoad(JavaVM *vm, void *reserved);
+
 #endif //NATIVES_NATIVES_UTILS_H

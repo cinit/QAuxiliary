@@ -74,18 +74,18 @@
       <option name="ALIGN_INIT_LIST_IN_COLUMNS" value="false" />
       <option name="SPACE_BEFORE_SUPERCLASS_COLON" value="false" />
     </Objective-C>
-    <Objective-C-extensions>
-      <extensions>
-        <pair source="cc" header="h" fileNamingConvention="NONE" />
-        <pair source="c" header="h" fileNamingConvention="NONE" />
-      </extensions>
-    </Objective-C-extensions>
     <Python>
       <option name="USE_CONTINUATION_INDENT_FOR_ARGUMENTS" value="true" />
     </Python>
     <TypeScriptCodeStyleSettings version="0">
       <option name="INDENT_CHAINED_CALLS" value="false" />
     </TypeScriptCodeStyleSettings>
+    <files>
+      <extensions>
+        <pair source="cc" header="h" fileNamingConvention="NONE" />
+        <pair source="c" header="h" fileNamingConvention="NONE" />
+      </extensions>
+    </files>
     <codeStyleSettings language="CSS">
       <indentOptions>
         <option name="INDENT_SIZE" value="2" />
