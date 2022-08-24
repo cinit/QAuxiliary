@@ -51,7 +51,6 @@ public class DexBuilderDexDeobfs implements DexDeobfsBackend {
     @Override
     public DexMethodDescriptor doFindMethodImpl(int i) {
         var ret = DexKit.getMethodDescFromCache(i);
-        Log.d("getMethodDescFromCache" + ret);
         if (ret != null) {
             return ret;
         }
@@ -84,6 +83,7 @@ public class DexBuilderDexDeobfs implements DexDeobfsBackend {
             Log.d("save id: " + i + ",method: " + ret);
             saveDescriptor(i, ret);
         }
+        ret = LegacyDexDeobfs.INSTANCE.doFindMethodImpl(i);
         return ret;
     }
 

@@ -43,6 +43,7 @@ public interface DexDeobfsBackend {
      * @param i the dex method index
      * @return target method descriptor, null if the target is not found.
      */
+    @Nullable
     DexMethodDescriptor doFindMethodImpl(int i);
 
     @Nullable
@@ -50,28 +51,56 @@ public interface DexDeobfsBackend {
         var descriptor = DexKit.getMethodDescFromCache(i);
         if (descriptor == null) {
             descriptor = doFindMethodImpl(i);
+            if (descriptor == null) {
+                Log.d("not found, save null");
+                descriptor = DexKit.NO_SUCH_METHOD;
+                saveDescriptor(i, descriptor);
+                return null;
+            }
         }
         try {
-            if (descriptor != null) {
-                if (DexKit.NO_SUCH_METHOD.toString().equals(descriptor.toString())) {
-                    return null;
-                }
-                if (descriptor.name.equals("<init>") || descriptor.name.equals("<clinit>")) {
-                    Log.i("doFindMethod(" + i + ") methodName == " + descriptor.name + " , return null");
-                    return null;
-                }
-                return descriptor.getMethodInstance(Initiator.getHostClassLoader());
-            } else {
-                saveDescriptor(i, DexKit.NO_SUCH_METHOD);
+            if (DexKit.NO_SUCH_METHOD.toString().equals(descriptor.toString())) {
+                return null;
             }
+            if (descriptor.name.equals("<init>") || descriptor.name.equals("<clinit>")) {
+                Log.i("doFindMethod(" + i + ") methodName == " + descriptor.name + " , return null");
+                return null;
+            }
+            return descriptor.getMethodInstance(Initiator.getHostClassLoader());
         } catch (NoSuchMethodException e) {
             // ignore
         }
         return null;
     }
 
+    @Nullable
+    default Class<?> doFindClass(int i) {
+        Class<?> ret = Initiator.load(DexKit.c(i));
+        if (ret != null) {
+            return ret;
+        }
+        var descriptor = DexKit.getMethodDescFromCache(i);
+        if (descriptor == null) {
+            descriptor = doFindMethodImpl(i);
+            if (descriptor == null) {
+                Log.d("not found, save null");
+                descriptor = DexKit.NO_SUCH_METHOD;
+                saveDescriptor(i, descriptor);
+                return null;
+            }
+        }
+        if (DexKit.NO_SUCH_METHOD.toString().equals(descriptor.toString())) {
+            return null;
+        }
+        if (descriptor.name.equals("<init>") || descriptor.name.equals("<clinit>")) {
+            Log.i("doFindMethod(" + i + ") methodName == " + descriptor.name + " , return null");
+            return null;
+        }
+        return Initiator.load(descriptor.declaringClass);
+
+    }
+
     default void saveDescriptor(int i, DexMethodDescriptor descriptor) {
-        Log.i("save " + DexKit.a(i) + " <--> " + descriptor.toString());
         var cache = ConfigManager.getCache();
         cache.putString("cache_" + DexKit.a(i) + "_method", descriptor.toString());
         cache.putInt("cache_" + DexKit.a(i) + "_code", HostInfo.getVersionCode32());

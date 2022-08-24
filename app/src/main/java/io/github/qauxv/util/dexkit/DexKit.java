@@ -223,15 +223,7 @@ public class DexKit {
      */
     @Nullable
     public static Class<?> doFindClass(int i) {
-        Class<?> ret = Initiator.load(c(i));
-        if (ret != null) {
-            return ret;
-        }
-        DexMethodDescriptor m = getCurrentBackend().doFindMethodImpl(i);
-        if (m == null) {
-            return null;
-        }
-        return Initiator.load(m.declaringClass);
+        return getCurrentBackend().doFindClass(i);
     }
 
     /**
