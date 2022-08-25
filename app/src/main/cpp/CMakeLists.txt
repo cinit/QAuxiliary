@@ -30,7 +30,7 @@ add_subdirectory(../../../../libs/mmkv mmkv)
 option(DEX_BUILDER_BUILD_SHARED "" OFF)
 option(ABSL_PROPAGATE_CXX_STD "" ON)
 add_subdirectory(dex_builder)
-add_subdirectory(dex_kit)
+add_subdirectory(dex_kit_trampoline)
 
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
@@ -49,4 +49,4 @@ set_target_properties(qauxv PROPERTIES
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dex_builder_static dex_kit_static)
+target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dex_builder_static dex_kit_trampoline)

@@ -1,5 +1,5 @@
 #include <jni.h>
-#include <dex_kit.h>
+#include "../dex_kit/include/dex_kit.h"
 #include <android/log.h>
 
 #define LOG_TAG "QAuxv"
