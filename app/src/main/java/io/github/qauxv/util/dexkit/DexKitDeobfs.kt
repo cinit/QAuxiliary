@@ -40,7 +40,7 @@ object DexKitDeobfs : DexDeobfsBackend {
     override fun isBatchFindMethodSupported(): Boolean = true
 
     override fun doBatchFindMethodImpl(indexArray: IntArray): Array<DexMethodDescriptor?> {
-        val resultArray = Array<DexMethodDescriptor?>(indexArray.size) {
+        val resultArray = Array(indexArray.size) {
             DexKit.getMethodDescFromCache(indexArray[it])
         }
         val stringKeyToArrayIndexes = HashMap<String, HashSet<Int>>(4)
@@ -55,7 +55,7 @@ object DexKitDeobfs : DexDeobfsBackend {
             }
         }
         val stringMappedKeys = stringKeyToArrayIndexes.keys.toTypedArray()
-        var designatorArray = Array<String>(stringMappedKeys.size) {
+        val designatorArray = Array(stringMappedKeys.size) {
             "noref_sid_$it"
         }
         // use designatorArray to map string keys to indexes

@@ -26,10 +26,10 @@ import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._TroopChatPie;
 import static io.github.qauxv.util.Initiator.load;
+import static io.github.qauxv.util.dexkit.DexFlow.packUtf8;
 
 import android.os.Bundle;
 import android.view.View;
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
@@ -47,7 +47,6 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.URL;
-import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
@@ -517,164 +516,164 @@ public class DexKit {
     public static byte[][] b(int i) {
         switch (i) {
             case C_DIALOG_UTIL:
-                return new byte[][]{forFiniteString8("android.permission.SEND_SMS", 27)};
+                return new byte[][]{packUtf8("android.permission.SEND_SMS", 27)};
             case C_FACADE:
-                return new byte[][]{forFiniteString8("reSendEmo", 32)};
+                return new byte[][]{packUtf8("reSendEmo", 32)};
             case C_FLASH_PIC_HELPER:
-                return new byte[][]{forFiniteString8("FlashPicHelper", 14)};
+                return new byte[][]{packUtf8("FlashPicHelper", 14)};
             case C_BASE_PIC_DL_PROC:
-                return new byte[][]{forFiniteString8("BasePicDownl", 44)};
+                return new byte[][]{packUtf8("BasePicDownl", 44)};
             case C_ItemBuilderFactory:
                 return new byte[][]{
-                        forFiniteString8("ItemBuilder is: D", 36),
-                        forFiniteString8("findItemBuilder: invoked.", 42)
+                        packUtf8("ItemBuilder is: D", 36),
+                        packUtf8("findItemBuilder: invoked.", 42)
                 };
             case C_AIO_UTILS:
-                return new byte[][]{forFiniteString8("openAIO by MT", 13)};
+                return new byte[][]{packUtf8("openAIO by MT", 13)};
             case C_ABS_GAL_SCENE:
-                return new byte[][]{forFiniteString8("gallery setColor bl", 22)};
+                return new byte[][]{packUtf8("gallery setColor bl", 22)};
             case C_FAV_EMO_CONST:
                 return new byte[][]{
-                        forFiniteString8("http://p.qpic.", 17),
-                        forFiniteString8("https://p.qpic.", 18)
+                        packUtf8("http://p.qpic.", 17),
+                        packUtf8("https://p.qpic.", 18)
                 };
             case C_MessageRecordFactory:
-                return new byte[][]{forFiniteString8("createPicMessage", 44)};
+                return new byte[][]{packUtf8("createPicMessage", 44)};
             case C_CONTACT_UTILS:
-                return new byte[][]{forFiniteString8(" - WiFi", 7)};
+                return new byte[][]{packUtf8(" - WiFi", 7)};
             case C_ARK_APP_ITEM_BUBBLE_BUILDER:
-                return new byte[][]{forFiniteString8("debugArkMeta = ", 15)};
+                return new byte[][]{packUtf8("debugArkMeta = ", 15)};
             case C_PNG_FRAME_UTIL:
-                return new byte[][]{forFiniteString8("func checkRandomPngEx", 42)};
+                return new byte[][]{packUtf8("func checkRandomPngEx", 42)};
             case C_PIC_EMOTICON_INFO:
-                return new byte[][]{forFiniteString8("send emotion + 1:", 32)};
+                return new byte[][]{packUtf8("send emotion + 1:", 32)};
             case C_SIMPLE_UI_UTIL:
-                return new byte[][]{forFiniteString8("key_simple_status_s", 21)};
+                return new byte[][]{packUtf8("key_simple_status_s", 21)};
             case C_TROOP_GIFT_UTIL:
                 return new byte[][]{
-                        forFiniteString8(".troop.send_giftTroopUtils"),
-                        forFiniteString8(".troop.send_giftTroopMemberUtil")
+                        packUtf8(".troop.send_giftTroopUtils"),
+                        packUtf8(".troop.send_giftTroopMemberUtil")
                 };
             case C_TEST_STRUCT_MSG:
-                return new byte[][]{forFiniteString8("TestStructMsg", 13)};
+                return new byte[][]{packUtf8("TestStructMsg", 13)};
             case C_QZONE_MSG_NOTIFY:
-                return new byte[][]{forFiniteString8("use small icon ,exp:", 20)};
+                return new byte[][]{packUtf8("use small icon ,exp:", 20)};
             case C_APP_CONSTANTS:
-                return new byte[][]{forFiniteString8(".indivAnim/", 11)};
+                return new byte[][]{packUtf8(".indivAnim/", 11)};
             case C_MessageCache:
-                return new byte[][]{forFiniteString8("Q.msg.MessageCache", 18)};
+                return new byte[][]{packUtf8("Q.msg.MessageCache", 18)};
             case C_ScreenShotHelper:
-                return new byte[][]{forFiniteString8("onActivityResumeHideFloatView", 29)};
+                return new byte[][]{packUtf8("onActivityResumeHideFloatView", 29)};
             case C_TimeFormatterUtils:
-                return new byte[][]{forFiniteString8("TimeFormatterUtils", 18)};
+                return new byte[][]{packUtf8("TimeFormatterUtils", 18)};
             case C_TogetherControlHelper:
-                return new byte[][]{forFiniteString8("SING together is click", 22)};
+                return new byte[][]{packUtf8("SING together is click", 22)};
             case C_GroupAppActivity:
-                return new byte[][]{forFiniteString8("onDrawerStartOpen", 17)};
+                return new byte[][]{packUtf8("onDrawerStartOpen", 17)};
             case C_IntimateDrawer:
-                return new byte[][]{forFiniteString8("onDrawerOpened, needReqIntimateInfo: %s")};
+                return new byte[][]{packUtf8("onDrawerOpened, needReqIntimateInfo: %s")};
             case C_ZipUtils_biz: {
-                return new byte[][]{forFiniteString8(",ZipEntry name: ", 16)};
+                return new byte[][]{packUtf8(",ZipEntry name: ", 16)};
             }
             case N_BASE_CHAT_PIE__INIT:
                 return new byte[][]{
-                        forFiniteString8("input set error", 15),
-                        forFiniteString8(", mDefautlBtnLeft: ", 19)
+                        packUtf8("input set error", 15),
+                        packUtf8(", mDefautlBtnLeft: ", 19)
                 };
             case N_BASE_CHAT_PIE__handleNightMask:
-                return new byte[][]{forFiniteString8("#handleNightMask# : inNightMode", 45)};
+                return new byte[][]{packUtf8("#handleNightMask# : inNightMode", 45)};
             case N_BASE_CHAT_PIE__updateSession:
-                return new byte[][]{forFiniteString8("AIOTime updateSession end", 25)};
+                return new byte[][]{packUtf8("AIOTime updateSession end", 25)};
             case N_BASE_CHAT_PIE__createMulti:
-                return new byte[][]{forFiniteString8("createMulti")};
+                return new byte[][]{packUtf8("createMulti")};
             case N_BASE_CHAT_PIE__chooseMsg:
-                return new byte[][]{forFiniteString8("set left text from cancel", 25)};
+                return new byte[][]{packUtf8("set left text from cancel", 25)};
             case C_CustomWidgetUtil:
-                // forFiniteString8("NEW", 3), still use hex bytes for high collision reason
+                // packUtf8("NEW", 3), still use hex bytes for high collision reason
                 return new byte[][]{new byte[]{0x03, 0x4E, 0x45, 0x57, 0x00}};
             case C_HttpDownloader:
-                return new byte[][]{forFiniteString8("[reportHttpsResult] url=", 24)};
+                return new byte[][]{packUtf8("[reportHttpsResult] url=", 24)};
             case C_MultiMsg_Manager:
-                return new byte[][]{forFiniteString8("[sendMultiMsg]data.length = ", 28)};
+                return new byte[][]{packUtf8("[sendMultiMsg]data.length = ", 28)};
             case N_LeftSwipeReply_Helper__reply:
-                return new byte[][]{forFiniteString8("0X800A92F", 9)};
+                return new byte[][]{packUtf8("0X800A92F", 9)};
             case C_ClockInEntryHelper:
                 return new byte[][]{
-                        forFiniteString8("isShowTogetherEntry", 31),
-                        forFiniteString8("ClockInEntryHelper.helper", 25)};
+                        packUtf8("isShowTogetherEntry", 31),
+                        packUtf8("ClockInEntryHelper.helper", 25)};
             case C_CaptureUtil:
-                return new byte[][]{forFiniteString8("mediacodec", 31)};
+                return new byte[][]{packUtf8("mediacodec", 31)};
             case C_AvatarUtil:
-                return new byte[][]{forFiniteString8("AvatarUtil", 10)};
+                return new byte[][]{packUtf8("AvatarUtil", 10)};
             case C_FaceManager:
-                return new byte[][]{forFiniteString8("FaceManager", 11)};
+                return new byte[][]{packUtf8("FaceManager", 11)};
             case C_SmartDeviceProxyMgr:
                 return new byte[][]{
-                        forFiniteString8("SmartDeviceProxyMgr create", 26)};
+                        packUtf8("SmartDeviceProxyMgr create", 26)};
             case N_AtPanel__refreshUI:
-                return new byte[][]{forFiniteString8("resultList = null")};
+                return new byte[][]{packUtf8("resultList = null")};
             case N_AtPanel__showDialogAtView:
-                return new byte[][]{forFiniteString8("showDialogAtView", 27)};
+                return new byte[][]{packUtf8("showDialogAtView", 27)};
             case C_AIOPictureView:
-                return new byte[][]{forFiniteString8("AIOPictureView", 14),
-                        forFiniteString8("AIOGalleryPicView", 17)};
+                return new byte[][]{packUtf8("AIOPictureView", 14),
+                        packUtf8("AIOGalleryPicView", 17)};
             case N_FriendChatPie_updateUITitle:
                 return new byte[][]{
-                        forFiniteString8("FriendChatPie updateUI_ti", 65)};
+                        packUtf8("FriendChatPie updateUI_ti", 65)};
             case N_ProfileCardUtil_getCard:
-                return new byte[][]{forFiniteString8("initCard bSuperVipOpen=", 23)};
+                return new byte[][]{packUtf8("initCard bSuperVipOpen=", 23)};
             case N_VasProfileTemplateController_onCardUpdate:
                 return new byte[][]{
-                        forFiniteString8("onCardUpdate fail.", 18),
-                        forFiniteString8("onCardUpdate: bgId=", 19)
+                        packUtf8("onCardUpdate fail.", 18),
+                        packUtf8("onCardUpdate: bgId=", 19)
                 };
             case N_QQSettingMe_updateProfileBubble:
                 return new byte[][]{
-                        forFiniteString8("updateProfileBubbleMsgView", 27)};
+                        packUtf8("updateProfileBubbleMsgView", 27)};
             case N_VIP_UTILS_getPrivilegeFlags:
-                return new byte[][]{forFiniteString8("getPrivilegeFlags Friends is null", 33)};
+                return new byte[][]{packUtf8("getPrivilegeFlags Friends is null", 33)};
             case N_TroopChatPie_showNewTroopMemberCount:
-                return new byte[][]{forFiniteString8("showNewTroopMemberCount info is null", 36)};
+                return new byte[][]{packUtf8("showNewTroopMemberCount info is null", 36)};
             case N_Conversation_onCreate:
-                return new byte[][]{forFiniteString8("Recent_OnCreate")};
+                return new byte[][]{packUtf8("Recent_OnCreate")};
             case N_QQSettingMe_onResume:
-                return new byte[][]{forFiniteString8("-->onResume!", 12)};
+                return new byte[][]{packUtf8("-->onResume!", 12)};
             case N_BaseChatPie_mosaic:
-                return new byte[][]{forFiniteString8("enableMosaicEffect", 50)};
+                return new byte[][]{packUtf8("enableMosaicEffect", 50)};
             case C_GalleryBaseScene:
-                return new byte[][]{forFiniteString8("GalleryBaseScene", 16)};
+                return new byte[][]{packUtf8("GalleryBaseScene", 16)};
             case N_WebSecurityPluginV2_callback:
-                return new byte[][]{forFiniteString8("check finish jr=", 16)};
+                return new byte[][]{packUtf8("check finish jr=", 16)};
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar:
-                return new byte[][]{forFiniteString8("resumeAppShorcutBar")};
+                return new byte[][]{packUtf8("resumeAppShorcutBar")};
             case N_ChatActivityFacade_sendMsgButton:
-                return new byte[][]{forFiniteString8(" sendMessage start currenttime:")};
+                return new byte[][]{packUtf8(" sendMessage start currenttime:")};
             case N_FriendsStatusUtil_isChatAtTop:
-                return new byte[][]{forFiniteString8("isChatAtTop result is: ")};
+                return new byte[][]{packUtf8("isChatAtTop result is: ")};
             case N_VipUtils_getUserStatus:
-                return new byte[][]{forFiniteString8("getUserStatus Friends is null")};
+                return new byte[][]{packUtf8("getUserStatus Friends is null")};
             case C_GuildHelperProvider:
-                return new byte[][]{forFiniteString8("onFoldStatus beginMoveFoldStatus:")};
+                return new byte[][]{packUtf8("onFoldStatus beginMoveFoldStatus:")};
             case C_GuildArkHelper:
-                return new byte[][]{forFiniteString8("GuildArkHelper")};
+                return new byte[][]{packUtf8("GuildArkHelper")};
             case C_ReplyMsgUtils:
-                return new byte[][]{forFiniteString8("generateSourceInfo sender uin exception:")};
+                return new byte[][]{packUtf8("generateSourceInfo sender uin exception:")};
             case C_ReplyMsgSender:
-                return new byte[][]{forFiniteString8("sendReplyMessage uniseq=0")};
+                return new byte[][]{packUtf8("sendReplyMessage uniseq=0")};
             case N_PhotoListPanel_resetStatus:
-                return new byte[][]{forFiniteString8("resetStatus selectSize:")};
+                return new byte[][]{packUtf8("resetStatus selectSize:")};
             case C_PopOutEmoticonUtil:
-                return new byte[][]{forFiniteString8("supportPopOutEmoticon isC2C=")};
+                return new byte[][]{packUtf8("supportPopOutEmoticon isC2C=")};
             case C_VipStatusManagerImpl:
-                return new byte[][]{forFiniteString8("getPrivilegeFlags Friends is null")};
+                return new byte[][]{packUtf8("getPrivilegeFlags Friends is null")};
             case C_SystemMessageProcessor:
-                return new byte[][]{forFiniteString8("<---handleGetFriendSystemMsgResp : decode pb filtered")};
+                return new byte[][]{packUtf8("<---handleGetFriendSystemMsgResp : decode pb filtered")};
             case C_OnlinePushPbPushTransMsg:
-                return new byte[][]{forFiniteString8("PbPushTransMsg muteGeneralFlag:")};
+                return new byte[][]{packUtf8("PbPushTransMsg muteGeneralFlag:")};
             case N_ContactUtils_getDiscussionMemberShowName:
-                return new byte[][]{forFiniteString8("getDiscussionMemberShowName uin is null")};
+                return new byte[][]{packUtf8("getDiscussionMemberShowName uin is null")};
             case N_ContactUtils_getBuddyName:
-                return new byte[][]{forFiniteString8("getBuddyName()")};
+                return new byte[][]{packUtf8("getBuddyName()")};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1577,32 +1576,5 @@ public class DexKit {
             }
             dexi++;
         }
-    }
-
-    @NonNull
-    public static byte[] forFiniteString8(@NonNull String str, int len) {
-        // dex uses utf-8 encoded utf-16, s.t. even if the str is complete, str.length != str.bytes.length
-        if (len < 0 || len > 127 || str.length() > 127) {
-            throw new IllegalArgumentException("String too long");
-        }
-        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
-        byte[] result = new byte[u8.length + 1];
-        result[0] = (byte) len;
-        System.arraycopy(u8, 0, result, 1, u8.length);
-        return result;
-    }
-
-    @NonNull
-    public static byte[] forFiniteString8(@NonNull String str) {
-        // dex uses utf-8 encoded utf-16
-        int len = str.length();
-        if (len > 127) {
-            throw new IllegalArgumentException("String too long");
-        }
-        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
-        byte[] result = new byte[u8.length + 1];
-        result[0] = (byte) len;
-        System.arraycopy(u8, 0, result, 1, u8.length);
-        return result;
     }
 }

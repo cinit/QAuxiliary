@@ -558,7 +558,7 @@ public class DexFlow {
     @NonNull
     public static byte[] packUtf8(@NonNull String string) {
         if (string.length() > 127) {
-            throw new UnsupportedOperationException("not implemented");
+            throw new UnsupportedOperationException("String too long");
         }
         byte[] tmp = string.getBytes(StandardCharsets.UTF_8);
         byte[] result = new byte[tmp.length + 1];
@@ -567,5 +567,16 @@ public class DexFlow {
         return result;
     }
 
+    @NonNull
+    public static byte[] packUtf8(@NonNull String str, int len) {
+        // dex uses utf-8 encoded utf-16, s.t. even if the str is complete, str.length != str.bytes.length
+        if (len < 0 || len > 127 || str.length() > 127) {
+            throw new IllegalArgumentException("String too long");
+        }
+        byte[] u8 = str.getBytes(StandardCharsets.UTF_8);
+        byte[] result = new byte[u8.length + 1];
+        result[0] = (byte) len;
+        System.arraycopy(u8, 0, result, 1, u8.length);
+        return result;
+    }
 }
-
