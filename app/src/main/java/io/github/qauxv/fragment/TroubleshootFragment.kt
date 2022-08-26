@@ -62,6 +62,7 @@ import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.hostInfo
 import kotlin.system.exitProcess
@@ -114,7 +115,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             CategoryItem("反混淆") {
                 textItem(
                     "切换反混淆后端", "如非必要请不要更改",
-                    value = DexKit.getCurrentBackend().name,
+                    value = DexDeobfsProvider.currentBackendName,
                     onClick = clickToSwitchDexDeobfsBackend
                 )
             },
@@ -281,9 +282,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val clickToSwitchDexDeobfsBackend = View.OnClickListener {
         val ctx = requireContext()
-        val backends = DexKit.backends.values.map { it.id to it.name }
+        val backends = DexDeobfsProvider.allBackendNames
         val optionText = Array(backends.size) { backends[it].second }
-        val current = backends.indexOfFirst { it.first == dexBuilderAsDexDeobfsBackend }
+        val current = backends.indexOfFirst { it.first == DexDeobfsProvider.currentBackendId }
         AlertDialog.Builder(ctx)
             .setTitle("选择反混淆后端")
             .setSingleChoiceItems(optionText, current) { _, _ -> }
@@ -295,8 +296,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     return@setPositiveButton
                 }
                 val newBackend = backends[which].first
-                if (newBackend != dexBuilderAsDexDeobfsBackend) {
-                    dexBuilderAsDexDeobfsBackend = newBackend
+                if (newBackend != DexDeobfsProvider.currentBackendId) {
+                    DexDeobfsProvider.currentBackendId = newBackend
                     // clear cache and restart
                     ConfigManager.getCache().apply {
                         clear()
@@ -309,18 +310,6 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             .setCancelable(true)
             .show()
     }
-
-    private var dexBuilderAsDexDeobfsBackend: String
-        get() = ConfigManager.getDefaultConfig().getStringOrDefault(
-            DexKit.KEY_DEX_DEOBFS_BACKEND,
-            DexKit.DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER
-        )
-        set(value) {
-            ConfigManager.getDefaultConfig().apply {
-                putString(DexKit.KEY_DEX_DEOBFS_BACKEND, value)
-                save()
-            }
-        }
 
     private fun generateDebugInfo(): CharSequence {
         val ctx = requireContext()

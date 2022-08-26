@@ -39,7 +39,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexFlow;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
-import io.github.qauxv.util.dexkit.LegacyDexDeobfs;
+import io.github.qauxv.util.dexkit.impl.LegacyDexDeobfs;
 import java.util.ArrayList;
 import java.util.HashSet;
 

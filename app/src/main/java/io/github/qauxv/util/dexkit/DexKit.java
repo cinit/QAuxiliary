@@ -64,8 +64,6 @@ public class DexKit {
 
     static final String NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit$NoSuchClass;";
     public static final DexMethodDescriptor NO_SUCH_METHOD = new DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V");
-    public static final String KEY_DEX_DEOBFS_BACKEND = "dex_deobfs_backend";
-    public static final String DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER = LegacyDexDeobfs.INSTANCE.getId();
 
     //WARN: NEVER change the index!
     public static final int C_DIALOG_UTIL = 1;
@@ -145,18 +143,6 @@ public class DexKit {
     public static final int N_ContactUtils_getBuddyName = 20025;
     public static final int DEOBF_NUM_N = 25;
 
-    public static final Map<String, DexDeobfsBackend> backends = Map.of(
-            LegacyDexDeobfs.INSTANCE.getId(), LegacyDexDeobfs.INSTANCE,
-            DexBuilderDexDeobfs.INSTANCE.getId(), DexBuilderDexDeobfs.INSTANCE,
-            DexKitDeobfs.INSTANCE.getId(), DexKitDeobfs.INSTANCE
-    );
-
-    public static DexDeobfsBackend getCurrentBackend() {
-        var id = ConfigManager.getDefaultConfig()
-                .getString(KEY_DEX_DEOBFS_BACKEND, DEFAULT_DEX_DEOBFS_BACKEND_DEXBUILDER);
-        return backends.get(id);
-    }
-
     /**
      * Run the dex deobfuscation.
      *
@@ -172,8 +158,10 @@ public class DexKit {
     }
 
     /**
-     * Test whether we should run the dex deobfuscation. Note that if a dex class is tried to deobfuscate before, but
-     * failed, its failed result will be cached, which means that the same dex class will not be deobfuscated again.
+     * Test whether we should run the dex deobfuscation.
+     * <p>
+     * Note that if a dex class is tried to deobfuscate before, but failed, its failed result will be cached,
+     * which means that the same dex class will not be deobfuscated again.
      *
      * @param i the dex class index
      * @return true if time is required to deobfuscate the dex class, false if either the dex class is already
@@ -196,8 +184,9 @@ public class DexKit {
     }
 
     /**
-     * Try to load the obfuscated class from deobfuscation cache. This method does not take much time and may be called
-     * in main thread.
+     * Try to load the obfuscated class from deobfuscation cache.
+     * <p>
+     * This method does not take much time and may be called in main thread.
      *
      * @param i the dex class index
      * @return null if the dex class is not in deobfuscation cache, otherwise the target class object.
@@ -223,12 +212,19 @@ public class DexKit {
      */
     @Nullable
     public static Class<?> doFindClass(int i) {
-        return getCurrentBackend().doFindClass(i);
+        Class<?> k = loadClassFromCache(i);
+        if (k != null) {
+            return k;
+        }
+        try (DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
+            return backend.doFindClass(i);
+        }
     }
 
     /**
-     * Try to load the obfuscated method from deobfuscation cache. This method does not take much time and may be called
-     * in main thread.
+     * Try to load the obfuscated method from deobfuscation cache.
+     * <p>
+     * This method does not take much time and may be called in main thread.
      *
      * @param i the dex method index
      * @return the target method descriptor, null if the target is not found.
@@ -266,12 +262,19 @@ public class DexKit {
         if (i / 10000 == 0) {
             throw new IllegalStateException("Index " + i + " attempted to access method!");
         }
-        return getCurrentBackend().doFindMethod(i);
+        Method cached = getMethodFromCache(i);
+        if (cached != null) {
+            return cached;
+        }
+        try (DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
+            return backend.doFindMethod(i);
+        }
     }
 
     /**
-     * Try to load the obfuscated method from deobfuscation cache. This method does not take much time and may be called
-     * in main thread.
+     * Try to load the obfuscated method from deobfuscation cache.
+     * <p>
+     * This method does not take much time and may be called in main thread.
      *
      * @param i the dex method index
      * @return the target method descriptor, null if the target is not in deobfuscation cache.
@@ -817,7 +820,7 @@ public class DexKit {
         }
     }
 
-    static DexMethodDescriptor verifyTargetMethod(int i, HashSet<DexMethodDescriptor> __methods) {
+    public static DexMethodDescriptor verifyTargetMethod(int i, HashSet<DexMethodDescriptor> __methods) {
         switch (i) {
             case C_DIALOG_UTIL:
             case C_FACADE:

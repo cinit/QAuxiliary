@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.util.dexkit;
+package io.github.qauxv.util.dexkit.impl;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -30,6 +30,10 @@ import dalvik.system.DexClassLoader;
 import dalvik.system.PathClassLoader;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.DexDeobfsBackend;
+import io.github.qauxv.util.dexkit.DexFlow;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import java.io.ByteArrayOutputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -41,7 +45,8 @@ import java.util.HashSet;
 
 public class LegacyDexDeobfs implements DexDeobfsBackend {
 
-    public static final LegacyDexDeobfs INSTANCE = new LegacyDexDeobfs();
+    private LegacyDexDeobfs() {
+    }
 
     @Nullable
     @Override
@@ -230,15 +235,28 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
         return rets;
     }
 
+    public static final String ID = "Legacy";
+    public static final String NAME = "Legacy(默认)";
+
     @NonNull
     @Override
     public String getId() {
-        return "Legacy";
+        return ID;
     }
 
     @NonNull
     @Override
     public String getName() {
-        return "Legacy(默认)";
+        return NAME;
+    }
+
+    @Override
+    public void close() {
+        // we do nothing because we do not cache anything
+        // TODO: 2022-08-26 add dex weak reference cache
+    }
+
+    public static LegacyDexDeobfs newInstance() {
+        return new LegacyDexDeobfs();
     }
 }

@@ -34,6 +34,8 @@ import io.github.qauxv.step.Step;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.DexDeobfsBackend;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 
 public class HookInstaller {
 
@@ -88,7 +90,8 @@ public class HookInstaller {
         final CustomDialog[] pDialog = new CustomDialog[1];
         Throwable err = null;
         boolean isSuccessful = true;
-        try {
+        DexDeobfsProvider.INSTANCE.enterDeobfsSection();
+        try (DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
             if (hook.isPreparationRequired()) {
                 Step[] steps = hook.makePreparationSteps();
                 if (steps != null) {
@@ -96,6 +99,7 @@ public class HookInstaller {
                         if (s.isDone()) {
                             continue;
                         }
+                        // TODO: 2022-08-26 add batch init
                         final String name = s.getDescription();
                         SyncUtils.runOnUiThread(() -> {
                             if (pDialog[0] == null) {
@@ -112,6 +116,7 @@ public class HookInstaller {
                 }
             }
         } catch (Throwable stepErr) {
+            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
             if (hook instanceof RuntimeErrorTracer) {
                 ((RuntimeErrorTracer) hook).traceError(stepErr);
             }

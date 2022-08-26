@@ -38,16 +38,17 @@ import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
+import io.github.qauxv.base.IDynamicHook;
+import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.step.DexDeobfStep;
 import io.github.qauxv.step.ShadowBatchDexDeobfStep;
-import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexDeobfsBackend;
-import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -105,8 +106,9 @@ public class InjectDelayableHooks {
                     deobfIndexList.add(id);
                 }
             }
+            DexDeobfsProvider.INSTANCE.enterDeobfsSection();
+            DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend();
             if (deobfIndexList.size() > 1) {
-                DexDeobfsBackend backend = DexKit.getCurrentBackend();
                 if (backend.isBatchFindMethodSupported()) {
                     int[] ids = new int[deobfIndexList.size()];
                     int i = 0;
@@ -175,6 +177,8 @@ public class InjectDelayableHooks {
                     Log.e(e);
                 }
             }
+            backend.close();
+            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
         }
         if (LicenseStatus.hasUserAcceptEula()) {
             for (IDynamicHook h : hooks) {

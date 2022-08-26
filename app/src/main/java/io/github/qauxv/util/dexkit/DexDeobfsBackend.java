@@ -28,9 +28,10 @@ import cc.ioctl.util.HostInfo;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import java.io.Closeable;
 import java.lang.reflect.Method;
 
-public interface DexDeobfsBackend {
+public interface DexDeobfsBackend extends Closeable {
 
     @NonNull
     String getId();
@@ -51,6 +52,14 @@ public interface DexDeobfsBackend {
 
     @NonNull
     DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException;
+
+    /**
+     * Close the backend, memory will be release when ref-count decrease to 0.
+     * <p>
+     * No other method should be called after this method is called.
+     */
+    @Override
+    void close();
 
     @Nullable
     default Method doFindMethod(int i) {
