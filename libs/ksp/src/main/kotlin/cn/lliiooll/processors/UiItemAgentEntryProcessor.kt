@@ -23,8 +23,7 @@ class UiItemAgentEntryProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation("io.github.qauxv.base.annotation.UiItemAgentEntry")
-                .filter { it is KSClassDeclaration }
-                .map { it as KSClassDeclaration }
+                .filterIsInstance<KSClassDeclaration>()
                 .toList()
         if (symbols.isEmpty()) {
             return emptyList()

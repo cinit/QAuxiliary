@@ -23,9 +23,8 @@ class FunctionHookEntryItemProcessor(
 
     override fun process(resolver: Resolver): List<KSAnnotated> {
         val symbols = resolver.getSymbolsWithAnnotation("io.github.qauxv.base.annotation.FunctionHookEntry")
-                .filter { it is KSClassDeclaration }
-                .map { it as KSClassDeclaration }
-                .toList()
+            .filterIsInstance<KSClassDeclaration>()
+            .toList()
         if (symbols.isEmpty()) {
             return emptyList()
         }
