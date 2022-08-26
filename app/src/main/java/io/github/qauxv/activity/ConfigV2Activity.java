@@ -252,6 +252,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         super.onCreateOptionsMenu(menu);
         if (HostInfo.isInModuleProcess()) {
             getMenuInflater().inflate(R.menu.main_v2_toolbar, menu);
+            updateMenuItems();
         } else {
             getMenuInflater().inflate(R.menu.host_main_v2_options, menu);
         }
