@@ -51,6 +51,11 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
                 (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false)) &&
                 (!intent.getBooleanExtra("is_decorated", false))) {
             // must use Activity context as base context to show dialog window
+            val uin = intent.getStringExtra("uin")
+            if (uin.toString().length > 10) {
+                // Filter out calls in the guild
+                return true
+            }
             val context = param.thisObject as Context
             Log.d("context: ${context.javaClass.name}")
             val activityMap = mapOf(

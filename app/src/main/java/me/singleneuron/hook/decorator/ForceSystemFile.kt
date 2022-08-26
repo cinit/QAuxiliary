@@ -59,6 +59,10 @@ object ForceSystemFile : BaseSwitchFunctionDecorator(), IStartActivityHookDecora
                 // reserved for special usage
                 return false
             }
+            if ("guild" in android.util.Log.getStackTraceString(Throwable())) {
+                // Filter out calls in the guild
+                return false
+            }
             Log.d("context: ${context.javaClass.name}")
             val activityMap = mapOf(
                     "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
