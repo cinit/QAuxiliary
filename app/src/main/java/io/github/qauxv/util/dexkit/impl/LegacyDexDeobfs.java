@@ -236,7 +236,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
     }
 
     public static final String ID = "Legacy";
-    public static final String NAME = "Legacy(默认)";
+    public static final String NAME = "Legacy(兼容性好, 最慢)";
 
     @NonNull
     @Override

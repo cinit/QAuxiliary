@@ -115,7 +115,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             CategoryItem("反混淆") {
                 textItem(
                     "切换反混淆后端", "如非必要请不要更改",
-                    value = DexDeobfsProvider.currentBackendName,
+                    value = DexDeobfsProvider.currentBackendId,
                     onClick = clickToSwitchDexDeobfsBackend
                 )
             },

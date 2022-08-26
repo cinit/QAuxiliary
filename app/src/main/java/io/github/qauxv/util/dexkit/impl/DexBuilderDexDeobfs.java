@@ -111,7 +111,7 @@ public class DexBuilderDexDeobfs implements DexDeobfsBackend {
     }
 
     public static final String ID = "DexBuilder";
-    public static final String NAME = "DexBuilder(更快)";
+    public static final String NAME = "DexBuilder(较快)";
 
     @NonNull
     @Override

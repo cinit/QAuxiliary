@@ -58,7 +58,7 @@ object DexDeobfsProvider {
     }
 
     var currentBackendId: String
-        get() = ConfigManager.getDefaultConfig().getString(KEY_DEX_DEOBFS_BACKEND, LegacyDexDeobfs.ID)!!
+        get() = ConfigManager.getDefaultConfig().getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)!!
         set(value) {
             require(value in listOf(LegacyDexDeobfs.ID, DexBuilderDexDeobfs.ID, DexKitDeobfs.ID)) {
                 "Unknown dex deobfs backend: $value"

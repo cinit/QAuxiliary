@@ -161,7 +161,7 @@ class DexKitDeobfs private constructor(
     companion object {
 
         const val ID = "DexKit"
-        const val NAME = "DexKit(极速)"
+        const val NAME = "DexKit(默认, 最快)"
 
         @JvmStatic
         fun newInstance(): DexKitDeobfs {
