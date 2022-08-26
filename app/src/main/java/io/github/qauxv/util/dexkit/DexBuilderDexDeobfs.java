@@ -78,7 +78,7 @@ public class DexBuilderDexDeobfs implements DexDeobfsBackend {
                 Executable m = helper.decodeMethodIndex(methodIndex);
                 if (m instanceof Method) {
                     methods.add(new DexMethodDescriptor((Method) m));
-                    Log.d("doFindMethodFromNative: id " + i + ", m:" + m);
+                    Log.d("doFindMethod: use DexBuilder, id " + i + ", find:" + m);
                 } else {
                     Log.i("find Constructor: " + m + ", but not support Constructor currently");
                 }

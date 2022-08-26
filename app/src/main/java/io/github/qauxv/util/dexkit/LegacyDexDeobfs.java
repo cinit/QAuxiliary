@@ -69,7 +69,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
     }
 
     @Nullable
-    static DexMethodDescriptor searchVerifyDexMethodDesc(int i) {
+    private static DexMethodDescriptor searchVerifyDexMethodDesc(int i) {
         ClassLoader loader = Initiator.getHostClassLoader();
         long record = 0;
         int[] qf = DexKit.d(i);
@@ -78,7 +78,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
             record |= 1L << dexi;
             try {
                 for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> rets = findMethodsByConstString(k, dexi, loader);
+                    HashSet<DexMethodDescriptor> rets = findMethodsByConstString(i, k, dexi, loader);
                     if (rets != null && rets.size() > 0) {
                         // verify
                         DexMethodDescriptor method = DexKit.verifyTargetMethod(i, rets);
@@ -98,7 +98,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
             }
             try {
                 for (byte[] k : keys) {
-                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(k, dexi, loader);
+                    HashSet<DexMethodDescriptor> ret = findMethodsByConstString(i, k, dexi, loader);
                     if (ret != null && ret.size() > 0) {
                         // verify
                         DexMethodDescriptor method = DexKit.verifyTargetMethod(i, ret);
@@ -123,7 +123,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
      * @return ["abc","ab"]
      * @throws FileNotFoundException apk has no classesN.dex
      */
-    public static HashSet<DexMethodDescriptor> findMethodsByConstString(byte[] key, int i, ClassLoader loader) throws FileNotFoundException {
+    public static HashSet<DexMethodDescriptor> findMethodsByConstString(int id, byte[] key, int i, ClassLoader loader) throws FileNotFoundException {
         String name;
         byte[] buf = new byte[4096];
         byte[] content;
@@ -184,6 +184,7 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
                     try {
                         DexMethodDescriptor desc = DexFlow.getDexMethodByOpOffset(content, opcodeOffsets.get(j), true);
                         if (desc != null) {
+                            Log.d("doFindMethod: use Legacy, id " + id + ", find:" + desc);
                             rets.add(desc);
                         }
                     } catch (InternalError ignored) {

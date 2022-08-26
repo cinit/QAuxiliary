@@ -106,9 +106,10 @@ object DexKitDeobfs : DexDeobfsBackend {
         val methods = HashSet<DexMethodDescriptor>()
         for (key in keys) {
             val str = String(Arrays.copyOfRange(key, 1, key.size))
-            Log.d("doFindMethodFromNative: id $i, key:$str")
+            Log.d("doFindMethod: use DexKit, id $i, key:$str")
             val descArray = helper.findMethodUsedString(str)
             descArray.forEach {
+                Log.d("doFindMethod: use DexKit, id $i, find: $it")
                 val desc = DexMethodDescriptor(it)
                 methods.add(desc)
             }
