@@ -38,12 +38,16 @@ import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
+import io.github.qauxv.step.DexDeobfStep;
+import io.github.qauxv.step.ShadowBatchDexDeobfStep;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.DexDeobfsBackend;
+import io.github.qauxv.util.dexkit.DexKit;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -93,6 +97,26 @@ public class InjectDelayableHooks {
                 }
             }
             final ArrayList<Step> steps = new ArrayList<>(todos);
+            // collect all dex-deobfs steps if backend supports
+            HashSet<Integer> deobfIndexList = new HashSet<>(16);
+            for (Step step : steps) {
+                if (step.getClass() == DexDeobfStep.class && !step.isDone()) {
+                    int id = ((DexDeobfStep) step).getId();
+                    deobfIndexList.add(id);
+                }
+            }
+            if (deobfIndexList.size() > 1) {
+                DexDeobfsBackend backend = DexKit.getCurrentBackend();
+                if (backend.isBatchFindMethodSupported()) {
+                    int[] ids = new int[deobfIndexList.size()];
+                    int i = 0;
+                    for (Integer id : deobfIndexList) {
+                        ids[i++] = id;
+                    }
+                    ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
+                    steps.add(shadowBatchStep);
+                }
+            }
             Collections.sort(steps, Collections.<Step>reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
                 final int j = idx;

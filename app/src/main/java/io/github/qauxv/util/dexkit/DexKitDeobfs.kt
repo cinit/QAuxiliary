@@ -28,13 +28,73 @@ import io.github.qauxv.util.Log
 import me.teble.DexKitHelper
 import java.util.Arrays
 
-object DexKitDeobfs: DexDeobfsBackend {
+object DexKitDeobfs : DexDeobfsBackend {
 
     private val dexClassLoader: ClassLoader = Initiator.getHostClassLoader().findDexClassLoader()!!
 
     val helper: DexKitHelper by lazy {
         Log.d("new DexKitHelper")
         DexKitHelper(dexClassLoader)
+    }
+
+    override fun isBatchFindMethodSupported(): Boolean = true
+
+    override fun doBatchFindMethodImpl(indexArray: IntArray): Array<DexMethodDescriptor?> {
+        val resultArray = Array<DexMethodDescriptor?>(indexArray.size) {
+            DexKit.getMethodDescFromCache(indexArray[it])
+        }
+        val stringKeyToArrayIndexes = HashMap<String, HashSet<Int>>(4)
+        for (index in resultArray.indices) {
+            if (resultArray[index] == null) {
+                val id = indexArray[index]
+                val keys = DexKit.b(id)
+                keys.forEach { kbytes ->
+                    val str = String(Arrays.copyOfRange(kbytes, 1, kbytes.size))
+                    stringKeyToArrayIndexes.getOrPut(str) { HashSet(1) }.add(index)
+                }
+            }
+        }
+        val stringMappedKeys = stringKeyToArrayIndexes.keys.toTypedArray()
+        var designatorArray = Array<String>(stringMappedKeys.size) {
+            "noref_sid_$it"
+        }
+        // use designatorArray to map string keys to indexes
+        for (i in stringMappedKeys.indices) {
+            val key = stringMappedKeys[i]
+            val requiringIndex = stringKeyToArrayIndexes[key]
+            if (!requiringIndex.isNullOrEmpty()) {
+                designatorArray[i] = requiringIndex.first().toString() + "_sid_$i"
+            }
+        }
+        val resultArrays = helper.batchFindMethodUsedString(designatorArray, stringMappedKeys)
+        val shadowTmpCandidateMethodDescriptors = HashMap<Int, HashSet<String>>(indexArray.size)
+        // fill candidate method descriptors
+        for (key in stringKeyToArrayIndexes.keys) {
+            val requiringIndex = stringKeyToArrayIndexes[key]!!
+            val indexOfKey = stringMappedKeys.indexOf(key)
+            requiringIndex.forEach {
+                shadowTmpCandidateMethodDescriptors.getOrPut(it) { HashSet(1) }.addAll(resultArrays[indexOfKey])
+            }
+        }
+        // run user-defined filter for each index
+        for (arrayIndex in resultArray.indices) {
+            if (resultArray[arrayIndex] == null) {
+                val candidates = shadowTmpCandidateMethodDescriptors[arrayIndex]
+                if (candidates.isNullOrEmpty()) {
+                    continue
+                }
+                val id = indexArray[arrayIndex]
+                val ret = DexKit.verifyTargetMethod(id, candidates.map { DexMethodDescriptor(it) }.toHashSet())
+                if (ret == null) {
+                    Log.i(candidates.size.toString() + " candidates found for " + id + ", none satisfactory.")
+                } else {
+                    Log.d("save id: $id,method: $ret")
+                    saveDescriptor(id, ret)
+                    resultArray[arrayIndex] = ret
+                }
+            }
+        }
+        return resultArray
     }
 
     override fun doFindMethodImpl(i: Int): DexMethodDescriptor? {
@@ -50,12 +110,7 @@ object DexKitDeobfs: DexDeobfsBackend {
             val descArray = helper.findMethodUsedString(str)
             descArray.forEach {
                 val desc = DexMethodDescriptor(it)
-                if (desc.name == "<init>" || desc.name == "<clinit>") {
-                    Log.i("doFindMethod($i) methodName == ${desc.name}, skip")
-                } else {
-                    methods.add(desc)
-                    Log.d("doFindMethodFromNative: id $i, m:$desc")
-                }
+                methods.add(desc)
             }
         }
         if (methods.size != 0) {

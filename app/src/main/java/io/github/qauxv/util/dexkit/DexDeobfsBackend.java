@@ -31,6 +31,7 @@ import io.github.qauxv.util.Log;
 import java.lang.reflect.Method;
 
 public interface DexDeobfsBackend {
+
     @NonNull
     String getId();
 
@@ -45,6 +46,11 @@ public interface DexDeobfsBackend {
      */
     @Nullable
     DexMethodDescriptor doFindMethodImpl(int i);
+
+    boolean isBatchFindMethodSupported();
+
+    @NonNull
+    DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException;
 
     @Nullable
     default Method doFindMethod(int i) {

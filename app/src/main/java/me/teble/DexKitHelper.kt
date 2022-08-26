@@ -41,6 +41,8 @@ class DexKitHelper(
 
     external fun findMethodUsedString(string: String): Array<String>
 
+    external fun batchFindMethodUsedString(designators: Array<String>, strings: Array<String>): Array<Array<String>>
+
     external override fun close()
 
 }

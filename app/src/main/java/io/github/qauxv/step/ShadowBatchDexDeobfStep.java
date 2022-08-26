@@ -19,34 +19,47 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
+
 package io.github.qauxv.step;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import io.github.qauxv.util.dexkit.DexDeobfsBackend;
+import java.util.Objects;
 
-public interface Step extends Comparable<Step> {
+public class ShadowBatchDexDeobfStep implements Step {
 
-    /**
-     * Execute this step, de-obfuscate the dex file. This method takes a long time, so it should not be called in the
-     * main thread.
-     *
-     * @return true if the step is done successfully, false otherwise
-     */
-    boolean step();
+    private final int[] indexes;
+    private final DexDeobfsBackend backend;
 
-    boolean isDone();
-
-    /**
-     * Get the priority of this step.
-     * <p>
-     * Step with a higher priority will be executed earlier.
-     */
-    int getPriority();
-
-    @Nullable
-    String getDescription();
+    public ShadowBatchDexDeobfStep(DexDeobfsBackend backend, @NonNull int[] indexes) {
+        this.backend = Objects.requireNonNull(backend);
+        this.indexes = Objects.requireNonNull(indexes);
+        if (!backend.isBatchFindMethodSupported()) {
+            throw new IllegalArgumentException(backend.getClass().getName());
+        }
+    }
 
     @Override
-    default int compareTo(Step o) {
-        return this.getPriority() - o.getPriority();
+    public boolean step() {
+        backend.doBatchFindMethodImpl(indexes);
+        // we actually do not care the result
+        return true;
+    }
+
+    @Override
+    public boolean isDone() {
+        return indexes.length != 0;
+    }
+
+    @Override
+    public int getPriority() {
+        return 101;
+    }
+
+    @Nullable
+    @Override
+    public String getDescription() {
+        return "预处理混淆";
     }
 }

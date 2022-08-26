@@ -64,6 +64,10 @@ Java_me_teble_DexKitHelper_findMethodUsedString(JNIEnv *env,
                                                 jobject thiz,
                                                 jstring string) {
     auto *helper = reinterpret_cast<dexkit::DexKit *>(env->GetLongField(thiz, token_field));
+    if (helper == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "helper is null");
+        return nullptr;
+    }
     const char *findStr = env->GetStringUTFChars(string, nullptr);
     auto res = helper->FindMethodUsedString(findStr, {}, {},
                                             {}, {}, {},
@@ -75,4 +79,89 @@ Java_me_teble_DexKitHelper_findMethodUsedString(JNIEnv *env,
     }
     env->ReleaseStringUTFChars(string, findStr);
     return result;
+}
+
+
+static std::vector<std::string> getJavaStringArray(JNIEnv *env, jobjectArray strings) {
+    std::vector<std::string> results;
+    if (strings == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "jstringKeyArray is null");
+        return {};
+    }
+    if (env->ExceptionCheck()) {
+        return {};
+    }
+    for (int i = 0; i < env->GetArrayLength(strings); i++) {
+        auto string = (jstring) env->GetObjectArrayElement(strings, i);
+        if (string == nullptr) {
+            env->ThrowNew(env->FindClass("java/lang/NullPointerException"),
+                          ("string at index " + std::to_string(i) + " is null").c_str());
+            return {};
+        }
+        const char *findStr = env->GetStringUTFChars(string, nullptr);
+        results.emplace_back(findStr);
+        env->ReleaseStringUTFChars(string, findStr);
+        env->DeleteLocalRef(string);
+    }
+    return results;
+}
+
+static jobjectArray stringArrayToJavaArray(JNIEnv *env, const std::vector<std::string> &strings) {
+    jobjectArray result = env->NewObjectArray((int) strings.size(), env->FindClass("java/lang/String"), nullptr);
+    if (result == nullptr) {
+        return nullptr;
+    }
+    for (int i = 0; i < strings.size(); i++) {
+        auto str = env->NewStringUTF(strings[i].c_str());
+        if (str == nullptr) {
+            return nullptr;
+        }
+        env->SetObjectArrayElement(result, i, str);
+        env->DeleteLocalRef(str);
+    }
+    return result;
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+Java_me_teble_DexKitHelper_batchFindMethodUsedString(JNIEnv *env,
+                                                     jobject thiz,
+                                                     jobjectArray jdesignatorArray,
+                                                     jobjectArray jstringKeyArray) {
+    auto *helper = reinterpret_cast<dexkit::DexKit *>(env->GetLongField(thiz, token_field));
+    if (helper == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "helper is null");
+        return nullptr;
+    }
+    std::vector<std::string> designatorArray = getJavaStringArray(env, jdesignatorArray);
+    if (env->ExceptionCheck()) {
+        return nullptr;
+    }
+    std::vector<std::string> stringKeyArray = getJavaStringArray(env, jstringKeyArray);
+    if (env->ExceptionCheck()) {
+        return nullptr;
+    }
+    if (designatorArray.size() != stringKeyArray.size()) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      "designatorArray and stringKeyArray size not equal");
+        return nullptr;
+    }
+    auto inputMap = std::map<std::string, std::set<std::string >>();
+    for (int i = 0; i < designatorArray.size(); i++) {
+        inputMap[designatorArray[i]].insert(stringKeyArray[i]);
+    }
+    auto results = helper->LocationMethods(inputMap, false);
+    jobjectArray resultArray2 = env->NewObjectArray((int) designatorArray.size(), env->FindClass("[Ljava/lang/String;"), nullptr);
+    if (resultArray2 == nullptr) {
+        return nullptr;
+    }
+    for (int i = 0; i < designatorArray.size(); i++) {
+        auto result = stringArrayToJavaArray(env, results[designatorArray[i]]);
+        if (result == nullptr) {
+            return nullptr;
+        }
+        env->SetObjectArrayElement(resultArray2, i, result);
+        env->DeleteLocalRef(result);
+    }
+    return resultArray2;
 }

@@ -47,6 +47,17 @@ public class DexBuilderDexDeobfs implements DexDeobfsBackend {
         return helper;
     }
 
+    @Override
+    public boolean isBatchFindMethodSupported() {
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("not supported by " + this.getClass().getName());
+    }
+
     @Nullable
     @Override
     public DexMethodDescriptor doFindMethodImpl(int i) {

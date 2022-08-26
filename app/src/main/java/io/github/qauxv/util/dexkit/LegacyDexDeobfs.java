@@ -40,7 +40,9 @@ import java.util.Enumeration;
 import java.util.HashSet;
 
 public class LegacyDexDeobfs implements DexDeobfsBackend {
+
     public static final LegacyDexDeobfs INSTANCE = new LegacyDexDeobfs();
+
     @Nullable
     @Override
     public DexMethodDescriptor doFindMethodImpl(int i) {
@@ -53,6 +55,17 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
             saveDescriptor(i, ret);
         }
         return ret;
+    }
+
+    @Override
+    public boolean isBatchFindMethodSupported() {
+        return false;
+    }
+
+    @NonNull
+    @Override
+    public DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException {
+        throw new UnsupportedOperationException("not supported by " + this.getClass().getName());
     }
 
     @Nullable
