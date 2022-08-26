@@ -50,7 +50,6 @@ import java.net.URL;
 import java.util.Arrays;
 import java.util.Enumeration;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Objects;
 import java.util.regex.Pattern;
 
@@ -1311,14 +1310,11 @@ public class DexKit {
                 }
                 break;
             case N_TroopAppShortcutBarHelper_resumeAppShorcutBar: {
-                // only 1 expected
-                if (__methods.size() == 1) {
-                    DexMethodDescriptor m = __methods.iterator().next();
-                    if (m.declaringClass.contains("TroopAppShortcutBarHelper")
-                            || m.declaringClass.contains("ShortcutBarAIOHelper")
-                            || m.declaringClass.contains("/aio/helper/")) {
-                        return m;
-                    }
+                DexMethodDescriptor m = __methods.iterator().next();
+                if (m.declaringClass.contains("TroopAppShortcutBarHelper")
+                        || m.declaringClass.contains("ShortcutBarAIOHelper")
+                        || m.declaringClass.contains("/aio/helper/")) {
+                    return m;
                 }
                 return null;
             }
