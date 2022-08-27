@@ -11,7 +11,7 @@ object Version {
     const val compileSdkVersion = 33
     const val minSdk = 24
     const val targetSdk = 33
-    const val versionName = "1.2.14"
+    const val versionName = "1.3.0"
 
     private const val defaultNdkVersion = "25.0.8775105"
     private const val defaultCMakeVersion = "3.22.1"
