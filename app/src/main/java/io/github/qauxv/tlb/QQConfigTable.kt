@@ -52,8 +52,10 @@ import io.github.qauxv.util.QQVersion.QQ_8_8_80
 import io.github.qauxv.util.QQVersion.QQ_8_8_83
 import io.github.qauxv.util.QQVersion.QQ_8_8_93
 import io.github.qauxv.util.QQVersion.QQ_8_8_98
+import io.github.qauxv.util.QQVersion.QQ_8_9_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
+import io.github.qauxv.util.QQVersion.QQ_8_9_8
 import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.RemovePlayTogether
 import me.kyuubiran.hook.SimplifyQQSettingMe
@@ -72,7 +74,9 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_3_6 to "n",
             QQ_8_4_8 to "createAtMsg",
             QQ_8_5_5 to "l",
-            QQ_8_6_0 to "__NOT_USED__",
+            QQ_8_6_0 to "com/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils",
+            QQ_8_9_0 to "com/tencent/mobileqq/activity/aio/rebuild/input/b",
+            QQ_8_9_8 to "com/tencent/mobileqq/activity/aio/rebuild/input/d",
         ),
 
         ChatWordsCount::class.java.simpleName to mapOf(

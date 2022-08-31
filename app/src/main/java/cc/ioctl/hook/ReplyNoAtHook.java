@@ -25,7 +25,6 @@ import static io.github.qauxv.util.Initiator._BaseChatPie;
 import static io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9;
 import static io.github.qauxv.util.QQVersion.QQ_8_1_3;
 import static io.github.qauxv.util.QQVersion.QQ_8_6_0;
-import static io.github.qauxv.util.QQVersion.QQ_8_9_0;
 import static io.github.qauxv.util.TIMVersion.TIM_3_1_1;
 
 import androidx.annotation.NonNull;
@@ -76,23 +75,14 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
         super();
     }
 
-    // 813 1246 k
-    // 815 1258 l
-    // 818 1276 l
-    // 820 1296 l
-    // 826 1320 m
-    // 827 1328 m
-    // ...
-    // 836 1406 n
-    // ^ 848 1492 createAtMsg
-
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
         if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
-            Class<?> kInputUIUtils = Initiator.loadClass(HostInfo.requireMinQQVersion(QQ_8_9_0)
-                    ? "com/tencent/mobileqq/activity/aio/rebuild/input/b"
-                    : "com/tencent/mobileqq/activity/aio/rebuild/input/InputUIUtils"
-            );
+            String className = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
+            if (className == null) {
+                return false;
+            }
+            Class<?> kInputUIUtils = Initiator.loadClass(className);
             Method method = null;
             for (Method m : kInputUIUtils.getDeclaredMethods()) {
                 if (Modifier.isStatic(m.getModifiers()) && m.getReturnType() == void.class) {
