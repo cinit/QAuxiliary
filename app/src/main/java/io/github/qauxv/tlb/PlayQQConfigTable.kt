@@ -22,24 +22,14 @@
 package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
-import cc.ioctl.hook.VasProfileAntiCrash
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_10
 import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
 import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9_1
 import me.ketal.hook.SortAtPanel
 import me.kyuubiran.hook.AutoMosaicName
 
 class PlayQQConfigTable : ConfigTableInterface {
 
     override val configs: Map<String, Map<Long, Any>> = mapOf(
-
-            VasProfileAntiCrash::class.java.simpleName to mapOf(
-                    PlayQQ_8_2_9 to "ause",
-                    PlayQQ_8_2_9_1 to "ause",
-                    PlayQQ_8_2_10 to "ausa",
-                    PlayQQ_8_2_11 to "ausf",
-            ),
 
             )
 

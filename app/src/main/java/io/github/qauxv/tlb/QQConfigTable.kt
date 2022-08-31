@@ -22,14 +22,11 @@
 package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ReplyNoAtHook
-import cc.ioctl.hook.VasProfileAntiCrash
 import io.github.qauxv.util.QQVersion.QQ_8_1_3
 import io.github.qauxv.util.QQVersion.QQ_8_1_5
 import io.github.qauxv.util.QQVersion.QQ_8_2_6
 import io.github.qauxv.util.QQVersion.QQ_8_3_6
 import io.github.qauxv.util.QQVersion.QQ_8_4_1
-import io.github.qauxv.util.QQVersion.QQ_8_4_10
-import io.github.qauxv.util.QQVersion.QQ_8_4_5
 import io.github.qauxv.util.QQVersion.QQ_8_4_8
 import io.github.qauxv.util.QQVersion.QQ_8_5_0
 import io.github.qauxv.util.QQVersion.QQ_8_5_5
@@ -95,15 +92,6 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_68 to "nm7",
             QQ_8_8_80 to "nmx",
             QQ_8_8_83 to "nnl",
-        ),
-
-        VasProfileAntiCrash::class.java.simpleName to mapOf(
-            QQ_8_4_1 to "azfl",
-            QQ_8_4_5 to "azxy",
-            QQ_8_4_8 to "aymn",
-            QQ_8_4_10 to "Y",
-            QQ_8_5_0 to "com.tencent.mobileqq.profile.ProfileCardTemplate",
-            QQ_8_6_0 to "com.tencent.mobileqq.profilecard.vas.component.template.VasProfileTemplateComponent",
         ),
 
         //中间部分(QQ会员 我的钱包等)
