@@ -33,7 +33,10 @@ import xyz.nextalone.util.throwOrTrue
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object RemoveIntimateDrawer : CommonSwitchFunctionHook("kr_remove_intimate_drawer") {
+object RemoveIntimateDrawer : CommonSwitchFunctionHook(
+    "kr_remove_intimate_drawer",
+    intArrayOf(DexKit.C_IntimateDrawer)
+) {
 
     override val name = "隐藏亲密抽屉"
 
