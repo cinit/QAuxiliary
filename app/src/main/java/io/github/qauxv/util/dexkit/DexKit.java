@@ -140,7 +140,8 @@ public class DexKit {
     public static final int N_PhotoListPanel_resetStatus = 20023;
     public static final int N_ContactUtils_getDiscussionMemberShowName = 20024;
     public static final int N_ContactUtils_getBuddyName = 20025;
-    public static final int DEOBF_NUM_N = 25;
+    public static final int N_Scene_checkDataRecmdRemarkList = 20026;
+    public static final int DEOBF_NUM_N = 26;
 
     /**
      * Run the dex deobfuscation.
@@ -500,6 +501,9 @@ public class DexKit {
             case N_ContactUtils_getBuddyName:
                 ret = "com.tencent.mobileqq.utils.ContactUtils";
                 break;
+            case N_Scene_checkDataRecmdRemarkList:
+                ret = "com.tencent.mobileqq.troopAddFrd.Scene";
+                break;
             default:
                 ret = null;
         }
@@ -676,6 +680,8 @@ public class DexKit {
                 return new byte[][]{packUtf8("getDiscussionMemberShowName uin is null")};
             case N_ContactUtils_getBuddyName:
                 return new byte[][]{packUtf8("getBuddyName()")};
+            case N_Scene_checkDataRecmdRemarkList:
+                return new byte[][]{packUtf8("checkDataRecmdRemarkList cacheInvalid_ts_type_troopUin=%b_%d_%d_%s")};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -814,6 +820,8 @@ public class DexKit {
             case N_ContactUtils_getDiscussionMemberShowName:
             case N_ContactUtils_getBuddyName:
                 return new int[]{16, 15, 14, 4, 10};
+            case N_Scene_checkDataRecmdRemarkList:
+                return new int[]{16};
             default:
                 throw new IndexOutOfBoundsException("No class index for " + i + ", max = " + DEOBF_NUM_C);
         }
@@ -1418,6 +1426,15 @@ public class DexKit {
                     }
                 } catch (NoSuchMethodException e) {
                     Log.e("N_ContactUtils_getBuddyName: getMethodInstance error", e);
+                }
+                return null;
+            }
+            case N_Scene_checkDataRecmdRemarkList: {
+                // only 1 expected
+                for (DexMethodDescriptor m : __methods) {
+                    if (m.declaringClass.contains("com/tencent/mobileqq/troopAddFrd")) {
+                        return m;
+                    }
                 }
                 return null;
             }
