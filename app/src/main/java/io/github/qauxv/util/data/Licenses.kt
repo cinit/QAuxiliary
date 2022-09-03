@@ -8,10 +8,9 @@ object Licenses {
 
     @Serializable
     data class LibraryLicense(
-        val license: String,
+        val license: String? = null,
         val normalizedLicense: String,
         val url: String? = null,
-        val licenseUrl: String,
         val copyrightHolder: String = "",
         val libraryName: String,
     )
@@ -24,7 +23,9 @@ object Licenses {
         val content = ResUtils.openAsset(licensesJSON)!!.bufferedReader().use { x -> x.readText() }
         parsed = content.decodeToDataClass()
         parsed?.let {
-            list = it["libraries"]!!.sortedBy { x -> x.libraryName }
+            list = it["libraries"]!!
+                .filter { x -> x.url != null && x.license != null }
+                .sortedBy { x -> x.libraryName }
         }
         list!!
     }

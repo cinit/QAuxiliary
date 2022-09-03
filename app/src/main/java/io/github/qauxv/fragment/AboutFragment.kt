@@ -167,7 +167,7 @@ class AboutFragment : BaseRootLayoutFragment() {
             Log.e(it)
             return@lazy emptyList()
         }.getOrNull()!!.map {
-            LicenseNotice(it.libraryName, it.url ?: it.licenseUrl, it.copyrightHolder, it.license)
+            LicenseNotice(it.libraryName, it.url!!, it.copyrightHolder, it.license!!)
         }
     }
 
