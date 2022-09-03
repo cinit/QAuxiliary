@@ -69,13 +69,13 @@ interface IDynamicHook {
 
     /**
      * Target effective process for the hook.
-     * @see io.github.qauxv.SyncUtils.getProcessType
+     * @see io.github.qauxv.util.SyncUtils.getProcessType
      */
     val targetProcesses: Int
 
     /**
      * Check if the hook is effective for the current process.
-     * @see io.github.qauxv.SyncUtils.getProcessType
+     * @see io.github.qauxv.util.SyncUtils.getProcessType
      * @see targetProcesses
      */
     val isTargetProcess: Boolean

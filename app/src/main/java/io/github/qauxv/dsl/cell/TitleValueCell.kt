@@ -63,7 +63,7 @@ class TitleValueCell(
         dividerColor = ResourcesCompat.getColor(resources, R.color.divideColor, context.theme)
         // title text view
         titleView = TextView(context).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16f);
+            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16f)
             setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, context.theme))
             gravity = Gravity.CENTER_VERTICAL or Gravity.START
         }.also {
@@ -71,7 +71,7 @@ class TitleValueCell(
         }
         // summary text view
         summaryView = TextView(context).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
+            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f)
             setTextColor(ResourcesCompat.getColor(resources, R.color.thirdTextColor, context.theme))
             gravity = Gravity.START
             visibility = GONE
@@ -83,7 +83,7 @@ class TitleValueCell(
         errorLineColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(context, R.attr.unusableColor, valueTextColor)
         // value text view
         valueView = TextView(context).apply {
-            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f);
+            setTextSize(TypedValue.COMPLEX_UNIT_DIP, 14f)
             setTextColor(valueTextColor)
             visibility = GONE
         }.also {
@@ -194,7 +194,7 @@ class TitleValueCell(
             // startY is baseline
             val startY = titleView.baseline + titleView.top + dip1 * 2f
             val endX = startX + textWidth
-            canvas.drawLine(startX.toFloat(), startY.toFloat(), endX.toFloat(), startY.toFloat(), dividerPaint)
+            canvas.drawLine(startX.toFloat(), startY, endX, startY, dividerPaint)
         }
     }
 }

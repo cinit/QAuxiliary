@@ -106,7 +106,7 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                 }
             }
         }
-        val kPlusPanelViewBinder: Class<*>? = Initiator.load("com/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder");
+        val kPlusPanelViewBinder: Class<*>? = Initiator.load("com/tencent/mobileqq/activity/aio/pluspanel/PlusPanelViewBinder")
         if (kPlusPanelViewBinder != null) {
             // assert QQ.version >= QQVersion.QQ_8_5.0
             val methods = kPlusPanelViewBinder.declaredMethods

@@ -248,11 +248,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             }
             formatTime = mDataFormatter!!.format(Date(chatMessage.time * 1000L))
         }
-        val result = msgFmt
+        return msgFmt
             .replace("\${senderuin}", chatMessage.senderUin.toString())
             .replace("\${frienduin}", chatMessage.friendUin.toString())
             .replace("\${msgtype}", chatMessage.msgType.toString())
-            .replace("\${readableMsgType}", chatMessage.readableMsgType.toString())
+            .replace("\${readableMsgType}", chatMessage.readableMsgType)
             .replace("\${extraflag}", chatMessage.extraFlag.toString())
             .replace("\${extStr}", chatMessage.extStr.toString())
             .replace("\${formatTime}", formatTime)
@@ -265,7 +265,6 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             .replace("\${shmsgseq}", chatMessage.shMsgSeq.toString())
             .replace("\${uniseq}", chatMessage.uniseq.toString())
             .replace("\${simpleName}", chatMessage.msgRecord.javaClass.simpleName)
-        return result
     }
 
     override fun onGetView(rootView: ViewGroup, chatMessage: MsgRecordData, param: XC_MethodHook.MethodHookParam) {
@@ -276,7 +275,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 "Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setTailMessage(ZLjava/lang/CharSequence;Landroid/view/View\$OnClickListener;)V".method
         }
         if (FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPic(chatMessage)) {
-            text = "闪照 " + text
+            text = "闪照 $text"
         }
         pfnSetTailMessage.invoke(rootView, true, text, if (mEnableDetailInfo) mOnTailMessageClickListener else null)
     }

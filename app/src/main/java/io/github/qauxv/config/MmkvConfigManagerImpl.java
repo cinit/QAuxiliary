@@ -622,12 +622,12 @@ public class MmkvConfigManagerImpl extends ConfigManager {
 
     @Override
     public boolean commit() {
-        return mmkv.commit();
+        return true;
     }
 
     @Override
     public void apply() {
-        mmkv.apply();
+        // do nothing
     }
 
     @Override

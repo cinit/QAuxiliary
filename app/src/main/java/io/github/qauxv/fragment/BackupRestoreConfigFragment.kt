@@ -381,7 +381,7 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
                 .setMessage(e.toString())
                 .setTitle("错误: " + Reflex.getShortClassName(e))
                 .setCancelable(false)
-                .ok().show();
+                .ok().show()
         }
     }
 
@@ -429,7 +429,7 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
     }
 
     private fun checkBadLocation(path: String): Boolean {
-        val specs: Array<String> = arrayOf("/dev/", "/sys/", "/acct/", "/d/");
+        val specs: Array<String> = arrayOf("/dev/", "/sys/", "/acct/", "/d/")
         for (spec in specs) {
             if (path.startsWith(spec)) {
                 return true
@@ -439,7 +439,7 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
             // allow /proc/[pid]/fd/[fd], where [pid] may be self and thread-self
             if (path.startsWith("/proc/self/fd/")
                 || path.startsWith("/proc/thread-self/fd/")
-                || path.matches("/proc/[0-9]+/fd/[0-9]+".toRegex())
+                || path.matches("/proc/\\d+/fd/\\d+".toRegex())
             ) {
                 return false
             }

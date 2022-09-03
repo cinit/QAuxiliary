@@ -43,7 +43,6 @@ import cc.ioctl.util.data.EventRecord;
 import cc.ioctl.util.data.FriendRecord;
 import cc.ioctl.util.data.Table;
 import io.github.qauxv.R;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FriendChunk;
@@ -53,6 +52,7 @@ import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.data.ContactDescriptor;
 import java.io.IOException;
@@ -781,7 +781,6 @@ public class ExfriendManager {
         saveConfigure();
     }
 
-    @SuppressWarnings("deprecation")
     public Notification createNotiComp(NotificationManager nm, String ticker, String title,
                                        String content, long[] vibration, PendingIntent pi) {
         Application app = HostInfo.getApplication();

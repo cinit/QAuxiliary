@@ -64,7 +64,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
         return uiClickableItemFactory
     }
 
-    inner class UiSwitchPreferenceItemFactory() : IUiItemAgent {
+    inner class UiSwitchPreferenceItemFactory : IUiItemAgent {
         lateinit var title: String
         var summary: String? = null
 
@@ -87,7 +87,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
         override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     }
 
-    inner class UiClickableItemFactory() : IUiItemAgent {
+    inner class UiClickableItemFactory : IUiItemAgent {
         lateinit var title: String
         var summary: String? = null
 

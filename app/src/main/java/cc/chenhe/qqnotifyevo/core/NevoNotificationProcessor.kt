@@ -2,8 +2,6 @@ package cc.chenhe.qqnotifyevo.core
 
 import android.app.Notification
 import android.content.Context
-import android.os.Build
-import androidx.annotation.RequiresApi
 import cc.chenhe.qqnotifyevo.utils.NotifyChannel
 import cc.chenhe.qqnotifyevo.utils.Tag
 

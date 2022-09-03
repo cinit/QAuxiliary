@@ -113,9 +113,9 @@ public class ModuleThemeManager {
         RYB(R.color.theme_color_ryb, R.style.AppTheme_Ryb, "皇室蓝"),
         GAP(R.color.theme_color_gap, R.style.AppTheme_Gap, "基佬紫");
 
-        public int colorId;
-        public int styleId;
-        public String title;
+        public final int colorId;
+        public final int styleId;
+        public final String title;
 
         Themes(int colorId, int styleId, String title) {
             this.colorId = colorId;

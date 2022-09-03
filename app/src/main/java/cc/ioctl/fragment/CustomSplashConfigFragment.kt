@@ -152,7 +152,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                         mHasUnsavedChanges = true
                     }
                 } catch (e: Exception) {
-                    FaultyDialog.show(requireContext(), e);
+                    FaultyDialog.show(requireContext(), e)
                 }
             }
         }
@@ -170,7 +170,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                         mHasUnsavedChanges = true
                     }
                 } catch (e: Exception) {
-                    FaultyDialog.show(requireContext(), e);
+                    FaultyDialog.show(requireContext(), e)
                 }
             }
         }
@@ -276,7 +276,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
             Toasts.success(requireContext(), "保存成功")
             finishFragment()
         } catch (e: Exception) {
-            FaultyDialog.show(requireContext(), e);
+            FaultyDialog.show(requireContext(), e)
         }
     }
 

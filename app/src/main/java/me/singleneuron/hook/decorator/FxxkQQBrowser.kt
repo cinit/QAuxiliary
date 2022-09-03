@@ -107,7 +107,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
         }.lowercase()
         return host.endsWith("qq.com")
             || host.endsWith("tenpay.com")
-            || host.endsWith("meeting.tencent.com");
+            || host.endsWith("meeting.tencent.com")
     }
 
     @ColorInt

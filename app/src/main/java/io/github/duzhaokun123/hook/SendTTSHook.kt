@@ -33,7 +33,6 @@ import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HostInfo
 import io.github.duzhaokun123.util.TTS
 import io.github.duzhaokun123.util.TimeFormat
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -44,8 +43,9 @@ import io.github.qauxv.router.decorator.IInputButtonDecorator
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher
 import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
-import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
 import mqq.app.AppRuntime
 import java.io.File
 import java.util.Locale
@@ -134,7 +134,7 @@ object SendTTSHook :
                         ("\n* 不要使用 MIUI 自带的 \"系统语音引擎\", 因为它的 mp3 文件无法播放".takeIf { TTS.packageName == MI_TTS } ?: ""))
                     .setNegativeButton("TTS 设置") { _, _ ->
                         TTS.showConfigDialog(wc, toSend)
-                    }.setPositiveButton("重试") { _, _, ->
+                    }.setPositiveButton("重试") { _, _ ->
                         trySend(true)
                     }.show()
                 return

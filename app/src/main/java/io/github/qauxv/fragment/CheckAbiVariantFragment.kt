@@ -30,7 +30,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.annotation.UiThread
-import io.github.qauxv.BuildConfig
 import io.github.qauxv.databinding.FragmentAbiVariantInfoBinding
 import io.github.qauxv.databinding.ItemHostStatusBinding
 import io.github.qauxv.fragment.CheckAbiVariantModel.AbiInfo

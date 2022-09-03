@@ -9,9 +9,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
 import androidx.core.app.Person
@@ -135,7 +133,7 @@ abstract class NotificationProcessor(context: Context) {
          */
         @VisibleForTesting
         val bindingQQMsgContextPattern: Pattern =
-            Pattern.compile("^有 (?:\\d+) 个联系人给你发过来(\\d+)条新消息$")
+            Pattern.compile("^有 \\d+ 个联系人给你发过来(\\d+)条新消息$")
 
         /**
          * 匹配关联 QQ 消息 title. 用于提取未读消息个数。
@@ -678,8 +676,6 @@ abstract class NotificationProcessor(context: Context) {
 
     private fun NotificationCompat.MessagingStyle.addMessage(message: Message) {
         var name = message.person.name!!
-
-        name = name
 
         if (message.special && showSpecialPrefix()) {
             // 添加特别关心或关注前缀

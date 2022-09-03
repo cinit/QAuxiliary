@@ -50,13 +50,13 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.TroopManagerHelper
 import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.R
-import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.SyncUtils.async
-import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.NonUiThread
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.Toasts
 import org.json.JSONObject
 import xyz.nextalone.util.SystemServiceUtils
@@ -161,7 +161,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
         }
 
         override fun getItemCount(): Int {
-            return Math.max(mTextItemList.size, 1)
+            return mTextItemList.size.coerceAtLeast(1)
         }
     }
 
@@ -454,7 +454,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                                         append(uin)
                                     }
                                 } else {
-                                    if (md5.matches("[0-9a-fA-F]{32}".toRegex())) {
+                                    if (md5.matches("[\\da-fA-F]{32}".toRegex())) {
                                         // add a link to search md5
                                         append("mr_")
                                         append(parts[1])
@@ -554,8 +554,8 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     @NonUiThread
     private fun getTableSize(db: SQLiteDatabase, table: String): Long {
-        SyncUtils.requiresNonUiThread();
-        if (!table.matches("[a-zA-Z0-9_]+".toRegex())) {
+        SyncUtils.requiresNonUiThread()
+        if (!table.matches("\\w+".toRegex())) {
             throw IllegalArgumentException("Invalid table name: '$table'")
         }
         var size: Long = -1
@@ -585,7 +585,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private fun clickToSearchMd5Online(md5: String): (View) -> Unit {
         return lambda@{
-            if (!md5.matches("[a-fA-F0-9]{32}".toRegex())) {
+            if (!md5.matches("[a-fA-F\\d]{32}".toRegex())) {
                 return@lambda
             }
             val ctx = requireContext()
@@ -622,7 +622,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
                     inp.close()
                     conn.disconnect()
                     val resp = respBuffer.toString()
-                    val json = JSONObject(resp.toString())
+                    val json = JSONObject(resp)
                     val code = json.getInt("code")
                     if (code == 0) {
                         val plain = json.getString("result")

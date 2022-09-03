@@ -72,10 +72,10 @@ class PendingFunctionFragment : BaseRootLayoutFragment() {
     }
 
     private fun convertItem(item: Item): DslTMsgListItemInflatable {
-        if (item.switch) {
-            return TextSwitchItem(item.title, item.desc, dummySwitch)
+        return if (item.switch) {
+            TextSwitchItem(item.title, item.desc, dummySwitch)
         } else {
-            return TextListItem(item.title, item.desc, item.value)
+            TextListItem(item.title, item.desc, item.value)
         }
     }
 

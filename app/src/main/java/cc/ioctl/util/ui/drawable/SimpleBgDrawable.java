@@ -69,7 +69,6 @@ public class SimpleBgDrawable extends Drawable {
     }
 
     @Override
-    @SuppressWarnings("deprecation")
     public int getOpacity() {
         return android.graphics.PixelFormat.TRANSLUCENT;
     }

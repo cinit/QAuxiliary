@@ -95,12 +95,11 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
         if (!name.startsWith("is")) {
             throw NoSuchMethodException("property name must start with 'is'")
         }
-        val getterName = name
         val setterName = "set" + name.substring(2).replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        val getter = Reflex.findMethod(owner.javaClass, java.lang.Boolean.TYPE, getterName)
-        val setter = Reflex.findMethod(owner.javaClass, java.lang.Void.TYPE, setterName, java.lang.Boolean.TYPE)
+        val getter = Reflex.findMethod(owner.javaClass, java.lang.Boolean.TYPE, name)
+        val setter = Reflex.findMethod(owner.javaClass, Void.TYPE, setterName, java.lang.Boolean.TYPE)
         return object : ISwitchCellAgent {
             override val isCheckable: Boolean = true
             override var isChecked: Boolean

@@ -128,7 +128,7 @@ public class CliOper {
         }
         __init__(HostInfo.getApplication());
         Analytics.trackEvent("onLoad", properties);
-        Log.d("start App Center Trace OnLoad:" + properties.toString());
+        Log.d("start App Center Trace OnLoad:" + properties);
     }
 
     public static void enterModuleActivity(String shortName) {
@@ -140,7 +140,7 @@ public class CliOper {
             Map<String, String> prop = new HashMap<>();
             prop.put("name", shortName);
             Analytics.trackEvent("enterModuleActivity", prop);
-            Log.d("Start App Center Trace enterModuleActivity: " + prop.toString());
+            Log.d("Start App Center Trace enterModuleActivity: " + prop);
         } catch (Throwable ignored) {
         }
     }

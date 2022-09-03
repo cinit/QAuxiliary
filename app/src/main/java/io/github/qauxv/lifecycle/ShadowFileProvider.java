@@ -34,9 +34,9 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
@@ -61,7 +61,7 @@ public class ShadowFileProvider {
         if (projection == null) {
             projection = COLUMNS;
         }
-        String path[] = getUriPathHierarchy(uri);
+        String[] path = getUriPathHierarchy(uri);
 
         String name = path[path.length - 1];
         long size = -1;

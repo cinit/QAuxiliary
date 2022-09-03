@@ -34,11 +34,11 @@ import cc.chenhe.qqnotifyevo.core.NevoNotificationProcessor
 import cc.chenhe.qqnotifyevo.utils.getNotificationChannels
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.throwOrTrue
 
@@ -68,7 +68,7 @@ object QNotifyEvolutionChannel  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                             param.args[param.args.size - 1] as Notification
 
                         createNotificationChannels()
-                        val decoratedNotification: Notification? = processor.resolveNotification(hostInfo.application, hostInfo.packageName, notification);
+                        val decoratedNotification: Notification? = processor.resolveNotification(hostInfo.application, hostInfo.packageName, notification)
                         if (decoratedNotification != null) {
                             param.args[param.args.size - 1] = decoratedNotification
                         }
@@ -83,13 +83,13 @@ object QNotifyEvolutionChannel  : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private fun createNotificationChannels() {
         val notificationChannels: List<NotificationChannel> = getNotificationChannels()
         val notificationChannelGroup = NotificationChannelGroup("qq_evolution", "QQ通知进化")
-        val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java);
+        val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java)
         if (notificationChannels.any {
                     notificationChannel -> notificationManager.getNotificationChannel(notificationChannel.id) == null
             }) {
-            Log.i("QNotifyEvolutionXp", "Creating channels...");
+            Log.i("QNotifyEvolutionXp", "Creating channels...")
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)
-            notificationManager.createNotificationChannels(notificationChannels);
+            notificationManager.createNotificationChannels(notificationChannels)
         }
     }
 }

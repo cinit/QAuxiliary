@@ -38,7 +38,7 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
     val title = TextView(context).apply {
         layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         setTextColor(HostStyledViewBuilder.getColorSkinBlack())
-        textSize = 16.dp2sp.toFloat()
+        textSize = 16.dp2sp
         addView(this)
     }
     private var hasDesc = false
@@ -46,7 +46,7 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
         TextView(context).apply {
             layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
             setTextColor(HostStyledViewBuilder.getColorSkinGray3())
-            textSize = 14.dp2sp.toFloat()
+            textSize = 14.dp2sp
             isSingleLine = true
             ellipsize = TextUtils.TruncateAt.END
             hasDesc = true
@@ -56,7 +56,7 @@ class FunctionDummy(context: Context) : BViewGroup(context) {
     val value = TextView(context).apply {
         layoutParams = LayoutParams(WRAP_CONTENT, WRAP_CONTENT)
         setTextColor(HostStyledViewBuilder.getColorSkinGray3())
-        textSize = 15.dp2sp.toFloat()
+        textSize = 15.dp2sp
         addView(this)
     }
 

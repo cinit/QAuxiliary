@@ -27,14 +27,14 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.hostInfo
 import me.kyuubiran.util.getDefaultCfg
 import me.kyuubiran.util.getExFriendCfg
@@ -175,7 +175,7 @@ internal fun <T> Any?.get(type: Class<out T>? = null): T? {
     return null
 }
 
-internal fun <T> Any?.getAll(type: Class<out T>? = null): MutableList<T>? {
+internal fun <T> Any?.getAll(type: Class<out T>? = null): MutableList<T> {
     var clz = this?.javaClass
     val objMutableList = mutableListOf<T>()
     while (clz != null && clz != Any::class.java) {

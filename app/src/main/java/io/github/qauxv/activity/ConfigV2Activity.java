@@ -234,7 +234,7 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                                     startActivity(intent);
                                 } catch (ActivityNotFoundException e) {
                                     new AlertDialog.Builder(this).setTitle("出错啦")
-                                            .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e.toString())
+                                            .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
                                             .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
                                 }
                             }

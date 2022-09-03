@@ -176,8 +176,7 @@ object FunctionEntryRouter {
      */
     class Locations {
         companion object {
-            @JvmField
-            val ANY_CAST_PREFIX: String = "@any-cast"
+            const val ANY_CAST_PREFIX: String = "@any-cast"
         }
 
         class Simplify {

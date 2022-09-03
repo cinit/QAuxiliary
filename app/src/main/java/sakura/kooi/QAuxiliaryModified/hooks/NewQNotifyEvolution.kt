@@ -50,13 +50,13 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.LicenseStatus
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
@@ -223,7 +223,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 }
             }
 
-            Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name);
+            Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name)
             param.result = builder.build()
         }
 
@@ -322,13 +322,13 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
         val notificationChannels: List<NotificationChannel> = getNotificationChannels()
         // don't create new channel group since the old channel ids are still used
         val notificationChannelGroup = NotificationChannelGroup("qq_evolution", "QQ通知进化 Plus")
-        val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java);
+        val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java)
         if (notificationChannels.any { notificationChannel ->
                 notificationManager.getNotificationChannel(notificationChannel.id) == null
             }) {
-            Log.i("QNotifyEvolutionXp", "Creating channels...");
+            Log.i("QNotifyEvolutionXp", "Creating channels...")
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)
-            notificationManager.createNotificationChannels(notificationChannels);
+            notificationManager.createNotificationChannels(notificationChannels)
         }
     }
 }

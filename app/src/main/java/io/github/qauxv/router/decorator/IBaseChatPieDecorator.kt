@@ -25,5 +25,4 @@ package io.github.qauxv.router.decorator
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 
-interface IBaseChatPieDecorator : RuntimeErrorTracer, IDynamicHook {
-}
+interface IBaseChatPieDecorator : RuntimeErrorTracer, IDynamicHook

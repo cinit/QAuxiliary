@@ -23,7 +23,6 @@
 package xyz.nextalone.hook
 
 import android.view.View
-import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry

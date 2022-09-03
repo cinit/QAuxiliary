@@ -60,7 +60,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
     private const val RecentUserBaseData1 = "com.tencent.mobileqq.activity.recent.RecentUserBaseData"
     private const val RecentUserBaseData2 = "com.tencent.mobileqq.activity.recent.data.RecentUserBaseData"
     private const val RecentBaseData = "com.tencent.mobileqq.activity.recent.RecentBaseData"
-    private val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
+    private const val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {

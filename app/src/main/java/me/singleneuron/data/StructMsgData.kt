@@ -64,8 +64,6 @@ data class StructMsgData(
     }
 
     override fun toString(): String = this.encodeToJson()
-    // {"app":"com.tencent.structmsg","desc":"新闻","view":"news","ver":"0.0.0.1","prompt":"[QQ小程序]哔哩哔哩","appID":"","sourceName":"","actionData":"","actionData_A":"","sourceUrl":"","meta":{"news":{"app_type":1,"appid":"100951776","desc":"把1000条蚊子幼虫放进风油精里，下一秒现场完全失控","jumpUrl":"https:\/\/b23.tv\/5dwJyj8?share_medium=android&share_source=qq&bbid=XX928359B161548F9208034E6FE89A65B3FDE&ts=1659704489837","preview":"pubminishare-30161.picsz.qpic.cn\/3c7f7d15-7e9f-4b09-bf64-1a8eb988fef2","tag":"哔哩哔哩","title":"哔哩哔哩"}},"config":{"autosize":true,"ctime":1659704502,"forward":true,"type":"normal"},"text":"","extraApps":[],"sourceAd":"","extra":"{\"app_type\":1,\"appid\":100951776,\"uin\":178772968}"}
-    // {"prompt":"[QQ小程序]哔哩哔哩","news":{"desc":"把1000条蚊子幼虫放进风油精里，下一秒现场完全失控","jumpUrl":"https://b23.tv/5dwJyj8?share_medium=android&share_source=qq&bbid=XX928359B161548F9208034E6FE89A65B3FDE&ts=1659704489837","preview":"pubminishare-30161.picsz.qpic.cn/3c7f7d15-7e9f-4b09-bf64-1a8eb988fef2","tag":"哔哩哔哩","title":"哔哩哔哩","appid":"100951776"},"config":{"ctime":1659704502},"extra":"{\"app_type\":1,\"appid\":100951776,\"uin\":178772968}"}
 }
 
 @Serializable

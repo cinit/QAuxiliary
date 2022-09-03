@@ -25,7 +25,7 @@ package me.teble
 import java.io.Closeable
 
 class DexKitHelper(
-    private val classLoader: ClassLoader
+    classLoader: ClassLoader
 ) : AutoCloseable, Closeable {
 
     private var token: Long = 0

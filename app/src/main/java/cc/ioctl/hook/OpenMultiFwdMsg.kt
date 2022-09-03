@@ -93,7 +93,7 @@ object OpenMultiFwdMsg : IUiItemAgent, IUiItemAgentProvider {
     @JvmStatic
     fun checkMultiMsgUri(multiUri: String): Boolean {
         // expect a 0x30 length encoded base64
-        if (!multiUri.matches(Regex("^[0-9A-Za-z+/]+$"))) {
+        if (!multiUri.matches(Regex("^[\\dA-Za-z+/]+$"))) {
             return false
         }
         try {

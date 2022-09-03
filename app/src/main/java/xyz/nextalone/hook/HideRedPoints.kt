@@ -35,7 +35,6 @@ import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
-import xyz.nextalone.util.replace
 import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 

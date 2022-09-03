@@ -26,7 +26,6 @@ import cn.lliiooll.msg.MessageReceiver
 import cn.lliiooll.util.MsgRecordUtil
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.singleneuron.data.MsgRecordData

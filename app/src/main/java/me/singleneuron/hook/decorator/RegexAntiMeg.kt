@@ -92,10 +92,10 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
             regexCache = regexString.toRegex()
             regexStringCache = regexString
         }
-        if (regexCache?.matches(text) == true) {
+        return if (regexCache?.matches(text) == true) {
             XposedHelpers.setBooleanField(data.msgRecord, "isread", true)
-            return true
-        } else return false
+            true
+        } else false
     }
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->

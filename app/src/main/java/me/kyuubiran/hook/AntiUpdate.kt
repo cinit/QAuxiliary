@@ -23,8 +23,6 @@
 package me.kyuubiran.hook
 
 import android.os.Message
-import android.text.SpannableStringBuilder
-import android.text.style.ForegroundColorSpan
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.emptyParam

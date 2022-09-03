@@ -35,7 +35,7 @@ abstract class BaseDecorator(
     protected abstract val dispatcher: IDynamicHook
 
     override fun initOnce(): Boolean {
-        return dispatcher.initialize();
+        return dispatcher.initialize()
     }
 
     override val isInitialized: Boolean get() = dispatcher.isInitialized

@@ -158,8 +158,8 @@ data class MsgRecordData(val msgRecord: Any) {
             return _msgType!!.getInt(msgRecord)
         }
 
-    val readableMsgType: String?
-        get() = msgType.let { if (MSG_TYPE_MAP[it] == null) msgType.toString() else MSG_TYPE_MAP[it] + "(${msgType.toString()})" }
+    val readableMsgType: String
+        get() = msgType.let { if (MSG_TYPE_MAP[it] == null) msgType.toString() else MSG_TYPE_MAP[it] + "($msgType)" }
 
     //额外flag extraflag
     val extraFlag: Int
@@ -275,19 +275,19 @@ data class MsgRecordData(val msgRecord: Any) {
         stringBuilder.apply {
             append("消息文本: $msg\n")
             msg2?.let { append("也是消息文本: $msg2\n") }
-            msgUid.let { append("消息uid: $msgUid\n") }
+            append("消息uid: $msgUid\n")
             friendUin?.let { append("好友/群号:$friendUin\n") }
             senderUin?.let { append("发送人QQ: $senderUin\n") }
             selfUin?.let { append("自己QQ: $selfUin\n") }
-            msgType.let { append("消息类型: $readableMsgType\n") }
-            extraFlag.let { append("额外flag: ${extraFlag.toString(16)}\n") }
-            readableTime.let { append("时间戳: $readableTime\n") }
-            isRead.let { append("是否已读: $isRead\n") }
-            isSend.let { append("是否发送: $isSend\n") }
-            isTroop.let { append("是否群组: $isTroop\n") }
-            msgSeq.let { append("msgSeq：$msgSeq\n") }
-            shMsgSeq.let { append("shMsgSeq: $shMsgSeq\n") }
-            uniseq.let { append("uinSeq: $uniseq\n") }
+            append("消息类型: $readableMsgType\n")
+            append("额外flag: ${extraFlag.toString(16)}\n")
+            append("时间戳: $readableTime\n")
+            append("是否已读: $isRead\n")
+            append("是否发送: $isSend\n")
+            append("是否群组: $isTroop\n")
+            append("msgSeq：$msgSeq\n")
+            append("shMsgSeq: $shMsgSeq\n")
+            append("uinSeq: $uniseq\n")
         }
         return stringBuilder.toString()
     }
