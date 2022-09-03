@@ -37,6 +37,7 @@ plugins {
     id("io.github.qauxv.application")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
     kotlin("plugin.serialization")
+    id("com.cookpad.android.plugin.license-tools") version "1.2.0"
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
@@ -128,6 +129,10 @@ android {
     lint {
         checkDependencies = true
     }
+    applicationVariants.all {
+        val variantCapped = name.capitalize()
+        tasks.findByName("merge${variantCapped}Assets")?.dependsOn(tasks.generateLicenseJson.get())
+    }
 }
 
 dependencies {
@@ -205,7 +210,7 @@ androidComponents.onVariants { variant ->
         }
     }
 
-    task("installRestart${variantCapped}") {
+    task("install${variantCapped}AndRestartQQ") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped", killQQ)
         finalizedBy(openQQ)

@@ -34,7 +34,7 @@ open class CategoryItem(
 
     private val dslItems = ArrayList<DslTMsgListItemInflatable>()
     private lateinit var listItems: ArrayList<TMsgListItem>
-    private var isAfterBuild: Boolean = false;
+    private var isAfterBuild: Boolean = false
 
     override fun inflateTMsgListItems(context: Context): List<TMsgListItem> {
         if (!::listItems.isInitialized) {

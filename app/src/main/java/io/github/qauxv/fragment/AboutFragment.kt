@@ -50,6 +50,8 @@ import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.util.CliOper
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.data.Licenses
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
@@ -160,69 +162,13 @@ class AboutFragment : BaseRootLayoutFragment() {
             }
     }
 
-    private val notices: Array<LicenseNotice> by lazy {
-        arrayOf(
-            LicenseNotice(
-                "QNotified",
-                "https://github.com/ferredoxin/QNotified",
-                "Copyright (C) 2019-2021 ferredoxin",
-                "AGPL-3.0 License with EULA"
-            ),
-            LicenseNotice(
-                "Xposed",
-                "https://github.com/rovo89/XposedBridge",
-                "Copyright 2013 rovo89, Tungstwenty",
-                "Apache License 2.0"
-            ),
-            LicenseNotice(
-                "LSPosed",
-                "https://github.com/LSPosed/LSPosed",
-                "Copyright (C) 2021 LSPosed",
-                "GPL-3.0 License"
-            ),
-            LicenseNotice(
-                "CustoMIUIzer",
-                "https://code.highspec.ru/Mikanoshi/CustoMIUIzer",
-                "Mikanoshi",
-                "GPL-3.0 License"
-            ),
-            LicenseNotice(
-                "MMKV",
-                "https://github.com/Tencent/MMKV",
-                "Copyright (C) 2018 THL A29 Limited, a Tencent company.",
-                "BSD 3-Clause License"
-            ),
-            LicenseNotice(
-                "EzXHelper",
-                "https://github.com/KyuubiRan/EzXHelper",
-                "KyuubiRan",
-                "Apache-2.0 License"
-            ),
-            LicenseNotice(
-                "AndroidHiddenApiBypass",
-                "https://github.com/LSPosed/AndroidHiddenApiBypass",
-                "Copyright (C) 2021 LSPosed",
-                "Apache License 2.0"
-            ),
-            LicenseNotice(
-                "DexBuilder",
-                "https://github.com/LSPosed/DexBuilder",
-                "Copyright (C) 2021 LSPosed",
-                "LGPL-3.0 License"
-            ),
-            LicenseNotice(
-                "BiliRoaming",
-                "https://github.com/yujincheng08/BiliRoaming",
-                "yujincheng08",
-                "GPL-3.0 License"
-            ),
-            LicenseNotice(
-                "QQ-Notify-Evolution",
-                "https://github.com/ichenhe/QQ-Notify-Evolution",
-                "ichenhe",
-                "AGPL-3.0 License"
-            )
-        )
+    private val notices: List<LicenseNotice> by lazy {
+        Licenses.getAll().onFailure {
+            Log.e(it)
+            return@lazy emptyList()
+        }.getOrNull()!!.map {
+            LicenseNotice(it.libraryName, it.url ?: it.licenseUrl, it.copyrightHolder, it.license)
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {

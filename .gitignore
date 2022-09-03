@@ -75,3 +75,4 @@ app/src/main/res/drawable/icon.xml
 .classpath
 app/signing.properties
 .vscode
+/app/src/main/assets/licenses.json
