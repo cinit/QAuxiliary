@@ -28,6 +28,7 @@ import com.android.tools.build.apkzlib.zip.AlignmentRules
 import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
+import org.jetbrains.changelog.markdownToHTML
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.cert.X509Certificate
@@ -38,6 +39,7 @@ plugins {
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
     kotlin("plugin.serialization")
     id("com.cookpad.android.plugin.license-tools") version "1.2.0"
+    id("org.jetbrains.changelog") version "1.3.1"
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
@@ -132,6 +134,7 @@ android {
     applicationVariants.all {
         val variantCapped = name.capitalize()
         tasks.findByName("merge${variantCapped}Assets")?.dependsOn(tasks.generateLicenseJson.get())
+        tasks.findByName("merge${variantCapped}Assets")?.dependsOn(generateEulaAndPrivacy)
     }
 }
 
@@ -150,7 +153,6 @@ dependencies {
 
     compileOnly("de.robv.android.xposed:api:82")
     implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
-    implementation("io.noties.markwon:core:4.6.2")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
     implementation("com.google.android.material:material:1.6.1")
     implementation("com.google.android.flexbox:flexbox:3.0.0")
@@ -183,9 +185,11 @@ val openQQ = tasks.register<Exec>("openQQ") {
 
 tasks.register<Exec>("openTroubleShooting") {
     group = "qauxv"
-    commandLine(adb, "shell", "am", "start",
+    commandLine(
+        adb, "shell", "am", "start",
         "-e", "qa_jump_action_cmd", "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY",
-        "com.tencent.mobileqq/.activity.JumpActivity")
+        "com.tencent.mobileqq/.activity.JumpActivity"
+    )
     isIgnoreExitValue = true
 }
 
@@ -217,7 +221,7 @@ androidComponents.onVariants { variant ->
     }
 }
 
-tasks.register<ReplaceIcon>("replaceIcon") {
+tasks.register<task.ReplaceIcon>("replaceIcon") {
     group = "qauxv"
     projectDir.set(project.projectDir)
     commitHash = Common.getGitHeadRefsSuffix(rootProject)
@@ -373,5 +377,32 @@ val synthesizeDistReleaseApksCI by tasks.registering {
         }
         val endTime = System.currentTimeMillis()
         logger.info("Task :app:synthesizeDistReleaseApksCI: completed in ${endTime - startTime}ms")
+    }
+}
+
+val generateEulaAndPrivacy by tasks.registering {
+    inputs.files("${rootDir}/LICENSE.md", "${rootDir}/PRIVACY_LICENSE.md")
+    outputs.file("${projectDir}/src/main/assets/eulaAndPrivacy.html")
+
+    doFirst {
+        val head = """
+            <head>
+                <meta charset="UTF-8">
+            </head>
+            <body>
+        """.trimIndent()
+
+        val html = inputs.files.map{ markdownToHTML(it.readText()) }
+
+        outputs.files.forEach {
+            it.writeText(
+                buildString {
+                    append("<html>")
+                    append(head)
+                    html.forEach(::append)
+                    append("</body></html>")
+                }
+            )
+        }
     }
 }

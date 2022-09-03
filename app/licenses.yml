@@ -410,12 +410,6 @@
   copyrightHolder: Copyright 2013 rovo89, Tungstwenty
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-- artifact: io.noties.markwon:core:+
-  name: core
-  copyrightHolder: #COPYRIGHT_HOLDER#
-  license: The Apache Software License, Version 2.0
-  licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://github.com/noties/Markwon
 - artifact: org.jetbrains.kotlin:kotlin-reflect:+
   name: kotlin-reflect
   copyrightHolder: #COPYRIGHT_HOLDER#
@@ -482,3 +476,7 @@
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://github.com/LSPosed/AndroidHiddenApiBypass
+- artifact: com.google.guava:listenablefuture:+
+  name: listenablefuture
+  copyrightHolder: #COPYRIGHT_HOLDER#
+  license: #LICENSE#

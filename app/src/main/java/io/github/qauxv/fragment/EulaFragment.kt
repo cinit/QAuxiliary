@@ -24,6 +24,7 @@ package io.github.qauxv.fragment
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.text.Html
 import android.text.SpannableStringBuilder
 import android.view.Gravity
 import android.view.LayoutInflater
@@ -94,9 +95,8 @@ class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
             val sb = SpannableStringBuilder()
             try {
-                sb.append(ResUtils.openAsset("eula.md").readText())
-                sb.append("\n\n")
-                sb.append(ResUtils.openAsset("privacy_license.txt").readText())
+                val eulaAndPrivacy = ResUtils.openAsset("eulaAndPrivacy.html").readText()
+                sb.append(Html.fromHtml(eulaAndPrivacy, Html.FROM_HTML_MODE_LEGACY))
             } catch (e: IOException) {
                 sb.append(Log.getStackTraceString(e))
             }
@@ -134,9 +134,9 @@ class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
                     agree.text = "我同意并继续"
                     addView(agree, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
                     val deny = Button(context)
-                    deny.setId(R.id.btn_deny)
+                    deny.id = R.id.btn_deny
                     deny.setOnClickListener(this@EulaFragment)
-                    deny.setText("我拒绝")
+                    deny.text = "我拒绝"
                     addView(deny, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp))
                 } else {
                     tv = TextView(context)

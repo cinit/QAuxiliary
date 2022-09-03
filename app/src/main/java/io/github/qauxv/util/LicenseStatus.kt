@@ -33,10 +33,10 @@ object LicenseStatus {
     @JvmField
     var sDisableCommonHooks: Boolean = isBlacklisted()
 
-    private const val qn_eula_status = "qa_eula_status" //typo, ignore it
+    private const val qn_eula_status = "qa_eula_status"
     private const val qn_user_auth_status = "qn_user_auth_status"
     private const val qn_user_auth_last_update = "qn_user_auth_last_update"
-    const val CURRENT_EULA_VERSION = 10
+    const val CURRENT_EULA_VERSION = 11
 
     @JvmStatic
     fun getEulaStatus(): Int {
