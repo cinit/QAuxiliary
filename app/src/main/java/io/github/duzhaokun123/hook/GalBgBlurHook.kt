@@ -51,7 +51,7 @@ object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
     override val name: String
         get() = "聊天界面查看图片背景模糊"
     override val description: CharSequence
-        get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_finger.supports_background_blur=1)"
+        get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_flinger.supports_background_blur=1)"
     override val valueState: MutableStateFlow<String?>?
         get() = null
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
