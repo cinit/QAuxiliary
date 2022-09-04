@@ -46,10 +46,12 @@ import xyz.nextalone.util.putExFriend
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object PicBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
-    val brCfg = "pic_bg_blur_radius"
+object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
+    val brCfg = "gal_bg_blur_radius"
     override val name: String
         get() = "聊天界面查看图片背景模糊"
+    override val description: CharSequence?
+        get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_finger.supports_background_blur=1)"
     override val valueState: MutableStateFlow<String?>?
         get() = null
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
@@ -58,9 +60,9 @@ object PicBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
             ll.apply {
                 orientation = LinearLayout.VERTICAL
                 addView(CheckBox(activity).apply {
-                    isChecked = this@PicBgBlurHook.isEnabled
+                    isChecked = this@GalBgBlurHook.isEnabled
                     setOnCheckedChangeListener { _, isChecked ->
-                        this@PicBgBlurHook.isEnabled = isChecked
+                        this@GalBgBlurHook.isEnabled = isChecked
                     }
                     text = "使能"
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
