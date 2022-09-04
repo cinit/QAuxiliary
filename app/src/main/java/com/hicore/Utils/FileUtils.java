@@ -47,8 +47,7 @@ public class FileUtils {
             }
             in.close();
             out.close();
-        } catch (Exception e) {
-        } finally {
+        } catch (Exception ignored) {
         }
     }
 

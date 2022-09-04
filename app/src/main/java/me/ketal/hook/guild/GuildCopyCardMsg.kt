@@ -58,8 +58,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
         val clMessageForArkApp = "com.tencent.mobileqq.data.MessageForArkApp".clazz!!
 
         clFragment.hookBeforeAllConstructors {
-            val menu = it.args[2]
-            val chatMessage = it.args[3]
+            val (_, menu, chatMessage) = it.args
             if (!chatMessage.javaClass.isAssignableFrom(clMessageForStructing)
                 && !chatMessage.javaClass.isAssignableFrom(clMessageForArkApp)) return@hookBeforeAllConstructors
             val list = getFirstByType(menu, List::class.java) as MutableList<Any>

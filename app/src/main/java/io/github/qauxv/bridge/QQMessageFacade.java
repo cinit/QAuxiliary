@@ -27,10 +27,10 @@ import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.tlb.ConfigTable;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.DexKit;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
@@ -80,7 +80,7 @@ public class QQMessageFacade {
             // must call the method to set the field to true, otherwise the message will not be revoked
             String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "z2" : "b"; //Default method name for QQ
             if (HostInfo.isTim()) {
-                methodName = ConfigTable.INSTANCE.getConfig(QQMessageFacade.class.getSimpleName());
+                methodName = ConfigTable.getConfig(QQMessageFacade.class.getSimpleName());
             }
             // invoke-virtual BaseMessageManager->doMsgRevokeRequest(MessageRecord)V
             Reflex.invokeVirtual(msgCache, methodName, true, boolean.class, void.class);

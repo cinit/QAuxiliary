@@ -23,8 +23,7 @@ package cc.ioctl.util.data;
 
 import java.io.Serializable;
 
-
-public class EventRecord implements Serializable, Cloneable, Comparable {
+public class EventRecord implements Serializable, Comparable {
 
     public static final long TIME_UNKNOWN = -1L;
     public static final int EVENT_ERROR = 0;

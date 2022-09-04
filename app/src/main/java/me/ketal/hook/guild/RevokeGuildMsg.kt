@@ -26,12 +26,12 @@ import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.tencent.mobileqq.data.MessageRecord
 import com.tencent.mobileqq.guild.message.api.IGuildNicknameApi
 import com.tencent.mobileqq.qroute.QRoute
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._MessageRecord
+import io.github.qauxv.util.SyncUtils
 import me.singleneuron.data.MsgRecordData
 import mqq.app.AppRuntime
 import tencent.im.group_pro_proto.common.common
@@ -52,11 +52,11 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
     override fun initOnce() = throwOrTrue {
         "com/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl"
             .clazz?.method("handleDeleteEvent")
-            ?.hookBefore(this) { it ->
-                val thisObject = it.thisObject
+            ?.hookBefore(this) { param ->
+                val thisObject = param.thisObject
                 val appRuntime = thisObject.get("appRuntime")!!
-                val msgRecord = it.args[0] ?: return@hookBefore
-                val event = it.args[1] as common.Event
+                val msgRecord = param.args[0] ?: return@hookBefore
+                val event = param.args[1] as common.Event
                 val senderUin = MsgRecordData(msgRecord).senderUin!!
 
                 val opInfo = event.op_info
@@ -90,7 +90,7 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
                 )
 
                 if (selfTinyId != operatorId) {
-                    it.result = null
+                    param.result = null
                 }
             }
 

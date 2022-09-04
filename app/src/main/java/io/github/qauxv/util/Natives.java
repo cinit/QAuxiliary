@@ -151,7 +151,7 @@ public class Natives {
      * <p>
      * Do not use this directly, use {@link cc.ioctl.util.Reflex#invokeNonVirtual(Object, Method, Object[])} instead.
      *
-     * @param classSig   the class signature of the method, e.g. "Ljava/lang/String;"
+     * @param declaringClass   the class of the method, e.g. "Ljava/lang/String;"
      * @param methodName the method name
      * @param methodSig  the method signature, e.g. "(Ljava/lang/String;)Ljava/lang/String;"
      * @param obj        the object to invoke the method on, must not be null

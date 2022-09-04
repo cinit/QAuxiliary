@@ -28,7 +28,11 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
+import xyz.nextalone.util.set
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -42,8 +46,9 @@ object Emoji2Sticker : CommonSwitchFunctionHook() {
         get() = requireMinQQVersion(QQVersion.QQ_8_7_5)
 
     override fun initOnce() = throwOrTrue {
-        "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")?.hookAfter(this) {
-            it.result.set("singleAniSticker", false)
-        }
+        "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")
+            ?.hookAfter(this) {
+                it.result.set("singleAniSticker", false)
+            }
     }
 }

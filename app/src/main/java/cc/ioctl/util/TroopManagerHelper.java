@@ -84,9 +84,8 @@ public class TroopManagerHelper {
 
 
     public static ArrayList<TroopInfo> getTroopInfoList() throws Exception {
-        Object mTroopManager = getTroopManager();
         ArrayList<?> tx = getTroopInfoListRaw();
-        ArrayList<TroopInfo> ret = new ArrayList<TroopInfo>();
+        ArrayList<TroopInfo> ret = new ArrayList<>();
         for (Object info : tx) {
             ret.add(new TroopInfo(info));
         }

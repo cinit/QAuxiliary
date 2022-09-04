@@ -58,8 +58,8 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
         uiClickableItem {
             title = "自定义QQ等级"
             summary = "仅本地生效"
-            onClickListener = { _, it, _ ->
-                showDialog(it)
+            onClickListener = { _, view, _ ->
+                showDialog(view)
             }
         }
     }

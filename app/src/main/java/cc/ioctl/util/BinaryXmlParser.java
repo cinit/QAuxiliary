@@ -61,26 +61,16 @@ public class BinaryXmlParser {
     public static final int NULL = 0xFFFFFFFF;
 
     public static XmlNode parseXml(String filePath) {
-        FileInputStream fis = null;
-        try {
-            fis = new FileInputStream(filePath);
-            ByteArrayOutputStream bos = new ByteArrayOutputStream();
+        try(FileInputStream fis = new FileInputStream(filePath);
+                ByteArrayOutputStream bos = new ByteArrayOutputStream()) {
             byte[] buffer = new byte[1024];
             int len = 0;
             while ((len = fis.read(buffer)) != -1) {
                 bos.write(buffer, 0, len);
             }
             return parseXml(bos.toByteArray());
-
         } catch (Exception e) {
             Log.e("parse xml error:" + e);
-        } finally {
-            try {
-                if (fis != null) {
-                    fis.close();
-                }
-            } catch (Exception ignored) {
-            }
         }
         return null;
     }

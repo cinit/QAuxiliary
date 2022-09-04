@@ -39,7 +39,6 @@ import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.base.IDynamicHook;
-import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.step.DexDeobfStep;
 import io.github.qauxv.step.ShadowBatchDexDeobfStep;
 import io.github.qauxv.step.Step;
@@ -119,7 +118,7 @@ public class InjectDelayableHooks {
                     steps.add(shadowBatchStep);
                 }
             }
-            Collections.sort(steps, Collections.<Step>reverseOrder());
+            steps.sort(Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
                 final int j = idx;
                 if (SyncUtils.isMainProcess() && ctx != null) {

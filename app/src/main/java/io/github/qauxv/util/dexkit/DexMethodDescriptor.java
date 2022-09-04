@@ -25,7 +25,7 @@ import java.io.Serializable;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
-public class DexMethodDescriptor implements Serializable, Cloneable {
+public class DexMethodDescriptor implements Serializable {
 
     /**
      * Ljava/lang/Object;

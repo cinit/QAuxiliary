@@ -30,7 +30,6 @@ import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -39,12 +38,8 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
-import android.widget.ImageView.ScaleType;
 import android.widget.LinearLayout;
-import android.widget.RadioGroup;
-import android.widget.RadioGroup.LayoutParams;
 import android.widget.TextView;
-import android.widget.TextView.OnEditorActionListener;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
@@ -52,7 +47,6 @@ import androidx.core.view.ViewCompat;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
-import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
@@ -290,15 +284,12 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                     cfg.remove(qn_repeat_icon_data);
                     cfg.remove(qn_repeat_icon_dpi);
                     cfg.remove(qn_repeat_last_file);
-                    cfg.save();
-                    dialog.dismiss();
-                    sCachedRepeaterIcon = null;
                 } else {
                     cfg.putInt(qn_repeat_icon_dpi, getCurrentDPI());
-                    cfg.save();
-                    dialog.dismiss();
-                    sCachedRepeaterIcon = null;
                 }
+                cfg.save();
+                dialog.dismiss();
+                sCachedRepeaterIcon = null;
             }
         } else if (v == browseBtn) {
             SafUtils.requestOpenFile(ctx).setMimeType("image/*").onResult(uri -> {

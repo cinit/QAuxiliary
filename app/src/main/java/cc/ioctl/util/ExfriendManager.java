@@ -205,10 +205,9 @@ public class ExfriendManager {
                         fremark.setAccessible(true);
                         fnick = clz_fr.getField("name");
                         fnick.setAccessible(true);
-                        Iterator<Map.Entry> it = mStdRemarks.entrySet().iterator();
-                        while (it.hasNext()) {
+                        for (var entry : (Iterable<Map.Entry>) mStdRemarks.entrySet()) {
                             long t = System.currentTimeMillis() / 1000;
-                            fr = it.next().getValue();
+                            fr = entry.getValue();
                             if (fr == null) {
                                 continue;
                             }
@@ -574,12 +573,7 @@ public class ExfriendManager {
                 final FriendChunk[] update = new FriendChunk[cachedFriendChunks.size()];
                 cachedFriendChunks.toArray(update);
                 cachedFriendChunks.clear();
-                tp.execute(new Runnable() {
-                    @Override
-                    public void run() {
-                        asyncUpdateFriendListTask(update);
-                    }
-                });
+                tp.execute(() -> asyncUpdateFriendListTask(update));
             }
         }
     }

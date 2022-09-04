@@ -139,13 +139,11 @@ public class MmkvConfigManagerImpl extends ConfigManager {
                 public Entry<String, Object> next() {
                     String key = iterator.next();
                     Entry<String, Object> ret = mCacheMap.get(key);
-                    if (ret != null) {
-                        return ret;
-                    } else {
+                    if (ret == null) {
                         ret = new VirtEntry(key);
                         mCacheMap.put(key, ret);
-                        return ret;
                     }
+                    return ret;
                 }
             };
         }

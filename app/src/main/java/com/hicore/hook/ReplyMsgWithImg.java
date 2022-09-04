@@ -46,11 +46,11 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.DexKit;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -276,13 +276,13 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                     recordList.add(copyReplyMessage(message));
                 }
                 ArrayList<Object> atInfoList = new ArrayList<>();
-                String textMsg = "";
+                var textMsg = new StringBuilder();
                 int length = 0;
                 for (MessageInfoList mElement : msgInfoList) {
                     if (mElement.messageType == 1) {
                         Object mTextMsgData = buildMessageForText(uin, mElement.message);
                         length += mElement.message.length();
-                        textMsg = textMsg + mElement.message;
+                        textMsg.append(mElement.message);
                         //MLogCat.Print_Debug(""+mTextMsgData);
                         recordList.add(mTextMsgData);
                     } else if (mElement.messageType == 2) {
@@ -295,7 +295,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                             AtText = "@全体成员 ";
                         }
 
-                        textMsg = textMsg + AtText;
+                        textMsg.append(AtText);
                         Object mTextMsg = buildMessageForText(uin, AtText);
                         atInfoList.add(buildAtInfo(mElement.message, AtText, (short) length));
                         length += AtText.length();
@@ -502,11 +502,6 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                 super.makePreparationSteps(),
                 InputButtonHookDispatcher.INSTANCE.makePreparationSteps()
         );
-    }
-
-    @Override
-    public boolean isAvailable() {
-        return super.isAvailable();
     }
 
     @Override

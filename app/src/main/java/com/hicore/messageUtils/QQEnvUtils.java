@@ -2,7 +2,6 @@ package com.hicore.messageUtils;
 
 import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MMethod;
-import java.lang.reflect.Method;
 
 public class QQEnvUtils {
 

@@ -16,7 +16,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.NoSuchElementException;
 
-public class Table<K> implements Serializable, Cloneable {
+public class Table<K> implements Serializable {
 
     public static final Object VOID_INSTANCE;
     public static final byte TYPE_VOID = 0;//should NOT have value
@@ -364,9 +364,8 @@ public class Table<K> implements Serializable, Cloneable {
         }
         Map.Entry<Object, Object[]> next;
         Object[] val;
-        Iterator<Map.Entry<Object, Object[]>> it = table.records.entrySet().iterator();
-        while (it.hasNext()) {
-            next = it.next();
+        for (var objectEntry : (Iterable<Map.Entry<Object, Object[]>>) table.records.entrySet()) {
+            next = objectEntry;
             val = next.getValue();
             writeTypeAndObj(out, table.keyType, next.getKey());
             for (i = 0; i < table.fields.length; i++) {

@@ -45,10 +45,9 @@ object HideAssistantRemoveTips : CommonSwitchFunctionHook("ketal_hide_assistant_
         val showChatTopBar = findMethod(k, false) {
             if (returnType == View::class.java) {
                 val params = parameterTypes
-                return@findMethod params.size == 4 && params[0] == Context::class.java && params[1] == String::class.java
+                params.size == 4 && params[0] == Context::class.java && params[1] == String::class.java
                     && params[2] == View.OnClickListener::class.java && params[3] == View.OnClickListener::class.java
-            }
-            return@findMethod false
+            } else false
         }
         showChatTopBar.replace(this, null)
     }

@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import com.tencent.mobileqq.app.QQAppInterface;
 import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Objects;
 import mqq.app.AppRuntime;
 
 public class Initiator {

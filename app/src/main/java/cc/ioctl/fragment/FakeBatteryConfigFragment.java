@@ -52,12 +52,12 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.fragment.BaseRootLayoutFragment;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 
 public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements View.OnClickListener {
@@ -189,7 +189,6 @@ public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements
 
     @Override
     public void onClick(View v) {
-        ConfigManager cfg = ConfigManager.getDefaultConfig();
         Context context = requireContext();
         switch (v.getId()) {
             case R.id.btn_apply:

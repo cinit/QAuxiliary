@@ -117,7 +117,7 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
             return sCachedRepeaterIcon;
         }
         ConfigManager cfg = ConfigManager.getDefaultConfig();
-        byte[] data = (byte[]) cfg.getBytes(qn_repeat_icon_data);
+        byte[] data = cfg.getBytes(qn_repeat_icon_data);
         int dpi = cfg.getIntOrDefault(qn_repeat_icon_dpi, 0);
         if (data != null) {
             Bitmap bm = BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -173,7 +173,7 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
         saveBtn.setOnClickListener(this);
         ConfigManager cfg = ConfigManager.getDefaultConfig();
         String lastPath = cfg.getString(qn_repeat_last_file);
-        byte[] data = (byte[]) cfg.getBytes(qn_repeat_icon_data);
+        byte[] data = cfg.getBytes(qn_repeat_icon_data);
         int dpi = cfg.getIntOrDefault(qn_repeat_icon_dpi, 0);
         if (lastPath != null) {
             pathInput.setText(lastPath);
@@ -281,21 +281,17 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
                 sCachedRepeaterIcon = currentIcon;
                 dialog.dismiss();
             } else {
+                ConfigManager cfg = ConfigManager.getDefaultConfig();
                 if (useDefault) {
-                    ConfigManager cfg = ConfigManager.getDefaultConfig();
                     cfg.remove(qn_repeat_icon_data);
                     cfg.remove(qn_repeat_icon_dpi);
                     cfg.remove(qn_repeat_last_file);
-                    cfg.save();
-                    dialog.dismiss();
-                    sCachedRepeaterIcon = null;
                 } else {
-                    ConfigManager cfg = ConfigManager.getDefaultConfig();
                     cfg.putInt(qn_repeat_icon_dpi, getCurrentSelectedDpi());
-                    cfg.save();
-                    dialog.dismiss();
-                    sCachedRepeaterIcon = null;
                 }
+                cfg.save();
+                dialog.dismiss();
+                sCachedRepeaterIcon = null;
             }
         } else if (v == browseBtn) {
             SafUtils.requestOpenFile(ctx).setMimeType("image/*").onResult(uri -> {

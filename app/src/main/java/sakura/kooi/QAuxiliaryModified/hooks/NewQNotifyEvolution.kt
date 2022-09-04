@@ -79,7 +79,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
 
     private val historyMessage: HashMap<Int, MutableList<NotificationCompat.MessagingStyle.Message>> = HashMap()
     private val personCache: HashMap<Int, Person> = HashMap()
-    var windowHeight = -1
+    private var windowHeight = -1
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {

@@ -5,14 +5,12 @@ import android.content.Context;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
-import android.widget.ImageView.ScaleType;
 import android.widget.RelativeLayout;
 import cc.ioctl.util.LayoutHelper;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
 import com.hicore.messageUtils.QQEnvUtils;
-import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.util.HashMap;
@@ -92,23 +90,18 @@ public class RepeaterHelper {
             View attachView = findView(attachName, baseChatItem);
             if (attachView != null) {
                 if (RepeaterPlusIconSettingDialog.getIsShowUpper()){
+                    param.removeRule(RelativeLayout.ALIGN_RIGHT);
+                    param.removeRule(RelativeLayout.ALIGN_TOP);
+                    param.removeRule(RelativeLayout.ALIGN_LEFT);
+                    param.addRule(RelativeLayout.ALIGN_TOP, attachView.getId());
                     if (isSendFromLocal) {
-                        param.removeRule(RelativeLayout.ALIGN_RIGHT);
-                        param.removeRule(RelativeLayout.ALIGN_TOP);
-                        param.removeRule(RelativeLayout.ALIGN_LEFT);
-                        param.addRule(RelativeLayout.ALIGN_TOP, attachView.getId());
                         param.addRule(RelativeLayout.ALIGN_LEFT, attachView.getId());
                         param.leftMargin = -(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
-                        param.topMargin = -(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
                     } else {
-                        param.removeRule(RelativeLayout.ALIGN_RIGHT);
-                        param.removeRule(RelativeLayout.ALIGN_TOP);
-                        param.removeRule(RelativeLayout.ALIGN_LEFT);
-                        param.addRule(RelativeLayout.ALIGN_TOP, attachView.getId());
                         param.addRule(RelativeLayout.ALIGN_RIGHT, attachView.getId());
                         param.rightMargin = - (LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
-                        param.topMargin = - (LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
                     }
+                    param.topMargin = -(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
                 }else {
                     if (isSendFromLocal) {
                         param.removeRule(RelativeLayout.RIGHT_OF);

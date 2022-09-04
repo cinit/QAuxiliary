@@ -30,7 +30,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
 
-public class FriendChunk implements Serializable, Cloneable {
+public class FriendChunk implements Serializable {
 
     private static final int maxLength = 14;
     private static Field[] from;

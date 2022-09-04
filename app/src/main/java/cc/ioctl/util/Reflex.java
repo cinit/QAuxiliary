@@ -25,8 +25,8 @@ package cc.ioctl.util;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.Natives;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
@@ -87,7 +87,6 @@ public class Reflex {
             argt[i] = (Class) argsTypesAndReturnType[argc + i];
             argv[i] = argsTypesAndReturnType[i];
         }
-        loop_main:
         do {
             m = clazz.getDeclaredMethods();
             loop:
@@ -157,7 +156,6 @@ public class Reflex {
             argt[i] = (Class) argsTypesAndReturnType[argc + i];
             argv[i] = argsTypesAndReturnType[i];
         }
-        loop_main:
         do {
             m = clazz.getDeclaredMethods();
             loop:
@@ -1039,19 +1037,19 @@ public class Reflex {
         do {
             Method[] methods = current.getDeclaredMethods();
             loop:
-            for (int i = 0; i < methods.length; i++) {
-                if (methods[i].getName().equals(name)) {
-                    Class<?>[] argt = methods[i].getParameterTypes();
+            for (Method value : methods) {
+                if (value.getName().equals(name)) {
+                    Class<?>[] argt = value.getParameterTypes();
                     if (argt.length == argc) {
                         for (int ii = 0; ii < argt.length; ii++) {
                             if (!argt[ii].equals(paramTypes[ii])) {
                                 continue loop;
                             }
                         }
-                        if (returnType != null && !returnType.equals(methods[i].getReturnType())) {
+                        if (returnType != null && !returnType.equals(value.getReturnType())) {
                             continue;
                         }
-                        Method method = methods[i];
+                        Method method = value;
                         method.setAccessible(true);
                         return method;
                     }
@@ -1249,7 +1247,6 @@ public class Reflex {
         Method method = null;
         Method[] m;
         Class[] _argt;
-        loop_main:
         do {
             m = clazz.getDeclaredMethods();
             loop:

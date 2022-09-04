@@ -370,7 +370,6 @@ public class DexFlow {
      * @param opcodeOff offset relative to {@code buf}
      * @param verify    whether to verify if the {@code opcodeOff} is aligned to opcode, return {@code null} if the
      *                  offset failed the verification
-     * @return
      */
     @Nullable
     public static DexMethodDescriptor getDexMethodByOpOffset(byte[] buf, int opcodeOff,

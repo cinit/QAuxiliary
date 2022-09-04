@@ -119,12 +119,10 @@ public class DecodeForEncPic {
         return 9;
     }
     private static String bytesToHex(byte[] bytes) {
-        StringBuffer sb = new StringBuffer();
-        for(int i = 0; i < bytes.length; i++)
-        {
-            String hex = Integer.toHexString(bytes[i] & 0xFF);
-            if(hex.length() < 2)
-            {
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            String hex = Integer.toHexString(aByte & 0xFF);
+            if (hex.length() < 2) {
                 sb.append(0);
             }
             sb.append(hex);

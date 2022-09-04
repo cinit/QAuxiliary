@@ -21,25 +21,23 @@
  */
 package me.ketal.hook
 
-import android.view.View
 import cc.ioctl.util.Reflex.getFirstByType
+import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinVersion
 import xyz.nextalone.data.TroopInfo
-import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
-import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -59,32 +57,28 @@ object SortAtPanel : CommonSwitchFunctionHook(
     private var isSort: Boolean? = null
     override fun initOnce() = throwOrTrue {
         val showDialogAtView = DexKit.doFindMethod(DexKit.N_AtPanel__showDialogAtView)
-            ?: DexKit.doFindClass(DexKit.N_AtPanel__showDialogAtView)?.method {
-                it.parameterTypes.contentEquals(arrayOf(View::class.java, String::class.java, Boolean::class.java))
-            }
         showDialogAtView?.hookAfter(this) {
             isSort = (it.args[1] as String?)?.isNotEmpty()
         }
         val refreshUI = DexKit.doFindMethod(DexKit.N_AtPanel__refreshUI)
-            ?: DexKit.doFindClass(DexKit.N_AtPanel__refreshUI)?.method {
-                it.parameterTypes.contentEquals(arrayOf("com.tencent.mobileqq.troop.quickat.ui.SearchTask\$SearchResult".clazz))
-            }
         refreshUI?.hookBefore(this) {
             if (isSort == true) return@hookBefore
-            val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo()) ?: throw IllegalStateException("sessionInfo is null")
-            val troopInfo = TroopInfo(getTroopUin(sessionInfo) ?: throw IllegalStateException("troopUin is null"))
-            val list = getFirstByType(it.args[0], MutableList::class.java) as MutableList<Any>
+            val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo())
+            check(sessionInfo != null) { "sessionInfo is null" }
+            val troopUin = getTroopUin(sessionInfo)
+            check(troopUin != null) { "troopUin is null" }
+            val troopInfo = TroopInfo(troopUin)
+            val list = it.args[0].getObjectByTypeAs<MutableList<Any>>(MutableList::class.java)
             val isAdmin = "0" == getMemberUin(list[0])
             val admin = mutableListOf<Any>()
-            for (i in list.indices) {
-                val member = list[i]
+            list.forEach { member ->
                 when (getMemberUin(member)) {
-                    "0" -> continue
+                    "0" -> return@forEach
                     troopInfo.troopOwnerUin -> admin.add(0, member)
                     in troopInfo.troopAdmin!! -> admin.add(member)
                 }
             }
-            list.removeAll(admin)
+            list.removeAll(admin.toSet())
             list.addAll(if (isAdmin) 1 else 0, admin)
         }
     }

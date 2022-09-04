@@ -114,10 +114,10 @@ public class SyncUtils {
     public static final int FILE_UIN_DATA = 3;
     private static final ConcurrentHashMap<Integer, EnumRequestHolder> sEnumProcCallbacks = new ConcurrentHashMap<>();
     private static final Collection<OnFileChangedListener> sFileChangedListeners = Collections
-        .synchronizedCollection(new HashSet<OnFileChangedListener>());
+        .synchronizedCollection(new HashSet<>());
     private static final Collection<BroadcastListener> sBroadcastListeners = Collections
-        .synchronizedCollection(new HashSet<BroadcastListener>());
-    private static final Map<Long, Collection<String>> sTlsFlags = new HashMap<Long, Collection<String>>();
+        .synchronizedCollection(new HashSet<>());
+    private static final Map<Long, Collection<String>> sTlsFlags = new HashMap<>();
     private static final Object sTlsLock = new Object();
     private static int myId = 0;
     private static boolean inited = false;
@@ -401,7 +401,7 @@ public class SyncUtils {
         synchronized (sTlsLock) {
             tls = sTlsFlags.get(tid);
             if (tls == null) {
-                tls = Collections.synchronizedCollection(new HashSet<String>());
+                tls = Collections.synchronizedCollection(new HashSet<>());
                 sTlsFlags.put(tid, tls);
             }
         }

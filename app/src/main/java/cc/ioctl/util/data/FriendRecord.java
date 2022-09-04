@@ -26,7 +26,7 @@ import static cc.ioctl.util.DebugUtils.en;
 import java.io.Serializable;
 
 
-public class FriendRecord implements Serializable, Cloneable {
+public class FriendRecord implements Serializable {
 
     public static final int STATUS_ERROR = 0;
     public static final int STATUS_RESERVED = 1;

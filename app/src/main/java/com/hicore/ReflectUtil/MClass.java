@@ -73,10 +73,7 @@ public class MClass {
         if (clz.equals(hasType(convert))) {
             return true;
         }
-        if (clz.isAssignableFrom(convert)) {
-            return true;
-        }
-        return false;
+        return clz.isAssignableFrom(convert);
     }
 
     private static Class<?> hasType(Class<?> clz) {

@@ -36,7 +36,7 @@ import cc.ioctl.util.LayoutHelper.dip2px
 class ConfigView @JvmOverloads constructor(
     context: Context, attrs: AttributeSet? = null, defStyleAttr: Int = 0
 ) : LinearLayout(context, attrs, defStyleAttr) {
-    val enable = CheckBox(context)
+    private val enable = CheckBox(context)
     var view: View? = null
         set(value) {
             value ?: return

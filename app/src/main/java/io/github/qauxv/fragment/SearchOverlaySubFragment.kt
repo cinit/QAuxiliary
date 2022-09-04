@@ -45,7 +45,6 @@ import com.google.android.flexbox.FlexWrap
 import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import io.github.qauxv.R
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -55,6 +54,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.IDslFragmentNode
 import io.github.qauxv.dsl.func.IDslParentNode
 import io.github.qauxv.util.NonUiThread
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.UiThread
 
 /**
@@ -399,28 +399,24 @@ class SearchOverlaySubFragment {
         // find containing fragment
         val absFullLocation = item.location!!
         val identifier = absFullLocation.last()
-        var container = absFullLocation.dropLast(1)
+        var container = absFullLocation.dropLast(1).toTypedArray()
         var targetFragmentLocation: Array<String>? = null
-        var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
+        var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container)
         // lookup the parent container, until we find the parent is a fragment
         while (true) {
-            if (node == null) {
+            if (node == null || container.isEmpty()) {
                 // we are lost!!!
                 break
             }
             if (node is IDslFragmentNode) {
                 // found
-                targetFragmentLocation = container.toTypedArray()
-                break
-            }
-            if (container.isEmpty()) {
-                // we are lost!!!
+                targetFragmentLocation = container
                 break
             }
             // not a fragment, keep looking up parent
-            container = container.dropLast(1)
+            container = container.dropLast(1).toTypedArray()
             // get current node
-            node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container.toTypedArray())
+            node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container)
         }
         if (targetFragmentLocation == null) {
             // tell user we are lost

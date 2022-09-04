@@ -41,7 +41,6 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -50,6 +49,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._QQAppInterface
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
@@ -72,7 +72,7 @@ object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN o
 
     private val historyMessage: HashMap<Int, MutableList<Message>> = HashMap()
     private val personCache: HashMap<Int, Person> = HashMap()
-    var windowHeight = -1
+    private var windowHeight = -1
 
     override fun initOnce(): Boolean {
         XposedHelpers.findAndHookMethod(

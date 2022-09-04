@@ -186,7 +186,7 @@ public class ArscKit {
         byte[] buf = new byte[4096];
         byte[] content;
         int ret = 0;
-        ArrayList<String> rets = new ArrayList<String>();
+        ArrayList<String> rets = new ArrayList<>();
         while (urls.hasMoreElements()) {
             try {
                 in = urls.nextElement().openStream();
