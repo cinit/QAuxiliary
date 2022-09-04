@@ -27,15 +27,13 @@
 }
 
 -dontobfuscate
--dontoptimize
 
 -dontwarn javax.**
 -dontwarn java.awt.**
--dontwarn java.lang.instrument.ClassFileTransformer
--dontwarn sun.misc.SignalHandler
--dontwarn org.apache.bsf.util.BSFEngineImpl
--dontwarn java.applet.Applet
 -dontwarn org.apache.bsf.*
+
+-keepattributes LineNumberTable,SourceFile
+-renamesourcefileattribute SourceFile
 
 # Keep `Companion` object fields of serializable classes.
 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.
