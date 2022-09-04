@@ -35,22 +35,22 @@ import io.github.duzhaokun123.util.blurBackground
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.SyncUtils
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.kyuubiran.util.getExFriendCfg
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.putExFriend
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
     val brCfg = "gal_bg_blur_radius"
+    val bdCfg = "gal_bg_dim"
     override val name: String
         get() = "聊天界面查看图片背景模糊"
-    override val description: CharSequence?
+    override val description: CharSequence
         get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_finger.supports_background_blur=1)"
     override val valueState: MutableStateFlow<String?>?
         get() = null
@@ -67,11 +67,19 @@ object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
                     text = "使能"
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 addView(EditText(activity).apply {
-                    setText(getExFriendCfg()!!.getIntOrDefault(brCfg, 10).toString())
+                    setText(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10).toString())
                     hint = "模糊半径"
                     doAfterTextChanged { t ->
                         t ?: return@doAfterTextChanged
-                        putExFriend(brCfg, t.toString().toIntOrNull() ?: 0)
+                        ConfigManager.getDefaultConfig().putInt(brCfg, t.toString().toIntOrNull() ?: 0)
+                    }
+                }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
+                addView(EditText(activity).apply {
+                    setText(ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F).toString())
+                    hint = "暗淡系数"
+                    doAfterTextChanged { t ->
+                        t ?: return@doAfterTextChanged
+                        ConfigManager.getDefaultConfig().putFloat(bdCfg, t.toString().toFloatOrNull() ?: 0F)
                     }
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
@@ -85,7 +93,7 @@ object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
             name == "onCreate"
         }.hookAfter(this) {
             val activity = it.thisObject as Activity
-            activity.window.blurBackground(getExFriendCfg()!!.getIntOrDefault(brCfg, 10))
+            activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
         }
         return true
     }

@@ -6,13 +6,13 @@ import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
 
-fun Window.blurBackground(br: Int) {
+fun Window.blurBackground(br: Int, bd: Float) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
     addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
     attributes.blurBehindRadius = br
     setBackgroundBlurRadius(br)
-    val blurEnableListener = { enable: Boolean ->
-        setDimAmount(if (enable) 0.1F else 0.6F)
+    val blurEnableListener = { _: Boolean ->
+        setDimAmount(bd)
     }
     decorView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
         @RequiresApi(Build.VERSION_CODES.S)
