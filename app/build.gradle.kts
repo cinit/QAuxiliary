@@ -38,7 +38,7 @@ plugins {
     id("io.github.qauxv.application")
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
     kotlin("plugin.serialization")
-    id("com.cookpad.android.plugin.license-tools") version "1.2.0"
+    id("com.cookpad.android.plugin.license-tools") version "1.2.8"
     id("org.jetbrains.changelog") version "1.3.1"
 }
 
