@@ -404,13 +404,17 @@ class SearchOverlaySubFragment {
         var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(container)
         // lookup the parent container, until we find the parent is a fragment
         while (true) {
-            if (node == null || container.isEmpty()) {
+            if (node == null) {
                 // we are lost!!!
                 break
             }
             if (node is IDslFragmentNode) {
                 // found
                 targetFragmentLocation = container
+                break
+            }
+            if (container.isEmpty()) {
+                // we are lost!!!
                 break
             }
             // not a fragment, keep looking up parent
