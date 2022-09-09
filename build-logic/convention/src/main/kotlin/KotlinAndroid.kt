@@ -33,6 +33,7 @@ internal fun Project.configureKotlinAndroid(
 ) {
     commonExtension.apply {
         compileSdkVersion(Version.compileSdkVersion)
+        buildToolsVersion = Version.buildToolsVersion
         ndkVersion = Version.getNdkVersion(project)
 
         defaultConfig {
