@@ -113,7 +113,9 @@ public class HybridClassLoader extends ClassLoader {
         if (sObfuscatedPackageName == null) {
             return "de.robv.android.xposed.XposedBridge";
         } else {
-            return sObfuscatedPackageName + ".XposedBridge";
+            var sb = new StringBuilder(sObfuscatedPackageName);
+            sb.append(".XposedBridge");
+            return sb.toString();
         }
     }
 }
