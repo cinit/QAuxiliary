@@ -4,6 +4,7 @@
     <item type="id" name="item_tts2" />
     <item type="id" name="item_showPicMd5"/>
     <item type="id" name="item_copyToClipboard"/>
+    <item type="id" name="item_free_copy" />
     <item type="id" name="rootBounceScrollView"/>
     <item type="id" name="rootMainLayout"/>
     <item type="id" name="rootMainList"/>
