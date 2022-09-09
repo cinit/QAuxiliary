@@ -24,6 +24,7 @@ package io.github.duzhaokun123.hook
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.os.Build
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -39,21 +40,19 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.SyncUtils
-import kotlinx.coroutines.flow.MutableStateFlow
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
-    val brCfg = "gal_bg_blur_radius"
-    val bdCfg = "gal_bg_dim"
-    override val name: String
-        get() = "聊天界面查看图片背景模糊"
+    private const val brCfg = "gal_bg_blur_radius"
+    private const val bdCfg = "gal_bg_dim"
+    override val name = "聊天界面查看图片背景模糊"
     override val description: CharSequence
         get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_flinger.supports_background_blur=1)"
-    override val valueState: MutableStateFlow<String?>?
-        get() = null
+    override val valueState = null
+    override val isAvailable  = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
         get() = { _, activity, _ ->
             val ll = LinearLayout(activity)
