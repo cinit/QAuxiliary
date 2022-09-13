@@ -75,8 +75,8 @@ object SendTTSHook :
 
     override val description: String
         get() = "mp3 格式 电脑无法播放, 时长不正确, 有时无法播放\n" +
-            "用法 (长按\"发送\"发送, [languege]省略时使用上次选择的语言)\n" +
-            "#tts [languege]\n" +
+            "用法 (长按\"发送\"发送, [language]省略时使用上次选择的语言)\n" +
+            "#tts [language]\n" +
             "<text>\n" +
             "\n" +
             "Example:\n" +
@@ -113,7 +113,7 @@ object SendTTSHook :
         if (lines.size < 2 && line1.startsWith("#tts", ignoreCase = true)) {
             AlertDialog.Builder(wc)
                 .setTitle("Usage")
-                .setMessage("#tts [languege]\n<text>\n\nExample:\n#tts zh-CN\n你好")
+                .setMessage("#tts [language]\n<text>\n\nExample:\n#tts zh-CN\n你好")
                 .show()
             return false
         }
