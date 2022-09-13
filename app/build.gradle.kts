@@ -207,9 +207,7 @@ androidComponents.onVariants { variant ->
                     tmpPath = tmpPath.replace('/', File.separatorChar)
                 }
                 val f = File(rootProject.projectDir, tmpPath)
-                if (!f.exists()) {
-                    throw IllegalStateException("Native library missing for the target abi: $abi. Please run gradle task ':app:externalNativeBuild$variantCapped' manually to force android gradle plugin to satisfy all required ABIs.")
-                }
+                require(f.exists()) { "Target native lib $soName not found in $abi" }
             }
         }
     }
@@ -314,23 +312,17 @@ val synthesizeDistReleaseApksCI by tasks.registering {
             noTimestamps = true
             autoSortFiles = true
         }
-        if (!srcApkDir.exists()) {
-            throw IllegalStateException("input apk not found: ${srcApkDir.absolutePath}")
-        }
+        require(srcApkDir.exists()) { "srcApkDir not found: $srcApkDir" }
         // srcApkDir should have one apk file
         val srcApkFiles = srcApkDir.listFiles()?.filter { it.isFile && it.name.endsWith(".apk") } ?: emptyList()
-        if (srcApkFiles.size != 1) {
-            throw IllegalStateException("input apk should have one apk file, but found ${srcApkFiles.size}")
-        }
+        require(srcApkFiles.size == 1) { "input apk should have one apk file, but found ${srcApkFiles.size}" }
         val inputApk = srcApkFiles.single()
         val startTime = System.currentTimeMillis()
         ZFile.openReadOnly(inputApk).use { srcApk ->
             // check whether all required abis are in the apk
             requiredAbiList.forEach { abi ->
                 val path = "lib/$abi/libqauxv.so"
-                if (srcApk.get(path) == null) {
-                    throw IllegalStateException("input apk should contain $path, but not found")
-                }
+                require(srcApk.get(path) != null) { "input apk should contain $path, but not found" }
             }
             outputAbiVariants.forEach { (variant, abis) ->
                 val outputApk = File(outputDir, "QAuxv-v${versionName}-${variant}.apk")
