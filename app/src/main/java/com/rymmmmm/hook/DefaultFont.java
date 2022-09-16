@@ -84,10 +84,11 @@ public class DefaultFont extends CommonSwitchFunctionHook {
         // 8.9.0 q0
         // 8.9.2 q0
         // 8.9.3 p0
+        // 8.9.10 o0
         Method method = null;
         for (Method m : candidates) {
             String name = m.getName();
-            if ("a".equals(name) || "p0".equals(name) || "q0".equals(name)) {
+            if ("a".equals(name) || "p0".equals(name) || "q0".equals(name) || "o0".equals(name)) {
                 method = m;
                 break;
             }
