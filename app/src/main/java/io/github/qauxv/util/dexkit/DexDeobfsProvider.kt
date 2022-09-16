@@ -48,7 +48,7 @@ object DexDeobfsProvider {
     fun getCurrentBackend(): DexDeobfsBackend {
         check(mDeobfsSection.get() > 0) { "dex deobfuscation is not meant to be available now" }
         val id = ConfigManager.getDefaultConfig()
-            .getString(KEY_DEX_DEOBFS_BACKEND, LegacyDexDeobfs.ID)
+            .getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)
         return when (id) {
             LegacyDexDeobfs.ID -> LegacyDexDeobfs.newInstance()
             DexBuilderDexDeobfs.ID -> DexBuilderDexDeobfs.newInstance()
