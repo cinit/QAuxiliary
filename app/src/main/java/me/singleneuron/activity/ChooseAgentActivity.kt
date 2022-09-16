@@ -23,7 +23,6 @@ package me.singleneuron.activity
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.ComponentName
 import android.content.Intent
 import android.content.Intent.ACTION_GET_CONTENT
 import android.content.Intent.ACTION_PICK
@@ -34,6 +33,7 @@ import androidx.lifecycle.lifecycleScope
 import cc.ioctl.util.Reflex
 import io.github.qauxv.R
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
@@ -107,10 +107,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
     @SuppressLint("WrongConstant")
     fun sendAFile(filePath: String, data: Intent) {
         val intent = Intent().apply {
-            component = ComponentName(
-                    application.packageName,
-                    "com.tencent.mobileqq.activity.SplashActivity"
-            )
+            component = packageManager.getLaunchIntentForPackage(hostInfo.packageName)!!.component
             flags = 0x14000000
             putExtras(data)
             putExtra("forward_from_jump", true)
