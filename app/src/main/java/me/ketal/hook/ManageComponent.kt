@@ -68,10 +68,6 @@ object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
         "发送到我的iPad" to ComponentName(HookEntry.PACKAGE_NAME_SELF, "me.ketal.ui.activity.QFileShareToIpadActivity")
     )
 
-    val listener = View.OnClickListener {
-        showDialog(it.context)
-    }
-
     private fun showDialog(context: Context) {
         val keys = components.keys.toTypedArray()
         val enable = keys.run {
@@ -92,7 +88,6 @@ object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
                 cache.forEachIndexed { i, b ->
                     if (!cache[keys.indexOf("发送到我的电脑")] && cache[keys.indexOf("发送到我的iPad")]) {
                         Toasts.error(context, "启用发送到iPad需启用发送到电脑")
-//                        view.performClick()
                         return@setPositiveButton
                     }
                     val k = keys[i]
