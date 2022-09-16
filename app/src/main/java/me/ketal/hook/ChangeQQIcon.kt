@@ -87,8 +87,8 @@ object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
             .setTitle("请选择一个图标")
             .setSingleChoiceItems(items, list.indexOfFirst { it.name == current.className }) { dialog, which ->
                 val selected = list[which]
-                ComponentName(hostInfo.packageName, selected.name).setEnable(ctx, true)
                 current.setEnable(ctx, false)
+                ComponentName(hostInfo.packageName, selected.name).setEnable(ctx, true)
                 Toasts.info(ctx, "修改完毕")
                 dialog.dismiss()
             }
