@@ -38,6 +38,7 @@ import com.rymmmmm.hook.CustomMsgTimeFormat;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 
@@ -61,7 +62,7 @@ public class RikkaCustomDeviceModelDialog {
     private boolean enableCustomDeviceModel;
 
     public static boolean IsEnabled() {
-        return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_custom_device_model_enabled);
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_custom_device_model_enabled) && HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_98);
     }
 
     @Nullable

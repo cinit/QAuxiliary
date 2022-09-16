@@ -50,8 +50,6 @@ import java.lang.reflect.Modifier;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
-import io.github.qauxv.BuildConfig;
-
 //重命名base.apk
 @FunctionHookEntry
 @UiItemAgentEntry
