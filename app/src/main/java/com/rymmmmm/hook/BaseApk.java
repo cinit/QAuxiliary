@@ -122,7 +122,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                                         .replace("%n", applicationInfo.loadLabel(packageManager).toString())
                                         .replace("%p", applicationInfo.packageName)
                                         .replace("%v", packageArchiveInfo.versionName)
-                                        .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));
+                                        .replace("%c", String.valueOf(packageArchiveInfo.versionCode));
                                 param.setResult(result);
                             }
                         }
@@ -158,7 +158,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                                         .replace("%n", applicationInfo.loadLabel(packageManager).toString())
                                         .replace("%p", applicationInfo.packageName)
                                         .replace("%v", packageArchiveInfo.versionName)
-                                        .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));
+                                        .replace("%c", String.valueOf(packageArchiveInfo.versionCode));
                                 fileName.set(item, result);
                             }
                         }
