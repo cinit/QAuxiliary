@@ -50,6 +50,7 @@ import java.lang.reflect.Modifier;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
+import io.github.qauxv.BuildConfig;
 
 //重命名base.apk
 @FunctionHookEntry
@@ -121,7 +122,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                                         .replace("%n", applicationInfo.loadLabel(packageManager).toString())
                                         .replace("%p", applicationInfo.packageName)
                                         .replace("%v", packageArchiveInfo.versionName)
-                                        .replace("%c", String.valueOf(HostInfo.getApplication()));
+                                        .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));
                                 param.setResult(result);
                             }
                         }
@@ -157,7 +158,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                                         .replace("%n", applicationInfo.loadLabel(packageManager).toString())
                                         .replace("%p", applicationInfo.packageName)
                                         .replace("%v", packageArchiveInfo.versionName)
-                                        .replace("%c", String.valueOf(HostInfo.getApplication()));
+                                        .replace("%c", String.valueOf(BuildConfig.VERSION_CODE));
                                 fileName.set(item, result);
                             }
                         }
