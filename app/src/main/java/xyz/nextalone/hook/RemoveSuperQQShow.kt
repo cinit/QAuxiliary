@@ -23,6 +23,7 @@
 package xyz.nextalone.hook
 
 import android.view.View
+import cn.lliiooll.msg.MessageManager
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -42,13 +43,19 @@ object RemoveSuperQQShow : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽主界面超级QQ秀图标"
 
     override fun initOnce() = throwOrTrue {
-        if (hostInfo.versionCode >= QQVersion.QQ_8_9_3){
+        if (hostInfo.versionCode >= QQVersion.QQ_8_9_10) {
+            findMethod(Initiator._ZPlanBadgeManagerImpl()) {
+                name == "onCreateView" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java, MessageManager.booleanType))
+            }.hookBefore {
+                if (!isEnabled) return@hookBefore; it.result = null
+            }
+        } else if (hostInfo.versionCode >= QQVersion.QQ_8_9_3) {
             findMethod(Initiator._ZPlanBadgeManagerImpl()) {
                 name == "onCreateView" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
             }.hookBefore {
                 if (!isEnabled) return@hookBefore; it.result = null
             }
-        }else{
+        } else {
             findMethod(Initiator._ConversationTitleBtnCtrl()) {
                 (name == "b" || name == "D") && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
             }.hookBefore {
