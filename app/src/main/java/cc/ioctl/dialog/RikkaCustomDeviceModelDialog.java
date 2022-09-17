@@ -62,7 +62,7 @@ public class RikkaCustomDeviceModelDialog {
     private boolean enableCustomDeviceModel;
 
     public static boolean IsEnabled() {
-        return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_custom_device_model_enabled) && HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_98);
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_custom_device_model_enabled);
     }
 
     @Nullable

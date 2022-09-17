@@ -28,6 +28,7 @@ import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.dialog.RikkaCustomDeviceModelDialog;
+import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -37,6 +38,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -133,5 +135,10 @@ public class CustomDeviceModel extends CommonConfigFunctionHook {
     @Override
     public void setEnabled(boolean enabled) {
         // not supported.
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_98);
     }
 }
