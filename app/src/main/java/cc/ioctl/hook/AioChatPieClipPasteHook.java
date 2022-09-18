@@ -26,7 +26,6 @@ import android.content.ClipData;
 import android.content.ClipData.Item;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap;
@@ -46,6 +45,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import de.robv.android.xposed.XC_MethodHook;
@@ -280,8 +280,9 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             FaultyDialog.show(context, e);
             return;
         }
+        var packageManager = context.getPackageManager();
         Intent intent = new Intent();
-        intent.setComponent(new ComponentName(context.getPackageName(), "com.tencent.mobileqq.activity.SplashActivity"));
+        intent.setComponent(packageManager.getLaunchIntentForPackage(HostInfo.getPackageName()).getComponent());
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
         intent.putExtra("forward_from_jump", true);
         intent.putExtra("preAct", "JumpActivity");
