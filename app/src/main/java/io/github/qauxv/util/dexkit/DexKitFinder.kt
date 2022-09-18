@@ -24,7 +24,7 @@ package io.github.qauxv.util.dexkit
 
 interface DexKitFinder {
 
-    val needFind: Boolean
+    val isNeedFind: Boolean
 
     fun doFind(): Boolean
 }

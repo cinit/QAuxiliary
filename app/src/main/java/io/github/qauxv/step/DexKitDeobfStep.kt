@@ -25,15 +25,14 @@ package io.github.qauxv.step
 import com.github.kyuubiran.ezxhelper.utils.Log
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.util.dexkit.DexKitFinder
-import java.lang.reflect.Method
 
-class DexKitDeobfStep: Step {
+class DexKitDeobfStep : Step {
 
     private val dexKitFinderHook = mutableListOf<DexKitFinder>()
 
     init {
         HookInstaller.queryAllAnnotatedHooks().forEach {
-            if (it.isEnabled && it.isAvailable && it is DexKitFinder && it.needFind) {
+            if (it is DexKitFinder && it.isEnabled && it.isAvailable && it.isNeedFind) {
                 dexKitFinderHook.add(it)
             }
         }
@@ -46,7 +45,7 @@ class DexKitDeobfStep: Step {
         return true
     }
 
-    override fun isDone(): Boolean = dexKitFinderHook.size > 0
+    override fun isDone(): Boolean = dexKitFinderHook.size == 0
 
     override fun getPriority() = 99
 

@@ -24,11 +24,14 @@ package com.rymmmmm.hook;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.step.DexKitDeobfStep;
+import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
@@ -73,6 +76,17 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
     }
 
     @Override
+    public boolean isPreparationRequired() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public Step[] makePreparationSteps() {
+        return new Step[]{new DexKitDeobfStep()};
+    }
+
+    @Override
     public boolean initOnce() throws ReflectiveOperationException {
         if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
             throw new IllegalStateException("该功能仅限DexKit引擎");
@@ -88,8 +102,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
     }
 
     @Override
-    public boolean getNeedFind() {
-        return DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText) != null;
+    public boolean isNeedFind() {
+        return DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText) == null;
     }
 
     @Override
@@ -97,6 +111,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
             return false;
         }
+        Log.i("doFind");
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
         Set<Method> candidates = new HashSet<>(2);
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
