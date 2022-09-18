@@ -77,6 +77,12 @@ android {
             }
         }
     }
+    externalNativeBuild {
+        cmake {
+            path = File(projectDir, "src/main/cpp/CMakeLists.txt")
+            version = Version.getCMakeVersion(project)
+        }
+    }
     if (System.getenv("KEYSTORE_PATH") != null) {
         signingConfigs {
             create("release") {
@@ -118,13 +124,15 @@ android {
     androidResources {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
-
-    externalNativeBuild {
-        cmake {
-            path = File(projectDir, "src/main/cpp/CMakeLists.txt")
-            version = Version.getCMakeVersion(project)
-        }
+    packagingOptions {
+        resources.excludes.addAll(arrayOf(
+            "META-INF/**",
+            "kotlin/**",
+            "**.bin",
+            "kotlin-tooling-metadata.json"
+        ))
     }
+
     buildFeatures {
         viewBinding = true
         prefab = true
