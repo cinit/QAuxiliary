@@ -40,8 +40,10 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.BaseFunctionHook;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
+import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Comparator;
@@ -85,6 +87,9 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
         }
         if (kBuddyListItem == null) {
             kBuddyListItem = Initiator.loadClass("com.tencent.mobileqq.adapter.contacts.BuddyListItem");
+        }
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_10)) {
+            kBuddyListItem = Initiator.load("com.tencent.mobileqq.activity.contacts.base.e");
         }
         fBuddyListItem_entry = Reflex.findFirstDeclaredInstanceFieldByType(kBuddyListItem, Initiator.loadClass("com.tencent.mobileqq.persistence.Entity"));
         fBuddyListItem_entry.setAccessible(true);
