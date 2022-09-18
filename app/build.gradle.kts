@@ -143,7 +143,7 @@ dependencies {
     implementation(projects.libs.mmkv)
     ksp(projects.libs.ksp)
     // androidx
-    implementation("androidx.core:core-ktx:1.8.0")
+    implementation("androidx.core:core-ktx:1.9.0")
     implementation("androidx.constraintlayout:constraintlayout:2.1.4")
     implementation("androidx.browser:browser:1.4.0")
     val lifecycleVersion = "2.4.1"
