@@ -1,40 +1,3 @@
-- artifact: #artifact#
-  name: QNotified
-  copyrightHolder: Copyright (C) 2019-2021 ferredoxin
-  license: AGPL-3.0 License with EULA
-  licenseUrl: https://github.com/ferredoxin/QNotified/blob/master/LICENSE.md
-  url: https://github.com/ferredoxin/QNotified
-- artifact: #artifact#
-  name: CustoMIUIzer
-  copyrightHolder: Mikanoshi
-  license: GPL-3.0 License
-  licenseUrl: https://www.gnu.org/licenses/gpl-3.0.en.html
-  url: https://code.highspec.ru/Mikanoshi/CustoMIUIzer
-- artifact: #artifact#
-  name: MMKV
-  copyrightHolder: Copyright (C) 2018 THL A29 Limited, a Tencent company.
-  license: BSD 3-Clause License
-  licenseUrl: https://github.com/Tencent/MMKV/blob/master/LICENSE.TXT
-  url: https://github.com/Tencent/MMKV
-- artifact: #artifact#
-  name: DexBuilder
-  copyrightHolder: Copyright (C) 2021 LSPosed
-  license: LGPL-3.0 License
-  licenseUrl: https://www.gnu.org/licenses/lgpl-3.0.html
-  url: https://github.com/LSPosed/DexBuilder
-- artifact: #artifact#
-  name: QQ-Notify-Evolution
-  copyrightHolder: ichenhe
-  license: GNU Affero General Public License version 3
-  licenseUrl: https://opensource.org/licenses/agpl-3.0
-  url: https://github.com/ichenhe/QQ-Notify-Evolution
-- artifact: #artifact#
-  name: BiliRoaming
-  copyrightHolder: yujincheng08
-  license: GPL-3.0 License
-  licenseUrl: https://www.gnu.org/licenses/gpl-3.0.en.html
-  url: https://github.com/yujincheng08/BiliRoaming
-# end of custom licenses
 - artifact: androidx.activity:activity:+
   name: activity
   copyrightHolder: #COPYRIGHT_HOLDER#
@@ -46,13 +9,13 @@
   copyrightHolder: #COPYRIGHT_HOLDER#
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/annotation#1.1.0
+  url: https://developer.android.com/jetpack/androidx/releases/annotation#1.3.0
 - artifact: androidx.annotation:annotation:+
   name: annotation
   copyrightHolder: #COPYRIGHT_HOLDER#
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: http://developer.android.com/tools/extras/support-library.html
+  url: https://developer.android.com/jetpack/androidx/releases/annotation#1.4.0
 - artifact: androidx.appcompat:appcompat-resources:+
   name: appcompat-resources
   copyrightHolder: #COPYRIGHT_HOLDER#
@@ -124,13 +87,13 @@
   copyrightHolder: #COPYRIGHT_HOLDER#
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/core#1.8.0
+  url: https://developer.android.com/jetpack/androidx/releases/core#1.9.0
 - artifact: androidx.core:core:+
   name: core
   copyrightHolder: #COPYRIGHT_HOLDER#
   license: The Apache Software License, Version 2.0
   licenseUrl: http://www.apache.org/licenses/LICENSE-2.0.txt
-  url: https://developer.android.com/jetpack/androidx/releases/core#1.8.0
+  url: https://developer.android.com/jetpack/androidx/releases/core#1.9.0
 - artifact: androidx.cursoradapter:cursoradapter:+
   name: cursoradapter
   copyrightHolder: #COPYRIGHT_HOLDER#
@@ -346,6 +309,10 @@
   license: Apache-2.0
   licenseUrl: https://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://github.com/KyuubiRan/EzXHelper
+- artifact: com.github.LuckyPray:DexKit-Android:+
+  name: DexKit-Android
+  copyrightHolder: #COPYRIGHT_HOLDER#
+  license: #LICENSE#
 - artifact: com.github.plattysoft:Leonids:+
   name: Leonids
   copyrightHolder: #COPYRIGHT_HOLDER#
