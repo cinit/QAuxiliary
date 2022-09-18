@@ -261,9 +261,7 @@ tasks.register("checkGitSubmodule") {
     doLast {
         listOf(
             "libs/mmkv/MMKV/Core",
-            "libs/stub/qq-stub",
-            "app/src/main/cpp/dex_builder",
-            "app/src/main/cpp/dex_builder/external/abseil"
+            "libs/stub/qq-stub"
         ).forEach {
             val submoduleDir = File(projectDir, it.replace('/', File.separatorChar))
             if (!submoduleDir.exists()) {
