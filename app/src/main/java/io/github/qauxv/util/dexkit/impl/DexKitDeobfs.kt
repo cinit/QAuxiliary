@@ -39,66 +39,40 @@ class DexKitDeobfs private constructor(
 
     override fun isBatchFindMethodSupported(): Boolean = true
 
-    override fun doBatchFindMethodImpl(indexArray: IntArray): Array<DexMethodDescriptor?> {
+    override fun doBatchFindMethodImpl(indexArray: IntArray) {
         ensureOpen()
         mReadLock.lock()
         try {
             val helper = mDexKitHelper!!
-            val resultArray = Array(indexArray.size) {
+            val methodDescriptorArray = Array(indexArray.size) {
                 DexKit.getMethodDescFromCache(indexArray[it])
             }
-            val stringKeyToArrayIndexes = HashMap<String, HashSet<Int>>(4)
-            for (index in resultArray.indices) {
-                if (resultArray[index] == null) {
+            val deobfsMap = mutableMapOf<String, Set<String>>()
+            for (index in methodDescriptorArray.indices) {
+                if (methodDescriptorArray[index] == null) {
                     val id = indexArray[index]
-                    val keys = DexKit.b(id)
-                    keys.forEach { kbytes ->
-                        val str = String(Arrays.copyOfRange(kbytes, 1, kbytes.size))
-                        stringKeyToArrayIndexes.getOrPut(str) { HashSet(1) }.add(index)
+                    val keys = DexKit.b(id).map {
+                        String(Arrays.copyOfRange(it, 1, it.size))
+                    }
+                    keys.forEachIndexed() { idx, key ->
+                        // 可能存在不同版本的关键词，所以需要区分开来
+                        deobfsMap["${id}_${idx}"] = setOf(key)
                     }
                 }
             }
-            val stringMappedKeys = stringKeyToArrayIndexes.keys.toTypedArray()
-            val designatorArray = Array(stringMappedKeys.size) {
-                "noref_sid_$it"
-            }
-            // use designatorArray to map string keys to indexes
-            for (i in stringMappedKeys.indices) {
-                val key = stringMappedKeys[i]
-                val requiringIndex = stringKeyToArrayIndexes[key]
-                if (!requiringIndex.isNullOrEmpty()) {
-                    designatorArray[i] = requiringIndex.first().toString() + "_sid_$i"
+
+            val resultMap = helper.batchFindMethodsUsedStrings(deobfsMap, true)
+
+            resultMap.forEach { (key, valueArr) ->
+                val id = key.split("_").first().toInt()
+                val ret = DexKit.verifyTargetMethod(id, valueArr.map { DexMethodDescriptor(it) }.toHashSet())
+                if (ret == null) {
+                    Log.i("${valueArr.size} candidates found for " + id + ", none satisfactory.")
+                } else {
+                    Log.d("save id: $id,method: $ret")
+                    saveDescriptor(id, ret)
                 }
             }
-            val resultArrays = helper.batchFindMethodUsedString(designatorArray, stringMappedKeys)
-            val shadowTmpCandidateMethodDescriptors = HashMap<Int, HashSet<String>>(indexArray.size)
-            // fill candidate method descriptors
-            for (key in stringKeyToArrayIndexes.keys) {
-                val requiringIndex = stringKeyToArrayIndexes[key]!!
-                val indexOfKey = stringMappedKeys.indexOf(key)
-                requiringIndex.forEach {
-                    shadowTmpCandidateMethodDescriptors.getOrPut(it) { HashSet(1) }.addAll(resultArrays[indexOfKey])
-                }
-            }
-            // run user-defined filter for each index
-            for (arrayIndex in resultArray.indices) {
-                if (resultArray[arrayIndex] == null) {
-                    val candidates = shadowTmpCandidateMethodDescriptors[arrayIndex]
-                    if (candidates.isNullOrEmpty()) {
-                        continue
-                    }
-                    val id = indexArray[arrayIndex]
-                    val ret = DexKit.verifyTargetMethod(id, candidates.map { DexMethodDescriptor(it) }.toHashSet())
-                    if (ret == null) {
-                        Log.i(candidates.size.toString() + " candidates found for " + id + ", none satisfactory.")
-                    } else {
-                        Log.d("save id: $id,method: $ret")
-                        saveDescriptor(id, ret)
-                        resultArray[arrayIndex] = ret
-                    }
-                }
-            }
-            return resultArray
         } finally {
             mReadLock.unlock()
         }
@@ -178,7 +152,7 @@ class DexKitDeobfs private constructor(
                 }
 
                 override fun closeResourceInternal(res: DexKitHelper) {
-                    res.close()
+                    res.release()
                     Log.d("close resource: DexKit")
                 }
             }

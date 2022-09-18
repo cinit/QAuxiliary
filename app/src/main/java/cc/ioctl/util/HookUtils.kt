@@ -101,7 +101,7 @@ fun BaseFunctionHook.beforeHookIfEnabled(hook: (XC_MethodHook.MethodHookParam) -
     return beforeHookIfEnabled(50, hook)
 }
 
-inline fun ClassLoader.findDexClassLoader(): BaseDexClassLoader? {
+fun ClassLoader.findDexClassLoader(): BaseDexClassLoader? {
     var classLoader = this
     while (classLoader !is BaseDexClassLoader) {
         if (classLoader.parent != null) classLoader = classLoader.parent

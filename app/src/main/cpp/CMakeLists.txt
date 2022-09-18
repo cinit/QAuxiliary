@@ -26,18 +26,13 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-ty
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
-
-option(DEX_BUILDER_BUILD_SHARED "" OFF)
-option(ABSL_PROPAGATE_CXX_STD "" ON)
-add_subdirectory(dex_builder)
-add_subdirectory(dex_kit_trampoline)
+find_package(dexkit REQUIRED CONFIG)
 
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
         qauxv_core/version.c
         qauxv_core/NativeHookEntry.cc
         qauxv_core/NativeMainHook.cc
-        qauxv_core/biliroaming.cc
         qauxv_core/shared_memory.cpp
         qauxv_core/dexkit.cc)
 
@@ -49,4 +44,4 @@ set_target_properties(qauxv PROPERTIES
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dex_builder_static dex_kit_trampoline)
+target_link_libraries(qauxv mmkv c dl z ${ANDROID_LIBS} dexkit::dex_kit_static)

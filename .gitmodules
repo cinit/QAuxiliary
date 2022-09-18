@@ -1,15 +1,6 @@
 [submodule "libs/mmkv/MMKV"]
 	path = libs/mmkv/MMKV
 	url = https://github.com/Tencent/MMKV
-[submodule "app/src/main/cpp/dex_builder"]
-	path = app/src/main/cpp/dex_builder
-	url = https://github.com/LSPosed/DexBuilder.git
-[submodule "libs/qq-stub"]
-	path = libs/qq-stub
-	url = https://github.com/LuckyPray/qq-stub
 [submodule "libs/stub/qq-stub"]
 	path = libs/stub/qq-stub
 	url = https://github.com/LuckyPray/qq-stub
-[submodule "app/src/main/cpp/dex_kit"]
-	path = app/src/main/cpp/dex_kit
-	url = https://github.com/cinit/DexKit

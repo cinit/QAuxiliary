@@ -60,7 +60,6 @@ android {
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
-
         externalNativeBuild {
             cmake {
                 arguments += listOf(
@@ -109,6 +108,7 @@ android {
             }
         }
         getByName("debug") {
+            ndk.abiFilters += "arm64-v8a"
             isShrinkResources = false
             isMinifyEnabled = false
             isCrunchPngs = false
@@ -127,6 +127,7 @@ android {
     }
     buildFeatures {
         viewBinding = true
+        prefab = true
     }
     lint {
         checkDependencies = true
@@ -168,6 +169,7 @@ dependencies {
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
+    implementation("com.github.LuckyPray:DexKit-Android:1.2.0")
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath

@@ -67,9 +67,9 @@ public class LegacyDexDeobfs implements DexDeobfsBackend {
         return false;
     }
 
-    @NonNull
+
     @Override
-    public DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException {
+    public void doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException {
         throw new UnsupportedOperationException("not supported by " + this.getClass().getName());
     }
 

@@ -23,7 +23,6 @@
 package io.github.qauxv.util.dexkit
 
 import io.github.qauxv.config.ConfigManager
-import io.github.qauxv.util.dexkit.impl.DexBuilderDexDeobfs
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
 import io.github.qauxv.util.dexkit.impl.LegacyDexDeobfs
 import java.util.concurrent.atomic.AtomicInteger
@@ -51,7 +50,6 @@ object DexDeobfsProvider {
             .getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)
         return when (id) {
             LegacyDexDeobfs.ID -> LegacyDexDeobfs.newInstance()
-            DexBuilderDexDeobfs.ID -> DexBuilderDexDeobfs.newInstance()
             DexKitDeobfs.ID -> DexKitDeobfs.newInstance()
             else -> throw IllegalArgumentException("Unknown dex deobfs backend: $id")
         }
@@ -60,7 +58,7 @@ object DexDeobfsProvider {
     var currentBackendId: String
         get() = ConfigManager.getDefaultConfig().getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)!!
         set(value) {
-            require(value in listOf(LegacyDexDeobfs.ID, DexBuilderDexDeobfs.ID, DexKitDeobfs.ID)) {
+            require(value in listOf(LegacyDexDeobfs.ID, DexKitDeobfs.ID)) {
                 "Unknown dex deobfs backend: $value"
             }
             ConfigManager.getDefaultConfig().putString(KEY_DEX_DEOBFS_BACKEND, value)
@@ -69,14 +67,12 @@ object DexDeobfsProvider {
     val currentBackendName: String
         get() = when (currentBackendId) {
             LegacyDexDeobfs.ID -> LegacyDexDeobfs.NAME
-            DexBuilderDexDeobfs.ID -> DexBuilderDexDeobfs.NAME
             DexKitDeobfs.ID -> DexKitDeobfs.NAME
             else -> throw IllegalArgumentException("Unknown dex deobfs backend: $currentBackendId")
         }
 
     val allBackendNames: List<Pair<String, String>> = listOf(
         LegacyDexDeobfs.ID to LegacyDexDeobfs.NAME,
-        DexBuilderDexDeobfs.ID to DexBuilderDexDeobfs.NAME,
         DexKitDeobfs.ID to DexKitDeobfs.NAME,
     )
 }

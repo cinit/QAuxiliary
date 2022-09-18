@@ -50,8 +50,7 @@ public interface DexDeobfsBackend extends Closeable {
 
     boolean isBatchFindMethodSupported();
 
-    @NonNull
-    DexMethodDescriptor[] doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException;
+    void doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException;
 
     /**
      * Close the backend, memory will be release when ref-count decrease to 0.

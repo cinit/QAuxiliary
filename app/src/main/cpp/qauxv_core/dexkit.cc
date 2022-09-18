@@ -1,5 +1,5 @@
-#include <jni.h>
-#include "../dex_kit/include/dex_kit.h"
+#include <dex_kit.h>
+#include "DexKitJniHelper.h"
 #include <android/log.h>
 
 #define LOG_TAG "QAuxv"
@@ -12,24 +12,12 @@
 #define PLOGE(fmt, args...)                                                    \
   LOGE(fmt " failed with %d: %s", ##args, errno, strerror(errno))
 
-jfieldID token_field;
-
 extern "C"
-JNIEXPORT void JNICALL
-Java_me_teble_DexKitHelper_close(JNIEnv *env,
-                                 jobject thiz) {
-    auto *helper = reinterpret_cast<dexkit::DexKit *>(env->GetLongField(thiz, token_field));
-    delete reinterpret_cast<dexkit::DexKit *>(helper);
-    env->SetLongField(thiz, token_field, jlong(0));
-}
-
-extern "C"
-JNIEXPORT jint JNICALL
-Java_me_teble_DexKitHelper_initDexKit(JNIEnv *env,
-                                      jobject thiz,
-                                      jobject class_loader) {
+JNIEXPORT jlong JNICALL
+Java_me_teble_DexKitHelper_initDexKit(JNIEnv *env, jobject thiz,
+                                                              jobject class_loader) {
     if (!class_loader) {
-        return -1;
+        return 0;
     }
     jclass cClassloader = env->FindClass("java/lang/ClassLoader");
     jmethodID mGetResource = env->GetMethodID(cClassloader, "findResource",
@@ -42,126 +30,147 @@ Java_me_teble_DexKitHelper_initDexKit(JNIEnv *env,
     const char *cStr = env->GetStringUTFChars(file, nullptr);
     std::string filePathStr(cStr);
     std::string hostApkPath = filePathStr.substr(5, filePathStr.size() - 26);
-    LOGD("host apk path -> %s", hostApkPath.c_str());
-    auto dexKitHelper = new dexkit::DexKit(hostApkPath);
-    env->SetLongField(thiz, token_field, jlong(dexKitHelper));
-    return 0;
+    LOGI("hostApkPath: %s", hostApkPath.c_str());
+    auto dexkit = new dexkit::DexKit(hostApkPath);
+    env->ReleaseStringUTFChars(file, cStr);
+    return (jlong) dexkit;
 }
 
-extern "C" JNIEXPORT jint JNICALL DexKit_JNI_OnLoad(JavaVM *vm, void *) {
-    JNIEnv *env = nullptr;
-    if (vm->GetEnv(reinterpret_cast<void **>(&env), JNI_VERSION_1_4) != JNI_OK) {
-        return -1;
-    }
-    jclass helper = env->FindClass("me/teble/DexKitHelper");
-    token_field = env->GetFieldID(helper, "token", "J");
-    return JNI_VERSION_1_4;
+extern "C"
+JNIEXPORT void JNICALL
+Java_me_teble_DexKitHelper_release(JNIEnv *env, jobject thiz, jlong token) {
+ReleaseDexKitInstance(env, token);
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+        Java_me_teble_DexKitHelper_batchFindClassesUsedStrings(JNIEnv *env,
+                                                                                       jobject thiz,
+jlong token,
+        jobject map,
+jboolean advanced_match,
+        jintArray dex_priority) {
+return BatchFindClassesUsedStrings(env, token, map, advanced_match, dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobject JNICALL
+        Java_me_teble_DexKitHelper_batchFindMethodsUsedStrings(JNIEnv *env,
+                                                                                       jobject thiz,
+jlong token,
+        jobject map,
+jboolean advanced_match,
+        jintArray dex_priority) {
+return BatchFindMethodsUsedStrings(env, token, map, advanced_match, dex_priority);
 }
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_me_teble_DexKitHelper_findMethodUsedString(JNIEnv *env,
-                                                jobject thiz,
-                                                jstring string) {
-    auto *helper = reinterpret_cast<dexkit::DexKit *>(env->GetLongField(thiz, token_field));
-    if (helper == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "helper is null");
-        return nullptr;
-    }
-    const char *findStr = env->GetStringUTFChars(string, nullptr);
-    auto res = helper->FindMethodUsedString(findStr, {}, {},
-                                            {}, {}, {},
-                                            true, false);
-    jobjectArray result = env->NewObjectArray((int) res.size(), env->FindClass("java/lang/String"),
-                                              env->NewStringUTF(""));
-    for (int i = 0; i < res.size(); i++) {
-        env->SetObjectArrayElement(result, i, env->NewStringUTF(res[i].c_str()));
-    }
-    env->ReleaseStringUTFChars(string, findStr);
-    return result;
+        Java_me_teble_DexKitHelper_findMethodBeInvoked(JNIEnv *env, jobject thiz,
+jlong token,
+        jstring method_descriptor,
+jstring method_declare_class,
+        jstring method_declare_name,
+jstring method_return_type,
+        jobjectArray method_param_types,
+jstring caller_method_declare_class,
+        jstring caller_method_declare_name,
+jstring caller_method_return_type,
+        jobjectArray caller_method_param_types,
+jintArray dex_priority) {
+return FindMethodBeInvoked(env, token, method_descriptor, method_declare_class,
+        method_declare_name, method_return_type, method_param_types,
+        caller_method_declare_class, caller_method_declare_name,
+        caller_method_return_type, caller_method_param_types, dex_priority);
 }
 
-
-static std::vector<std::string> getJavaStringArray(JNIEnv *env, jobjectArray strings) {
-    std::vector<std::string> results;
-    if (strings == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "jstringKeyArray is null");
-        return {};
-    }
-    if (env->ExceptionCheck()) {
-        return {};
-    }
-    for (int i = 0; i < env->GetArrayLength(strings); i++) {
-        auto string = (jstring) env->GetObjectArrayElement(strings, i);
-        if (string == nullptr) {
-            env->ThrowNew(env->FindClass("java/lang/NullPointerException"),
-                          ("string at index " + std::to_string(i) + " is null").c_str());
-            return {};
-        }
-        const char *findStr = env->GetStringUTFChars(string, nullptr);
-        results.emplace_back(findStr);
-        env->ReleaseStringUTFChars(string, findStr);
-        env->DeleteLocalRef(string);
-    }
-    return results;
-}
-
-static jobjectArray stringArrayToJavaArray(JNIEnv *env, const std::vector<std::string> &strings) {
-    jobjectArray result = env->NewObjectArray((int) strings.size(), env->FindClass("java/lang/String"), nullptr);
-    if (result == nullptr) {
-        return nullptr;
-    }
-    for (int i = 0; i < strings.size(); i++) {
-        auto str = env->NewStringUTF(strings[i].c_str());
-        if (str == nullptr) {
-            return nullptr;
-        }
-        env->SetObjectArrayElement(result, i, str);
-        env->DeleteLocalRef(str);
-    }
-    return result;
+extern "C"
+JNIEXPORT jobject JNICALL
+        Java_me_teble_DexKitHelper_findMethodInvoking(JNIEnv *env, jobject thiz,
+jlong token,
+        jstring method_descriptor,
+jstring method_declare_class,
+        jstring method_declare_name,
+jstring method_return_type,
+        jobjectArray method_param_types,
+jstring be_called_method_declare_class,
+        jstring be_called_method_declare_name,
+jstring be_called_method_return_type,
+        jobjectArray be_called_method_param_types,
+jintArray dex_priority) {
+return FindMethodInvoking(env, token, method_descriptor, method_declare_class,
+        method_declare_name, method_return_type, method_param_types,
+        be_called_method_declare_class, be_called_method_declare_name,
+        be_called_method_return_type, be_called_method_param_types,
+        dex_priority);
 }
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_me_teble_DexKitHelper_batchFindMethodUsedString(JNIEnv *env,
-                                                     jobject thiz,
-                                                     jobjectArray jdesignatorArray,
-                                                     jobjectArray jstringKeyArray) {
-    auto *helper = reinterpret_cast<dexkit::DexKit *>(env->GetLongField(thiz, token_field));
-    if (helper == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "helper is null");
-        return nullptr;
-    }
-    std::vector<std::string> designatorArray = getJavaStringArray(env, jdesignatorArray);
-    if (env->ExceptionCheck()) {
-        return nullptr;
-    }
-    std::vector<std::string> stringKeyArray = getJavaStringArray(env, jstringKeyArray);
-    if (env->ExceptionCheck()) {
-        return nullptr;
-    }
-    if (designatorArray.size() != stringKeyArray.size()) {
-        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
-                      "designatorArray and stringKeyArray size not equal");
-        return nullptr;
-    }
-    auto inputMap = std::map<std::string, std::set<std::string >>();
-    for (int i = 0; i < designatorArray.size(); i++) {
-        inputMap[designatorArray[i]].insert(stringKeyArray[i]);
-    }
-    auto results = helper->LocationMethods(inputMap, false);
-    jobjectArray resultArray2 = env->NewObjectArray((int) designatorArray.size(), env->FindClass("[Ljava/lang/String;"), nullptr);
-    if (resultArray2 == nullptr) {
-        return nullptr;
-    }
-    for (int i = 0; i < designatorArray.size(); i++) {
-        auto result = stringArrayToJavaArray(env, results[designatorArray[i]]);
-        if (result == nullptr) {
-            return nullptr;
-        }
-        env->SetObjectArrayElement(resultArray2, i, result);
-        env->DeleteLocalRef(result);
-    }
-    return resultArray2;
+        Java_me_teble_DexKitHelper_findFieldBeUsed(JNIEnv *env, jobject thiz,
+jlong token,
+        jstring field_descriptor,
+jstring field_declare_class,
+        jstring field_name,
+jstring field_type,
+        jint be_used_flags,
+jstring caller_method_declare_class,
+        jstring caller_method_name,
+jstring caller_method_return_type,
+        jobjectArray caller_method_param_types,
+jintArray dex_priority) {
+return FindFieldBeUsed(env, token, field_descriptor, field_declare_class, field_name,
+        field_type, be_used_flags, caller_method_declare_class,
+        caller_method_name, caller_method_return_type, caller_method_param_types,
+        dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+        Java_me_teble_DexKitHelper_findMethodUsedString(JNIEnv *env, jobject thiz,
+jlong token,
+        jstring used_string,
+jboolean advanced_match,
+        jstring method_declare_class,
+jstring method_name,
+        jstring method_return_type,
+jobjectArray method_param_types,
+        jintArray dex_priority) {
+return FindMethodUsedString(env, token, used_string, advanced_match, method_declare_class,
+        method_name, method_return_type, method_param_types, dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+        Java_me_teble_DexKitHelper_findMethod(JNIEnv *env, jobject thiz,
+jlong token,
+        jstring method_declare_class,
+jstring method_name,
+        jstring method_return_type,
+jobjectArray method_param_types,
+        jintArray dex_priority) {
+return FindMethod(env, token, method_declare_class, method_name, method_return_type,
+        method_param_types, dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+        Java_me_teble_DexKitHelper_findSubClasses(JNIEnv *env, jobject thiz,
+jlong token, jstring parent_class,
+jintArray dex_priority) {
+return FindSubClasses(env, token, parent_class, dex_priority);
+}
+
+extern "C"
+JNIEXPORT jobjectArray JNICALL
+        Java_me_teble_DexKitHelper_findMethodOpPrefixSeq(JNIEnv *env, jobject thiz,
+jlong token,
+        jintArray op_prefix_seq,
+jstring method_declare_class,
+        jstring method_name,
+jstring method_return_type,
+        jobjectArray method_param_types,
+jintArray dex_priority) {
+return FindMethodOpPrefixSeq(env, token, op_prefix_seq, method_declare_class, method_name,
+        method_return_type, method_param_types, dex_priority);
 }
