@@ -40,6 +40,7 @@ import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.step.DexDeobfStep;
+import io.github.qauxv.step.DexKitDeobfStep;
 import io.github.qauxv.step.ShadowBatchDexDeobfStep;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
@@ -48,6 +49,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexDeobfsBackend;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -117,6 +119,9 @@ public class InjectDelayableHooks {
                     ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
                     steps.add(shadowBatchStep);
                 }
+            }
+            if (backend instanceof DexKitDeobfs) {
+                steps.add(new DexKitDeobfStep());
             }
             steps.sort(Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {

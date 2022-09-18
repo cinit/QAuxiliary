@@ -30,15 +30,23 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitFinder;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
+import me.teble.DexKitHelper;
 
 //强制使用默认字体
 @FunctionHookEntry
 @UiItemAgentEntry
-public class DefaultFont extends CommonSwitchFunctionHook {
+public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinder {
 
     public static final DefaultFont INSTANCE = new DefaultFont();
 
@@ -66,8 +74,31 @@ public class DefaultFont extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
+        if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
+            throw new IllegalStateException("该功能仅限DexKit引擎");
+        }
+        Method method = DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText);
+        Objects.requireNonNull(method);
+        HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
+        // m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a") &&
+        Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
+                .getDeclaredMethod("enlargeTextMsg", TextView.class);
+        HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
+        return true;
+    }
+
+    @Override
+    public boolean getNeedFind() {
+        return DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText) != null;
+    }
+
+    @Override
+    public boolean doFind() {
+        if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
+            return false;
+        }
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
-        ArrayList<Method> candidates = new ArrayList<>(2);
+        Set<Method> candidates = new HashSet<>(2);
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
             if (m.getModifiers() == Modifier.PROTECTED && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
@@ -79,26 +110,33 @@ public class DefaultFont extends CommonSwitchFunctionHook {
         if (candidates.size() != 2) {
             throw new RuntimeException("expect 2 methods, got " + candidates.size());
         }
-        // 8.8.88 a
-        // 8.8.93 q0
-        // 8.9.0 q0
-        // 8.9.2 q0
-        // 8.9.3 p0
-        // 8.9.10 o0
-        Method method = null;
-        for (Method m : candidates) {
-            String name = m.getName();
-            if ("a".equals(name) || "p0".equals(name) || "q0".equals(name) || "o0".equals(name)) {
-                method = m;
-                break;
+        DexKitDeobfs dexKitDeobf = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
+        String[] res = dexKitDeobf.doFindMethodUsedField(
+                "",
+                "",
+                "",
+                "Landroid/widget/TextView;",
+                DexKitHelper.FLAG_GETTING,
+                Initiator._TextItemBuilder().getName(),
+                "",
+                "void",
+                new String[]{"", Initiator._ChatMessage().getName()},
+                new int[0]
+        );
+        for (String desc : res) {
+            DexMethodDescriptor descriptor = new DexMethodDescriptor(desc);
+            try {
+                Method method = descriptor.getMethodInstance(Initiator.getHostClassLoader());
+                if (candidates.contains(method)) {
+                    dexKitDeobf.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
+                    Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + desc);
+                    return true;
+                }
+            } catch (NoSuchMethodException e) {
+                Log.e(e);
             }
         }
-        Objects.requireNonNull(method);
-        HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
-        // m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a") &&
-        Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
-                .getDeclaredMethod("enlargeTextMsg", TextView.class);
-        HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
-        return true;
+        dexKitDeobf.saveDescriptor(DexKit.N_TextItemBuilder_setETText, new DexMethodDescriptor("Lxxxxx;->xxxxx()V"));
+        return false;
     }
 }

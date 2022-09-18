@@ -75,4 +75,6 @@ object DexDeobfsProvider {
         LegacyDexDeobfs.ID to LegacyDexDeobfs.NAME,
         DexKitDeobfs.ID to DexKitDeobfs.NAME,
     )
+
+    val isDexKitBackend get() = currentBackendId == DexKitDeobfs.ID
 }

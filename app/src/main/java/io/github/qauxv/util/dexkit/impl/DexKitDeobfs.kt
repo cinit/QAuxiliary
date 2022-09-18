@@ -54,7 +54,7 @@ class DexKitDeobfs private constructor(
                     val keys = DexKit.b(id).map {
                         String(Arrays.copyOfRange(it, 1, it.size))
                     }
-                    keys.forEachIndexed() { idx, key ->
+                    keys.forEachIndexed { idx, key ->
                         // 可能存在不同版本的关键词，所以需要区分开来
                         deobfsMap["${id}_${idx}"] = setOf(key)
                     }
@@ -119,6 +119,32 @@ class DexKitDeobfs private constructor(
         } finally {
             mReadLock.unlock()
         }
+    }
+
+    fun doFindMethodUsedField(
+        fieldDescriptor: String,
+        fieldDeclareClass: String,
+        fieldName: String,
+        fieldType: String,
+        beUsedFlag: Int,
+        callerMethodDeclareClass: String,
+        callerMethodName: String,
+        callerMethodReturnType: String,
+        callerMethodParamTypes: Array<String>? = null,
+        dexPriority: IntArray? = intArrayOf(),
+    ): Array<String> {
+        return mDexKitHelper!!.findFieldBeUsed(
+            fieldDescriptor,
+            fieldDeclareClass,
+            fieldName,
+            fieldType,
+            beUsedFlag,
+            callerMethodDeclareClass,
+            callerMethodName,
+            callerMethodReturnType,
+            callerMethodParamTypes,
+            dexPriority,
+        )
     }
 
     @Synchronized

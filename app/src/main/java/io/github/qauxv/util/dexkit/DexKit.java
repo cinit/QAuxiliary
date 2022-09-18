@@ -141,7 +141,8 @@ public class DexKit {
     public static final int N_ContactUtils_getDiscussionMemberShowName = 20024;
     public static final int N_ContactUtils_getBuddyName = 20025;
     public static final int N_Scene_checkDataRecmdRemarkList = 20026;
-    public static final int DEOBF_NUM_N = 26;
+    public static final int N_TextItemBuilder_setETText = 20027;
+    public static final int DEOBF_NUM_N = 27;
 
     /**
      * Run the dex deobfuscation.
@@ -503,6 +504,9 @@ public class DexKit {
                 break;
             case N_Scene_checkDataRecmdRemarkList:
                 ret = "com.tencent.mobileqq.troopAddFrd.Scene";
+                break;
+            case N_TextItemBuilder_setETText:
+                ret = "com/tencent/mobileqq/activity/aio/item/TextItemBuilder";
                 break;
             default:
                 ret = null;
