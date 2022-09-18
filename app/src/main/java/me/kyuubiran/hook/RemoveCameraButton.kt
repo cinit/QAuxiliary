@@ -23,6 +23,7 @@
 package me.kyuubiran.hook
 
 import android.view.View
+import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -42,13 +43,20 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
-            name == (if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "G" else "a")
+            val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_10) -> "C"
+                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "G"
+                else -> "a"
+            }
+            name == methodName
                 && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
         }.hookBefore {
+            Log.d("屏蔽消息界面相机/小世界图标")
             if (!isEnabled) return@hookBefore; it.result = null
         }
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
             val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
                 requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
                 requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
                 else -> "a"
