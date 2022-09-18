@@ -49,7 +49,7 @@ abstract class ReplaceIcon : Copy() {
             File(iconsDir, "classic"),
             // File(iconsDir, "ChineseNewYearIcons")
         )
-        val iconFile = iconFileDirs.random(random).listFiles()!!.random(random)
+        val iconFile = iconFileDirs.flatMap { it.listFiles()!!.toList() }.random(random)
         println("Select Icon: $iconFile")
         into("drawable") {
             from(iconFile)
