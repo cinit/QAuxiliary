@@ -73,6 +73,18 @@ android {
                         "-DANDROID_CCACHE=$it"
                     )
                 }
+                val flags = arrayOf(
+                    "-Wall",
+                    "-Qunused-arguments",
+                    "-fno-rtti",
+                    "-fvisibility=hidden",
+                    "-fvisibility-inlines-hidden",
+                    "-Wno-unused-value",
+                    "-Wno-unused-variable",
+                    "-Wno-unused-command-line-argument",
+                )
+                cppFlags("-std=c++17", *flags)
+                cFlags("-std=c18", *flags)
                 targets += "qauxv"
             }
         }
@@ -108,7 +120,15 @@ android {
                 "-Wl,--thinlto-cache-policy,cache_size_bytes=300m",
                 "-Wl,--thinlto-cache-dir=${buildDir.absolutePath}/.lto-cache",
             )
+            val releaseFlags = arrayOf<String>(
+                "-ffunction-sections",
+                "-fdata-sections",
+                "-Wl,--gc-sections",
+                "-Oz",
+            )
             externalNativeBuild.cmake {
+                cFlags += releaseFlags
+                cppFlags += releaseFlags
                 cFlags += ltoCacheFlags
                 cppFlags += ltoCacheFlags
             }
@@ -392,7 +412,7 @@ val generateEulaAndPrivacy by tasks.registering {
             <body>
         """.trimIndent()
 
-        val html = inputs.files.map{ markdownToHTML(it.readText()) }
+        val html = inputs.files.map { markdownToHTML(it.readText()) }
 
         outputs.files.forEach {
             it.writeText(
