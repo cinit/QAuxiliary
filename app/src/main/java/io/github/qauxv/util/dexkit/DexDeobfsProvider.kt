@@ -29,7 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 object DexDeobfsProvider {
 
-    private const val KEY_DEX_DEOBFS_BACKEND = "dex_deobfs_backend"
+    private const val KEY_DEX_DEOBFS_BACKEND = "dex_deobfs_backend2"
 
     private val mDeobfsSection = AtomicInteger(0)
 
