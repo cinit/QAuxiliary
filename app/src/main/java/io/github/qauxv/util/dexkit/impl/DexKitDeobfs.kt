@@ -125,32 +125,6 @@ class DexKitDeobfs private constructor(
         }
     }
 
-    fun doFindMethodUsedField(
-        fieldDescriptor: String,
-        fieldDeclareClass: String,
-        fieldName: String,
-        fieldType: String,
-        beUsedFlag: Int,
-        callerMethodDeclareClass: String,
-        callerMethodName: String,
-        callerMethodReturnType: String,
-        callerMethodParamTypes: Array<String>? = null,
-        dexPriority: IntArray? = intArrayOf(),
-    ): Array<String> {
-        return mDexKitHelper!!.findFieldBeUsed(
-            fieldDescriptor,
-            fieldDeclareClass,
-            fieldName,
-            fieldType,
-            beUsedFlag,
-            callerMethodDeclareClass,
-            callerMethodName,
-            callerMethodReturnType,
-            callerMethodParamTypes,
-            dexPriority,
-        )
-    }
-
     @Synchronized
     private fun ensureOpen() {
         check(mDexKitHelper != null) { "closed" }

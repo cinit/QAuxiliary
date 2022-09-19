@@ -75,11 +75,6 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         return Simplify.UI_CHAT_MSG;
     }
 
-    @Override
-    public boolean isPreparationRequired() {
-        return isNeedFind();
-    }
-
     @Nullable
     @Override
     public Step[] makePreparationSteps() {
@@ -121,8 +116,9 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (candidates.size() != 2) {
             throw new RuntimeException("expect 2 methods, got " + candidates.size());
         }
-        DexKitDeobfs dexKitDeobf = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
-        String[] res = dexKitDeobf.doFindMethodUsedField(
+        DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
+        DexKitHelper helper = dexKitDeobfs.getDexKitHelper();
+        String[] res = helper.findMethodUsedField(
                 "",
                 "",
                 "",
@@ -132,14 +128,14 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 "",
                 "void",
                 new String[]{"", Initiator._ChatMessage().getName()},
-                new int[0]
+                null
         );
         for (String desc : res) {
             DexMethodDescriptor descriptor = new DexMethodDescriptor(desc);
             try {
                 Method method = descriptor.getMethodInstance(Initiator.getHostClassLoader());
                 if (candidates.contains(method)) {
-                    dexKitDeobf.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
+                    dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
                     Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + desc);
                     return true;
                 }
@@ -147,7 +143,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 Log.e(e);
             }
         }
-        dexKitDeobf.saveDescriptor(DexKit.N_TextItemBuilder_setETText, new DexMethodDescriptor("Lxxxxx;->xxxxx()V"));
+        dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, new DexMethodDescriptor("Lxxxxx;->xxxxx()V"));
         return false;
     }
 }

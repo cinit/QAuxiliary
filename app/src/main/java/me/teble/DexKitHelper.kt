@@ -114,25 +114,25 @@ class DexKitHelper(
         )
     }
 
-    fun findFieldBeUsed(
+    fun findMethodUsedField(
         fieldDescriptor: String,
         fieldDeclareClass: String,
         fieldName: String,
         fieldType: String,
-        beUsedFlag: Int,
+        usedFlags: Int,
         callerMethodDeclareClass: String,
         callerMethodName: String,
         callerMethodReturnType: String,
         callerMethodParamTypes: Array<String>? = null,
         dexPriority: IntArray? = intArrayOf(),
     ): Array<String> {
-        return findFieldBeUsed(
+        return findMethodUsedField(
             token,
             fieldDescriptor,
             fieldDeclareClass,
             fieldName,
             fieldType,
-            beUsedFlag,
+            usedFlags,
             callerMethodDeclareClass,
             callerMethodName,
             callerMethodReturnType,
@@ -251,13 +251,13 @@ class DexKitHelper(
         dexPriority: IntArray?,
     ): Map<String, Array<String>>
 
-    private external fun findFieldBeUsed(
+    private external fun findMethodUsedField(
         token: Long,
         fieldDescriptor: String,
         fieldDeclareClass: String,
         fieldName: String,
         fieldType: String,
-        beUsedFlag: Int,
+        beUsedFlags: Int,
         callerMethodDeclareClass: String,
         callerMethodName: String,
         callerMethodReturnType: String,

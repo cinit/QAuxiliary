@@ -105,22 +105,22 @@ Java_me_teble_DexKitHelper_findMethodInvoking(JNIEnv *env, jobject thiz,
 
 extern "C"
 JNIEXPORT jobjectArray JNICALL
-Java_me_teble_DexKitHelper_findFieldBeUsed(JNIEnv *env, jobject thiz,
-                                           jlong token,
-                                           jstring field_descriptor,
-                                           jstring field_declare_class,
-                                           jstring field_name,
-                                           jstring field_type,
-                                           jint be_used_flags,
-                                           jstring caller_method_declare_class,
-                                           jstring caller_method_name,
-                                           jstring caller_method_return_type,
-                                           jobjectArray caller_method_param_types,
-                                           jintArray dex_priority) {
-    return FindFieldBeUsed(env, token, field_descriptor, field_declare_class, field_name,
-                           field_type, be_used_flags, caller_method_declare_class,
-                           caller_method_name, caller_method_return_type, caller_method_param_types,
-                           dex_priority);
+Java_me_teble_DexKitHelper_findMethodUsedField(JNIEnv *env, jobject thiz,
+                                               jlong token,
+                                               jstring field_descriptor,
+                                               jstring field_declare_class,
+                                               jstring field_name,
+                                               jstring field_type,
+                                               jint used_flags,
+                                               jstring caller_method_declare_class,
+                                               jstring caller_method_name,
+                                               jstring caller_method_return_type,
+                                               jobjectArray caller_method_param_types,
+                                               jintArray dex_priority) {
+    return FindMethodUsedField(env, token, field_descriptor, field_declare_class, field_name,
+                               field_type, used_flags, caller_method_declare_class,
+                               caller_method_name, caller_method_return_type, caller_method_param_types,
+                               dex_priority);
 }
 
 extern "C"
