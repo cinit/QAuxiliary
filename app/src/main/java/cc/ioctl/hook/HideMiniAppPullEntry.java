@@ -33,19 +33,20 @@ import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.dexkit.DexFlow;
-import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
-import io.github.qauxv.util.dexkit.impl.LegacyDexDeobfs;
-import java.util.ArrayList;
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements Step {
+public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements DexKitFinder {
 
     public static final HideMiniAppPullEntry INSTANCE = new HideMiniAppPullEntry();
 
@@ -87,81 +88,6 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements St
         return true;
     }
 
-    @Override
-    public boolean isPreparationRequired() {
-        return !isDone();
-    }
-
-    @Nullable
-    @Override
-    public Step[] makePreparationSteps() {
-        return new Step[]{this};
-    }
-
-    @Override
-    public boolean step() {
-        if (getInitMiniAppObfsName() != null) {
-            return true;
-        }
-        try {
-            Class<?> clz = Initiator._Conversation();
-            if (clz == null) {
-                return false;
-            }
-            String smaliConversation = DexMethodDescriptor.getTypeSig(clz);
-            byte[] dex = DexKit.getClassDeclaringDex(smaliConversation, null);
-            if (dex == null) {
-                Log.e("Error getClassDeclaringDex Conversation.class");
-                return false;
-            }
-            for (byte[] key : new byte[][]{
-                    DexFlow.packUtf8("initMiniAppEntryLayout."),
-                    DexFlow.packUtf8("initMicroAppEntryLayout."),
-                    DexFlow.packUtf8("init Mini App, cost=")
-            }) {
-                HashSet<DexMethodDescriptor> rets = new HashSet<>();
-                ArrayList<Integer> opcodeOffsets = LegacyDexDeobfs.a(dex, key);
-                for (int j = 0; j < opcodeOffsets.size(); j++) {
-                    try {
-                        DexMethodDescriptor desc = DexFlow
-                                .getDexMethodByOpOffset(dex, opcodeOffsets.get(j), true);
-                        if (desc != null) {
-                            rets.add(desc);
-                        }
-                    } catch (InternalError ignored) {
-                    }
-                }
-                for (DexMethodDescriptor desc : rets) {
-                    if (smaliConversation.equals(desc.declaringClass)
-                            && "()V".equals(desc.signature)) {
-                        // save and return
-                        ConfigManager cache = ConfigManager.getCache();
-                        cache.putInt("qn_hide_miniapp_v2_version_code",
-                                HostInfo.getVersionCode());
-                        cache.putString("qn_hide_miniapp_v2_method_name", desc.name);
-                        cache.save();
-                        return true;
-                    }
-                }
-            }
-            traceError(new RuntimeException("No Conversation.?() func found"));
-            return false;
-        } catch (Exception e) {
-            traceError(e);
-            return false;
-        }
-    }
-
-    @Override
-    public boolean isDone() {
-        return getInitMiniAppObfsName() != null;
-    }
-
-    @Override
-    public int getPriority() {
-        return 0;
-    }
-
     @Nullable
     @Override
     public String getDescription() {
@@ -178,5 +104,49 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements St
     @Override
     public String getName() {
         return "隐藏下拉小程序";
+    }
+
+    @Override
+    public boolean isNeedFind() {
+        return getInitMiniAppObfsName() == null;
+    }
+
+    @Override
+    public boolean doFind() {
+        Class<?> clz = Initiator._Conversation();
+        if (clz == null) {
+            return false;
+        }
+        String conversationSig = DexMethodDescriptor.getTypeSig(clz);
+        DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
+        String[] strings = new String[]{
+                "initMiniAppEntryLayout.",
+                "initMicroAppEntryLayout.",
+                "init Mini App, cost="
+        };
+        Map<String, Set<String>> map = new HashMap<>(16);
+        for (int i = 0; i < strings.length; i++) {
+            Set<String> set = new HashSet<>(1);
+            set.add(strings[i]);
+            map.put("Conversation_" + i, set);
+        }
+        Map<String, String[]> res = dexKitDeobfs.getDexKitHelper().batchFindMethodsUsedStrings(map, false, new int[0]);
+        for (String[] methods: res.values()) {
+            for (String method : methods) {
+                DexMethodDescriptor descriptor = new DexMethodDescriptor(method);
+                if (descriptor.declaringClass.equals(conversationSig)
+                        && "()V".equals(descriptor.signature)) {
+                    Log.i("下拉 desc " + descriptor);
+                    // save and return
+                    ConfigManager cache = ConfigManager.getCache();
+                    cache.putInt("qn_hide_miniapp_v2_version_code",
+                            HostInfo.getVersionCode());
+                    cache.putString("qn_hide_miniapp_v2_method_name", descriptor.name);
+                    cache.save();
+                    return true;
+                }
+            }
+        }
+        return false;
     }
 }

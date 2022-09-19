@@ -103,15 +103,11 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        Log.d("desc: " + DexKit.getMethodDescFromCache(DexKit.N_TextItemBuilder_setETText));
         return DexKit.getMethodDescFromCache(DexKit.N_TextItemBuilder_setETText) == null;
     }
 
     @Override
     public boolean doFind() {
-        if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
-            return false;
-        }
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
         Set<Method> candidates = new HashSet<>(2);
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {

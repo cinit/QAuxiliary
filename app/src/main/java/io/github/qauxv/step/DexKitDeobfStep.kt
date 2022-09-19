@@ -24,6 +24,7 @@ package io.github.qauxv.step
 
 import com.github.kyuubiran.ezxhelper.utils.Log
 import io.github.qauxv.core.HookInstaller
+import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKitFinder
 
 class DexKitDeobfStep : Step {
@@ -31,9 +32,11 @@ class DexKitDeobfStep : Step {
     private val dexKitFinderHook = mutableListOf<DexKitFinder>()
 
     init {
-        HookInstaller.queryAllAnnotatedHooks().forEach {
-            if (it is DexKitFinder && it.isEnabled && it.isAvailable && it.isNeedFind) {
-                dexKitFinderHook.add(it)
+        if (DexDeobfsProvider.isDexKitBackend) {
+            HookInstaller.queryAllAnnotatedHooks().forEach {
+                if (it is DexKitFinder && it.isEnabled && it.isAvailable && it.isNeedFind) {
+                    dexKitFinderHook.add(it)
+                }
             }
         }
     }

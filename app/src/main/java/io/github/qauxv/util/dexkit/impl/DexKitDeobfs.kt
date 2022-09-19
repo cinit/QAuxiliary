@@ -37,6 +37,10 @@ class DexKitDeobfs private constructor(
     private var mDexKitHelper: DexKitHelper?
 ) : DexDeobfsBackend {
 
+    fun getDexKitHelper(): DexKitHelper {
+        return mDexKitHelper!!
+    }
+
     override fun isBatchFindMethodSupported(): Boolean = true
 
     override fun doBatchFindMethodImpl(indexArray: IntArray) {

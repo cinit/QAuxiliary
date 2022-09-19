@@ -109,19 +109,17 @@ public class InjectDelayableHooks {
             }
             DexDeobfsProvider.INSTANCE.enterDeobfsSection();
             DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend();
-            if (deobfIndexList.size() > 1) {
-                if (backend.isBatchFindMethodSupported()) {
-                    int[] ids = new int[deobfIndexList.size()];
-                    int i = 0;
-                    for (Integer id : deobfIndexList) {
-                        ids[i++] = id;
-                    }
-                    ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
-                    steps.add(shadowBatchStep);
+            if (backend.isBatchFindMethodSupported()) {
+                int[] ids = new int[deobfIndexList.size()];
+                int i = 0;
+                for (Integer id : deobfIndexList) {
+                    ids[i++] = id;
                 }
-                if (backend instanceof DexKitDeobfs) {
-                    steps.add(new DexKitDeobfStep());
-                }
+                ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
+                steps.add(shadowBatchStep);
+            }
+            if (backend instanceof DexKitDeobfs) {
+                steps.add(new DexKitDeobfStep());
             }
             steps.sort(Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
