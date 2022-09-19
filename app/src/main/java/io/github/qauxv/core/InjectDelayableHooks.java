@@ -119,9 +119,9 @@ public class InjectDelayableHooks {
                     ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
                     steps.add(shadowBatchStep);
                 }
-            }
-            if (backend instanceof DexKitDeobfs) {
-                steps.add(new DexKitDeobfStep());
+                if (backend instanceof DexKitDeobfs) {
+                    steps.add(new DexKitDeobfStep());
+                }
             }
             steps.sort(Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
@@ -176,7 +176,10 @@ public class InjectDelayableHooks {
                     });
                 }
                 try {
-                    steps.get(idx).step();
+                    Step step = steps.get(idx);
+                    if (!step.isDone()) {
+                        step.step();
+                    }
                 } catch (Throwable e) {
                     Log.e(e);
                 }

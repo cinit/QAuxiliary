@@ -77,7 +77,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isPreparationRequired() {
-        return true;
+        return isNeedFind();
     }
 
     @Nullable
@@ -103,7 +103,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        return DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText) == null;
+        Log.d("desc: " + DexKit.getMethodDescFromCache(DexKit.N_TextItemBuilder_setETText));
+        return DexKit.getMethodDescFromCache(DexKit.N_TextItemBuilder_setETText) == null;
     }
 
     @Override
@@ -111,7 +112,6 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
             return false;
         }
-        Log.i("doFind");
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
         Set<Method> candidates = new HashSet<>(2);
         for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {

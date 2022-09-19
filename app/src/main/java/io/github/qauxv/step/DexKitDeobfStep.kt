@@ -40,12 +40,14 @@ class DexKitDeobfStep : Step {
 
     override fun step(): Boolean {
         dexKitFinderHook.forEach {
-            it.doFind()
+            it.isNeedFind && it.doFind()
         }
         return true
     }
 
-    override fun isDone(): Boolean = dexKitFinderHook.size == 0
+    override fun isDone(): Boolean {
+        return dexKitFinderHook.all { !it.isNeedFind }
+    }
 
     override fun getPriority() = 99
 
