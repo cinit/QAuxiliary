@@ -49,7 +49,7 @@ public class ShadowBatchDexDeobfStep implements Step {
 
     @Override
     public boolean isDone() {
-        return indexes.length != 0;
+        return indexes.length == 0;
     }
 
     @Override
