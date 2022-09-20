@@ -26,7 +26,7 @@ public final class GravitySensor implements SensorEventListener {
         this.sensorManager = (SensorManager) this.context.getSystemService(Context.SENSOR_SERVICE);
     }
 
-    public final boolean getStarted() {
+    public boolean getStarted() {
         return this.started;
     }
 
@@ -92,31 +92,31 @@ public final class GravitySensor implements SensorEventListener {
         this.sensorManager.unregisterListener(this);
     }
 
-    public final void start() {
+    public void start() {
         this.started = true;
         this.registerListener();
     }
 
-    public final void stop() {
+    public void stop() {
         this.started = false;
         this.unregisterListener();
     }
 
-    public final void onResume() {
+    public void onResume() {
         if (this.started) {
             this.registerListener();
         }
     }
 
-    public final void onPause() {
+    public void onPause() {
         this.unregisterListener();
     }
 
-    public final Context getContext() {
+    public Context getContext() {
         return this.context;
     }
 
-    public final WeatherView getWeatherView() {
+    public WeatherView getWeatherView() {
         return this.weatherView;
     }
 

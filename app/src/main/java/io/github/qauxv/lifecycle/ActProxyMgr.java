@@ -42,9 +42,6 @@ public class ActProxyMgr {
     // NOTICE: ** If you have created your own package, add it to proguard-rules.pro.**
 
     public static boolean isModuleProxyActivity(@NonNull String className) {
-        if (className == null) {
-            return false;
-        }
         return className.startsWith("io.github.qauxv.activity.")
             || className.startsWith("cc.ioctl.activity.")
             || className.startsWith("me.singleneuron.")
