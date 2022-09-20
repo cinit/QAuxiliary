@@ -49,7 +49,8 @@ class QFileShareToIpadActivity : Activity() {
         } catch (e: ActivityNotFoundException) {
             AlertDialog.Builder(this).setTitle("出错啦")
                 .setMessage("拉起QQ分享失败, 请确认 $pkg 已安装并启用(没有被关冰箱或被冻结停用)\n$e")
-                .setCancelable(true).setPositiveButton(android.R.string.ok, null).show()
+                .setPositiveButton(android.R.string.ok, null)
+                .show()
         }
     }
 

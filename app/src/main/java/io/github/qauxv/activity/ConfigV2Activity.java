@@ -179,7 +179,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             } catch (ActivityNotFoundException e) {
                 new AlertDialog.Builder(this).setTitle("出错啦")
                         .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
-                        .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
             }
         }
     }
@@ -235,7 +236,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                                 } catch (ActivityNotFoundException e) {
                                     new AlertDialog.Builder(this).setTitle("出错啦")
                                             .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
-                                            .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+                                            .setPositiveButton(android.R.string.ok, null)
+                                            .show();
                                 }
                             }
                         })
@@ -290,7 +292,8 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                 } catch (ActivityNotFoundException e) {
                     new AlertDialog.Builder(this).setTitle("出错啦")
                             .setMessage("拉起模块失败, 请确认 " + BuildConfig.APPLICATION_ID + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
-                            .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+                            .setPositiveButton(android.R.string.ok, null)
+                            .show();
                 }
                 return true;
             }
