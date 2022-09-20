@@ -52,9 +52,9 @@ private:
 
     explicit ConcurrentHashSet(std::unordered_set<T> *);
 
-    std::atomic<int> *mRefCount = nullptr;
     std::mutex *mLock = nullptr;
     std::unordered_set<T> *mValues = nullptr;
+    std::atomic<int> *mRefCount = nullptr;
 };
 
 template<typename T>

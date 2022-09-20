@@ -74,11 +74,11 @@ android {
                     )
                 }
                 val flags = arrayOf(
-                    "-Wall",
                     "-Qunused-arguments",
                     "-fno-rtti",
                     "-fvisibility=hidden",
                     "-fvisibility-inlines-hidden",
+                    "-fno-omit-frame-pointer",
                     "-Wno-unused-value",
                     "-Wno-unused-variable",
                     "-Wno-unused-command-line-argument",
