@@ -32,7 +32,9 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object TrimMessage : CommonSwitchFunctionHook() {
+object TrimMessage : CommonSwitchFunctionHook(
+    dexDeobfIndexes = intArrayOf(DexKit.N_ChatActivityFacade_sendMsgButton)
+) {
 
     override val name = "移除消息前后的空格"
 
