@@ -21,6 +21,8 @@
  */
 package com.rymmmmm.hook;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -34,6 +36,7 @@ import io.github.qauxv.step.DexKitDeobfStep;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitFinder;
@@ -41,9 +44,13 @@ import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Arrays;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
+import java.util.stream.Collectors;
 import me.teble.DexKitHelper;
 
 //强制使用默认字体
@@ -75,6 +82,11 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         return Simplify.UI_CHAT_MSG;
     }
 
+    @Override
+    public boolean isAvailable() {
+        return requireMinQQVersion(QQVersion.QQ_8_5_0);
+    }
+
     @Nullable
     @Override
     public Step[] makePreparationSteps() {
@@ -89,7 +101,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         Method method = DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText);
         Objects.requireNonNull(method);
         HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
-        // m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "q0" : "a") &&
+
         Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
                 .getDeclaredMethod("enlargeTextMsg", TextView.class);
         HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
@@ -104,21 +116,9 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
     @Override
     public boolean doFind() {
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
-        Set<Method> candidates = new HashSet<>(2);
-        for (Method m : Initiator._TextItemBuilder().getDeclaredMethods()) {
-            if (m.getModifiers() == Modifier.PROTECTED && m.getReturnType() == void.class) {
-                Class<?>[] argt = m.getParameterTypes();
-                if (argt.length == 2 && argt[0] != View.class && argt[1] == Initiator._ChatMessage()) {
-                    candidates.add(m);
-                }
-            }
-        }
-        if (candidates.size() != 2) {
-            throw new RuntimeException("expect 2 methods, got " + candidates.size());
-        }
         DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
         DexKitHelper helper = dexKitDeobfs.getDexKitHelper();
-        String[] res = helper.findMethodUsedField(
+        String[] resultMethods = helper.findMethodUsedField(
                 "",
                 "",
                 "",
@@ -130,15 +130,45 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 new String[]{"", Initiator._ChatMessage().getName()},
                 null
         );
-        for (String desc : res) {
-            DexMethodDescriptor descriptor = new DexMethodDescriptor(desc);
+        List<String> descs = Arrays.stream(resultMethods)
+                .filter(s -> s.contains("BaseBubbleBuilder"))
+                .collect(Collectors.toList());
+        if (descs.size() == 1) {
             try {
-                Method method = descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                if (candidates.contains(method)) {
-                    dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
-                    Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + desc);
-                    return true;
-                }
+                DexMethodDescriptor descriptor = new DexMethodDescriptor(descs.get(0));
+                descriptor.getMethodInstance(Initiator.getHostClassLoader());
+                dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
+                Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + descs.get(0));
+                return true;
+            } catch (NoSuchMethodException e) {
+                Log.e(e);
+            }
+        }
+        Map<String, String[]> resMap = helper.findMethodInvoking(
+                "",
+                "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
+                "",
+                "void",
+                new String[]{"", Initiator._ChatMessage().getName()},
+                "Landroid/text/TextUtils;",
+                "isEmpty",
+                "boolean",
+                null,
+                null
+        );
+        Set<String> classSet = resMap.keySet().stream()
+                .filter(s -> s.contains("BaseBubbleBuilder"))
+                .collect(Collectors.toSet());
+        List<String> res = descs.stream()
+                .filter(s -> !classSet.contains(s))
+                .collect(Collectors.toList());
+        if (res.size() == 1) {
+            try {
+                DexMethodDescriptor descriptor = new DexMethodDescriptor(descs.get(0));
+                descriptor.getMethodInstance(Initiator.getHostClassLoader());
+                dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
+                Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + descs.get(0));
+                return true;
             } catch (NoSuchMethodException e) {
                 Log.e(e);
             }
