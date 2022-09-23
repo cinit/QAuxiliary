@@ -55,6 +55,7 @@ if (ccacheExecutablePath != null) {
 
 android {
     namespace = "io.github.qauxv"
+    ndkVersion = "25.0.8775105"
     defaultConfig {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
@@ -70,7 +71,7 @@ android {
                         "-DCMAKE_C_COMPILER_LAUNCHER=$it",
                         "-DCMAKE_CXX_COMPILER_LAUNCHER=$it",
                         "-DNDK_CCACHE=$it",
-                        "-DANDROID_CCACHE=$it"
+                        "-DANDROID_CCACHE=$it",
                     )
                 }
                 val flags = arrayOf(
@@ -82,6 +83,7 @@ android {
                     "-Wno-unused-value",
                     "-Wno-unused-variable",
                     "-Wno-unused-command-line-argument",
+                    "-DMMKV_DISABLE_CRYPT",
                 )
                 cppFlags("-std=c++17", *flags)
                 cFlags("-std=c18", *flags)
@@ -125,6 +127,7 @@ android {
                 "-fdata-sections",
                 "-Wl,--gc-sections",
                 "-Oz",
+                "-Wl,--exclude-libs,ALL",
             )
             externalNativeBuild.cmake {
                 cFlags += releaseFlags
