@@ -405,11 +405,11 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     if (format == '<') {
         jclass AbsStructMsg = env->FindClass("com/tencent/mobileqq/structmsg/AbsStructMsg");
         if (!AbsStructMsg)return false;
-        jclass DexKit = env->FindClass("io/github/qauxv/util/DexKit");
-        jmethodID cid = env->GetStaticMethodID(DexKit, "doFindClass", "(I)Ljava/lang/Class;");
+        jclass DexKit = env->FindClass("io/github/qauxv/util/dexkit/DexKit");
+        jmethodID cid = env->GetStaticMethodID(DexKit, "loadClassFromCache", "(I)Ljava/lang/Class;");
         jclass TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, 18);
         if (TestStructMsg == nullptr) {
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "404: TestStructMsg");
+            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "class TestStructMsg not found");
             return false;
         }
         jclass cl_Utils = env->FindClass("cc/ioctl/util/Reflex");
