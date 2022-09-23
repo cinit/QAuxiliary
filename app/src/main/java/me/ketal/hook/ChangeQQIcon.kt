@@ -73,13 +73,6 @@ object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
                 val pm: PackageManager = ctx.packageManager
                 pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component
             }
-
-        clazz.method("getSplashActivityName")!!
-            .replace(this) {
-                val ctx = it.args[0] as Context
-                val pm: PackageManager = ctx.packageManager
-                pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component!!.className
-            }
     }
 
     private fun showDialog(ctx: Context) {
