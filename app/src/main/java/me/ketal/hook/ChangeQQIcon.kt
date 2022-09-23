@@ -26,9 +26,6 @@ import android.app.Activity
 import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
-import android.content.Intent
-import android.content.IntentFilter
-import android.content.pm.ActivityInfo
 import android.content.pm.PackageManager
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
@@ -38,7 +35,9 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.view.View
-import com.github.kyuubiran.ezxhelper.utils.getObjectAs
+import com.github.kyuubiran.ezxhelper.utils.invokeMethodAutoAs
+import com.github.kyuubiran.ezxhelper.utils.invokeStaticMethodAuto
+import com.github.kyuubiran.ezxhelper.utils.loadClass
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -50,9 +49,10 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.ketal.util.getAllActivity
 import me.ketal.util.setEnable
-import java.io.File
+import xyz.nextalone.util.method
+import xyz.nextalone.util.replace
+import xyz.nextalone.util.throwOrTrue
 
 @[FunctionHookEntry UiItemAgentEntry]
 object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
@@ -65,23 +65,50 @@ object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
     }
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_10)
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-    override fun initOnce() = true
+    override fun initOnce() = throwOrTrue {
+        val clazz = loadClass("com.tencent.mobileqq.vas.api.impl.VasAppIconStateManagerImpl")
+        clazz.method("getSplashActivityComponent", ComponentName::class.java, Context::class.java)!!
+            .replace(this) {
+                val ctx = it.args[0] as Context
+                val pm: PackageManager = ctx.packageManager
+                pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component
+            }
+
+        clazz.method("getAliasName", String::class.java)!!
+            .replace(this) {
+                val ctx = it.args[0] as Context
+                val pm: PackageManager = ctx.packageManager
+                pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component!!.className
+            }
+    }
 
     private fun showDialog(ctx: Context) {
+        if (!isAvailable) {
+            Toasts.error(ctx, "当前QQ版本不支持修改QQ图标")
+            return
+        }
+        val api = loadClass("com.tencent.mobileqq.qroute.QRoute")
+            .invokeStaticMethodAuto("api",
+                loadClass("com.tencent.mobileqq.vas.api.IVasAppIconStateManager"))!!
+
         val resources = hostInfo.application.resources
         val applicationInfo = hostInfo.application.applicationInfo
-        val list = iconList(applicationInfo.sourceDir)
-        val packageManager: PackageManager = ctx.packageManager
+        val pm: PackageManager = ctx.packageManager
+        val alias = api.invokeMethodAutoAs<Array<Any>>("getAllAlias")!!
+            .map { it.toString().substringAfter("(").substringBefore(')').split(", ") }
+        val list = alias.map {
+            pm.getActivityInfo(ComponentName(hostInfo.packageName, it[1]), PackageManager.MATCH_DISABLED_COMPONENTS)
+        }
         val items = Array(list.size) {
             val info = list[it]
             SpannableStringBuilder().apply {
                 val icon = BitmapFactory.decodeResource(resources, info.icon)
                     ?: BitmapFactory.decodeResource(resources, applicationInfo.icon)
                 append("icon", MyIm(ctx, icon), Spanned.SPAN_EXCLUSIVE_EXCLUSIVE)
-                append("     " + info.loadLabel(packageManager))
+                append("     " + info.loadLabel(pm))
             }
         }
-        val current = packageManager.getLaunchIntentForPackage(hostInfo.packageName)!!.component!!
+        val current = pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component!!
 
         AlertDialog.Builder(ctx, CustomDialog.themeIdForDialog())
             .setTitle("请选择一个图标")
@@ -89,23 +116,13 @@ object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
                 val selected = list[which]
                 current.setEnable(ctx, false)
                 ComponentName(hostInfo.packageName, selected.name).setEnable(ctx, true)
+                this.isEnabled = true
                 Toasts.info(ctx, "修改完毕")
                 dialog.dismiss()
             }
             .setNegativeButton("取消", null)
             .show()
     }
-
-    private fun iconList(path: String): List<ActivityInfo> {
-        val activity = getAllActivity(File(path))
-        return activity.filter { isIcon(it.getObjectAs("intents")) }
-            .map { it.getObjectAs("info") }
-    }
-
-    private fun isIcon(list: List<IntentFilter>) =
-        list.any {
-            it.hasCategory(Intent.CATEGORY_LAUNCHER) && it.hasAction(Intent.ACTION_MAIN)
-        }
 
     private class MyIm(ctx: Context, bitmap: Bitmap) : ImageSpan(ctx, bitmap) {
 
