@@ -23,8 +23,10 @@
 package io.github.qauxv.util.hookstatus;
 
 import android.app.Application;
+import android.os.Build;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Natives;
+import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 public class ModuleAppImpl extends Application {
 
@@ -35,5 +37,9 @@ public class ModuleAppImpl extends Application {
         HostInfo.init(this);
         // load native library
         Natives.load(this);
+        // bypass hidden api check for current process
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+            HiddenApiBypass.setHiddenApiExemptions("L");
+        }
     }
 }
