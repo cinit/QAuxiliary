@@ -48,6 +48,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FriendChunk;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
+import io.github.qauxv.util.CliOper;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import java.lang.ref.WeakReference;
@@ -169,6 +170,7 @@ public class DeletionObserver extends BasePersistBackgroundHook {
                         return;
                     }
                     z = true;
+                    CliOper.onLoad();
                 }
             });
         findAndHookMethod(load("friendlist/GetFriendListResp"), "readFrom",
