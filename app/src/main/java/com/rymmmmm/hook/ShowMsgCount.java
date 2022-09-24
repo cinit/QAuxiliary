@@ -31,9 +31,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.CCustomWidgetUtil;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -50,7 +52,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     public static final ShowMsgCount INSTANCE = new ShowMsgCount();
 
     private ShowMsgCount() {
-        super(new int[]{DexKit.C_CustomWidgetUtil});
+        super(new DexKitTarget[]{CCustomWidgetUtil.INSTANCE});
     }
 
     @NonNull
@@ -67,7 +69,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> kCustomWidgetUtil = DexKit.loadClassFromCache(DexKit.C_CustomWidgetUtil);
+        Class<?> kCustomWidgetUtil = DexKit.INSTANCE.loadClassFromCache(CCustomWidgetUtil.INSTANCE);
         // target: com.tencent.widget.CustomWidgetUtil
         // com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil is not what we want
         Objects.requireNonNull(kCustomWidgetUtil, "CustomWidgetUtil.class is null");

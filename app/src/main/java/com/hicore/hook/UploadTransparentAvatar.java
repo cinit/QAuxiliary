@@ -36,6 +36,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NVipUtils_getPrivilegeFlags;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -48,7 +50,7 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
     public static final UploadTransparentAvatar INSTANCE = new UploadTransparentAvatar();
 
     private UploadTransparentAvatar() {
-        super(new int[]{DexKit.C_VipStatusManagerImpl});
+        super(new DexKitTarget[]{NVipUtils_getPrivilegeFlags.INSTANCE});
     }
 
     @NonNull
@@ -97,8 +99,7 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
             param.setResult(true);
         });
 
-        Method med = Reflex.findMethod(Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_VipStatusManagerImpl), "VipStatusManagerImpl"),
-                int.class, "getPrivilegeFlags", String.class);
+        Method med = Objects.requireNonNull(DexKit.INSTANCE.loadMethodFromCache(NVipUtils_getPrivilegeFlags.INSTANCE), "VipStatusManagerImpl");
         HookUtils.hookAfterAlways(this, med, param -> {
             int i = (int) param.getResult();
             param.setResult(i | 2 | 4 | 8);

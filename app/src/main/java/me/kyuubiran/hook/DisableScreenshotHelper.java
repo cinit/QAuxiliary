@@ -29,7 +29,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.dexkit.CScreenShotHelper;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -53,12 +55,12 @@ public class DisableScreenshotHelper extends CommonSwitchFunctionHook {
     }
 
     private DisableScreenshotHelper() {
-        super(new int[]{DexKit.C_ScreenShotHelper});
+        super(new DexKitTarget[]{CScreenShotHelper.INSTANCE});
     }
 
     @Override
     public boolean initOnce() throws Exception {
-        for (Method m : DexKit.doFindClass(DexKit.C_ScreenShotHelper).getDeclaredMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CScreenShotHelper.INSTANCE).getDeclaredMethods()) {
             if (m.getName().equals("a") && Modifier.isStatic(m.getModifiers())
                 && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();

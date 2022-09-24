@@ -26,8 +26,9 @@ import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.dexkit.CItemBuilderFactory
+import io.github.qauxv.util.dexkit.DexKit
 import me.singleneuron.hook.decorator.CardMsgToText
 import me.singleneuron.hook.decorator.MiniAppToStruckMsg
 import me.singleneuron.hook.decorator.SimpleCheckIn
@@ -36,7 +37,7 @@ import java.lang.reflect.Method
 
 @FunctionHookEntry
 object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecorator>(
-        intArrayOf(DexKit.C_ItemBuilderFactory)
+        arrayOf(CItemBuilderFactory)
 ) {
 
     // register your decorator here
@@ -53,7 +54,7 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         var getMsgType: Method? = null
-        for (m in DexKit.doFindClass(DexKit.C_ItemBuilderFactory)!!.methods) {
+        for (m in DexKit.doFindClass(CItemBuilderFactory)!!.methods) {
             if (m.returnType == Int::class.javaPrimitiveType) {
                 val argt = m.parameterTypes
                 if (argt.isNotEmpty() && argt[argt.size - 1] == Initiator._ChatMessage()) {

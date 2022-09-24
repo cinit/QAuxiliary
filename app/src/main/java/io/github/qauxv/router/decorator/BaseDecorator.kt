@@ -25,11 +25,12 @@ package io.github.qauxv.router.decorator
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.step.Step
+import io.github.qauxv.util.dexkit.DexKitTarget
 
 abstract class BaseDecorator(
         hookKey: String?,
         defaultEnabled: Boolean,
-        dexDeobfIndexes: IntArray?
+        dexDeobfIndexes: Array<DexKitTarget>?
 ) : BaseFunctionHook(hookKey, defaultEnabled, dexDeobfIndexes) {
 
     protected abstract val dispatcher: IDynamicHook

@@ -35,7 +35,13 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.CMessageRecordFactory;
+import io.github.qauxv.util.dexkit.COnlinePushPbPushTransMsg;
+import io.github.qauxv.util.dexkit.CSystemMessageProcessor;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Objects;
@@ -48,11 +54,12 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     public static final TroopMemberLeaveGreyTip INSTANCE = new TroopMemberLeaveGreyTip();
 
     private TroopMemberLeaveGreyTip() {
-        super(SyncUtils.PROC_MAIN, new int[]{
-                DexKit.C_SystemMessageProcessor,
-                DexKit.C_OnlinePushPbPushTransMsg,
-                DexKit.N_ContactUtils_getDiscussionMemberShowName,
-                DexKit.N_ContactUtils_getBuddyName,
+        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{
+                CMessageRecordFactory.INSTANCE,
+                CSystemMessageProcessor.INSTANCE,
+                COnlinePushPbPushTransMsg.INSTANCE,
+                NContactUtils_getDiscussionMemberShowName.INSTANCE,
+                NContactUtils_getBuddyName.INSTANCE,
         });
         // The MSF process is not required to be hooked, said by the original author.
     }
@@ -78,7 +85,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_OnlinePushPbPushTransMsg), "OnlinePushPbPushTransMsg")
+                Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "OnlinePushPbPushTransMsg")
                         .getDeclaredMethod("a", Initiator.loadClass("com.tencent.mobileqq.app.MessageHandler"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.ToServiceMsg"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.FromServiceMsg")),
@@ -86,7 +93,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
         );
         HookUtils.hookBeforeIfEnabled(this,
                 Reflex.findSingleMethod(
-                        Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_SystemMessageProcessor), "C_SystemMessageProcessor"),
+                        Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "C_SystemMessageProcessor"),
                         void.class, false,
                         int.class, Initiator.loadClass("tencent.mobileim.structmsg.structmsg$StructMsg"), int.class),
                 param -> onProcessGroupSystemMsg((int) param.args[0], param.args[1], (int) param.args[2])

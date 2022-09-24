@@ -26,10 +26,12 @@ import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.tlb.ConfigTable;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.CMessageCache;
 import io.github.qauxv.util.dexkit.DexKit;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -67,6 +69,7 @@ public class QQMessageFacade {
         }
     }
 
+    @DexDeobfs("CMessageCache")
     public static void revokeMessage(Object msg) throws ReflectiveOperationException {
         if (msg == null) {
             throw new NullPointerException("msg == null");
@@ -74,7 +77,7 @@ public class QQMessageFacade {
         int istroop = (int) Reflex.getInstanceObjectOrNull(msg, "istroop");
         Object mgr = getMessageManager(istroop);
         try {
-            Class<?> kMessageCache = DexKit.loadClassFromCache(DexKit.C_MessageCache);
+            Class<?> kMessageCache = DexKit.INSTANCE.loadClassFromCache(CMessageCache.INSTANCE);
             Objects.requireNonNull(kMessageCache, "kMessageCache == null");
             Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(), kMessageCache);
             // must call the method to set the field to true, otherwise the message will not be revoked

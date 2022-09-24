@@ -29,7 +29,6 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
@@ -38,9 +37,13 @@ import io.github.qauxv.bridge.GreyTipBuilder;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
+import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.CMessageRecordFactory;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,10 +56,10 @@ public class GagInfoDisclosure extends CommonSwitchFunctionHook {
 
     private GagInfoDisclosure() {
         // TODO: 2020/6/12 Figure out whether MSF is really needed
-        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new int[]{
-                DexKit.C_MessageRecordFactory,
-                DexKit.N_ContactUtils_getDiscussionMemberShowName,
-                DexKit.N_ContactUtils_getBuddyName,
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new DexKitTarget[]{
+                CMessageRecordFactory.INSTANCE,
+                NContactUtils_getDiscussionMemberShowName.INSTANCE,
+                NContactUtils_getBuddyName.INSTANCE,
         });
     }
 

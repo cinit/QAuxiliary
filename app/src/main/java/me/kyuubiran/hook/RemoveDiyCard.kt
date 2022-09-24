@@ -30,10 +30,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NVasProfileTemplateController_onCardUpdate
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
@@ -47,14 +48,15 @@ import java.lang.reflect.Modifier
 @UiItemAgentEntry
 object RemoveDiyCard : CommonSwitchFunctionHook(
     "kr_remove_diy_card",
-    intArrayOf(DexKit.N_VasProfileTemplateController_onCardUpdate)) {
+    arrayOf(NVasProfileTemplateController_onCardUpdate)
+) {
 
     override val name = "屏蔽 DIY 名片"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_VasProfileTemplateController_onCardUpdate)!!
+        DexKit.doFindMethod(NVasProfileTemplateController_onCardUpdate)!!
             .hookBefore(this) {
                 when (it.thisObject) {
                     is Activity -> {

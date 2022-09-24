@@ -26,13 +26,16 @@ import android.view.ViewGroup;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.CAbsGalScene;
+import io.github.qauxv.util.dexkit.CGalleryBaseScene;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -43,13 +46,13 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
     public static final GalleryBgHook INSTANCE = new GalleryBgHook();
 
     private GalleryBgHook() {
-        super(SyncUtils.PROC_PEAK, new int[]{DexKit.C_ABS_GAL_SCENE, DexKit.C_GalleryBaseScene});
+        super(SyncUtils.PROC_PEAK, new DexKitTarget[]{CAbsGalScene.INSTANCE, CGalleryBaseScene.INSTANCE});
     }
 
     @Override
     public boolean initOnce() throws Exception {
         // for QQ >= 8.3.5
-        Class<?> kBrowserBaseScene = DexKit.doFindClass(DexKit.C_GalleryBaseScene);
+        Class<?> kBrowserBaseScene = DexKit.INSTANCE.doFindClass(CGalleryBaseScene.INSTANCE);
         if (kBrowserBaseScene != null) {
             Method m;
             try {
@@ -79,7 +82,7 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
             // for legacy QQ
             // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
             // source code from: ColorQQ by qiwu
-            Class<?> kAbstractGalleryScene = DexKit.doFindClass(DexKit.C_ABS_GAL_SCENE);
+            Class<?> kAbstractGalleryScene = DexKit.INSTANCE.doFindClass(CAbsGalScene.INSTANCE);
             Method m = Reflex.findSingleMethod(kAbstractGalleryScene, void.class, false, ViewGroup.class);
             Field fv = null;
             for (Field f : kAbstractGalleryScene.getDeclaredFields()) {

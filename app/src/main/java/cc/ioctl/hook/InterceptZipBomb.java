@@ -29,8 +29,10 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CZipUtils;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.io.File;
 import java.lang.reflect.Method;
 import java.util.Enumeration;
@@ -45,12 +47,12 @@ public class InterceptZipBomb extends CommonSwitchFunctionHook {
     public static final InterceptZipBomb INSTANCE = new InterceptZipBomb();
 
     private InterceptZipBomb() {
-        super(new int[]{DexKit.C_ZipUtils_biz});
+        super(new DexKitTarget[]{CZipUtils.INSTANCE});
     }
 
     @Override
     protected boolean initOnce() throws Exception {
-        Class<?> zipUtil = DexKit.doFindClass(DexKit.C_ZipUtils_biz);
+        Class<?> zipUtil = DexKit.INSTANCE.doFindClass(CZipUtils.INSTANCE);
         Method m;
         try {
             m = zipUtil.getMethod("a", File.class, String.class);

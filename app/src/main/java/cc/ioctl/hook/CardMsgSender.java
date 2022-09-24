@@ -39,7 +39,11 @@ import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
-import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
+import io.github.qauxv.util.dexkit.CFaceDe;
+import io.github.qauxv.util.dexkit.CTestStructMsg;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.lang.reflect.InvocationTargetException;
 import mqq.app.AppRuntime;
 
@@ -50,11 +54,11 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
     public static final CardMsgSender INSTANCE = new CardMsgSender();
 
     private CardMsgSender() {
-        super("qn_send_card_msg", false, new int[]{
-                DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER,
-                DexKit.C_FACADE,
-                DexKit.C_TEST_STRUCT_MSG,
-                DexKit.N_BASE_CHAT_PIE__INIT
+        super("qn_send_card_msg", false, new DexKitTarget[]{
+                CArkAppItemBubbleBuilder.INSTANCE,
+                CFaceDe.INSTANCE,
+                CTestStructMsg.INSTANCE,
+                NBaseChatPie_init.INSTANCE
         });
     }
 

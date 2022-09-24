@@ -32,6 +32,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NLeftSwipeReplyHelper_reply;
 import java.lang.reflect.Method;
 
 @FunctionHookEntry
@@ -41,7 +43,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
     public static final UnlockLeftSlipLimit INSTANCE = new UnlockLeftSlipLimit();
     public static final String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "H" : "h";
     private UnlockLeftSlipLimit() {
-        super(new int[]{DexKit.N_LeftSwipeReply_Helper__reply});
+        super(new DexKitTarget[]{NLeftSwipeReplyHelper_reply.INSTANCE});
     }
     @NonNull
     @Override
@@ -51,7 +53,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Method m = MMethod.FindMethod(DexKit.doFindMethod(DexKit.N_LeftSwipeReply_Helper__reply).getDeclaringClass(), methodName, boolean.class, new Class[0]);
+        Method m = MMethod.FindMethod(DexKit.INSTANCE.doFindMethod(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class, new Class[0]);
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
         return true;
     }

@@ -36,6 +36,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.throwOrTrue
@@ -51,7 +52,7 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
 
     override fun initOnce() = throwOrTrue {
         //Begin: ArkApp
-        val cl_ArkAppItemBuilder = DexKit.doFindClass(DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER)
+        val cl_ArkAppItemBuilder = DexKit.doFindClass(CArkAppItemBubbleBuilder)
         XposedHelpers.findAndHookMethod(cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
                 Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback)
         for (m in cl_ArkAppItemBuilder!!.declaredMethods) {

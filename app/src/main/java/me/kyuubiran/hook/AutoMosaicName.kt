@@ -26,20 +26,21 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NBaseChatPie_mosaic
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 
 //聊天界面顶栏群名字/好友昵称自动打码
 @FunctionHookEntry
 @UiItemAgentEntry
-object AutoMosaicName : CommonSwitchFunctionHook(intArrayOf(DexKit.N_BaseChatPie_mosaic)) {
+object AutoMosaicName : CommonSwitchFunctionHook(arrayOf(NBaseChatPie_mosaic)) {
 
     override val name = "昵称/群名片打码"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_BaseChatPie_mosaic)?.hookBefore(this) {
+        DexKit.doFindMethod(NBaseChatPie_mosaic)?.hookBefore(this) {
             it.args[0] = true
         }
     }

@@ -37,6 +37,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NConversation_onCreate
+import io.github.qauxv.util.dexkit.NFriendsStatusUtil_isChatAtTop
 import me.ketal.util.ignoreResult
 import me.kyuubiran.util.getDefaultCfg
 import xyz.nextalone.util.clazz
@@ -48,7 +50,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsStatusUtil_isChatAtTop, DexKit.N_Conversation_onCreate)) {
+object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isChatAtTop, NConversation_onCreate)) {
 
     override val name = "清理最近聊天"
 
@@ -64,7 +66,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.getMethodFromCache(DexKit.N_Conversation_onCreate)!!
+        DexKit.doFindMethod(NConversation_onCreate)!!
             .hookAfter(this) {
                 val recentAdapter = it.thisObject.get(RecentAdapter.clazz)
                 val app = it.thisObject.get("mqq.app.AppRuntime".clazz)
@@ -137,6 +139,6 @@ object CleanRecentChat : CommonSwitchFunctionHook(intArrayOf(DexKit.N_FriendsSta
 
     @Throws(ReflectiveOperationException::class)
     private fun isAtTop(app: Any?, str: String, i: Int, context: Context): Boolean {
-        return DexKit.getMethodFromCache(DexKit.N_FriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
+        return DexKit.doFindMethod(NFriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
     }
 }

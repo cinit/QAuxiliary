@@ -34,11 +34,13 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NBaseChatPie_chooseMsg
+import io.github.qauxv.util.dexkit.NLeftSwipeReplyHelper_reply
 import io.github.qauxv.util.requireMinVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.data.ConfigData
@@ -50,7 +52,7 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object LeftSwipeReplyHook : CommonConfigFunctionHook(
     "ketal_left_swipe_action",
-    intArrayOf(DexKit.N_LeftSwipeReply_Helper__reply, DexKit.N_BASE_CHAT_PIE__chooseMsg)
+    arrayOf(NLeftSwipeReplyHelper_reply, NBaseChatPie_chooseMsg)
 ) {
 
     override val name = "修改消息左滑动作"
@@ -87,7 +89,7 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
         get() = requireMinVersion(QQVersion.QQ_8_2_6, TIMVersion.TIM_3_1_1, PlayQQVersion.PlayQQ_8_2_9)
 
     override fun initOnce() = throwOrTrue {
-        val replyMethod = DexKit.doFindMethod(DexKit.N_LeftSwipeReply_Helper__reply)
+        val replyMethod = DexKit.doFindMethod(NLeftSwipeReplyHelper_reply)
         val hookClass = replyMethod!!.declaringClass
         Reflex.findSingleMethod(
             hookClass,
@@ -116,7 +118,7 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
             val message = Reflex.invokeVirtualAny(it.thisObject, Initiator._ChatMessage())
             val baseChatPie =
                 Reflex.getFirstByType(it.thisObject, Initiator._BaseChatPie() as Class<*>)
-            DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__chooseMsg)!!.invoke(baseChatPie, message)
+            DexKit.doFindMethod(NBaseChatPie_chooseMsg)!!.invoke(baseChatPie, message)
             it.result = null
         }
     }

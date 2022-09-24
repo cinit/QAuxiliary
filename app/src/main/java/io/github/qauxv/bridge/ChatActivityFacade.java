@@ -38,6 +38,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CFaceDe;
 import io.github.qauxv.util.dexkit.DexKit;
 import java.io.Externalizable;
 import java.io.File;
@@ -71,7 +72,7 @@ public class ChatActivityFacade {
         Objects.requireNonNull(context, "context == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(msg, "msg == null");
-        Class<?> facade = DexKit.doFindClass(DexKit.C_FACADE);
+        Class<?> facade = DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE);
         Class<?> kSendMsgParams = null;
         Method m = null;
         for (Method mi : facade.getDeclaredMethods()) {
@@ -131,7 +132,7 @@ public class ChatActivityFacade {
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(pttPath, "pttPath == null");
         Method send = null;
-        for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(long.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -157,7 +158,7 @@ public class ChatActivityFacade {
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(arkAppMsg, "arkAppMsg == null");
         Method send = null;
-        for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(boolean.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -183,7 +184,7 @@ public class ChatActivityFacade {
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(absStructMsg, "absStructMsg == null");
         Method send = null;
-        for (Method m : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(void.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -268,7 +269,7 @@ public class ChatActivityFacade {
                 break;
             case "MessageForPic":
                 try {
-                    for (Method mi : DexKit.doFindClass(DexKit.C_FACADE).getMethods()) {
+                    for (Method mi : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
                         if (!mi.getName().equals("a") && !mi.getName().equals("b")
                                 && (!mi.getName().equals("o0") && !HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93))) {
                             continue;

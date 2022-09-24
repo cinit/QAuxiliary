@@ -35,7 +35,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.dexkit.CFavEmoConst;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.util.List;
 
@@ -46,7 +48,7 @@ public class FavMoreEmo extends CommonSwitchFunctionHook {
     public static final FavMoreEmo INSTANCE = new FavMoreEmo();
 
     private FavMoreEmo() {
-        super(new int[]{DexKit.C_FAV_EMO_CONST});
+        super(new DexKitTarget[]{ CFavEmoConst.INSTANCE });
     }
 
     @Override
@@ -111,7 +113,7 @@ public class FavMoreEmo extends CommonSwitchFunctionHook {
     }
 
     private void setEmoNum() throws NoSuchFieldException {
-        Class<?> mFavEmoConstant = DexKit.doFindClass(DexKit.C_FAV_EMO_CONST);
+        Class<?> mFavEmoConstant = DexKit.INSTANCE.doFindClass(CFavEmoConst.INSTANCE);
         Reflex.setStaticObject(mFavEmoConstant, "a", 800);
         Reflex.setStaticObject(mFavEmoConstant, "b", 800);
     }

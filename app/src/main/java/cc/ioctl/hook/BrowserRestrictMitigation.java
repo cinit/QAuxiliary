@@ -35,6 +35,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NWebSecurityPluginV2_callback;
 import java.lang.reflect.Method;
 
 @FunctionHookEntry
@@ -44,7 +46,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
     public static final BrowserRestrictMitigation INSTANCE = new BrowserRestrictMitigation();
 
     private BrowserRestrictMitigation() {
-        super(SyncUtils.PROC_TOOL, new int[]{DexKit.N_WebSecurityPluginV2_callback});
+        super(SyncUtils.PROC_TOOL, new DexKitTarget[]{NWebSecurityPluginV2_callback.INSTANCE});
     }
 
     @NonNull
@@ -68,7 +70,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         // com.tencent.mobileqq.webview.WebSecurityPluginV2$1.callback(Bundle)V
-        Method callback = DexKit.doFindMethod(DexKit.N_WebSecurityPluginV2_callback);
+        Method callback = DexKit.INSTANCE.doFindMethod(NWebSecurityPluginV2_callback.INSTANCE);
         HookUtils.hookBeforeIfEnabled(this, callback, param -> {
             Bundle bundle = (Bundle) param.args[0];
             if (bundle != null && bundle.getInt("result", -1) == 0) {

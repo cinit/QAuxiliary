@@ -32,7 +32,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.dexkit.CSimpleUiUtil;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 
 @FunctionHookEntry
@@ -42,7 +44,7 @@ public class RoundAvatarHook extends CommonSwitchFunctionHook {
     public static final RoundAvatarHook INSTANCE = new RoundAvatarHook();
 
     private RoundAvatarHook() {
-        super(new int[]{DexKit.C_SIMPLE_UI_UTIL});
+        super(new DexKitTarget[]{CSimpleUiUtil.INSTANCE});
     }
 
     @NonNull
@@ -66,7 +68,7 @@ public class RoundAvatarHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         Method a = null, b = null;
-        Class clz = DexKit.doFindClass(DexKit.C_SIMPLE_UI_UTIL);
+        Class clz = DexKit.INSTANCE.doFindClass(CSimpleUiUtil.INSTANCE);
         for (Method m : clz.getDeclaredMethods()) {
             if (!boolean.class.equals(m.getReturnType())) {
                 continue;

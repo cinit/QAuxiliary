@@ -29,16 +29,17 @@ import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitTarget
 import java.util.Arrays
 
 abstract class BaseHookDispatcher<T : IDynamicHook>(
-        dexDeobfIndexes: IntArray?
+    targets: Array<DexKitTarget>?
 ) : IDynamicHook, RuntimeErrorTracer {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
     private var mInitializeResult = false
-    private val mDexDeobfIndexes: IntArray? = dexDeobfIndexes
+    private val mDexDeobfIndexes: Array<DexKitTarget>? = targets
 
     override val isInitialized: Boolean get() = mInitialized
 
@@ -97,7 +98,7 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
             decorators.iterator().forEach { if (it.isEnabled) return true }
             return false
         }
-        set(value) {
+        set(_) {
             // not supported
         }
 

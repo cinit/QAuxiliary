@@ -25,11 +25,14 @@ import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
+import com.tencent.common.app.AppInterface;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -43,13 +46,13 @@ public class ContactUtils {
     private static final String UNICODE_RLO = "\u202E";
 
     @NonNull
-    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName, DexKit.N_ContactUtils_getBuddyName})
+    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName", "NContactUtils_getBuddyName"})
     public static String getTroopMemberNick(long troopUin, long memberUin) {
         return getTroopMemberNick(String.valueOf(troopUin), String.valueOf(memberUin));
     }
 
     @NonNull
-    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName, DexKit.N_ContactUtils_getBuddyName})
+    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName", "NContactUtils_getBuddyName"})
     public static String getTroopMemberNick(@NonNull String troopUin, @NonNull String memberUin) {
         Objects.requireNonNull(troopUin);
         Objects.requireNonNull(memberUin);
@@ -98,12 +101,12 @@ public class ContactUtils {
     }
 
     @Nullable
-    @DexDeobfs({DexKit.N_ContactUtils_getDiscussionMemberShowName})
+    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName"})
     public static String getDiscussionMemberShowName(@NonNull AppRuntime app, @NonNull String troopUin, @NonNull String memberUin) {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(troopUin, "troopUin is null");
         Objects.requireNonNull(memberUin, "memberUin is null");
-        Method getDiscussionMemberShowName = DexKit.getMethodFromCache(DexKit.N_ContactUtils_getDiscussionMemberShowName);
+        Method getDiscussionMemberShowName = DexKit.INSTANCE.loadMethodFromCache(NContactUtils_getDiscussionMemberShowName.INSTANCE);
         if (getDiscussionMemberShowName == null) {
             Log.e("getDiscussionMemberShowName but N_ContactUtils_getDiscussionMemberShowName not found");
             return null;
@@ -122,11 +125,11 @@ public class ContactUtils {
     }
 
     @Nullable
-    @DexDeobfs({DexKit.N_ContactUtils_getBuddyName})
+    @DexDeobfs({"NContactUtils_getBuddyName"})
     public static String getBuddyName(@NonNull AppRuntime app, @NonNull String uin) {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(uin, "uin is null");
-        Method getBuddyName = DexKit.getMethodFromCache(DexKit.N_ContactUtils_getBuddyName);
+        Method getBuddyName = DexKit.INSTANCE.loadMethodFromCache(NContactUtils_getBuddyName.INSTANCE);
         if (getBuddyName == null) {
             Log.e("getBuddyName but N_ContactUtils_getBuddyName not found");
             return null;
@@ -152,7 +155,7 @@ public class ContactUtils {
         try {
             return (String) Reflex.invokeStatic(Initiator.loadClass("com.tencent.mobileqq.utils.ContactUtils"), "a",
                     AppRuntimeHelper.getQQAppInterface(), troopUin, true,
-                    Initiator.loadClass("com.tencent.common.app.AppInterface"), String.class, boolean.class, String.class);
+                    AppInterface.class, String.class, boolean.class, String.class);
         } catch (ReflectiveOperationException e) {
             Log.e(e);
             return troopUin;

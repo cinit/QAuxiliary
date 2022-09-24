@@ -52,6 +52,8 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NChatActivityFacade_sendMsgButton
+import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getExFriendCfg
@@ -69,7 +71,7 @@ import java.util.Date
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intArrayOf(DexKit.N_QQSettingMe_onResume, DexKit.N_ChatActivityFacade_sendMsgButton)) {
+object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", arrayOf(NQQSettingMe_onResume, NChatActivityFacade_sendMsgButton)) {
 
     override val name = "聊天字数统计"
     override val valueState: MutableStateFlow<String?>? = null
@@ -114,11 +116,11 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", intAr
                 updateChatWordView(viewGroup)
             }
         }
-        DexKit.doFindMethod(DexKit.N_QQSettingMe_onResume)?.hookAfter(this) {
+        DexKit.doFindMethod(NQQSettingMe_onResume)?.hookAfter(this) {
             val viewGroup = it.thisObject.get(ViewGroup::class.java) as ViewGroup
             updateChatWordView(viewGroup)
         }
-        DexKit.doFindMethod(DexKit.N_ChatActivityFacade_sendMsgButton)?.hookAfter(this)
+        DexKit.doFindMethod(NChatActivityFacade_sendMsgButton)?.hookAfter(this)
         {
             val isToday = Date().today == getExFriendCfg()!!.getStringOrDefault(timeCfg, "")
             if (isToday) {

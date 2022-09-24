@@ -27,9 +27,11 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.dexkit.DexDeobfsBackend
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
+import io.github.qauxv.util.dexkit.name
+import io.github.qauxv.util.dexkit.valueOf
 import me.teble.DexKitHelper
-import java.util.Arrays
 import java.util.concurrent.locks.Lock
 
 class DexKitDeobfs private constructor(
@@ -37,30 +39,31 @@ class DexKitDeobfs private constructor(
     private var mDexKitHelper: DexKitHelper?
 ) : DexDeobfsBackend {
 
+    override val id: String = ID
+    override val name: String = NAME
+    override val isBatchFindMethodSupported: Boolean = true
+
     fun getDexKitHelper(): DexKitHelper {
         return mDexKitHelper!!
     }
 
-    override fun isBatchFindMethodSupported(): Boolean = true
-
-    override fun doBatchFindMethodImpl(indexArray: IntArray) {
+    override fun doBatchFindMethodImpl(targetArray: Array<DexKitTarget>) {
         ensureOpen()
         mReadLock.lock()
         try {
             val helper = mDexKitHelper!!
-            val methodDescriptorArray = Array(indexArray.size) {
-                DexKit.getMethodDescFromCache(indexArray[it])
+            val targets = targetArray.filterIsInstance<DexKitTarget.UsingStr>()
+            val methodDescriptorArray = Array(targets.size) {
+                DexKit.getMethodDescFromCache(targets[it])
             }
             val deobfsMap = mutableMapOf<String, Set<String>>()
             for (index in methodDescriptorArray.indices) {
                 if (methodDescriptorArray[index] == null) {
-                    val id = indexArray[index]
-                    val keys = DexKit.b(id).map {
-                        String(Arrays.copyOfRange(it, 1, it.size))
-                    }
+                    val target = targets[index]
+                    val keys = target.traitString
                     keys.forEachIndexed { idx, key ->
                         // 可能存在不同版本的关键词，所以需要区分开来
-                        deobfsMap["${id}_${idx}"] = setOf(key)
+                        deobfsMap["${target.name}#_#${idx}"] = setOf(key)
                     }
                 }
             }
@@ -68,13 +71,15 @@ class DexKitDeobfs private constructor(
             val resultMap = helper.batchFindMethodsUsedStrings(deobfsMap, true)
 
             resultMap.forEach { (key, valueArr) ->
-                val id = key.split("_").first().toInt()
-                val ret = DexKit.verifyTargetMethod(id, valueArr.map { DexMethodDescriptor(it) }.toHashSet())
+                val name = key.split("#_#").first()
+                val target = DexKitTarget.valueOf(name)
+                val ret = target.verifyTargetMethod(valueArr.map { DexMethodDescriptor(it) })
                 if (ret == null) {
-                    Log.i("${valueArr.size} candidates found for " + id + ", none satisfactory.")
+                    valueArr.forEach(Log::i)
+                    Log.i("${valueArr.size} candidates found for " + name + ", none satisfactory.")
                 } else {
                     Log.d("save id: $id,method: $ret")
-                    saveDescriptor(id, ret)
+                    target.descCache = ret.toString()
                 }
             }
         } finally {
@@ -82,44 +87,33 @@ class DexKitDeobfs private constructor(
         }
     }
 
-    override fun doFindMethodImpl(i: Int): DexMethodDescriptor? {
+    override fun doFindMethodImpl(target: DexKitTarget): DexMethodDescriptor? {
+        if (target !is DexKitTarget.UsingStr) return null
         ensureOpen()
         mReadLock.lock()
         try {
-            var ret = DexKit.getMethodDescFromCache(i)
+            var ret = DexKit.getMethodDescFromCache(target)
             if (ret != null) {
                 return ret
             }
             ensureOpen()
             val helper = mDexKitHelper!!
-            val keys = DexKit.b(i)
-            val methods = HashSet<DexMethodDescriptor>()
-            for (key in keys) {
-                val str = String(Arrays.copyOfRange(key, 1, key.size))
-                Log.d("DexKitDeobfs.doFindMethodImpl: id $i, key:$str")
-                val descArray = helper.findMethodUsedString(str)
-                descArray.forEach {
-                    val desc = DexMethodDescriptor(it)
-                    methods.add(desc)
-                }
+            val keys = target.traitString
+            val methods = keys.map { key ->
+                helper.findMethodUsedString(key, true)
+            }.flatMap { desc ->
+                desc.map { DexMethodDescriptor(it) }
             }
-            if (methods.size != 0) {
-                ret = DexKit.verifyTargetMethod(i, methods)
+            if (methods.isNotEmpty()) {
+                ret = target.verifyTargetMethod(methods)
                 if (ret == null) {
-                    Log.i(methods.size.toString() + " classes candidates found for " + i + ", none satisfactory.")
-                    LegacyDexDeobfs.newInstance().use { legacy ->
-                        ret = legacy.doFindMethodImpl(i)
-                        return ret
-                    }
+                    Log.i("${methods.size} methods found for ${target.name}, none satisfactory, save null.")
+                    ret = DexKit.NO_SUCH_METHOD
                 }
-                Log.d("save id: $i,method: $ret")
-                saveDescriptor(i, ret)
-
+                Log.d("save id: ${target.name},method: $ret")
+                target.descCache = ret.toString()
             }
-            LegacyDexDeobfs.newInstance().use { legacy ->
-                ret = legacy.doFindMethodImpl(i)
-                return ret
-            }
+            return ret
         } finally {
             mReadLock.unlock()
         }
@@ -162,9 +156,4 @@ class DexKitDeobfs private constructor(
             }
         }
     }
-
-    override fun getId() = ID
-
-    override fun getName() = NAME
-
 }

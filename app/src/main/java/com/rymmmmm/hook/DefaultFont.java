@@ -23,7 +23,6 @@ package com.rymmmmm.hook;
 
 import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
 
-import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -40,12 +39,12 @@ import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitFinder;
+import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
+import io.github.qauxv.util.dexkit.NTextItemBuilder_setETText;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.Arrays;
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -98,7 +97,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
             throw new IllegalStateException("该功能仅限DexKit引擎");
         }
-        Method method = DexKit.getMethodFromCache(DexKit.N_TextItemBuilder_setETText);
+        Method method = DexKit.INSTANCE.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
         Objects.requireNonNull(method);
         HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
 
@@ -110,7 +109,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        return DexKit.getMethodDescFromCache(DexKit.N_TextItemBuilder_setETText) == null;
+        return DexKit.INSTANCE.getMethodDescFromCache(NTextItemBuilder_setETText.INSTANCE) == null;
     }
 
     @Override
@@ -137,8 +136,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
             try {
                 DexMethodDescriptor descriptor = new DexMethodDescriptor(descs.get(0));
                 descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
-                Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + descs.get(0));
+                NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
+                Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descs.get(0));
                 return true;
             } catch (NoSuchMethodException e) {
                 Log.e(e);
@@ -166,14 +165,14 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
             try {
                 DexMethodDescriptor descriptor = new DexMethodDescriptor(descs.get(0));
                 descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, descriptor);
-                Log.d("save id: " + DexKit.N_TextItemBuilder_setETText + ",method: " + descs.get(0));
+                NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
+                Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descs.get(0));
                 return true;
             } catch (NoSuchMethodException e) {
                 Log.e(e);
             }
         }
-        dexKitDeobfs.saveDescriptor(DexKit.N_TextItemBuilder_setETText, new DexMethodDescriptor("Lxxxxx;->xxxxx()V"));
+        NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.INSTANCE.getNO_SUCH_METHOD().toString());
         return false;
     }
 }

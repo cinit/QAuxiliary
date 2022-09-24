@@ -37,7 +37,6 @@ import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -49,9 +48,15 @@ import io.github.qauxv.bridge.RevokeMsgInfoImpl;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.CContactUtils;
+import io.github.qauxv.util.dexkit.CMessageRecordFactory;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -85,10 +90,11 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     private RevokeMsgHook() {
         //FIXME: is MSF really necessary?
-        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new int[]{
-                DexKit.C_MessageRecordFactory, DexKit.C_CONTACT_UTILS,
-                DexKit.N_ContactUtils_getDiscussionMemberShowName,
-                DexKit.N_ContactUtils_getBuddyName
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new DexKitTarget[]{
+                CMessageRecordFactory.INSTANCE,
+                CContactUtils.INSTANCE,
+                NContactUtils_getDiscussionMemberShowName.INSTANCE,
+                NContactUtils_getBuddyName.INSTANCE
         });
     }
 
@@ -331,7 +337,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             throws Exception {
         int msgtype = -2030;// MessageRecord.MSG_TYPE_TROOP_GAP_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,
@@ -346,7 +352,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                                           String msg, long msgUid, long shmsgseq) throws Exception {
         int msgtype = -2031;// MessageRecord.MSG_TYPE_REVOKE_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,

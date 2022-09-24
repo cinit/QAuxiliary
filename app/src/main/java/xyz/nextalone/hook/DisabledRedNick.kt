@@ -27,6 +27,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NFriendChatPie_updateUITitle
+import io.github.qauxv.util.dexkit.NVipUtils_getUserStatus
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
@@ -37,7 +39,7 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object DisabledRedNick : CommonSwitchFunctionHook(
     "na_disable_red_nick_kt",
-    intArrayOf(DexKit.N_FriendChatPie_updateUITitle, DexKit.N_VipUtils_getUserStatus)
+    arrayOf(NFriendChatPie_updateUITitle, NVipUtils_getUserStatus)
 ) {
     private var updating = false
     override val name = "隐藏会员红名"
@@ -47,15 +49,15 @@ object DisabledRedNick : CommonSwitchFunctionHook(
     override fun initOnce() = throwOrTrue {
         if (!isSimpleUi) {
 
-            DexKit.doFindMethod(DexKit.N_VipUtils_getUserStatus)?.hookBefore(this) {
+            DexKit.doFindMethod(NVipUtils_getUserStatus)?.hookBefore(this) {
                 if (updating) {
                     it.result = -1
                 }
             }
-            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookBefore(this) {
+            DexKit.doFindMethod(NFriendChatPie_updateUITitle)?.hookBefore(this) {
                 updating = true
             }
-            DexKit.doFindMethod(DexKit.N_FriendChatPie_updateUITitle)?.hookAfter(this) {
+            DexKit.doFindMethod(NFriendChatPie_updateUITitle)?.hookAfter(this) {
                 updating = false
             }
         }

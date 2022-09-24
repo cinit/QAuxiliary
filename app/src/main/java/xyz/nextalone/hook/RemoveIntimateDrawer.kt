@@ -26,6 +26,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.dexkit.CIntimateDrawer
 import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
@@ -35,7 +36,7 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 object RemoveIntimateDrawer : CommonSwitchFunctionHook(
     "kr_remove_intimate_drawer",
-    intArrayOf(DexKit.C_IntimateDrawer)
+    arrayOf(CIntimateDrawer)
 ) {
 
     override val name = "隐藏亲密抽屉"
@@ -43,7 +44,7 @@ object RemoveIntimateDrawer : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindClass(DexKit.C_IntimateDrawer)?.method {
+        DexKit.doFindClass(CIntimateDrawer)?.method {
             it.returnType == View::class.java && it.parameterTypes.isEmpty()
         }?.replace(this, null)
     }

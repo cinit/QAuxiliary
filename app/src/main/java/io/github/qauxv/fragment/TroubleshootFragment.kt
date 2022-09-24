@@ -22,6 +22,7 @@
 
 package io.github.qauxv.fragment
 
+import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Context
@@ -64,6 +65,9 @@ import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitTarget
+import io.github.qauxv.util.dexkit.ordinal
+import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
 import kotlin.system.exitProcess
 
@@ -156,7 +160,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToClearCache = confirmBeforeAction(
-            "确认清除缓存, 并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + hostInfo.hostName + "."
+        "确认清除缓存, 并重新计算适配数据?\n点击确认后请等待3秒后手动重启" + hostInfo.hostName + "."
     ) {
         ConfigManager.getCache().apply {
             clear()
@@ -167,7 +171,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToResetDefaultConfig = confirmBeforeAction(
-            "此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + hostInfo.hostName + ".\n此操作不可恢复"
+        "此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + hostInfo.hostName + ".\n此操作不可恢复"
     ) {
         ConfigManager.getCache().apply {
             clear()
@@ -182,7 +186,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToClearRecoveredFriends = confirmBeforeAction(
-            """
+        """
             此操作将删除当前帐号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
             如果因 BUG 大量好友被标记为已删除, 请先刷新好友列表, 然后再点击此按钮.
             此操作不可恢复
@@ -193,7 +197,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         while (it.hasNext()) {
             val ev = (it.next() as Map.Entry<*, *>).value as EventRecord
             if (exm.persons[ev.operand]!!.friendStatus
-                    == FriendRecord.STATUS_FRIEND_MUTUAL) {
+                == FriendRecord.STATUS_FRIEND_MUTUAL
+            ) {
                 it.remove()
             }
         }
@@ -202,10 +207,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToClearAllFriends = confirmBeforeAction(
-            "此操作将删除当前帐号(" + getLongAccountUin()
-                    + ")下的 全部 的历史好友记录, 通常您不需要进行此操作. \n" +
-                    "如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友. \n" +
-                    "此操作不可恢复"
+        "此操作将删除当前帐号(" + getLongAccountUin()
+            + ")下的 全部 的历史好友记录, 通常您不需要进行此操作. \n" +
+            "如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友. \n" +
+            "此操作不可恢复"
     ) {
         val uin = getLongAccountUin()
         if (uin < 10000) {
@@ -226,10 +231,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 action()
             } catch (e: Exception) {
                 CustomDialog.createFailsafe(requireContext())
-                        .setTitle(Reflex.getShortClassName(e))
-                        .setCancelable(true)
-                        .setMessage(e.toString())
-                        .ok().show()
+                    .setTitle(Reflex.getShortClassName(e))
+                    .setCancelable(true)
+                    .setMessage(e.toString())
+                    .ok().show()
             }
         }
         dialog.setNegativeButton(android.R.string.cancel, null)
@@ -244,10 +249,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             action()
         } catch (e: Throwable) {
             CustomDialog.createFailsafe(requireContext())
-                    .setTitle(Reflex.getShortClassName(e))
-                    .setCancelable(true)
-                    .setMessage(e.toString())
-                    .ok().show()
+                .setTitle(Reflex.getShortClassName(e))
+                .setCancelable(true)
+                .setMessage(e.toString())
+                .ok().show()
         }
     }
 
@@ -262,6 +267,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         startActivity(intent)
     }
 
+    @SuppressLint("NotificationPermission")
     private val clickToTestNotification = actionOrShowError {
         val app = hostInfo.application
         val inner = createStartActivityForFragmentIntent(app, ExfriendListFragment::class.java, null)
@@ -316,27 +322,24 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val colorError: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, R.attr.unusableColor, Color.RED)
         val colorNotice: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, androidx.appcompat.R.attr.colorAccent, Color.BLUE)
         val sb = SpannableStringBuilder()
-        for (i in 1..DexKit.DEOBF_NUM_C) {
-            if (i == 8 || i == 12) {
-                // hide red items to make users happy
-                continue
-            }
-            try {
-                val tag = DexKit.a(i)
-                var orig = DexKit.c(i) ?: continue
-                orig = orig.replace("/", ".")
+        val targets = DexKitTarget.values
+            .filterIsInstance<DexKitTarget.UsingStr>()
+            .groupBy { it.findMethod }
+        targets[false]?.forEach {
+            kotlin.runCatching {
+                val orig = it.declaringClass.replace("/", ".")
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
-                val md = DexKit.getMethodDescFromCache(i)
+                val md = DexKit.getMethodDescFromCache(it)
                 if (md != null) {
                     currName = md.toString()
                 } else {
-                    val c = DexKit.loadClassFromCache(i)
+                    val c = DexKit.loadClassFromCache(it)
                     if (c != null) {
                         currName = c.name
                     }
                 }
-                val text = "  [$i]$shortName\n$orig\n= $currName"
+                val text = "  [${it.ordinal}]$shortName\n$orig\n= $currName"
                 when (currName) {
                     "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
                     DexKit.NO_SUCH_METHOD.toString() -> {
@@ -344,29 +347,27 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     }
                     else -> sb.append(text)
                 }
-            } catch (e: Throwable) {
-                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
+            }.onFailure { t ->
+                sb.append("  [${it.ordinal}]$t", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }
-        for (ii in 1..DexKit.DEOBF_NUM_N) {
-            val i = 20000 + ii
-            try {
-                val tag = DexKit.a(i)
-                var orig = DexKit.c(i) ?: continue
-                orig = orig.replace("/", ".")
+
+        targets[true]?.forEach {
+            kotlin.runCatching {
+                val orig = it.declaringClass.replace("/", ".")
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
-                val md = DexKit.getMethodDescFromCache(i)
+                val md = DexKit.getMethodDescFromCache(it)
                 if (md != null) {
                     currName = md.toString()
                 } else {
-                    val c = DexKit.loadClassFromCache(i)
+                    val c = DexKit.loadClassFromCache(it)
                     if (c != null) {
                         currName = c.name
                     }
                 }
-                val text = "  [$i]$shortName\n$orig\n= $currName"
+                val text = "  [${it.ordinal}]$shortName\n$orig\n= $currName"
                 when (currName) {
                     "(void*)0" -> sb.append(text, ForegroundColorSpan(colorNotice), SPAN_EXCLUSIVE_EXCLUSIVE)
                     DexKit.NO_SUCH_METHOD.toString() -> {
@@ -374,8 +375,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     }
                     else -> sb.append(text)
                 }
-            } catch (e: Throwable) {
-                sb.append("  [$i]$e", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
+            }.onFailure { t ->
+                sb.append("  [${it.ordinal}]$t", ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
             }
             sb.append("\n")
         }

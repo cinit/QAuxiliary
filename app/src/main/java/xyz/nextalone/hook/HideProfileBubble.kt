@@ -25,9 +25,10 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NQQSettingMe_updateProfileBubble
 import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.replace
@@ -35,7 +36,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HideProfileBubble : CommonSwitchFunctionHook(intArrayOf(DexKit.N_QQSettingMe_updateProfileBubble)) {
+object HideProfileBubble : CommonSwitchFunctionHook(arrayOf(NQQSettingMe_updateProfileBubble)) {
 
     override val name = "隐藏资料卡气泡"
     override val description = "空间点赞提醒"
@@ -43,7 +44,7 @@ object HideProfileBubble : CommonSwitchFunctionHook(intArrayOf(DexKit.N_QQSettin
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_QQSettingMe_updateProfileBubble)?.replace(this, null)
+        DexKit.doFindMethod(NQQSettingMe_updateProfileBubble)?.replace(this, null)
     }
 
     override val isAvailable: Boolean

@@ -22,27 +22,33 @@
 package io.github.qauxv.step;
 
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
 
 public class DexDeobfStep implements Step {
 
-    private final int id;
+    private final DexKitTarget target;
 
-    public DexDeobfStep(int id) {
-        this.id = id;
+    public DexDeobfStep(String id) {
+        this.target = DexKitTargetSealedEnum.INSTANCE.valueOf(id);
     }
 
-    public int getId() {
-        return id;
+    public DexDeobfStep(DexKitTarget target) {
+        this.target = target;
+    }
+
+    public String getId() {
+        return DexKitTargetSealedEnum.INSTANCE.nameOf(target);
     }
 
     @Override
     public boolean step() {
-        return DexKit.prepareFor(id);
+        return DexKit.INSTANCE.tryFind(target);
     }
 
     @Override
     public boolean isDone() {
-        return !DexKit.isRunDexDeobfuscationRequired(id);
+        return !DexKit.INSTANCE.isRunDexDeobfuscationRequired(target);
     }
 
     @Override
@@ -52,11 +58,15 @@ public class DexDeobfStep implements Step {
 
     @Override
     public String getDescription() {
-        if (id / 10000 == 0) {
-            return "定位被混淆类: " + DexKit.c(id);
-        } else {
-            return "定位被混淆方法: " + DexKit.c(id);
+        if (target instanceof DexKitTarget.UsingStr) {
+            var t = (DexKitTarget.UsingStr) target;
+            if (t.getFindMethod()) {
+                return "定位被混淆方法: " + getId();
+            } else {
+                return "定位被混淆类: " + getId();
+            }
         }
+        return "Unsupported Type";
     }
 
     @Override
@@ -68,11 +78,11 @@ public class DexDeobfStep implements Step {
             return false;
         }
         DexDeobfStep that = (DexDeobfStep) o;
-        return id == that.id;
+        return getId().equals(that.getId());
     }
 
     @Override
     public int hashCode() {
-        return id;
+        return getId().hashCode();
     }
 }

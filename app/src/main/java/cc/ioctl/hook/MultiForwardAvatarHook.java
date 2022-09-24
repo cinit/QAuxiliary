@@ -42,9 +42,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.UiThread;
+import io.github.qauxv.util.dexkit.CAIOUtils;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -57,7 +59,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
     private static Field mLeftCheckBoxVisible = null;
 
     private MultiForwardAvatarHook() {
-        super(new int[]{DexKit.C_AIO_UTILS});
+        super(new DexKitTarget[]{CAIOUtils.INSTANCE});
     }
 
     @NonNull
@@ -87,7 +89,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
     @Nullable
     //@Deprecated
     public static Object getChatMessageByView(View v) {
-        Class cl_AIOUtils = DexKit.doFindClass(DexKit.C_AIO_UTILS);
+        Class<?> cl_AIOUtils = DexKit.INSTANCE.doFindClass(CAIOUtils.INSTANCE);
         if (cl_AIOUtils == null) {
             return null;
         }

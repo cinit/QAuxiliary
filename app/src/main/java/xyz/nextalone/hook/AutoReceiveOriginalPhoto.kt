@@ -28,6 +28,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.CAIOPictureView
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
@@ -41,7 +42,7 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     SyncUtils.PROC_PEAK,
-    intArrayOf(DexKit.C_AIOPictureView)
+    arrayOf(CAIOPictureView)
 ) {
 
     override val name: String = "聊天自动接收原图"
@@ -58,7 +59,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "t"
             else -> "I"
         }
-        val kAIOPictureView = DexKit.loadClassFromCache(DexKit.C_AIOPictureView)!!
+        val kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)!!
         val setXxxVisible: String = when {
             requireMinQQVersion(QQVersion.QQ_8_9_5) -> "b1"
             requireMinQQVersion(QQVersion.QQ_8_8_98) -> "Z0"

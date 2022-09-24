@@ -27,14 +27,16 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.CTroopGiftUtil;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -64,13 +66,13 @@ public class SendGiftHook extends CommonSwitchFunctionHook {
     public static final SendGiftHook INSTANCE = new SendGiftHook();
 
     private SendGiftHook() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_TROOP_GIFT_UTIL});
+        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{CTroopGiftUtil.INSTANCE});
     }
 
     @Override
     public boolean initOnce() throws Exception {
         {
-            Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_TROOP_GIFT_UTIL), "DexKit.C_TROOP_GIFT_UTIL"),
+            Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CTroopGiftUtil.INSTANCE), "CTROOP_GIFT_UTIL.INSTANCE"),
                     void.class, false,
                     Activity.class, String.class, String.class, Initiator._QQAppInterface());
             HookUtils.hookBeforeIfEnabled(this, m, 47, param -> param.setResult(null));

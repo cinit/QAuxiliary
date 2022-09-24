@@ -34,6 +34,6 @@ public @interface DexDeobfs {
     /**
      * Dex deobfuscation required to be performed before the method is called.
      */
-    int[] value();
+    String[] value();
 
 }

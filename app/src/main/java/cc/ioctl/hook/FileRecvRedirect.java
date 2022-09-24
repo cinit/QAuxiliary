@@ -34,7 +34,6 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import com.afollestad.materialdialogs.MaterialDialog;
 import de.robv.android.xposed.XposedHelpers;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -42,11 +41,14 @@ import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CAppConstants;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.Locale;
@@ -64,7 +66,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     private Field TARGET_FIELD = null;
 
     private FileRecvRedirect() {
-        super(SyncUtils.PROC_ANY & ~(SyncUtils.PROC_MSF | SyncUtils.PROC_UNITY | SyncUtils.PROC_MINI), new int[]{DexKit.C_APP_CONSTANTS});
+        super(SyncUtils.PROC_ANY & ~(SyncUtils.PROC_MSF | SyncUtils.PROC_UNITY | SyncUtils.PROC_MINI), new DexKitTarget[]{CAppConstants.INSTANCE});
     }
 
     @NonNull
@@ -168,7 +170,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
                     });
                 }
             }else {
-                Field[] fields = DexKit.doFindClass(DexKit.C_APP_CONSTANTS).getFields();
+                Field[] fields = DexKit.INSTANCE.doFindClass(CAppConstants.INSTANCE).getFields();
                 if (TARGET_FIELD == null) {
                     for (Field field : fields) {
                         field.setAccessible(true);

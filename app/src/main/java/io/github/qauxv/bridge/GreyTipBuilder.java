@@ -26,8 +26,10 @@ import static de.robv.android.xposed.XposedHelpers.setObjectField;
 
 import android.os.Bundle;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.CMessageRecordFactory;
+import io.github.qauxv.util.dexkit.DexKit;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 
@@ -71,12 +73,13 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         return this;
     }
 
+    @DexDeobfs("CMessageRecordFactory")
     public Object build(String uin, int istroop, String fromUin, long time, long msgUid,
                         long msgseq, long shmsgseq) {
         Object messageRecord = null;
         try {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, type,
+                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
             callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);
@@ -95,11 +98,12 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         return messageRecord;
     }
 
+    @DexDeobfs("CMessageRecordFactory")
     public Object build(String uin, int istroop, String fromUin, long time, long msgseq) {
         Object messageRecord = null;
         try {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.doFindClass(DexKit.C_MessageRecordFactory), 0, 1, true, Modifier.PUBLIC, 0, type,
+                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
             callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);

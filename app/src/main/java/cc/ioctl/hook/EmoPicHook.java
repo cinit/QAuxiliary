@@ -33,8 +33,9 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AIOUtilsImpl;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.LicenseStatus;
+import io.github.qauxv.util.dexkit.CAIOUtils;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 
 @UiItemAgentEntry
@@ -44,7 +45,7 @@ public class EmoPicHook extends CommonSwitchFunctionHook {
     public static final EmoPicHook INSTANCE = new EmoPicHook();
 
     private EmoPicHook() {
-        super(new int[]{DexKit.C_AIO_UTILS});
+        super(new DexKitTarget[]{CAIOUtils.INSTANCE});
     }
 
     @Override

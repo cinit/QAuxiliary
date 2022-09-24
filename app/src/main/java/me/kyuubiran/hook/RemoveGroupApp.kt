@@ -26,6 +26,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.dexkit.CGroupAppActivity
 import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
@@ -34,7 +35,7 @@ import xyz.nextalone.util.throwOrTrue
 //移除傻屌右划群应用
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveGroupApp : CommonSwitchFunctionHook("kr_remove_group_app", intArrayOf(DexKit.C_GroupAppActivity)) {
+object RemoveGroupApp : CommonSwitchFunctionHook("kr_remove_group_app", arrayOf(CGroupAppActivity)) {
 
     override val name = "移除右划群应用"
 
@@ -42,7 +43,7 @@ object RemoveGroupApp : CommonSwitchFunctionHook("kr_remove_group_app", intArray
 
     override fun initOnce(): Boolean {
         return throwOrTrue {
-            DexKit.doFindClass(DexKit.C_GroupAppActivity)?.method {
+            DexKit.doFindClass(CGroupAppActivity)?.method {
                 it.returnType == View::class.java && it.parameterTypes.isEmpty()
             }?.replace(this, null)
         }

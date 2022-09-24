@@ -37,6 +37,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NConversation_onCreate
 import io.github.qauxv.util.isTim
 import me.ketal.util.findViewByType
 import xyz.nextalone.util.clazz
@@ -52,7 +53,8 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideSearch : CommonSwitchFunctionHook(
-    dexDeobfIndexes = intArrayOf(DexKit.N_Conversation_onCreate)) {
+    targets = arrayOf(NConversation_onCreate)
+) {
 
     override val name = "隐藏搜索编辑框"
 
@@ -70,7 +72,7 @@ object HideSearch : CommonSwitchFunctionHook(
 
     //处理首页
     private fun copeConversation() {
-        DexKit.doFindMethod(DexKit.N_Conversation_onCreate)
+        DexKit.doFindMethod(NConversation_onCreate)
             ?.hookAfter(this) {
                 val relativeLayout = it.thisObject.get("b", RelativeLayout::class.java)
                 relativeLayout?.isVisible = false

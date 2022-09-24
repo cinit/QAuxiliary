@@ -32,12 +32,13 @@ import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitTarget
 import java.util.Arrays
 
 abstract class BaseFunctionHook(
     hookKey: String? = null,
     defaultEnabled: Boolean = false,
-    dexDeobfIndexes: IntArray? = null
+    targets: Array<DexKitTarget>? = null
 ) : IDynamicHook, IUiItemAgentProvider, RuntimeErrorTracer {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
@@ -45,7 +46,7 @@ abstract class BaseFunctionHook(
     private var mInitializeResult = false
     private val mHookKey: String = hookKey ?: this::class.java.name
     private val mDefaultEnabled: Boolean = defaultEnabled
-    private val mDexDeobfIndexes: IntArray? = dexDeobfIndexes
+    private val mDexDeobfIndexes: Array<DexKitTarget>? = targets
 
     override val isInitialized: Boolean
         get() = mInitialized
@@ -85,14 +86,10 @@ abstract class BaseFunctionHook(
 
     override val isPreparationRequired: Boolean
         get() {
-            mDexDeobfIndexes?.let {
-                it.forEach { i ->
-                    if (DexKit.isRunDexDeobfuscationRequired(i)) {
-                        return true
-                    }
-                }
+            if (mDexDeobfIndexes == null) return false
+            return mDexDeobfIndexes.any {
+                DexKit.isRunDexDeobfuscationRequired(it)
             }
-            return false
         }
 
     override fun makePreparationSteps(): Array<Step>? = mDexDeobfIndexes?.map { DexDeobfStep(it) }?.toTypedArray()

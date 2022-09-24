@@ -28,7 +28,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.dexkit.CQzoneMsgNotify;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 
 @FunctionHookEntry
@@ -57,12 +59,12 @@ public class MuteQZoneThumbsUp extends CommonSwitchFunctionHook {
     protected int MSG_INFO_OFFSET = -1;
 
     private MuteQZoneThumbsUp() {
-        super(new int[]{DexKit.C_QZONE_MSG_NOTIFY});
+        super(new DexKitTarget[]{CQzoneMsgNotify.INSTANCE});
     }
 
     @Override
     public boolean initOnce() {
-        Class<?> clz = DexKit.doFindClass(DexKit.C_QZONE_MSG_NOTIFY);
+        Class<?> clz = DexKit.INSTANCE.doFindClass(CQzoneMsgNotify.INSTANCE);
         Method showQZoneMsgNotification = null;
         for (Method m : clz.getDeclaredMethods()) {
             if (m.getReturnType().equals(void.class)) {

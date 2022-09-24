@@ -45,7 +45,10 @@ import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
-import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
+import io.github.qauxv.util.dexkit.CFaceDe
+import io.github.qauxv.util.dexkit.CTestStructMsg
+import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import mqq.app.AppRuntime
 import java.io.File
 import java.util.Locale
@@ -55,11 +58,11 @@ import java.util.Locale
 object SendTTSHook :
     BaseSwitchFunctionDecorator(
         "qn_send_tts", false,
-        intArrayOf(
-            DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER,
-            DexKit.C_FACADE,
-            DexKit.C_TEST_STRUCT_MSG,
-            DexKit.N_BASE_CHAT_PIE__INIT
+        arrayOf(
+            CArkAppItemBubbleBuilder,
+            CFaceDe,
+            CTestStructMsg,
+            NBaseChatPie_init,
         )
     ), IInputButtonDecorator {
 

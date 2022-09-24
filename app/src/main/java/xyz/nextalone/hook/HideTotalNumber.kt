@@ -26,20 +26,22 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NTroopChatPie_showNewTroopMemberCount
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
 @UiItemAgentEntry
 @FunctionHookEntry
 object HideTotalNumber : CommonSwitchFunctionHook("na_hide_total_number",
-    intArrayOf(DexKit.N_TroopChatPie_showNewTroopMemberCount)) {
+    arrayOf(NTroopChatPie_showNewTroopMemberCount)
+) {
 
     override val name = "隐藏总人数"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_TroopChatPie_showNewTroopMemberCount)
+        DexKit.doFindMethod(NTroopChatPie_showNewTroopMemberCount)
             ?.replace(this, false)
     }
 }

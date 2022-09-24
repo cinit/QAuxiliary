@@ -37,20 +37,25 @@ import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
+import io.github.qauxv.util.dexkit.CMessageCache
+import io.github.qauxv.util.dexkit.CMessageRecordFactory
+import io.github.qauxv.util.dexkit.CMultiMsgManager
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object MultiActionHook : CommonSwitchFunctionHook(
-    intArrayOf(
-        DexKit.C_MessageCache,
-        DexKit.C_MessageRecordFactory,
-        DexKit.N_BASE_CHAT_PIE__createMulti,
-        DexKit.C_MultiMsg_Manager)
+    arrayOf(
+        CMessageCache,
+        CMessageRecordFactory,
+        NBaseChatPie_createMulti,
+        CMultiMsgManager
+    )
 ) {
 
     override val name = "批量撤回消息"
@@ -60,7 +65,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     private var baseChatPie: Any? = null
 
     public override fun initOnce() = throwOrTrue {
-        val m = DexKit.getMethodFromCache(DexKit.N_BASE_CHAT_PIE__createMulti)!!
+        val m = DexKit.loadMethodFromCache(NBaseChatPie_createMulti)!!
         m.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
@@ -79,7 +84,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
 
     private fun recall(ctx: Context) {
         runCatching {
-            val clazz = DexKit.doFindClass(DexKit.C_MultiMsg_Manager)
+            val clazz = DexKit.doFindClass(CMultiMsgManager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
             val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
                 .invoke(manager) as List<*>

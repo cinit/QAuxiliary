@@ -35,7 +35,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.dexkit.CBasePicDlProcessor;
+import io.github.qauxv.util.dexkit.CFlashPicHelper;
+import io.github.qauxv.util.dexkit.CItemBuilderFactory;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -54,9 +58,11 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     private Method setTailMessage = null;
 
     private FlashPicHook() {
-        super(new int[]{DexKit.C_FLASH_PIC_HELPER,
-                DexKit.C_BASE_PIC_DL_PROC,
-                DexKit.C_ItemBuilderFactory});
+        super(new DexKitTarget[]{
+                CFlashPicHelper.INSTANCE,
+                CBasePicDlProcessor.INSTANCE,
+                CItemBuilderFactory.INSTANCE
+        });
     }
 
     public boolean isFlashPic(Object msgRecord) {
@@ -77,8 +83,8 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> clz = DexKit.loadClassFromCache(DexKit.C_FLASH_PIC_HELPER);
-        Objects.requireNonNull(clz, "DexKit.C_FLASH_PIC_HELPER");
+        Class<?> clz = DexKit.INSTANCE.loadClassFromCache(CFlashPicHelper.INSTANCE);
+        Objects.requireNonNull(clz, "CFLASH_PIC_HELPER.INSTANCE");
         Method isFlashPic = null;
         for (Method mi : clz.getDeclaredMethods()) {
             if (mi.getReturnType().equals(boolean.class) && mi.getParameterTypes().length == 1) {
@@ -95,12 +101,12 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 View.OnClickListener.class);
         Objects.requireNonNull(setTailMessage, "setTailMessage not found");
         setTailMessage.setAccessible(true);
-        Class<?> kItemBuilderFactory = DexKit.loadClassFromCache(DexKit.C_ItemBuilderFactory);
-        Objects.requireNonNull(kItemBuilderFactory, "DexKit.C_ItemBuilderFactory");
+        Class<?> kItemBuilderFactory = DexKit.INSTANCE.loadClassFromCache(CItemBuilderFactory.INSTANCE);
+        Objects.requireNonNull(kItemBuilderFactory, "CItemBuilderFactory.INSTANCE");
         sn_ItemBuilderFactory = kItemBuilderFactory.getName();
         Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found");
         sn_BasePicDownloadProcessor =
-                Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_BASE_PIC_DL_PROC), "DexKit.C_BASE_PIC_DL_PROC").getName();
+                Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CBasePicDlProcessor.INSTANCE), "CBASE_PIC_DL_PROC.INSTANCE").getName();
         Objects.requireNonNull(sn_BasePicDownloadProcessor, "sn_BasePicDownloadProcessor not found");
         snarray_CheckStackClasses = new String[]{
                 Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found"),

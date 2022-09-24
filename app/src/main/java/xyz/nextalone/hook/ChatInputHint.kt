@@ -41,6 +41,7 @@ import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.kyuubiran.util.getDefaultCfg
 import xyz.nextalone.util.findHostView
@@ -50,7 +51,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint") {
+object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NBaseChatPie_init)) {
 
     override val name = "输入框增加提示"
     override val valueState: MutableStateFlow<String?>? = null
@@ -58,7 +59,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint") {
     private const val strCfg = "na_chat_input_hint_str"
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__INIT)?.hookAfter(this) {
+        DexKit.doFindMethod(NBaseChatPie_init)?.hookAfter(this) {
             val chatPie: Any = it.thisObject
             var aioRootView: ViewGroup? = null
             for (m in Initiator._BaseChatPie().declaredMethods) {

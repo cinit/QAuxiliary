@@ -43,16 +43,18 @@ import io.github.qauxv.step.DexDeobfStep;
 import io.github.qauxv.step.DexKitDeobfStep;
 import io.github.qauxv.step.ShadowBatchDexDeobfStep;
 import io.github.qauxv.step.Step;
-import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexDeobfsBackend;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import mqq.app.AppActivity;
 
 public class InjectDelayableHooks {
 
@@ -63,10 +65,9 @@ public class InjectDelayableHooks {
             return true;
         }
         inited = true;
-        Activity activity = (Activity) Reflex.getInstanceObjectOrNull(director, "a",
-                Initiator.load("mqq/app/AppActivity"));
+        Activity activity = Reflex.getInstanceObjectOrNull(director, "a", AppActivity.class);
         if (activity == null) {
-            activity = (Activity) Reflex.getFirstNSFByType(director, Initiator.load("mqq/app/AppActivity"));
+            activity = Reflex.getFirstNSFByType(director, AppActivity.class);
         }
         final Activity ctx = activity;
         boolean needDeobf = false;
@@ -100,20 +101,20 @@ public class InjectDelayableHooks {
             }
             final ArrayList<Step> steps = new ArrayList<>(todos);
             // collect all dex-deobfs steps if backend supports
-            HashSet<Integer> deobfIndexList = new HashSet<>(16);
+            HashSet<String> deobfIndexList = new HashSet<>(16);
             for (Step step : steps) {
                 if (step.getClass() == DexDeobfStep.class && !step.isDone()) {
-                    int id = ((DexDeobfStep) step).getId();
+                    String id = ((DexDeobfStep) step).getId();
                     deobfIndexList.add(id);
                 }
             }
             DexDeobfsProvider.INSTANCE.enterDeobfsSection();
             DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend();
             if (backend.isBatchFindMethodSupported()) {
-                int[] ids = new int[deobfIndexList.size()];
+                DexKitTarget[] ids = new DexKitTarget[deobfIndexList.size()];
                 int i = 0;
-                for (Integer id : deobfIndexList) {
-                    ids[i++] = id;
+                for (String id : deobfIndexList) {
+                    ids[i++] = DexKitTargetSealedEnum.INSTANCE.valueOf(id);
                 }
                 ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
                 steps.add(shadowBatchStep);

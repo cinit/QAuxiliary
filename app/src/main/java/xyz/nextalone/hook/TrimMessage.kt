@@ -27,13 +27,14 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NChatActivityFacade_sendMsgButton
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object TrimMessage : CommonSwitchFunctionHook(
-    dexDeobfIndexes = intArrayOf(DexKit.N_ChatActivityFacade_sendMsgButton)
+    targets = arrayOf(NChatActivityFacade_sendMsgButton)
 ) {
 
     override val name = "移除消息前后的空格"
@@ -41,7 +42,7 @@ object TrimMessage : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.getMethodFromCache(DexKit.N_ChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
+        DexKit.doFindMethod(NChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
             it.args[3] = trimMessage(it.args[3] as String)
         }
     }

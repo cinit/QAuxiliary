@@ -42,7 +42,10 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.CPicEmoticonInfo;
+import io.github.qauxv.util.dexkit.CPngFrameUtil;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.util.Random;
 
 @FunctionHookEntry
@@ -57,13 +60,13 @@ public class CheatHook extends CommonSwitchFunctionHook {
     private int morraNum = -1;
 
     private CheatHook() {
-        super(new int[]{DexKit.C_PNG_FRAME_UTIL, DexKit.C_PIC_EMOTICON_INFO});
+        super(new DexKitTarget[]{CPngFrameUtil.INSTANCE, CPicEmoticonInfo.INSTANCE});
     }
 
     @Override
     protected boolean initOnce() throws Exception {
         var method = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "d" : "a";
-        XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PNG_FRAME_UTIL), method, int.class,
+        XposedHelpers.findAndHookMethod(DexKit.INSTANCE.doFindClass(CPngFrameUtil.INSTANCE), method, int.class,
                 new XC_MethodHook(43) {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) {
@@ -107,7 +110,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
                             ".sender.PicEmoticonInfoSender"),
                     Method, _BaseQQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
         } else {
-            XposedHelpers.findAndHookMethod(DexKit.doFindClass(DexKit.C_PIC_EMOTICON_INFO),
+            XposedHelpers.findAndHookMethod(DexKit.INSTANCE.doFindClass(CPicEmoticonInfo.INSTANCE),
                     Method, _QQAppInterface(), Context.class, _SessionInfo(), _Emoticon(), _StickerInfo(), hook);
         }
         return true;

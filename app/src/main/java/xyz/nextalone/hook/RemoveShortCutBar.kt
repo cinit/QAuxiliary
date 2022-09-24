@@ -25,23 +25,24 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NTroopAppShortcutBarHelper_resumeAppShorcutBar
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveShortCutBar : CommonSwitchFunctionHook(intArrayOf(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)) {
+object RemoveShortCutBar : CommonSwitchFunctionHook(arrayOf(NTroopAppShortcutBarHelper_resumeAppShorcutBar)) {
 
     override val name = "隐藏文本框上方快捷方式"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce() = throwOrTrue {
-        val resumeAppShorcutBar = DexKit.getMethodDescFromCache(DexKit.N_TroopAppShortcutBarHelper_resumeAppShorcutBar)
+        val resumeAppShorcutBar = DexKit.getMethodDescFromCache(NTroopAppShortcutBarHelper_resumeAppShorcutBar)
         resumeAppShorcutBar!!.getMethodInstance(Initiator.getHostClassLoader()).replace(this, null)
     }
 

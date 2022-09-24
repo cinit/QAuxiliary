@@ -58,7 +58,6 @@ import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.ChatActivityFacade;
@@ -71,10 +70,12 @@ import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.CustomMenu;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.data.ContactDescriptor;
+import io.github.qauxv.util.dexkit.CFaceDe;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -113,7 +114,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
     }
 
     private PttForwardHook() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_FACADE});
+        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{CFaceDe.INSTANCE});
     }
 
     private static void showSavePttFileDialog(Activity activity, final File ptt) {

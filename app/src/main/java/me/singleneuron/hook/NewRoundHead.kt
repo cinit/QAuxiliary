@@ -29,8 +29,13 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
-import io.github.qauxv.util.*
+import io.github.qauxv.util.LicenseStatus
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.CAvatarUtil
+import io.github.qauxv.util.dexkit.CFaceManager
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -45,18 +50,18 @@ object NewRoundHead : CommonSwitchFunctionHook() {
     override fun makePreparationSteps(): Array<Step> {
         //特征字符串："FaceManager"/"AvatarUtil"
         return if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-            arrayOf(DexDeobfStep(DexKit.C_AvatarUtil))
+            arrayOf(DexDeobfStep(CAvatarUtil))
         } else {
-            arrayOf(DexDeobfStep(DexKit.C_FaceManager))
+            arrayOf(DexDeobfStep(CFaceManager))
         }
     }
 
     override val isPreparationRequired: Boolean
         get() {
             return if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-                DexKit.isRunDexDeobfuscationRequired(DexKit.C_AvatarUtil)
+                DexKit.isRunDexDeobfuscationRequired(CAvatarUtil)
             } else {
-                DexKit.isRunDexDeobfuscationRequired(DexKit.C_FaceManager)
+                DexKit.isRunDexDeobfuscationRequired(CFaceManager)
             }
         }
 
@@ -68,7 +73,7 @@ object NewRoundHead : CommonSwitchFunctionHook() {
         //参数和值都是byte类型
         //这个方法在QQ主界面初始化时会调用200+次，因此需要极高的性能
         if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-            for (m in DexKit.doFindClass(DexKit.C_AvatarUtil)!!.declaredMethods) {
+            for (m in DexKit.doFindClass(CAvatarUtil)!!.declaredMethods) {
                 val argt = m.parameterTypes
                 if (argt.isNotEmpty() && method == m.name && argt[0] == Byte::class.javaPrimitiveType && m.returnType == Byte::class.javaPrimitiveType) {
                     XposedBridge.hookMethod(m, object : XC_MethodHook() {
@@ -86,7 +91,7 @@ object NewRoundHead : CommonSwitchFunctionHook() {
                 }
             }
         } else {
-            for (m in DexKit.doFindClass(DexKit.C_FaceManager)!!.declaredMethods) {
+            for (m in DexKit.doFindClass(CFaceManager)!!.declaredMethods) {
                 val argt = m.parameterTypes
                 if (argt.isNotEmpty() && method == m.name && argt[0] == Byte::class.javaPrimitiveType && m.returnType == Byte::class.javaPrimitiveType) {
                     XposedBridge.hookMethod(m, object : XC_MethodHook() {

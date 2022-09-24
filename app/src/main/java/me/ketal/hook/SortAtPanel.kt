@@ -33,6 +33,8 @@ import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NAtPanel_refreshUI
+import io.github.qauxv.util.dexkit.NAtPanel_showDialogAtView
 import io.github.qauxv.util.requireMinVersion
 import xyz.nextalone.data.TroopInfo
 import xyz.nextalone.util.get
@@ -43,7 +45,7 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object SortAtPanel : CommonSwitchFunctionHook(
-    intArrayOf(DexKit.N_AtPanel__refreshUI, DexKit.N_AtPanel__showDialogAtView)
+    arrayOf(NAtPanel_refreshUI, NAtPanel_showDialogAtView)
 ) {
 
     override val name = "修改@界面排序"
@@ -56,11 +58,11 @@ object SortAtPanel : CommonSwitchFunctionHook(
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null
     override fun initOnce() = throwOrTrue {
-        val showDialogAtView = DexKit.doFindMethod(DexKit.N_AtPanel__showDialogAtView)
+        val showDialogAtView = DexKit.doFindMethod(NAtPanel_showDialogAtView)
         showDialogAtView?.hookAfter(this) {
             isSort = (it.args[1] as String?)?.isNotEmpty()
         }
-        val refreshUI = DexKit.doFindMethod(DexKit.N_AtPanel__refreshUI)
+        val refreshUI = DexKit.doFindMethod(NAtPanel_refreshUI)
         refreshUI?.hookBefore(this) {
             if (isSort == true) return@hookBefore
             val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo())

@@ -19,105 +19,84 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
+package io.github.qauxv.util.dexkit
 
-package io.github.qauxv.util.dexkit;
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import java.io.Closeable
+import java.lang.reflect.Method
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import cc.ioctl.util.HostInfo;
-import io.github.qauxv.config.ConfigManager;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
-import java.io.Closeable;
-import java.lang.reflect.Method;
-
-public interface DexDeobfsBackend extends Closeable {
-
-    @NonNull
-    String getId();
-
-    @NonNull
-    String getName();
+interface DexDeobfsBackend : Closeable {
+    val id: String
+    val name: String
+    val isBatchFindMethodSupported: Boolean
 
     /**
      * Run the dex deobfuscation. This method may take a long time and should only be called in background thread.
      *
-     * @param i the dex method index
+     * @param target the dex method target
      * @return target method descriptor, null if the target is not found.
      */
-    @Nullable
-    DexMethodDescriptor doFindMethodImpl(int i);
+    fun doFindMethodImpl(target: DexKitTarget): DexMethodDescriptor?
 
-    boolean isBatchFindMethodSupported();
-
-    void doBatchFindMethodImpl(@NonNull int[] indexArray) throws UnsupportedOperationException;
+    @Throws(UnsupportedOperationException::class)
+    fun doBatchFindMethodImpl(targetArray: Array<DexKitTarget>)
 
     /**
      * Close the backend, memory will be release when ref-count decrease to 0.
-     * <p>
+     *
+     *
      * No other method should be called after this method is called.
      */
-    @Override
-    void close();
-
-    @Nullable
-    default Method doFindMethod(int i) {
-        var descriptor = DexKit.getMethodDescFromCache(i);
+    override fun close()
+    fun doFindMethod(target: DexKitTarget): Method? {
+        var descriptor = DexKit.getMethodDescFromCache(target)
         if (descriptor == null) {
-            descriptor = doFindMethodImpl(i);
+            descriptor = doFindMethodImpl(target)
             if (descriptor == null) {
-                Log.d("not found, save null");
-                descriptor = DexKit.NO_SUCH_METHOD;
-                saveDescriptor(i, descriptor);
-                return null;
+                Log.d("not found, save null")
+                descriptor = DexKit.NO_SUCH_METHOD
+                target.descCache = descriptor.toString()
+                return null
             }
         }
         try {
-            if (DexKit.NO_SUCH_METHOD.toString().equals(descriptor.toString())) {
-                return null;
+            if (DexKit.NO_SUCH_METHOD.toString() == descriptor.toString()) {
+                return null
             }
-            if (descriptor.name.equals("<init>") || descriptor.name.equals("<clinit>")) {
-                Log.i("doFindMethod(" + i + ") methodName == " + descriptor.name + " , return null");
-                return null;
+            if (descriptor.name == "<init>" || descriptor.name == "<clinit>") {
+                Log.i("doFindMethod(" + target.name + ") methodName == " + descriptor.name + " , return null")
+                return null
             }
-            return descriptor.getMethodInstance(Initiator.getHostClassLoader());
-        } catch (NoSuchMethodException e) {
+            return descriptor.getMethodInstance(Initiator.getHostClassLoader())
+        } catch (e: NoSuchMethodException) {
             // ignore
         }
-        return null;
+        return null
     }
 
-    @Nullable
-    default Class<?> doFindClass(int i) {
-        Class<?> ret = Initiator.load(DexKit.c(i));
+    fun doFindClass(target: DexKitTarget): Class<*>? {
+        val ret = Initiator.load(target.declaringClass)
         if (ret != null) {
-            return ret;
+            return ret
         }
-        var descriptor = DexKit.getMethodDescFromCache(i);
+        var descriptor = DexKit.getMethodDescFromCache(target)
         if (descriptor == null) {
-            descriptor = doFindMethodImpl(i);
+            descriptor = doFindMethodImpl(target)
             if (descriptor == null) {
-                Log.d("not found, save null");
-                descriptor = DexKit.NO_SUCH_METHOD;
-                saveDescriptor(i, descriptor);
-                return null;
+                Log.d("not found, save null")
+                descriptor = DexKit.NO_SUCH_METHOD
+                target.descCache = descriptor.toString()
+                return null
             }
         }
-        if (DexKit.NO_SUCH_METHOD.toString().equals(descriptor.toString())) {
-            return null;
+        if (DexKit.NO_SUCH_METHOD.toString() == descriptor.toString()) {
+            return null
         }
-        if (descriptor.name.equals("<init>") || descriptor.name.equals("<clinit>")) {
-            Log.i("doFindMethod(" + i + ") methodName == " + descriptor.name + " , return null");
-            return null;
+        if (descriptor.name == "<init>" || descriptor.name == "<clinit>") {
+            Log.i("doFindMethod(${target.name}" + ") methodName == " + descriptor.name + " , return null")
+            return null
         }
-        return Initiator.load(descriptor.declaringClass);
-
-    }
-
-    default void saveDescriptor(int i, DexMethodDescriptor descriptor) {
-        var cache = ConfigManager.getCache();
-        cache.putString("cache_" + DexKit.a(i) + "_method", descriptor.toString());
-        cache.putInt("cache_" + DexKit.a(i) + "_code", HostInfo.getVersionCode32());
-        cache.save();
+        return Initiator.load(descriptor.declaringClass)
     }
 }

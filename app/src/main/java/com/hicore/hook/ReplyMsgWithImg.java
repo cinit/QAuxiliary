@@ -50,7 +50,16 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CGuildArkHelper;
+import io.github.qauxv.util.dexkit.CGuildHelperProvider;
+import io.github.qauxv.util.dexkit.CMessageRecordFactory;
+import io.github.qauxv.util.dexkit.CReplyMsgSender;
+import io.github.qauxv.util.dexkit.CReplyMsgUtils;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
+import io.github.qauxv.util.dexkit.NPhotoListPanel_resetStatus;
 import java.io.File;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
@@ -71,15 +80,15 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     public static final ReplyMsgWithImg INSTANCE = new ReplyMsgWithImg();
 
     private ReplyMsgWithImg() {
-        super(new int[]{
-                DexKit.C_GuildHelperProvider,
-                DexKit.C_GuildArkHelper,
-                DexKit.C_MessageRecordFactory,
-                DexKit.C_ReplyMsgUtils,
-                DexKit.C_ReplyMsgSender,
-                DexKit.N_PhotoListPanel_resetStatus,
-                DexKit.N_ContactUtils_getDiscussionMemberShowName,
-                DexKit.N_ContactUtils_getBuddyName,
+        super(new DexKitTarget[]{
+                CGuildHelperProvider.INSTANCE,
+                CGuildArkHelper.INSTANCE,
+                CMessageRecordFactory.INSTANCE,
+                CReplyMsgUtils.INSTANCE,
+                CReplyMsgSender.INSTANCE,
+                NPhotoListPanel_resetStatus.INSTANCE,
+                NContactUtils_getDiscussionMemberShowName.INSTANCE,
+                NContactUtils_getBuddyName.INSTANCE,
         });
     }
 
@@ -126,12 +135,13 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     protected boolean initOnce() throws Exception {
         kHelperProvider = Initiator.load("com.tencent.mobileqq.activity.aio.helper.HelperProvider");
         if (kHelperProvider == null) {
-            kHelperProvider = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_GuildHelperProvider), "DexKit.C_GuildHelperProvider").getSuperclass();
+            kHelperProvider = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CGuildHelperProvider.INSTANCE), "CGuildHelperProvider.INSTANCE")
+                    .getSuperclass();
             Objects.requireNonNull(kHelperProvider);
         }
         kIHelper = Initiator.load("com.tencent.mobileqq.activity.aio.helper.IHelper");
         if (kIHelper == null) {
-            Class<?> kGuildArkHelper = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_GuildArkHelper), "DexKit.C_GuildArkHelper");
+            Class<?> kGuildArkHelper = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CGuildArkHelper.INSTANCE), "CGuildArkHelper.INSTANCE");
             // expect 1 interface
             Class<?>[] interfaces = kGuildArkHelper.getInterfaces();
             if (interfaces.length != 1) {
@@ -139,10 +149,11 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
             }
             kIHelper = interfaces[0];
         }
-        kMessageRecordFactory = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_MessageRecordFactory), "DexKit.C_MessageRecordFactory");
-        kReplyMsgUtils = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgUtils), "DexKit.C_ReplyMsgUtils");
-        kReplyMsgSender = Objects.requireNonNull(DexKit.loadClassFromCache(DexKit.C_ReplyMsgSender), "DexKit.C_ReplyMsgSender");
-        pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.getMethodFromCache(DexKit.N_PhotoListPanel_resetStatus), "N_PhotoListPanel_resetStatus");
+        kMessageRecordFactory = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CMessageRecordFactory.INSTANCE), "CMessageRecordFactory.INSTANCE");
+        kReplyMsgUtils = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CReplyMsgUtils.INSTANCE), "CReplyMsgUtils.INSTANCE");
+        kReplyMsgSender = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CReplyMsgSender.INSTANCE), "CReplyMsgSender.INSTANCE");
+        pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.INSTANCE.loadMethodFromCache(NPhotoListPanel_resetStatus.INSTANCE),
+                "NPhotoListPanel_resetStatus.INSTANCE");
 
         sBaseChatPie_HelperProvider = Reflex.getFirstNSFFieldByType(Initiator._BaseChatPie(), kHelperProvider);
         sBaseChatPie_HelperProvider.setAccessible(true);
@@ -478,7 +489,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
 
     @Override
     public void onInitBaseChatPie(@NonNull Object baseChatPie, @NonNull ViewGroup aioRootView, @NonNull Parcelable session, @NonNull Context ctx,
-                                  @NonNull AppRuntime rt) {
+            @NonNull AppRuntime rt) {
         mBaseChatPie = new WeakReference<>(Objects.requireNonNull(baseChatPie, "baseChatPie is null"));
         EditText input = aioRootView.findViewById(ctx.getResources().getIdentifier("input", "id", ctx.getPackageName()));
         if (input != null) {

@@ -41,6 +41,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NProfileCardUtil_getCard
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
 import me.ketal.util.ignoreResult
@@ -52,7 +53,7 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
-    dexDeobfIndexes = intArrayOf(DexKit.N_ProfileCardUtil_getCard)) {
+    targets = arrayOf(NProfileCardUtil_getCard)) {
 
     override val uiItemAgent: IUiItemAgent by lazy {
         uiClickableItem {
@@ -67,7 +68,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     private val levelKey = ConfigData<String>("Ketal_FakeQQLevel_level")
-    private var level
+    private var level: String
         get() = levelKey.getOrDefault("255")
         set(value) {
             levelKey.value = value
@@ -119,7 +120,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     }
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(DexKit.N_ProfileCardUtil_getCard)?.hookAfter(this) {
+        DexKit.doFindMethod(NProfileCardUtil_getCard)?.hookAfter(this) {
             if (it.result.get("uin") == AppRuntimeHelper.getAccount()) {
                 it.result.set("iQQLevel", level.toInt())
             }

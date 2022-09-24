@@ -45,10 +45,15 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.ui.TouchEventToLongClickAdapter;
 import io.github.qauxv.ui.widget.InterceptLayout;
-import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
+import io.github.qauxv.util.dexkit.CFaceDe;
+import io.github.qauxv.util.dexkit.CTestStructMsg;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import mqq.app.AppRuntime;
@@ -59,11 +64,11 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
     public static final InputButtonHookDispatcher INSTANCE = new InputButtonHookDispatcher();
 
     private InputButtonHookDispatcher() {
-        super(new int[]{
-                DexKit.C_ARK_APP_ITEM_BUBBLE_BUILDER,
-                DexKit.C_FACADE,
-                DexKit.C_TEST_STRUCT_MSG,
-                DexKit.N_BASE_CHAT_PIE__INIT
+        super(new DexKitTarget[]{
+                CArkAppItemBubbleBuilder.INSTANCE,
+                CFaceDe.INSTANCE,
+                CTestStructMsg.INSTANCE,
+                NBaseChatPie_init.INSTANCE,
         });
     }
 
@@ -83,7 +88,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
     @Override
     public boolean initOnce() throws Exception {
         //Begin: send btn
-        HookUtils.hookAfterIfEnabled(this, DexKit.doFindMethod(DexKit.N_BASE_CHAT_PIE__INIT), 40,
+        HookUtils.hookAfterIfEnabled(this, DexKit.INSTANCE.doFindMethod(NBaseChatPie_init.INSTANCE), 40,
                 param -> {
                     Object chatPie = param.thisObject;
                     //Class cl_PatchedButton = load("com/tencent/widget/PatchedButton");

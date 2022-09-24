@@ -28,6 +28,7 @@ import android.view.View
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexKitTarget
 import kotlinx.coroutines.flow.MutableStateFlow
 
 /**
@@ -36,18 +37,18 @@ import kotlinx.coroutines.flow.MutableStateFlow
 abstract class CommonSwitchFunctionHook(
     hookKey: String? = null,
     defaultEnabled: Boolean = false,
-    dexDeobfIndexes: IntArray? = null,
+    targets: Array<DexKitTarget>? = null,
     private val targetProc: Int = SyncUtils.PROC_MAIN
-) : BaseFunctionHook(hookKey, defaultEnabled, dexDeobfIndexes = dexDeobfIndexes) {
+) : BaseFunctionHook(hookKey, defaultEnabled, targets = targets) {
 
     constructor() : this(null, false)
     constructor(defaultEnabled: Boolean) : this(null, defaultEnabled)
     constructor(key: String) : this(key, false)
-    constructor(key: String, dexDeobfIndexes: IntArray) : this(key, false, dexDeobfIndexes)
-    constructor(dexDeobfIndexes: IntArray) : this(null, false, dexDeobfIndexes)
+    constructor(key: String, targets: Array<DexKitTarget>) : this(key, false, targets)
+    constructor(targets: Array<DexKitTarget>) : this(null, false, targets)
     constructor(key: String, targetProc: Int) : this(hookKey = key, targetProc = targetProc)
     constructor(targetProc: Int) : this(null, targetProc = targetProc)
-    constructor(targetProc: Int, dexDeobfIndexes: IntArray) : this(null, targetProc = targetProc, dexDeobfIndexes = dexDeobfIndexes)
+    constructor(targetProc: Int, targets: Array<DexKitTarget>) : this(null, targetProc = targetProc, targets = targets)
 
     /**
      * Name of the function.

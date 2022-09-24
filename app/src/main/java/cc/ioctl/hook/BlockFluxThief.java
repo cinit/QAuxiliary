@@ -30,9 +30,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CZipUtils;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.io.File;
 import java.io.IOException;
 import java.io.OutputStream;
@@ -50,7 +51,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
     public static final BlockFluxThief INSTANCE = new BlockFluxThief();
 
     private BlockFluxThief() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.C_ZipUtils_biz});
+        super(new DexKitTarget[]{CZipUtils.INSTANCE});
     }
 
     static long requestUrlSizeBlocked(String url) throws IOException {
@@ -75,7 +76,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         Method downloadImage = null;
-        for (Method m : DexKit.doFindClass(DexKit.C_HttpDownloader).getDeclaredMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CZipUtils.INSTANCE).getDeclaredMethods()) {
             if (m.getReturnType() != File.class || Modifier.isStatic(m.getModifiers())) {
                 continue;
             }
@@ -88,7 +89,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
             break;
         }
         Objects.requireNonNull(downloadImage,
-                "unable to find DexKit.C_HttpDownloader.downloadImage");
+                "unable to find CHttpDownloader.downloadImage.INSTANCE");
         HookUtils.hookAfterIfEnabled(this, downloadImage, param -> {
             long maxSize = 32 * 1024 * 1024;//32MiB
             String url = (String) Reflex.getInstanceObjectOrNull(param.args[1], "urlStr");

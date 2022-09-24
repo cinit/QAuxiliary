@@ -25,16 +25,17 @@ package io.github.qauxv.step;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.util.dexkit.DexDeobfsBackend;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.util.Objects;
 
 public class ShadowBatchDexDeobfStep implements Step {
 
-    private final int[] indexes;
+    private final DexKitTarget[] targets;
     private final DexDeobfsBackend backend;
 
-    public ShadowBatchDexDeobfStep(DexDeobfsBackend backend, @NonNull int[] indexes) {
+    public ShadowBatchDexDeobfStep(DexDeobfsBackend backend, @NonNull DexKitTarget[] indexes) {
         this.backend = Objects.requireNonNull(backend);
-        this.indexes = Objects.requireNonNull(indexes);
+        this.targets = Objects.requireNonNull(indexes);
         if (!backend.isBatchFindMethodSupported()) {
             throw new IllegalArgumentException(backend.getClass().getName());
         }
@@ -42,14 +43,14 @@ public class ShadowBatchDexDeobfStep implements Step {
 
     @Override
     public boolean step() {
-        backend.doBatchFindMethodImpl(indexes);
+        backend.doBatchFindMethodImpl(targets);
         // we actually do not care the result
         return true;
     }
 
     @Override
     public boolean isDone() {
-        return indexes.length == 0;
+        return targets.length == 0;
     }
 
     @Override

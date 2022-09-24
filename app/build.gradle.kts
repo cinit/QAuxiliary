@@ -163,6 +163,11 @@ android {
     lint {
         checkDependencies = true
     }
+    kotlin {
+        sourceSets.configureEach {
+            kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
+        }
+    }
     applicationVariants.all {
         val variantCapped = name.capitalize()
         tasks.findByName("merge${variantCapped}Assets")?.dependsOn(tasks.generateLicenseJson.get())
@@ -201,6 +206,8 @@ dependencies {
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
     implementation("com.github.LuckyPray:DexKit-Android:1.2.2")
+    implementation("com.github.livefront.sealed-enum:runtime:0.5.0")
+    ksp("com.github.livefront.sealed-enum:ksp:0.5.0")
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath

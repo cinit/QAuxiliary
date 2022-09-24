@@ -30,9 +30,11 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.dexkit.DexKit;
-import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
+import io.github.qauxv.util.dexkit.NVipUtils_getPrivilegeFlags;
 import java.lang.reflect.Method;
 
 @FunctionHookEntry
@@ -42,7 +44,7 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
     public static final FakeVipHook INSTANCE = new FakeVipHook();
 
     private FakeVipHook() {
-        super(new int[]{DexKit.N_VIP_UTILS_getPrivilegeFlags});
+        super(new DexKitTarget[]{NVipUtils_getPrivilegeFlags.INSTANCE});
     }
 
     @Override
@@ -62,7 +64,7 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
             getPrivilegeFlags0VipUtils = new DexMethodDescriptor("Lcom/tencent/mobileqq/utils/VipUtils;->a(Lmqq/app/AppRuntime;Ljava/lang/String;)I")
                     .getMethodInstance(Initiator.getHostClassLoader());
         } catch (NoSuchMethodException e) {
-            getPrivilegeFlags0VipUtils = DexKit.doFindMethod(DexKit.N_VIP_UTILS_getPrivilegeFlags);
+            getPrivilegeFlags0VipUtils = DexKit.INSTANCE.doFindMethod(NVipUtils_getPrivilegeFlags.INSTANCE);
         }
         if (getPrivilegeFlags0VipUtils != null && getPrivilegeFlags0VipUtils.getReturnType() != int.class) {
             throw new IllegalStateException("VipUtils.getPrivilegeFlags(AppRuntime, String) return type is not int");

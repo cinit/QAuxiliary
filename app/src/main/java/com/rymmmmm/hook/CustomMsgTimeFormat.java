@@ -34,7 +34,9 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.CTimeFormatterUtils;
 import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
@@ -54,7 +56,7 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
     public static final CustomMsgTimeFormat INSTANCE = new CustomMsgTimeFormat();
 
     protected CustomMsgTimeFormat() {
-        super(new int[]{DexKit.C_TimeFormatterUtils});
+        super(new DexKitTarget[]{CTimeFormatterUtils.INSTANCE});
     }
 
     @NonNull
@@ -87,7 +89,7 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() {
-        for (Method m : DexKit.doFindClass(DexKit.C_TimeFormatterUtils).getDeclaredMethods()) {
+        for (Method m : DexKit.INSTANCE.doFindClass(CTimeFormatterUtils.INSTANCE).getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
             if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "e" : "a") && Modifier.isStatic(m.getModifiers())
                     && argt.length == 3 && argt[2] == long.class) {

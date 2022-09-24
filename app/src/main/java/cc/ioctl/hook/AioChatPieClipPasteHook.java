@@ -63,7 +63,8 @@ import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -87,7 +88,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     }
 
     private AioChatPieClipPasteHook() {
-        super(SyncUtils.PROC_MAIN, new int[]{DexKit.N_BASE_CHAT_PIE__INIT});
+        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{NBaseChatPie_init.INSTANCE});
     }
 
     @NonNull

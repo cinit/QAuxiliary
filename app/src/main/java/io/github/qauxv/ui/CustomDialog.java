@@ -32,7 +32,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.CDialogUtil;
 import io.github.qauxv.util.dexkit.DexKit;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -50,10 +52,11 @@ public class CustomDialog {
     private AlertDialog.Builder mBuilder = null;
     private boolean failsafe = false;
 
+    @DexDeobfs("CDialogUtil")
     public static CustomDialog create(Context ctx) {
         try {
             if (clz_DialogUtil == null) {
-                clz_DialogUtil = DexKit.loadClassFromCache(DexKit.C_DIALOG_UTIL);
+                clz_DialogUtil = DexKit.INSTANCE.loadClassFromCache(CDialogUtil.INSTANCE);
             }
             if (clz_CustomDialog == null) {
                 clz_CustomDialog = load("com/tencent/mobileqq/utils/QQCustomDialog");
