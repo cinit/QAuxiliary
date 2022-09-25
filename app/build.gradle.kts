@@ -55,7 +55,7 @@ if (ccacheExecutablePath != null) {
 
 android {
     namespace = "io.github.qauxv"
-    ndkVersion = "25.0.8775105"
+    ndkVersion = Version.getNdkVersion(project)
     defaultConfig {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
