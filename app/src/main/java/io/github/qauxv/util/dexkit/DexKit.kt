@@ -35,7 +35,12 @@ object DexKit {
         return kotlin.runCatching {
             when (target) {
                 is DexKitTarget.UsingStr -> {
-                    doFindClass(target) != null
+                    if (target.findMethod) {
+                        doFindMethod(target) != null
+                    } else {
+                        doFindClass(target) != null
+                    }
+
                 }
             }
         }.isSuccess
@@ -55,9 +60,9 @@ object DexKit {
         when (target) {
             is DexKitTarget.UsingStr -> {
                 if (target.findMethod) {
-                    if (loadClassFromCache(target) != null) return false
+                    if (getMethodDescFromCache(target) != null) return false
                 }
-                return getMethodDescFromCache(target) == null
+                return loadClassFromCache(target) == null
             }
         }
     }

@@ -78,7 +78,7 @@ class DexKitDeobfs private constructor(
                     valueArr.forEach(Log::i)
                     Log.i("${valueArr.size} candidates found for " + name + ", none satisfactory.")
                 } else {
-                    Log.d("save id: $id,method: $ret")
+                    Log.d("save id: $name,method: $ret")
                     target.descCache = ret.toString()
                 }
             }
