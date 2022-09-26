@@ -54,6 +54,8 @@ import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedList;
+import java.util.List;
 import mqq.app.AppActivity;
 
 public class InjectDelayableHooks {
@@ -111,12 +113,14 @@ public class InjectDelayableHooks {
             DexDeobfsProvider.INSTANCE.enterDeobfsSection();
             DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend();
             if (backend.isBatchFindMethodSupported()) {
-                DexKitTarget[] ids = new DexKitTarget[deobfIndexList.size()];
-                int i = 0;
+                List<DexKitTarget> ids = new LinkedList<>();
                 for (String id : deobfIndexList) {
-                    ids[i++] = DexKitTargetSealedEnum.INSTANCE.valueOf(id);
+                    DexKitTarget target = DexKitTargetSealedEnum.INSTANCE.valueOf(id);
+                    if (target instanceof DexKitTarget.UsingStr) {
+                        ids.add(target);
+                    }
                 }
-                ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids);
+                ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids.toArray(new DexKitTarget[0]));
                 steps.add(shadowBatchStep);
             }
             if (backend instanceof DexKitDeobfs) {
