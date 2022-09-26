@@ -44,7 +44,7 @@ import java.lang.reflect.Array
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie") {
+object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayOf(CArkAppItemBubbleBuilder)) {
 
     override val name = "复制卡片消息"
 

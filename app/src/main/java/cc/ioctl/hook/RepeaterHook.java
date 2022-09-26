@@ -64,6 +64,8 @@ import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.ui.widget.LinearLayoutDelegate;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CFaceDe;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -79,7 +81,7 @@ public class RepeaterHook extends BaseFunctionHook {
     public static final RepeaterHook INSTANCE = new RepeaterHook();
 
     private RepeaterHook() {
-        super();
+        super(null, false, new DexKitTarget[]{CFaceDe.INSTANCE});
     }
 
     private IUiItemAgent mUiAgent = null;

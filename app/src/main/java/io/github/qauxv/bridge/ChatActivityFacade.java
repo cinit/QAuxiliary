@@ -34,6 +34,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
@@ -66,13 +67,14 @@ public class ChatActivityFacade {
      * @param sendMsgParams  The extra parameters.
      * @return The message id, or null if failed.
      */
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static long[] sendMessage(@NonNull AppRuntime qqAppInterface, @NonNull Context context, @NonNull Parcelable sessionInfo,
                                      @NonNull String msg, @Nullable ArrayList<?> atInfo, @Nullable Object sendMsgParams) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(context, "context == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(msg, "msg == null");
-        Class<?> facade = DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE);
+        Class<?> facade = DexKit.INSTANCE.requireClassFromCache(CFaceDe.INSTANCE);
         Class<?> kSendMsgParams = null;
         Method m = null;
         for (Method mi : facade.getDeclaredMethods()) {
@@ -114,6 +116,7 @@ public class ChatActivityFacade {
      * @param msg            The message to be sent.
      * @return The message id, or null if failed.
      */
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static long[] sendMessage(AppRuntime qqAppInterface, Context context, Parcelable sessionInfo, String msg) {
         return sendMessage(qqAppInterface, context, sessionInfo, msg, null, null);
     }
@@ -126,13 +129,14 @@ public class ChatActivityFacade {
      * @param pttPath        the path of the PTT file
      * @return the message id, or 0 if failed
      */
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static long sendPttMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                       @NonNull String pttPath) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(pttPath, "pttPath == null");
         Method send = null;
-        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.requireClassFromCache(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(long.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -152,13 +156,14 @@ public class ChatActivityFacade {
         }
     }
 
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static boolean sendArkAppMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                             @NonNull Object arkAppMsg) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(arkAppMsg, "arkAppMsg == null");
         Method send = null;
-        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.requireClassFromCache(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(boolean.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -178,13 +183,14 @@ public class ChatActivityFacade {
         }
     }
 
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static void sendAbsStructMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                         @NonNull Externalizable absStructMsg) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(absStructMsg, "absStructMsg == null");
         Method send = null;
-        for (Method m : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
+        for (Method m : DexKit.INSTANCE.requireClassFromCache(CFaceDe.INSTANCE).getMethods()) {
             if (m.getReturnType().equals(void.class)) {
                 Class<?>[] clz = m.getParameterTypes();
                 if (clz.length != 3) {
@@ -202,14 +208,15 @@ public class ChatActivityFacade {
             Log.e(e);
         }
     }
+
     public static void sendReplyMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
             @NonNull Object replyMsg){
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(replyMsg, "absStructMsg == null");
         try{
-            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a", _QQAppInterface(),
+            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+            Method invokeMethod = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a", _QQAppInterface(),
                     _ChatMessage(),
                     _BaseSessionInfo(),
                     int.class,
@@ -220,14 +227,15 @@ public class ChatActivityFacade {
             Log.e(e);
         }
     }
+
     public static void sendMixedMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
             @NonNull Object mixedMsg){
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
         Objects.requireNonNull(sessionInfo, "sessionInfo == null");
         Objects.requireNonNull(mixedMsg, "absStructMsg == null");
         try{
-            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-            Method invokeMethod = Reflex.findMethod(Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a",
+            Object ReplyMsgSender = Reflex.invokeStatic(Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"),"a",Initiator.load("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
+            Method invokeMethod = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"),void.class,"a",
                     _QQAppInterface(),
                     Initiator.load("com.tencent.mobileqq.data.MessageForMixedMsg"),
                     _SessionInfo(),
@@ -238,6 +246,7 @@ public class ChatActivityFacade {
         }
     }
 
+    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
     public static void repeatMessage(@NonNull AppRuntime app, @NonNull Parcelable session, @NonNull Object msg) {
         Objects.requireNonNull(app, "app == null");
         Objects.requireNonNull(session, "session == null");
@@ -269,7 +278,7 @@ public class ChatActivityFacade {
                 break;
             case "MessageForPic":
                 try {
-                    for (Method mi : DexKit.INSTANCE.doFindClass(CFaceDe.INSTANCE).getMethods()) {
+                    for (Method mi : DexKit.INSTANCE.requireClassFromCache(CFaceDe.INSTANCE).getMethods()) {
                         if (!mi.getName().equals("a") && !mi.getName().equals("b")
                                 && (!mi.getName().equals("o0") && !HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93))) {
                             continue;
