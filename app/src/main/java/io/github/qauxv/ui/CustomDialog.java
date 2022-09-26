@@ -56,7 +56,7 @@ public class CustomDialog {
     public static CustomDialog create(Context ctx) {
         try {
             if (clz_DialogUtil == null) {
-                clz_DialogUtil = DexKit.INSTANCE.loadClassFromCache(CDialogUtil.INSTANCE);
+                clz_DialogUtil = DexKit.loadClassFromCache(CDialogUtil.INSTANCE);
             }
             if (clz_CustomDialog == null) {
                 clz_CustomDialog = load("com/tencent/mobileqq/utils/QQCustomDialog");

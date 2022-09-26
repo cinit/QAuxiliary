@@ -79,7 +79,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         Object messageRecord = null;
         try {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.INSTANCE.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
+                DexKit.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
             callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);
@@ -103,7 +103,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         Object messageRecord = null;
         try {
             messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.INSTANCE.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
+                DexKit.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, type,
                 int.class);
             callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), uin, fromUin, msg.toString(),
                 time, type, istroop, msgseq);

@@ -64,7 +64,7 @@ public class MuteQZoneThumbsUp extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> clz = DexKit.INSTANCE.requireClassFromCache(CQzoneMsgNotify.INSTANCE);
+        Class<?> clz = DexKit.requireClassFromCache(CQzoneMsgNotify.INSTANCE);
         Method showQZoneMsgNotification = null;
         for (Method m : clz.getDeclaredMethods()) {
             if (m.getReturnType().equals(void.class)) {

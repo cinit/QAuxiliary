@@ -106,7 +106,7 @@ public class ContactUtils {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(troopUin, "troopUin is null");
         Objects.requireNonNull(memberUin, "memberUin is null");
-        Method getDiscussionMemberShowName = DexKit.INSTANCE.loadMethodFromCache(NContactUtils_getDiscussionMemberShowName.INSTANCE);
+        Method getDiscussionMemberShowName = DexKit.loadMethodFromCache(NContactUtils_getDiscussionMemberShowName.INSTANCE);
         if (getDiscussionMemberShowName == null) {
             Log.e("getDiscussionMemberShowName but N_ContactUtils_getDiscussionMemberShowName not found");
             return null;
@@ -129,7 +129,7 @@ public class ContactUtils {
     public static String getBuddyName(@NonNull AppRuntime app, @NonNull String uin) {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(uin, "uin is null");
-        Method getBuddyName = DexKit.INSTANCE.loadMethodFromCache(NContactUtils_getBuddyName.INSTANCE);
+        Method getBuddyName = DexKit.loadMethodFromCache(NContactUtils_getBuddyName.INSTANCE);
         if (getBuddyName == null) {
             Log.e("getBuddyName but N_ContactUtils_getBuddyName not found");
             return null;

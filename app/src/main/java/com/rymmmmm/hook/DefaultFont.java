@@ -97,7 +97,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
             throw new IllegalStateException("该功能仅限DexKit引擎");
         }
-        Method method = DexKit.INSTANCE.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
+        Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
         Objects.requireNonNull(method);
         HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
 
@@ -109,7 +109,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        return DexKit.INSTANCE.getMethodDescFromCache(NTextItemBuilder_setETText.INSTANCE) == null;
+        return DexKit.getMethodDescFromCache(NTextItemBuilder_setETText.INSTANCE) == null;
     }
 
     @Override

@@ -99,7 +99,7 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
             param.setResult(true);
         });
 
-        Method med = Objects.requireNonNull(DexKit.INSTANCE.loadMethodFromCache(NVipUtils_getPrivilegeFlags.INSTANCE), "VipStatusManagerImpl");
+        Method med = Objects.requireNonNull(DexKit.loadMethodFromCache(NVipUtils_getPrivilegeFlags.INSTANCE), "VipStatusManagerImpl");
         HookUtils.hookAfterAlways(this, med, param -> {
             int i = (int) param.getResult();
             param.setResult(i | 2 | 4 | 8);

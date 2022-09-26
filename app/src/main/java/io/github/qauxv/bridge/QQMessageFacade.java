@@ -77,7 +77,7 @@ public class QQMessageFacade {
         int istroop = (int) Reflex.getInstanceObjectOrNull(msg, "istroop");
         Object mgr = getMessageManager(istroop);
         try {
-            Class<?> kMessageCache = DexKit.INSTANCE.loadClassFromCache(CMessageCache.INSTANCE);
+            Class<?> kMessageCache = DexKit.loadClassFromCache(CMessageCache.INSTANCE);
             Objects.requireNonNull(kMessageCache, "kMessageCache == null");
             Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(), kMessageCache);
             // must call the method to set the field to true, otherwise the message will not be revoked

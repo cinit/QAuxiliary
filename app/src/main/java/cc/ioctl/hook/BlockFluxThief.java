@@ -76,7 +76,7 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         Method downloadImage = null;
-        for (Method m : DexKit.INSTANCE.requireClassFromCache(CZipUtils.INSTANCE).getDeclaredMethods()) {
+        for (Method m : DexKit.requireClassFromCache(CZipUtils.INSTANCE).getDeclaredMethods()) {
             if (m.getReturnType() != File.class || Modifier.isStatic(m.getModifiers())) {
                 continue;
             }

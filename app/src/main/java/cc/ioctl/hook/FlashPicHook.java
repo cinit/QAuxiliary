@@ -83,7 +83,7 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> clz = DexKit.INSTANCE.loadClassFromCache(CFlashPicHelper.INSTANCE);
+        Class<?> clz = DexKit.loadClassFromCache(CFlashPicHelper.INSTANCE);
         Objects.requireNonNull(clz, "CFLASH_PIC_HELPER.INSTANCE");
         Method isFlashPic = null;
         for (Method mi : clz.getDeclaredMethods()) {
@@ -101,12 +101,12 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
                 View.OnClickListener.class);
         Objects.requireNonNull(setTailMessage, "setTailMessage not found");
         setTailMessage.setAccessible(true);
-        Class<?> kItemBuilderFactory = DexKit.INSTANCE.loadClassFromCache(CItemBuilderFactory.INSTANCE);
+        Class<?> kItemBuilderFactory = DexKit.loadClassFromCache(CItemBuilderFactory.INSTANCE);
         Objects.requireNonNull(kItemBuilderFactory, "CItemBuilderFactory.INSTANCE");
         sn_ItemBuilderFactory = kItemBuilderFactory.getName();
         Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found");
         sn_BasePicDownloadProcessor =
-                Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CBasePicDlProcessor.INSTANCE), "CBASE_PIC_DL_PROC.INSTANCE").getName();
+                Objects.requireNonNull(DexKit.loadClassFromCache(CBasePicDlProcessor.INSTANCE), "CBASE_PIC_DL_PROC.INSTANCE").getName();
         Objects.requireNonNull(sn_BasePicDownloadProcessor, "sn_BasePicDownloadProcessor not found");
         snarray_CheckStackClasses = new String[]{
                 Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found"),

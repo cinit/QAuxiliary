@@ -52,7 +52,7 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         // for QQ >= 8.3.5
-        Class<?> kBrowserBaseScene = DexKit.INSTANCE.loadClassFromCache(CGalleryBaseScene.INSTANCE);
+        Class<?> kBrowserBaseScene = DexKit.loadClassFromCache(CGalleryBaseScene.INSTANCE);
         if (kBrowserBaseScene != null) {
             Method m;
             try {
@@ -82,7 +82,7 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
             // for legacy QQ
             // com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity
             // source code from: ColorQQ by qiwu
-            Class<?> kAbstractGalleryScene = DexKit.INSTANCE.requireClassFromCache(CAbsGalScene.INSTANCE);
+            Class<?> kAbstractGalleryScene = DexKit.requireClassFromCache(CAbsGalScene.INSTANCE);
             Method m = Reflex.findSingleMethod(kAbstractGalleryScene, void.class, false, ViewGroup.class);
             Field fv = null;
             for (Field f : kAbstractGalleryScene.getDeclaredFields()) {

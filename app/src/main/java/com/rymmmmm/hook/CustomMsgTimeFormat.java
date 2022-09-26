@@ -89,7 +89,7 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() {
-        for (Method m : DexKit.INSTANCE.requireClassFromCache(CTimeFormatterUtils.INSTANCE).getDeclaredMethods()) {
+        for (Method m : DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE).getDeclaredMethods()) {
             Class<?>[] argt = m.getParameterTypes();
             if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "e" : "a") && Modifier.isStatic(m.getModifiers())
                     && argt.length == 3 && argt[2] == long.class) {

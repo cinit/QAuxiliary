@@ -43,12 +43,12 @@ public class DexDeobfStep implements Step {
 
     @Override
     public boolean step() {
-        return DexKit.INSTANCE.tryFind(target);
+        return DexKit.tryFind(target);
     }
 
     @Override
     public boolean isDone() {
-        return !DexKit.INSTANCE.isRunDexDeobfuscationRequired(target);
+        return !DexKit.isRunDexDeobfuscationRequired(target);
     }
 
     @Override

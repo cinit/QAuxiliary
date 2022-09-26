@@ -113,7 +113,7 @@ public class FavMoreEmo extends CommonSwitchFunctionHook {
     }
 
     private void setEmoNum() throws NoSuchFieldException {
-        Class<?> mFavEmoConstant = DexKit.INSTANCE.requireClassFromCache(CFavEmoConst.INSTANCE);
+        Class<?> mFavEmoConstant = DexKit.requireClassFromCache(CFavEmoConst.INSTANCE);
         Reflex.setStaticObject(mFavEmoConstant, "a", 800);
         Reflex.setStaticObject(mFavEmoConstant, "b", 800);
     }

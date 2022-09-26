@@ -68,7 +68,7 @@ public class RoundAvatarHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         Method a = null, b = null;
-        Class<?> clz = DexKit.INSTANCE.requireClassFromCache(CSimpleUiUtil.INSTANCE);
+        Class<?> clz = DexKit.requireClassFromCache(CSimpleUiUtil.INSTANCE);
         for (Method m : clz.getDeclaredMethods()) {
             if (!boolean.class.equals(m.getReturnType())) {
                 continue;

@@ -67,7 +67,7 @@ public class DisablePopOutEmoticon extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Reflex.findSingleMethod(Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CPopOutEmoticonUtil.INSTANCE), "C_PopOutEmoticonUtil"),
+                Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(CPopOutEmoticonUtil.INSTANCE), "C_PopOutEmoticonUtil"),
                         boolean.class, false,
                         int.class, Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonInfo"), int.class),
                 param -> param.setResult(false));

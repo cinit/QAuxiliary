@@ -72,7 +72,7 @@ public class SendGiftHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         {
-            Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CTroopGiftUtil.INSTANCE), "CTROOP_GIFT_UTIL.INSTANCE"),
+            Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(CTroopGiftUtil.INSTANCE), "CTROOP_GIFT_UTIL.INSTANCE"),
                     void.class, false,
                     Activity.class, String.class, String.class, Initiator._QQAppInterface());
             HookUtils.hookBeforeIfEnabled(this, m, 47, param -> param.setResult(null));

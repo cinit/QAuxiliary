@@ -85,7 +85,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "OnlinePushPbPushTransMsg")
+                Objects.requireNonNull(DexKit.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "OnlinePushPbPushTransMsg")
                         .getDeclaredMethod("a", Initiator.loadClass("com.tencent.mobileqq.app.MessageHandler"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.ToServiceMsg"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.FromServiceMsg")),
@@ -93,7 +93,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
         );
         HookUtils.hookBeforeIfEnabled(this,
                 Reflex.findSingleMethod(
-                        Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "C_SystemMessageProcessor"),
+                        Objects.requireNonNull(DexKit.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "C_SystemMessageProcessor"),
                         void.class, false,
                         int.class, Initiator.loadClass("tencent.mobileim.structmsg.structmsg$StructMsg"), int.class),
                 param -> onProcessGroupSystemMsg((int) param.args[0], param.args[1], (int) param.args[2])

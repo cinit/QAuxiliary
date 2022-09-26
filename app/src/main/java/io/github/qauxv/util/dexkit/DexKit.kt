@@ -33,6 +33,7 @@ object DexKit {
     @JvmField
     val NO_SUCH_METHOD = DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V")
 
+    @JvmStatic
     fun tryFind(target: DexKitTarget) : Boolean {
         return kotlin.runCatching {
             when (target) {
@@ -58,6 +59,7 @@ object DexKit {
      * @return true if time is required to deobfuscate the dex class, false if either the dex class is already
      * found or there was already a failed result.
      */
+    @JvmStatic
     fun isRunDexDeobfuscationRequired(target: DexKitTarget) : Boolean {
         when (target) {
             is DexKitTarget.UsingStr -> {
@@ -70,11 +72,13 @@ object DexKit {
         }
     }
 
+    @JvmStatic
     fun doFindClass(target: DexKitTarget): Class<*>? {
         loadClassFromCache(target)?.let { return it }
         return DexDeobfsProvider.getCurrentBackend().doFindClass(target)
     }
 
+    @JvmStatic
     fun doFindMethod(target: DexKitTarget): Method? {
         when (target) {
             is DexKitTarget.UsingStr -> {
@@ -90,6 +94,7 @@ object DexKit {
      *
      * If the cache is not empty, but the method is not found, return [NO_SUCH_METHOD].
      */
+    @JvmStatic
     fun getMethodDescFromCacheImpl(target: DexKitTarget): DexMethodDescriptor? {
         target.descCache.let {
             return if (it.isNullOrEmpty()) {
@@ -103,6 +108,7 @@ object DexKit {
     /**
      * Get the method descriptor from cache. If the cache is empty or not found, return null.
      */
+    @JvmStatic
     fun getMethodDescFromCache(target: DexKitTarget): DexMethodDescriptor? {
         target.descCache.let {
             return if (it.isNullOrEmpty() || it == NO_SUCH_METHOD.toString()) {
@@ -113,6 +119,7 @@ object DexKit {
         }
     }
 
+    @JvmStatic
     fun loadClassFromCache(target: DexKitTarget): Class<*>? {
         when (target) {
             is DexKitTarget.UsingStr -> {
@@ -122,6 +129,7 @@ object DexKit {
         }
     }
 
+    @JvmStatic
     fun loadMethodFromCache(target: DexKitTarget): Method? {
         when (target) {
             is DexKitTarget.UsingStr -> {
@@ -140,10 +148,12 @@ object DexKit {
         }
     }
 
+    @JvmStatic
     fun requireMethodFromCache(target: DexKitTarget): Method {
         return loadMethodFromCache(target) ?: throw NoSuchMethodException("DexTarget: " + target.name)
     }
 
+    @JvmStatic
     fun requireClassFromCache(target: DexKitTarget): Class<*> {
         return loadClassFromCache(target) ?: throw ClassNotFoundException("DexTarget: " + target.name)
     }

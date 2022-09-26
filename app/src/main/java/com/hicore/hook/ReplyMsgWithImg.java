@@ -135,13 +135,13 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     protected boolean initOnce() throws Exception {
         kHelperProvider = Initiator.load("com.tencent.mobileqq.activity.aio.helper.HelperProvider");
         if (kHelperProvider == null) {
-            kHelperProvider = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CGuildHelperProvider.INSTANCE), "CGuildHelperProvider.INSTANCE")
+            kHelperProvider = Objects.requireNonNull(DexKit.loadClassFromCache(CGuildHelperProvider.INSTANCE), "CGuildHelperProvider.INSTANCE")
                     .getSuperclass();
             Objects.requireNonNull(kHelperProvider);
         }
         kIHelper = Initiator.load("com.tencent.mobileqq.activity.aio.helper.IHelper");
         if (kIHelper == null) {
-            Class<?> kGuildArkHelper = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CGuildArkHelper.INSTANCE), "CGuildArkHelper.INSTANCE");
+            Class<?> kGuildArkHelper = Objects.requireNonNull(DexKit.loadClassFromCache(CGuildArkHelper.INSTANCE), "CGuildArkHelper.INSTANCE");
             // expect 1 interface
             Class<?>[] interfaces = kGuildArkHelper.getInterfaces();
             if (interfaces.length != 1) {
@@ -149,10 +149,10 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
             }
             kIHelper = interfaces[0];
         }
-        kMessageRecordFactory = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CMessageRecordFactory.INSTANCE), "CMessageRecordFactory.INSTANCE");
-        kReplyMsgUtils = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CReplyMsgUtils.INSTANCE), "CReplyMsgUtils.INSTANCE");
-        kReplyMsgSender = Objects.requireNonNull(DexKit.INSTANCE.loadClassFromCache(CReplyMsgSender.INSTANCE), "CReplyMsgSender.INSTANCE");
-        pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.INSTANCE.loadMethodFromCache(NPhotoListPanel_resetStatus.INSTANCE),
+        kMessageRecordFactory = Objects.requireNonNull(DexKit.loadClassFromCache(CMessageRecordFactory.INSTANCE), "CMessageRecordFactory.INSTANCE");
+        kReplyMsgUtils = Objects.requireNonNull(DexKit.loadClassFromCache(CReplyMsgUtils.INSTANCE), "CReplyMsgUtils.INSTANCE");
+        kReplyMsgSender = Objects.requireNonNull(DexKit.loadClassFromCache(CReplyMsgSender.INSTANCE), "CReplyMsgSender.INSTANCE");
+        pfnPhotoListPanel_resetStatus = Objects.requireNonNull(DexKit.loadMethodFromCache(NPhotoListPanel_resetStatus.INSTANCE),
                 "NPhotoListPanel_resetStatus.INSTANCE");
 
         sBaseChatPie_HelperProvider = Reflex.getFirstNSFFieldByType(Initiator._BaseChatPie(), kHelperProvider);

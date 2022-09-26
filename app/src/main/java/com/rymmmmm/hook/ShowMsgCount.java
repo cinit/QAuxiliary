@@ -69,7 +69,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> kCustomWidgetUtil = DexKit.INSTANCE.loadClassFromCache(CCustomWidgetUtil.INSTANCE);
+        Class<?> kCustomWidgetUtil = DexKit.loadClassFromCache(CCustomWidgetUtil.INSTANCE);
         // target: com.tencent.widget.CustomWidgetUtil
         // com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil is not what we want
         Objects.requireNonNull(kCustomWidgetUtil, "CustomWidgetUtil.class is null");

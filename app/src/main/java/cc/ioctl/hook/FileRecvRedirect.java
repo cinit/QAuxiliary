@@ -171,7 +171,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
                     });
                 }
             }else {
-                Field[] fields = DexKit.INSTANCE.requireClassFromCache(CAppConstants.INSTANCE).getFields();
+                Field[] fields = DexKit.requireClassFromCache(CAppConstants.INSTANCE).getFields();
                 if (TARGET_FIELD == null) {
                     for (Field field : fields) {
                         field.setAccessible(true);
