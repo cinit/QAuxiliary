@@ -80,7 +80,7 @@ class DexKitDeobfs private constructor(
                     target.descCache = DexKit.NO_SUCH_METHOD.toString()
                 } else {
                     Log.d("save id: $name,method: $ret")
-                    target.descCache = ret.toString()
+                    target.descCache = (ret ?: DexKit.NO_SUCH_METHOD).toString()
                 }
             }
         } finally {
