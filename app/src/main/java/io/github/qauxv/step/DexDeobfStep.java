@@ -43,7 +43,19 @@ public class DexDeobfStep implements Step {
 
     @Override
     public boolean step() {
-        return DexKit.tryFind(target);
+        try {
+            if (target instanceof DexKitTarget.UsingStr) {
+                var t = (DexKitTarget.UsingStr) target;
+                if (t.getFindMethod()) {
+                    DexKit.doFindMethod(t);
+                } else {
+                    DexKit.doFindClass(t);
+                }
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
     }
 
     @Override

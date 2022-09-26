@@ -33,22 +33,6 @@ object DexKit {
     @JvmField
     val NO_SUCH_METHOD = DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V")
 
-    @JvmStatic
-    fun tryFind(target: DexKitTarget) : Boolean {
-        return kotlin.runCatching {
-            when (target) {
-                is DexKitTarget.UsingStr -> {
-                    if (target.findMethod) {
-                        doFindMethod(target) != null
-                    } else {
-                        doFindClass(target) != null
-                    }
-
-                }
-            }
-        }.isSuccess
-    }
-
     /**
      * Test whether we should run the dex deobfuscation.
      * <p>
@@ -63,10 +47,10 @@ object DexKit {
     fun isRunDexDeobfuscationRequired(target: DexKitTarget) : Boolean {
         when (target) {
             is DexKitTarget.UsingStr -> {
-                if (target.findMethod) {
-                    return getMethodDescFromCacheImpl(target) == null
+                return if (target.findMethod) {
+                    getMethodDescFromCacheImpl(target) == null
                 } else {
-                    return getMethodDescFromCacheImpl(target) == null && loadClassFromCache(target) == null
+                    getMethodDescFromCacheImpl(target) == null && loadClassFromCache(target) == null
                 }
             }
         }
