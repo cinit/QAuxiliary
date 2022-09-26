@@ -227,7 +227,7 @@ object CQzoneMsgNotify : DexKitTarget.UsingStr() {
             && clz.superclass == Any::class.java
             && clz.methods.any {
             val argt = it.parameterTypes
-            it.returnType == Void::class.java && argt.size > 7 && argt[0] == _QQAppInterface()
+            it.returnType == Void.TYPE && argt.size > 7 && argt[0] == _QQAppInterface()
         }
     }
 }
@@ -450,7 +450,7 @@ object NAtPanel_refreshUI : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.notHasSuper and
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-            m.returnType == Void::class.java
+            m.returnType == Void.TYPE
         }
 }
 
@@ -493,7 +493,7 @@ object NQQSettingMe_updateProfileBubble : DexKitTarget.UsingStr() {
     override val preferredDexIndexArray = intArrayOf(4, 6, 8, 7)
     override val filter = filter@{ it: DexMethodDescriptor ->
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-        "QQSettingMe" in it.declaringClass || m.returnType == Void::class.java
+        "QQSettingMe" in it.declaringClass || m.returnType == Void.TYPE
     }
 }
 
