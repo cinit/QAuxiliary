@@ -69,18 +69,26 @@ class DexKitDeobfs private constructor(
             }
 
             val resultMap = helper.batchFindMethodsUsedStrings(deobfsMap, true)
+            val resultMap2 = mutableMapOf<String, Set<String>>()
+            resultMap.forEach {
+                val key = it.key.split("#").first()
+                if (resultMap2.containsKey(key)) {
+                    resultMap2[key] = resultMap2[key]!! + it.value
+                } else {
+                    resultMap2[key] = it.value.toSet()
+                }
+            }
 
-            resultMap.forEach { (key, valueArr) ->
-                val name = key.split("#_#").first()
-                val target = DexKitTarget.valueOf(name)
+            resultMap2.forEach { (key, valueArr) ->
+                val target = DexKitTarget.valueOf(key)
                 val ret = target.verifyTargetMethod(valueArr.map { DexMethodDescriptor(it) })
-                if (ret == null && target.descCache == null) {
+                if (ret == null) {
                     valueArr.forEach(Log::i)
-                    Log.e("${valueArr.size} candidates found for " + name + ", none satisfactory, save null.")
+                    Log.e("${valueArr.size} candidates found for " + key + ", none satisfactory, save null.")
                     target.descCache = DexKit.NO_SUCH_METHOD.toString()
                 } else {
-                    Log.d("save id: $name,method: $ret")
-                    target.descCache = (ret ?: DexKit.NO_SUCH_METHOD).toString()
+                    Log.d("save id: $key,method: $ret")
+                    target.descCache = ret.toString()
                 }
             }
         } finally {
