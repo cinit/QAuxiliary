@@ -60,7 +60,7 @@ object DexKit {
         when (target) {
             is DexKitTarget.UsingStr -> {
                 if (target.findMethod) {
-                    if (getMethodDescFromCache(target) != null) return false
+                    return getMethodDescFromCache(target) == null
                 }
                 return loadClassFromCache(target) == null
             }

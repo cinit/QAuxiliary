@@ -54,7 +54,7 @@ interface DexDeobfsBackend : Closeable {
         if (descriptor == null) {
             descriptor = doFindMethodImpl(target)
             if (descriptor == null) {
-                Log.d("not found, save null")
+                Log.d("${target.name} not found, save null")
                 descriptor = DexKit.NO_SUCH_METHOD
                 target.descCache = descriptor.toString()
                 return null
@@ -84,7 +84,7 @@ interface DexDeobfsBackend : Closeable {
         if (descriptor == null) {
             descriptor = doFindMethodImpl(target)
             if (descriptor == null) {
-                Log.d("not found, save null")
+                Log.d("${target.name} not found, save null")
                 descriptor = DexKit.NO_SUCH_METHOD
                 target.descCache = descriptor.toString()
                 return null
