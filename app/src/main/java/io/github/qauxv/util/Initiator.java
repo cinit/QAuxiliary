@@ -287,7 +287,7 @@ public class Initiator {
     }
 
     public static Class<?> _C2CMessageProcessor() {
-        Class<?> k = findClassWithSynthetics("com/tencent/mobileqq/app/message/C2CMessageProcessor",
+        Class<?> k = findClassWithSynthetics0("com/tencent/mobileqq/app/message/C2CMessageProcessor",
                 "com/tencent/imcore/message/C2CMessageProcessor", 4, 6, 1, 5, 7);
         if (k == null) {
             Class<?> kC2CMessageProcessorCallback = load("com.tencent.imcore.message.C2CMessageProcessorCallback");
@@ -429,7 +429,7 @@ public class Initiator {
     }
 
     @Nullable
-    public static Class<?> findClassWithSynthetics(@NonNull String className1, @NonNull String className2, int... index) {
+    public static Class<?> findClassWithSynthetics0(@NonNull String className1, @NonNull String className2, int... index) {
         String cacheKey = className1;
         Class<?> cache = sClassCache.get(cacheKey);
         if (cache != null) {
@@ -445,8 +445,20 @@ public class Initiator {
             sClassCache.put(cacheKey, clazz);
             return clazz;
         }
-        Log.e("Initiator/E class " + className1 + " not found");
         return null;
+    }
+
+    @Nullable
+    public static Class<?> findClassWithSynthetics(@NonNull String className1, @NonNull String className2, int... index) {
+        Class<?> ret = findClassWithSynthetics0(className1, className2, index);
+        logErrorIfNotFound(ret, className1);
+        return ret;
+    }
+
+    private static void logErrorIfNotFound(@Nullable Class<?> c, @NonNull String name) {
+        if (c == null) {
+            Log.e("Initiator/E class " + name + " not found");
+        }
     }
 
     @Nullable
