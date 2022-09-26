@@ -121,7 +121,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
             tags.add("存在错误")
         }
         if (isDepError) {
-            iconType = 4
+            iconType = 5
             tags.add("依赖错误")
         }
         if (errorCount != 0) {
@@ -193,13 +193,15 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         val enabled = item is IDynamicHook && item.isEnabled
         // report error +70
         val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
+        // dep error +60
+        val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
         val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
         // a error is 10, max is 50
         val errorRank = (errorCount * 10).coerceAtMost(50)
         // unsupported +2
         val unsupported = item is IDynamicHook && !item.isAvailable
         // sum up
-        return (if (enabled) 2 else 0) + (if (reportError) 70 else 0) + errorRank + (if (unsupported) 1 else 0)
+        return (if (enabled) 2 else 0) + (if (isDepError) 60 else 0) + (if (reportError) 70 else 0) + errorRank + (if (unsupported) 1 else 0)
     }
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
