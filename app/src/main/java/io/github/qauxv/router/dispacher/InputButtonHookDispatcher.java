@@ -88,7 +88,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
     @Override
     public boolean initOnce() throws Exception {
         //Begin: send btn
-        HookUtils.hookAfterIfEnabled(this, DexKit.INSTANCE.doFindMethod(NBaseChatPie_init.INSTANCE), 40,
+        HookUtils.hookAfterIfEnabled(this, DexKit.INSTANCE.requireMethodFromCache(NBaseChatPie_init.INSTANCE), 40,
                 param -> {
                     Object chatPie = param.thisObject;
                     //Class cl_PatchedButton = load("com/tencent/widget/PatchedButton");

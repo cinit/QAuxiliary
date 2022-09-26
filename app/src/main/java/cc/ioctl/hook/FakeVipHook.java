@@ -64,7 +64,7 @@ public class FakeVipHook extends CommonSwitchFunctionHook {
             getPrivilegeFlags0VipUtils = new DexMethodDescriptor("Lcom/tencent/mobileqq/utils/VipUtils;->a(Lmqq/app/AppRuntime;Ljava/lang/String;)I")
                     .getMethodInstance(Initiator.getHostClassLoader());
         } catch (NoSuchMethodException e) {
-            getPrivilegeFlags0VipUtils = DexKit.INSTANCE.doFindMethod(NVipUtils_getPrivilegeFlags.INSTANCE);
+            getPrivilegeFlags0VipUtils = DexKit.INSTANCE.loadMethodFromCache(NVipUtils_getPrivilegeFlags.INSTANCE);
         }
         if (getPrivilegeFlags0VipUtils != null && getPrivilegeFlags0VipUtils.getReturnType() != int.class) {
             throw new IllegalStateException("VipUtils.getPrivilegeFlags(AppRuntime, String) return type is not int");

@@ -72,7 +72,7 @@ object HideSearch : CommonSwitchFunctionHook(
 
     //处理首页
     private fun copeConversation() {
-        DexKit.doFindMethod(NConversation_onCreate)
+        DexKit.loadMethodFromCache(NConversation_onCreate)
             ?.hookAfter(this) {
                 val relativeLayout = it.thisObject.get("b", RelativeLayout::class.java)
                 relativeLayout?.isVisible = false

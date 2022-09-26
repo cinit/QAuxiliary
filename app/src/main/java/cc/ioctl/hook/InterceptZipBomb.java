@@ -52,7 +52,7 @@ public class InterceptZipBomb extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Class<?> zipUtil = DexKit.INSTANCE.doFindClass(CZipUtils.INSTANCE);
+        Class<?> zipUtil = DexKit.INSTANCE.requireClassFromCache(CZipUtils.INSTANCE);
         Method m;
         try {
             m = zipUtil.getMethod("a", File.class, String.class);

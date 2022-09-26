@@ -66,7 +66,8 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
     private Field TARGET_FIELD = null;
 
     private FileRecvRedirect() {
-        super(SyncUtils.PROC_ANY & ~(SyncUtils.PROC_MSF | SyncUtils.PROC_UNITY | SyncUtils.PROC_MINI), new DexKitTarget[]{CAppConstants.INSTANCE});
+        super(SyncUtils.PROC_ANY & ~(SyncUtils.PROC_MSF | SyncUtils.PROC_UNITY | SyncUtils.PROC_MINI),
+                new DexKitTarget[]{CAppConstants.INSTANCE});
     }
 
     @NonNull
@@ -170,7 +171,7 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
                     });
                 }
             }else {
-                Field[] fields = DexKit.INSTANCE.doFindClass(CAppConstants.INSTANCE).getFields();
+                Field[] fields = DexKit.INSTANCE.requireClassFromCache(CAppConstants.INSTANCE).getFields();
                 if (TARGET_FIELD == null) {
                     for (Field field : fields) {
                         field.setAccessible(true);

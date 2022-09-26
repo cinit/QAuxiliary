@@ -42,7 +42,7 @@ object TrimMessage : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(NChatActivityFacade_sendMsgButton)!!.hookBefore(this) {
+        DexKit.requireMethodFromCache(NChatActivityFacade_sendMsgButton).hookBefore(this) {
             it.args[3] = trimMessage(it.args[3] as String)
         }
     }

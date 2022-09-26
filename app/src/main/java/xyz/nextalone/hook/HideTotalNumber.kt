@@ -41,7 +41,7 @@ object HideTotalNumber : CommonSwitchFunctionHook("na_hide_total_number",
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(NTroopChatPie_showNewTroopMemberCount)
-            ?.replace(this, false)
+        DexKit.requireMethodFromCache(NTroopChatPie_showNewTroopMemberCount)
+            .replace(this, false)
     }
 }

@@ -58,11 +58,11 @@ object SortAtPanel : CommonSwitchFunctionHook(
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null
     override fun initOnce() = throwOrTrue {
-        val showDialogAtView = DexKit.doFindMethod(NAtPanel_showDialogAtView)
+        val showDialogAtView = DexKit.loadMethodFromCache(NAtPanel_showDialogAtView)
         showDialogAtView?.hookAfter(this) {
             isSort = (it.args[1] as String?)?.isNotEmpty()
         }
-        val refreshUI = DexKit.doFindMethod(NAtPanel_refreshUI)
+        val refreshUI = DexKit.loadMethodFromCache(NAtPanel_refreshUI)
         refreshUI?.hookBefore(this) {
             if (isSort == true) return@hookBefore
             val sessionInfo = getFirstByType(it.thisObject, Initiator._SessionInfo())

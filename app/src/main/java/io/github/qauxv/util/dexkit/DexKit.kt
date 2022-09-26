@@ -114,4 +114,12 @@ object DexKit {
             }
         }
     }
+
+    fun requireMethodFromCache(target: DexKitTarget): Method {
+        return loadMethodFromCache(target) ?: throw NoSuchMethodException("DexTarget: " + target.declaringClass)
+    }
+
+    fun requireClassFromCache(target: DexKitTarget): Class<*> {
+        return loadClassFromCache(target) ?: throw ClassNotFoundException("DexTarget: " + target.declaringClass)
+    }
 }

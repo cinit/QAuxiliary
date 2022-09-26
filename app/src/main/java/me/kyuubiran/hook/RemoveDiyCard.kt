@@ -56,7 +56,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(NVasProfileTemplateController_onCardUpdate)!!
+        DexKit.requireMethodFromCache(NVasProfileTemplateController_onCardUpdate)
             .hookBefore(this) {
                 when (it.thisObject) {
                     is Activity -> {

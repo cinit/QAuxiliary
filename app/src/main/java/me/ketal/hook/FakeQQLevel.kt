@@ -120,7 +120,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     }
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(NProfileCardUtil_getCard)?.hookAfter(this) {
+        DexKit.requireMethodFromCache(NProfileCardUtil_getCard).hookAfter(this) {
             if (it.result.get("uin") == AppRuntimeHelper.getAccount()) {
                 it.result.set("iQQLevel", level.toInt())
             }

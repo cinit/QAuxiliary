@@ -39,6 +39,6 @@ object HideTroopAddTips : CommonSwitchFunctionHook(arrayOf(NScene_checkDataRecmd
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(NScene_checkDataRecmdRemarkList)!!.replace(this, 0)
+        DexKit.requireMethodFromCache(NScene_checkDataRecmdRemarkList).replace(this, 0)
     }
 }

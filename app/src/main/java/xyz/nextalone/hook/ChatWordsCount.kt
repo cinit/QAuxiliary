@@ -116,11 +116,11 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
                 updateChatWordView(viewGroup)
             }
         }
-        DexKit.doFindMethod(NQQSettingMe_onResume)?.hookAfter(this) {
+        DexKit.loadMethodFromCache(NQQSettingMe_onResume)?.hookAfter(this) {
             val viewGroup = it.thisObject.get(ViewGroup::class.java) as ViewGroup
             updateChatWordView(viewGroup)
         }
-        DexKit.doFindMethod(NChatActivityFacade_sendMsgButton)?.hookAfter(this)
+        DexKit.loadMethodFromCache(NChatActivityFacade_sendMsgButton)?.hookAfter(this)
         {
             val isToday = Date().today == getExFriendCfg()!!.getStringOrDefault(timeCfg, "")
             if (isToday) {

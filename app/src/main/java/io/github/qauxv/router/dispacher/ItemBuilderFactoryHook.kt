@@ -54,7 +54,7 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         var getMsgType: Method? = null
-        for (m in DexKit.doFindClass(CItemBuilderFactory)!!.methods) {
+        for (m in DexKit.requireClassFromCache(CItemBuilderFactory).methods) {
             if (m.returnType == Int::class.javaPrimitiveType) {
                 val argt = m.parameterTypes
                 if (argt.isNotEmpty() && argt[argt.size - 1] == Initiator._ChatMessage()) {

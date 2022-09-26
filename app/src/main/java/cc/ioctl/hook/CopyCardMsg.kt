@@ -52,7 +52,7 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
 
     override fun initOnce() = throwOrTrue {
         //Begin: ArkApp
-        val cl_ArkAppItemBuilder = DexKit.doFindClass(CArkAppItemBubbleBuilder)
+        val cl_ArkAppItemBuilder = DexKit.loadClassFromCache(CArkAppItemBubbleBuilder)
         XposedHelpers.findAndHookMethod(cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
                 Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback)
         for (m in cl_ArkAppItemBuilder!!.declaredMethods) {

@@ -44,8 +44,8 @@ object RemoveIntimateDrawer : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindClass(CIntimateDrawer)?.method {
+        DexKit.requireClassFromCache(CIntimateDrawer).method {
             it.returnType == View::class.java && it.parameterTypes.isEmpty()
-        }?.replace(this, null)
+        }!!.replace(this, null)
     }
 }

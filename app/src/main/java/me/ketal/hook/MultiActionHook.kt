@@ -84,7 +84,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
 
     private fun recall(ctx: Context) {
         runCatching {
-            val clazz = DexKit.doFindClass(CMultiMsgManager)
+            val clazz = DexKit.requireClassFromCache(CMultiMsgManager)
             val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
             val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
                 .invoke(manager) as List<*>

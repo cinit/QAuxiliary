@@ -337,7 +337,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             throws Exception {
         int msgtype = -2030;// MessageRecord.MSG_TYPE_TROOP_GAP_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.INSTANCE.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,
@@ -352,7 +352,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                                           String msg, long msgUid, long shmsgseq) throws Exception {
         int msgtype = -2031;// MessageRecord.MSG_TYPE_REVOKE_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
-                DexKit.INSTANCE.doFindClass(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
+                DexKit.INSTANCE.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
                 int.class);
         callMethod(messageRecord, "init", AppRuntimeHelper.getAccount(), entityUin, fromUin, msg,
                 time,

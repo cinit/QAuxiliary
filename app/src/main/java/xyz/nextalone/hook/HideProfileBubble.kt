@@ -44,7 +44,7 @@ object HideProfileBubble : CommonSwitchFunctionHook(arrayOf(NQQSettingMe_updateP
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_PROFILE
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(NQQSettingMe_updateProfileBubble)?.replace(this, null)
+        DexKit.requireMethodFromCache(NQQSettingMe_updateProfileBubble).replace(this, null)
     }
 
     override val isAvailable: Boolean

@@ -40,7 +40,7 @@ object AutoMosaicName : CommonSwitchFunctionHook(arrayOf(NBaseChatPie_mosaic)) {
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        DexKit.doFindMethod(NBaseChatPie_mosaic)?.hookBefore(this) {
+        DexKit.requireMethodFromCache(NBaseChatPie_mosaic).hookBefore(this) {
             it.args[0] = true
         }
     }

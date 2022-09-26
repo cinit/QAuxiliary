@@ -89,7 +89,7 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
     @Nullable
     //@Deprecated
     public static Object getChatMessageByView(View v) {
-        Class<?> cl_AIOUtils = DexKit.INSTANCE.doFindClass(CAIOUtils.INSTANCE);
+        Class<?> cl_AIOUtils = DexKit.INSTANCE.loadClassFromCache(CAIOUtils.INSTANCE);
         if (cl_AIOUtils == null) {
             return null;
         }

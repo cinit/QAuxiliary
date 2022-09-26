@@ -66,7 +66,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         var method = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "d" : "a";
-        XposedHelpers.findAndHookMethod(DexKit.INSTANCE.doFindClass(CPngFrameUtil.INSTANCE), method, int.class,
+        XposedHelpers.findAndHookMethod(DexKit.INSTANCE.requireClassFromCache(CPngFrameUtil.INSTANCE), method, int.class,
                 new XC_MethodHook(43) {
                     @Override
                     protected void afterHookedMethod(MethodHookParam param) {
@@ -110,7 +110,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
                             ".sender.PicEmoticonInfoSender"),
                     Method, _BaseQQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
         } else {
-            XposedHelpers.findAndHookMethod(DexKit.INSTANCE.doFindClass(CPicEmoticonInfo.INSTANCE),
+            XposedHelpers.findAndHookMethod(DexKit.INSTANCE.requireClassFromCache(CPicEmoticonInfo.INSTANCE),
                     Method, _QQAppInterface(), Context.class, _SessionInfo(), _Emoticon(), _StickerInfo(), hook);
         }
         return true;

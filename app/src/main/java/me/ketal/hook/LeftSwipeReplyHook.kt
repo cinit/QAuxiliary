@@ -89,8 +89,8 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
         get() = requireMinVersion(QQVersion.QQ_8_2_6, TIMVersion.TIM_3_1_1, PlayQQVersion.PlayQQ_8_2_9)
 
     override fun initOnce() = throwOrTrue {
-        val replyMethod = DexKit.doFindMethod(NLeftSwipeReplyHelper_reply)
-        val hookClass = replyMethod!!.declaringClass
+        val replyMethod = DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply)
+        val hookClass = replyMethod.declaringClass
         Reflex.findSingleMethod(
             hookClass,
             Void.TYPE,
@@ -116,9 +116,8 @@ object LeftSwipeReplyHook : CommonConfigFunctionHook(
         replyMethod.hookBefore(this) {
             if (!isMultiChose) return@hookBefore
             val message = Reflex.invokeVirtualAny(it.thisObject, Initiator._ChatMessage())
-            val baseChatPie =
-                Reflex.getFirstByType(it.thisObject, Initiator._BaseChatPie() as Class<*>)
-            DexKit.doFindMethod(NBaseChatPie_chooseMsg)!!.invoke(baseChatPie, message)
+            val baseChatPie = Reflex.getFirstByType(it.thisObject, Initiator._BaseChatPie() as Class<*>)
+            DexKit.requireMethodFromCache(NBaseChatPie_chooseMsg).invoke(baseChatPie, message)
             it.result = null
         }
     }

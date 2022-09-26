@@ -60,7 +60,7 @@ public class DisableScreenshotHelper extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        for (Method m : DexKit.INSTANCE.doFindClass(CScreenShotHelper.INSTANCE).getDeclaredMethods()) {
+        for (Method m : DexKit.INSTANCE.requireClassFromCache(CScreenShotHelper.INSTANCE).getDeclaredMethods()) {
             if (m.getName().equals("a") && Modifier.isStatic(m.getModifiers())
                 && m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();

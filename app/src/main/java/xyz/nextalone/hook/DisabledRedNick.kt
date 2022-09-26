@@ -49,15 +49,15 @@ object DisabledRedNick : CommonSwitchFunctionHook(
     override fun initOnce() = throwOrTrue {
         if (!isSimpleUi) {
 
-            DexKit.doFindMethod(NVipUtils_getUserStatus)?.hookBefore(this) {
+            DexKit.loadMethodFromCache(NVipUtils_getUserStatus)?.hookBefore(this) {
                 if (updating) {
                     it.result = -1
                 }
             }
-            DexKit.doFindMethod(NFriendChatPie_updateUITitle)?.hookBefore(this) {
+            DexKit.loadMethodFromCache(NFriendChatPie_updateUITitle)?.hookBefore(this) {
                 updating = true
             }
-            DexKit.doFindMethod(NFriendChatPie_updateUITitle)?.hookAfter(this) {
+            DexKit.loadMethodFromCache(NFriendChatPie_updateUITitle)?.hookAfter(this) {
                 updating = false
             }
         }

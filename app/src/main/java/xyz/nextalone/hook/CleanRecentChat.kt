@@ -66,7 +66,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
     private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(NConversation_onCreate)!!
+        DexKit.requireMethodFromCache(NConversation_onCreate)
             .hookAfter(this) {
                 val recentAdapter = it.thisObject.get(RecentAdapter.clazz)
                 val app = it.thisObject.get("mqq.app.AppRuntime".clazz)
@@ -139,6 +139,6 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
 
     @Throws(ReflectiveOperationException::class)
     private fun isAtTop(app: Any?, str: String, i: Int, context: Context): Boolean {
-        return DexKit.doFindMethod(NFriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
+        return DexKit.loadMethodFromCache(NFriendsStatusUtil_isChatAtTop)!!.invoke(null, app, str, i) as Boolean
     }
 }

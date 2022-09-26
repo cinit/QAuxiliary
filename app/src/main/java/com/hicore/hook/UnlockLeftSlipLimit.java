@@ -53,7 +53,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Method m = MMethod.FindMethod(DexKit.INSTANCE.doFindMethod(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class, new Class[0]);
+        Method m = MMethod.FindMethod(DexKit.INSTANCE.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class, new Class[0]);
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
         return true;
     }

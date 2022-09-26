@@ -59,7 +59,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
     private const val strCfg = "na_chat_input_hint_str"
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.doFindMethod(NBaseChatPie_init)?.hookAfter(this) {
+        DexKit.requireMethodFromCache(NBaseChatPie_init).hookAfter(this) {
             val chatPie: Any = it.thisObject
             var aioRootView: ViewGroup? = null
             for (m in Initiator._BaseChatPie().declaredMethods) {

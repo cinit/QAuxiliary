@@ -70,7 +70,7 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         // com.tencent.mobileqq.webview.WebSecurityPluginV2$1.callback(Bundle)V
-        Method callback = DexKit.INSTANCE.doFindMethod(NWebSecurityPluginV2_callback.INSTANCE);
+        Method callback = DexKit.INSTANCE.requireMethodFromCache(NWebSecurityPluginV2_callback.INSTANCE);
         HookUtils.hookBeforeIfEnabled(this, callback, param -> {
             Bundle bundle = (Bundle) param.args[0];
             if (bundle != null && bundle.getInt("result", -1) == 0) {

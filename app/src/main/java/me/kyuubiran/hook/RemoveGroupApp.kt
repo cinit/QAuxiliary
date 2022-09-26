@@ -43,9 +43,9 @@ object RemoveGroupApp : CommonSwitchFunctionHook("kr_remove_group_app", arrayOf(
 
     override fun initOnce(): Boolean {
         return throwOrTrue {
-            DexKit.doFindClass(CGroupAppActivity)?.method {
+            DexKit.requireClassFromCache(CGroupAppActivity).method {
                 it.returnType == View::class.java && it.parameterTypes.isEmpty()
-            }?.replace(this, null)
+            }!!.replace(this, null)
         }
     }
 }
