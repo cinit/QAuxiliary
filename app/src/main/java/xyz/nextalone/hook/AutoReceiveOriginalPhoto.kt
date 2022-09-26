@@ -21,19 +21,30 @@
  */
 package xyz.nextalone.hook
 
+import com.github.kyuubiran.ezxhelper.utils.Log
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator.getHostClassLoader
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.CAIOPictureView
+import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
+import io.github.qauxv.util.dexkit.DexDeobfsProvider.isDexKitBackend
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.NAIOPictureView_onDownloadOriginalPictureClick
+import io.github.qauxv.util.dexkit.NAIOPictureView_setVisibility
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
 import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
+import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
+import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import xyz.nextalone.util.invoke
+import xyz.nextalone.util.isPublic
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -43,36 +54,21 @@ import xyz.nextalone.util.throwOrTrue
 object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     SyncUtils.PROC_PEAK,
     arrayOf(CAIOPictureView)
-) {
+), DexKitFinder {
 
     override val name: String = "聊天自动接收原图"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        val onDownloadOriginalPictureClick: String = when {
-            requireMinQQVersion(QQVersion.QQ_8_8_98) -> "N0"
-            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "O0"
-            requireMinQQVersion(QQVersion.QQ_8_8_80) -> "m"
-            requireMinQQVersion(QQVersion.QQ_8_6_0) -> "j"
-            requireMinQQVersion(QQVersion.QQ_8_5_0) -> "h"
-            requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "t"
-            else -> "I"
-        }
+        check(isDexKitBackend) { "该功能仅限DexKit引擎" }
+        Log.d("AutoReceiveOriginalPhoto initOnce")
         val kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)!!
-        val setXxxVisible: String = when {
-            requireMinQQVersion(QQVersion.QQ_8_9_5) -> "b1"
-            requireMinQQVersion(QQVersion.QQ_8_8_98) -> "Z0"
-            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "a1"
-            requireMinQQVersion(QQVersion.QQ_8_8_80) -> "h"
-            requireMinQQVersion(QQVersion.QQ_8_6_0) -> "g"
-            requireMinQQVersion(QQVersion.QQ_8_5_0) -> "f"
-            requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11) -> "h"
-            else -> "I"
-        }
-        "L${kAIOPictureView.name};->$setXxxVisible(Z)V".method.replace(this) {
+        val onDownloadOriginalPictureClick = DexKit.loadMethodFromCache(NAIOPictureView_onDownloadOriginalPictureClick)!!
+        val setVisibility = DexKit.loadMethodFromCache(NAIOPictureView_setVisibility)!!
+        setVisibility.replace(this) {
             if (it.args[0] as Boolean) {
-                it.thisObject.invoke(onDownloadOriginalPictureClick)
+                it.thisObject.invoke(onDownloadOriginalPictureClick.name)
             }
         }
     }
@@ -81,4 +77,77 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         QQVersionCode = QQVersion.QQ_8_3_5,
         PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_11
     )
+
+//    override val isPreparationRequired: Boolean = true
+
+    override val isNeedFind: Boolean
+        get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null
+
+    override fun doFind(): Boolean {
+        val deobfs = getCurrentBackend() as? DexKitDeobfs ?: return false
+        val dexKit = deobfs.getDexKitBridge()
+        var kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)
+        if (kAIOPictureView == null) {
+            val clazzList = mutableListOf<DexClassDescriptor>().apply {
+                dexKit.batchFindClassesUsingStrings(mapOf(
+                    "1" to setOf("AIOPictureView", "0X800A91E"),
+                    "2" to setOf("AIOGalleryPicView", "0X800A91E")
+                )).values.forEach {
+                    addAll(it)
+                }
+            }
+            Log.d("clazz: $clazzList")
+            if (clazzList.size != 1) {
+                return false
+            }
+            kAIOPictureView = clazzList[0].getClassInstance(getHostClassLoader())
+            CAIOPictureView.descCache = kAIOPictureView.name
+        }
+        Log.d("kAIOPictureView: ${kAIOPictureView.name}")
+        val onClickInvokingMethods = dexKit.findMethodInvoking(
+            methodDescriptor = "",
+            methodDeclareClass = kAIOPictureView.name,
+            methodName = "onClick",
+            beCalledMethodDeclareClass = kAIOPictureView.name,
+            beCalledMethodReturnType = "V",
+            beCalledMethodParamTypes = emptyArray()
+        )
+        Log.d("onClickInvokingMethods: $onClickInvokingMethods")
+        if (onClickInvokingMethods.size != 1) {
+            return false
+        }
+        val calledMethods = onClickInvokingMethods.values.first().map { it.descriptor }.toSet()
+        Log.d("calledMethods: $calledMethods")
+        val invokingMethods = dexKit.findMethodInvoking(
+            "",
+            methodDeclareClass = kAIOPictureView.name,
+            methodReturnType = "V",
+            methodParameterTypes = emptyArray(),
+            beCalledMethodReturnType = "V",
+            beCalledMethodParamTypes = arrayOf("J", "I", "I")
+        ).map { it.key }.filter { calledMethods.contains(it.descriptor) }
+        Log.d("invokingMethods: $invokingMethods")
+        if (invokingMethods.size == 1) {
+            NAIOPictureView_onDownloadOriginalPictureClick.descCache = invokingMethods.first().descriptor
+        } else {
+            val filterMethods = invokingMethods
+                .map { it.getMethod(getHostClassLoader()) }
+                .filter { it.isPublic }
+            if (filterMethods.size != 1) {
+                return false
+            }
+            Log.d("save: ${filterMethods.first()}")
+            NAIOPictureView_onDownloadOriginalPictureClick.descCache = DexMethodDescriptor(filterMethods.first()).descriptor
+        }
+        val usingStrMethods = dexKit.findMethodUsingString(
+            "0X800A91E",
+            methodDeclareClass = kAIOPictureView.name
+        )
+        Log.d("usingStrMethods: $usingStrMethods")
+        if (usingStrMethods.size != 1) {
+            return false
+        }
+        NAIOPictureView_setVisibility.descCache = usingStrMethods.first().descriptor
+        return true
+    }
 }

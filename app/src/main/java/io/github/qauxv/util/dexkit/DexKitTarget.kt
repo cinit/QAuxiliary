@@ -631,9 +631,26 @@ object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/troopAddFrd")
 }
 
+// TODO 待优化这几种类型
 object NTextItemBuilder_setETText : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass = "com/tencent/mobileqq/activity/aio/item/TextItemBuilder"
+    override val traitString = arrayOf("NOT_USED()")
+    override val preferredDexIndexArray = intArrayOf(-1)
+    override val filter = DexKitFilter.allowAll
+}
+
+object NAIOPictureView_setVisibility : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com/tencent/mobileqq/activity/aio/photo/AIOPictureView"
+    override val traitString = arrayOf("NOT_USED()")
+    override val preferredDexIndexArray = intArrayOf(-1)
+    override val filter = DexKitFilter.allowAll
+}
+
+object NAIOPictureView_onDownloadOriginalPictureClick : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com/tencent/mobileqq/activity/aio/photo/AIOPictureView"
     override val traitString = arrayOf("NOT_USED()")
     override val preferredDexIndexArray = intArrayOf(-1)
     override val filter = DexKitFilter.allowAll

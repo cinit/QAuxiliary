@@ -116,7 +116,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
     public boolean doFind() {
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
         DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
-        DexKitBridge dexKit = dexKitDeobfs.getDexKitHelper();
+        DexKitBridge dexKit = dexKitDeobfs.getDexKitBridge();
         Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit.findMethodUsingField(
                 "",
                 "",

@@ -37,22 +37,22 @@ import java.util.concurrent.locks.Lock
 
 class DexKitDeobfs private constructor(
     private val mReadLock: Lock,
-    private var mDexKitHelper: DexKitBridge?
+    private var mDexKitBridge: DexKitBridge?
 ) : DexDeobfsBackend {
 
     override val id: String = ID
     override val name: String = NAME
     override val isBatchFindMethodSupported: Boolean = true
 
-    fun getDexKitHelper(): DexKitBridge {
-        return mDexKitHelper!!
+    fun getDexKitBridge(): DexKitBridge {
+        return mDexKitBridge!!
     }
 
     override fun doBatchFindMethodImpl(targetArray: Array<DexKitTarget>) {
         ensureOpen()
         mReadLock.lock()
         try {
-            val helper = mDexKitHelper!!
+            val helper = mDexKitBridge!!
             val targets = targetArray.filterIsInstance<DexKitTarget.UsingStr>()
             val methodDescriptorArray = Array(targets.size) {
                 DexKit.getMethodDescFromCacheImpl(targets[it])
@@ -107,7 +107,7 @@ class DexKitDeobfs private constructor(
                 return ret
             }
             ensureOpen()
-            val helper = mDexKitHelper!!
+            val helper = mDexKitBridge!!
             val keys = target.traitString
             val methods = keys.map { key ->
                 helper.findMethodUsingString(key, true)
@@ -131,13 +131,13 @@ class DexKitDeobfs private constructor(
 
     @Synchronized
     private fun ensureOpen() {
-        check(mDexKitHelper != null) { "closed" }
+        check(mDexKitBridge != null) { "closed" }
     }
 
     @Synchronized
     override fun close() {
         mSharedResourceImpl.decreaseRefCount()
-        mDexKitHelper = null
+        mDexKitBridge = null
     }
 
     companion object {

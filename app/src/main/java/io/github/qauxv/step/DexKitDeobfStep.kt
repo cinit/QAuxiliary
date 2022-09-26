@@ -35,6 +35,7 @@ class DexKitDeobfStep : Step {
         if (DexDeobfsProvider.isDexKitBackend) {
             HookInstaller.queryAllAnnotatedHooks().forEach {
                 if (it is DexKitFinder && it.isEnabled && it.isAvailable && it.isNeedFind) {
+                    Log.d("DexKitDeobfStep add DexKitFinder: ${it::class.java.simpleName}")
                     dexKitFinderHook.add(it)
                 }
             }

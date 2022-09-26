@@ -35,7 +35,6 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
@@ -132,7 +131,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
             set.add(strings[i]);
             map.put("Conversation_" + i, set);
         }
-        Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitHelper().batchFindMethodsUsingStrings(map, false, new int[0]);
+        Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge().batchFindMethodsUsingStrings(map, false, new int[0]);
         for (List<DexMethodDescriptor> methods: res.values()) {
             for (DexMethodDescriptor descriptor: methods) {
                 if (descriptor.getDeclaringClassSig().equals(conversationSig)
