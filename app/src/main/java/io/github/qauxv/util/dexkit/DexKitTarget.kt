@@ -130,7 +130,7 @@ object CAbsGalScene : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("gallery setColor bl")
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
-        !clz.isAbstract && clz.fields.any { it.type == View::class.java }
+        clz.isAbstract && clz.fields.any { it.type == View::class.java }
     }
 }
 
@@ -175,8 +175,8 @@ object CPngFrameUtil : DexKitTarget.UsingStr() {
     override val preferredDexIndexArray = intArrayOf(3, 2)
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
-        clz.methods.filter { "b" !in it.name && it.returnType == Int::class.java && it.isStatic }
-            .any { it.parameterTypes.contentDeepEquals(arrayOf(Int::class.java)) }
+        clz.methods.filter { "b" != it.name && it.returnType == Int::class.java && it.isStatic }
+            .any { it.parameterTypes.contentEquals(arrayOf(Int::class.java)) }
     }
 }
 
@@ -223,7 +223,7 @@ object CQzoneMsgNotify : DexKitTarget.UsingStr() {
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
         !clz.isAbstract
-            && clz.superclass != Any::class.java
+            && clz.superclass == Any::class.java
             && clz.methods.any {
             val argt = it.parameterTypes
             it.returnType == Void::class.java && argt.size > 7 && argt[0] == _QQAppInterface()
@@ -244,18 +244,19 @@ object CCustomWidgetUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
     override val traitString = arrayOf("^NEW$")
     override val preferredDexIndexArray = intArrayOf(20, 5, 4, 9)
-    override val filter = filter@{ it: DexMethodDescriptor ->
-        if ("com/tencent/widget" !in it.declaringClass) return@filter false
-        val clz = load(it.declaringClass) ?: return@filter false
-        DexKitFilter.notHasSuper(it) && clz.fields.all { it.isStatic }
-    }
+    override val filter = DexKitFilter.strInClsName("com/tencent/widget") or
+        DexKitFilter.notHasSuper or
+        filter@{ it: DexMethodDescriptor ->
+            val clz = load(it.declaringClass) ?: return@filter false
+            clz.fields.all { it.isStatic }
+        }
 }
 
 object CMessageCache : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/service/message/MessageCache"
     override val traitString = arrayOf("Q.msg.MessageCache")
     override val preferredDexIndexArray = intArrayOf(1, 4)
-    override val filter = filter@{ it: DexMethodDescriptor -> "<clinit>" in it.name }
+    override val filter = filter@{ it: DexMethodDescriptor -> "<clinit>" == it.name }
 }
 
 object CScreenShotHelper : DexKitTarget.UsingStr() {
@@ -276,17 +277,18 @@ object CGroupAppActivity : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/activity/aio/drawer/TroopAppShortcutDrawer"
     override val traitString = arrayOf("onDrawerStartOpen")
     override val preferredDexIndexArray = intArrayOf(2, 11, 6)
-    override val filter = filter@{ it: DexMethodDescriptor ->
-        val clz = load(it.declaringClass) ?: return@filter false
-        DexKitFilter.notHasSuper(it) && clz.fields.any { it.name.endsWith("TroopAppShortcutContainer") }
-    }
+    override val filter = DexKitFilter.hasSuper or
+        filter@{ it: DexMethodDescriptor ->
+            val clz = load(it.declaringClass) ?: return@filter false
+            clz.fields.any { it.name.endsWith("TroopAppShortcutContainer") }
+        }
 }
 
 object CIntimateDrawer : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/activity/aio/drawer/IntimateInfoChatDrawer"
     override val traitString = arrayOf("onDrawerOpened, needReqIntimateInfo: %s")
     override val preferredDexIndexArray = intArrayOf(7, 6)
-    override val filter = DexKitFilter.notHasSuper
+    override val filter = DexKitFilter.hasSuper
 }
 
 object CZipUtils : DexKitTarget.UsingStr() {
@@ -307,28 +309,28 @@ object CMultiMsgManager : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/multimsg/MultiMsgManager"
     override val traitString = arrayOf("[sendMultiMsg]data.length = ")
     override val preferredDexIndexArray = intArrayOf(9, 4, 3, 7)
-    override val filter = DexKitFilter.notHasSuper
+    override val filter = DexKitFilter.hasSuper
 }
 
 object CAvatarUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.avatar.utils.AvatarUtil"
     override val traitString = arrayOf("AvatarUtil")
     override val preferredDexIndexArray = intArrayOf(8)
-    override val filter = DexKitFilter.hasSuper
+    override val filter = DexKitFilter.notHasSuper
 }
 
 object CFaceManager : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.app.face.FaceManager"
     override val traitString = arrayOf("FaceManager")
     override val preferredDexIndexArray = intArrayOf(3)
-    override val filter = DexKitFilter.hasSuper
+    override val filter = DexKitFilter.notHasSuper
 }
 
 object CAIOPictureView : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.richmediabrowser.view.AIOPictureView"
     override val traitString = arrayOf("AIOPictureView", "AIOGalleryPicView")
     override val preferredDexIndexArray = intArrayOf(10, 4, 2)
-    override val filter = DexKitFilter.notHasSuper
+    override val filter = DexKitFilter.hasSuper
 }
 
 object CGalleryBaseScene : DexKitTarget.UsingStr() {
@@ -407,7 +409,7 @@ object NBaseChatPie_createMulti : DexKitTarget.UsingStr() {
     override val declaringClass: String = _BaseChatPie().name
     override val traitString = arrayOf("createMulti")
     override val preferredDexIndexArray = intArrayOf(6, 2, 7, 3)
-    override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.activity.aio.helper") or
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/aio/helper") or
         DexKitFilter.strInClsName(declaringClass.replace('.', '/')) or
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
@@ -479,7 +481,7 @@ object NVasProfileTemplateController_onCardUpdate : DexKitTarget.UsingStr() {
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
         "onCardUpdate" == m.name
             || m.declaringClass.name == "com.tencent.mobileqq.profilecard.vas.VasProfileTemplateController"
-            || m.declaringClass == _FriendProfileCardActivity()
+            || m.declaringClass.isAssignableFrom(_FriendProfileCardActivity())
     }
 }
 
@@ -509,7 +511,7 @@ object NVipUtils_getPrivilegeFlags : DexKitTarget.UsingStr() {
     override val preferredDexIndexArray = intArrayOf(16, 11, 12, 14, 4, 2, 3)
     override val filter = filter@{ it: DexMethodDescriptor ->
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-        "getPrivilegeFlags" in m.name
+        "getPrivilegeFlags" == m.name
             || m.parameterTypes.contentEquals(arrayOf(String::class.java))
             || m.parameterTypes.contentEquals(arrayOf(AppRuntime::class.java, String::class.java))
     }
@@ -632,7 +634,7 @@ object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
 object NTextItemBuilder_setETText : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass = "com/tencent/mobileqq/activity/aio/item/TextItemBuilder"
-    override val traitString = arrayOf("TODO()")
+    override val traitString = arrayOf("NOT_USED()")
     override val preferredDexIndexArray = intArrayOf(-1)
     override val filter = DexKitFilter.allowAll
 }
