@@ -254,8 +254,9 @@ androidComponents.onVariants { variant ->
 
     task("install${variantCapped}AndRestartQQ") {
         group = "qauxv"
-        dependsOn(":app:install$variantCapped", killQQ)
-        finalizedBy(openQQ)
+        dependsOn(":app:install$variantCapped")
+        openQQ.dependsOn(killQQ)
+        finalizedBy(killQQ, openQQ)
     }
 }
 
