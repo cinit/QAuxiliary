@@ -76,7 +76,8 @@ class DexKitDeobfs private constructor(
                 val ret = target.verifyTargetMethod(valueArr.map { DexMethodDescriptor(it) })
                 if (ret == null) {
                     valueArr.forEach(Log::i)
-                    Log.i("${valueArr.size} candidates found for " + name + ", none satisfactory.")
+                    Log.i("${valueArr.size} candidates found for " + name + ", none satisfactory, save null.")
+                    target.descCache = DexKit.NO_SUCH_METHOD.toString()
                 } else {
                     Log.d("save id: $name,method: $ret")
                     target.descCache = ret.toString()
