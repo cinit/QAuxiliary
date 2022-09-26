@@ -52,7 +52,7 @@ DexKitTarget {
     }
 
     abstract val declaringClass: String
-    open val preferredDexIndexArray: IntArray = intArrayOf(1)
+    open val preferredDexIndexArray: IntArray = intArrayOf()
     abstract val filter: dexkitFilter
 
     private val descCacheKey by lazy { ConfigData<String>("cache#$name#$version", ConfigManager.getCache()) }
