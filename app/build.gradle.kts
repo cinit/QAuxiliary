@@ -178,6 +178,7 @@ android {
 dependencies {
     compileOnly(projects.libs.stub)
     implementation(projects.libs.mmkv)
+    implementation(projects.libs.dexkit)
     ksp(projects.libs.ksp)
     // androidx
     implementation("androidx.core:core-ktx:1.9.0")
@@ -205,7 +206,6 @@ dependencies {
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 
     implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.0")
-    implementation("com.github.LuckyPray:DexKit-Android:1.2.2")
     implementation("com.github.livefront.sealed-enum:runtime:0.5.0")
     ksp("com.github.livefront.sealed-enum:ksp:0.5.0")
 }
@@ -218,6 +218,12 @@ val killQQ = tasks.register<Exec>("killQQ") {
 }
 
 val openQQ = tasks.register<Exec>("openQQ") {
+    group = "qauxv"
+    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
+    isIgnoreExitValue = true
+}
+
+val restartQQ = tasks.register<Exec>("restartQQ") {
     group = "qauxv"
     commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
     isIgnoreExitValue = true
@@ -255,8 +261,8 @@ androidComponents.onVariants { variant ->
     task("install${variantCapped}AndRestartQQ") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped")
-        openQQ.dependsOn(killQQ)
-        finalizedBy(killQQ, openQQ)
+        restartQQ.dependsOn(killQQ)
+        finalizedBy(killQQ, restartQQ)
     }
 }
 
@@ -300,7 +306,8 @@ tasks.register("checkGitSubmodule") {
     doLast {
         listOf(
             "libs/mmkv/MMKV/Core",
-            "libs/stub/qq-stub"
+            "libs/stub/qq-stub",
+            "libs/dexkit/DexKit/Core",
         ).forEach {
             val submoduleDir = File(projectDir, it.replace('/', File.separatorChar))
             if (!submoduleDir.exists()) {

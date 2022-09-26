@@ -31,19 +31,20 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.name
 import io.github.qauxv.util.dexkit.valueOf
-import me.teble.DexKitHelper
+import io.luckypray.dexkit.DexKitBridge
+import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor as MethodDescriptor
 import java.util.concurrent.locks.Lock
 
 class DexKitDeobfs private constructor(
     private val mReadLock: Lock,
-    private var mDexKitHelper: DexKitHelper?
+    private var mDexKitHelper: DexKitBridge?
 ) : DexDeobfsBackend {
 
     override val id: String = ID
     override val name: String = NAME
     override val isBatchFindMethodSupported: Boolean = true
 
-    fun getDexKitHelper(): DexKitHelper {
+    fun getDexKitHelper(): DexKitBridge {
         return mDexKitHelper!!
     }
 
@@ -68,8 +69,8 @@ class DexKitDeobfs private constructor(
                 }
             }
 
-            val resultMap = helper.batchFindMethodsUsedStrings(deobfsMap, true)
-            val resultMap2 = mutableMapOf<String, Set<String>>()
+            val resultMap = helper.batchFindMethodsUsingStrings(deobfsMap, true)
+            val resultMap2 = mutableMapOf<String, Set<MethodDescriptor>>()
             resultMap.forEach {
                 val key = it.key.split("#").first()
                 if (resultMap2.containsKey(key)) {
@@ -81,9 +82,9 @@ class DexKitDeobfs private constructor(
 
             resultMap2.forEach { (key, valueArr) ->
                 val target = DexKitTarget.valueOf(key)
-                val ret = target.verifyTargetMethod(valueArr.map { DexMethodDescriptor(it) })
+                val ret = target.verifyTargetMethod(valueArr.map { DexMethodDescriptor(it.descriptor) })
                 if (ret == null) {
-                    valueArr.forEach(Log::i)
+                    valueArr.map { it.descriptor }.forEach(Log::i)
                     Log.e("${valueArr.size} candidates found for " + key + ", none satisfactory, save null.")
                     target.descCache = DexKit.NO_SUCH_METHOD.toString()
                 } else {
@@ -109,9 +110,9 @@ class DexKitDeobfs private constructor(
             val helper = mDexKitHelper!!
             val keys = target.traitString
             val methods = keys.map { key ->
-                helper.findMethodUsedString(key, true)
+                helper.findMethodUsingString(key, true)
             }.flatMap { desc ->
-                desc.map { DexMethodDescriptor(it) }
+                desc.map { DexMethodDescriptor(it.descriptor) }
             }
             if (methods.isNotEmpty()) {
                 ret = target.verifyTargetMethod(methods)
@@ -151,15 +152,15 @@ class DexKitDeobfs private constructor(
         }
 
         private val mSharedResourceImpl by lazy {
-            object : SharedRefCountResourceImpl<DexKitHelper>() {
-                override fun openResourceInternal(): DexKitHelper {
+            object : SharedRefCountResourceImpl<DexKitBridge>() {
+                override fun openResourceInternal(): DexKitBridge {
                     Log.d("open resource: DexKit")
                     val dexClassLoader: ClassLoader = Initiator.getHostClassLoader().findDexClassLoader()!!
-                    return DexKitHelper(dexClassLoader)
+                    return DexKitBridge.create(dexClassLoader)!!
                 }
 
-                override fun closeResourceInternal(res: DexKitHelper) {
-                    res.release()
+                override fun closeResourceInternal(res: DexKitBridge) {
+                    res.close()
                     Log.d("close resource: DexKit")
                 }
             }

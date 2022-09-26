@@ -309,12 +309,12 @@
   license: Apache-2.0
   licenseUrl: https://www.apache.org/licenses/LICENSE-2.0.txt
   url: https://github.com/KyuubiRan/EzXHelper
-- artifact: com.github.LuckyPray:DexKit-Android:+
-  name: DexKit-Android
+- artifact: com.github.LuckyPray:DexKit:+
+  name: DexKit
   copyrightHolder: LuckyPray
   licenseUrl: https://www.gnu.org/licenses/lgpl-3.0.html
   license: LGPL-3.0 license
-  url: https://github.com/LuckyPray/DexKit-Android
+  url: https://github.com/LuckyPray/DexKit
 - artifact: com.github.plattysoft:Leonids:+
   name: Leonids
   copyrightHolder: #COPYRIGHT_HOLDER#

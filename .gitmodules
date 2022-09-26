@@ -4,3 +4,6 @@
 [submodule "libs/stub/qq-stub"]
 	path = libs/stub/qq-stub
 	url = https://github.com/LuckyPray/qq-stub
+[submodule "libs/dexkit/DexKit"]
+	path = libs/dexkit/DexKit
+	url = git@github.com:LuckyPray/DexKit.git

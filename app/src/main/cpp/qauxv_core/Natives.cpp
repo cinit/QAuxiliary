@@ -457,6 +457,10 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (retCode < 0) {
         return retCode;
     }
+    retCode = DexKit_JNI_OnLoad(vm, reserved);
+    if (retCode < 0) {
+        return retCode;
+    }
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }

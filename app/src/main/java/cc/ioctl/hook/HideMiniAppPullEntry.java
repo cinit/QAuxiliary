@@ -22,6 +22,7 @@
 package cc.ioctl.hook;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
+import static io.luckypray.dexkit.descriptor.DexDescriptorUtil.getTypeSig;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -37,10 +38,11 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKitFinder;
-import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
+import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -117,7 +119,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         if (clz == null) {
             return false;
         }
-        String conversationSig = DexMethodDescriptor.getTypeSig(clz);
+        String conversationSig = getTypeSig(clz);
         DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
         String[] strings = new String[]{
                 "initMiniAppEntryLayout.",
@@ -130,18 +132,16 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
             set.add(strings[i]);
             map.put("Conversation_" + i, set);
         }
-        Map<String, String[]> res = dexKitDeobfs.getDexKitHelper().batchFindMethodsUsedStrings(map, false, new int[0]);
-        for (String[] methods: res.values()) {
-            for (String method : methods) {
-                DexMethodDescriptor descriptor = new DexMethodDescriptor(method);
-                if (descriptor.declaringClass.equals(conversationSig)
-                        && "()V".equals(descriptor.signature)) {
-                    Log.i("下拉 desc " + descriptor);
+        Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitHelper().batchFindMethodsUsingStrings(map, false, new int[0]);
+        for (List<DexMethodDescriptor> methods: res.values()) {
+            for (DexMethodDescriptor descriptor: methods) {
+                if (descriptor.getDeclaringClassSig().equals(conversationSig)
+                        && "()V".equals(descriptor.getMethodTypeSig())) {
                     // save and return
                     ConfigManager cache = ConfigManager.getCache();
                     cache.putInt("qn_hide_miniapp_v2_version_code",
                             HostInfo.getVersionCode());
-                    cache.putString("qn_hide_miniapp_v2_method_name", descriptor.name);
+                    cache.putString("qn_hide_miniapp_v2_method_name", descriptor.getName());
                     cache.save();
                     return true;
                 }

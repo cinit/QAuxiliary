@@ -27,5 +27,6 @@ include(
     ":app",
     ":libs:stub",
     ":libs:ksp",
-    ":libs:mmkv"
+    ":libs:mmkv",
+    ":libs:dexkit",
 )
