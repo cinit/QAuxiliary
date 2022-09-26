@@ -330,7 +330,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val orig = it.declaringClass.replace("/", ".")
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
-                val md = DexKit.getMethodDescFromCache(it)
+                val md = DexKit.getMethodDescFromCacheImpl(it)
                 if (md != null) {
                     currName = md.toString()
                 } else {
@@ -358,7 +358,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val orig = it.declaringClass.replace("/", ".")
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
-                val md = DexKit.getMethodDescFromCache(it)
+                val md = DexKit.getMethodDescFromCacheImpl(it)
                 if (md != null) {
                     currName = md.toString()
                 } else {

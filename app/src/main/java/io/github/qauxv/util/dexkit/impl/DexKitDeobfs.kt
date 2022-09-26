@@ -54,7 +54,7 @@ class DexKitDeobfs private constructor(
             val helper = mDexKitHelper!!
             val targets = targetArray.filterIsInstance<DexKitTarget.UsingStr>()
             val methodDescriptorArray = Array(targets.size) {
-                DexKit.getMethodDescFromCache(targets[it])
+                DexKit.getMethodDescFromCacheImpl(targets[it])
             }
             val deobfsMap = mutableMapOf<String, Set<String>>()
             for (index in methodDescriptorArray.indices) {
@@ -93,7 +93,7 @@ class DexKitDeobfs private constructor(
         ensureOpen()
         mReadLock.lock()
         try {
-            var ret = DexKit.getMethodDescFromCache(target)
+            var ret = DexKit.getMethodDescFromCacheImpl(target)
             if (ret != null) {
                 return ret
             }

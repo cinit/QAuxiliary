@@ -50,7 +50,7 @@ interface DexDeobfsBackend : Closeable {
      */
     override fun close()
     fun doFindMethod(target: DexKitTarget): Method? {
-        var descriptor = DexKit.getMethodDescFromCache(target)
+        var descriptor = DexKit.getMethodDescFromCacheImpl(target)
         if (descriptor == null) {
             descriptor = doFindMethodImpl(target)
             if (descriptor == null) {
@@ -80,7 +80,7 @@ interface DexDeobfsBackend : Closeable {
         if (ret != null) {
             return ret
         }
-        var descriptor = DexKit.getMethodDescFromCache(target)
+        var descriptor = DexKit.getMethodDescFromCacheImpl(target)
         if (descriptor == null) {
             descriptor = doFindMethodImpl(target)
             if (descriptor == null) {

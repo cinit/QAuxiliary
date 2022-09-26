@@ -172,7 +172,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 Log.e(e);
             }
         }
-        NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.INSTANCE.getNO_SUCH_METHOD().toString());
+        NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.toString());
         return false;
     }
 }

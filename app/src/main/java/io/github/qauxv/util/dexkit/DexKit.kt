@@ -29,6 +29,8 @@ import java.lang.reflect.Method
 
 object DexKit {
     private const val NO_SUCH_CLASS = "Lio/github/qauxv/util/DexKit\$NoSuchClass;"
+
+    @JvmField
     val NO_SUCH_METHOD = DexMethodDescriptor(NO_SUCH_CLASS, "a", "()V")
 
     fun tryFind(target: DexKitTarget) : Boolean {
@@ -60,9 +62,10 @@ object DexKit {
         when (target) {
             is DexKitTarget.UsingStr -> {
                 if (target.findMethod) {
-                    return getMethodDescFromCache(target) == null
+                    return getMethodDescFromCacheImpl(target) == null
+                } else {
+                    return getMethodDescFromCacheImpl(target) == null && loadClassFromCache(target) == null
                 }
-                return loadClassFromCache(target) == null
             }
         }
     }
@@ -82,10 +85,32 @@ object DexKit {
         }
     }
 
+    /**
+     * Get the method descriptor from cache. If the cache is empty, return null.
+     *
+     * If the cache is not empty, but the method is not found, return [NO_SUCH_METHOD].
+     */
+    fun getMethodDescFromCacheImpl(target: DexKitTarget): DexMethodDescriptor? {
+        target.descCache.let {
+            return if (it.isNullOrEmpty()) {
+                null
+            } else {
+                DexMethodDescriptor(it)
+            }
+        }
+    }
+
+    /**
+     * Get the method descriptor from cache. If the cache is empty or not found, return null.
+     */
     fun getMethodDescFromCache(target: DexKitTarget): DexMethodDescriptor? {
-        return kotlin.runCatching {
-            DexMethodDescriptor(target.descCache)
-        }.getOrNull()
+        target.descCache.let {
+            return if (it.isNullOrEmpty() || it == NO_SUCH_METHOD.toString()) {
+                null
+            } else {
+                DexMethodDescriptor(it)
+            }
+        }
     }
 
     fun loadClassFromCache(target: DexKitTarget): Class<*>? {
