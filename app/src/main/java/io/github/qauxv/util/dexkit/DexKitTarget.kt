@@ -66,6 +66,7 @@ DexKitTarget {
         return kotlin.runCatching {
             val filter = methods.filter(filter)
             if (filter.size > 1) {
+                filter.forEach { Log.e(it.toString()) }
                 Log.e("More than one method matched: $name, return the first one")
             }
             // check(filter.size <= 1) { "Too many methods found for $this: ${filter.size}" }
@@ -244,8 +245,8 @@ object CCustomWidgetUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
     override val traitString = arrayOf("^NEW$")
     override val preferredDexIndexArray = intArrayOf(20, 5, 4, 9)
-    override val filter = DexKitFilter.strInClsName("com/tencent/widget") or
-        DexKitFilter.notHasSuper or
+    override val filter = DexKitFilter.strInClsName("com/tencent/widget") and
+        DexKitFilter.notHasSuper and
         filter@{ it: DexMethodDescriptor ->
             val clz = load(it.declaringClass) ?: return@filter false
             clz.fields.all { it.isStatic }
@@ -277,7 +278,7 @@ object CGroupAppActivity : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/activity/aio/drawer/TroopAppShortcutDrawer"
     override val traitString = arrayOf("onDrawerStartOpen")
     override val preferredDexIndexArray = intArrayOf(2, 11, 6)
-    override val filter = DexKitFilter.hasSuper or
+    override val filter = DexKitFilter.hasSuper and
         filter@{ it: DexMethodDescriptor ->
             val clz = load(it.declaringClass) ?: return@filter false
             clz.fields.any { it.name.endsWith("TroopAppShortcutContainer") }
@@ -446,7 +447,7 @@ object NAtPanel_refreshUI : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/troop/quickat/ui/AtPanel"
     override val traitString = arrayOf("resultList = null")
     override val preferredDexIndexArray = intArrayOf(12, 10, 4)
-    override val filter = DexKitFilter.notHasSuper or
+    override val filter = DexKitFilter.notHasSuper and
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
             m.returnType == Void::class.java
@@ -570,7 +571,7 @@ object NChatActivityFacade_sendMsgButton : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/activity/ChatActivityFacade"
     override val traitString = arrayOf(" sendMessage start currenttime:")
     override val preferredDexIndexArray = intArrayOf(2, 6, 3, 7)
-    override val filter = DexKitFilter.strInClsName("ChatActivityFacade") or
+    override val filter = DexKitFilter.strInClsName("ChatActivityFacade") and
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
             m.paramCount == 6
