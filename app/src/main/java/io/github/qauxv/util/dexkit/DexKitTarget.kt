@@ -131,7 +131,7 @@ object CAbsGalScene : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("gallery setColor bl")
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
-        clz.isAbstract && clz.fields.any { it.type == View::class.java }
+        clz.isAbstract && clz.declaredFields.any { it.type == View::class.java }
     }
 }
 
@@ -205,7 +205,7 @@ object CSimpleUiUtil : DexKitTarget.UsingStr() {
 
 object CTroopGiftUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/troop/utils/TroopGiftUtil"
-    override val traitString = arrayOf(".troop.sendgiftTroopUtils", ".troop.sendgiftTroopMemberUtil")
+    override val traitString = arrayOf(".troop.send_giftTroopUtils", ".troop.send_giftTroopMemberUtil")
     override val preferredDexIndexArray = intArrayOf(4, 9, 2)
     override val filter = DexKitFilter.allStaticFields
 }
@@ -281,7 +281,7 @@ object CGroupAppActivity : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.hasSuper and
         filter@{ it: DexMethodDescriptor ->
             val clz = load(it.declaringClass) ?: return@filter false
-            clz.fields.any { it.name.endsWith("TroopAppShortcutContainer") }
+            clz.declaredFields.any { it.type.name.endsWith("TroopAppShortcutContainer") }
         }
 }
 
@@ -341,7 +341,7 @@ object CGalleryBaseScene : DexKitTarget.UsingStr() {
     override val preferredDexIndexArray = intArrayOf(2)
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
-        clz.fields.any { it.type == View::class.java }
+        clz.declaredFields.any { it.type == View::class.java }
     }
 }
 
