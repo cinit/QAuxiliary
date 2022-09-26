@@ -42,8 +42,7 @@ import io.github.qauxv.util.Log
 import me.ketal.data.ConfigData
 import mqq.app.AppRuntime
 
-sealed class
-DexKitTarget {
+sealed class DexKitTarget {
     val version = HostInfo.getVersionCode32()
 
     sealed class UsingStr : DexKitTarget() {
@@ -62,7 +61,7 @@ DexKitTarget {
             descCacheKey.value = value
         }
 
-    fun verifyTargetMethod(methods: List<DexMethodDescriptor>): DexMethodDescriptor? {
+    open fun verifyTargetMethod(methods: List<DexMethodDescriptor>): DexMethodDescriptor? {
         return kotlin.runCatching {
             val filter = methods.filter(filter)
             if (filter.size > 1) {
