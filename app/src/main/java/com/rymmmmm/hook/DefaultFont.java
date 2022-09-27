@@ -135,7 +135,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (methods.size() == 1) {
             try {
                 DexMethodDescriptor descriptor = methods.get(0);
-                descriptor.getMethod(Initiator.getHostClassLoader());
+                descriptor.getMethodInstance(Initiator.getHostClassLoader());
                 NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
                 Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
                 return true;
@@ -164,7 +164,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (res.size() == 1) {
             try {
                 DexMethodDescriptor descriptor = res.get(0);
-                descriptor.getMethod(Initiator.getHostClassLoader());
+                descriptor.getMethodInstance(Initiator.getHostClassLoader());
                 NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
                 Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
                 return true;

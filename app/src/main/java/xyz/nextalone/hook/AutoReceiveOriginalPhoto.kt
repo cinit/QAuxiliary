@@ -116,7 +116,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         if (onClickInvokingMethods.size != 1) {
             return false
         }
-        val calledMethods = onClickInvokingMethods.values.first().map { it.descriptor }.toSet()
+        val calledMethods = onClickInvokingMethods.values.first().toSet()
         Log.d("calledMethods: $calledMethods")
         val invokingMethods = dexKit.findMethodInvoking(
             "",
@@ -125,13 +125,13 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             methodParameterTypes = emptyArray(),
             beCalledMethodReturnType = "V",
             beCalledMethodParamTypes = arrayOf("J", "I", "I")
-        ).map { it.key }.filter { calledMethods.contains(it.descriptor) }
+        ).map { it.key }.filter { calledMethods.contains(it) }
         Log.d("invokingMethods: $invokingMethods")
         if (invokingMethods.size == 1) {
             NAIOPictureView_onDownloadOriginalPictureClick.descCache = invokingMethods.first().descriptor
         } else {
             val filterMethods = invokingMethods
-                .map { it.getMethod(getHostClassLoader()) }
+                .map { it.getMethodInstance(getHostClassLoader()) }
                 .filter { it.isPublic }
             if (filterMethods.size != 1) {
                 return false

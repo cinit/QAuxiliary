@@ -22,7 +22,7 @@
 package cc.ioctl.hook;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static io.luckypray.dexkit.descriptor.DexDescriptorUtil.getTypeSig;
+import static io.luckypray.dexkit.descriptor.util.DexDescriptorUtil.getTypeSig;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -133,14 +133,14 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         }
         Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge().batchFindMethodsUsingStrings(map, false, new int[0]);
         for (List<DexMethodDescriptor> methods: res.values()) {
-            for (DexMethodDescriptor descriptor: methods) {
-                if (descriptor.getDeclaringClassSig().equals(conversationSig)
-                        && "()V".equals(descriptor.getMethodTypeSig())) {
+            for (DexMethodDescriptor methodDesc: methods) {
+                if (methodDesc.getDeclaringClassSig().equals(conversationSig)
+                        && "()V".equals(methodDesc.getSignature())) {
                     // save and return
                     ConfigManager cache = ConfigManager.getCache();
                     cache.putInt("qn_hide_miniapp_v2_version_code",
                             HostInfo.getVersionCode());
-                    cache.putString("qn_hide_miniapp_v2_method_name", descriptor.getName());
+                    cache.putString("qn_hide_miniapp_v2_method_name", methodDesc.getName());
                     cache.save();
                     return true;
                 }
