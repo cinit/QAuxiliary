@@ -130,11 +130,6 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         }
     };
 
-    @Override
-    public boolean isPreparationRequired() {
-        return true;
-    }
-
     @Nullable
     @Override
     public Step[] makePreparationSteps() {

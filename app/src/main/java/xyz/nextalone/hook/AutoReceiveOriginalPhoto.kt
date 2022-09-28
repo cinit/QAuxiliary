@@ -94,8 +94,6 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         }
     }
 
-    override val isPreparationRequired: Boolean = true
-
     override fun makePreparationSteps(): Array<Step> {
         return arrayOf(mStep)
     }

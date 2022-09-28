@@ -108,11 +108,6 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         }
     };
 
-    @Override
-    public boolean isPreparationRequired() {
-        return true;
-    }
-
     @Nullable
     @Override
     public Step[] makePreparationSteps() {

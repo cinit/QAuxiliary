@@ -32,6 +32,7 @@ import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexKitTarget
 import java.util.Arrays
 
@@ -86,6 +87,11 @@ abstract class BaseFunctionHook(
 
     override val isPreparationRequired: Boolean
         get() {
+            if (this is DexKitFinder) {
+                if (this.isNeedFind) {
+                    return true
+                }
+            }
             if (mDexDeobfIndexes == null) return false
             return mDexDeobfIndexes.any {
                 DexKit.isRunDexDeobfuscationRequired(it)
