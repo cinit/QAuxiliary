@@ -40,11 +40,16 @@ object DexDeobfsProvider {
         mDeobfsSection.decrementAndGet()
     }
 
+    @JvmStatic
+    fun checkDeobfuscationAvailable() {
+        check(mDeobfsSection.get() > 0) { "dex deobfuscation is not meant to be available now" }
+    }
+
     /**
      * Create a new instance. Call [DexDeobfsBackend.close] when you are done.
      */
     fun getCurrentBackend(): DexDeobfsBackend {
-        check(mDeobfsSection.get() > 0) { "dex deobfuscation is not meant to be available now" }
+        checkDeobfuscationAvailable()
         val id = ConfigManager.getDefaultConfig()
             .getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)
         return when (id) {

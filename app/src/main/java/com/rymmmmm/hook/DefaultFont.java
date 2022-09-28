@@ -31,7 +31,6 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.step.DexKitDeobfStep;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -86,19 +85,39 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         return requireMinQQVersion(QQVersion.QQ_8_5_0);
     }
 
+    private final Step mStep = new Step() {
+        @Override
+        public boolean step() {
+            return doFind();
+        }
+
+        @Override
+        public boolean isDone() {
+            return !isNeedFind();
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+
+        @Override
+        public String getDescription() {
+            return "查找字体相关类";
+        }
+    };
+
     @Nullable
     @Override
     public Step[] makePreparationSteps() {
-        return new Step[]{new DexKitDeobfStep()};
+        return new Step[]{mStep};
     }
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
-        if (!DexDeobfsProvider.INSTANCE.isDexKitBackend()) {
-            throw new IllegalStateException("该功能仅限DexKit引擎");
-        }
         Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
-        Objects.requireNonNull(method);
+        Objects.requireNonNull(method, "NTextItemBuilder_setETText.INSTANCE");
         HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
 
         Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
@@ -109,70 +128,72 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        return DexKit.getMethodDescFromCache(NTextItemBuilder_setETText.INSTANCE) == null;
+        return DexKit.getMethodDescFromCacheImpl(NTextItemBuilder_setETText.INSTANCE) == null;
     }
 
     @Override
     public boolean doFind() {
         // protected (BaseBubbleBuilder, TextItemBuilder).void ?(BaseBubbleBuilder.ViewHolder, ChatMessage)
-        DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
-        DexKitBridge dexKit = dexKitDeobfs.getDexKitBridge();
-        Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit.findMethodUsingField(
-                "",
-                "",
-                "",
-                "Landroid/widget/TextView;",
-                DexKitBridge.FLAG_GETTING,
-                Initiator._TextItemBuilder().getName(),
-                "",
-                "void",
-                new String[]{"", Initiator._ChatMessage().getName()},
-                null
-        );
-        List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
-                .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
-                .collect(Collectors.toList());
-        if (methods.size() == 1) {
-            try {
-                DexMethodDescriptor descriptor = methods.get(0);
-                descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
-                Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
-                return true;
-            } catch (Throwable e) {
-                Log.e(e);
+        DexDeobfsProvider.checkDeobfuscationAvailable();
+        try (DexKitDeobfs dexKitDeobfs = DexKitDeobfs.newInstance()) {
+            DexKitBridge dexKit = dexKitDeobfs.getDexKitBridge();
+            Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit.findMethodUsingField(
+                    "",
+                    "",
+                    "",
+                    "Landroid/widget/TextView;",
+                    DexKitBridge.FLAG_GETTING,
+                    Initiator._TextItemBuilder().getName(),
+                    "",
+                    "void",
+                    new String[]{"", Initiator._ChatMessage().getName()},
+                    null
+            );
+            List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
+                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
+                    .collect(Collectors.toList());
+            if (methods.size() == 1) {
+                try {
+                    DexMethodDescriptor descriptor = methods.get(0);
+                    descriptor.getMethodInstance(Initiator.getHostClassLoader());
+                    NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
+                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
+                    return true;
+                } catch (Throwable e) {
+                    traceError(e);
+                }
             }
-        }
-        Map<DexMethodDescriptor, List<DexMethodDescriptor>> resMap = dexKit.findMethodInvoking(
-                "",
-                "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
-                "",
-                "void",
-                new String[]{"", Initiator._ChatMessage().getName()},
-                "Landroid/text/TextUtils;",
-                "isEmpty",
-                "boolean",
-                null,
-                null
-        );
-        Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
-                .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
-                .collect(Collectors.toSet());
-        List<DexMethodDescriptor> res = methods.stream()
-                .filter(s -> !methodSet.contains(s))
-                .collect(Collectors.toList());
-        if (res.size() == 1) {
-            try {
-                DexMethodDescriptor descriptor = res.get(0);
-                descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
-                Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
-                return true;
-            } catch (Throwable e) {
-                Log.e(e);
+            Map<DexMethodDescriptor, List<DexMethodDescriptor>> resMap = dexKit.findMethodInvoking(
+                    "",
+                    "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
+                    "",
+                    "void",
+                    new String[]{"", Initiator._ChatMessage().getName()},
+                    "Landroid/text/TextUtils;",
+                    "isEmpty",
+                    "boolean",
+                    null,
+                    null
+            );
+            Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
+                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
+                    .collect(Collectors.toSet());
+            List<DexMethodDescriptor> res = methods.stream()
+                    .filter(s -> !methodSet.contains(s))
+                    .collect(Collectors.toList());
+            if (res.size() == 1) {
+                try {
+                    DexMethodDescriptor descriptor = res.get(0);
+                    descriptor.getMethodInstance(Initiator.getHostClassLoader());
+                    NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
+                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
+                    return true;
+                } catch (Throwable e) {
+                    traceError(e);
+                }
             }
+            NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.toString());
+            return false;
         }
-        NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.toString());
-        return false;
     }
 }
