@@ -26,6 +26,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.step.Step
 import io.github.qauxv.util.Initiator.getHostClassLoader
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
@@ -38,14 +39,11 @@ import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.NAIOPictureView_onDownloadOriginalPictureClick
 import io.github.qauxv.util.dexkit.NAIOPictureView_setVisibility
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
-import io.github.qauxv.util.requireMinPlayQQVersion
-import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
 import io.luckypray.dexkit.descriptor.member.DexClassDescriptor
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.isPublic
-import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
@@ -78,7 +76,29 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_11
     )
 
-//    override val isPreparationRequired: Boolean = true
+    private val mStep: Step = object : Step {
+        override fun step(): Boolean {
+            return doFind()
+        }
+
+        override fun isDone(): Boolean {
+            return !isNeedFind
+        }
+
+        override fun getPriority(): Int {
+            return 0
+        }
+
+        override fun getDescription(): String {
+            return "聊天自动接收原图相关类查找中"
+        }
+    }
+
+    override val isPreparationRequired: Boolean = true
+
+    override fun makePreparationSteps(): Array<Step> {
+        return arrayOf(mStep)
+    }
 
     override val isNeedFind: Boolean
         get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null

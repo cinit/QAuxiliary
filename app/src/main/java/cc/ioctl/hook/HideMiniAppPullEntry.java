@@ -34,6 +34,7 @@ import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKitFinder;
@@ -105,6 +106,39 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
     @Override
     public String getName() {
         return "隐藏下拉小程序";
+    }
+
+    private final Step mStep = new Step() {
+        @Override
+        public boolean step() {
+            return doFind();
+        }
+
+        @Override
+        public boolean isDone() {
+            return !isNeedFind();
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        @Override
+        public String getDescription() {
+            return "生成隐藏下拉小程序解决方案";
+        }
+    };
+
+    @Override
+    public boolean isPreparationRequired() {
+        return true;
+    }
+
+    @Nullable
+    @Override
+    public Step[] makePreparationSteps() {
+        return new Step[]{mStep};
     }
 
     @Override
