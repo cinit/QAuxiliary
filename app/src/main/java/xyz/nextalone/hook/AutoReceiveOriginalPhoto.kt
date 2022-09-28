@@ -157,15 +157,17 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             Log.d("save: ${filterMethods.first()}")
             NAIOPictureView_onDownloadOriginalPictureClick.descCache = DexMethodDescriptor(filterMethods.first()).descriptor
         }
-        val usingStrMethods = dexKit.findMethodUsingString(
-            "0X800A91E",
-            methodDeclareClass = kAIOPictureView.name
+        val setVisibilityMethods = dexKit.findMethodCaller(
+            methodDescriptor = "Landroid/widget/TextView;->setVisibility(I)V",
+            callerMethodDeclareClass = kAIOPictureView.name,
+            callerMethodReturnType = "V",
+            callerMethodParameterTypes = arrayOf("Z"),
         )
-        Log.d("usingStrMethods: $usingStrMethods")
-        if (usingStrMethods.size != 1) {
+        Log.d("setVisibilityMethods: $setVisibilityMethods")
+        if (setVisibilityMethods.size != 1) {
             return false
         }
-        NAIOPictureView_setVisibility.descCache = usingStrMethods.first().descriptor
+        NAIOPictureView_setVisibility.descCache = setVisibilityMethods.first().descriptor
         return true
     }
 }
