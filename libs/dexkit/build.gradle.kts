@@ -23,13 +23,10 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("com.android.library")
-    id("org.jetbrains.kotlin.android")
+    id("io.github.qauxv.library")
 }
 
 android {
-    compileSdk = 32
-
     sourceSets {
         val main by getting
         main.apply {
