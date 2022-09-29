@@ -22,7 +22,7 @@
 
 plugins {
     id("io.github.qauxv.version")
-    kotlin("plugin.serialization") version "1.7.10" apply false
+    kotlin("plugin.serialization") version "1.7.20" apply false
 }
 
 tasks.register<Delete>("clean").configure {
