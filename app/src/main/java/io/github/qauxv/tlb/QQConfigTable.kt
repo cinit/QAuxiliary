@@ -50,6 +50,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_8_83
 import io.github.qauxv.util.QQVersion.QQ_8_8_93
 import io.github.qauxv.util.QQVersion.QQ_8_8_98
 import io.github.qauxv.util.QQVersion.QQ_8_9_0
+import io.github.qauxv.util.QQVersion.QQ_8_9_13
 import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
 import io.github.qauxv.util.QQVersion.QQ_8_9_8
@@ -106,6 +107,7 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_98 to "S0",
             QQ_8_9_2 to "R0",
             QQ_8_9_3 to "X0",
+            QQ_8_9_13 to "h0",
         ),
 
         SortAtPanel.sessionInfoTroopUin to mapOf(
