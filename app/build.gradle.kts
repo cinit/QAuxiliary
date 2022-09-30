@@ -137,7 +137,6 @@ android {
             }
         }
         getByName("debug") {
-            ndk.abiFilters += "arm64-v8a"
             isShrinkResources = false
             isMinifyEnabled = false
             isCrunchPngs = false
