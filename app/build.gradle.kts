@@ -404,6 +404,8 @@ val synthesizeDistReleaseApksCI by tasks.registering {
                             if (abis.contains(abi)) {
                                 dstApk.add(name, entry.open(), isCompressed)
                             }
+                        } else if (name.startsWith("META-INF/com/android/")) {
+                            // drop gradle version
                         } else {
                             // add all other entries to the output apk
                             dstApk.add(name, entry.open(), isCompressed)
