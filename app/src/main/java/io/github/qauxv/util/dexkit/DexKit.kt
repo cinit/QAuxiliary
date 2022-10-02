@@ -45,21 +45,23 @@ object DexKit {
      */
     @JvmStatic
     fun isRunDexDeobfuscationRequired(target: DexKitTarget) : Boolean {
-        when (target) {
-            is DexKitTarget.UsingStr -> {
-                return if (target.findMethod) {
-                    getMethodDescFromCacheImpl(target) == null
-                } else {
-                    getMethodDescFromCacheImpl(target) == null && loadClassFromCache(target) == null
-                }
-            }
+        return if (target.findMethod) {
+            getMethodDescFromCacheImpl(target) == null
+        } else {
+            getMethodDescFromCacheImpl(target) == null && loadClassFromCache(target) == null
         }
     }
 
     @JvmStatic
     fun doFindClass(target: DexKitTarget): Class<*>? {
-        loadClassFromCache(target)?.let { return it }
-        return DexDeobfsProvider.getCurrentBackend().doFindClass(target)
+        when (target) {
+            is DexKitTarget.UsingStr -> {
+                loadClassFromCache(target)?.let { return it }
+                return DexDeobfsProvider.getCurrentBackend().doFindClass(target)
+            }
+            else -> throw IllegalArgumentException("Unsupported target type: $target")
+        }
+
     }
 
     @JvmStatic
@@ -70,6 +72,7 @@ object DexKit {
                 loadMethodFromCache(target)?.let { return it }
                 return DexDeobfsProvider.getCurrentBackend().doFindMethod(target)
             }
+            else -> throw IllegalArgumentException("Unsupported target type: $target")
         }
     }
 
@@ -105,31 +108,23 @@ object DexKit {
 
     @JvmStatic
     fun loadClassFromCache(target: DexKitTarget): Class<*>? {
-        when (target) {
-            is DexKitTarget.UsingStr -> {
-                Initiator.load(target.declaringClass)?.let { return it }
-                return getMethodDescFromCache(target)?.let { Initiator.load(it.declaringClass) }
-            }
-        }
+        Initiator.load(target.declaringClass)?.let { return it }
+        return getMethodDescFromCache(target)?.let { Initiator.load(it.declaringClass) }
     }
 
     @JvmStatic
     fun loadMethodFromCache(target: DexKitTarget): Method? {
-        when (target) {
-            is DexKitTarget.UsingStr -> {
-                check(target.findMethod) { "$target attempted to access method!" }
-                val cache = getMethodDescFromCache(target) ?: return null
-                if (NO_SUCH_METHOD.toString() == cache.toString()) return null
-                if ("<init>" in cache.name || "<clinit>" in cache.name) {
-                    // TODO: support constructors
-                    Log.i("getMethodFromCache($target) methodName == ${cache.name} , return null")
-                    return null
-                }
-                return kotlin.runCatching {
-                    cache.getMethodInstance(getHostClassLoader())
-                }.onFailure { t -> Log.e(t) }.getOrNull()
-            }
+        check(target.findMethod) { "$target attempted to access method!" }
+        val cache = getMethodDescFromCache(target) ?: return null
+        if (NO_SUCH_METHOD.toString() == cache.toString()) return null
+        if ("<init>" in cache.name || "<clinit>" in cache.name) {
+            // TODO: support constructors
+            Log.i("getMethodFromCache($target) methodName == ${cache.name} , return null")
+            return null
         }
+        return kotlin.runCatching {
+            cache.getMethodInstance(getHostClassLoader())
+        }.onFailure { t -> Log.e(t) }.getOrNull()
     }
 
     @JvmStatic
