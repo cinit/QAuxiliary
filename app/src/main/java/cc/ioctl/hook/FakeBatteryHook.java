@@ -51,6 +51,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.CDialogUtil;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationHandler;
@@ -71,7 +73,7 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
     public static final FakeBatteryHook INSTANCE = new FakeBatteryHook();
 
     private FakeBatteryHook() {
-        super(null, false, null);
+        super(null, false, new DexKitTarget[]{CDialogUtil.INSTANCE});
     }
 
     private static final String ACTION_UPDATE_BATTERY_STATUS = "io.github.qauxv.ACTION_UPDATE_BATTERY_STATUS";

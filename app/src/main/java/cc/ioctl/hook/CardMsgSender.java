@@ -41,7 +41,6 @@ import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
 import io.github.qauxv.util.dexkit.CFaceDe;
-import io.github.qauxv.util.dexkit.CTestStructMsg;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.lang.reflect.InvocationTargetException;
@@ -57,7 +56,6 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
         super("qn_send_card_msg", false, new DexKitTarget[]{
                 CArkAppItemBubbleBuilder.INSTANCE,
                 CFaceDe.INSTANCE,
-                CTestStructMsg.INSTANCE,
                 NBaseChatPie_init.INSTANCE
         });
     }

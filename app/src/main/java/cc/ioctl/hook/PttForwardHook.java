@@ -74,6 +74,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.data.ContactDescriptor;
+import io.github.qauxv.util.dexkit.CDialogUtil;
 import io.github.qauxv.util.dexkit.CFaceDe;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.io.File;
@@ -114,7 +115,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
     }
 
     private PttForwardHook() {
-        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{CFaceDe.INSTANCE});
+        super(SyncUtils.PROC_MAIN, new DexKitTarget[]{CFaceDe.INSTANCE, CDialogUtil.INSTANCE});
     }
 
     private static void showSavePttFileDialog(Activity activity, final File ptt) {

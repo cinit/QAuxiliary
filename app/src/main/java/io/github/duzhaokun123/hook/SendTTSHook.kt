@@ -47,7 +47,6 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.CFaceDe
-import io.github.qauxv.util.dexkit.CTestStructMsg
 import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import mqq.app.AppRuntime
 import java.io.File
@@ -61,7 +60,6 @@ object SendTTSHook :
         arrayOf(
             CArkAppItemBubbleBuilder,
             CFaceDe,
-            CTestStructMsg,
             NBaseChatPie_init,
         )
     ), IInputButtonDecorator {

@@ -313,56 +313,6 @@ static int64_t sBuildTimestamp = -2;
 
 static const int DEX_MAX_SIZE = 12 * 1024 * 1024;
 
-
-jboolean handleSendBatchMessages(JNIEnv *env, jclass clazz, jobject rt,
-                                 jobject ctx, jstring msg, jintArray _type, jlongArray _uin) {
-    if (rt == nullptr || ctx == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "appInterface/ctx == null");
-        return false;
-    }
-    if (msg == nullptr || _type == nullptr || _uin == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "msg/uin == null");
-        return false;
-    }
-    bool success = true;
-    int len = min(env->GetArrayLength(_type), env->GetArrayLength(_uin));
-    if (len == 0)return true;
-    int *types = static_cast<int *>(malloc(4 * len));
-    int64_t *uins = static_cast<int64_t *>(malloc(8 * len));
-    env->GetIntArrayRegion(_type, 0, len, types);
-    env->GetLongArrayRegion(_uin, 0, len, uins);
-    jclass cl_SessionInfoImpl = env->FindClass("io/github/qauxv/bridge/SessionInfoImpl");
-    jmethodID createSessionInfo = env->GetStaticMethodID(cl_SessionInfoImpl, "createSessionInfo",
-                                                         "(Ljava/lang/String;I)Landroid/os/Parcelable;");
-    jclass cl_Str = env->FindClass("java/lang/String");
-    jmethodID strValOf = env->GetStaticMethodID(cl_Str, "valueOf", "(J)Ljava/lang/String;");
-    jclass cl_Facade = env->FindClass("io/github/qauxv/bridge/ChatActivityFacade");
-    jmethodID send = env->GetStaticMethodID(cl_Facade, "sendMessage",
-                                            "(Lmqq/app/AppRuntime;Landroid/content/Context;Landroid/os/Parcelable;Ljava/lang/String;)[J");
-    for (int i = 0; i < len; i++) {
-        jstring struin = (jstring) (env->CallStaticObjectMethod(cl_Str, strValOf, uins[i]));
-        jobject session = env->CallStaticObjectMethod(cl_SessionInfoImpl, createSessionInfo, struin,
-                                                      types[i]);
-        if (session == nullptr) {
-            __android_log_print(ANDROID_LOG_ERROR, "QAuxv",
-                                "SessionInfoImpl/E createSessionInfo failed");
-            success = false;
-            break;
-        }
-        jlongArray msgUid = (jlongArray) env->CallStaticObjectMethod(cl_Facade, send, rt, ctx,
-                                                                     session, msg);
-        if (msgUid == nullptr) {
-            __android_log_print(ANDROID_LOG_ERROR, "QAuxv",
-                                "handleSendBatchMessages/E sendMsg failed");
-            success = false;
-            break;
-        }
-    }
-    free(types);
-    free(uins);
-    return success;
-}
-
 jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject session, jstring msg) {
     if (rt == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "appInterface== null");

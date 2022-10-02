@@ -46,6 +46,8 @@ import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.CDialogUtil;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.text.ParseException;
 import java.util.ArrayList;
@@ -78,7 +80,7 @@ public class JumpController extends CommonConfigFunctionHook {
     private final MutableStateFlow<String> mState = StateFlowKt.MutableStateFlow(null);
 
     protected JumpController() {
-        super("qn_jmp_ctl_enable", true, null, SyncUtils.PROC_MAIN);
+        super("qn_jmp_ctl_enable", true, new DexKitTarget[]{CDialogUtil.INSTANCE}, SyncUtils.PROC_MAIN);
     }
 
     @NonNull
