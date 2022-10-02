@@ -58,13 +58,14 @@ import xyz.nextalone.util.throwOrTrue
 object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
 
     override val name = "修改QQ图标"
+    override val description = "会导致通知无法打开，无法点击发送消息等大量bug，仅供娱乐，不建议日常使用"
     override val valueState: MutableStateFlow<String?>? = null
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
         showDialog(activity)
     }
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_10)
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override fun initOnce() = throwOrTrue {
         val clazz = loadClass("com.tencent.mobileqq.vas.api.impl.VasAppIconStateManagerImpl")
         clazz.method("getSplashActivityComponent", ComponentName::class.java, Context::class.java)!!
