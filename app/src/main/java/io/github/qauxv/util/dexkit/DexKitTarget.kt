@@ -30,6 +30,7 @@ import com.github.kyuubiran.ezxhelper.utils.isFinal
 import com.github.kyuubiran.ezxhelper.utils.isStatic
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.livefront.sealedenum.GenSealedEnum
+import com.tencent.common.app.AppInterface
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Initiator._ChatMessage
@@ -148,7 +149,10 @@ object CMessageRecordFactory : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.service.message.MessageRecordFactory"
     override val traitString = arrayOf("createPicMessage")
     override val preferredDexIndexArray = intArrayOf(15, 4)
-    override val filter = DexKitFilter.allStaticFields
+    override val filter = filter@{ it: DexMethodDescriptor ->
+        val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+        m.parameterTypes[0] == AppInterface::class.java
+    }
 }
 
 object CContactUtils : DexKitTarget.UsingStr() {
@@ -206,13 +210,6 @@ object CTroopGiftUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/troop/utils/TroopGiftUtil"
     override val traitString = arrayOf(".troop.send_giftTroopUtils", ".troop.send_giftTroopMemberUtil")
     override val preferredDexIndexArray = intArrayOf(4, 9, 2)
-    override val filter = DexKitFilter.allStaticFields
-}
-
-object CTestStructMsg : DexKitTarget.UsingStr() {
-    override val declaringClass = "com/tencent/mobileqq/structmsg/TestStructMsg"
-    override val traitString = arrayOf("TestStructMsg")
-    override val preferredDexIndexArray = intArrayOf(4, 7, 2)
     override val filter = DexKitFilter.allStaticFields
 }
 
@@ -410,7 +407,7 @@ object NBaseChatPie_createMulti : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("createMulti")
     override val preferredDexIndexArray = intArrayOf(6, 2, 7, 3)
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/aio/helper") or
-        DexKitFilter.strInClsName(declaringClass.replace('.', '/')) or
+        DexKitFilter.strInClsName(declaringClass.replace('.', '/')) and
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
             m.parameterTypes.first() == _ChatMessage()
