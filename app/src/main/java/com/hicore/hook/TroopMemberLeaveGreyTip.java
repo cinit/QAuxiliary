@@ -85,7 +85,7 @@ public class TroopMemberLeaveGreyTip extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         HookUtils.hookBeforeIfEnabled(this,
-                Objects.requireNonNull(DexKit.loadClassFromCache(CSystemMessageProcessor.INSTANCE), "OnlinePushPbPushTransMsg")
+                Objects.requireNonNull(DexKit.loadClassFromCache(COnlinePushPbPushTransMsg.INSTANCE), "OnlinePushPbPushTransMsg")
                         .getDeclaredMethod("a", Initiator.loadClass("com.tencent.mobileqq.app.MessageHandler"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.ToServiceMsg"),
                                 Initiator.loadClass("com.tencent.qphone.base.remote.FromServiceMsg")),
