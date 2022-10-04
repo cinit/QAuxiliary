@@ -68,7 +68,8 @@ sealed class DexKitTarget {
             val filter = methods.filter(filter)
             if (filter.size > 1) {
                 filter.forEach { Log.e(it.toString()) }
-                Log.e("More than one method matched: $name, return the first one")
+                Log.e("More than one method matched: $name, return none for safety")
+                return null
             }
             // check(filter.size <= 1) { "Too many methods found for $this: ${filter.size}" }
             filter.firstOrNull()
