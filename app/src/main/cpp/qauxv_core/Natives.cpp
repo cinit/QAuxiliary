@@ -356,8 +356,11 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
         jclass AbsStructMsg = env->FindClass("com/tencent/mobileqq/structmsg/AbsStructMsg");
         if (!AbsStructMsg)return false;
         jclass DexKit = env->FindClass("io/github/qauxv/util/dexkit/DexKit");
-        jmethodID cid = env->GetStaticMethodID(DexKit, "loadClassFromCache", "(I)Ljava/lang/Class;");
-        jclass TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, 18);
+        jmethodID cid = env->GetStaticMethodID(DexKit, "loadClassFromCache", "(Lio/github/qauxv/util/dexkit/DexKitTarget;)Ljava/lang/Class;");
+        jclass TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, env->GetStaticObjectField(
+                env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), env->GetStaticFieldID(
+                        env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), "INSTANCE",
+                        "Lio/github/qauxv/util/dexkit/CTestStructMsg;")));
         if (TestStructMsg == nullptr) {
             env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "class TestStructMsg not found");
             return false;
@@ -372,6 +375,11 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
         jobject structMsg = env->CallStaticObjectMethod(cl_Utils, cid, TestStructMsg, va);
         if (env->ExceptionCheck())return false;
         if (structMsg == nullptr)return false;
+        // check cast: expected AbsStructMsg
+        if (!env->IsInstanceOf(structMsg, AbsStructMsg)) {
+            env->ThrowNew(env->FindClass("java/lang/ClassCastException"), "expected AbsStructMsg");
+            return false;
+        }
         jclass ChatActivityFacade = env->FindClass("io/github/qauxv/bridge/ChatActivityFacade");
         jmethodID sendAbsStructMsg = env->GetStaticMethodID(ChatActivityFacade, "sendAbsStructMsg",
                                                             "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/io/Externalizable;)V");

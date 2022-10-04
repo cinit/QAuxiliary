@@ -347,6 +347,12 @@ object CPopOutEmoticonUtil : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allStaticFields
 }
 
+object CTestStructMsg : DexKitTarget.UsingStr() {
+    override val declaringClass = "com/tencent/mobileqq/structmsg/TestStructMsg"
+    override val traitString = arrayOf("TestStructMsg")
+    override val filter = DexKitFilter.allStaticFields
+}
+
 object CSystemMessageProcessor : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.app.message.SystemMessageProcessor"
     override val traitString = arrayOf("<---handleGetFriendSystemMsgResp : decode pb filtered")
