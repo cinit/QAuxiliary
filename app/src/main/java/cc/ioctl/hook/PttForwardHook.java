@@ -58,6 +58,7 @@ import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.ChatActivityFacade;
@@ -91,8 +92,6 @@ import java.util.ArrayList;
 @UiItemAgentEntry
 public class PttForwardHook extends CommonSwitchFunctionHook {
 
-    public static final int R_ID_PTT_FORWARD = 0x30EE77CB;
-    public static final int R_ID_PTT_SAVE = 0x30EE77CC;
     public static final String qn_cache_ptt_save_last_parent_dir = "qn_cache_ptt_save_last_parent_dir";
     public static final PttForwardHook INSTANCE = new PttForwardHook();
 
@@ -384,7 +383,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                         int id = (int) param.args[0];
                         Activity context = (Activity) param.args[1];
                         Object chatMessage = param.args[2];
-                        if (id == R_ID_PTT_FORWARD) {
+                        if (id == R.id.item_ptt_forward) {
                             param.setResult(null);
                             String url = (String) Reflex.invokeVirtual(chatMessage, "getLocalFilePath");
                             File file = new File(url);
@@ -404,7 +403,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                             intent.putExtra("k_dataline", false);
                             intent.putExtra("k_forward_title", "语音转发");
                             context.startActivity(intent);
-                        } else if (id == R_ID_PTT_SAVE) {
+                        } else if (id == R.id.item_ptt_save) {
                             param.setResult(null);
                             String url = (String) Reflex.invokeVirtual(chatMessage, "getLocalFilePath");
                             File file = new File(url);
@@ -426,8 +425,8 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                     Object arr = param.getResult();
                     Class<?> clQQCustomMenuItem = arr.getClass().getComponentType();
                     Object ret;
-                    Object item_forward = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_FORWARD, "转发");
-                    Object item_save = CustomMenu.createItem(clQQCustomMenuItem, R_ID_PTT_SAVE, "保存");
+                    Object item_forward = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_ptt_forward, "转发");
+                    Object item_save = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_ptt_save, "保存");
                     ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 2);
                     Array.set(ret, 0, Array.get(arr, 0));
                     //noinspection SuspiciousSystemArraycopy

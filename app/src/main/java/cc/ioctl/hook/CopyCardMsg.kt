@@ -29,6 +29,7 @@ import cc.ioctl.util.afterHookIfEnabled
 import cc.ioctl.util.beforeHookIfEnabled
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -99,12 +100,10 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
 //        }
     }
 
-    const val R_ID_COPY_CODE = 0x00EE77CC
-
     private val getMenuItemCallBack = afterHookIfEnabled(60) { param ->
         val arr = param.result
         val clQQCustomMenuItem = arr.javaClass.componentType
-        val item_copy = CustomMenu.createItem(clQQCustomMenuItem, R_ID_COPY_CODE, "复制代码")
+        val item_copy = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_copy_code, "复制代码")
         val ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 1)
         Array.set(ret, 0, Array.get(arr, 0))
         System.arraycopy(arr, 1, ret, 2, Array.getLength(arr) - 1)
@@ -116,7 +115,7 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
         val id = param.args[0] as Int
         val ctx = param.args[1] as Activity
         val chatMessage = param.args[2]
-        if (id == R_ID_COPY_CODE) {
+        if (id == R.id.item_copy_code) {
             param.result = null
             if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
                             .isAssignableFrom(chatMessage.javaClass)) {

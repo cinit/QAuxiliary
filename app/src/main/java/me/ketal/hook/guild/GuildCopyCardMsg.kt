@@ -65,7 +65,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
             val clQQCustomMenuItem = list.first().javaClass
             val item = CustomMenu.createItem(
                 clQQCustomMenuItem,
-                CopyCardMsg.R_ID_COPY_CODE,
+                R.id.item_copy_code,
                 "复制代码",
                 R.drawable.ic_guild_schedule_edit
             )
@@ -75,7 +75,7 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
         adapterClazz.method("onClick")?.hookBefore(this) {
             val view = it.args[0] as View
             val ctx = view.context
-            if (view.id == CopyCardMsg.R_ID_COPY_CODE) {
+            if (view.id == R.id.item_copy_code) {
                 it.result = null
                 val fragment = getFirstByType(it.thisObject, clFragment)
                 val chatMessage = getFirstByType(fragment,
