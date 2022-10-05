@@ -51,7 +51,6 @@ import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.util.dexkit.CContactUtils;
 import io.github.qauxv.util.dexkit.CMessageRecordFactory;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
@@ -92,7 +91,6 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         //FIXME: is MSF really necessary?
         super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new DexKitTarget[]{
                 CMessageRecordFactory.INSTANCE,
-                CContactUtils.INSTANCE,
                 NContactUtils_getDiscussionMemberShowName.INSTANCE,
                 NContactUtils_getBuddyName.INSTANCE
         });

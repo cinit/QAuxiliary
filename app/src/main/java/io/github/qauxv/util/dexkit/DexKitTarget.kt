@@ -47,6 +47,7 @@ sealed class DexKitTarget {
     val version = HostInfo.getVersionCode32()
 
     sealed class UsingStr : DexKitTarget() {
+        // with 'OR' relationship
         abstract val traitString: Array<String>
     }
 
@@ -149,12 +150,6 @@ object CMessageRecordFactory : DexKitTarget.UsingStr() {
     }
 }
 
-object CContactUtils : DexKitTarget.UsingStr() {
-    override val declaringClass = "com/tencent/mobileqq/utils/ContactUtils"
-    override val traitString = arrayOf(" - WiFi")
-    override val filter = DexKitFilter.allStaticFields
-}
-
 object CArkAppItemBubbleBuilder : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/activity/aio/item/ArkAppItemBubbleBuilder"
     override val traitString = arrayOf("debugArkMeta = ")
@@ -249,7 +244,8 @@ object CScreenShotHelper : DexKitTarget.UsingStr() {
 
 object CTimeFormatterUtils : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.utils.TimeFormatterUtils"
-    override val traitString = arrayOf("TimeFormatterUtils")
+    // old: arrayOf("TimeFormatterUtils")
+    override val traitString = arrayOf("^EEEE$")
     override val filter = DexKitFilter.allStaticFields
 }
 
@@ -289,7 +285,7 @@ object CMultiMsgManager : DexKitTarget.UsingStr() {
 
 object CAvatarUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.avatar.utils.AvatarUtil"
-    override val traitString = arrayOf("AvatarUtil")
+    override val traitString = arrayOf("===getDiscussionUinFromPstn pstnDiscussionUin is null ===")
     override val filter = DexKitFilter.notHasSuper
 }
 

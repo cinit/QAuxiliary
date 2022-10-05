@@ -71,6 +71,8 @@ object NewRoundHead : CommonSwitchFunctionHook() {
             method = "adjustFaceShape"
         }
         //参数和值都是byte类型
+        // com/tencent/mobileqq/avatar/utils/AvatarUtil
+        // public static byte adjustFaceShape(byte b);
         //这个方法在QQ主界面初始化时会调用200+次，因此需要极高的性能
         if (requireMinQQVersion(QQVersion.QQ_8_5_0)) {
             for (m in DexKit.requireClassFromCache(CAvatarUtil).declaredMethods) {
