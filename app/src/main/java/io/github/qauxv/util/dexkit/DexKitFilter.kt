@@ -49,6 +49,15 @@ object DexKitFilter {
 
     val allowAll = { _: DexMethodDescriptor -> true }
 
+    val clinit = filter@{ it: DexMethodDescriptor ->
+        it.name == "<clinit>"
+    }
+
+    val defpackage = filter@{ it: DexMethodDescriptor ->
+        val clz = Initiator.load(it.declaringClass) ?: return@filter false
+        !clz.name.contains(".")
+    }
+
     fun strInClsName(str: String, fullMatch: Boolean = false): dexkitFilter = { it: DexMethodDescriptor ->
         if (fullMatch) str == it.declaringClass else str in it.declaringClass
     }

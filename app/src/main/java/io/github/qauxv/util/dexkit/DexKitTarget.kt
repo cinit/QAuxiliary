@@ -31,6 +31,7 @@ import com.github.kyuubiran.ezxhelper.utils.isStatic
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.livefront.sealedenum.GenSealedEnum
 import com.tencent.common.app.AppInterface
+import com.tencent.mobileqq.app.QQAppInterface
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Initiator._ChatMessage
@@ -84,7 +85,7 @@ sealed class DexKitTarget {
 object CDialogUtil : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/utils/DialogUtil"
     override val traitString = arrayOf("android.permission.SEND_SMS")
-    override val filter = DexKitFilter.allStaticFields
+    override val filter = DexKitFilter.allStaticFields and DexKitFilter.clinit
 }
 
 object CFaceDe : DexKitTarget.UsingStr() {
@@ -101,7 +102,7 @@ object CFlashPicHelper : DexKitTarget.UsingStr() {
 
 object CBasePicDlProcessor : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/transfile/BasePicDownloadProcessor"
-    override val traitString = arrayOf("BasePicDownl")
+    override val traitString = arrayOf("BasePicDownloadProcessor.onSuccess():Delete ")
     override val filter = filter@{ it: DexMethodDescriptor ->
         val clz = load(it.declaringClass) ?: return@filter false
         clz.declaredFields.any { it.isStatic && it.isFinal && it.type == java.util.regex.Pattern::class.java }
@@ -146,7 +147,7 @@ object CMessageRecordFactory : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("createPicMessage")
     override val filter = filter@{ it: DexMethodDescriptor ->
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-        m.parameterTypes[0] == AppInterface::class.java
+        m.parameterTypes[0] == AppInterface::class.java || m.parameterTypes[0] == QQAppInterface::class.java
     }
 }
 
@@ -335,7 +336,7 @@ object CReplyMsgUtils : DexKitTarget.UsingStr() {
 object CReplyMsgSender : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.replymsg.ReplyMsgSender"
     override val traitString = arrayOf("sendReplyMessage uniseq=0")
-    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/replymsg/")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/replymsg/") or DexKitFilter.defpackage
 }
 
 object CPopOutEmoticonUtil : DexKitTarget.UsingStr() {
@@ -372,7 +373,7 @@ object NBaseChatPie_init : DexKitTarget.UsingStr() {
 object NBaseChatPie_createMulti : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass: String = _BaseChatPie().name
-    override val traitString = arrayOf("createMulti")
+    override val traitString = arrayOf("^createMulti$")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/aio/helper") or
         DexKitFilter.strInClsName(declaringClass.replace('.', '/')) and
         filter@{ it: DexMethodDescriptor ->
@@ -570,7 +571,7 @@ object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.mobileqq.troopAddFrd.Scene"
     override val traitString = arrayOf("checkDataRecmdRemarkList cacheInvalid_ts_type_troopUin=%b_%d_%d_%s")
-    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/troopAddFrd")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/troopAddFrd") or DexKitFilter.defpackage
 }
 
 // TODO 待优化这几种类型

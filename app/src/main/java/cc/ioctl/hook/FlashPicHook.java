@@ -105,8 +105,7 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
         Objects.requireNonNull(kItemBuilderFactory, "CItemBuilderFactory.INSTANCE");
         sn_ItemBuilderFactory = kItemBuilderFactory.getName();
         Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found");
-        sn_BasePicDownloadProcessor =
-                Objects.requireNonNull(DexKit.loadClassFromCache(CBasePicDlProcessor.INSTANCE), "CBASE_PIC_DL_PROC.INSTANCE").getName();
+        sn_BasePicDownloadProcessor = DexKit.requireClassFromCache(CBasePicDlProcessor.INSTANCE).getName();
         Objects.requireNonNull(sn_BasePicDownloadProcessor, "sn_BasePicDownloadProcessor not found");
         snarray_CheckStackClasses = new String[]{
                 Objects.requireNonNull(sn_ItemBuilderFactory, "sn_ItemBuilderFactory not found"),
