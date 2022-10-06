@@ -26,6 +26,7 @@ import android.graphics.Bitmap
 import android.graphics.BitmapFactory
 import android.widget.ImageView
 import androidx.core.view.isVisible
+import com.github.kyuubiran.ezxhelper.utils.putObjectByType
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -35,7 +36,6 @@ import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
-import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -61,7 +61,7 @@ object HideRedPoints : CommonSwitchFunctionHook() {
             it.name == "createImageFromResourceStream" || it.name == "a" && it.parameterTypes.size == 7
         }?.hookAfter(this) {
             if (!it.args[3].toString().contains("skin_tips_dot")) return@hookAfter
-            it.result.set("a", Bitmap::class.java, transparentBitmap)
+            it.result.putObjectByType(transparentBitmap, Bitmap::class.java)
         }
     }
 
