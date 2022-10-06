@@ -155,14 +155,4 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
     @SuppressWarnings("JavaJniMissingFunction")
     static native boolean ntSendCardMsg(AppRuntime rt, Parcelable session, String msg) throws Exception;
 
-    @Override
-    public boolean initOnce() {
-        return true;
-    }
-
-    @Nullable
-    @Override
-    public Step[] makePreparationSteps() {
-        return new Step[]{};
-    }
 }

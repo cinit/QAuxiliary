@@ -88,6 +88,7 @@ object SendTTSHook :
         get() = InputButtonHookDispatcher.INSTANCE
 
     override fun initOnce(): Boolean {
+        super.initOnce()
         TTS.addInitCallback {
             if (it == TextToSpeech.ERROR) {
                 Toasts.error(HostInfo.getApplication(), "TTS 初始化失败")
@@ -196,8 +197,6 @@ object SendTTSHook :
         trySend()
         return true
     }
-
-    override fun makePreparationSteps() = arrayOf<Step>()
 
 //    fun mp3ToSilk(mp3: String, silk: String): Boolean {
 //        File(mp3 + "m").delete()

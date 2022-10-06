@@ -22,6 +22,7 @@
 
 package io.github.qauxv.router.decorator
 
+import androidx.annotation.CallSuper
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.step.Step
@@ -35,6 +36,7 @@ abstract class BaseDecorator(
 
     protected abstract val dispatcher: IDynamicHook
 
+    @CallSuper
     override fun initOnce(): Boolean {
         return dispatcher.initialize()
     }
@@ -54,9 +56,15 @@ abstract class BaseDecorator(
 
     override val targetProcesses: Int get() = dispatcher.targetProcesses
 
-    override val isPreparationRequired: Boolean get() = dispatcher.isPreparationRequired
+    override val isPreparationRequired: Boolean get() = dispatcher.isPreparationRequired || super.isPreparationRequired
+
+    private fun <T> mergeArray(a1: Array<T>?, a2: Array<T>?): Array<T>? {
+        if (a1 == null || a1.isEmpty()) return a2
+        if (a2 == null || a2.isEmpty()) return a1
+        return a1 + a2
+    }
 
     override fun makePreparationSteps(): Array<Step>? {
-        return dispatcher.makePreparationSteps()
+        return mergeArray(super.makePreparationSteps(), dispatcher.makePreparationSteps())
     }
 }
