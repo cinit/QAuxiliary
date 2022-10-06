@@ -22,13 +22,10 @@
 
 package io.github.qauxv.util.dexkit
 
-import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
 import java.util.concurrent.atomic.AtomicInteger
 
 object DexDeobfsProvider {
-
-    private const val KEY_DEX_DEOBFS_BACKEND = "dex_deobfs_backend2"
 
     private val mDeobfsSection = AtomicInteger(0)
 
@@ -50,32 +47,7 @@ object DexDeobfsProvider {
      */
     fun getCurrentBackend(): DexDeobfsBackend {
         checkDeobfuscationAvailable()
-        val id = ConfigManager.getDefaultConfig()
-            .getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)
-        return when (id) {
-            DexKitDeobfs.ID -> DexKitDeobfs.newInstance()
-            else -> throw IllegalArgumentException("Unknown dex deobfs backend: $id")
-        }
+        return DexKitDeobfs.newInstance()
     }
 
-    var currentBackendId: String
-        get() = ConfigManager.getDefaultConfig().getString(KEY_DEX_DEOBFS_BACKEND, DexKitDeobfs.ID)!!
-        set(value) {
-            require(value in listOf(DexKitDeobfs.ID)) {
-                "Unknown dex deobfs backend: $value"
-            }
-            ConfigManager.getDefaultConfig().putString(KEY_DEX_DEOBFS_BACKEND, value)
-        }
-
-    val currentBackendName: String
-        get() = when (currentBackendId) {
-            DexKitDeobfs.ID -> DexKitDeobfs.NAME
-            else -> throw IllegalArgumentException("Unknown dex deobfs backend: $currentBackendId")
-        }
-
-    val allBackendNames: List<Pair<String, String>> = listOf(
-        DexKitDeobfs.ID to DexKitDeobfs.NAME,
-    )
-
-    val isDexKitBackend get() = currentBackendId == DexKitDeobfs.ID
 }

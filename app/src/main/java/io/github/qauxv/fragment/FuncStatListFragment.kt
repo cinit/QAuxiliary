@@ -118,7 +118,6 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
             val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
             val unsupported = item is IDynamicHook && !item.isAvailable
             val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
-            val unsupportedDexKit = item is IDynamicHook && item is DexKitFinder && item.isEnabled && !DexDeobfsProvider.isDexKitBackend
             if (reportError) {
                 iconType = 5
                 tags.add("存在错误")
@@ -130,10 +129,6 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
             if (errorCount != 0) {
                 iconType = max(iconType, 4)
                 tags.add("$errorCount 个异常")
-            }
-            if (unsupportedDexKit) {
-                iconType = max(iconType, 3)
-                tags.add("不兼容的混淆引擎，请切换为 DexKit")
             }
             if (unsupported) {
                 iconType = max(iconType, 3)

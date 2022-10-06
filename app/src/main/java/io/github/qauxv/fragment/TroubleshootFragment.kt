@@ -116,13 +116,6 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
-            CategoryItem("反混淆") {
-                textItem(
-                    "切换反混淆后端", "如非必要请不要更改",
-                    value = DexDeobfsProvider.currentBackendId,
-                    onClick = clickToSwitchDexDeobfsBackend
-                )
-            },
             CategoryItem("调试信息") {
                 description(
                     "PID: " + android.os.Process.myPid() +
@@ -284,37 +277,6 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val browser = Class.forName("com.tencent.mobileqq.debug.DebugActivity")
         val intent = Intent(requireContext(), browser)
         startActivity(intent)
-    }
-
-    private val clickToSwitchDexDeobfsBackend = View.OnClickListener {
-        val ctx = requireContext()
-        val backends = DexDeobfsProvider.allBackendNames
-        val optionText = Array(backends.size) { backends[it].second }
-        val current = backends.indexOfFirst { it.first == DexDeobfsProvider.currentBackendId }
-        AlertDialog.Builder(ctx)
-            .setTitle("选择反混淆后端")
-            .setSingleChoiceItems(optionText, current) { _, _ -> }
-            .setNegativeButton("取消", null)
-            .setPositiveButton("确定") { d, _ ->
-                val dialog = d as AlertDialog
-                val which = dialog.listView.checkedItemPosition
-                if (which == -1) {
-                    return@setPositiveButton
-                }
-                val newBackend = backends[which].first
-                if (newBackend != DexDeobfsProvider.currentBackendId) {
-                    DexDeobfsProvider.currentBackendId = newBackend
-                    // clear cache and restart
-                    ConfigManager.getCache().apply {
-                        clear()
-                        save()
-                    }
-                    Thread.sleep(100)
-                    exitProcess(0)
-                }
-            }
-            .setCancelable(true)
-            .show()
     }
 
     private fun generateDebugInfo(): CharSequence {

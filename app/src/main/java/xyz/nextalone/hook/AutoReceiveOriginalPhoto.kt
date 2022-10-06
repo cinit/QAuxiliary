@@ -33,7 +33,6 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.CAIOPictureView
 import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
-import io.github.qauxv.util.dexkit.DexDeobfsProvider.isDexKitBackend
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexMethodDescriptor.getTypeSig
@@ -60,7 +59,6 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        check(isDexKitBackend) { "该功能仅限DexKit引擎" }
         Log.d("AutoReceiveOriginalPhoto initOnce")
         val kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)!!
         val onDownloadOriginalPictureClick = DexKit.loadMethodFromCache(NAIOPictureView_onDownloadOriginalPictureClick)!!
