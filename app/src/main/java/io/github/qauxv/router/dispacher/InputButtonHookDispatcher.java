@@ -50,6 +50,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
 import io.github.qauxv.util.dexkit.CFaceDe;
+import io.github.qauxv.util.dexkit.CTestStructMsg;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
@@ -67,6 +68,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                 CArkAppItemBubbleBuilder.INSTANCE,
                 CFaceDe.INSTANCE,
                 NBaseChatPie_init.INSTANCE,
+                CTestStructMsg.INSTANCE
         });
     }
 
