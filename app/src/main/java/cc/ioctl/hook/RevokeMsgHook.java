@@ -23,7 +23,6 @@ package cc.ioctl.hook;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
-import static io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin;
 import static io.github.qauxv.util.Initiator._C2CMessageProcessor;
 import static io.github.qauxv.util.Initiator._QQMessageFacade;
 
@@ -48,7 +47,6 @@ import io.github.qauxv.bridge.RevokeMsgInfoImpl;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.CMessageRecordFactory;
@@ -198,103 +196,60 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     private void onRevokeMsg(Object revokeMsgInfo) throws Exception {
         RevokeMsgInfoImpl info = new RevokeMsgInfoImpl((Parcelable) revokeMsgInfo);
-        String aioSessionUin = info.friendUin;
+        // 1. C2C chat session, istroop=0, RevokeMsgInfo is always the same on both side. e.g.
+        // istroop=0, shmsgseq=***(valid),
+        // friendUin=***(counterpart of revoker), msgUid=***(valid), fromUin=***(revoker), time=***(valid),
+        // sendUin='0', authorUin='null', opType=0
+        // 2. For troop chat session. RevokeMsgInfo is always the same on 3 sides(revoker, revokee, participants).
+        // 2.1 Troop spontaneous revocation(revoker is msg sender, opType=0). e.g.
+        // istroop=1, shmsgseq=***(valid), friendUin=***(troop), msgUid=0, fromUin=***(revoker), time=***(valid),
+        // sendUin='null', authorUin=***(original msg sender), opType=0
+        // 2.2 Troop revocation by admin(revoker is troop admin, opType=1). e.g.
+        // istroop=1, shmsgseq=***(valid), friendUin=***(troop), msgUid=0, fromUin=***(revoker), time=***(valid),
+        // sendUin='null', authorUin=***(original msg sender), opType=1
+        String selfUin = AppRuntimeHelper.getAccount();
         String revokerUin = info.fromUin;
-        String authorUin = info.authorUin;
         int istroop = info.istroop;
-        long msgUid = info.msgUid;
         long shmsgseq = info.shmsgseq;
         long time = info.time;
-        String selfUin = String.valueOf(getLongAccountUin());
-        if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
-            return;
+        String aioSessionUin;
+        AppRuntimeHelper.checkUinValid(selfUin);
+        AppRuntimeHelper.checkUinValid(revokerUin);
+        if (istroop == 0) {
+            // C2C PM
+            if (selfUin.equals(info.friendUin)) {
+                aioSessionUin = revokerUin;
+            } else {
+                aioSessionUin = info.friendUin;
+            }
+        } else if (istroop == 1) {
+            // Troop
+            aioSessionUin = info.friendUin;
+        } else {
+            // XXX: maybe confession chat? 3000: temp C2C chat? guild?
+            throw new IllegalStateException("onRevokeMsg, istroop=" + istroop);
         }
-        Object msgObject = getMessage(aioSessionUin, istroop, shmsgseq, msgUid);
-        // long id = getMessageUid(msgObject);
+
         if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
             return;
         }
-        boolean isGroupChat = istroop != 0;
+
+        if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
+            return;
+        }
+
+        Object msgObject = getMessage(aioSessionUin, istroop, shmsgseq, info.msgUid);
+        // long id = getMessageUid(msgObject);
         long newMsgUid;
-        if (msgUid != 0) {
-            newMsgUid = msgUid + new Random().nextInt();
+        if (info.msgUid != 0) {
+            newMsgUid = info.msgUid + new Random().nextInt();
         } else {
             newMsgUid = 0;
         }
-        Object revokeGreyTip;
-        if (isGroupChat) {
-            String troopUin = aioSessionUin;
-            if (authorUin == null || revokerUin.equals(authorUin)) {
-                //自己撤回
-                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
-                String greyMsg = "\"" + revokerNick + "\u202d\"";
-                if (msgObject != null) {
-                    greyMsg += "尝试撤回一条消息";
-                    String message = getMessageContentStripped(msgObject);
-                    int msgtype = getMessageType(msgObject);
-                    boolean hasMsgInfo = false;
-                    if (msgtype == -1000 /*text msg*/) {
-                        if (!TextUtils.isEmpty(message)) {
-                            greyMsg += ": " + message;
-                            hasMsgInfo = true;
-                        }
-                    }
-                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
-                        greyMsg += ", shmsgseq: " + shmsgseq;
-                    }
-                } else {
-                    if (isShowShmsgseqEnabled()) {
-                        greyMsg += "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
-                    } else {
-                        greyMsg += "撤回了一条消息(没收到)";
-                    }
-                }
-                revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1,
-                        greyMsg, newMsgUid, shmsgseq);
-                addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
-                        createTroopMemberHighlightItem(revokerUin));
-            } else {
-                //被权限撤回(含管理,群主)
-                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
-                String authorNick = ContactUtils.getTroopMemberNick(troopUin, authorUin);
-                if (msgObject == null) {
-                    String greyMsg = "\"" + revokerNick + "\u202d\"撤回了\"" + authorNick + "\u202d\"的消息(没收到)";
-                    if (isShowShmsgseqEnabled()) {
-                        greyMsg += ", shmsgseq: " + shmsgseq;
-                    }
-                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin,
-                            time + 1, greyMsg, newMsgUid, shmsgseq);
-                    addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
-                            createTroopMemberHighlightItem(revokerUin));
-                    addHightlightItem(revokeGreyTip, 1 + revokerNick.length() + 1 + 5,
-                            1 + revokerNick.length() + 1 + 5 + authorNick.length(),
-                            createTroopMemberHighlightItem(authorUin));
-                } else {
-                    String greyMsg =
-                            "\"" + revokerNick + "\u202d\"尝试撤回\"" + authorNick + "\u202d\"的消息";
-                    String message = getMessageContentStripped(msgObject);
-                    int msgtype = getMessageType(msgObject);
-                    boolean hasMsgInfo = false;
-                    if (msgtype == -1000 /*text msg*/) {
-                        if (!TextUtils.isEmpty(message)) {
-                            greyMsg += ": " + message;
-                            hasMsgInfo = true;
-                        }
-                    }
-                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
-                        greyMsg += ", shmsgseq: " + shmsgseq;
-                    }
-                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin,
-                            time + 1, greyMsg, newMsgUid, shmsgseq);
-                    addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
-                            createTroopMemberHighlightItem(revokerUin));
-                    addHightlightItem(revokeGreyTip, 1 + revokerNick.length() + 1 + 6,
-                            1 + revokerNick.length() + 1 + 6 + authorNick.length(),
-                            createTroopMemberHighlightItem(authorUin));
-                }
-            }
-        } else {
-            // PM
+
+        Object revokeGreyTip = null;
+        if (istroop == 0) {
+            // C2C PM
             String friendUin = aioSessionUin;
             String greyMsg;
             String revokerPron = selfUin.equals(revokerUin) ? "你" : "对方";
@@ -318,12 +273,80 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     greyMsg += ", shmsgseq: " + shmsgseq;
                 }
             }
-            revokeGreyTip = createBarePlainGreyTip(friendUin, istroop, revokerUin, time + 1,
-                    greyMsg, newMsgUid, shmsgseq);
+            revokeGreyTip = createBarePlainGreyTip(friendUin, istroop, revokerUin, time + 1, greyMsg, newMsgUid, shmsgseq);
+        } else if (istroop == 1) {
+            String authorUin = info.authorUin;
+            AppRuntimeHelper.checkUinValid(authorUin);
+            String troopUin = aioSessionUin;
+            if (revokerUin.equals(authorUin)) {
+                // Troop spontaneous revocation
+                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
+                String greyMsg = "\"" + revokerNick + "\u202d\"";
+                if (msgObject != null) {
+                    greyMsg += "尝试撤回一条消息";
+                    String message = getMessageContentStripped(msgObject);
+                    int msgtype = getMessageType(msgObject);
+                    boolean hasMsgInfo = false;
+                    if (msgtype == -1000 /*text msg*/) {
+                        if (!TextUtils.isEmpty(message)) {
+                            greyMsg += ": " + message;
+                            hasMsgInfo = true;
+                        }
+                    }
+                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
+                        greyMsg += ", shmsgseq: " + shmsgseq;
+                    }
+                } else {
+                    if (isShowShmsgseqEnabled()) {
+                        greyMsg += "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                    } else {
+                        greyMsg += "撤回了一条消息(没收到)";
+                    }
+                }
+                revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1, greyMsg, newMsgUid, shmsgseq);
+                addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(), createTroopMemberHighlightItem(revokerUin));
+            } else {
+                // Troop revocation by admin or owner
+                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
+                String authorNick = ContactUtils.getTroopMemberNick(troopUin, authorUin);
+                if (msgObject == null) {
+                    String greyMsg = "\"" + revokerNick + "\u202d\"撤回了\"" + authorNick + "\u202d\"的消息(没收到)";
+                    if (isShowShmsgseqEnabled()) {
+                        greyMsg += ", shmsgseq: " + shmsgseq;
+                    }
+                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1, greyMsg, newMsgUid, shmsgseq);
+                    addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(), createTroopMemberHighlightItem(revokerUin));
+                    addHightlightItem(revokeGreyTip, 1 + revokerNick.length() + 1 + 5,
+                            1 + revokerNick.length() + 1 + 5 + authorNick.length(),
+                            createTroopMemberHighlightItem(authorUin));
+                } else {
+                    String greyMsg = "\"" + revokerNick + "\u202d\"尝试撤回\"" + authorNick + "\u202d\"的消息";
+                    String message = getMessageContentStripped(msgObject);
+                    int msgtype = getMessageType(msgObject);
+                    boolean hasMsgInfo = false;
+                    if (msgtype == -1000 /*text msg*/) {
+                        if (!TextUtils.isEmpty(message)) {
+                            greyMsg += ": " + message;
+                            hasMsgInfo = true;
+                        }
+                    }
+                    if (!hasMsgInfo && isShowShmsgseqEnabled()) {
+                        greyMsg += ", shmsgseq: " + shmsgseq;
+                    }
+                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1, greyMsg, newMsgUid, shmsgseq);
+                    addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
+                            createTroopMemberHighlightItem(revokerUin));
+                    addHightlightItem(revokeGreyTip, 1 + revokerNick.length() + 1 + 6,
+                            1 + revokerNick.length() + 1 + 6 + authorNick.length(),
+                            createTroopMemberHighlightItem(authorUin));
+                }
+            }
         }
-        List<Object> list = new ArrayList<>();
-        list.add(revokeGreyTip);
-        QQMessageFacade.commitMessageRecordList(list, AppRuntimeHelper.getAccount());
+        if (revokeGreyTip != null) {
+            List<Object> list = new ArrayList<>(1);
+            list.add(revokeGreyTip);
+            QQMessageFacade.commitMessageRecordList(list, selfUin);
+        }
     }
 
     private Bundle createTroopMemberHighlightItem(String memberUin) {
@@ -334,9 +357,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         return bundle;
     }
 
-    private Object createBareHighlightGreyTip(String entityUin, int istroop, String fromUin,
-                                              long time, String msg, long msgUid, long shmsgseq)
-            throws Exception {
+    private Object createBareHighlightGreyTip(String entityUin, int istroop, String fromUin, long time, String msg, long msgUid, long shmsgseq)
+            throws ReflectiveOperationException {
         int msgtype = -2030;// MessageRecord.MSG_TYPE_TROOP_GAP_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
                 DexKit.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,
@@ -350,8 +372,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         return messageRecord;
     }
 
-    private Object createBarePlainGreyTip(String entityUin, int istroop, String fromUin, long time,
-                                          String msg, long msgUid, long shmsgseq) throws Exception {
+    private Object createBarePlainGreyTip(String entityUin, int istroop, String fromUin, long time, String msg, long msgUid, long shmsgseq)
+            throws ReflectiveOperationException {
         int msgtype = -2031;// MessageRecord.MSG_TYPE_REVOKE_GRAY_TIPS
         Object messageRecord = Reflex.invokeStaticDeclaredOrdinalModifier(
                 DexKit.requireClassFromCache(CMessageRecordFactory.INSTANCE), 0, 1, true, Modifier.PUBLIC, 0, msgtype,

@@ -116,6 +116,9 @@ public class QQMessageFacade {
     public static void commitMessageRecordList(@NonNull List<Object> messages, @NonNull String account) throws ReflectiveOperationException {
         Objects.requireNonNull(messages, "messages == null");
         Objects.requireNonNull(account, "account == null");
+        if (Long.parseLong(account) < 10000) {
+            throw new IllegalArgumentException("account is invalid: " + account);
+        }
         if (messages.isEmpty()) {
             return;
         }

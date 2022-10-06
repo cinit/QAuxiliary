@@ -32,6 +32,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import mqq.app.AppRuntime;
 import mqq.app.MobileQQ;
+import org.jetbrains.annotations.Contract;
 
 public class AppRuntimeHelper {
 
@@ -103,6 +104,21 @@ public class AppRuntimeHelper {
             IoUtils.unsafeThrowForIteCause(e);
             // unreachable
             return null;
+        }
+    }
+
+    @Contract("null -> fail")
+    public static void checkUinValid(String uin) {
+        if (uin == null || uin.length() == 0) {
+            throw new IllegalArgumentException("uin is empty");
+        }
+        try {
+            // allow cases like 9915...
+            if (Long.parseLong(uin) < 1000) {
+                throw new IllegalArgumentException("uin is invalid: " + uin);
+            }
+        } catch (NumberFormatException e) {
+            throw new IllegalArgumentException("uin is invalid: " + uin);
         }
     }
 
