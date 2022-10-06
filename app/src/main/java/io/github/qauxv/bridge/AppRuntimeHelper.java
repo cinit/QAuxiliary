@@ -25,6 +25,7 @@ package io.github.qauxv.bridge;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Field;
@@ -47,8 +48,10 @@ public class AppRuntimeHelper {
                 return -1;
             }
             return (long) Reflex.invokeVirtual(rt, "getLongAccountUin");
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.e(e);
+            IoUtils.unsafeThrowForIteCause(e);
+            // unreachable
         }
         return -1;
     }
@@ -83,8 +86,10 @@ public class AppRuntimeHelper {
                 f_mAppRuntime.setAccessible(true);
             }
             return (AppRuntime) f_mAppRuntime.get(sMobileQQ);
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.e(e);
+            IoUtils.unsafeThrowForIteCause(e);
+            // unreachable
             return null;
         }
     }
@@ -93,8 +98,10 @@ public class AppRuntimeHelper {
         Object rt = getAppRuntime();
         try {
             return (String) Reflex.invokeVirtual(rt, "getAccount");
-        } catch (Exception e) {
+        } catch (ReflectiveOperationException e) {
             Log.e(e);
+            IoUtils.unsafeThrowForIteCause(e);
+            // unreachable
             return null;
         }
     }

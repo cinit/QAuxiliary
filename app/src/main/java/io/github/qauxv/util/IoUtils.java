@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
@@ -139,6 +140,22 @@ public class IoUtils {
     public static void unsafeThrow(@NonNull Throwable t) {
         Objects.requireNonNull(t, "t == null");
         unsafeThrowImpl(t);
+    }
+
+    public static void unsafeThrowForIteCause(@NonNull Throwable t) {
+        Objects.requireNonNull(t, "t == null");
+        unsafeThrowImpl(getIteCauseOrSelf(t));
+    }
+
+    @NonNull
+    public static Throwable getIteCauseOrSelf(@NonNull Throwable t) {
+        Objects.requireNonNull(t, "t == null");
+        Throwable cause;
+        if (t instanceof InvocationTargetException && (cause = t.getCause()) != null) {
+            return cause;
+        } else {
+            return t;
+        }
     }
 
     @SuppressWarnings("unchecked")
