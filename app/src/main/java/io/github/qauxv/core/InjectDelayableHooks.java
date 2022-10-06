@@ -39,6 +39,7 @@ import cc.ioctl.util.ui.drawable.ProportionDrawable;
 import cc.ioctl.util.ui.drawable.SimpleBgDrawable;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.base.IDynamicHook;
+import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.step.DexDeobfStep;
 import io.github.qauxv.step.ShadowBatchDexDeobfStep;
 import io.github.qauxv.step.Step;
@@ -73,9 +74,17 @@ public class InjectDelayableHooks {
         boolean needDeobf = false;
         IDynamicHook[] hooks = HookInstaller.queryAllAnnotatedHooks();
         for (IDynamicHook h : hooks) {
-            if (h.isEnabled() && h.isPreparationRequired()) {
-                needDeobf = true;
-                break;
+            try {
+                if (h.isEnabled() && h.isPreparationRequired()) {
+                    needDeobf = true;
+                    break;
+                }
+            } catch (Exception | LinkageError | AssertionError e) {
+                if (h instanceof RuntimeErrorTracer) {
+                    ((RuntimeErrorTracer) h).traceError(e);
+                } else {
+                    Log.e("Hook " + h.getClass().getName() + " failed to check if preparation is required", e);
+                }
             }
         }
         final LinearLayout[] overlay = new LinearLayout[1];
@@ -85,17 +94,25 @@ public class InjectDelayableHooks {
         if (needDeobf) {
             final HashSet<Step> todos = new HashSet<>();
             for (IDynamicHook h : hooks) {
-                if (!h.isEnabled()) {
-                    continue;
-                }
-                if (h.isPreparationRequired()) {
-                    Step[] steps = h.makePreparationSteps();
-                    if (steps != null) {
-                        for (Step i : steps) {
-                            if (!i.isDone()) {
-                                todos.add(i);
+                try {
+                    if (!h.isEnabled()) {
+                        continue;
+                    }
+                    if (h.isPreparationRequired()) {
+                        Step[] steps = h.makePreparationSteps();
+                        if (steps != null) {
+                            for (Step i : steps) {
+                                if (!i.isDone()) {
+                                    todos.add(i);
+                                }
                             }
                         }
+                    }
+                } catch (Exception | LinkageError | AssertionError e) {
+                    if (h instanceof RuntimeErrorTracer) {
+                        ((RuntimeErrorTracer) h).traceError(e);
+                    } else {
+                        Log.e("Hook " + h.getClass().getName() + " failed to make preparation steps", e);
                     }
                 }
             }

@@ -222,18 +222,22 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         append('(').append(hostInfo.versionCode).append(')').append('\n')
         append("PID: ").append(Process.myPid()).append(", UID: ").append(Process.myUid()).append('\n')
         append(func.javaClass.name).append("\n")
-        if (func is IDynamicHook) {
-            val h: IDynamicHook = func
-            append("isInitialized: ").append(h.isInitialized).append("\n")
-            append("isInitializationSuccessful: ").append(h.isInitializationSuccessful).append("\n")
-            append("isEnabled: ").append(h.isEnabled).append("\n")
-            append("isAvailable: ").append(h.isAvailable).append("\n")
-            append("isPreparationRequired: ").append(h.isPreparationRequired).append("\n")
-            val errors: List<Throwable> = h.runtimeErrors
-            append("errors: ").append(errors.size).append("\n")
-            for (error in errors) {
-                append(Log.getStackTraceString(error)).append("\n")
+        kotlin.runCatching {
+            if (func is IDynamicHook) {
+                val h: IDynamicHook = func
+                append("isInitialized: ").append(h.isInitialized).append("\n")
+                append("isInitializationSuccessful: ").append(h.isInitializationSuccessful).append("\n")
+                append("isEnabled: ").append(h.isEnabled).append("\n")
+                append("isAvailable: ").append(h.isAvailable).append("\n")
+                append("isPreparationRequired: ").append(h.isPreparationRequired).append("\n")
+                val errors: List<Throwable> = h.runtimeErrors
+                append("errors: ").append(errors.size).append("\n")
+                for (error in errors) {
+                    append(Log.getStackTraceString(error)).append("\n")
+                }
             }
+        }.onFailure {
+            append('\n').append("dumpStatus failed: ").append(Log.getStackTraceString(it)).append("\n")
         }
     }
 

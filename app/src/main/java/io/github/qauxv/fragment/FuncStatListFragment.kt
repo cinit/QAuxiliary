@@ -32,6 +32,7 @@ import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.ThemeAttrUtils
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
@@ -39,6 +40,7 @@ import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.ItemFuncStatusBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKitFinder
 import kotlin.math.max
@@ -66,8 +68,8 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
     @SuppressLint("NotifyDataSetChanged")
     private fun sortAndUpdateStatus() {
         mFunction.sortWith(Comparator { o1, o2 ->
-            val r1 = calculateUiItemRank(o1)
-            val r2 = calculateUiItemRank(o2)
+            val r1: Int = kotlin.runCatching { calculateUiItemRank(o1) }.getOrDefault(114514)
+            val r2: Int = kotlin.runCatching { calculateUiItemRank(o2) }.getOrDefault(114514)
             // descending order, so that the highest rank is at the top
             return@Comparator r2 - r1
         })
@@ -77,7 +79,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         var errorCount = 0
         var warningCount = 0
         for (item in mFunction) {
-            val rank = calculateUiItemRank(item)
+            val rank = kotlin.runCatching { calculateUiItemRank(item) }.getOrDefault(114514)
             if (rank >= 70) {
                 errorCount++
             } else if (rank >= 10) {
@@ -108,42 +110,48 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
     @UiThread
     private fun updateViewItem(vh: FuncStatViewHolder, item: IUiItemAgentProvider) {
         val title = item.uiItemAgent.titleProvider(item.uiItemAgent)
-        val enabled = item is IDynamicHook && item.isEnabled
-        val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
-        val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
-        val unsupported = item is IDynamicHook && !item.isAvailable
-        val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
-        val unsupportedDexKit = item is IDynamicHook && item is DexKitFinder && item.isEnabled && !DexDeobfsProvider.isDexKitBackend
-        val tags = ArrayList<String>()
         var iconType = 0
-        if (reportError) {
-            iconType = 5
-            tags.add("存在错误")
-        }
-        if (isDepError) {
-            iconType = 5
-            tags.add("依赖错误")
-        }
-        if (errorCount != 0) {
-            iconType = max(iconType, 4)
-            tags.add("$errorCount 个异常")
-        }
-        if (unsupportedDexKit) {
-            iconType = max(iconType, 3)
-            tags.add("不兼容的混淆引擎，请切换为 DexKit")
-        }
-        if (unsupported) {
-            iconType = max(iconType, 3)
-            tags.add("不兼容当前版本")
-        }
-        if (tags.isEmpty()) {
-            if (enabled) {
-                iconType = 1
-                tags.add("未见明显异常")
-            } else {
-                iconType = 2
-                tags.add("未启用")
+        val tags = ArrayList<String>()
+        kotlin.runCatching {
+            val enabled = item is IDynamicHook && item.isEnabled
+            val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
+            val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
+            val unsupported = item is IDynamicHook && !item.isAvailable
+            val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
+            val unsupportedDexKit = item is IDynamicHook && item is DexKitFinder && item.isEnabled && !DexDeobfsProvider.isDexKitBackend
+            if (reportError) {
+                iconType = 5
+                tags.add("存在错误")
             }
+            if (isDepError) {
+                iconType = 5
+                tags.add("依赖错误")
+            }
+            if (errorCount != 0) {
+                iconType = max(iconType, 4)
+                tags.add("$errorCount 个异常")
+            }
+            if (unsupportedDexKit) {
+                iconType = max(iconType, 3)
+                tags.add("不兼容的混淆引擎，请切换为 DexKit")
+            }
+            if (unsupported) {
+                iconType = max(iconType, 3)
+                tags.add("不兼容当前版本")
+            }
+            if (tags.isEmpty()) {
+                if (enabled) {
+                    iconType = 1
+                    tags.add("未见明显异常")
+                } else {
+                    iconType = 2
+                    tags.add("未启用")
+                }
+            }
+        }.onFailure {
+            Log.e("FuncStatListFragment updateViewItem", it)
+            iconType = 5
+            tags.add(Reflex.getShortClassName(it) + it.message.toString())
         }
         val desc = tags.joinToString(", ")
         vh.binding.apply {
