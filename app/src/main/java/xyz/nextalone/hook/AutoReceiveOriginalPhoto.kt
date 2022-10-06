@@ -36,6 +36,7 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexDeobfsProvider.isDexKitBackend
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.DexMethodDescriptor.getTypeSig
 import io.github.qauxv.util.dexkit.NAIOPictureView_onDownloadOriginalPictureClick
 import io.github.qauxv.util.dexkit.NAIOPictureView_setVisibility
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
@@ -119,7 +120,8 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
                 return false
             }
             kAIOPictureView = clazzList[0].getClassInstance(getHostClassLoader())
-            CAIOPictureView.descCache = kAIOPictureView.name
+            // here a method descriptor is used to cache the class descriptor, not a class name
+            CAIOPictureView.descCache = getTypeSig(kAIOPictureView) + "-><clinit>()V"
         }
         Log.d("kAIOPictureView: ${kAIOPictureView.name}")
         val onClickInvokingMethods = dexKit.findMethodInvoking(
