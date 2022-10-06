@@ -197,7 +197,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     private void onRevokeMsg(Object revokeMsgInfo) throws Exception {
         RevokeMsgInfoImpl info = new RevokeMsgInfoImpl((Parcelable) revokeMsgInfo);
-        String entityUin = info.friendUin;
+        String aioSessionUin = info.friendUin;
         String revokerUin = info.fromUin;
         String authorUin = info.authorUin;
         int istroop = info.istroop;
@@ -208,9 +208,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
             return;
         }
-        String uin = istroop == 0 ? revokerUin : entityUin;
-        Object msgObject = getMessage(uin, istroop, shmsgseq, msgUid);
-        long id = getMessageUid(msgObject);
+        Object msgObject = getMessage(aioSessionUin, istroop, shmsgseq, msgUid);
+        // long id = getMessageUid(msgObject);
         if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
             return;
         }
@@ -223,9 +222,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         }
         Object revokeGreyTip;
         if (isGroupChat) {
+            String troopUin = aioSessionUin;
             if (authorUin == null || revokerUin.equals(authorUin)) {
                 //自己撤回
-                String revokerNick = ContactUtils.getTroopMemberNick(entityUin, revokerUin);
+                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
                 String greyMsg = "\"" + revokerNick + "\u202d\"";
                 if (msgObject != null) {
                     greyMsg += "尝试撤回一条消息";
@@ -248,20 +248,20 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                         greyMsg += "撤回了一条消息(没收到)";
                     }
                 }
-                revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin, time + 1,
+                revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1,
                         greyMsg, newMsgUid, shmsgseq);
                 addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
                         createTroopMemberHighlightItem(revokerUin));
             } else {
                 //被权限撤回(含管理,群主)
-                String revokerNick = ContactUtils.getTroopMemberNick(entityUin, revokerUin);
-                String authorNick = ContactUtils.getTroopMemberNick(entityUin, authorUin);
+                String revokerNick = ContactUtils.getTroopMemberNick(troopUin, revokerUin);
+                String authorNick = ContactUtils.getTroopMemberNick(troopUin, authorUin);
                 if (msgObject == null) {
                     String greyMsg = "\"" + revokerNick + "\u202d\"撤回了\"" + authorNick + "\u202d\"的消息(没收到)";
                     if (isShowShmsgseqEnabled()) {
                         greyMsg += ", shmsgseq: " + shmsgseq;
                     }
-                    revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin,
+                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin,
                             time + 1, greyMsg, newMsgUid, shmsgseq);
                     addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
                             createTroopMemberHighlightItem(revokerUin));
@@ -283,7 +283,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     if (!hasMsgInfo && isShowShmsgseqEnabled()) {
                         greyMsg += ", shmsgseq: " + shmsgseq;
                     }
-                    revokeGreyTip = createBareHighlightGreyTip(entityUin, istroop, revokerUin,
+                    revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin,
                             time + 1, greyMsg, newMsgUid, shmsgseq);
                     addHightlightItem(revokeGreyTip, 1, 1 + revokerNick.length(),
                             createTroopMemberHighlightItem(revokerUin));
@@ -293,6 +293,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                 }
             }
         } else {
+            // PM
+            String friendUin = aioSessionUin;
             String greyMsg;
             if (msgObject == null) {
                 if (isShowShmsgseqEnabled()) {
@@ -314,7 +316,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     greyMsg += ", shmsgseq: " + shmsgseq;
                 }
             }
-            revokeGreyTip = createBarePlainGreyTip(revokerUin, istroop, revokerUin, time + 1,
+            revokeGreyTip = createBarePlainGreyTip(friendUin, istroop, revokerUin, time + 1,
                     greyMsg, newMsgUid, shmsgseq);
         }
         List<Object> list = new ArrayList<>();
