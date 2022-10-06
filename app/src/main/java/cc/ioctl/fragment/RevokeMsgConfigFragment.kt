@@ -58,11 +58,12 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
                 summary = "在撤回提示灰字中显示被撤回消息的 shmsgseq",
                 switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, "isShowShmsgseqEnabled")
             ),
+            /* 坏了
             TextSwitchItem(
                 "保留自己撤回的消息",
                 summary = null,
                 switchAgent = createSwitchAgent(RevokeMsgHook.INSTANCE, "isKeepSelfMsgEnabled")
-            )
+            )*/
         )
     }
 

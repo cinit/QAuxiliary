@@ -136,8 +136,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
     }
 
     public boolean isKeepSelfMsgEnabled() {
-        ConfigManager cfg = ConfigManager.getDefaultConfig();
-        return cfg.getBoolean(KEY_KEEP_SELF_REVOKE_MSG, false);
+        return false;
+        // ConfigManager cfg = ConfigManager.getDefaultConfig();
+        // return cfg.getBoolean(KEY_KEEP_SELF_REVOKE_MSG, false);
     }
 
     public void setKeepSelfMsgEnabled(boolean enabled) {
@@ -186,8 +187,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             for (Object revokeMsgInfo : list) {
                 try {
                     onRevokeMsg(revokeMsgInfo);
-                } catch (Throwable t) {
-                    Log.e(t);
+                } catch (Exception | LinkageError | AssertionError t) {
+                    traceError(t);
                 }
             }
             list.clear();
@@ -296,17 +297,18 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             // PM
             String friendUin = aioSessionUin;
             String greyMsg;
+            String revokerPron = selfUin.equals(revokerUin) ? "你" : "对方";
             if (msgObject == null) {
                 if (isShowShmsgseqEnabled()) {
-                    greyMsg = "对方撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                    greyMsg = revokerPron + "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
                 } else {
-                    greyMsg = "对方撤回了一条消息(没收到)";
+                    greyMsg = revokerPron + "撤回了一条消息(没收到)";
                 }
             } else {
                 String message = getMessageContentStripped(msgObject);
                 int msgtype = getMessageType(msgObject);
                 boolean hasMsgInfo = false;
-                greyMsg = "对方尝试撤回一条消息";
+                greyMsg = revokerPron + "尝试撤回一条消息";
                 if (msgtype == -1000 /*text msg*/) {
                     if (!TextUtils.isEmpty(message)) {
                         greyMsg += ": " + message;
