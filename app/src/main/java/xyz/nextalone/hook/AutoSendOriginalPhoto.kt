@@ -40,8 +40,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object AutoSendOriginalPhoto :
-    CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_PEAK) {
+object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_PEAK) {
 
     override val name = "聊天自动发送原图"
 
@@ -49,6 +48,7 @@ object AutoSendOriginalPhoto :
 
     override fun initOnce() = throwOrTrue {
         val method = when {
+            requireMinQQVersion(QQVersion.QQ_8_9_13) -> "d0"
             requireMinQQVersion(QQVersion.QQ_8_9_2) -> "e0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "Z"
             else -> "a"
