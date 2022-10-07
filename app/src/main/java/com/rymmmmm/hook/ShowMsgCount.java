@@ -33,12 +33,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
-import io.github.qauxv.util.dexkit.CCustomWidgetUtil;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Objects;
 
 /**
  * 显示具体消息数量
@@ -52,7 +50,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     public static final ShowMsgCount INSTANCE = new ShowMsgCount();
 
     private ShowMsgCount() {
-        super(new DexKitTarget[]{CCustomWidgetUtil.INSTANCE});
+        super(new DexKitTarget[]{NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE});
     }
 
     @NonNull
@@ -69,21 +67,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        Class<?> kCustomWidgetUtil = DexKit.loadClassFromCache(CCustomWidgetUtil.INSTANCE);
-        // target: com.tencent.widget.CustomWidgetUtil
-        // com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil is not what we want
-        Objects.requireNonNull(kCustomWidgetUtil, "CustomWidgetUtil.class is null");
-        Method updateCustomNoteTxt = null;
-        for (Method m : kCustomWidgetUtil.getDeclaredMethods()) {
-            Class<?>[] argt = m.getParameterTypes();
-            if (argt.length == 6 && Modifier.isStatic(m.getModifiers()) && m.getReturnType() == void.class) {
-                // TIM 3.1.1(1084) smali references
-                // updateCustomNoteTxt(Landroid/widget/TextView;IIIILjava/lang/String;)V
-                updateCustomNoteTxt = m;
-                break;
-            }
-        }
-        Objects.requireNonNull(updateCustomNoteTxt, "updateCustomNoteTxt not found");
+        Method updateCustomNoteTxt = DexKit.loadMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
         XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {

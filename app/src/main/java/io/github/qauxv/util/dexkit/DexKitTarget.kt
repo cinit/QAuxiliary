@@ -24,6 +24,7 @@ package io.github.qauxv.util.dexkit
 
 import android.os.Bundle
 import android.view.View
+import android.widget.TextView
 import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import com.github.kyuubiran.ezxhelper.utils.isFinal
@@ -222,17 +223,6 @@ object CAppConstants : DexKitTarget.UsingStr() {
         val clz = load(it.declaringClass) ?: return@filter false
         clz.isInterface && clz.declaredMethods.size >= 50
     }
-}
-
-object CCustomWidgetUtil : DexKitTarget.UsingStr() {
-    override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
-    override val traitString = arrayOf("^NEW$")
-    override val filter = DexKitFilter.strInClsName("com/tencent/widget") and
-        DexKitFilter.notHasSuper and
-        filter@{ it: DexMethodDescriptor ->
-            val clz = load(it.declaringClass) ?: return@filter false
-            clz.fields.all { it.isStatic }
-        }
 }
 
 object CMessageCache : DexKitTarget.UsingStr() {
@@ -576,6 +566,21 @@ object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.troopAddFrd.Scene"
     override val traitString = arrayOf("checkDataRecmdRemarkList cacheInvalid_ts_type_troopUin=%b_%d_%d_%s")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/troopAddFrd") or DexKitFilter.defpackage
+}
+
+object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
+    // guess
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
+    override val traitString = arrayOf("^NEW$")
+    override val filter = DexKitFilter.strInClsName("com/tencent/widget") or
+        DexKitFilter.defpackage and
+        DexKitFilter.notHasSuper and
+        filter@{ it: DexMethodDescriptor ->
+            val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+            m.isStatic && m.returnType == Void.TYPE
+                && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
+        }
 }
 
 // TODO 待优化这几种类型
