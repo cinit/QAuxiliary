@@ -70,10 +70,14 @@ sealed class DexKitTarget {
             val filter = methods.filter(filter)
             if (filter.size > 1) {
                 filter.forEach { Log.e(it.toString()) }
+                if (!findMethod) {
+                    val sameClass = filter.distinctBy { it.declaringClass }.size == 1
+                    Log.w("More than one method matched: $name, but has same class")
+                    if (sameClass) return filter.first()
+                }
                 Log.e("More than one method matched: $name, return none for safety")
                 return null
             }
-            // check(filter.size <= 1) { "Too many methods found for $this: ${filter.size}" }
             filter.firstOrNull()
         }.onFailure { Log.e(it) }.getOrNull()
     }
