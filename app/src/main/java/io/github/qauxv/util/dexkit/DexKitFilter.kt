@@ -65,4 +65,9 @@ object DexKitFilter {
     fun strInSig(str: String, fullMatch: Boolean = false): dexkitFilter = { it: DexMethodDescriptor ->
         if (fullMatch) str == it.signature else str in it.signature
     }
+
+    fun filterByParams(filter: (Array<Class<*>>) -> Boolean): dexkitFilter = filter@{ it: DexMethodDescriptor ->
+        val m = kotlin.runCatching { it.getMethodInstance(Initiator.getHostClassLoader()) }.getOrNull() ?: return@filter false
+        filter(m.parameterTypes)
+    }
 }

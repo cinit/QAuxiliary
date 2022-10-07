@@ -277,7 +277,9 @@ object CHttpDownloader : DexKitTarget.UsingStr() {
 object CMultiMsgManager : DexKitTarget.UsingStr() {
     override val declaringClass = "com/tencent/mobileqq/multimsg/MultiMsgManager"
     override val traitString = arrayOf("[sendMultiMsg]data.length = ")
-    override val filter = DexKitFilter.hasSuper
+    override val filter = DexKitFilter.filterByParams {
+        it.first() == _QQAppInterface()
+    }
 }
 
 object CAvatarUtil : DexKitTarget.UsingStr() {
@@ -326,7 +328,9 @@ object CGuildArkHelper : DexKitTarget.UsingStr() {
 object CReplyMsgUtils : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.activity.aio.reply.ReplyMsgUtils"
     override val traitString = arrayOf("generateSourceInfo sender uin exception:")
-    override val filter = DexKitFilter.allStaticFields
+    override val filter = DexKitFilter.filterByParams {
+        it.first() == _QQAppInterface()
+    }
 }
 
 object CReplyMsgSender : DexKitTarget.UsingStr() {
@@ -371,6 +375,7 @@ object NBaseChatPie_createMulti : DexKitTarget.UsingStr() {
     override val declaringClass: String = _BaseChatPie().name
     override val traitString = arrayOf("^createMulti$")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/aio/helper") or
+        DexKitFilter.defpackage or
         DexKitFilter.strInClsName(declaringClass.replace('.', '/')) and
         filter@{ it: DexMethodDescriptor ->
             val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
@@ -508,7 +513,8 @@ object NTroopAppShortcutBarHelper_resumeAppShorcutBar : DexKitTarget.UsingStr() 
     override val traitString = arrayOf("resumeAppShorcutBar")
     override val filter = DexKitFilter.strInClsName("TroopAppShortcutBarHelper") or
         DexKitFilter.strInClsName("ShortcutBarAIOHelper") or
-        DexKitFilter.strInClsName("/aio/helper/")
+        DexKitFilter.strInClsName("/aio/helper/") or
+        DexKitFilter.defpackage
 }
 
 object NChatActivityFacade_sendMsgButton : DexKitTarget.UsingStr() {
