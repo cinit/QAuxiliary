@@ -157,7 +157,7 @@ android {
 
     buildFeatures {
         viewBinding = true
-        prefab = true
+        renderScript = false
     }
     lint {
         checkDependencies = true
@@ -169,8 +169,11 @@ android {
     }
     applicationVariants.all {
         val variantCapped = name.capitalize()
-        tasks.findByName("merge${variantCapped}Assets")?.dependsOn(tasks.generateLicenseJson.get())
-        tasks.findByName("merge${variantCapped}Assets")?.dependsOn(generateEulaAndPrivacy)
+        val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
+        if (variantCapped == "Release") {
+            mergeAssets.dependsOn(tasks.generateLicenseJson.get())
+        }
+        mergeAssets.dependsOn(generateEulaAndPrivacy)
     }
 }
 
