@@ -88,11 +88,13 @@ object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
         }
 
     override fun initOnce(): Boolean {
-        "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity".clazz!!.findMethod {
-            name == "onCreate"
-        }.hookAfter(this) {
-            val activity = it.thisObject as Activity
-            activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
+        listOf("com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity", "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity").forEach {
+            it.clazz!!.findMethod {
+                name == "onCreate"
+            }.hookAfter(this) {
+                val activity = it.thisObject as Activity
+                activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
+            }
         }
         return true
     }
