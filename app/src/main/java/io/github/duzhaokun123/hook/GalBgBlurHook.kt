@@ -40,6 +40,7 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.Toasts
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 
@@ -88,7 +89,11 @@ object GalBgBlurHook: CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
         }
 
     override fun initOnce(): Boolean {
-        listOf("com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity", "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity").forEach {
+        listOf(
+            "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
+            "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
+            "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity"
+        ).forEach {
             it.clazz!!.findMethod {
                 name == "onCreate"
             }.hookAfter(this) {
