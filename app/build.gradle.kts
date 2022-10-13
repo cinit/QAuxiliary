@@ -213,21 +213,22 @@ dependencies {
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
+val packageName = "com.tencent.mobileqq"
 val killQQ = tasks.register<Exec>("killQQ") {
     group = "qauxv"
-    commandLine(adb, "shell", "am", "force-stop", "com.tencent.mobileqq")
+    commandLine(adb, "shell", "am", "force-stop", packageName)
     isIgnoreExitValue = true
 }
 
 val openQQ = tasks.register<Exec>("openQQ") {
     group = "qauxv"
-    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
+    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components $packageName)")
     isIgnoreExitValue = true
 }
 
 val restartQQ = tasks.register<Exec>("restartQQ") {
     group = "qauxv"
-    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components com.tencent.mobileqq)")
+    commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components $packageName)")
     isIgnoreExitValue = true
 }
 
@@ -236,7 +237,7 @@ tasks.register<Exec>("openTroubleShooting") {
     commandLine(
         adb, "shell", "am", "start",
         "-e", "qa_jump_action_cmd", "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY",
-        "com.tencent.mobileqq/.activity.JumpActivity"
+        "$packageName/com.tencent.mobileqq.activity.JumpActivity"
     )
     isIgnoreExitValue = true
 }
