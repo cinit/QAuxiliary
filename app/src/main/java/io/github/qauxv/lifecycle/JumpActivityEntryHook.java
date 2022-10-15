@@ -25,15 +25,15 @@ import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
-import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
-import android.text.TextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
+import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.fragment.TroubleshootFragment;
+import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.MainProcess;
 import java.lang.reflect.Method;
@@ -47,7 +47,6 @@ public class JumpActivityEntryHook {
 
     public static final String JUMP_ACTION_CMD = "qa_jump_action_cmd";
     public static final String JUMP_ACTION_TARGET = "qa_jump_action_target";
-    public static final String JUMP_ACTION_START_ACTIVITY = "io.github.qauxv.START_ACTIVITY";
     public static final String JUMP_ACTION_SETTING_ACTIVITY = "io.github.qauxv.SETTING_ACTIVITY";
     public static final String JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY = "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY";
     private static boolean __jump_act_init = false;
@@ -75,20 +74,10 @@ public class JumpActivityEntryHook {
                         return;
                     }
                     if (JUMP_ACTION_SETTING_ACTIVITY.equals(cmd)) {
-                        Intent realIntent = new Intent(intent);
-                        realIntent.setComponent(new ComponentName(activity, SettingsUiFragmentHostActivity.class));
-                        activity.startActivity(realIntent);
-                    } else if (JUMP_ACTION_START_ACTIVITY.equals(cmd)) {
-                        String target = intent.getStringExtra(JUMP_ACTION_TARGET);
-                        if (!TextUtils.isEmpty(target)) {
-                            try {
-                                Class<?> activityClass = Class.forName(target);
-                                Intent realIntent = new Intent(intent);
-                                realIntent.setComponent(new ComponentName(activity, activityClass));
-                                activity.startActivity(realIntent);
-                            } catch (Exception e) {
-                                Log.i("Unable to start Activity: " + e);
-                            }
+                        if (LicenseStatus.hasUserAcceptEula()) {
+                            activity.startActivity(new Intent(activity, SettingsUiFragmentHostActivity.class));
+                        } else {
+                            SettingsUiFragmentHostActivity.startActivityForFragment(activity, EulaFragment.class, null);
                         }
                     } else if (JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY.equals(cmd)) {
                         SettingsUiFragmentHostActivity.startFragmentWithContext(activity, TroubleshootFragment.class);
