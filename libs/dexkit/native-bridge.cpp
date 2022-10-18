@@ -11,8 +11,14 @@
 #define LOGW(...) __android_log_print(ANDROID_LOG_WARN, TAG ,__VA_ARGS__)
 
 static jclass dex_kit_class = nullptr;
-static jfieldID token_field = nullptr;
 static JavaVM *g_currentJVM = nullptr;
+
+static jfieldID path_list_field = nullptr;
+static jfieldID element_field = nullptr;
+static jfieldID dex_file_field = nullptr;
+static jfieldID cookie_field = nullptr;
+static jfieldID file_name_field = nullptr;
+static bool is_initialized = false;
 
 static int registerNativeMethods(JNIEnv *env, jclass cls);
 
@@ -32,6 +38,42 @@ extern "C" JNIEXPORT JNICALL jint DexKit_JNI_OnLoad(JavaVM *vm, void *reserved) 
 
 namespace DexKit {
 
+struct DexFile {
+  const void *begin_{};
+  size_t size_{};
+
+  virtual ~DexFile() = default;
+};
+
+static bool IsDexFile(const void *image) {
+    const auto *header = reinterpret_cast<const struct dex::Header *>(image);
+    if (header->magic[0] == 'd' && header->magic[1] == 'e' &&
+            header->magic[2] == 'x' && header->magic[3] == '\n') {
+        return true;
+    }
+    return false;
+}
+
+void init(JNIEnv *env) {
+    if (is_initialized) {
+        return;
+    }
+    auto dex_class_loader = env->FindClass("dalvik/system/BaseDexClassLoader");
+    path_list_field = env->GetFieldID(dex_class_loader, "pathList",
+                                      "Ldalvik/system/DexPathList;");
+    auto dex_path_list = env->FindClass("dalvik/system/DexPathList");
+    element_field = env->GetFieldID(dex_path_list, "dexElements",
+                                    "[Ldalvik/system/DexPathList$Element;");
+    auto element = env->FindClass("dalvik/system/DexPathList$Element");
+    dex_file_field =
+            env->GetFieldID(element, "dexFile", "Ldalvik/system/DexFile;");
+    auto dex_file = env->FindClass("dalvik/system/DexFile");
+    cookie_field = env->GetFieldID(dex_file, "mCookie", "Ljava/lang/Object;");
+    file_name_field = env->GetFieldID(dex_file, "mFileName", "Ljava/lang/String;");
+
+    is_initialized = true;
+}
+
 #define DEXKIT_JNI extern "C" JNIEXPORT JNICALL
 
 DEXKIT_JNI jlong
@@ -46,6 +88,85 @@ nativeInitDexKit(JNIEnv *env, jclass clazz,
     auto dexkit = new dexkit::DexKit(filePathStr);
     env->ReleaseStringUTFChars(apk_path, cStr);
     return (jlong) dexkit;
+}
+
+DEXKIT_JNI jlong
+nativeInitDexKitByClassLoader(JNIEnv *env, jclass clazz,
+                              jobject class_loader) {
+    if (!class_loader) {
+        return 0;
+    }
+    init(env);
+    auto path_list = env->GetObjectField(class_loader, path_list_field);
+    if (!path_list)
+        return 0;
+    auto elements = (jobjectArray) env->GetObjectField(path_list, element_field);
+    if (!elements)
+        return 0;
+    LOGD("elements size -> %d", env->GetArrayLength(elements));
+    std::vector<std::pair<const void *, size_t>> images;
+    std::list<dexkit::MemMap> maps;
+    std::string apk_path;
+    for (auto i = 0, len = env->GetArrayLength(elements); i < len; ++i) {
+        auto element = env->GetObjectArrayElement(elements, i);
+        if (!element)
+            continue;
+        auto java_dex_file = env->GetObjectField(element, dex_file_field);
+        if (!java_dex_file)
+            continue;
+        auto cookie = (jlongArray) env->GetObjectField(java_dex_file, cookie_field);
+        if (!cookie)
+            continue;
+        auto dex_file_length = env->GetArrayLength(cookie);
+        const auto *dex_files = reinterpret_cast<const DexFile **>(
+                env->GetLongArrayElements(cookie, nullptr));
+        LOGI("dex_file_length -> %d", dex_file_length);
+        std::vector<std::pair<const void *, size_t>> dex_images;
+        if (!dex_files[0]) {
+            while (dex_file_length-- > 1) {
+                const auto *dex_file = dex_files[dex_file_length];
+                LOGD("Got dex file %d", dex_file_length);
+                if (!dex_file) {
+                    LOGD("Skip empty dex file");
+                    dex_images.clear();
+                    continue;
+                }
+                if (!IsDexFile(dex_file->begin_)) {
+                    LOGD("skip compact dex");
+                    dex_images.clear();
+                    break;
+                } else {
+                    LOGD("push dex file %d, image size: %zu", dex_file_length, dex_file->size_);
+                    dex_images.emplace_back(dex_file->begin_, dex_file->size_);
+                }
+            }
+        }
+        if (dex_images.empty() && apk_path.empty()) {
+            auto file_name_obj = (jstring) env->GetObjectField(java_dex_file, file_name_field);
+            if (!file_name_obj) continue;
+            auto file_name = env->GetStringUTFChars(file_name_obj, nullptr);
+            LOGD("dex filename is %s", file_name);
+            std::string path(file_name);
+            if (path.find(".apk") == path.size() - 4) {
+                apk_path = path;
+            }
+            env->ReleaseStringUTFChars(file_name_obj, file_name);
+            env->DeleteLocalRef(file_name_obj);
+        } else {
+            for (auto &image: dex_images) {
+                images.emplace_back(std::move(image));
+            }
+        }
+    }
+    if (images.empty()) {
+        if (apk_path.empty()) {
+            LOGW("dex file and apk_path not found");
+            return 0;
+        }
+        LOGD("contains compact dex or not found cookie, use apk_path load: %s", apk_path.c_str());
+        return (jlong) new dexkit::DexKit(apk_path);
+    }
+    return (jlong) new dexkit::DexKit(images);
 }
 
 DEXKIT_JNI void
@@ -268,6 +389,7 @@ nativeGetMethodOpCodeSeq(JNIEnv *env, jclass clazz,
 
 static JNINativeMethod g_methods[]{
         {"nativeInitDexKit",                   "(Ljava/lang/String;)J",                                                                                                                                                                        (void *) DexKit::nativeInitDexKit},
+        {"nativeInitDexKitByClassLoader",      "(Ljava/lang/ClassLoader;)J",                                                                                                                                                                   (void *) DexKit::nativeInitDexKitByClassLoader},
         {"nativeSetThreadNum",                 "(JI)V",                                                                                                                                                                                        (void *) DexKit::nativeSetThreadNum},
         {"nativeGetDexNum",                    "(J)I",                                                                                                                                                                                         (void *) DexKit::nativeGetDexNum},
         {"nativeRelease",                      "(J)V",                                                                                                                                                                                         (void *) DexKit::nativeRelease},
