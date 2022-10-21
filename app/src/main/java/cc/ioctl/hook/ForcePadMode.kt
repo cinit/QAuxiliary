@@ -28,13 +28,14 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ForcePadMode : CommonSwitchFunctionHook() {
+object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
 
     override val name = "强制平板模式"
     override val description = "仅支持 QQ 8.9.15, 未经测试, 谨慎使用"
