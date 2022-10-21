@@ -27,6 +27,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
 import cc.ioctl.hook.FileRecvRedirect;
+import cc.ioctl.hook.ForcePadMode;
 import cc.ioctl.hook.GagInfoDisclosure;
 import cc.ioctl.hook.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.MuteQZoneThumbsUp;
@@ -110,6 +111,7 @@ public class MainHook {
             HookInstaller.allowEarlyInit(RemoveSuperQQShow.INSTANCE);
             HookInstaller.allowEarlyInit(FileRecvRedirect.INSTANCE);
             HookInstaller.allowEarlyInit(OptXListViewScrollBar.INSTANCE);
+            HookInstaller.allowEarlyInit(ForcePadMode.INSTANCE);
         }
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
