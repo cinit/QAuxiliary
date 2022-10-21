@@ -31,6 +31,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.res.Resources;
 import android.os.Bundle;
+import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
@@ -68,6 +69,9 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     public boolean initOnce() throws Exception {
         Class<?> kQQSettingSettingActivity = loadClass("com.tencent.mobileqq.activity.QQSettingSettingActivity");
         XposedHelpers.findAndHookMethod(kQQSettingSettingActivity, "doOnCreate", Bundle.class, mAddModuleEntry);
+        Class<?> kQQSettingSettingFragment = loadClass("com.tencent.mobileqq.fragment.QQSettingSettingFragment");
+        XposedHelpers.findAndHookMethod(kQQSettingSettingFragment, "doOnCreateView",
+                LayoutInflater.class, ViewGroup.class, Bundle.class, mAddModuleEntry);
         return true;
     }
 
@@ -75,7 +79,13 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
         @Override
         protected void afterHookedMethod(final MethodHookParam param) throws Throwable {
             try {
-                final Activity activity = (Activity) param.thisObject;
+                final Activity activity;
+                var thisObject = param.thisObject;
+                if (thisObject instanceof Activity) {
+                    activity = (Activity) thisObject;
+                } else {
+                    activity = (Activity) Reflex.invokeVirtual(thisObject, "getActivity");
+                }
                 Resources res = activity.getResources();
                 Class<?> itemClass;
                 View itemRef = null;
@@ -83,10 +93,10 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     Class<?> clz = load("com/tencent/mobileqq/widget/FormSimpleItem");
                     if (clz != null) {
                         // find a candidate view field
-                        for (Field f : activity.getClass().getDeclaredFields()) {
+                        for (Field f : thisObject.getClass().getDeclaredFields()) {
                             if (f.getType() == clz && !Modifier.isStatic(f.getModifiers())) {
                                 f.setAccessible(true);
-                                View v = (View) f.get(activity);
+                                View v = (View) f.get(thisObject);
                                 if (v != null && v.getParent() != null) {
                                     itemRef = v;
                                     break;
