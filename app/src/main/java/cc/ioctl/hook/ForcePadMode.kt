@@ -22,16 +22,14 @@
 
 package cc.ioctl.hook
 
-import cc.ioctl.util.Reflex
-import cc.ioctl.util.hookBeforeIfEnabled
+import android.annotation.SuppressLint
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.method
+import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -48,12 +46,14 @@ object ForcePadMode : CommonSwitchFunctionHook() {
 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
-        val k = Initiator.loadClass("com/tencent/common/config/DeviceType")
-        val deviceTypePad = Reflex.getStaticObject(k, "TABLET")
-        val initDeviceType = "Lcom/tencent/common/config/e;->a(Landroid/content/Context;)Lcom/tencent/common/config/DeviceType;".method
-        hookBeforeIfEnabled(initDeviceType) {
-            it.result = deviceTypePad
-        }
+        @SuppressLint("PrivateApi")
+        val cls = Class.forName("android.os.SystemProperties")
+        cls.getMethod("get", String::class.java)
+            .hookAfter(this) {
+                if (it.args[0] == "ro.build.characteristics") {
+                    it.result = "tablet"
+                }
+            }
     }
 
 }
