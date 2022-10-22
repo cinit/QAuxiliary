@@ -37,6 +37,7 @@ import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -48,40 +49,63 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override val preferenceTitle = "精简设置菜单"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
 
-    override val allItems = setOf("手机号码", "达人", "安全", "模式选择", "通知", "记录", "隐私", "通用", "辅助", "免流量", "关于", "收集清单", "共享清单", "保护设置", "隐私政策摘要")
+    override val allItems = setOf(
+        "手机号码",
+        "达人",
+        "安全",
+        "模式选择",
+        "通知",
+        "记录",
+        "隐私",
+        "通用",
+        "辅助",
+        "免流量",
+        "关于",
+        "收集清单",
+        "共享清单",
+        "保护设置",
+        "隐私政策摘要"
+    )
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {
-        Reflex.findSingleMethod(
-            Initiator.loadClass("com/tencent/mobileqq/activity/QQSettingSettingActivity"),
-            Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE
-        ).hookAfter(this) {
-            val activity = it.thisObject as Activity
-            val viewId: Int = it.args[0].toString().toInt()
-            val strId: Int = it.args[1].toString().toInt()
-            val view = activity.findViewById<View>(viewId)
-            val str = activity.getString(strId)
-            if (activeItems.any { string ->
-                    string.isNotEmpty() && string in str
-                }) {
-                view.hide()
+        val clazz = arrayOf(
+            Initiator._QQSettingSettingActivity(),
+            Initiator._QQSettingSettingFragment()
+        )
+        clazz.forEach { c ->
+            val m = Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
+            m.hookAfter(this) {
+                val thisObject = it.thisObject
+                val activity = if (thisObject is Activity) {
+                    thisObject
+                } else {
+                    thisObject.invoke("getActivity") as Activity
+                }
+                val viewId: Int = it.args[0].toString().toInt()
+                val strId: Int = it.args[1].toString().toInt()
+                val view = thisObject.invoke("findViewById", viewId, Int::class.java) as View
+                val str = activity.getString(strId)
+                if (activeItems.any { string -> string.isNotEmpty() && string in str }) {
+                    view.hide()
+                }
             }
         }
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
             if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
-                "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("doOnCreate")?.hookAfter(this) {
+                Initiator._QQSettingSettingActivity().method("doOnCreate")?.hookAfter(this) {
                     val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "cu_open_card_guide_entry")
                     val cu = (it.thisObject as Activity).findViewById<RelativeLayout>(getId)
                     (cu.parent as LinearLayout).removeView(cu)
                 }
             } else {
                 try {
-                    "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("a", 0, Void.TYPE)?.replace(
+                    Initiator._QQSettingSettingActivity().method("a", 0, Void.TYPE)?.replace(
                         this, null
                     )
                 } catch (e: Throwable) {
-                    "com/tencent/mobileqq/activity/QQSettingSettingActivity".clazz?.method("b", 0, Void.TYPE)?.replace(
+                    Initiator._QQSettingSettingActivity().method("b", 0, Void.TYPE)?.replace(
                         this, null
                     )
                 }

@@ -379,6 +379,14 @@ public class Initiator {
         return clazz;
     }
 
+    public static Class<?> _QQSettingSettingActivity() {
+        return load("com.tencent.mobileqq.activity.QQSettingSettingActivity");
+    }
+
+    public static Class<?> _QQSettingSettingFragment() {
+        return load("com.tencent.mobileqq.fragment.QQSettingSettingFragment");
+    }
+
     @Nullable
     private static Class<?> findClassWithSyntheticsImpl(@NonNull String className, int... index) {
         Class<?> clazz = load(className);

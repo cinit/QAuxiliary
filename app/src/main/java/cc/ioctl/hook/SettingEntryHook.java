@@ -24,7 +24,6 @@ package cc.ioctl.hook;
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static io.github.qauxv.util.Initiator.load;
-import static io.github.qauxv.util.Initiator.loadClass;
 
 import android.app.Activity;
 import android.content.Context;
@@ -47,6 +46,7 @@ import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import java.lang.reflect.Field;
@@ -67,10 +67,8 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> kQQSettingSettingActivity = loadClass("com.tencent.mobileqq.activity.QQSettingSettingActivity");
-        XposedHelpers.findAndHookMethod(kQQSettingSettingActivity, "doOnCreate", Bundle.class, mAddModuleEntry);
-        Class<?> kQQSettingSettingFragment = loadClass("com.tencent.mobileqq.fragment.QQSettingSettingFragment");
-        XposedHelpers.findAndHookMethod(kQQSettingSettingFragment, "doOnCreateView",
+        XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingActivity(), "doOnCreate", Bundle.class, mAddModuleEntry);
+        XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingFragment(), "doOnCreateView",
                 LayoutInflater.class, ViewGroup.class, Bundle.class, mAddModuleEntry);
         return true;
     }
