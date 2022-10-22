@@ -74,7 +74,9 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
             Initiator._QQSettingSettingFragment()
         )
         clazz.forEach { c ->
-            val m = Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
+            val m = kotlin.runCatching {
+                Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
+            }.getOrNull() ?: return@forEach
             m.hookAfter(this) {
                 val thisObject = it.thisObject
                 val activity = if (thisObject is Activity) {

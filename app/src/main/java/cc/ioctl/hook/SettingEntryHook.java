@@ -68,8 +68,10 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     @Override
     public boolean initOnce() throws Exception {
         XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingActivity(), "doOnCreate", Bundle.class, mAddModuleEntry);
-        XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingFragment(), "doOnCreateView",
-                LayoutInflater.class, ViewGroup.class, Bundle.class, mAddModuleEntry);
+        try {
+            XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingFragment(), "doOnCreateView",
+                    LayoutInflater.class, ViewGroup.class, Bundle.class, mAddModuleEntry);
+        } catch (NoSuchMethodError ignore) {}
         return true;
     }
 
