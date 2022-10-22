@@ -27,7 +27,6 @@ import android.content.ClipData.Item;
 import android.content.ClipDescription;
 import android.content.ClipboardManager;
 import android.content.Context;
-import android.content.Intent;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.net.Uri;
@@ -45,9 +44,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
+import com.hicore.messageUtils.QQMsgSender;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
@@ -272,37 +271,11 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     private static void executeSendMessage(@NonNull Context context, @NonNull Parcelable session, @NonNull byte[] data,
                                            @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
-        int uinType = SessionInfoImpl.getUinType(session);
-        String uin = SessionInfoImpl.getUin(session);
-        File file;
         try {
-            file = SendCacheUtils.saveAsCacheFile(context, data);
+            File file = SendCacheUtils.saveAsCacheFile(context, data);
+            QQMsgSender.sendPic(session, file);
         } catch (IOException e) {
             FaultyDialog.show(context, e);
-            return;
         }
-        var packageManager = context.getPackageManager();
-        Intent intent = new Intent();
-        intent.setComponent(packageManager.getLaunchIntentForPackage(HostInfo.getPackageName()).getComponent());
-        intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TOP);
-        intent.putExtra("forward_from_jump", true);
-        intent.putExtra("preAct", "JumpActivity");
-        intent.putExtra("miniAppShareFrom", 0);
-        intent.putExtra("system_share", true);
-        intent.putExtra("task_launched_for_result", true);
-        intent.putExtra("isFromShare", true);
-        intent.putExtra("needShareCallBack", false);
-        intent.putExtra("key_forward_ability_type", 0);
-        intent.putExtra("moInputType", 2);
-        intent.putExtra("chooseFriendFrom", 1);
-        intent.putExtra("forward_source_business_type", -1);
-        intent.putExtra("forward_type", 1);
-        intent.putExtra("uin", uin);
-        intent.putExtra("uintype", uinType);
-        intent.putExtra("selection_mode", 2);
-        intent.putExtra("sendMultiple", false);
-        intent.putExtra("open_chatfragment", true);
-        intent.putExtra("forward_filepath", file.getAbsolutePath());
-        context.startActivity(intent);
     }
 }

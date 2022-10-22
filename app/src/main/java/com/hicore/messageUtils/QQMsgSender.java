@@ -30,6 +30,15 @@ public class QQMsgSender {
         }
     }
 
+    public static void sendPic(Object _Session, File pic) {
+        try {
+            var picRecord = QQMsgBuilder.buildPicMsg(_Session, pic.getAbsolutePath());
+            sendPic(_Session, picRecord);
+        } catch (Exception e) {
+            Log.e(e);
+        }
+    }
+
     public static void sendPic(Object _Session, Object picRecord) {
         try {
             Method hookMethod = MMethod.FindMethod("com.tencent.mobileqq.activity.ChatActivityFacade", null, void.class, new Class[]{

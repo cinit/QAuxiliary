@@ -4,10 +4,30 @@ import cc.ioctl.util.HostInfo;
 import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
+import com.hicore.Utils.DataUtils;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.util.QQVersion;
+import java.io.File;
 import java.lang.reflect.Method;
+import java.util.UUID;
 
 public class QQMsgBuilder {
+
+    public static Object buildPicMsg(Object _Session, String PicPath) throws Exception {
+        Method CallMethod = MMethod.FindMethod("com.tencent.mobileqq.activity.ChatActivityFacade", null, MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"), new Class[]{
+                MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                String.class
+        });
+        Object PICMsg = CallMethod.invoke(null,
+                AppRuntimeHelper.getQQAppInterface(), _Session, PicPath
+        );
+        MField.SetField(PICMsg, "md5", DataUtils.getFileMD5(new File(PicPath)));
+        MField.SetField(PICMsg, "uuid", DataUtils.getFileMD5(new File(PicPath)) + ".jpg");
+        MField.SetField(PICMsg, "localUUID", UUID.randomUUID().toString());
+        MMethod.CallMethodNoParam(PICMsg, "prewrite", void.class);
+        return PICMsg;
+    }
 
     public static Object Copy_NewFlashChat(Object SourceChat) {
         try {
