@@ -45,7 +45,7 @@ struct DexFile {
   virtual ~DexFile() = default;
 };
 
-static bool IsDexFile(const void *image) {
+static bool IsStandardDexFile(const void *image) {
     const auto *header = reinterpret_cast<const struct dex::Header *>(image);
     if (header->magic[0] == 'd' && header->magic[1] == 'e' &&
             header->magic[2] == 'x' && header->magic[3] == '\n') {
@@ -104,69 +104,58 @@ nativeInitDexKitByClassLoader(JNIEnv *env, jclass clazz,
     if (!elements)
         return 0;
     LOGD("elements size -> %d", env->GetArrayLength(elements));
-    std::vector<std::pair<const void *, size_t>> images;
-    std::list<dexkit::MemMap> maps;
-    std::string apk_path;
+    auto dexkit = new dexkit::DexKit();
     for (auto i = 0, len = env->GetArrayLength(elements); i < len; ++i) {
         auto element = env->GetObjectArrayElement(elements, i);
-        if (!element)
-            continue;
+        if (!element) continue;
         auto java_dex_file = env->GetObjectField(element, dex_file_field);
-        if (!java_dex_file)
-            continue;
+        if (!java_dex_file) continue;
         auto cookie = (jlongArray) env->GetObjectField(java_dex_file, cookie_field);
-        if (!cookie)
-            continue;
+        if (!cookie) continue;
         auto dex_file_length = env->GetArrayLength(cookie);
         const auto *dex_files = reinterpret_cast<const DexFile **>(
                 env->GetLongArrayElements(cookie, nullptr));
         LOGI("dex_file_length -> %d", dex_file_length);
-        std::vector<std::pair<const void *, size_t>> dex_images;
-        if (!dex_files[0]) {
-            while (dex_file_length-- > 1) {
-                const auto *dex_file = dex_files[dex_file_length];
-                LOGD("Got dex file %d", dex_file_length);
-                if (!dex_file) {
-                    LOGD("Skip empty dex file");
-                    dex_images.clear();
-                    continue;
-                }
-                if (!IsDexFile(dex_file->begin_)) {
-                    LOGD("skip compact dex");
-                    dex_images.clear();
-                    break;
-                } else {
-                    LOGD("push dex file %d, image size: %zu", dex_file_length, dex_file->size_);
-                    dex_images.emplace_back(dex_file->begin_, dex_file->size_);
-                }
+        std::vector<const DexFile *> dex_images;
+        for (int j = 1; j < dex_file_length; ++j) {
+            const auto *dex_file = dex_files[j];
+            LOGD("Got dex file %d", j);
+            if (!dex_file) {
+                LOGD("Skip empty dex file");
+                continue;
+            }
+            auto magic = reinterpret_cast<const uint32_t *>(dex_file->begin_);
+            if ((((*magic >> 0) & 0xff) == 'P') &&
+                    (((*magic >> 8) & 0xff) == 'K')) {
+                LOGD("skip zip file");
+                continue;
+            }
+            if (dex_file->begin_ && !IsStandardDexFile(dex_file->begin_)) {
+                LOGD("skip compact dex");
+                dex_images.clear();
+                break;
+            } else {
+                LOGD("push standard dex file %d, image size: %zu", j, dex_file->size_);
+                dex_images.emplace_back(dex_file);
             }
         }
-        if (dex_images.empty() && apk_path.empty()) {
+        if (dex_images.empty()) {
             auto file_name_obj = (jstring) env->GetObjectField(java_dex_file, file_name_field);
             if (!file_name_obj) continue;
             auto file_name = env->GetStringUTFChars(file_name_obj, nullptr);
-            LOGD("dex filename is %s", file_name);
-            std::string path(file_name);
-            if (path.find(".apk") == path.size() - 4) {
-                apk_path = path;
-            }
-            env->ReleaseStringUTFChars(file_name_obj, file_name);
-            env->DeleteLocalRef(file_name_obj);
+            LOGD("contains compact dex, use path load: %s", file_name);
+            dexkit->AddPath(file_name);
         } else {
+            std::vector<std::unique_ptr<dexkit::MemMap>> images;
             for (auto &image: dex_images) {
-                images.emplace_back(std::move(image));
+                auto mmap = dexkit::MemMap(image->size_);
+                memcpy(mmap.addr(), image->begin_, image->size_);
+                images.emplace_back(std::make_unique<dexkit::MemMap>(std::move(mmap)));
             }
+            dexkit->AddImages(std::move(images));
         }
     }
-    if (images.empty()) {
-        if (apk_path.empty()) {
-            LOGW("dex file and apk_path not found");
-            return 0;
-        }
-        LOGD("contains compact dex or not found cookie, use apk_path load: %s", apk_path.c_str());
-        return (jlong) new dexkit::DexKit(apk_path);
-    }
-    return (jlong) new dexkit::DexKit(images);
+    return (jlong) dexkit;
 }
 
 DEXKIT_JNI void
