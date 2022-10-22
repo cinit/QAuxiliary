@@ -37,7 +37,7 @@ data class MiniAppArkData(
 }
 
 @Serializable
-class MiniAppArkDetailData(
+data class MiniAppArkDetailData(
     val desc: String,
     val preview: String,
     val qqdocurl: String,
