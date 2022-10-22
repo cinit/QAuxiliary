@@ -22,20 +22,23 @@
 
 package cc.ioctl.hook
 
-import android.annotation.SuppressLint
+import cc.ioctl.util.HookUtils
+import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NPadUtil_initDeviceType
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
+object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, arrayOf(NPadUtil_initDeviceType)) {
 
     override val name = "强制平板模式"
     override val description = "仅支持 QQ 8.9.15, 未经测试, 谨慎使用"
@@ -47,14 +50,9 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
-        @SuppressLint("PrivateApi")
-        val cls = Class.forName("android.os.SystemProperties")
-        cls.getMethod("get", String::class.java)
-            .hookAfter(this) {
-                if (it.args[0] == "ro.build.characteristics") {
-                    it.result = "tablet"
-                }
-            }
+        HookUtils.hookAfterIfEnabled(this,DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
+            Reflex.setStaticObject(it.thisObject.javaClass, "b", Reflex.findMethod(Initiator.loadClass("com.tencent.common.config.DeviceType"), "valueOf", String.javaClass).invoke(null,"TABLET"))
+        }
     }
 
 }

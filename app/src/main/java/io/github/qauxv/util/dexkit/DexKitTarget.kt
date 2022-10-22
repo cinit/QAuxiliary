@@ -590,6 +590,12 @@ object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
                 && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
         }
 }
+object NPadUtil_initDeviceType : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.common.config.PadUtil"
+    override val traitString = arrayOf("initDeviceType type = ")
+    override val filter = DexKitFilter.allowAll
+}
 
 // TODO 待优化这几种类型
 object NTextItemBuilder_setETText : DexKitTarget.UsingDexkit() {
