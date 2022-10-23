@@ -51,7 +51,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
         HookUtils.hookAfterIfEnabled(this,DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
-            Reflex.setStaticObject(it.thisObject.javaClass, "b", Reflex.findMethod(Initiator.loadClass("com.tencent.common.config.DeviceType"), "valueOf", String.javaClass).invoke(null,"TABLET"))
+            Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", Reflex.findMethod(Initiator.loadClass("com.tencent.common.config.DeviceType"), "valueOf", String::class.java).invoke(null,"TABLET"))
         }
     }
 
