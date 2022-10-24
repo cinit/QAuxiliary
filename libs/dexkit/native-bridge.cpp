@@ -135,7 +135,6 @@ nativeInitDexKitByClassLoader(JNIEnv *env, jclass clazz,
                 LOGD("dex_file %d is invalid", j);
                 continue;
             }
-            auto magic = reinterpret_cast<const uint32_t *>(dex_file->begin_);
             if (IsCompactDexFile(dex_file->begin_)) {
                 LOGD("skip compact dex");
                 dex_images.clear();

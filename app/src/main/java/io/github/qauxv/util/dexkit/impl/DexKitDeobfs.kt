@@ -31,6 +31,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.name
 import io.github.qauxv.util.dexkit.valueOf
+import io.github.qauxv.util.hostInfo
 import io.luckypray.dexkit.DexKitBridge
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor as MethodDescriptor
 import java.util.concurrent.locks.Lock
@@ -155,8 +156,7 @@ class DexKitDeobfs private constructor(
             object : SharedRefCountResourceImpl<DexKitBridge>() {
                 override fun openResourceInternal(): DexKitBridge {
                     Log.d("open resource: DexKit")
-                    val dexClassLoader = Initiator.getHostClassLoader().findDexClassLoader()!!
-                    return DexKitBridge.create(dexClassLoader)!!
+                    return DexKitBridge.create(hostInfo.application.applicationInfo.sourceDir)!!
                 }
 
                 override fun closeResourceInternal(res: DexKitBridge) {
