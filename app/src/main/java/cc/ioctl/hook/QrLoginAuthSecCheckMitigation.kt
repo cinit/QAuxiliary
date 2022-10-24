@@ -22,15 +22,19 @@
 
 package cc.ioctl.hook
 
+import android.app.Activity
 import android.view.View
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.isPrivate
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.hostInfo
+import java.lang.reflect.Method
 import java.lang.reflect.Modifier
+import java.util.Arrays
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -54,11 +58,27 @@ object QrLoginAuthSecCheckMitigation : CommonSwitchFunctionHook() {
         }.also {
             it.isAccessible = true
         }
+        // For older vision set X, where 8.9.15 not belongs to X.
         hookBeforeIfEnabled(onClick) { params ->
+            // TODO: check side effect of this hook on QQ 8.9.15+
             val this0 = params.thisObject
             val view = params.args[0] as View
             if (view.id == confirm_risk_login_btn) {
                 doLogin.invoke(this0, false)
+                params.result = null
+            }
+        }
+        // For version set X, where 8.9.15 belongs X.
+        val startLoginBtnCountDown: Method? = kQRLoginAuthActivity.declaredMethods.firstOrNull { m ->
+            m.isPrivate && m.returnType == Void.TYPE && Arrays.equals(m.parameterTypes, arrayOf(String::class.java))
+        }
+        if (startLoginBtnCountDown != null) {
+            hookBeforeIfEnabled(startLoginBtnCountDown) { params ->
+                val activity = params.thisObject as Activity
+                val view = activity.findViewById<View>(confirm_risk_login_btn)
+                if (view != null && view.visibility == View.VISIBLE) {
+                    view.isEnabled = true
+                }
                 params.result = null
             }
         }
