@@ -147,6 +147,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                     "",
                     "void",
                     new String[]{"", Initiator._ChatMessage().getName()},
+                    true,
                     null
             );
             List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
@@ -173,6 +174,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                     "isEmpty",
                     "boolean",
                     null,
+                    true,
                     null
             );
             Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
