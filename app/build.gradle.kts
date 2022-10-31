@@ -39,7 +39,7 @@ plugins {
     id("com.google.devtools.ksp") version "${Version.kotlin}-${Version.ksp}"
     kotlin("plugin.serialization")
     id("com.cookpad.android.plugin.license-tools") version "1.2.8"
-    id("org.jetbrains.changelog") version "1.3.1"
+    id("org.jetbrains.changelog") version "2.0.0"
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
