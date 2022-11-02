@@ -24,6 +24,7 @@ package me.ketal.dispacher
 
 import android.view.View
 import android.view.ViewGroup
+import cc.ioctl.hook.MultiForwardAvatarHook
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
@@ -47,6 +48,7 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
         HideTroopLevel,
         ShowMsgAt,
         ChatItemShowQQUin,
+        MultiForwardAvatarHook.INSTANCE
     )
 
     @Throws(Exception::class)

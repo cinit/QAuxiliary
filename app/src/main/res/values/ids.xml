@@ -30,6 +30,7 @@
     <item type="id" name="btn_deny" />
     <item type="id" name="input_value" />
     <item type="id" name="tag_searchResultItem" />
+    <item type="id" name="tag_chat_item_head_icon" />
 
     <item type="id" name="weather_view" />
     <item type="id" name="holiday_header" />

@@ -25,18 +25,25 @@ import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static cc.ioctl.util.Reflex.getShortClassName;
 import static io.github.qauxv.util.Initiator._ChatMessage;
 import static io.github.qauxv.util.Initiator.load;
+import static io.github.qauxv.util.Initiator.loadClass;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.view.View;
+import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
+import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -50,10 +57,13 @@ import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import me.ketal.dispacher.BaseBubbleBuilderHook;
+import me.ketal.dispacher.OnBubbleBuilder;
+import me.singleneuron.data.MsgRecordData;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
+public class MultiForwardAvatarHook extends CommonSwitchFunctionHook implements OnBubbleBuilder {
 
     public static final MultiForwardAvatarHook INSTANCE = new MultiForwardAvatarHook();
     private static Field mLeftCheckBoxVisible = null;
@@ -219,11 +229,15 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
         }
     }
 
+    private int mChatItemHeadIconViewId = 0;
+
     @Override
+    @SuppressLint("DiscouragedApi")
     public boolean initOnce() throws Exception {
-        Method m = load("com/tencent/mobileqq/activity/aio/BaseBubbleBuilder")
-                .getMethod("onClick", View.class);
-        HookUtils.hookBeforeIfEnabled(this, m, 49, param -> {
+        BaseBubbleBuilderHook.INSTANCE.initialize();
+        Class<?> kBaseBubbleBuilder = loadClass("com/tencent/mobileqq/activity/aio/BaseBubbleBuilder");
+        Method onClick = kBaseBubbleBuilder.getMethod("onClick", View.class);
+        HookUtils.hookBeforeIfEnabled(this, onClick, 49, param -> {
             Context ctx = Reflex.getInstanceObjectOrNull(param.thisObject, "a", Context.class);
             if (ctx == null) {
                 ctx = getFirstNSFByType(param.thisObject, Context.class);
@@ -233,18 +247,10 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
                 return;
             }
             String activityName = ctx.getClass().getName();
-            boolean needShow = false;
-            if (activityName
-                    .equals("com.tencent.mobileqq.activity.MultiForwardActivity")) {
-                if (view.getClass().getName()
-                        .equals("com.tencent.mobileqq.vas.avatar.VasAvatar")) {
-                    needShow = true;
-                } else if (view.getClass().equals(ImageView.class) ||
-                        view.getClass()
-                                .equals(load("com.tencent.widget.CommonImageView"))) {
-                    needShow = true;
-                }
-            }
+            boolean needShow = activityName.equals("com.tencent.mobileqq.activity.MultiForwardActivity") &&
+                    (view.getClass().getName().equals("com.tencent.mobileqq.vas.avatar.VasAvatar") ||
+                            view.getClass().equals(ImageView.class) ||
+                            view.getClass().equals(load("com.tencent.widget.CommonImageView")));
             if (!needShow) {
                 return;
             }
@@ -261,6 +267,33 @@ public class MultiForwardAvatarHook extends CommonSwitchFunctionHook {
                 createAndShowDialogForDetail(ctx, msg);
             }
         });
+        mChatItemHeadIconViewId = HostInfo.getApplication().getResources()
+                .getIdentifier("chat_item_head_icon", "id", HostInfo.getPackageName());
+        if (mChatItemHeadIconViewId == 0) {
+            throw new IllegalStateException("R.id.chat_item_head_icon not found");
+        }
         return true;
+    }
+
+    @Override
+    public void onGetView(@NonNull ViewGroup rootView, @NonNull MsgRecordData chatMessage, @NonNull MethodHookParam param) {
+        // XXX: performance sensitive, peak frequency: ~68 invocations per second
+        if (!isEnabled() || mChatItemHeadIconViewId == 0) {
+            return;
+        }
+        // For versions >= x (x exists, where x <= 8.9.15), @[R.id.chat_item_head_icon].onCLickListener = null
+        // register @[R.id.chat_item_head_icon] click event for versions >= x
+        OnClickListener baseBubbleBuilderOnClick = (OnClickListener) param.thisObject;
+        View headIconView = (View) rootView.getTag(R.id.tag_chat_item_head_icon);
+        if (headIconView == null) {
+            headIconView = rootView.findViewById(mChatItemHeadIconViewId);
+            if (headIconView != null) {
+                rootView.setTag(R.id.tag_chat_item_head_icon, headIconView);
+            } else {
+                // give up.
+                return;
+            }
+        }
+        headIconView.setOnClickListener(baseBubbleBuilderOnClick);
     }
 }
