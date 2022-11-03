@@ -35,6 +35,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
@@ -43,9 +44,8 @@ import androidx.recyclerview.widget.RecyclerView
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.drawable.BackgroundDrawableUtils
 import io.github.qauxv.R
-import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.SyncUtils.async
-import io.github.qauxv.util.SyncUtils.runOnUiThread
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.ContactUtils
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.MainHook
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -60,8 +60,12 @@ import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.SimpleListItem
 import io.github.qauxv.dsl.item.TMsgListItem
 import io.github.qauxv.dsl.item.UiAgentItem
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.SyncUtils.async
+import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.UiThread
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.singleneuron.util.forSuBanXia
 
 class SettingsMainFragment : BaseRootLayoutFragment() {
 
@@ -185,6 +189,22 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
 
     override fun onResume() {
         super.onResume()
+        try {
+            if (ContactUtils.getBuddyName(AppRuntimeHelper.getAppRuntime()!!, AppRuntimeHelper.getAccount())
+                    ?.contains("\uD83C\uDFF3\uFE0F\u200D\u26A7\uFE0F") == true &&
+                ConfigManager.forAccount(AppRuntimeHelper.getLongAccountUin()).getBoolean("ForSuBanXia", true)
+            ) {
+                AlertDialog.Builder(requireContext())
+                    .setTitle(forSuBanXia.first)
+                    .setMessage(forSuBanXia.second + "\n\n当你心情低落的时候，就在QA的搜索里输入MtF/FtM回来看看我吧！ ^_^")
+                    .setPositiveButton("OK", null)
+                    .create()
+                    .show()
+                ConfigManager.forAccount(AppRuntimeHelper.getLongAccountUin()).putBoolean("ForSuBanXia", false)
+            }
+        } catch (e: Exception) {
+            //ignored
+        }
         if (!mTargetUiAgentNavId.isNullOrEmpty() && !mTargetUiAgentNavigated) {
             navigateToTargetUiAgentItem()
         }

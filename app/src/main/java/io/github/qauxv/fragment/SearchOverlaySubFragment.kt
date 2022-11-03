@@ -56,6 +56,7 @@ import io.github.qauxv.dsl.func.IDslParentNode
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.UiThread
+import me.singleneuron.util.processSearchEasterEgg
 
 /**
  * The search sub fragment of [SettingsMainFragment]
@@ -108,6 +109,7 @@ class SearchOverlaySubFragment {
                 override fun onQueryTextSubmit(query: String) = false
 
                 override fun onQueryTextChange(newText: String): Boolean {
+                    processSearchEasterEgg(newText, requireContext())
                     search(newText)
                     return false
                 }
