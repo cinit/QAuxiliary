@@ -392,6 +392,11 @@ public class Initiator {
                 "com.tencent.common.config.pad.DeviceType");
     }
 
+    public static Class<?> _UpgradeController() {
+        return findClassWithSynthetics("com.tencent.mobileqq.upgrade.UpgradeController",
+                "com.tencent.mobileqq.app.upgrade.UpgradeController", 1, 2);
+    }
+
     @Nullable
     private static Class<?> findClassWithSyntheticsImpl(@NonNull String className, int... index) {
         Class<?> clazz = load(className);

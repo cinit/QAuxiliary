@@ -23,6 +23,9 @@ package me.kyuubiran.hook
 
 import android.widget.LinearLayout
 import cc.ioctl.util.HostInfo
+import com.github.kyuubiran.ezxhelper.utils.getObjectAs
+import com.github.kyuubiran.ezxhelper.utils.loadClass
+import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -34,9 +37,6 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
-import me.kyuubiran.util.getObjectOrNull
-import me.kyuubiran.util.loadClass
-import me.kyuubiran.util.setViewZeroSize
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -66,12 +66,8 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
                             hostInfo.versionCode == QQVersion.QQ_8_6_0 -> "b"
                             else -> "a"
                         }
-                        val dailySignLayout = getObjectOrNull(
-                            param.thisObject,
-                            dailySignName,
-                            LinearLayout::class.java
-                        ) as LinearLayout
-                        dailySignLayout.setViewZeroSize()
+                        param.thisObject.getObjectAs<LinearLayout>(dailySignName, LinearLayout::class.java)
+                            .setViewZeroSize()
                     } catch (e: Throwable) {
                         traceError(e)
                     }

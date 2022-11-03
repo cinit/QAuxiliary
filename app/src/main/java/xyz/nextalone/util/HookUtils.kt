@@ -36,8 +36,8 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.hostInfo
-import me.kyuubiran.util.getDefaultCfg
-import me.kyuubiran.util.getExFriendCfg
+import io.github.qauxv.config.ConfigManager.getDefaultConfig
+import io.github.qauxv.config.ConfigManager.getExFriendCfg
 import xyz.nextalone.bridge.NAMethodHook
 import xyz.nextalone.bridge.NAMethodReplacement
 import java.lang.reflect.Member
@@ -414,6 +414,6 @@ internal fun putValue(keyName: String, obj: Any, mgr: ConfigManager) {
     }
 }
 
-internal fun putDefault(keyName: String, obj: Any) = putValue(keyName, obj, getDefaultCfg())
+internal fun putDefault(keyName: String, obj: Any) = putValue(keyName, obj, getDefaultConfig())
 
 internal fun putExFriend(keyName: String, obj: Any) = getExFriendCfg()?.let { putValue(keyName, obj, it) }

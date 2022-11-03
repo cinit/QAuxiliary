@@ -26,12 +26,6 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
-import com.github.kyuubiran.ezxhelper.utils.argTypes
-import com.github.kyuubiran.ezxhelper.utils.args
-import com.github.kyuubiran.ezxhelper.utils.getObjectAs
-import com.github.kyuubiran.ezxhelper.utils.invokeMethod
-import me.kyuubiran.util.loadClass
-import java.io.File
 
 fun ComponentName.getEnable(ctx: Context): Boolean {
     val packageManager: PackageManager = ctx.packageManager
@@ -47,10 +41,4 @@ fun ComponentName.setEnable(ctx: Context, enabled: Boolean) {
         if (enabled) PackageManager.COMPONENT_ENABLED_STATE_ENABLED else
             PackageManager.COMPONENT_ENABLED_STATE_DISABLED,
         PackageManager.DONT_KILL_APP)
-}
-
-fun getAllActivity(file: File): List<Any> {
-    val parser = loadClass("android.content.pm.PackageParser").newInstance()
-    val pkg = parser.invokeMethod("parsePackage", args(file, 1), argTypes(File::class.java, Int::class.java))
-    return pkg!!.getObjectAs("activities")
 }

@@ -22,9 +22,10 @@
 package me.singleneuron.data
 
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.getObjectAs
+import com.github.kyuubiran.ezxhelper.utils.getObjectOrNull
+import com.github.kyuubiran.ezxhelper.utils.putObject
 import io.github.qauxv.util.Initiator
-import me.kyuubiran.util.getObjectOrNull
-import me.kyuubiran.util.putObject
 import java.lang.reflect.Field
 import java.lang.reflect.Method
 import java.text.SimpleDateFormat
@@ -111,7 +112,7 @@ data class MsgRecordData(val msgRecord: Any) {
     //消息id
     //@Deprecated
     val msgId: Long?
-        get() = getObjectOrNull(msgRecord, "msgId", Long::class.java) as Long?
+        get() = msgRecord.getObjectOrNull("msgId", Long::class.java) as Long?
 
     //消息uid
     val msgUid: Long
@@ -256,11 +257,11 @@ data class MsgRecordData(val msgRecord: Any) {
         }
 
     inline fun <reified T> get(fieldName: String): T {
-        return getObjectOrNull(msgRecord, fieldName, T::class.java) as T
+        return msgRecord.getObjectAs(fieldName, T::class.java)
     }
 
     fun <T> set(fieldName: String, value: T) where T : Any {
-        putObject(msgRecord, fieldName, value)
+        msgRecord.putObject(fieldName, value)
     }
 
     fun getExtInfoFromExtStr(key: String): String {

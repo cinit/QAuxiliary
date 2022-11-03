@@ -56,8 +56,7 @@ import io.github.qauxv.util.dexkit.NChatActivityFacade_sendMsgButton
 import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.kyuubiran.util.getExFriendCfg
-import me.kyuubiran.util.showToastByTencent
+import io.github.qauxv.config.ConfigManager.getExFriendCfg
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -235,7 +234,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
                         putExFriend(msgCfg, 0)
                         putExFriend(wordsCfg, 0)
                         putExFriend(emoCfg, 0)
-                        context.showToastByTencent("已清空聊天字数统计")
+                        Toasts.info(context, "已清空聊天字数统计")
                     }.setNegativeButton(android.R.string.cancel, null).show()
                 true
             }

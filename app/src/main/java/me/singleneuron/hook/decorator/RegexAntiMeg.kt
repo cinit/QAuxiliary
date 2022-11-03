@@ -38,7 +38,7 @@ import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Initiator
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.kyuubiran.util.getExFriendCfg
+import io.github.qauxv.config.ConfigManager.getExFriendCfg
 import me.singleneuron.data.MsgRecordData
 
 @UiItemAgentEntry

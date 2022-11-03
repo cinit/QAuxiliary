@@ -77,7 +77,7 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
      * @return if no account is logged in, {@code null} will be returned.
      */
     @Nullable
-    public static ConfigManager forCurrentAccount() {
+    public static ConfigManager getExFriendCfg() {
         long uin = AppRuntimeHelper.getLongAccountUin();
         if (uin >= 10000) {
             return forAccount(uin);

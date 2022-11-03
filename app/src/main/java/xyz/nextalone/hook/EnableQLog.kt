@@ -21,11 +21,11 @@
  */
 package xyz.nextalone.hook
 
+import com.github.kyuubiran.ezxhelper.utils.loadClass
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import me.kyuubiran.util.getMethods
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -41,7 +41,7 @@ object EnableQLog : CommonSwitchFunctionHook("na_enable_qlog") {
     override val uiItemLocation = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        for (m: Method in getMethods("com.tencent.qphone.base.util.QLog")) {
+        for (m: Method in loadClass("com.tencent.qphone.base.util.QLog").declaredMethods) {
             val argt = m.parameterTypes
             if (m.name == "isDevelopLevel" && argt.isEmpty()) {
                 m.replace(this, true)

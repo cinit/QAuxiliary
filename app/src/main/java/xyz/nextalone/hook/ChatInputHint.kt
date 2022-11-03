@@ -43,7 +43,7 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import kotlinx.coroutines.flow.MutableStateFlow
-import me.kyuubiran.util.getDefaultCfg
+import io.github.qauxv.config.ConfigManager.getDefaultConfig
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.putDefault
@@ -70,7 +70,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                     break
                 }
             }
-            aioRootView?.findHostView<EditText>("input")?.hint = getDefaultCfg().getStringOrDefault(strCfg, "Typing words...")
+            aioRootView?.findHostView<EditText>("input")?.hint = getDefaultConfig().getStringOrDefault(strCfg, "Typing words...")
         }
     }
 
@@ -88,7 +88,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
         val _5 = LayoutHelper.dip2px(activity, 5f)
         editText.setPadding(_5, _5, _5, _5 * 2)
         editText.setText(
-            getDefaultCfg().getStringOrDefault(
+            getDefaultConfig().getStringOrDefault(
                 strCfg,
                 "Typing words..."
             )

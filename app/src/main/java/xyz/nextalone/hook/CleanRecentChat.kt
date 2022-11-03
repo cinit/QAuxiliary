@@ -40,7 +40,7 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NConversation_onCreate
 import io.github.qauxv.util.dexkit.NFriendsStatusUtil_isChatAtTop
 import me.ketal.util.ignoreResult
-import me.kyuubiran.util.getDefaultCfg
+import io.github.qauxv.config.ConfigManager.getDefaultConfig
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -63,7 +63,7 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
     private const val RecentUserBaseData2 = "com.tencent.mobileqq.activity.recent.data.RecentUserBaseData"
     private const val RecentBaseData = "com.tencent.mobileqq.activity.recent.RecentBaseData"
     private const val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
-    private var includeTopped = getDefaultCfg().getBooleanOrDefault(INCLUDE_TOPPED, false)
+    private var includeTopped = getDefaultConfig().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {
         DexKit.requireMethodFromCache(NConversation_onCreate)

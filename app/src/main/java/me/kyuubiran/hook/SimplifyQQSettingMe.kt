@@ -31,6 +31,7 @@ import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
 import com.github.kyuubiran.ezxhelper.utils.getStaticObject
+import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -47,7 +48,6 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
-import me.kyuubiran.util.setViewZeroSize
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get

@@ -22,11 +22,11 @@
 package me.kyuubiran.hook
 
 import cc.ioctl.util.HookUtils
+import com.github.kyuubiran.ezxhelper.utils.getObjectAs
+import com.github.kyuubiran.ezxhelper.utils.loadClass
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import me.kyuubiran.util.getMethods
-import me.kyuubiran.util.getObjectOrNull
-import me.kyuubiran.util.loadClass
+import io.github.qauxv.util.Initiator
 import xyz.nextalone.util.throwOrTrue
 
 //屏蔽戳一戳灰字提示
@@ -39,11 +39,11 @@ object RemovePokeGrayTips : CommonSwitchFunctionHook("kr_remove_poke_tips") {
     override fun initOnce() = throwOrTrue {
         val Msg = loadClass("com.tencent.imcore.message.QQMessageFacade\$Message")
         val MsgRecord = loadClass("com.tencent.mobileqq.data.MessageRecord")
-        for (m in getMethods("com.tencent.imcore.message.QQMessageFacade")) {
+        for (m in Initiator._QQMessageFacade().declaredMethods) {
             val argt = m.parameterTypes
             if (m.name == "a" && argt.size == 1 && argt[0] == Msg::class.java) {
                 HookUtils.hookBeforeIfEnabled(this, m) { param ->
-                    val msg = getObjectOrNull(param.args[0], "msg", String::class.java) as String
+                    val msg = param.args[0].getObjectAs<String>("msg", String::class.java)
                 }
             }
         }
