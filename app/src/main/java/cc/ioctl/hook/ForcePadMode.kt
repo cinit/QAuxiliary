@@ -24,6 +24,7 @@ package cc.ioctl.hook
 
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.getStaticObject
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -51,7 +52,8 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
         HookUtils.hookAfterIfEnabled(this,DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
-            Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", Reflex.findMethod(Initiator.loadClass("com.tencent.common.config.DeviceType"), "valueOf", String::class.java).invoke(null,"TABLET"))
+            val type = Initiator._DeviceType().getStaticObject("TABLET")
+            Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", type)
         }
     }
 

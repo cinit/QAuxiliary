@@ -387,6 +387,11 @@ public class Initiator {
         return load("com.tencent.mobileqq.fragment.QQSettingSettingFragment");
     }
 
+    public static Class<?> _DeviceType() {
+        return findClassWithSynthetics("com.tencent.common.config.DeviceType",
+                "com.tencent.common.config.pad.DeviceType");
+    }
+
     @Nullable
     private static Class<?> findClassWithSyntheticsImpl(@NonNull String className, int... index) {
         Class<?> clazz = load(className);
