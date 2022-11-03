@@ -39,7 +39,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.util.findViewByType
-import me.kyuubiran.hook.SimplifyQQSettingMe
+import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
 import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.util.*
 

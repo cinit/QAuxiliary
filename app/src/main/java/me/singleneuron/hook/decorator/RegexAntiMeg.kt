@@ -26,8 +26,8 @@ import android.app.Activity
 import android.view.View
 import android.widget.EditText
 import cc.ioctl.util.Reflex
-import cn.lliiooll.hook.MessageInterception
-import cn.lliiooll.msg.MessageReceiver
+import cc.ioctl.hook.notification.MessageInterception
+import cc.ioctl.util.msg.MessageReceiver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.IUiItemAgent

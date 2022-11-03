@@ -19,32 +19,28 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
+package cc.ioctl.hook.entertainment
 
-import cc.ioctl.hook.ReplyNoAtHook
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
-import me.ketal.hook.SortAtPanel
-import cc.ioctl.hook.entertainment.AutoMosaicName
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
+import io.github.qauxv.util.Initiator
+import xyz.nextalone.util.replace
+import xyz.nextalone.util.throwOrTrue
 
-class PlayQQConfigTable : ConfigTableInterface {
+@FunctionHookEntry
+@UiItemAgentEntry
+object ShowSelfMsgByLeft : CommonSwitchFunctionHook() {
 
-    override val configs: Map<String, Map<Long, Any>> = mapOf(
+    override val name = "自己的消息居左显示"
 
-            )
+    override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
-    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-        ReplyNoAtHook::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "m",
-        ),
-
-        AutoMosaicName::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "r",
-        ),
-
-        SortAtPanel.sessionInfoTroopUin to mapOf(
-            PlayQQ_8_2_11 to "a",
-        ),
-    )
-
+    override fun initOnce() = throwOrTrue {
+        DexMethodDescriptor("Lcom/tencent/mobileqq/activity/aio/BaseChatItemLayout;->setHearIconPosition(I)V")
+            .getMethodInstance(Initiator.getHostClassLoader())
+            .replace(this, null)
+    }
 }

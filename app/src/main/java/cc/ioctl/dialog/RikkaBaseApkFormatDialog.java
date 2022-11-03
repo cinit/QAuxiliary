@@ -34,7 +34,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import com.rymmmmm.hook.BaseApk;
+import cc.ioctl.hook.file.BaseApk;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;

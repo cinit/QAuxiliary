@@ -19,32 +19,29 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
+package cc.ioctl.hook.entertainment
 
-import cc.ioctl.hook.ReplyNoAtHook
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
-import me.ketal.hook.SortAtPanel
-import cc.ioctl.hook.entertainment.AutoMosaicName
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NBaseChatPie_mosaic
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.throwOrTrue
 
-class PlayQQConfigTable : ConfigTableInterface {
+//聊天界面顶栏群名字/好友昵称自动打码
+@FunctionHookEntry
+@UiItemAgentEntry
+object AutoMosaicName : CommonSwitchFunctionHook(arrayOf(NBaseChatPie_mosaic)) {
 
-    override val configs: Map<String, Map<Long, Any>> = mapOf(
+    override val name = "昵称/群名片打码"
 
-            )
+    override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
-    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-        ReplyNoAtHook::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "m",
-        ),
-
-        AutoMosaicName::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "r",
-        ),
-
-        SortAtPanel.sessionInfoTroopUin to mapOf(
-            PlayQQ_8_2_11 to "a",
-        ),
-    )
-
+    override fun initOnce() = throwOrTrue {
+        DexKit.requireMethodFromCache(NBaseChatPie_mosaic).hookBefore(this) {
+            it.args[0] = true
+        }
+    }
 }

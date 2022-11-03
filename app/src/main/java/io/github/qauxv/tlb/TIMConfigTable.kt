@@ -28,7 +28,7 @@ import io.github.qauxv.util.TIMVersion.TIM_3_0_0
 import io.github.qauxv.util.TIMVersion.TIM_3_1_1
 import io.github.qauxv.util.TIMVersion.TIM_3_3_0
 import io.github.qauxv.util.TIMVersion.TIM_3_3_1
-import me.kyuubiran.hook.AutoMosaicName
+import cc.ioctl.hook.entertainment.AutoMosaicName
 
 class TIMConfigTable : ConfigTableInterface {
 

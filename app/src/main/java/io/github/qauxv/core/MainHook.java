@@ -36,7 +36,7 @@ import cc.ioctl.hook.RevokeMsgHook;
 import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import com.rymmmmm.hook.CustomSplash;
+import cc.ioctl.hook.misc.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.config.ConfigItems;
@@ -51,7 +51,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import me.kyuubiran.hook.RemoveCameraButton;
+import cc.ioctl.hook.ui.title.RemoveCameraButton;
 import xyz.nextalone.hook.RemoveSuperQQShow;
 
 /*TitleKit:Lcom/tencent/mobileqq/widget/navbar/NavBarCommon*/

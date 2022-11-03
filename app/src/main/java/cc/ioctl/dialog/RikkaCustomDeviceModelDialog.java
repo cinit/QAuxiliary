@@ -34,11 +34,10 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import com.rymmmmm.hook.CustomMsgTimeFormat;
+import cc.ioctl.hook.chat.CustomMsgTimeFormat;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
-import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 

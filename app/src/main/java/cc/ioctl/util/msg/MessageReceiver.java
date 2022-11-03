@@ -19,32 +19,18 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
 
-import cc.ioctl.hook.ReplyNoAtHook
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
-import me.ketal.hook.SortAtPanel
-import cc.ioctl.hook.entertainment.AutoMosaicName
+package cc.ioctl.util.msg;
 
-class PlayQQConfigTable : ConfigTableInterface {
+import me.singleneuron.data.MsgRecordData;
 
-    override val configs: Map<String, Map<Long, Any>> = mapOf(
+public interface MessageReceiver {
 
-            )
-
-    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-        ReplyNoAtHook::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "m",
-        ),
-
-        AutoMosaicName::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "r",
-        ),
-
-        SortAtPanel.sessionInfoTroopUin to mapOf(
-            PlayQQ_8_2_11 to "a",
-        ),
-    )
-
+    /**
+     * 当拦截到消息时会调用此方法
+     *
+     * @param data 拦截到的数据
+     * @return 如果返回为真将不会向下传递拦截到的消息
+     */
+    boolean onReceive(MsgRecordData data);
 }

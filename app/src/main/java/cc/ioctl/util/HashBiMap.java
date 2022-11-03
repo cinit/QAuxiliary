@@ -19,32 +19,23 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
 
-import cc.ioctl.hook.ReplyNoAtHook
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
-import me.ketal.hook.SortAtPanel
-import cc.ioctl.hook.entertainment.AutoMosaicName
+package cc.ioctl.util;
 
-class PlayQQConfigTable : ConfigTableInterface {
+import java.util.HashMap;
 
-    override val configs: Map<String, Map<Long, Any>> = mapOf(
+public class HashBiMap<K, V> extends HashMap<K, V> implements BiMap<K, V> {
 
-            )
-
-    override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
-        ReplyNoAtHook::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "m",
-        ),
-
-        AutoMosaicName::class.java.simpleName to mapOf(
-            PlayQQ_8_2_9 to "r",
-        ),
-
-        SortAtPanel.sessionInfoTroopUin to mapOf(
-            PlayQQ_8_2_11 to "a",
-        ),
-    )
-
+    /**
+     * @return 一个反向map
+     */
+    @Override
+    public BiMap<V, K> getReverseMap() {
+        BiMap<V, K> reverse = new HashBiMap<>();
+        for (K key : this.keySet()) {
+            V value = this.get(key);
+            reverse.put(value, key);
+        }
+        return reverse;
+    }
 }

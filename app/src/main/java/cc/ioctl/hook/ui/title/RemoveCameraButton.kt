@@ -20,10 +20,10 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package xyz.nextalone.hook
+package cc.ioctl.hook.ui.title
 
 import android.view.View
-import cc.ioctl.util.msg.MessageManager
+import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -32,39 +32,41 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveSuperQQShow : CommonSwitchFunctionHook() {
+object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button") {
 
-    override val name: String = "屏蔽主界面超级QQ秀图标"
+    override val name: String = "屏蔽消息界面相机/小世界图标"
 
     override fun initOnce() = throwOrTrue {
-        if (hostInfo.versionCode >= QQVersion.QQ_8_9_10) {
-            findMethod(Initiator._ZPlanBadgeManagerImpl()) {
-                name == "onCreateView" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java, MessageManager.booleanType))
-            }.hookBefore {
-                if (!isEnabled) return@hookBefore; it.result = null
+        findMethod(Initiator._ConversationTitleBtnCtrl()) {
+            val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_10) -> "C"
+                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "G"
+                else -> "a"
             }
-        } else if (hostInfo.versionCode >= QQVersion.QQ_8_9_3) {
-            findMethod(Initiator._ZPlanBadgeManagerImpl()) {
-                name == "onCreateView" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
-            }.hookBefore {
-                if (!isEnabled) return@hookBefore; it.result = null
+            name == methodName
+                && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
+        }.hookBefore {
+            Log.d("屏蔽消息界面相机/小世界图标")
+            if (!isEnabled) return@hookBefore; it.result = null
+        }
+        findMethod(Initiator._ConversationTitleBtnCtrl()) {
+            val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
+                requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
+                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
+                else -> "a"
             }
-        } else {
-            findMethod(Initiator._ConversationTitleBtnCtrl()) {
-                (name == "b" || name == "D") && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java))
-            }.hookBefore {
-                if (!isEnabled) return@hookBefore; it.result = null
-            }
+            name == methodName
+                && returnType == Void.TYPE && parameterTypes.isEmpty()
+        }.hookBefore {
+            if (!isEnabled) return@hookBefore; it.result = null
         }
     }
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
-
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_8_80)
 }

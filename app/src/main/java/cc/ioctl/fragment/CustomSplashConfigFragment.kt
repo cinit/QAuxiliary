@@ -32,7 +32,7 @@ import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.BugUtils
 import cc.ioctl.util.ui.FaultyDialog
-import com.rymmmmm.hook.CustomSplash
+import cc.ioctl.hook.misc.CustomSplash
 import io.github.qauxv.R
 import io.github.qauxv.databinding.FragmentCustomSplashConfigBinding
 import io.github.qauxv.fragment.BaseRootLayoutFragment

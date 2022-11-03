@@ -32,7 +32,7 @@ import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import cc.ioctl.hook.AioChatPieClipPasteHook;
+import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
 import cc.ioctl.hook.CardMsgSender;
 import cc.ioctl.util.HookUtils;
 import com.hicore.hook.ReplyMsgWithImg;

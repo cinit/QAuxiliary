@@ -55,8 +55,8 @@ import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
 import io.github.qauxv.util.QQVersion.QQ_8_9_8
 import me.ketal.hook.SortAtPanel
-import me.kyuubiran.hook.RemovePlayTogether
-import me.kyuubiran.hook.SimplifyQQSettingMe
+import cc.ioctl.hook.troop.RemovePlayTogether
+import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
 import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
