@@ -312,7 +312,7 @@ object CGalleryBaseScene : DexKitTarget.UsingStr() {
 
 object CGuildHelperProvider : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.guild.chatpie.GuildHelperProvider"
-    override val traitString = arrayOf("onFoldStatus beginMoveFoldStatus:")
+    override val traitString = arrayOf("^GuildHelperProvider$")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/guild/chatpie")
 }
 
