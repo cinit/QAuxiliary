@@ -24,7 +24,6 @@ package cc.ioctl.hook.ui.title
 import android.widget.LinearLayout
 import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.getObjectAs
-import com.github.kyuubiran.ezxhelper.utils.loadClass
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
@@ -32,6 +31,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator.loadClass
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo

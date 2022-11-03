@@ -23,7 +23,7 @@ package cc.ioctl.hook.bak
 
 import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.getObjectAs
-import com.github.kyuubiran.ezxhelper.utils.loadClass
+import io.github.qauxv.util.Initiator.loadClass
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
