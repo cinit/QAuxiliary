@@ -48,6 +48,7 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or S
 
     override fun initOnce() = throwOrTrue {
         val method = when {
+            requireMinQQVersion(QQVersion.QQ_8_9_18) -> "c0"
             requireMinQQVersion(QQVersion.QQ_8_9_13) -> "d0"
             requireMinQQVersion(QQVersion.QQ_8_9_2) -> "e0"
             requireMinQQVersion(QQVersion.QQ_8_8_93) -> "Z"
