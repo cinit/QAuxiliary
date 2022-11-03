@@ -123,6 +123,6 @@ abstract class BaseFunctionHook(
     }
 
     private fun enableAllHook(): Boolean {
-        return BuildConfig.DEBUG && ConfigManager.getDefaultConfig().getBooleanOrDefault("EnableAllHook.enabled", false)
+        return BuildConfig.DEBUG && ConfigManager.getDefaultConfig().getBooleanOrDefault("hook.EnableAllHook.enabled", false)
     }
 }

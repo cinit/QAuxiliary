@@ -22,6 +22,7 @@
 
 package io.github.qauxv.dsl
 
+import io.github.qauxv.BuildConfig
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.fragment.AboutFragment
@@ -129,7 +130,9 @@ object FunctionEntryRouter {
                 fragmentImpl("cfg-backup-restore", "备份和恢复", BackupRestoreConfigFragment::class.java)
             }
             category("debug-category", "调试", false) {
-                fragment("debug-function", "调试功能", false)
+                if (BuildConfig.DEBUG) {
+                    fragment("debug-function", "调试功能", false)
+                }
                 fragmentImpl("debug-impl", "故障排查", TroubleshootFragment::class.java)
             }
             category("other-config", "其他") {

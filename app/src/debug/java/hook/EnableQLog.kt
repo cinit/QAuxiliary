@@ -19,7 +19,8 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package xyz.nextalone.hook
+
+package hook
 
 import com.github.kyuubiran.ezxhelper.utils.loadClass
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -33,10 +34,9 @@ import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object EnableQLog : CommonSwitchFunctionHook("na_enable_qlog") {
+object EnableQLog : CommonSwitchFunctionHook() {
 
     override val name = "输出 QLog 到 NADump"
-    override val description = "仅限调试，请勿开启，没有作用"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
 

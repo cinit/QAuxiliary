@@ -24,13 +24,15 @@ package io.github.qauxv.router.dispacher
 import android.app.Activity
 import android.content.ContextWrapper
 import android.content.Intent
+import com.github.kyuubiran.ezxhelper.utils.getStaticObject
+import com.github.kyuubiran.ezxhelper.utils.loadClass
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
-import me.singleneuron.hook.DebugDump
+import io.github.qauxv.BuildConfig
 import me.singleneuron.hook.decorator.DisableQzoneSlideCamera
 import me.singleneuron.hook.decorator.ForceSystemAlbum
 import me.singleneuron.hook.decorator.ForceSystemFile
@@ -40,13 +42,20 @@ import me.singleneuron.hook.decorator.FxxkQQBrowser
 object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null) {
 
     // add start activity hooks here
-    override val decorators: Array<IStartActivityHookDecorator> = arrayOf(
-            DebugDump,
-            DisableQzoneSlideCamera,
-            FxxkQQBrowser,
-            ForceSystemAlbum,
-            ForceSystemFile
-    )
+    override val decorators: Array<IStartActivityHookDecorator>
+        get() {
+            val ret: Array<IStartActivityHookDecorator> = arrayOf(
+                DisableQzoneSlideCamera,
+                FxxkQQBrowser,
+                ForceSystemAlbum,
+                ForceSystemFile
+            )
+            return if (BuildConfig.DEBUG) {
+                val debugDump = loadClass("hook.DebugDump")
+                    .getStaticObject("INSTANCE") as IStartActivityHookDecorator
+                ret + debugDump
+            } else ret
+        }
 
     override val targetProcesses = SyncUtils.PROC_ANY
 
