@@ -33,7 +33,7 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
-import cc.ioctl.hook.CardMsgSender;
+import cc.ioctl.hook.experimental.CardMsgSender;
 import cc.ioctl.util.HookUtils;
 import com.hicore.hook.ReplyMsgWithImg;
 import io.github.duzhaokun123.hook.SendTTSHook;

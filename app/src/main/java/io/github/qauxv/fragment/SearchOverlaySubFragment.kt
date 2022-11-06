@@ -38,7 +38,7 @@ import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import cc.ioctl.hook.OpenProfileCard
+import cc.ioctl.hook.profile.OpenProfileCard
 import cc.ioctl.util.LayoutHelper
 import com.google.android.flexbox.FlexDirection
 import com.google.android.flexbox.FlexWrap

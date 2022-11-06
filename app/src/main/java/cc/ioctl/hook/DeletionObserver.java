@@ -38,6 +38,7 @@ import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
 import cc.ioctl.fragment.ExfriendListFragment;
+import cc.ioctl.hook.friend.ShowDeletedFriendListEntry;
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;

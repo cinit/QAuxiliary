@@ -39,7 +39,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
-import cc.ioctl.hook.FlashPicHook
+import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog

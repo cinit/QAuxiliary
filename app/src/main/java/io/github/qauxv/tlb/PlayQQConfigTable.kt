@@ -21,7 +21,7 @@
  */
 package io.github.qauxv.tlb
 
-import cc.ioctl.hook.ReplyNoAtHook
+import cc.ioctl.hook.ui.chat.ReplyNoAtHook
 import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
 import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
 import me.ketal.hook.SortAtPanel

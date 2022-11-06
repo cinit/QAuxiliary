@@ -40,7 +40,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
-import cc.ioctl.hook.JumpController;
+import cc.ioctl.hook.misc.JumpController;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.ViewBuilder;

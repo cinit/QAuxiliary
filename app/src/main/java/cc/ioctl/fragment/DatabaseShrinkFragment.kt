@@ -43,8 +43,8 @@ import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.res.ResourcesCompat
 import androidx.recyclerview.widget.RecyclerView
-import cc.ioctl.hook.OpenFriendChatHistory
-import cc.ioctl.hook.OpenProfileCard
+import cc.ioctl.hook.friend.OpenFriendChatHistory
+import cc.ioctl.hook.profile.OpenProfileCard
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.TroopManagerHelper

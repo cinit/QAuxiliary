@@ -22,7 +22,7 @@
 
 package cc.ioctl.fragment
 
-import cc.ioctl.hook.RevokeMsgHook
+import cc.ioctl.hook.msg.RevokeMsgHook
 import cc.ioctl.util.Reflex
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.core.HookInstaller

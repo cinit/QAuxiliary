@@ -47,7 +47,7 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
-import cc.ioctl.hook.FakeBatteryHook;
+import cc.ioctl.hook.experimental.FakeBatteryHook;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.ui.drawable.HighContrastBorder;
 import com.tencent.mobileqq.widget.BounceScrollView;

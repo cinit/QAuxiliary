@@ -21,7 +21,7 @@
  */
 package io.github.qauxv.tlb
 
-import cc.ioctl.hook.ReplyNoAtHook
+import cc.ioctl.hook.ui.chat.ReplyNoAtHook
 import io.github.qauxv.util.QQVersion.QQ_8_1_3
 import io.github.qauxv.util.QQVersion.QQ_8_1_5
 import io.github.qauxv.util.QQVersion.QQ_8_2_6

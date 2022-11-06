@@ -30,7 +30,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
-import cc.ioctl.hook.OpenProfileCard
+import cc.ioctl.hook.profile.OpenProfileCard
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

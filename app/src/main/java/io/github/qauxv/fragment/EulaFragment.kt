@@ -37,7 +37,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
-import cc.ioctl.hook.FakeBatteryHook
+import cc.ioctl.hook.experimental.FakeBatteryHook
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.LayoutHelper.WRAP_CONTENT
 import cc.ioctl.util.LayoutHelper.dip2px
