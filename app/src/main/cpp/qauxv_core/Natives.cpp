@@ -48,7 +48,7 @@ static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
  */
 EXPORT void Java_io_github_qauxv_util_Natives_mwrite
         (JNIEnv *env, jclass clz, jlong ptr, jint len, jbyteArray arr, jint offset) {
-    jbyte *bufptr = (jbyte *) ptr;
+    auto *bufptr = (jbyte *) ptr;
     int blen = env->GetArrayLength(arr);
     if (offset < 0) {
         env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), "offset < 0");
@@ -72,7 +72,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_mwrite
  */
 EXPORT void Java_io_github_qauxv_util_Natives_mread
         (JNIEnv *env, jclass, jlong ptr, jint len, jbyteArray arr, jint offset) {
-    jbyte *bufptr = (jbyte *) ptr;
+    auto *bufptr = (jbyte *) ptr;
     int blen = env->GetArrayLength(arr);
     if (offset < 0) {
         env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), "offset < 0");
@@ -96,7 +96,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_mread
  */
 EXPORT jlong Java_io_github_qauxv_util_Natives_malloc
         (JNIEnv *env, jclass, jint len) {
-    jlong ptr = (jlong) malloc(len);
+    auto ptr = (jlong) malloc(len);
     return ptr;
 }
 
@@ -292,7 +292,7 @@ uint8_t *extractPayload(uint8_t *dex, int dexLength, int *outLength) {
         return nullptr;
     }
     uint32_t key = extra & 0xFFu;
-    uint8_t *dat = (uint8_t *) malloc(size);
+    auto *dat = (uint8_t *) malloc(size);
     if (key == 0) {
         memcpy(dat, dex + base + 16, size);
     } else {
@@ -357,7 +357,7 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
         if (!AbsStructMsg)return false;
         jclass DexKit = env->FindClass("io/github/qauxv/util/dexkit/DexKit");
         jmethodID cid = env->GetStaticMethodID(DexKit, "loadClassFromCache", "(Lio/github/qauxv/util/dexkit/DexKitTarget;)Ljava/lang/Class;");
-        jclass TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, env->GetStaticObjectField(
+        auto TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, env->GetStaticObjectField(
                 env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), env->GetStaticFieldID(
                         env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), "INSTANCE",
                         "Lio/github/qauxv/util/dexkit/CTestStructMsg;")));
@@ -428,7 +428,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         env->ExceptionClear();
         __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");
     } else {
-        jclass clazz = env->FindClass("cc/ioctl/hook/CardMsgSender");
+        jclass clazz = env->FindClass("cc/ioctl/hook/experimental/CardMsgSender");
         lMethods[0].name = "ntSendCardMsg";
         lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/String;)Z";
         lMethods[0].fnPtr = (void *) &handleSendCardMsg;
