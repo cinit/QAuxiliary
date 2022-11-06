@@ -32,7 +32,6 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
 import io.github.qauxv.BuildConfig
-import io.github.qauxv.util.Initiator.loadClass
 import me.singleneuron.hook.decorator.DisableQzoneSlideCamera
 import me.singleneuron.hook.decorator.ForceSystemAlbum
 import me.singleneuron.hook.decorator.ForceSystemFile
@@ -51,7 +50,7 @@ object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null)
                 ForceSystemFile
             )
             return if (BuildConfig.DEBUG) {
-                val debugDump = loadClass("hook.DebugDump")
+                val debugDump = StartActivityHook::class.java.classLoader.loadClass("hook.DebugDump")
                     .getStaticObject("INSTANCE") as IStartActivityHookDecorator
                 ret + debugDump
             } else ret
