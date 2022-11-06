@@ -81,10 +81,7 @@ public class QQMessageFacade {
             Objects.requireNonNull(kMessageCache, "kMessageCache == null");
             Object msgCache = Reflex.invokeVirtualAny(getQQAppInterface(), kMessageCache);
             // must call the method to set the field to true, otherwise the message will not be revoked
-            String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "z2" : "b"; //Default method name for QQ
-            if (HostInfo.isTim()) {
-                methodName = ConfigTable.getConfig(QQMessageFacade.class.getSimpleName());
-            }
+            String methodName = ConfigTable.getConfig(QQMessageFacade.class.getSimpleName());
             // invoke-virtual BaseMessageManager->doMsgRevokeRequest(MessageRecord)V
             Reflex.invokeVirtual(msgCache, methodName, true, boolean.class, void.class);
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_3)) {

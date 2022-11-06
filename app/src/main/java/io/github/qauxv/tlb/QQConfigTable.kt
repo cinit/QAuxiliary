@@ -57,6 +57,9 @@ import io.github.qauxv.util.QQVersion.QQ_8_9_8
 import me.ketal.hook.SortAtPanel
 import cc.ioctl.hook.troop.RemovePlayTogether
 import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
+import io.github.qauxv.bridge.QQMessageFacade
+import io.github.qauxv.util.QQVersion.QQ_8_0_0
+import io.github.qauxv.util.QQVersion.QQ_8_9_18
 import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
@@ -129,6 +132,12 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_4_8 to "g",
             QQ_8_8_20 to "n",
             QQ_8_8_93 to "q",
-        )
+        ),
+
+        QQMessageFacade::class.java.simpleName to mapOf(
+            QQ_8_0_0 to "b",
+            QQ_8_8_93 to "z2",
+            QQ_8_9_18 to "B2",
+        ),
     )
 }
