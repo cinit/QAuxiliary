@@ -45,7 +45,7 @@ abstract class BaseFunctionHook(
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
     private var mInitializeResult = false
-    private val mHookKey: String = hookKey ?: this::class.java.name
+    private val mHookKey: String = hookKey ?: this::class.java.simpleName
     private val mDefaultEnabled: Boolean = defaultEnabled
     private val mDexDeobfIndexes: Array<DexKitTarget>? = targets
 
