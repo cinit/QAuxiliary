@@ -47,7 +47,7 @@ object DebugDump : BaseSwitchFunctionDecorator(), IStartActivityHookDecorator {
     }
 
     private fun isEnabledAllFunction(): Boolean {
-        return ConfigManager.getDefaultConfig().getBooleanOrDefault("hook.EnableAllHook.enabled", false)
+        return ConfigManager.getDefaultConfig().getBooleanOrDefault("EnableAllHook.enabled", false)
     }
 
     override val name = "Activity堆栈转储"
