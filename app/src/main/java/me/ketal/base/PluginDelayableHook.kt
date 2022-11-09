@@ -38,6 +38,12 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     abstract val pluginID: String
     abstract val preference: IUiItemAgent
     val cfg = keyName
+    private val m by lazy {
+        "Lcom/tencent/mobileqq/pluginsdk/PluginStatic;->getOrCreateClassLoader(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/ClassLoader;"
+            .method.apply {
+                isAccessible = true
+            }
+    }
 
     override val uiItemAgent: IUiItemAgent get() = preference
 
@@ -45,10 +51,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     abstract fun startHook(classLoader: ClassLoader): Boolean
 
     override fun initOnce() = throwOrTrue {
-        val classLoader =
-            "Lcom/tencent/mobileqq/pluginsdk/PluginStatic;->getOrCreateClassLoader(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/ClassLoader;"
-                .method
-                .invoke(null, hostInfo.application, pluginID) as ClassLoader
+        val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
         startHook(classLoader)
     }
 
