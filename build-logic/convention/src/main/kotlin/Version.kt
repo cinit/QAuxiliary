@@ -5,8 +5,8 @@ import java.io.File
 import java.util.Properties
 
 object Version {
-    const val kotlin = "1.7.20"
-    const val ksp = "1.0.6"
+    const val kotlin = "1.7.21"
+    const val ksp = "1.7.20-1.0.8"
     val java = JavaVersion.VERSION_11
 
     const val compileSdkVersion = 33
