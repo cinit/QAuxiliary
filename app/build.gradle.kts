@@ -203,7 +203,7 @@ dependencies {
     // festival title
     implementation("com.github.jinatonic.confetti:confetti:1.1.2")
     implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
-    val appCenterSdkVersion = "4.4.5"
+    val appCenterSdkVersion = "5.0.0"
     implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
     implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
 
