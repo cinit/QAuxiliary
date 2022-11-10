@@ -37,7 +37,7 @@ import java.util.UUID
 plugins {
     id("io.github.qauxv.application")
     id("com.google.devtools.ksp") version Version.ksp
-    kotlin("plugin.serialization") version Version.kotlin
+    kotlin("plugin.serialization") version 1.7.21
     id("com.cookpad.android.plugin.license-tools") version "1.2.8"
     id("org.jetbrains.changelog") version "2.0.0"
 }
