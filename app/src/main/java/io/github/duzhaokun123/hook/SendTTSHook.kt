@@ -112,6 +112,7 @@ object SendTTSHook :
         val wc = CommonContextWrapper.createAppCompatContext(ctx1)
         val lines = text.split("\n")
         val line1 = lines.getOrNull(0) ?: ""
+        if (line1.startWith("#tts", ignoreCase = true).not()) return false
         if (lines.size < 2 && line1.startsWith("#tts", ignoreCase = true)) {
             AlertDialog.Builder(wc)
                 .setTitle("Usage")
