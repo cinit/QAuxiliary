@@ -38,7 +38,7 @@ plugins {
     id("io.github.qauxv.application")
     id("com.google.devtools.ksp") version Version.ksp
     kotlin("plugin.serialization") version Version.kotlin
-    id("com.cookpad.android.plugin.license-tools") version "1.2.8"
+    id("com.jaredsburrows.license") version "0.9.0"
     id("org.jetbrains.changelog") version "2.0.0"
 }
 
@@ -122,7 +122,7 @@ android {
                 "-Wl,--thinlto-cache-policy,cache_size_bytes=300m",
                 "-Wl,--thinlto-cache-dir=${buildDir.absolutePath}/.lto-cache",
             )
-            val releaseFlags = arrayOf<String>(
+            val releaseFlags = arrayOf(
                 "-ffunction-sections",
                 "-fdata-sections",
                 "-Wl,--gc-sections",
@@ -170,11 +170,25 @@ android {
     applicationVariants.all {
         val variantCapped = name.capitalize()
         val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
-        if (variantCapped == "Release") {
-            mergeAssets.dependsOn(tasks.generateLicenseJson.get())
-        }
         mergeAssets.dependsOn(generateEulaAndPrivacy)
+        tasks.whenTaskAdded {
+            if (name == "license${variantCapped}Report") {
+                mergeAssets.dependsOn(this)
+            }
+        }
     }
+}
+
+licenseReport {
+    generateCsvReport = false
+    generateHtmlReport = false
+    generateJsonReport = true
+    generateTextReport = false
+
+    copyCsvReportToAssets = false
+    copyHtmlReportToAssets = false
+    copyJsonReportToAssets = true
+    copyTextReportToAssets = false
 }
 
 dependencies {

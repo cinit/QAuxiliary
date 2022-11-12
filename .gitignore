@@ -75,5 +75,5 @@ app/src/main/res/drawable/icon.xml
 .classpath
 app/signing.properties
 .vscode
-/app/src/main/assets/licenses.json
+/app/src/main/assets/open_source_licenses.json
 /app/src/main/assets/eulaAndPrivacy.html

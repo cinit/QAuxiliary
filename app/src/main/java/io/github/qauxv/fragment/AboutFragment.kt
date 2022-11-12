@@ -163,11 +163,55 @@ class AboutFragment : BaseRootLayoutFragment() {
     }
 
     private val notices: List<LicenseNotice> by lazy {
-        Licenses.getAll().onFailure {
+        val ret = listOf(
+            LicenseNotice(
+                "QNotified",
+                "https://github.com/ferredoxin/QNotified",
+                "Copyright (C) 2019-2021 ferredoxin",
+                "AGPL-3.0 License with EULA"
+            ),
+            LicenseNotice(
+                "Xposed",
+                "https://github.com/rovo89/XposedBridge",
+                "Copyright 2013 rovo89, Tungstwenty",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "LSPosed",
+                "https://github.com/LSPosed/LSPosed",
+                "Copyright (C) 2021 LSPosed",
+                "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "CustoMIUIzer",
+                "https://code.highspec.ru/Mikanoshi/CustoMIUIzer",
+                "Mikanoshi",
+                "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "MMKV",
+                "https://github.com/Tencent/MMKV",
+                "Copyright (C) 2018 THL A29 Limited, a Tencent company.",
+                "BSD 3-Clause License"
+            ),
+            LicenseNotice(
+                "QQ-Notify-Evolution",
+                "https://github.com/ichenhe/QQ-Notify-Evolution",
+                "ichenhe",
+                "AGPL-3.0 License"
+            ),
+            LicenseNotice(
+                "DexKit",
+                "https://github.com/LuckyPray/DexKit",
+                "LuckyPray",
+                "LGPL-3.0 license"
+            )
+        )
+        ret + Licenses.getAll().onFailure {
             Log.e(it)
             return@lazy emptyList()
         }.getOrNull()!!.map {
-            LicenseNotice(it.libraryName, it.url!!, it.copyrightHolder, it.license!!)
+            LicenseNotice(it.libraryName, it.jumpUrl, it.author, it.license)
         }
     }
 
