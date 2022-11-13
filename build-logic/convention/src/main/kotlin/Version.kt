@@ -13,7 +13,7 @@ object Version {
     val buildToolsVersion = if (Os.isFamily(Os.FAMILY_WINDOWS)) "32.0.0" else "33.0.0"
     const val minSdk = 24
     const val targetSdk = 33
-    const val versionName = "1.3.4"
+    const val versionName = "1.3.5"
 
     private const val defaultNdkVersion = "25.0.8775105"
     private const val defaultCMakeVersion = "3.22.1"
