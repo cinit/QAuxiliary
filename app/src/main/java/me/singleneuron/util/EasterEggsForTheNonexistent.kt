@@ -44,7 +44,7 @@ fun processSearchEasterEgg(text: String, context: Context) {
 
 private val easterEggsMap by lazy {
     hashMapOf(
-        arrayOf("\uD83C\uDFF3\uFE0F\u200D\u26A7\uFE0F", "mtf", "mtx", "ftm", "ftx", "transgender") to forSuBanXia,
+        arrayOf("\uD83C\uDFF3\uFE0F\u200D\u26A7\uFE0F", "\uD38C\uDF65", "mtf", "mtx", "ftm", "ftx", "transgender") to forSuBanXia,
         arrayOf("喵") to ("喵喵" to "喵喵喵")
     )
 }
