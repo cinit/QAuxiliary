@@ -24,28 +24,20 @@ package cc.ioctl.hook.notification
 
 import android.app.Activity
 import android.app.Notification
-import android.app.NotificationChannel
-import android.app.NotificationChannelGroup
-import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
-import android.util.Log
 import android.view.WindowInsets
-import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.MessagingStyle.Message
 import androidx.core.app.Person
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
-import cc.chenhe.qqnotifyevo.utils.NotifyChannel
-import cc.chenhe.qqnotifyevo.utils.getChannelId
-import cc.chenhe.qqnotifyevo.utils.getNotificationChannels
 import cc.ioctl.util.Reflex
-import cc.ioctl.util.hookAfterIfEnabled
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -55,21 +47,21 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Initiator._QQAppInterface
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
-
-// FIXME: current not working: channel not assigned or overwritten
+import kotlin.collections.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
-    override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-    override val name = "QQ通知进化Plus"
-    override val description: String = "更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
+object MessageStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF) {
+
+    override val name = "MessageStyle通知"
+    override val description = "致敬QQ Helper"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 
@@ -77,19 +69,14 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val senderName = Regex("""^.*?: """)
     private const val activityName = "com.tencent.mobileqq.activity.miniaio.MiniChatActivity"
 
-    private val historyMessage: HashMap<Int, MutableList<NotificationCompat.MessagingStyle.Message>> = HashMap()
+    private val historyMessage: HashMap<Int, MutableList<Message>> = HashMap()
     private val personCache: HashMap<Int, Person> = HashMap()
     private var windowHeight = -1
 
-    @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannels()
-        }
-
         val buildNotification = Reflex.findSingleMethod(
             Initiator._MobileQQServiceExtend()!!,
-            android.app.Notification::class.java,
+            Notification::class.java,
             false,
             Intent::class.java,
             Bitmap::class.java,
@@ -97,17 +84,16 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             String::class.java,
             String::class.java
         )
-        hookAfterIfEnabled(buildNotification) { param ->
+        buildNotification.hookAfter(this) { param ->
             val intent = param.args[0] as Intent
-            val context = hostInfo.application
-            // TODO: 2022-07-14 uin may be null
+            val context = hostInfo.application as Context
             val uin = intent.getStringExtra("uin")
                 ?: intent.getStringExtra("param_uin")!!
             val isTroop = intent.getIntExtra(
                 "uintype",
                 intent.getIntExtra("param_uinType", -1)
             )
-            if (isTroop != 0 && isTroop != 1 && isTroop != 3000) return@hookAfterIfEnabled
+            if (isTroop != 0 && isTroop != 1 && isTroop != 3000) return@hookAfter
             val bitmap = param.args[1] as Bitmap?
             var title = param.args[3] as String
             var text = param.args[4] as String
@@ -122,7 +108,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             title = numRegex.replace(title, "")
 
             val person: Person
-            var channelId: NotifyChannel
 
             if (isTroop == 1) {
                 val sender = senderName.find(text)?.value?.replace(": ", "")
@@ -137,19 +122,14 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     .build()
                 messageStyle.conversationTitle = title
                 messageStyle.isGroupConversation = true
-                channelId = NotifyChannel.GROUP
             } else {
-                channelId = NotifyChannel.FRIEND
                 val personInCache = personCache[notificationId]
                 if (personInCache == null) {
                     val builder = Person.Builder()
                         .setName(title)
-                        // FIXME: 2022-06-24 handle NPE if bitmap is null
                         .setIcon(IconCompat.createWithBitmap(bitmap!!))
                     if (title.contains("[特别关心]")) {
                         builder.setImportant(true)
-                        channelId = NotifyChannel.FRIEND_SPECIAL
-                        title = title.removePrefix("[特别关心]")
                     }
                     person = builder.build()
                     personCache[notificationId] = person
@@ -158,7 +138,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 }
             }
 
-            val message = NotificationCompat.MessagingStyle.Message(text, oldNotification.`when`, person)
+            val message = Message(text, oldNotification.`when`, person)
             messageStyle.addMessage(message)
             if (historyMessage[notificationId] == null) {
                 historyMessage[notificationId] = ArrayList()
@@ -166,7 +146,10 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             historyMessage[notificationId]?.add(message)
 
             //Log.d(historyMessage.toString())
-            val builder = NotificationCompat.Builder(context, oldNotification)
+            val builder = NotificationCompat.Builder(
+                context,
+                oldNotification
+            )
                 .setContentTitle(null)
                 .setContentText(null)
                 .setLargeIcon(null)
@@ -189,14 +172,13 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 )
                 val bubbleIntent = PendingIntent.getActivity(
                     context,
-                    uin.toLong().toInt(), // uin may be lager than Int.MAX_VALUE but small than 2^32-1
+                    uin.toInt(),
                     newIntent,
                     PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
                 )
 
                 val bubbleData = NotificationCompat.BubbleMetadata.Builder(
                     bubbleIntent,
-                    // FIXME: 2022-06-24 handle NPE if bitmap is null
                     person.icon ?: IconCompat.createWithBitmap(bitmap!!)
                 )
                     .setDesiredHeight(600)
@@ -217,14 +199,10 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 builder.apply {
                     setShortcutInfo(shortcut)
                     bubbleMetadata = bubbleData
-                    setChannelId(getChannelId(channelId))
                 }
             }
-
-            Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name)
             param.result = builder.build()
         }
-
         XposedHelpers.findAndHookMethod(
             "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz,
             "cancel", String::class.java, Int::class.javaPrimitiveType,
@@ -277,11 +255,12 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                             param.args[1] as Boolean &&
                             (param.args[0] as Activity).isLaunchedFromBubble
                         )
-                            XposedHelpers.findAndHookMethod("com.tencent.mobileqq.app.QQAppInterface".clazz,
+                            XposedHelpers.findAndHookMethod(_QQAppInterface(),
                                 "removeNotification",
                                 object : XC_MethodHook() {
                                     override fun beforeHookedMethod(param: MethodHookParam) {
-                                        if (id == Thread.currentThread().id) param.result = null
+                                        if (id == Thread.currentThread().id) param.result =
+                                            null
                                     }
                                 }
                             ) else null
@@ -313,20 +292,5 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             }
         }
         return true
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    private fun createNotificationChannels() {
-        val notificationChannels: List<NotificationChannel> = getNotificationChannels()
-        // don't create new channel group since the old channel ids are still used
-        val notificationChannelGroup = NotificationChannelGroup("qq_evolution", "QQ通知进化 Plus")
-        val notificationManager: NotificationManager = hostInfo.application.getSystemService(NotificationManager::class.java)
-        if (notificationChannels.any { notificationChannel ->
-                notificationManager.getNotificationChannel(notificationChannel.id) == null
-            }) {
-            Log.i("QNotifyEvolutionXp", "Creating channels...")
-            notificationManager.createNotificationChannelGroup(notificationChannelGroup)
-            notificationManager.createNotificationChannels(notificationChannels)
-        }
     }
 }
