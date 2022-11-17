@@ -28,13 +28,15 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.dexkit.CFrameControllerInjectImpl
+import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook() {
+object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook(arrayOf(CFrameControllerInjectImpl)) {
 
     override val name = "隐藏消息列表底栏未读消息数"
 
@@ -46,7 +48,7 @@ object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook() {
         // bottom red point
         "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
             ?.replace(this, null)
-        "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl".clazz?.let {
+        DexKit.requireClassFromCache(CFrameControllerInjectImpl).let {
             Reflex.findSingleMethod(
                 it, Void.TYPE, false,
                 TextView::class.java,

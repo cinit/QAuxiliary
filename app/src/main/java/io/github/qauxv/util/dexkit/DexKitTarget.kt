@@ -363,6 +363,12 @@ object COnlinePushPbPushTransMsg : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.strInClsName("/receivesuccess/")
 }
 
+object CFrameControllerInjectImpl : DexKitTarget.UsingStr() {
+    override val declaringClass = "com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl"
+    override val traitString = arrayOf("FrameControllerInjectImpl.recoverTabBluer")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/framebusiness/controllerinject/")
+}
+
 object NBaseChatPie_init : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass: String = _BaseChatPie().name
