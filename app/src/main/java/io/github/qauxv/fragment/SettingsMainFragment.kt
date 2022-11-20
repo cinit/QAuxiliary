@@ -190,8 +190,8 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     override fun onResume() {
         super.onResume()
         try {
-            if (ContactUtils.getBuddyName(AppRuntimeHelper.getAppRuntime()!!, AppRuntimeHelper.getAccount())
-                    ?.contains("\uD83C\uDFF3\uFE0F\u200D\u26A7\uFE0F") == true &&
+            val buddyName = ContactUtils.getBuddyName(AppRuntimeHelper.getAppRuntime()!!, AppRuntimeHelper.getAccount())
+            if ((buddyName?.contains("\u26A7\uFE0F") == true || buddyName?.contains("\uD83C\uDF65") == true) &&
                 ConfigManager.forAccount(AppRuntimeHelper.getLongAccountUin()).getBoolean("ForSuBanXia", true)
             ) {
                 AlertDialog.Builder(requireContext())
