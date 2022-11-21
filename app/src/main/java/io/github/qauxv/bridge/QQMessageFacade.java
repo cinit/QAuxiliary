@@ -69,7 +69,7 @@ public class QQMessageFacade {
         }
     }
 
-    @DexDeobfs("CMessageCache")
+    @DexDeobfs(CMessageCache.class)
     public static void revokeMessage(Object msg) throws ReflectiveOperationException {
         if (msg == null) {
             throw new NullPointerException("msg == null");

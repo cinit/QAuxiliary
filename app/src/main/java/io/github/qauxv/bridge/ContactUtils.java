@@ -46,13 +46,13 @@ public class ContactUtils {
     private static final String UNICODE_RLO = "\u202E";
 
     @NonNull
-    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName", "NContactUtils_getBuddyName"})
+    @DexDeobfs({NContactUtils_getDiscussionMemberShowName.class, NContactUtils_getBuddyName.class})
     public static String getTroopMemberNick(long troopUin, long memberUin) {
         return getTroopMemberNick(String.valueOf(troopUin), String.valueOf(memberUin));
     }
 
     @NonNull
-    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName", "NContactUtils_getBuddyName"})
+    @DexDeobfs({NContactUtils_getDiscussionMemberShowName.class, NContactUtils_getBuddyName.class})
     public static String getTroopMemberNick(@NonNull String troopUin, @NonNull String memberUin) {
         Objects.requireNonNull(troopUin);
         Objects.requireNonNull(memberUin);
@@ -101,7 +101,7 @@ public class ContactUtils {
     }
 
     @Nullable
-    @DexDeobfs({"NContactUtils_getDiscussionMemberShowName"})
+    @DexDeobfs(NContactUtils_getDiscussionMemberShowName.class)
     public static String getDiscussionMemberShowName(@NonNull AppRuntime app, @NonNull String troopUin, @NonNull String memberUin) {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(troopUin, "troopUin is null");
@@ -125,7 +125,7 @@ public class ContactUtils {
     }
 
     @Nullable
-    @DexDeobfs({"NContactUtils_getBuddyName"})
+    @DexDeobfs(NContactUtils_getBuddyName.class)
     public static String getBuddyName(@NonNull AppRuntime app, @NonNull String uin) {
         Objects.requireNonNull(app, "app is null");
         Objects.requireNonNull(uin, "uin is null");

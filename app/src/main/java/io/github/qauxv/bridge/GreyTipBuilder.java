@@ -73,7 +73,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         return this;
     }
 
-    @DexDeobfs("CMessageRecordFactory")
+    @DexDeobfs(CMessageRecordFactory.class)
     public Object build(String uin, int istroop, String fromUin, long time, long msgUid,
                         long msgseq, long shmsgseq) {
         Object messageRecord = null;
@@ -98,7 +98,7 @@ public class GreyTipBuilder implements Appendable, CharSequence {
         return messageRecord;
     }
 
-    @DexDeobfs("CMessageRecordFactory")
+    @DexDeobfs(CMessageRecordFactory.class)
     public Object build(String uin, int istroop, String fromUin, long time, long msgseq) {
         Object messageRecord = null;
         try {

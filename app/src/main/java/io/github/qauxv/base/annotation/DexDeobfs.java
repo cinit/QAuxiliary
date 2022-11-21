@@ -22,6 +22,7 @@
 
 package io.github.qauxv.base.annotation;
 
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.annotation.ElementType;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
@@ -34,6 +35,5 @@ public @interface DexDeobfs {
     /**
      * Dex deobfuscation required to be performed before the method is called.
      */
-    String[] value();
-
+    Class<? extends DexKitTarget>[] value();
 }

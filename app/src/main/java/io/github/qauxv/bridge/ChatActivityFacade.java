@@ -67,7 +67,7 @@ public class ChatActivityFacade {
      * @param sendMsgParams  The extra parameters.
      * @return The message id, or null if failed.
      */
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static long[] sendMessage(@NonNull AppRuntime qqAppInterface, @NonNull Context context, @NonNull Parcelable sessionInfo,
                                      @NonNull String msg, @Nullable ArrayList<?> atInfo, @Nullable Object sendMsgParams) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
@@ -116,7 +116,7 @@ public class ChatActivityFacade {
      * @param msg            The message to be sent.
      * @return The message id, or null if failed.
      */
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static long[] sendMessage(AppRuntime qqAppInterface, Context context, Parcelable sessionInfo, String msg) {
         return sendMessage(qqAppInterface, context, sessionInfo, msg, null, null);
     }
@@ -129,7 +129,7 @@ public class ChatActivityFacade {
      * @param pttPath        the path of the PTT file
      * @return the message id, or 0 if failed
      */
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static long sendPttMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                       @NonNull String pttPath) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
@@ -156,7 +156,7 @@ public class ChatActivityFacade {
         }
     }
 
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static boolean sendArkAppMessage(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                             @NonNull Object arkAppMsg) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
@@ -183,7 +183,7 @@ public class ChatActivityFacade {
         }
     }
 
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static void sendAbsStructMsg(@NonNull AppRuntime qqAppInterface, @NonNull Parcelable sessionInfo,
                                         @NonNull Externalizable absStructMsg) {
         Objects.requireNonNull(qqAppInterface, "qqAppInterface == null");
@@ -246,7 +246,7 @@ public class ChatActivityFacade {
         }
     }
 
-    @DexDeobfs("com/tencent/mobileqq/activity/ChatActivityFacade")
+    @DexDeobfs(CFaceDe.class)
     public static void repeatMessage(@NonNull AppRuntime app, @NonNull Parcelable session, @NonNull Object msg) {
         Objects.requireNonNull(app, "app == null");
         Objects.requireNonNull(session, "session == null");

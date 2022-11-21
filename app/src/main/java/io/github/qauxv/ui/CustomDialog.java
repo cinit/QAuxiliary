@@ -52,7 +52,7 @@ public class CustomDialog {
     private AlertDialog.Builder mBuilder = null;
     private boolean failsafe = false;
 
-    @DexDeobfs("CDialogUtil")
+    @DexDeobfs(CDialogUtil.class)
     public static CustomDialog create(Context ctx) {
         try {
             if (clz_DialogUtil == null) {
