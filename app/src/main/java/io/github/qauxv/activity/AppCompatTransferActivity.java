@@ -116,6 +116,20 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
     }
 
     @Override
+    public Resources getResources() {
+        var res =  super.getResources();
+        try {
+            res.getString(R.string.res_inject_success);
+        } catch (Resources.NotFoundException e) {
+            // inject resources
+            if (HostInfo.isInHostProcess()) {
+                Parasitics.injectModuleResources(res);
+            }
+        }
+        return res;
+    }
+
+    @Override
     public void onConfigurationChanged(@NonNull Configuration newConfig) {
         try {
             getString(R.string.res_inject_success);
