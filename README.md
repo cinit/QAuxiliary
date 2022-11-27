@@ -2,6 +2,7 @@
     <h1> QAuxiliary </h1>
 
 [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest)
+[![main](https://github.com/cinit/QAuxiliary/actions/workflows/push_ci.yml/badge.svg)](https://github.com/cinit/QAuxiliary/actions/workflows/push_ci.yml)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Channel&color=0088cc)](https://t.me/QAuxiliary)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=CI&color=0088cc)](https://t.me/QAuxiliary_CI)
 [![Telegram](https://img.shields.io/static/v1?label=Telegram&message=Chat&color=0088cc)](https://t.me/QAuxiliaryChat)
