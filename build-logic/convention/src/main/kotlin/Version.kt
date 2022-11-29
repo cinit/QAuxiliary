@@ -10,7 +10,7 @@ object Version {
     val java = JavaVersion.VERSION_11
 
     const val compileSdkVersion = 33
-    val buildToolsVersion = if (Os.isFamily(Os.FAMILY_WINDOWS)) "32.0.0" else "33.0.0"
+    val buildToolsVersion = if (Os.isFamily(Os.FAMILY_WINDOWS)) "32.0.0" else "33.0.1"
     const val minSdk = 24
     const val targetSdk = 33
     const val versionName = "1.3.5"
