@@ -36,7 +36,7 @@ import java.util.UUID
 
 plugins {
     id("io.github.qauxv.application")
-    id("com.google.devtools.ksp") version Version.ksp
+    id("com.google.devtools.ksp") version 1.7.22-1.0.8
     kotlin("plugin.serialization") version Version.kotlin
     id("com.jaredsburrows.license") version "0.9.0"
     id("org.jetbrains.changelog") version "2.0.0"
