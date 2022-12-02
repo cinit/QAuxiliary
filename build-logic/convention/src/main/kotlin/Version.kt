@@ -1,21 +1,20 @@
-import org.apache.tools.ant.taskdefs.condition.Os
 import org.gradle.api.JavaVersion
 import org.gradle.api.Project
 import java.io.File
 import java.util.Properties
 
 object Version {
-    const val kotlin = "1.7.21"
-    const val ksp = "1.7.21-1.0.8"
+    const val kotlin = "1.7.22"
+    const val ksp = "1.7.22-1.0.8"
     val java = JavaVersion.VERSION_11
 
     const val compileSdkVersion = 33
-    val buildToolsVersion = "33.0.1"
+    const val buildToolsVersion = "33.0.1"
     const val minSdk = 24
     const val targetSdk = 33
     const val versionName = "1.3.5"
 
-    private const val defaultNdkVersion = "25.0.8775105"
+    private const val defaultNdkVersion = "25.1.8937393"
     private const val defaultCMakeVersion = "3.22.1"
 
     fun getNdkVersion(project: Project): String {
