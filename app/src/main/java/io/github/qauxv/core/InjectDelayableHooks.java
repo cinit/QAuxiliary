@@ -226,6 +226,27 @@ public class InjectDelayableHooks {
         return true;
     }
 
+    public static void stepForMainBackgroundStartup() {
+        if (LicenseStatus.hasUserAcceptEula()) {
+            IDynamicHook[] hooks = HookInstaller.queryAllAnnotatedHooks();
+            for (IDynamicHook h : hooks) {
+                try {
+                    if (h.isEnabled() && h.isTargetProcess()) {
+                        if (!h.isPreparationRequired()) {
+                            h.initialize();
+                        } else {
+                            Log.e("InjectDelayableHooks/stepForMainBackgroundStartup not init " + h + ", checkPreconditions == false");
+                        }
+                    }
+                } catch (Throwable e) {
+                    Log.e(e);
+                }
+            }
+        } else {
+            SettingEntryHook.INSTANCE.initialize();
+        }
+    }
+
     public static void doInitDelayableHooksMP() {
         for (IDynamicHook h : HookInstaller.queryAllAnnotatedHooks()) {
             try {

@@ -116,6 +116,10 @@ public class MainHook {
         if (SyncUtils.isMainProcess()) {
             ConfigItems.removePreviousCacheIfNecessary();
             JumpActivityEntryHook.initForJumpActivityEntry(ctx);
+            if (!isForegroundStartupForMainProcess(ctx, step) && !safeMode) {
+                // since we are in background, we can do some heavy work without compromising user experience
+                InjectDelayableHooks.stepForMainBackgroundStartup();
+            }
             Class<?> loadData = Initiator.requireClass("com/tencent/mobileqq/startup/step/LoadData");
             Method doStep = null;
             for (Method method : loadData.getDeclaredMethods()) {
@@ -130,14 +134,7 @@ public class MainHook {
                     if (third_stage_inited) {
                         return;
                     }
-                    Class<?> director = Initiator._StartupDirector();
-                    Object dir = Reflex.getInstanceObjectOrNull(param.thisObject, "mDirector", director);
-                    if (dir == null) {
-                        dir = Reflex.getInstanceObjectOrNull(param.thisObject, "a", director);
-                    }
-                    if (dir == null) {
-                        dir = Reflex.getFirstNSFByType(param.thisObject, director);
-                    }
+                    Object dir = getStartDirector(param.thisObject);
                     if (safeMode) {
                         SettingEntryHook.INSTANCE.initialize();
                     } else {
@@ -148,17 +145,28 @@ public class MainHook {
             });
         } else {
             if (!safeMode && LicenseStatus.hasUserAcceptEula()) {
-                Class<?> director = Initiator._StartupDirector();
-                Object dir = Reflex.getInstanceObjectOrNull(step, "mDirector", director);
-                if (dir == null) {
-                    dir = Reflex.getInstanceObjectOrNull(step, "a", director);
-                }
-                if (dir == null) {
-                    dir = Reflex.getFirstNSFByType(step, director);
-                }
+                Object dir = getStartDirector(step);
                 InjectDelayableHooks.step(dir);
             }
         }
+    }
+
+    private static boolean isForegroundStartupForMainProcess(Context ctx, Object step) {
+        // TODO: 2022-12-03 find a way to detect foreground startup
+        // XXX: BaseApplicationImpl.sIsBgStartup does not work, always false
+        return false;
+    }
+
+    private static Object getStartDirector(Object step) {
+        Class<?> director = Initiator._StartupDirector();
+        Object dir = Reflex.getInstanceObjectOrNull(step, "mDirector", director);
+        if (dir == null) {
+            dir = Reflex.getInstanceObjectOrNull(step, "a", director);
+        }
+        if (dir == null) {
+            dir = Reflex.getFirstNSFByType(step, director);
+        }
+        return dir;
     }
 
     private static void initForQQHDBasePadActivityMitigation() {
