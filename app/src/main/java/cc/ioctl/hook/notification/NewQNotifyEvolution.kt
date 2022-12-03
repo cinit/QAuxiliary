@@ -235,6 +235,9 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                         historyMessage.remove(param.args[1] as Int)
                         personCache.remove(param.args[1] as Int)
                         ShortcutManagerCompat.removeDynamicShortcuts(hostInfo.application, arrayListOf((param.args[1] as Int).toString()))
+                    } else {
+                        // stop QQ cancel the old message to prevent message flashing in notification area
+                        param.result = null
                     }
                 }
             }
