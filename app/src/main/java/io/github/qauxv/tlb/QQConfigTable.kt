@@ -60,6 +60,7 @@ import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
 import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.util.QQVersion.QQ_8_0_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_18
+import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
