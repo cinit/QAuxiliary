@@ -39,6 +39,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
@@ -50,6 +51,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
 @FunctionHookEntry
@@ -68,10 +70,12 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     @Override
     public boolean initOnce() throws Exception {
         XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingActivity(), "doOnCreate", Bundle.class, mAddModuleEntry);
-        try {
-            XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingFragment(), "doOnCreateView",
-                    LayoutInflater.class, ViewGroup.class, Bundle.class, mAddModuleEntry);
-        } catch (NoSuchMethodError ignore) {}
+        Class<?> kQQSettingSettingFragment = Initiator._QQSettingSettingFragment();
+        if (kQQSettingSettingFragment != null) {
+            Method doOnCreateView = kQQSettingSettingFragment.getDeclaredMethod("doOnCreateView",
+                    LayoutInflater.class, ViewGroup.class, Bundle.class);
+            XposedBridge.hookMethod(doOnCreateView, mAddModuleEntry);
+        }
         return true;
     }
 
