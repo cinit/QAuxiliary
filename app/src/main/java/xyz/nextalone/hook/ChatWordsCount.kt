@@ -22,7 +22,6 @@
 package xyz.nextalone.hook
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.graphics.Color
@@ -36,6 +35,7 @@ import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
@@ -47,7 +47,6 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.tlb.ConfigTable.getConfig
-import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
@@ -57,6 +56,7 @@ import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import io.github.qauxv.config.ConfigManager.getExFriendCfg
+import io.github.qauxv.ui.CommonContextWrapper
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -195,7 +195,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
         textView.id = io.github.qauxv.R.id.chat_words_count
         textView.textSize = 15.0f
         textView.setOnClickListener {
-            val dialog = CustomDialog.createFailsafe(context)
+            val dialog = AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
             val ctx = dialog.context
             val editText = EditText(ctx)
             editText.setText(getExFriendCfg()?.getString(colorCfg) ?: "#ff000000")
@@ -214,7 +214,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
                     putExFriend(colorCfg, "#FF000000")
                     Toasts.showToast(context, Toasts.TYPE_INFO, "重启以应用设置", Toast.LENGTH_SHORT)
                 }
-                .create() as AlertDialog
+                .create()
             alertDialog.show()
             alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                 val color = editText.text.toString()
@@ -228,7 +228,8 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
                 }
             }
             textView.setOnLongClickListener {
-                CustomDialog.createFailsafe(context).setTitle("聊天字数统计设置").setMessage("是否要重置统计记录")
+                AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
+                    .setTitle("聊天字数统计设置").setMessage("是否要重置统计记录")
                     .setPositiveButton(android.R.string.ok) { _: DialogInterface, _: Int ->
                         putExFriend(timeCfg, Date().today)
                         putExFriend(msgCfg, 0)
@@ -248,7 +249,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
     private fun showChatWordsCountDialog(activity: Context) {
-        val dialog = CustomDialog.createFailsafe(activity)
+        val dialog = AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(activity))
         val ctx = dialog.context
         val editText = EditText(ctx)
         editText.textSize = 16f

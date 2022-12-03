@@ -35,15 +35,15 @@ import cc.ioctl.util.LayoutHelper
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager.getDefaultConfig
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.ui.CustomDialog
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import kotlinx.coroutines.flow.MutableStateFlow
-import io.github.qauxv.config.ConfigManager.getDefaultConfig
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.putDefault
@@ -81,8 +81,8 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
     }
 
     private fun showInputHintDialog(activity: Context) {
-        val dialog = CustomDialog.createFailsafe(activity)
-        val ctx = dialog.context
+        val ctx = CommonContextWrapper.createAppCompatContext(activity)
+        val dialog = androidx.appcompat.app.AlertDialog.Builder(ctx)
         val editText = EditText(ctx)
         editText.textSize = 16f
         val _5 = LayoutHelper.dip2px(activity, 5f)
@@ -129,7 +129,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                 putDefault(strCfg, "Typing words...")
             }
             .setNegativeButton("取消", null)
-            .create() as AlertDialog
+            .create()
         alertDialog.show()
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val text = editText.text.toString()
