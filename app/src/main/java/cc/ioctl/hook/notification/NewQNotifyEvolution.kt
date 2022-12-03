@@ -111,6 +111,10 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             val bitmap = param.args[1] as Bitmap?
             var title = param.args[3] as String
             var text = param.args[4] as String
+            val key = when (isTroop) {
+                1 -> "group_$uin"
+                else -> "private_$uin"
+            }
             val oldNotification = param.result as Notification
             val notificationId =
                 intent.getIntExtra("KEY_NOTIFY_ID_FROM_PROCESSOR", -113)
@@ -203,7 +207,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     .build()
 
                 val shortcut =
-                    ShortcutInfoCompat.Builder(context, notificationId.toString())
+                    ShortcutInfoCompat.Builder(context, key)
                         .setIntent(intent)
                         .setLongLived(true)
                         .setShortLabel(title)
@@ -234,7 +238,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     if (param.args[0] as String != "MobileQQServiceWrapper.showMsgNotification") {
                         historyMessage.remove(param.args[1] as Int)
                         personCache.remove(param.args[1] as Int)
-                        ShortcutManagerCompat.removeDynamicShortcuts(hostInfo.application, arrayListOf((param.args[1] as Int).toString()))
                     } else {
                         // stop QQ cancel the old message to prevent message flashing in notification area
                         param.result = null
@@ -250,7 +253,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
                     historyMessage.clear()
                     personCache.clear()
-                    ShortcutManagerCompat.removeAllDynamicShortcuts(hostInfo.application)
                 }
             }
         )
