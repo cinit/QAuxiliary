@@ -23,12 +23,12 @@
 package me.ketal.hook
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -36,7 +36,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.startup.HookEntry
-import io.github.qauxv.ui.CustomDialog
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -78,7 +78,7 @@ object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
             ary
         }
         val cache = enable.clone()
-        AlertDialog.Builder(context, CustomDialog.themeIdForDialog())
+        AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
             .setTitle("选择要启用的组件")
             .setMultiChoiceItems(keys, enable) { _: DialogInterface, i: Int, _: Boolean ->
                 cache[i] = !cache[i]

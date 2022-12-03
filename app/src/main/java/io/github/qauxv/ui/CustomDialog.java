@@ -23,7 +23,6 @@ package io.github.qauxv.ui;
 
 import static io.github.qauxv.util.Initiator.load;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -45,11 +44,9 @@ public class CustomDialog {
     private static Class<?> clz_DialogUtil;
     private static Class<?> clz_CustomDialog;
     private static Method m_DialogUtil_a;
-    private static final int THEME_LIGHT = android.R.style.Theme_DeviceDefault_Light_Dialog_Alert;
-    private static final int THEME_DARK = android.R.style.Theme_DeviceDefault_Dialog_Alert;
     private Dialog mDialog = null;
-    private AlertDialog mFailsafeDialog = null;
-    private AlertDialog.Builder mBuilder = null;
+    private androidx.appcompat.app.AlertDialog mFailsafeDialog = null;
+    private androidx.appcompat.app.AlertDialog.Builder mBuilder = null;
     private boolean failsafe = false;
 
     @DexDeobfs(CDialogUtil.class)
@@ -115,21 +112,18 @@ public class CustomDialog {
         }
         if (ref.mDialog == null) {
             ref.failsafe = true;
-            ref.mBuilder = new AlertDialog.Builder(ctx,
-                ResUtils.isInNightMode() ? THEME_DARK : THEME_LIGHT);
+            ref.mBuilder = new androidx.appcompat.app.AlertDialog.Builder(
+                    CommonContextWrapper.createAppCompatContext(ctx));
         }
         return ref;
     }
 
-    public static int themeIdForDialog() {
-        return ResUtils.isInNightMode() ? THEME_DARK : THEME_LIGHT;
-    }
-
-    public static CustomDialog createFailsafe(Context ctx) {
+    public static CustomDialog createFailsafe(Context context) {
         CustomDialog ref = new CustomDialog();
+        // dark/light theme is already handled by CommonContextWrapper.createAppCompatContext(context)
+        Context ctx = CommonContextWrapper.createAppCompatContext(context);
         ref.failsafe = true;
-        ref.mBuilder = new AlertDialog.Builder(ctx,
-            ResUtils.isInNightMode() ? THEME_DARK : THEME_LIGHT);
+        ref.mBuilder = new androidx.appcompat.app.AlertDialog.Builder(ctx);
         return ref;
     }
 

@@ -28,9 +28,9 @@ import static io.github.qauxv.util.Initiator._QQAppInterface;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator._StickerInfo;
 
-import android.app.AlertDialog;
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -39,7 +39,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.CPicEmoticonInfo;
@@ -119,7 +119,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
     private static final Random RNG = new Random();
 
     private void showDiceDialog(Context context, XC_MethodHook.MethodHookParam param) {
-        AlertDialog alertDialog = new AlertDialog.Builder(context, CustomDialog.themeIdForDialog())
+        AlertDialog alertDialog = new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
                 .setTitle("自定义骰子")
                 .setSingleChoiceItems(diceItem, diceNum, (dialog, which) -> diceNum = which)
                 .setNegativeButton("取消", null)
@@ -145,7 +145,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
     }
 
     private void showMorraDialog(Context context, XC_MethodHook.MethodHookParam param) {
-        AlertDialog alertDialog = new AlertDialog.Builder(context, CustomDialog.themeIdForDialog())
+        AlertDialog alertDialog = new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
                 .setTitle("自定义猜拳")
                 .setSingleChoiceItems(morraItem, morraNum, (dialog, which) -> morraNum = which)
                 .setNegativeButton("取消", null)

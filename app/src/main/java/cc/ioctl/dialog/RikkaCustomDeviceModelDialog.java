@@ -22,7 +22,6 @@
 package cc.ioctl.dialog;
 
 import android.annotation.SuppressLint;
-import android.app.AlertDialog;
 import android.content.Context;
 import android.text.Editable;
 import android.text.TextWatcher;
@@ -33,6 +32,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.hook.chat.CustomMsgTimeFormat;
 import io.github.qauxv.R;

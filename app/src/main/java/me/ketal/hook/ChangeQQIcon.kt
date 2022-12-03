@@ -23,7 +23,6 @@
 package me.ketal.hook
 
 import android.app.Activity
-import android.app.AlertDialog
 import android.content.ComponentName
 import android.content.Context
 import android.content.pm.PackageManager
@@ -35,6 +34,7 @@ import android.text.SpannableStringBuilder
 import android.text.Spanned
 import android.text.style.ImageSpan
 import android.view.View
+import androidx.appcompat.app.AlertDialog
 import com.github.kyuubiran.ezxhelper.utils.invokeMethodAutoAs
 import com.github.kyuubiran.ezxhelper.utils.invokeStaticMethodAuto
 import com.github.kyuubiran.ezxhelper.utils.loadClass
@@ -43,7 +43,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.ui.CustomDialog
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
@@ -104,7 +104,7 @@ object ChangeQQIcon : CommonConfigFunctionHook("Ketal_ManageComponent") {
         }
         val current = pm.getLaunchIntentForPackage(hostInfo.packageName)!!.component!!
 
-        AlertDialog.Builder(ctx, CustomDialog.themeIdForDialog())
+        AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(ctx))
             .setTitle("请选择一个图标")
             .setSingleChoiceItems(items, list.indexOfFirst { it.name == current.className }) { dialog, which ->
                 val selected = list[which]
