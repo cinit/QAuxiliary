@@ -46,6 +46,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_4_1
 import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
+import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
@@ -154,7 +155,9 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                         val underSettingsName = if (requireMinQQVersion(QQ_8_6_0)) "l" else "h"
                         param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
                     }
-                    underSettingsLayout?.forEachIndexed { i, v ->
+                    val correctUSLayout: LinearLayout? =
+                        if (requireMinQQVersion(QQ_8_9_23)) (underSettingsLayout as LinearLayout)[0] as LinearLayout else underSettingsLayout
+                    correctUSLayout?.forEachIndexed { i, v ->
                         val tv = (v as LinearLayout)[1] as TextView
                         val text = tv.text
                         if (stringHit(text.toString()) || i == 3 && activeItems.contains("当前温度")) {
