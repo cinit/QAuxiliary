@@ -78,7 +78,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private const val activityName = "com.tencent.mobileqq.activity.miniaio.MiniChatActivity"
 
     private val historyMessage: HashMap<Int, MutableList<NotificationCompat.MessagingStyle.Message>> = HashMap()
-    private val personCache: HashMap<Int, Person> = HashMap()
     private var windowHeight = -1
 
     @Throws(Exception::class)
@@ -109,7 +108,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             )
             if (isTroop != 0 && isTroop != 1 && isTroop != 3000) return@hookAfterIfEnabled
             val bitmap = param.args[1] as Bitmap?
-            var title = param.args[3] as String
+            var title = numRegex.replace(param.args[3] as String, "")
             var text = param.args[4] as String
             val key = when (isTroop) {
                 1 -> "group_$uin"
@@ -118,15 +117,23 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             val oldNotification = param.result as Notification
             val notificationId =
                 intent.getIntExtra("KEY_NOTIFY_ID_FROM_PROCESSOR", -113)
+
+            var channelId: NotifyChannel = NotifyChannel.FRIEND
+            if (title.contains("[特别关心]")) {
+                channelId = NotifyChannel.FRIEND_SPECIAL
+                title = title.removePrefix("[特别关心]")
+            }
+
             val messageStyle = NotificationCompat.MessagingStyle(
-                Person.Builder().setName("我").build()
+                Person.Builder()
+                    .setName(title)
+                    .setIcon(IconCompat.createWithBitmap(bitmap!!))
+                    .setImportant(channelId == NotifyChannel.FRIEND_SPECIAL)
+                    .build()
             )
             historyMessage[notificationId]?.forEach(messageStyle::addMessage)
 
-            title = numRegex.replace(title, "")
-
-            val person: Person
-            var channelId: NotifyChannel
+            var person: Person? = null
 
             if (isTroop == 1) {
                 val sender = senderName.find(text)?.value?.replace(": ", "")
@@ -142,24 +149,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 messageStyle.conversationTitle = title
                 messageStyle.isGroupConversation = true
                 channelId = NotifyChannel.GROUP
-            } else {
-                channelId = NotifyChannel.FRIEND
-                val personInCache = personCache[notificationId]
-                if (personInCache == null) {
-                    val builder = Person.Builder()
-                        .setName(title)
-                        // FIXME: 2022-06-24 handle NPE if bitmap is null
-                        .setIcon(IconCompat.createWithBitmap(bitmap!!))
-                    if (title.contains("[特别关心]")) {
-                        builder.setImportant(true)
-                        channelId = NotifyChannel.FRIEND_SPECIAL
-                        title = title.removePrefix("[特别关心]")
-                    }
-                    person = builder.build()
-                    personCache[notificationId] = person
-                } else {
-                    person = personInCache
-                }
             }
 
             val message = NotificationCompat.MessagingStyle.Message(text, oldNotification.`when`, person)
@@ -201,7 +190,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 val bubbleData = NotificationCompat.BubbleMetadata.Builder(
                     bubbleIntent,
                     // FIXME: 2022-06-24 handle NPE if bitmap is null
-                    person.icon ?: IconCompat.createWithBitmap(bitmap!!)
+                    IconCompat.createWithBitmap(bitmap)
                 )
                     .setDesiredHeight(600)
                     .build()
@@ -237,7 +226,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
                     if (param.args[0] as String != "MobileQQServiceWrapper.showMsgNotification") {
                         historyMessage.remove(param.args[1] as Int)
-                        personCache.remove(param.args[1] as Int)
                     } else {
                         // stop QQ cancel the old message to prevent message flashing in notification area
                         param.result = null
@@ -252,7 +240,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 override fun beforeHookedMethod(param: MethodHookParam) {
                     if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
                     historyMessage.clear()
-                    personCache.clear()
                 }
             }
         )
