@@ -28,6 +28,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._TroopMemberLevelView
+import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.ketal.util.findViewByType
 import me.singleneuron.data.MsgRecordData
@@ -46,7 +47,9 @@ object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     override val isAvailable = levelClass != null
 
-    override fun initOnce() = isAvailable
+    override fun initOnce(): Boolean {
+        return isAvailable && BaseBubbleBuilderHook.initialize()
+    }
 
     override fun onGetView(
         rootView: ViewGroup,

@@ -28,15 +28,14 @@ import cc.ioctl.hook.msg.MultiForwardAvatarHook
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
-import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.Initiator
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.hook.HideTroopLevel
-import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.isPublic
+import java.lang.reflect.Method
+import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
@@ -53,21 +52,23 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        for (m in "com.tencent.mobileqq.activity.aio.BaseBubbleBuilder".clazz?.methods!!) {
-            if (m.name != "a" && (m.name != "q" && requireMinQQVersion(QQVersion.QQ_8_8_93))) continue
-            if (m.returnType != View::class.java) continue
-            if (!m.isPublic) continue
-            if (m.parameterTypes.size != 6) continue
-            m.hookAfter(this) {
-                if (it.result == null) return@hookAfter
-                val rootView = it.result as ViewGroup
-                val msg = MsgRecordData(it.args[2])
-                for (decorator in decorators) {
-                    try {
-                        decorator.onGetView(rootView, msg, it)
-                    } catch (e: Exception) {
-                        traceError(e)
-                    }
+        val kBaseBubbleBuilder = Initiator.loadClass("com.tencent.mobileqq.activity.aio.BaseBubbleBuilder")
+        val getView: Method? = kBaseBubbleBuilder.declaredMethods.singleOrNull { m ->
+            if (m.parameterTypes.size == 6 && m.returnType == View::class.java && m.modifiers == Modifier.PUBLIC) {
+                val argt = m.parameterTypes
+                argt[0] == Int::class.javaPrimitiveType && argt[1] == Int::class.javaPrimitiveType
+            } else false
+        }
+        check(getView != null) { "Cannot find BaseBubbleBuilder.getView" }
+        getView.hookAfter(this) {
+            if (it.result == null) return@hookAfter
+            val rootView = it.result as ViewGroup
+            val msg = MsgRecordData(it.args[2])
+            for (decorator in decorators) {
+                try {
+                    decorator.onGetView(rootView, msg, it)
+                } catch (e: Exception) {
+                    traceError(e)
                 }
             }
         }

@@ -55,6 +55,7 @@ import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.util.method
@@ -68,8 +69,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     override val name = "消息显示 ID 和时间"
     override val description = "可能导致聊天界面滑动掉帧"
-    override fun initOnce() = isAvailable
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+
+    override fun initOnce(): Boolean {
+        return isAvailable && BaseBubbleBuilderHook.initialize()
+    }
 
     private const val CFG_KEY_CUSTOM_MSG_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_MSG_FORMAT"
     private const val CFG_KEY_CUSTOM_TIME_FORMAT = "ChatItemShowQQUin.CFG_KEY_CUSTOM_TIME_FORMAT"

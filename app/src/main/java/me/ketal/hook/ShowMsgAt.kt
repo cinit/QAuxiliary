@@ -37,6 +37,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.isTim
+import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.util.clazz
@@ -53,7 +54,9 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
 
-    override fun initOnce() = !isTim()
+    override fun initOnce(): Boolean {
+        return !isTim() && BaseBubbleBuilderHook.initialize()
+    }
 
     override fun onGetView(
         rootView: ViewGroup,
