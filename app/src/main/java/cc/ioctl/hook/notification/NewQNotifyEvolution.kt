@@ -37,7 +37,9 @@ import android.util.Log
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationCompat.MessagingStyle
 import androidx.core.app.Person
+import androidx.core.app.RemoteInput
 import androidx.core.content.pm.ShortcutInfoCompat
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
@@ -52,6 +54,9 @@ import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.ChatActivityFacade
+import io.github.qauxv.bridge.SessionInfoImpl
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
@@ -77,7 +82,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val senderName = Regex("""^.*?: """)
     private const val activityName = "com.tencent.mobileqq.activity.miniaio.MiniChatActivity"
 
-    private val historyMessage: HashMap<Int, MutableList<NotificationCompat.MessagingStyle.Message>> = HashMap()
+    private val historyMessage: HashMap<Int, MutableList<MessagingStyle.Message>> = HashMap()
     private var windowHeight = -1
 
     @Throws(Exception::class)
@@ -124,7 +129,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 title = title.removePrefix("[特别关心]")
             }
 
-            val messageStyle = NotificationCompat.MessagingStyle(
+            val messageStyle = MessagingStyle(
                 Person.Builder()
                     .setName(title)
                     .setIcon(IconCompat.createWithBitmap(bitmap!!))
@@ -151,7 +156,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 channelId = NotifyChannel.GROUP
             }
 
-            val message = NotificationCompat.MessagingStyle.Message(text, oldNotification.`when`, person)
+            val message = MessagingStyle.Message(text, oldNotification.`when`, person)
             messageStyle.addMessage(message)
             if (historyMessage[notificationId] == null) {
                 historyMessage[notificationId] = ArrayList()
@@ -167,6 +172,33 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             if (isTroop == 1) {
                 builder.setLargeIcon(bitmap)
             }
+
+            val remoteInput: RemoteInput = RemoteInput.Builder("KEY_REPLY").run {
+                setLabel("回复")
+                build()
+            }
+            val replyIntent = Intent(context, "com.tencent.mobileqq.servlet.NotificationClickReceiver".clazz).apply {
+                putExtra("TO_UIN", uin)
+                putExtra("UIN_TYPE", isTroop)
+                putExtra("NOTIFY_ID", notificationId)
+            }
+
+            val replyPendingIntent: PendingIntent =
+                PendingIntent.getBroadcast(
+                    context,
+                    uin.toLong().toInt(),
+                    replyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT or if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) PendingIntent.FLAG_MUTABLE else 0
+                )
+            val replyAction = NotificationCompat.Action.Builder(
+                android.R.drawable.ic_menu_edit,
+                "回复",
+                replyPendingIntent
+            )
+                .addRemoteInput(remoteInput)
+                .build()
+            builder.addAction(replyAction)
+
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
                 val newIntent = intent.clone() as Intent
                 newIntent.component = ComponentName(
@@ -207,16 +239,69 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                     context,
                     shortcut
                 )
+
                 builder.apply {
                     setShortcutInfo(shortcut)
                     bubbleMetadata = bubbleData
                     setChannelId(getChannelId(channelId))
                 }
             }
-
             Log.i("QNotifyEvolutionXp", "send as channel " + channelId.name)
             param.result = builder.build()
         }
+
+        XposedHelpers.findAndHookMethod(
+            "com.tencent.mobileqq.servlet.NotificationClickReceiver".clazz,
+            "onReceive",
+            Context::class.java,
+            Intent::class.java,
+            object : XC_MethodHook() {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val ctx = param.args[0] as Context
+                    val intent = param.args[1] as Intent
+                    val uinType = intent.getIntExtra("UIN_TYPE", -1)
+                    if (uinType != -1) {
+                        param.result = null
+                        val uin = intent.getStringExtra("TO_UIN") ?:  return
+                        val result = RemoteInput.getResultsFromIntent(intent)?.getString("KEY_REPLY")?: return
+
+                        // send message
+                        ChatActivityFacade.sendMessage(
+                            AppRuntimeHelper.getQQAppInterface(),
+                            hostInfo.application,
+                            SessionInfoImpl.createSessionInfo(uin, uinType),
+                            result
+                        )
+
+                        // update exist notification
+                        val notifyId = intent.getIntExtra("NOTIFY_ID", -113)
+                        val notificationManager = ctx.getSystemService(NotificationManager::class.java)
+                        val origin = notificationManager.activeNotifications.find {
+                            it.id == notifyId
+                        } ?: return
+                        val msg = MessagingStyle.extractMessagingStyleFromNotification(origin.notification)
+                            ?: return
+                        val sendMsg: MessagingStyle.Message = if (uinType == 0) {
+                            MessagingStyle.Message("[我]: $result", System.currentTimeMillis(), null as Person?)
+                        } else {
+                            MessagingStyle.Message(
+                                result,
+                                System.currentTimeMillis(),
+                                Person.Builder().setName("我").build()
+                            )
+                        }
+                        historyMessage[notifyId]?.add(sendMsg)
+                        msg.addMessage(sendMsg)
+                        val newNotification =
+                            NotificationCompat.Builder(ctx, origin.notification)
+                                .setStyle(msg)
+                                .setSilent(true)
+                                .build()
+                        notificationManager.notify(origin.id, newNotification)
+                    }
+                }
+            }
+        )
 
         XposedHelpers.findAndHookMethod(
             "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz,
