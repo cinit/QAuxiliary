@@ -22,24 +22,24 @@
 package cc.ioctl.hook.chat;
 
 import android.app.Activity;
+import android.content.Context;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.dialog.RikkaCustomMsgTimeFormatDialog;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
-import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.CTimeFormatterUtils;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.text.SimpleDateFormat;
+import java.util.Locale;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -88,19 +88,15 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
-        for (Method m : DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE).getDeclaredMethods()) {
-            Class<?>[] argt = m.getParameterTypes();
-            if (m.getName().equals(HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "e" : "a") && Modifier.isStatic(m.getModifiers())
-                    && argt.length == 3 && argt[2] == long.class) {
-                HookUtils.hookBeforeIfEnabled(this, m, param -> {
-                    String result = formatTime((long) param.args[2]);
-                    if (result != null) {
-                        param.setResult(result);
-                    }
-                });
+    public boolean initOnce() throws NoSuchMethodException {
+        Method method = Reflex.findSingleMethod(DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE),
+                CharSequence.class, false, Context.class, int.class, long.class);
+        HookUtils.hookBeforeIfEnabled(this, method, param -> {
+            String result = formatTime((long) param.args[2]);
+            if (result != null) {
+                param.setResult(result);
             }
-        }
+        });
         return true;
     }
 
@@ -110,7 +106,7 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
     public String formatTime(long time) {
         String fmt = RikkaCustomMsgTimeFormatDialog.getCurrentMsgTimeFormat();
         if (!fmt.equals(sCachedFormatString) || sCachedFormatInstance == null) {
-            sCachedFormatInstance = new SimpleDateFormat(fmt);
+            sCachedFormatInstance = new SimpleDateFormat(fmt, Locale.ROOT);
             sCachedFormatString = fmt;
         }
         return sCachedFormatInstance.format(time);
