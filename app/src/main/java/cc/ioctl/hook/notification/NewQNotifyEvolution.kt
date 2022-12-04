@@ -82,7 +82,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val senderName = Regex("""^.*?: """)
     private const val activityName = "com.tencent.mobileqq.activity.miniaio.MiniChatActivity"
 
-    private val historyMessage: HashMap<Int, MutableList<MessagingStyle.Message>> = HashMap()
+    private val historyMessage: HashMap<Int, MessagingStyle> = HashMap()
     private var windowHeight = -1
 
     @Throws(Exception::class)
@@ -129,14 +129,17 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 title = title.removePrefix("[特别关心]")
             }
 
-            val messageStyle = MessagingStyle(
-                Person.Builder()
-                    .setName(title)
-                    .setIcon(IconCompat.createWithBitmap(bitmap!!))
-                    .setImportant(channelId == NotifyChannel.FRIEND_SPECIAL)
-                    .build()
-            )
-            historyMessage[notificationId]?.forEach(messageStyle::addMessage)
+            var messageStyle = historyMessage[notificationId]
+            if (messageStyle == null) {
+                messageStyle = MessagingStyle(
+                    Person.Builder()
+                        .setName(title)
+                        .setIcon(IconCompat.createWithBitmap(bitmap!!))
+                        .setImportant(channelId == NotifyChannel.FRIEND_SPECIAL)
+                        .build()
+                )
+                historyMessage[notificationId] = messageStyle
+            }
 
             var person: Person? = null
 
@@ -158,10 +161,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
 
             val message = MessagingStyle.Message(text, oldNotification.`when`, person)
             messageStyle.addMessage(message)
-            if (historyMessage[notificationId] == null) {
-                historyMessage[notificationId] = ArrayList()
-            }
-            historyMessage[notificationId]?.add(message)
 
             //Log.d(historyMessage.toString())
             val builder = NotificationCompat.Builder(context, oldNotification)
@@ -222,7 +221,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                 val bubbleData = NotificationCompat.BubbleMetadata.Builder(
                     bubbleIntent,
                     // FIXME: 2022-06-24 handle NPE if bitmap is null
-                    IconCompat.createWithBitmap(bitmap)
+                    IconCompat.createWithBitmap(bitmap!!)
                 )
                     .setDesiredHeight(600)
                     .build()
@@ -290,7 +289,6 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                                 Person.Builder().setName("我").build()
                             )
                         }
-                        historyMessage[notifyId]?.add(sendMsg)
                         msg.addMessage(sendMsg)
                         val newNotification =
                             NotificationCompat.Builder(ctx, origin.notification)
