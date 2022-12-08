@@ -280,15 +280,11 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                         } ?: return
                         val msg = MessagingStyle.extractMessagingStyleFromNotification(origin.notification)
                             ?: return
-                        val sendMsg: MessagingStyle.Message = if (uinType == 0) {
-                            MessagingStyle.Message("[我]: $result", System.currentTimeMillis(), null as Person?)
-                        } else {
-                            MessagingStyle.Message(
-                                result,
-                                System.currentTimeMillis(),
-                                Person.Builder().setName("我").build()
-                            )
-                        }
+                        val sendMsg: MessagingStyle.Message = MessagingStyle.Message(
+                            result,
+                            System.currentTimeMillis(),
+                            Person.Builder().setName("我").build()
+                        )
                         msg.addMessage(sendMsg)
                         historyMessage[notifyId] = msg
                         val newNotification =
