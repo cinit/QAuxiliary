@@ -290,6 +290,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                             )
                         }
                         msg.addMessage(sendMsg)
+                        historyMessage[notifyId] = msg
                         val newNotification =
                             NotificationCompat.Builder(ctx, origin.notification)
                                 .setStyle(msg)
