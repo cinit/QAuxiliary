@@ -32,8 +32,16 @@ import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.graphics.Canvas
+import android.graphics.Paint
+import android.graphics.PorterDuff
+import android.graphics.PorterDuffXfermode
+import android.graphics.Rect
+import android.graphics.RectF
 import android.os.Build
 import android.util.Log
+import android.util.LruCache
 import android.view.WindowInsets
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -56,6 +64,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.bridge.ChatActivityFacade
+import io.github.qauxv.bridge.FaceImpl
 import io.github.qauxv.bridge.SessionInfoImpl
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
@@ -66,6 +75,7 @@ import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
+import java.io.File
 
 // FIXME: current not working: channel not assigned or overwritten
 
@@ -81,8 +91,11 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val numRegex = Regex("""\((\d+)\S{1,3}新消息\)?$""")
     private val senderName = Regex("""^.*?: """)
     private const val activityName = "com.tencent.mobileqq.activity.miniaio.MiniChatActivity"
+    private val toMD5Method = "com.tencent.qphone.base.util.MD5".clazz!!.getMethod("toMD5", String::class.java)
+    private var avatarCachePath: String? = null
 
     private val historyMessage: HashMap<Int, MessagingStyle> = HashMap()
+    private val avatarCache: LruCache<String, IconCompat> = LruCache(50)
     private var windowHeight = -1
 
     @Throws(Exception::class)
@@ -101,9 +114,14 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             String::class.java,
             String::class.java
         )
+        val context = hostInfo.application
+        avatarCachePath = File(
+            context.getExternalFilesDir(null)?.parent,
+            "Tencent/MobileQQ/head/_hd"
+        ).absolutePath
+
         hookAfterIfEnabled(buildNotification) { param ->
             val intent = param.args[0] as Intent
-            val context = hostInfo.application
             // TODO: 2022-07-14 uin may be null
             val uin = intent.getStringExtra("uin")
                 ?: intent.getStringExtra("param_uin")!!
@@ -136,6 +154,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                         .setName(title)
                         .setIcon(IconCompat.createWithBitmap(bitmap!!))
                         .setImportant(channelId == NotifyChannel.FRIEND_SPECIAL)
+                        .setKey(uin)
                         .build()
                 )
                 historyMessage[notificationId] = messageStyle
@@ -146,13 +165,15 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             if (isTroop == 1) {
                 val sender = senderName.find(text)?.value?.replace(": ", "")
                 text = senderName.replace(text, "")
+                val senderUin = intent.getStringExtra("param_fromuin")!!
                 /*throwOrTrue {
                     val senderUin = intent.getStringExtra("param_fromuin")
                     bitmap = face.getBitmapFromCache(TYPE_USER,senderUin)
                 }*/
                 person = Person.Builder()
                     .setName(sender)
-                    //.setIcon(IconCompat.createWithBitmap(bitmap))
+                    .setKey(senderUin)
+                    .setIcon(getAvatar(senderUin))
                     .build()
                 messageStyle.conversationTitle = title
                 messageStyle.isGroupConversation = true
@@ -263,7 +284,7 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                         param.result = null
                         val uin = intent.getStringExtra("TO_UIN") ?:  return
                         val result = RemoteInput.getResultsFromIntent(intent)?.getString("KEY_REPLY")?: return
-
+                        val selfUin = AppRuntimeHelper.getAccount()
                         // send message
                         ChatActivityFacade.sendMessage(
                             AppRuntimeHelper.getQQAppInterface(),
@@ -278,12 +299,11 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
                         val origin = notificationManager.activeNotifications.find {
                             it.id == notifyId
                         } ?: return
-                        val msg = MessagingStyle.extractMessagingStyleFromNotification(origin.notification)
-                            ?: return
+                        val msg = historyMessage[notifyId]?: return
                         val sendMsg: MessagingStyle.Message = MessagingStyle.Message(
                             result,
                             System.currentTimeMillis(),
-                            Person.Builder().setName("我").build()
+                            Person.Builder().setName("我").setIcon(getAvatar(selfUin)).setKey(selfUin).build()
                         )
                         msg.addMessage(sendMsg)
                         historyMessage[notifyId] = msg
@@ -400,5 +420,63 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)
             notificationManager.createNotificationChannels(notificationChannels)
         }
+    }
+
+    private fun toMD5(uin: String): String {
+        return toMD5Method.invoke(null, uin) as String
+    }
+
+    private fun getCroppedBitmap(bm: Bitmap): Bitmap {
+        var w: Int = bm.width
+        var h: Int = bm.height
+
+        val radius = if (w < h) w else h
+        w = radius
+        h = radius
+
+        val bmOut = Bitmap.createBitmap(w, h, Bitmap.Config.ARGB_8888)
+        val canvas = Canvas(bmOut)
+
+        val paint = Paint()
+        paint.isAntiAlias = true
+        paint.color = -0xbdbdbe
+
+        val rect = Rect(0, 0, w, h)
+        val rectF = RectF(rect)
+
+        canvas.drawARGB(0, 0, 0, 0)
+        canvas.drawCircle(
+            rectF.left + rectF.width() / 2, rectF.top + rectF.height() / 2,
+            (radius / 2).toFloat(), paint
+        )
+
+        paint.xfermode = PorterDuffXfermode(PorterDuff.Mode.SRC_IN)
+        canvas.drawBitmap(bm, rect, rect, paint)
+
+        return bmOut
+    }
+
+    private fun getAvatarFromFile(uin: String): Bitmap? {
+        val md5 = toMD5(toMD5(toMD5(uin) + uin) + uin)
+        val file = File(avatarCachePath, "$md5.jpg_")
+        if (file.isFile) {
+            return getCroppedBitmap(BitmapFactory.decodeFile(file.absolutePath))
+        }
+        return null
+    }
+    private fun getAvatar(uin: String): IconCompat? {
+        if (avatarCache[uin] == null) {
+            var cached = getAvatarFromFile(uin)
+            if (cached == null) {
+                val face = FaceImpl.getInstance()
+                cached = face.getBitmapFromCache(1, uin)
+                if (cached == null) {
+                    face.requestDecodeFace(1, uin)
+                    return null
+                }
+            }
+            avatarCache.put(uin, IconCompat.createWithBitmap(cached))
+        }
+        return avatarCache[uin]
     }
 }
