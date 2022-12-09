@@ -269,7 +269,7 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
         statlp.addRule(RelativeLayout.CENTER_VERTICAL);
         statlp.rightMargin = LayoutHelper.dip2px(context, 16);
 
-        rlayout.addView(llayout);
+        rlayout.addView(llayout, MATCH_PARENT, WRAP_CONTENT);
         rlayout.addView(stat, statlp);
 
         rlayout.setClickable(true);
