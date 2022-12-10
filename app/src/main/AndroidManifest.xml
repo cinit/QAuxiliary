@@ -102,6 +102,13 @@
             android:name="xposedscope"
             android:resource="@array/xposedscope" />
 
+        <provider
+            android:name="androidx.startup.InitializationProvider"
+            android:authorities="${applicationId}.androidx-startup"
+            android:exported="false"
+            tools:node="remove"
+            tools:ignore="MissingClass" />
+
     </application>
 
     <queries>
