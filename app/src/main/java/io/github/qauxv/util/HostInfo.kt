@@ -68,11 +68,11 @@ fun init(applicationContext: Application) {
 }
 
 private fun getHostInfo(context: Context): PackageInfo {
-    return try {
-        context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
-    } catch (e: Throwable) {
-        Log.e("Utils", "Can not get PackageInfo!")
-        throw AssertionError("Can not get PackageInfo!")
+    try {
+        return context.packageManager.getPackageInfo(context.packageName, PackageManager.GET_META_DATA)
+    } catch (e: PackageManager.NameNotFoundException) {
+        Log.e("Utils", "Can not get PackageInfo!", e)
+        throw e
     }
 }
 
