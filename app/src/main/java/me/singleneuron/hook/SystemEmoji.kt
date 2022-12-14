@@ -34,7 +34,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object SystemEmoji : CommonSwitchFunctionHook() {
+object SystemEmoji : CommonSwitchFunctionHook(defaultEnabled = true) {
 
     override val name: String = "强制使用系统Emoji"
 
