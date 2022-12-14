@@ -179,7 +179,7 @@ public class GagInfoDisclosure extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public String getDescription() {
-        return "即使你只是普通群成员";
+        return "总是显示哪个管理员设置了禁言";
     }
 
     @NonNull
