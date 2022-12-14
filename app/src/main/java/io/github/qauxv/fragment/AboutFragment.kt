@@ -171,6 +171,12 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "AGPL-3.0 License with EULA"
             ),
             LicenseNotice(
+                "Android",
+                "https://source.android.google.cn/license",
+                "Android Open Source Project",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
                 "Xposed",
                 "https://github.com/rovo89/XposedBridge",
                 "Copyright 2013 rovo89, Tungstwenty",
@@ -211,6 +217,36 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "https://github.com/F-19-F/justpush",
                 "F-19-F",
                 "GPL-3.0 License"
+            ),
+            LicenseNotice(
+                "QQHelper",
+                "https://github.com/Qiwu2542284182/QQHelper",
+                "祈无",
+                ""
+            ),
+            LicenseNotice(
+                "noapplet",
+                "https://github.com/Alcatraz323/noapplet",
+                "Alcatraz323",
+                "MIT License"
+            ),
+            LicenseNotice(
+                "QQ净化",
+                "https://github.com/zpp0196/QQPurify",
+                "zpp0196",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "原生音乐通知",
+                "https://github.com/Cryolitia/XposedMusicNotify",
+                "singleNeuron",
+                "LGPL-3.0 license"
+            ),
+            LicenseNotice(
+                "QQSpeciallyCare",
+                "https://github.com/Cryolitia/QQSpeciallyCare",
+                "singleNeuron",
+                "Apache License 2.0"
             )
         )
         ret + Licenses.getAll().onFailure {
