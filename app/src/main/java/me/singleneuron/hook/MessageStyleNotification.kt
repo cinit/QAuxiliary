@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.ioctl.hook.notification
+package me.singleneuron.hook
 
 import android.app.Activity
 import android.app.Notification
@@ -83,8 +83,8 @@ import java.io.File
 @UiItemAgentEntry
 object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
-    override val name = "QQ通知进化Plus"
-    override val description: String = "更加优雅的通知样式w" + if (isAvailable) "" else " [系统不支持]"
+    override val name = "MessageStyle通知"
+    override val description: String = "更加优雅的通知样式w，致敬QQ Helper" + if (isAvailable) "" else " [系统不支持]"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 
