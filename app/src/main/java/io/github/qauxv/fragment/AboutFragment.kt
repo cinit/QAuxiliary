@@ -205,6 +205,12 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "https://github.com/LuckyPray/DexKit",
                 "LuckyPray",
                 "LGPL-3.0 license"
+            ),
+            LicenseNotice(
+                "justpush",
+                "https://github.com/F-19-F/justpush",
+                "F-19-F",
+                "GPL-3.0 License"
             )
         )
         ret + Licenses.getAll().onFailure {
