@@ -456,7 +456,7 @@ object NQQSettingMe_updateProfileBubble : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("updateProfileBubbleMsgView")
     override val filter = filter@{ it: DexMethodDescriptor ->
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-        "QQSettingMe" in it.declaringClass || m.returnType == Void.TYPE
+        ("QQSettingMe" in it.declaringClass || m.returnType == Void.TYPE) && "bizParts" !in it.declaringClass
     }
 }
 
