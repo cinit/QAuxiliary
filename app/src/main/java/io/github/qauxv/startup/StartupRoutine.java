@@ -52,7 +52,9 @@ public class StartupRoutine {
     public static void execPostStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
         ensureHiddenApiAccess();
         // init all kotlin utils here
-        EzXHelperInit.INSTANCE.initZygote(HookEntry.getInitZygoteStartupParam());
+        try {
+            EzXHelperInit.INSTANCE.initZygote(HookEntry.getInitZygoteStartupParam());
+        }catch (NoClassDefFoundError error){ }
         EzXHelperInit.INSTANCE.initHandleLoadPackage(HookEntry.getLoadPackageParam());
         // resource injection is done somewhere else, do not init it here
         EzXHelperInit.INSTANCE.initAppContext(ctx, false, false);
