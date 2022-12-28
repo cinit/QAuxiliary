@@ -36,7 +36,7 @@ repositories {
 
 dependencies {
     implementation("com.android.tools.build:gradle:7.3.1")
-    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.7.22")
+    implementation("org.jetbrains.kotlin:kotlin-gradle-plugin:1.8.0")
     implementation("org.eclipse.jgit:org.eclipse.jgit:6.4.0.202211300538-r")
 }
 
