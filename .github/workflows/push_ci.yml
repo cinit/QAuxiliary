@@ -135,7 +135,7 @@ jobs:
       - telegram-bot-api
     steps:
       - name: Donwload Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
       - name: Download Telegram Bot API Binary
@@ -175,7 +175,7 @@ jobs:
       - build
     steps:
       - name: Donwload Artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           path: artifacts
       - name: Release
