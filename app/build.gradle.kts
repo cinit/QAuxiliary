@@ -206,7 +206,7 @@ dependencies {
     implementation(libs.lifecycle.livedata)
     implementation(libs.lifecycle.common)
     implementation(libs.lifecycle.runtime)
-    implementation(libs.xposed)
+    compileOnly(libs.xposed)
     implementation(libs.hiddenapibypass)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.material)
