@@ -106,22 +106,22 @@ jobs:
           echo "|universal|$universal" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Artifacts(arm32)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: ${{ env.APK_FILE_ARM32 }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-arm32
       - name: Upload Artifacts(arm64)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: ${{ env.APK_FILE_ARM64 }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-arm64
       - name: Upload Artifacts(armAll)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: ${{ env.APK_FILE_ARMALL }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-armAll
       - name: Upload Artifacts(universal)
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           path: ${{ env.APK_FILE_UNIVERSAL }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-universal
