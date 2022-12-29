@@ -23,6 +23,6 @@ android {
     }
 
     dependencies {
-        compileOnly("androidx.annotation:annotation:1.4.0")
+        compileOnly("androidx.annotation:annotation:1.5.0")
     }
 }
