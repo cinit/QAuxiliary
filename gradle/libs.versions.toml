@@ -4,7 +4,7 @@ appCenter = "5.0.0"
 compilesdk = "33"
 kotlin = "1.8.0"
 ksp = "1.8.0-1.0.8"
-lifecycle = "2.4.1"
+lifecycle = "2.5.1"
 materialDialog = "3.3.0"
 
 [libraries]
