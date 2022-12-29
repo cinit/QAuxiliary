@@ -9,6 +9,7 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
+        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
 }
 
@@ -20,6 +21,10 @@ dependencyResolutionManagement {
         maven("https://jitpack.io")
         maven("https://api.xposed.info/")
     }
+}
+
+plugins {
+    id("me.omico.age.settings") version "1.0.0-SNAPSHOT"
 }
 
 rootProject.name = "QAuxiliary"

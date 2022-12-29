@@ -4,8 +4,6 @@ import java.io.File
 import java.util.Properties
 
 object Version {
-    const val kotlin = "1.7.22"
-    const val ksp = "1.7.22-1.0.8"
     val java = JavaVersion.VERSION_11
 
     const val compileSdkVersion = 33

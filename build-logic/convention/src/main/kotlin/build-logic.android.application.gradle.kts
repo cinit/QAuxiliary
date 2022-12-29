@@ -20,35 +20,15 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
-    `kotlin-dsl`
+    id("com.android.application")
+    id("build-logic.android.base")
 }
 
-group = "io.github.qauxv.buildLogic"
-
-repositories {
-    google()
-    gradlePluginPortal()
-    mavenCentral()
-    maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
-}
-
-dependencies {
-    implementation(libs.android.tools)
-    implementation(libs.kotlin.gradle)
-    implementation(libs.eclipse.jgit)
-    implementation(libs.age)
-}
-
-java {
-    targetCompatibility = JavaVersion.VERSION_11
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
+android {
+    defaultConfig {
+        targetSdk = Version.targetSdk
+        versionCode = Common.getBuildVersionCode(rootProject)
+        versionName = Version.versionName + Common.getGitHeadRefsSuffix(rootProject)
     }
 }

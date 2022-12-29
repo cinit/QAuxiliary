@@ -23,7 +23,7 @@
 @file:Suppress("UnstableApiUsage")
 
 plugins {
-    id("io.github.qauxv.library")
+    id("build-logic.android.library")
 }
 
 android {

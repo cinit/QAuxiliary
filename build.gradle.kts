@@ -21,7 +21,7 @@
  */
 
 plugins {
-    id("io.github.qauxv.version")
+    id("build-logic.root-project")
 }
 
 tasks.register<Delete>("clean").configure {

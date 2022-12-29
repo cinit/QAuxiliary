@@ -34,12 +34,13 @@ import java.security.KeyStore
 import java.security.cert.X509Certificate
 import java.util.UUID
 
+@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
-    id("io.github.qauxv.application")
-    id("com.google.devtools.ksp") version Version.ksp
-    kotlin("plugin.serialization") version Version.kotlin
-    id("com.jaredsburrows.license") version "0.9.0"
-    id("org.jetbrains.changelog") version "2.0.0"
+    id("build-logic.android.application")
+    alias(libs.plugins.changelog)
+    alias(libs.plugins.ksp)
+    alias(libs.plugins.license)
+    alias(libs.plugins.serialization)
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
@@ -156,8 +157,9 @@ android {
     }
 
     buildFeatures {
+        aidl = true
+        buildConfig = true
         viewBinding = true
-        renderScript = false
     }
     lint {
         checkDependencies = true
@@ -166,6 +168,7 @@ android {
         sourceSets.configureEach {
             kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
         }
+        jvmToolchain(11)
     }
     applicationVariants.all {
         val variantCapped = name.capitalize()
@@ -197,33 +200,29 @@ dependencies {
     implementation(projects.libs.dexkit)
     ksp(projects.libs.ksp)
     // androidx
-    implementation("androidx.core:core-ktx:1.9.0")
-    implementation("androidx.constraintlayout:constraintlayout:2.1.4")
-    implementation("androidx.browser:browser:1.4.0")
-    val lifecycleVersion = "2.4.1"
-    implementation("androidx.lifecycle:lifecycle-livedata-ktx:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-common-java8:$lifecycleVersion")
-    implementation("androidx.lifecycle:lifecycle-runtime-ktx:$lifecycleVersion")
-
-    compileOnly("de.robv.android.xposed:api:82")
-    implementation("org.lsposed.hiddenapibypass:hiddenapibypass:4.3")
-    implementation("org.jetbrains.kotlinx:kotlinx-coroutines-core:1.6.4")
-    implementation("com.google.android.material:material:1.7.0")
-    implementation("com.google.android.flexbox:flexbox:3.0.0")
-    implementation("com.afollestad.material-dialogs:core:3.3.0")
-    implementation("com.afollestad.material-dialogs:input:3.3.0")
-    implementation("com.jaredrummler:colorpicker:1.1.0")
-    implementation("com.github.kyuubiran:EzXHelper:1.0.3")
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.browser)
+    implementation(libs.lifecycle.livedata)
+    implementation(libs.lifecycle.common)
+    implementation(libs.lifecycle.runtime)
+    implementation(libs.xposed)
+    implementation(libs.hiddenapibypass)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.material)
+    implementation(libs.flexbox)
+    implementation(libs.colorpicker)
+    implementation(libs.material.dialogs.core)
+    implementation(libs.material.dialogs.input)
+    implementation(libs.ezXHelper)
     // festival title
-    implementation("com.github.jinatonic.confetti:confetti:1.1.2")
-    implementation("com.github.MatteoBattilana:WeatherView:3.0.0")
-    val appCenterSdkVersion = "5.0.0"
-    implementation("com.microsoft.appcenter:appcenter-analytics:${appCenterSdkVersion}")
-    implementation("com.microsoft.appcenter:appcenter-crashes:${appCenterSdkVersion}")
-
-    implementation("org.jetbrains.kotlinx:kotlinx-serialization-json:1.4.1")
-    implementation("com.github.livefront.sealed-enum:runtime:0.5.0")
-    ksp("com.github.livefront.sealed-enum:ksp:0.5.0")
+    implementation(libs.confetti)
+    implementation(libs.weatherView)
+    implementation(libs.appcenter.analytics)
+    implementation(libs.appcenter.crashes)
+    implementation(libs.kotlinx.serialization.json)
+    implementation(libs.sealedEnum.runtime)
+    ksp(libs.sealedEnum.ksp)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath

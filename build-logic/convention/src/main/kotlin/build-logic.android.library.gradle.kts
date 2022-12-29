@@ -19,13 +19,15 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
+import com.android.build.gradle.LibraryExtension
 
-package plugin
+plugins {
+    id("com.android.library")
+    id("build-logic.android.base")
+}
 
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-
-class VersionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
+extensions.configure<LibraryExtension> {
+    defaultConfig {
+        targetSdk = Version.targetSdk
     }
 }

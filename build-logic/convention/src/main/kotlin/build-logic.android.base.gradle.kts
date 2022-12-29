@@ -20,25 +20,36 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package plugin
+@file:Suppress("UnstableApiUsage")
 
-import com.android.build.gradle.internal.dsl.BaseAppModuleExtension
-import configureKotlinAndroid
-import org.gradle.api.Plugin
-import org.gradle.api.Project
-import org.gradle.kotlin.dsl.configure
+import me.omico.age.dsl.configureAndroidCommon
 
-class ApplicationConventionPlugin : Plugin<Project> {
-    override fun apply(target: Project) {
-        with(target) {
-            with(pluginManager) {
-                apply("com.android.application")
-                apply("org.jetbrains.kotlin.android")
-            }
-
-            extensions.configure<BaseAppModuleExtension> {
-                configureKotlinAndroid(this)
-            }
-        }
-    }
+plugins {
+    id("com.android.base")
+    kotlin("android")
 }
+
+configureAndroidCommon {
+    compileSdk = Version.compileSdkVersion
+    buildToolsVersion = Version.buildToolsVersion
+    ndkVersion = Version.getNdkVersion(project)
+
+    defaultConfig {
+        minSdk = Version.minSdk
+        resourceConfigurations += listOf("zh", "en")
+    }
+    compileOptions {
+        sourceCompatibility = Version.java
+        targetCompatibility = Version.java
+    }
+
+    /*kotlinOptions {
+        jvmTarget = Version.java.toString()
+    }*/
+
+    packagingOptions.jniLibs.useLegacyPackaging = false
+}
+
+/*fun CommonExtension.kotlinOptions(block: KotlinJvmOptions.() -> Unit) {
+    (this as ExtensionAware).extensions.configure("kotlinOptions", block)
+}*/
