@@ -17,6 +17,7 @@
 #include "Natives.h"
 #include "NativeMainHook.h"
 #include "shared_memory.h"
+#include "v2sign.h"
 
 static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
     if (obj == nullptr) {
@@ -411,6 +412,14 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
 
 EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = nullptr;
+    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
+        return -1;
+    }
+#ifdef NDEBUG
+    if (!checkSignature(env)) {
+        return -1;
+    }
+#endif
     jint retCode = MMKV_JNI_OnLoad(vm, reserved);
     if (retCode < 0) {
         return retCode;
@@ -418,9 +427,6 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     retCode = DexKit_JNI_OnLoad(vm, reserved);
     if (retCode < 0) {
         return retCode;
-    }
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
-        return -1;
     }
     JNINativeMethod lMethods[1];
     jclass appInterface = env->FindClass("mqq/app/AppRuntime");

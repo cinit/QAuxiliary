@@ -129,6 +129,7 @@ android {
                 "-Wl,--gc-sections",
                 "-Oz",
                 "-Wl,--exclude-libs,ALL",
+                "-DNDEBUG",
             )
             externalNativeBuild.cmake {
                 cFlags += releaseFlags
