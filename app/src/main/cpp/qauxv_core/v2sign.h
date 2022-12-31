@@ -85,7 +85,7 @@ namespace {
         std::string file((std::istreambuf_iterator<char>(f)), std::istreambuf_iterator<char>());
         std::reverse(file.begin(), file.end());
         unsigned long long curr = 0;
-        const char *p = file.c_str();
+        auto *p = reinterpret_cast<const unsigned char *>(file.c_str());
         std::string signBlock;
         for (int j = 0; j < file.length(); j++) {
             curr = (curr << 8) | *p++;
