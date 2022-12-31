@@ -106,7 +106,7 @@ public class HybridClassLoader extends ClassLoader {
     }
 
     public static String getObfuscatedLsposedNativeApiClassName() {
-        return sProbeLsposedNativeApiClassName.replace('.', '/').substring(1, sObfuscatedPackageName.length() - 1);
+        return sProbeLsposedNativeApiClassName.replace('.', '/').substring(1, sProbeLsposedNativeApiClassName.length() - 1);
     }
 
     public static String getXposedBridgeClassName() {
