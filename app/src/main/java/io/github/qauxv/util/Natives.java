@@ -204,6 +204,7 @@ public class Natives {
                     Log.d("dlopen by mmap success");
                 }
             } catch (UnsatisfiedLinkError e1) {
+                throwIfJniError(e1);
                 // direct memory map load failed, extract and dlopen
                 File libname = extractNativeLibrary(ctx, "qauxv", abi);
                 registerNativeLibEntry(libname.getName());
@@ -211,6 +212,7 @@ public class Natives {
                     System.load(libname.getAbsolutePath());
                     Log.d("dlopen by extract success");
                 } catch (UnsatisfiedLinkError e3) {
+                    throwIfJniError(e3);
                     // give enough information to help debug
                     // Is this CPU_ABI bad?
                     Log.e("Build.SDK_INT=" + VERSION.SDK_INT);
@@ -248,6 +250,12 @@ public class Natives {
         });
         MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
         MMKV.mmkvWithID("global_cache", MMKV.MULTI_PROCESS_MODE);
+    }
+
+    private static void throwIfJniError(UnsatisfiedLinkError error) {
+        if (error.getMessage() != null && error.getMessage().contains("JNI_ERR")) {
+            throw error;
+        }
     }
 
     /**
