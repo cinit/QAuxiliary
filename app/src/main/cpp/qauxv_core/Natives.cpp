@@ -415,8 +415,12 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }
+    jclass appInterface = env->FindClass("mqq/app/AppRuntime");
+    if (appInterface == nullptr) {
+        env->ExceptionClear();
+    }
 #ifdef NDEBUG
-    if (!checkSignature(env)) {
+    if (!checkSignature(env, appInterface != nullptr)) {
         return -1;
     }
 #endif
@@ -429,9 +433,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return retCode;
     }
     JNINativeMethod lMethods[1];
-    jclass appInterface = env->FindClass("mqq/app/AppRuntime");
     if (appInterface == nullptr) {
-        env->ExceptionClear();
         __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");
     } else {
         jclass clazz = env->FindClass("cc/ioctl/hook/experimental/CardMsgSender");

@@ -2,12 +2,21 @@
 #include <regex>
 #include <cstring>
 #include <fstream>
+
+#include <unistd.h>
+#include <errno.h>
+#include <dirent.h>
+
+#include "android/log.h"
 #include "md5.cpp"
+
 #ifndef MODULE_SIGNATURE
 #define MODULE_SIGNATURE 294E0ABF933AAA14C6EB986A005E5CCB
 #endif
+#define PKG_NAME "io.github.qauxv"
 #define __STRING(x) #x
 #define STRING(x) __STRING(x)
+
 namespace {
     const char magic[16]{
             0x32, 0x34, 0x20, 0x6b, 0x63, 0x6f, 0x6c, 0x42,
@@ -40,6 +49,35 @@ namespace {
         std::string s = filePathStr.substr(5, filePathStr.size() - 26);
         env->ReleaseStringUTFChars(file, cStr);
         return s;
+    }
+
+    std::string getSelfApkPath(JNIEnv *env) {
+        // walk through /proc/pid/fd to find the apk path
+        std::string selfFdDir = "/proc/" + std::to_string(getpid()) + "/fd";
+        DIR *dir = opendir(selfFdDir.c_str());
+        if (dir == nullptr) {
+            return std::string();
+        }
+        struct dirent *entry;
+        while ((entry = readdir(dir)) != nullptr) {
+            if (entry->d_type != DT_LNK) {
+                continue;
+            }
+            std::string linkPath = selfFdDir + "/" + entry->d_name;
+            char buf[PATH_MAX];
+            ssize_t len = readlink(linkPath.c_str(), buf, sizeof(buf) - 1);
+            if (len < 0) {
+                continue;
+            }
+            buf[len] = '\0';
+            std::string path(buf);
+            if (path.starts_with("/data/app/") && path.find(PKG_NAME) != std::string::npos && path.ends_with(".apk")) {
+                closedir(dir);
+                return path;
+            }
+        }
+        closedir(dir);
+        return std::string();
     }
 
     std::string getSignBlock(const std::string &path) {
@@ -112,8 +150,9 @@ namespace {
         return signature;
     }
 
-    bool checkSignature(JNIEnv *env) {
-        std::string path = getModulePath(env);
+    bool checkSignature(JNIEnv *env,bool isModule) {
+        std::string path = isModule ? getModulePath(env) : getSelfApkPath(env);
+        // __android_log_print(ANDROID_LOG_INFO, "QAuxv", "isModule: %d, path: %s", isModule, path.c_str());
         if (path.empty()) {
             return false;
         }
