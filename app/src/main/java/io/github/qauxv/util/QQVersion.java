@@ -23,6 +23,9 @@ package io.github.qauxv.util;
 
 public class QQVersion {
 
+    private QQVersion() {
+    }
+
     public static final long QQ_7_8_0 = 922;
     public static final long QQ_8_0_0 = 1024;
     public static final long QQ_8_0_5 = 1186;
@@ -92,4 +95,5 @@ public class QQVersion {
     public static final long QQ_8_9_20 = 3524;
     public static final long QQ_8_9_23 = 3582;
     public static final long QQ_8_9_25 = 3640;
+    public static final long QQ_8_9_28 = 3698;
 }
