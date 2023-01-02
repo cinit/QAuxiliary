@@ -105,12 +105,14 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
     }
 
     override fun initOnce() = throwOrTrue {
-        val kQQSettingMe: Class<*> = "com.tencent.mobileqq.activity.QQSettingMe".clazz!!
-        val ctor = kQQSettingMe.constructors.asSequence().first { it.parameterTypes.size > 2 }
+        val kQQSettingMeView: Class<*> = if (requireMinQQVersion(QQVersion.QQ_8_9_25))
+            Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMeView")
+        else Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
+        val ctor = kQQSettingMeView.constructors.asSequence().first { it.parameterTypes.size > 2 }
         // select a method to get view
         if (ViewGroup::class.java.isAssignableFrom(ctor.parameterTypes[2])) {
             // for after QQ 8.8.20
-            kQQSettingMe.hookBeforeAllConstructors {
+            kQQSettingMeView.hookBeforeAllConstructors {
                 val viewGroup = it.args[2] as ViewGroup
                 updateChatWordView(viewGroup)
             }
