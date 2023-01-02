@@ -30,9 +30,9 @@ import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
+import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.getStaticObject
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -40,8 +40,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.QQVersion.QQ_8_4_1
 import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
@@ -124,68 +124,62 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
 
     @Throws(Exception::class)
     override fun initOnce() = throwOrTrue {
-        val clz = Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
-        XposedBridge.hookAllConstructors(clz, object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                if (LicenseStatus.sDisableCommonHooks) return
-                if (!isEnabled) return
-                try {
-                    //中间部分(QQ会员 我的钱包等)
-                    val midContentName = ConfigTable.getConfig<String>(MidContentName)
-                    val midContentListLayout = if (requireMinQQVersion(QQ_8_6_5)) {
-                        param.thisObject.get(midContentName, LinearLayout::class.java)
-                    } else {
-                        param.thisObject.get(midContentName, View::class.java) as LinearLayout
+        val kQQSettingMeView = if (requireMinQQVersion(QQVersion.QQ_8_9_25))
+            Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMeView")
+        else Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
+        XposedBridge.hookAllConstructors(kQQSettingMeView, HookUtils.afterIfEnabled(this) { param ->
+            //中间部分(QQ会员 我的钱包等)
+            val midContentName = ConfigTable.getConfig<String>(MidContentName)
+            val midContentListLayout = if (requireMinQQVersion(QQ_8_6_5)) {
+                param.thisObject.get(midContentName, LinearLayout::class.java)
+            } else {
+                param.thisObject.get(midContentName, View::class.java) as LinearLayout
+            }
+            //底端部分 设置 夜间模式 达人 等
+            val (_, _, vg) = param.args
+            val id = "${hostInfo.packageName}.R\$id".clazz!!.getStaticObject("drawer_bottom_container")
+            val underSettingsLayout = if (id is Int && vg is ViewGroup) {
+                vg.findViewById(id)
+            } else if (requireMinQQVersion(QQ_8_6_5)) {
+                val parent = midContentListLayout?.parent?.parent as ViewGroup
+                var ret: LinearLayout? = null
+                parent.forEach {
+                    if (it is LinearLayout && it[0] is LinearLayout) {
+                        ret = it
                     }
-                    //底端部分 设置 夜间模式 达人 等
-                    val (_, _, vg) = param.args
-                    val id = "${hostInfo.packageName}.R\$id".clazz!!.getStaticObject("drawer_bottom_container")
-                    val underSettingsLayout = if (id is Int && vg is ViewGroup) {
-                        vg.findViewById(id)
-                    } else if (requireMinQQVersion(QQ_8_6_5)) {
-                        val parent = midContentListLayout?.parent?.parent as ViewGroup
-                        var ret: LinearLayout? = null
-                        parent.forEach {
-                            if (it is LinearLayout && it[0] is LinearLayout) {
-                                ret = it
-                            }
-                        }
-                        ret
-                    } else {
-                        val underSettingsName = if (requireMinQQVersion(QQ_8_6_0)) "l" else "h"
-                        param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
-                    }
-                    val correctUSLayout: LinearLayout? =
-                        if (requireMinQQVersion(QQ_8_9_23)) (underSettingsLayout as LinearLayout)[0] as LinearLayout else underSettingsLayout
-                    correctUSLayout?.forEachIndexed { i, v ->
-                        val tv = (v as LinearLayout)[1] as TextView
-                        val text = tv.text
-                        if (stringHit(text.toString()) || i == 3 && activeItems.contains("当前温度")) {
-                            v.setViewZeroSize()
-                        }
-                    }
-                    val midRemovedList: MutableList<Int> = mutableListOf()
-                    midContentListLayout?.forEach {
-                        val child = it as LinearLayout
-                        val tv = if (child.size == 1) {
-                            (child[0] as LinearLayout)[1]
-                        } else {
-                            child[1]
-                        } as TextView
-                        val text = tv.text.toString()
-                        if (stringHit(text)) {
-                            midRemovedList.add(midContentListLayout.indexOfChild(child))
-                        }
-                    }
-                    midRemovedList.sorted().forEachIndexed { index, i ->
-                        if (requireMinQQVersion(QQ_8_8_11)) {
-                            midContentListLayout?.removeViewAt(i - index)
-                        } else {
-                            midContentListLayout?.getChildAt(i)?.hide()
-                        }
-                    }
-                } catch (e: Throwable) {
-                    traceError(e)
+                }
+                ret
+            } else {
+                val underSettingsName = if (requireMinQQVersion(QQ_8_6_0)) "l" else "h"
+                param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
+            }
+            val correctUSLayout: LinearLayout? =
+                if (requireMinQQVersion(QQ_8_9_23)) (underSettingsLayout as LinearLayout)[0] as LinearLayout else underSettingsLayout
+            correctUSLayout?.forEachIndexed { i, v ->
+                val tv = (v as LinearLayout)[1] as TextView
+                val text = tv.text
+                if (stringHit(text.toString()) || i == 3 && activeItems.contains("当前温度")) {
+                    v.setViewZeroSize()
+                }
+            }
+            val midRemovedList: MutableList<Int> = mutableListOf()
+            midContentListLayout?.forEach {
+                val child = it as LinearLayout
+                val tv = if (child.size == 1) {
+                    (child[0] as LinearLayout)[1]
+                } else {
+                    child[1]
+                } as TextView
+                val text = tv.text.toString()
+                if (stringHit(text)) {
+                    midRemovedList.add(midContentListLayout.indexOfChild(child))
+                }
+            }
+            midRemovedList.sorted().forEachIndexed { index, i ->
+                if (requireMinQQVersion(QQ_8_8_11)) {
+                    midContentListLayout?.removeViewAt(i - index)
+                } else {
+                    midContentListLayout?.getChildAt(i)?.hide()
                 }
             }
         })

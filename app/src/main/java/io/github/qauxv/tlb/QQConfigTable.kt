@@ -61,6 +61,8 @@ import io.github.qauxv.bridge.QQMessageFacade
 import io.github.qauxv.util.QQVersion.QQ_8_0_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_18
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
+import io.github.qauxv.util.QQVersion.QQ_8_9_25
+import io.github.qauxv.util.QQVersion.QQ_8_9_28
 import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
@@ -112,6 +114,9 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_9_2 to "R0",
             QQ_8_9_3 to "X0",
             QQ_8_9_13 to "h0",
+            // gap
+            QQ_8_9_25 to "l0",
+            QQ_8_9_28 to "m0",
         ),
 
         SortAtPanel.sessionInfoTroopUin to mapOf(
