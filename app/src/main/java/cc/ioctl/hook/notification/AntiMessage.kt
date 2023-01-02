@@ -57,7 +57,7 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         return false
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
 }
 
 val chineseSorter = Comparator<String>(Collator.getInstance(Locale.CHINA)::compare)

@@ -48,7 +48,7 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
     override val targetProcesses = SyncUtils.PROC_QQFAV
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_0_0)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_2_0)
 
     override val pluginID = "qqfav.apk"
 

@@ -46,7 +46,7 @@ object QZoneNoAD : PluginDelayableHook("ketal_qzone_hook") {
     override val targetProcesses = SyncUtils.PROC_QZONE
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_OPERATION_LOG
 
-    override val isAvailable = requireMinVersion(QQVersion.QQ_8_0_0, TIMVersion.TIM_1_0_0)
+    override val isAvailable = requireMinVersion(QQVersion.QQ_8_2_0, TIMVersion.TIM_1_0_0)
 
     override val pluginID = "qzone_plugin.apk"
 

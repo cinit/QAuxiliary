@@ -53,7 +53,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
             chatMessage: Any,
             param: XC_MethodHook.MethodHookParam
     ): Boolean {
-        if (hostInfo.versionCode < QQVersion.QQ_8_0_0) return false
+        if (hostInfo.versionCode < QQVersion.QQ_8_2_0) return false
         return if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
                         .isAssignableFrom(chatMessage.javaClass)
         ) {

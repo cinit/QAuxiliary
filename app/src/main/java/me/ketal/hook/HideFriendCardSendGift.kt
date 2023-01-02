@@ -49,7 +49,7 @@ object HideFriendCardSendGift : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
     override val isAvailable: Boolean
-        get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
+        get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
 
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {

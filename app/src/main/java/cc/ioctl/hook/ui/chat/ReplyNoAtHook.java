@@ -23,7 +23,7 @@ package cc.ioctl.hook.ui.chat;
 
 import static io.github.qauxv.util.Initiator._BaseChatPie;
 import static io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9;
-import static io.github.qauxv.util.QQVersion.QQ_8_1_3;
+import static io.github.qauxv.util.QQVersion.QQ_8_2_0;
 import static io.github.qauxv.util.QQVersion.QQ_8_6_0;
 import static io.github.qauxv.util.TIMVersion.TIM_3_1_1;
 
@@ -119,7 +119,7 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean isAvailable() {
-        return HostInfo.requireMinQQVersion(QQ_8_1_3)
+        return HostInfo.requireMinQQVersion(QQ_8_2_0)
                 || HostInfo.requireMinTimVersion(TIM_3_1_1)
                 || HostInfo.requireMinPlayQQVersion(PlayQQ_8_2_9);
     }

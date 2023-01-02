@@ -53,7 +53,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("艾特", "at")
     override val isAvailable: Boolean
-        get() = requireMinVersion(QQVersion.QQ_8_1_3, TIMVersion.TIM_3_1_1, PlayQQVersion.PlayQQ_8_2_9)
+        get() = requireMinVersion(QQVersion.QQ_8_2_0, TIMVersion.TIM_3_1_1, PlayQQVersion.PlayQQ_8_2_9)
 
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null

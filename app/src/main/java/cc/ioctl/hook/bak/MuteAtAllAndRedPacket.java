@@ -27,16 +27,13 @@ import static io.github.qauxv.util.Initiator.load;
 
 import cc.ioctl.util.ExfriendManager;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 
 public class MuteAtAllAndRedPacket extends BasePersistBackgroundHook {
@@ -55,7 +52,7 @@ public class MuteAtAllAndRedPacket extends BasePersistBackgroundHook {
             cl_MessageInfo = c.getDeclaredField("mMessageInfo").getType();
         }
         /* @author qiwu */
-        final int at_all_type = (HostInfo.requireMinQQVersion(QQVersion.QQ_7_8_0)) ? 13 : 12;
+        final int at_all_type = 13;
         for (Method m : cl_MessageInfo.getDeclaredMethods()) {
             if (m.getReturnType().equals(int.class)) {
                 Class<?>[] argt = m.getParameterTypes();
@@ -82,7 +79,7 @@ public class MuteAtAllAndRedPacket extends BasePersistBackgroundHook {
         XposedHelpers.findAndHookMethod(load("com.tencent.mobileqq.data.MessageForQQWalletMsg"),
                 "doParse", new XC_MethodHook(98) {
                     @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    protected void afterHookedMethod(MethodHookParam param) {
                         if (LicenseStatus.sDisableCommonHooks) {
                             return;
                         }

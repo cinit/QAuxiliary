@@ -26,7 +26,6 @@ import android.app.Activity
 import android.view.View
 import android.view.ViewGroup
 import android.view.ViewTreeObserver.OnGlobalLayoutListener
-import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex.getFirstByType
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -38,6 +37,7 @@ import me.ketal.base.PluginDelayableHook
 import me.ketal.util.getField
 import me.ketal.util.getMethod
 import xyz.nextalone.util.clazz
+import xyz.nextalone.util.getIdentifier
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
@@ -52,13 +52,13 @@ object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
 
     override val pluginID = "qwallet_plugin.apk"
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
         arrayOf("Lcom/qwallet/activity/QWalletHomeActivity;->onCreate(Landroid/os/Bundle;)V", "Lcom/qwallet/activity/QvipPayWalletActivity;->onCreate(Landroid/os/Bundle;)V").getMethod(classLoader)
             ?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
-                val id = ctx.resources.getIdentifier("root", "id", HostInfo.PACKAGE_NAME_QQ)
+                val id = ctx.getIdentifier("id", "root")!!
                 val rootView = ctx.findViewById<ViewGroup>(id)
                 val midView = rootView.getChildAt(rootView.childCount - 1)
                 if (!requireMinQQVersion(QQVersion.QQ_8_8_17)) {

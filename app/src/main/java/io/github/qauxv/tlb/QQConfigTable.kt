@@ -22,8 +22,6 @@
 package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ui.chat.ReplyNoAtHook
-import io.github.qauxv.util.QQVersion.QQ_8_1_3
-import io.github.qauxv.util.QQVersion.QQ_8_1_5
 import io.github.qauxv.util.QQVersion.QQ_8_2_6
 import io.github.qauxv.util.QQVersion.QQ_8_3_6
 import io.github.qauxv.util.QQVersion.QQ_8_4_1
@@ -58,9 +56,8 @@ import me.ketal.hook.SortAtPanel
 import cc.ioctl.hook.troop.RemovePlayTogether
 import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
 import io.github.qauxv.bridge.QQMessageFacade
-import io.github.qauxv.util.QQVersion.QQ_8_0_0
+import io.github.qauxv.util.QQVersion.QQ_8_2_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_18
-import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import io.github.qauxv.util.QQVersion.QQ_8_9_25
 import io.github.qauxv.util.QQVersion.QQ_8_9_28
 import xyz.nextalone.hook.ChatWordsCount
@@ -72,8 +69,7 @@ class QQConfigTable : ConfigTableInterface {
 
     override val rangingConfigs: Map<String, Map<Long, Any>> = mapOf(
         ReplyNoAtHook::class.java.simpleName to mapOf(
-            QQ_8_1_3 to "k",
-            QQ_8_1_5 to "l",
+            QQ_8_2_0 to "l",
             QQ_8_2_6 to "m",
             QQ_8_3_6 to "n",
             QQ_8_4_8 to "createAtMsg",
@@ -141,7 +137,6 @@ class QQConfigTable : ConfigTableInterface {
         ),
 
         QQMessageFacade::class.java.simpleName to mapOf(
-            QQ_8_0_0 to "b",
             QQ_8_8_93 to "z2",
             QQ_8_9_18 to "B2",
         ),

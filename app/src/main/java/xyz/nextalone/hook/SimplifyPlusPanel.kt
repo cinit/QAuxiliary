@@ -143,5 +143,5 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_0_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
 }
