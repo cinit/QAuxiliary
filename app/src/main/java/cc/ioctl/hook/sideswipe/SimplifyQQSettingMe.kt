@@ -31,7 +31,7 @@ import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
 import cc.ioctl.util.HookUtils
-import com.github.kyuubiran.ezxhelper.utils.getStaticObject
+import com.github.kyuubiran.ezxhelper.utils.getStaticObjectOrNull
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedBridge
@@ -137,7 +137,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
             }
             //底端部分 设置 夜间模式 达人 等
             val (_, _, vg) = param.args
-            val id = "${hostInfo.packageName}.R\$id".clazz!!.getStaticObject("drawer_bottom_container")
+            val id = "${hostInfo.packageName}.R\$id".clazz!!.getStaticObjectOrNull("drawer_bottom_container")
             val underSettingsLayout = if (id is Int && vg is ViewGroup) {
                 vg.findViewById(id)
             } else if (requireMinQQVersion(QQ_8_6_5)) {
