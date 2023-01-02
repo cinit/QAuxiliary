@@ -12,6 +12,7 @@ age = { module = "me.omico.age:age-dsl", version = "1.0.0-SNAPSHOT" }
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", version.ref = "appCenter" }
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }
+androidx-annotation = { module = "androidx.annotation:annotation", version = "1.5.0" }
 androidx-browser = { module = "androidx.browser:browser", version = "1.4.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.1.4" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.9.0" }
