@@ -914,3 +914,97 @@ Java_cc_ioctl_util_JunkCodeUtils_getJunkCode(JNIEnv *, jclass, jint jtc) {
     uint32_t code = (a32 >> o) % 1000000;
     return jint(code);
 }
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_dup(JNIEnv *env, jclass clazz, jint fd) {
+    if (fd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("fd is negative: ") + std::to_string(fd)).c_str());
+        return -1;
+    }
+    int result = dup(fd);
+    if (result < 0) {
+        int err = errno;
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    }
+    return result;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_dup2(JNIEnv *env,
+                                       jclass clazz,
+                                       jint oldfd,
+                                       jint newfd) {
+    if (oldfd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("oldfd is negative: ") + std::to_string(oldfd)).c_str());
+        return -1;
+    }
+    if (newfd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("newfd is negative: ") + std::to_string(newfd)).c_str());
+        return -1;
+    }
+    int result = dup2(oldfd, newfd);
+    if (result < 0) {
+        int err = errno;
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    }
+    return result;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_dup3(JNIEnv *env,
+                                       jclass clazz,
+                                       jint oldfd,
+                                       jint newfd,
+                                       jint flags) {
+    if (oldfd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("oldfd is negative: ") + std::to_string(oldfd)).c_str());
+        return -1;
+    }
+    if (newfd < 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      (std::string("newfd is negative: ") + std::to_string(newfd)).c_str());
+        return -1;
+    }
+    int result = dup3(oldfd, newfd, flags);
+    if (result < 0) {
+        int err = errno;
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    }
+    return result;
+}
+
+extern "C"
+JNIEXPORT jint JNICALL
+Java_io_github_qauxv_util_Natives_open(JNIEnv *env,
+                                       jclass clazz,
+                                       jstring path,
+                                       jint flags,
+                                       jint mode) {
+    if (path == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "path is null");
+        return -1;
+    }
+    const char *path_cstr = env->GetStringUTFChars(path, nullptr);
+    if (path_cstr == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "out of memory");
+        return -1;
+    }
+    int result = open(path_cstr, flags, mode);
+    int err = errno;
+    env->ReleaseStringUTFChars(path, path_cstr);
+    if (result < 0) {
+        env->ThrowNew(env->FindClass("java/io/IOException"), strerror(err));
+        return -1;
+    }
+    return result;
+}

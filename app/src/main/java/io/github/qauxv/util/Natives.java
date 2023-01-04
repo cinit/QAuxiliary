@@ -74,6 +74,26 @@ public class Natives {
     public static final int SEEK_CUR = 1;        /* Set file offset to current plus OFFSET.  */
     public static final int SEEK_END = 2;        /* Set file offset to end plus OFFSET.  */
 
+    public static final int O_ACCMODE = 0x3;
+    public static final int O_RDONLY = 0x0;
+    public static final int O_WRONLY = 0x1;
+    public static final int O_RDWR = 0x2;
+    public static final int O_CREAT = 0x40;
+    public static final int O_EXCL = 0x80;
+    public static final int O_NOCTTY = 0x100;
+    public static final int O_TRUNC = 0x200;
+    public static final int O_APPEND = 0x400;
+    public static final int O_NONBLOCK = 0x800;
+    public static final int O_DSYNC = 0x1000;
+    public static final int O_DIRECT = 0x4000;
+    public static final int O_LARGEFILE = 0x8000;
+    public static final int O_DIRECTORY = 0x10000;
+    public static final int O_NOFOLLOW = 0x20000;
+    public static final int O_NOATIME = 0x40000;
+    public static final int O_CLOEXEC = 0x80000;
+    public static final int O_SYNC = (0x100000 | O_DSYNC);
+    public static final int O_PATH = 0x200000;
+
     private Natives() {
         throw new AssertionError("No instance for you!");
     }
@@ -101,6 +121,14 @@ public class Natives {
     public static int read(int fd, byte[] buf, int len) throws IOException {
         return read(fd, buf, 0, len);
     }
+
+    public static native int dup(int fd) throws IOException;
+
+    public static native int dup2(int oldfd, int newfd) throws IOException;
+
+    public static native int dup3(int oldfd, int newfd, int flags) throws IOException;
+
+    public static native int open(String path, int flags, int mode) throws IOException;
 
     public static native long lseek(int fd, long offset, int whence) throws IOException;
 
