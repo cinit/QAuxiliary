@@ -125,7 +125,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         val onClickInvokingMethods = dexKit.findMethodInvoking {
             methodDeclareClass = kAIOPictureView.name
             methodName = "onClick"
-            beInvokedMethodName = kAIOPictureView.name
+            beInvokedMethodDeclareClass = kAIOPictureView.name
             beInvokedMethodReturnType = "V"
             beInvokedMethodParameterTypes = emptyArray()
         }
