@@ -89,6 +89,11 @@
             android:name=".activity.SettingsUiFragmentHostActivity"
             android:theme="@style/AppTheme.Def" />
 
+        <activity
+            android:exported="false"
+            android:name=".activity.ShadowSafTransientActivity"
+            android:theme="@android:style/Theme.Translucent.NoTitleBar" />
+
         <meta-data
             android:name="xposedmodule"
             android:value="true" />

@@ -148,51 +148,60 @@ public class SafUtils {
 
     private static final HashMap<String, ParcelFileDescriptor> sCachedFileDescriptors = new HashMap<>();
 
+    private static void checkMode(@Nullable String mode) {
+        // Can be "r", "w", "wt", "wa", "rw" or "rwt".
+        if (!"r".equals(mode) && !"w".equals(mode) && !"wt".equals(mode) && !"wa".equals(mode)
+                && !"rw".equals(mode) && !"rwt".equals(mode)) {
+            throw new IllegalArgumentException("invalid mode: " + mode);
+        }
+    }
+
     /**
-     * Open an input stream for the given uri. The result is cached.
+     * Open a fd for the given uri. The result is cached. It's the caller's responsibility to close the fd.
      * TODO: add a lifecycle callback to clear the cached fd when the activity is destroyed.
      *
      * @param context the activity or application context
      * @param uri     the uri of the file to be opened
-     * @return the input stream of the file
+     * @param mode    the mode to open the file
+     *                Can be "r", "w", "wt", "wa", "rw" or "rwt".
+     *                See {@link ParcelFileDescriptor#parseMode} for more details.
+     * @return a fd for the given uri
      * @throws IOException       if any error occurs
      * @throws SecurityException if access denied by the content provider
      */
-    public static InputStream openInputStream(@NonNull Context context, @NonNull Uri uri) throws IOException, SecurityException {
+    public static ParcelFileDescriptor openFileDescriptor(@NonNull Context context, @NonNull Uri uri, @NonNull String mode) throws IOException, SecurityException {
         Objects.requireNonNull(context, "context");
         Objects.requireNonNull(uri, "uri");
+        checkMode(mode);
         try {
-            ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(uri, "r");
+            ParcelFileDescriptor fd = context.getContentResolver().openFileDescriptor(uri, mode);
             if (fd == null) {
                 throw new IOException("Failed to open " + uri + ", is the provider still running?");
             }
             ParcelFileDescriptor dup = fd.dup();
             synchronized (sCachedFileDescriptors) {
-                ParcelFileDescriptor old = sCachedFileDescriptors.put(uri.toString(), dup);
+                ParcelFileDescriptor old = sCachedFileDescriptors.put(mode + "|" + uri, dup);
                 if (old != null) {
                     old.close();
                 }
-                sCachedFileDescriptors.put(uri.toString(), dup);
+                sCachedFileDescriptors.put(mode + "|" + uri, dup);
             }
-            // do not close the fd, it will be closed when the input stream is closed
-            return new FileInputStream(fd.getFileDescriptor());
+            return fd;
         } catch (SecurityException se) {
             // the access is denied, maybe there is an activity recreation?
             // try to open the input stream by a cached file descriptor
             ParcelFileDescriptor dup = null;
             synchronized (sCachedFileDescriptors) {
-                ParcelFileDescriptor cached = sCachedFileDescriptors.get(uri.toString());
+                ParcelFileDescriptor cached = sCachedFileDescriptors.get(mode + "|" + uri);
                 if (cached != null) {
                     dup = cached.dup();
                 }
             }
             if (dup != null) {
-                FileDescriptor fd = dup.getFileDescriptor();
                 try {
                     // set the offset to 0
-                    Os.lseek(fd, 0, OsConstants.SEEK_SET);
-                    // do not close the fd, it will be closed when the input stream is closed
-                    return new FileInputStream(fd);
+                    Os.lseek(dup.getFileDescriptor(), 0, OsConstants.SEEK_SET);
+                    return dup;
                 } catch (ErrnoException e) {
                     dup.close();
                     throw new IOException("Failed to seek to the beginning of the file", e);
@@ -202,6 +211,11 @@ public class SafUtils {
                 throw se;
             }
         }
+    }
+
+    public static InputStream openInputStream(@NonNull Context context, @NonNull Uri uri) throws IOException, SecurityException {
+        // do not close the fd, it will be closed when the input stream is closed
+        return new FileInputStream(openFileDescriptor(context, uri, "r").getFileDescriptor());
     }
 
     private static void checkProcess() {
