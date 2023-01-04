@@ -33,6 +33,7 @@ import io.github.qauxv.util.dexkit.name
 import io.github.qauxv.util.dexkit.valueOf
 import io.github.qauxv.util.hostInfo
 import io.luckypray.dexkit.DexKitBridge
+import io.luckypray.dexkit.builder.BatchFindArgs
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor as MethodDescriptor
 import java.util.concurrent.locks.Lock
 
@@ -70,7 +71,9 @@ class DexKitDeobfs private constructor(
                 }
             }
 
-            val resultMap = helper.batchFindMethodsUsingStrings(deobfsMap, true)
+            val resultMap = helper.batchFindMethodsUsingStrings(BatchFindArgs.build {
+                queryMap = deobfsMap
+            })
             val resultMap2 = mutableMapOf<String, Set<MethodDescriptor>>()
             resultMap.forEach {
                 val key = it.key.split("#").first()
@@ -111,7 +114,9 @@ class DexKitDeobfs private constructor(
             val helper = mDexKitBridge!!
             val keys = target.traitString
             val methods = keys.map { key ->
-                helper.findMethodUsingString(key, true)
+                helper.findMethodUsingString {
+                    usingString = key
+                }
             }.flatMap { desc ->
                 desc.map { DexMethodDescriptor(it.descriptor) }
             }

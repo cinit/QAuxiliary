@@ -106,10 +106,10 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         var kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)
         if (kAIOPictureView == null) {
             val clazzList = mutableListOf<DexClassDescriptor>().apply {
-                dexKit.batchFindClassesUsingStrings(mapOf(
-                    "1" to setOf("AIOPictureView", "0X800A91E"),
-                    "2" to setOf("AIOGalleryPicView", "0X800A91E")
-                )).values.forEach {
+                dexKit.batchFindClassesUsingStrings {
+                    addQuery("1", setOf("AIOPictureView", "0X800A91E"))
+                    addQuery("2", setOf("AIOGalleryPicView", "0X800A91E"))
+                }.values.forEach {
                     addAll(it)
                 }
             }
@@ -122,28 +122,26 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             CAIOPictureView.descCache = getTypeSig(kAIOPictureView) + "-><clinit>()V"
         }
         Log.d("kAIOPictureView: ${kAIOPictureView.name}")
-        val onClickInvokingMethods = dexKit.findMethodInvoking(
-            methodDescriptor = "",
-            methodDeclareClass = kAIOPictureView.name,
-            methodName = "onClick",
-            beCalledMethodDeclareClass = kAIOPictureView.name,
-            beCalledMethodReturnType = "V",
-            beCalledMethodParamTypes = emptyArray()
-        )
+        val onClickInvokingMethods = dexKit.findMethodInvoking {
+            methodDeclareClass = kAIOPictureView.name
+            methodName = "onClick"
+            beInvokedMethodName = kAIOPictureView.name
+            beInvokedMethodReturnType = "V"
+            beInvokedMethodParameterTypes = emptyArray()
+        }
         Log.d("onClickInvokingMethods: $onClickInvokingMethods")
         if (onClickInvokingMethods.size != 1) {
             return false
         }
         val calledMethods = onClickInvokingMethods.values.first().toSet()
         Log.d("calledMethods: $calledMethods")
-        val invokingMethods = dexKit.findMethodInvoking(
-            "",
-            methodDeclareClass = kAIOPictureView.name,
-            methodReturnType = "V",
-            methodParameterTypes = emptyArray(),
-            beCalledMethodReturnType = "V",
-            beCalledMethodParamTypes = arrayOf("J", "I", "I")
-        ).map { it.key }.filter { calledMethods.contains(it) }
+        val invokingMethods = dexKit.findMethodInvoking {
+            methodDeclareClass = kAIOPictureView.name
+            methodReturnType = "V"
+            methodParameterTypes = emptyArray()
+            beInvokedMethodReturnType = "V"
+            beInvokedMethodParameterTypes = arrayOf("J", "I", "I")
+        }.map { it.key }.filter { calledMethods.contains(it) }
         Log.d("invokingMethods: $invokingMethods")
         if (invokingMethods.size == 1) {
             NAIOPictureView_onDownloadOriginalPictureClick.descCache = invokingMethods.first().descriptor
@@ -157,12 +155,12 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
             Log.d("save: ${filterMethods.first()}")
             NAIOPictureView_onDownloadOriginalPictureClick.descCache = DexMethodDescriptor(filterMethods.first()).descriptor
         }
-        val setVisibilityMethods = dexKit.findMethodCaller(
-            methodDescriptor = "Landroid/widget/TextView;->setVisibility(I)V",
-            callerMethodDeclareClass = kAIOPictureView.name,
-            callerMethodReturnType = "V",
-            callerMethodParameterTypes = arrayOf("Z"),
-        )
+        val setVisibilityMethods = dexKit.findMethodCaller {
+            methodDescriptor = "Landroid/widget/TextView;->setVisibility(I)V"
+            callerMethodDeclareClass = kAIOPictureView.name
+            callerMethodReturnType = "V"
+            callerMethodParameterTypes = arrayOf("Z")
+        }
         Log.d("setVisibilityMethods: $setVisibilityMethods")
         if (setVisibilityMethods.size != 1) {
             return false

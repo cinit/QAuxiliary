@@ -42,8 +42,11 @@ import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
 import io.github.qauxv.util.dexkit.NTextItemBuilder_setETText;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import io.luckypray.dexkit.DexKitBridge;
+import io.luckypray.dexkit.builder.MethodInvokingArgs;
+import io.luckypray.dexkit.builder.MethodUsingFieldArgs;
 import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor;
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
+import io.luckypray.dexkit.enums.FieldUsingType;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
@@ -137,19 +140,14 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         DexDeobfsProvider.checkDeobfuscationAvailable();
         try (DexKitDeobfs dexKitDeobfs = DexKitDeobfs.newInstance()) {
             DexKitBridge dexKit = dexKitDeobfs.getDexKitBridge();
-            Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit.findMethodUsingField(
-                    "",
-                    "",
-                    "",
-                    "Landroid/widget/TextView;",
-                    DexKitBridge.FLAG_GETTING,
-                    Initiator._TextItemBuilder().getName(),
-                    "",
-                    "void",
-                    new String[]{"", Initiator._ChatMessage().getName()},
-                    true,
-                    null
-            );
+            Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit
+                    .findMethodUsingField(new MethodUsingFieldArgs.Builder()
+                            .fieldType("Landroid/widget/TextView;")
+                            .usingType(FieldUsingType.GET)
+                            .callerMethodDeclareClass(Initiator._TextItemBuilder().getName())
+                            .callerMethodReturnType("void")
+                            .callerMethodParamTypes(new String[]{"", Initiator._ChatMessage().getName()})
+                            .build());
             List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
                     .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
                     .collect(Collectors.toList());
@@ -165,17 +163,14 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 }
             }
             Map<DexMethodDescriptor, List<DexMethodDescriptor>> resMap = dexKit.findMethodInvoking(
-                    "",
-                    "Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;",
-                    "",
-                    "void",
-                    new String[]{"", Initiator._ChatMessage().getName()},
-                    "Landroid/text/TextUtils;",
-                    "isEmpty",
-                    "boolean",
-                    null,
-                    true,
-                    null
+                    new MethodInvokingArgs.Builder()
+                            .methodDeclareClass("Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;")
+                            .methodReturnType("void")
+                            .methodParameterTypes(new String[]{"", Initiator._ChatMessage().getName()})
+                            .beInvokedMethodDeclareClass("Landroid/text/TextUtils;")
+                            .beInvokedMethodName("isEmpty")
+                            .beInvokedMethodReturnType("boolean")
+                            .build()
             );
             Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
                     .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))

@@ -22,7 +22,7 @@
 package cc.ioctl.hook.ui.main;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static io.luckypray.dexkit.descriptor.util.DexDescriptorUtil.getTypeSig;
+import static io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -39,6 +39,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
+import io.luckypray.dexkit.builder.BatchFindArgs;
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -160,7 +161,11 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
             set.add(strings[i]);
             map.put("Conversation_" + i, set);
         }
-        Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge().batchFindMethodsUsingStrings(map, false, new int[0]);
+        Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge()
+                .batchFindMethodsUsingStrings(new BatchFindArgs.Builder()
+                        .queryMap(map)
+                        .advancedMatch(false)
+                        .build());
         for (List<DexMethodDescriptor> methods: res.values()) {
             for (DexMethodDescriptor methodDesc: methods) {
                 if (methodDesc.getDeclaringClassSig().equals(conversationSig)
