@@ -247,6 +247,12 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "https://github.com/Cryolitia/QQSpeciallyCare",
                 "singleNeuron",
                 "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "silk-v3-decoder",
+                "https://github.com/kn007/silk-v3-decoder",
+                "kn007",
+                "The MIT License"
             )
         )
         ret + Licenses.getAll().onFailure {
