@@ -27,6 +27,7 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib
 
 add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit dexkit)
+add_subdirectory(../../../../libs/silk silk)
 
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
@@ -34,6 +35,8 @@ add_library(qauxv SHARED
         qauxv_core/NativeHookEntry.cc
         qauxv_core/NativeMainHook.cc
         qauxv_core/shared_memory.cpp
+        qauxv_core/SilkCodec.cc
+        qauxv_core/auto_close_fd.cc
         )
 
 set_target_properties(qauxv PROPERTIES
@@ -44,4 +47,4 @@ set_target_properties(qauxv PROPERTIES
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv dexkit c dl z ${ANDROID_LIBS})
+target_link_libraries(qauxv mmkv dexkit silk c dl z ${ANDROID_LIBS})
