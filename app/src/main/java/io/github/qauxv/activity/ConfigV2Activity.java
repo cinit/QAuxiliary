@@ -43,6 +43,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
 import cc.ioctl.fragment.JunkCodeFragment;
+import cc.ioctl.fragment.Pcm2SilkTestFragment;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
@@ -270,6 +271,10 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             }
             case R.id.menu_item_about: {
                 SettingsUiFragmentHostActivity.startActivityForFragment(this, AboutFragment.class, null);
+                return true;
+            }
+            case R.id.menu_item_test_pcm2silk: {
+                SettingsUiFragmentHostActivity.startActivityForFragment(this, Pcm2SilkTestFragment.class, null);
                 return true;
             }
             case R.id.mainV2_menuItem_toggleDesktopIcon: {

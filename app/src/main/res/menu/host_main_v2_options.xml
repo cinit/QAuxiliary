@@ -10,6 +10,10 @@
         android:title="切换主题"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_item_test_pcm2silk"
+        android:title="PCM2SILK"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_item_switch_to_module_process"
         android:title="切换到模块进程"
         app:showAsAction="never" />

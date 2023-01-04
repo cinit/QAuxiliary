@@ -10,6 +10,10 @@
         android:title="切换主题"
         app:showAsAction="never" />
     <item
+        android:id="@+id/menu_item_test_pcm2silk"
+        android:title="PCM2SILK"
+        app:showAsAction="never" />
+    <item
         android:id="@+id/menu_item_about"
         android:title="关于"
         app:showAsAction="never" />
