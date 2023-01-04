@@ -7,3 +7,6 @@
 [submodule "libs/dexkit/DexKit"]
 	path = libs/dexkit/DexKit
 	url = https://github.com/LuckyPray/DexKit
+[submodule "libs/silk/silk-v3-decoder"]
+	path = libs/silk/silk-v3-decoder
+	url = https://github.com/kn007/silk-v3-decoder
