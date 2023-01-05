@@ -44,6 +44,8 @@ set_target_properties(qauxv PROPERTIES
         POSITION_INDEPENDENT_CODE ON
         )
 
+target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
+
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 

@@ -10,3 +10,6 @@
 [submodule "libs/silk/silk-v3-decoder"]
 	path = libs/silk/silk-v3-decoder
 	url = https://github.com/kn007/silk-v3-decoder
+[submodule "libs/linux-syscall-support"]
+	path = libs/linux-syscall-support
+	url = https://chromium.googlesource.com/linux-syscall-support

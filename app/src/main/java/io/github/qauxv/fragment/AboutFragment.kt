@@ -253,6 +253,12 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "https://github.com/kn007/silk-v3-decoder",
                 "kn007",
                 "The MIT License"
+            ),
+            LicenseNotice(
+                "linux-syscall-support",
+                "https://chromium.googlesource.com/linux-syscall-support",
+                "Google LLC",
+                "BSD 3-Clause \"New\" or \"Revised\" License"
             )
         )
         ret + Licenses.getAll().onFailure {
