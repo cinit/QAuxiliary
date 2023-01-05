@@ -103,26 +103,25 @@ namespace {
     }
 
     std::string getSignBlock(const uint8_t *base, size_t size) {
-        std::string_view file(reinterpret_cast<const char *>(base), size);
         unsigned long long curr = 0;
-        auto *p = base;
         std::string signBlock;
-        for (int j = 0; j < file.length(); j++) {
-            curr = (curr << 8) | *p++;
+        auto *ptr = base + size - 1;
+        while (ptr >= base) {
+            curr = (curr << 8) | *ptr--;
             if (curr == revertMagikFirst) {
                 unsigned long long tmp = 0;
                 for (int i = 0; i < 8; ++i) {
-                    tmp = (tmp << 8) | *(p + i);
+                    tmp = (tmp << 8) | *(ptr - i);
                 }
                 if (tmp == revertMagikSecond) {
                     for (int i = 8; i < 16; ++i) {
-                        tmp = (tmp << 8) | *(p + i);
+                        tmp = (tmp << 8) | *(ptr - i);
                     }
                     // TODO 只判断魔数“APK Sig Block 42”可能存在误判
-                    p += 16;
+                    ptr -= 16;
                     tmp -= 24;
                     for (int i = 0; i < tmp; ++i) {
-                        signBlock.push_back(*p++);
+                        signBlock.push_back(*ptr--);
                     }
                     break;
                 }

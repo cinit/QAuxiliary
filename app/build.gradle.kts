@@ -143,6 +143,14 @@ android {
             isMinifyEnabled = false
             isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
+            val debugFlags = arrayOf(
+//                "-DMODULE_SIGNATURE=E7A8AEB0A1431D12EB04BF1B7FC31960",
+//                "-DTEST_SIGNATURE",
+            )
+            externalNativeBuild.cmake {
+                cFlags += debugFlags
+                cppFlags += debugFlags
+            }
         }
     }
     androidResources {

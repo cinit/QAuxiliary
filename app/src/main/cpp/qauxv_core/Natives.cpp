@@ -419,7 +419,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (appInterface == nullptr) {
         env->ExceptionClear();
     }
-#ifdef NDEBUG
+#if defined(NDEBUG) || defined(TEST_SIGNATURE)
     if (!checkSignature(env, appInterface != nullptr)) {
         return -1;
     }
