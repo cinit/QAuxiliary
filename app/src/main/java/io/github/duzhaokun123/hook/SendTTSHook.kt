@@ -22,14 +22,14 @@
 
 package io.github.duzhaokun123.hook
 
+import android.app.Dialog
 import android.content.Context
-import android.media.MediaExtractor
-import android.media.MediaFormat
 import android.os.Parcelable
 import android.speech.tts.TextToSpeech
 import android.speech.tts.UtteranceProgressListener
 import android.view.View
 import android.widget.EditText
+import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HostInfo
 import io.github.duzhaokun123.util.TTS
@@ -51,6 +51,7 @@ import io.github.qauxv.util.dexkit.NBaseChatPie_init
 import io.github.qauxv.util.ptt.SilkEncodeUtils
 import mqq.app.AppRuntime
 import java.io.File
+import java.io.FileOutputStream
 import java.util.Locale
 
 @UiItemAgentEntry
@@ -64,8 +65,6 @@ object SendTTSHook :
             NBaseChatPie_init,
         )
     ), IInputButtonDecorator {
-
-    const val MI_TTS = "com.xiaomi.mibrain.speech"
 
     override val name: String
         get() = "文字转语音发送 (使用系统 TTS)"
@@ -89,8 +88,6 @@ object SendTTSHook :
             if (it == TextToSpeech.ERROR) {
                 Toasts.error(HostInfo.getApplication(), "TTS 初始化失败")
                 traceError(RuntimeException("TTS init failed"))
-            } else if (TTS.packageName == MI_TTS) {
-                traceError(RuntimeException("init with xiaomi tts ($MI_TTS), which may not work"))
             }
         }
         TTS.init(HostInfo.getApplication())
@@ -120,71 +117,68 @@ object SendTTSHook :
             TTS.instance.language = Locale.getDefault()
         }
         val toSend = lines.slice(1 until lines.size).joinToString("\n")
-        val mp3 = File(wc.externalCacheDir, "send_tts/mp3")
-        mp3.parentFile!!.mkdirs()
-        var tryCount = 0
-        fun trySend(retry: Boolean = false) {
-            if (tryCount != 0 && tryCount % 5 == 0 && retry.not()) {
-                AlertDialog.Builder(wc)
-                    .setTitle("发送失败 (tryCount=$tryCount)")
-                    .setMessage("你的 TTS 引擎产生的 mp3 文件可能无法播放, 尝试更换 TTS 引擎, 或继续重试" +
-                        ("\n* 不要使用 MIUI 自带的 \"系统语音引擎\", 因为它的 mp3 文件无法播放".takeIf { TTS.packageName == MI_TTS } ?: ""))
-                    .setNegativeButton("TTS 设置") { _, _ ->
-                        TTS.showConfigDialog(wc, toSend)
-                    }.setPositiveButton("重试") { _, _ ->
-                        trySend(true)
-                    }.show()
-                return
-            }
-            tryCount++
-            TTS.instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
-                override fun onStart(utteranceId: String?) {}
+        TTS.instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+            var sampleRateInHz = 0
+            val pcm = File(wc.externalCacheDir, "send_tts/pcm")
+            val silk = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/${TimeFormat.format1.format(System.currentTimeMillis())}.silk")
 
-                override fun onDone(utteranceId: String?) {}
+            lateinit var dialog: Dialog
 
-                override fun onError(utteranceId: String?) {}
-
-                override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
-                    TTS.instance.setOnUtteranceProgressListener(null)
-                    runCatching { MediaExtractor().apply { setDataSource(mp3.absolutePath) } }
-                        .onFailure {
-                            SyncUtils.runOnUiThread {
-                                trySend()
-                            }
-                        }.onSuccess {
-                            val time = TimeFormat.format1.format(System.currentTimeMillis())
-                            val save = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/$time.silk")
-                            val trackFormat = it.getTrackFormat(0)
-                            runCatching {
-                                SilkEncodeUtils.nativePcm16leToSilkSS(
-                                    mp3.absolutePath,
-                                    save.absolutePath,
-                                    trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE),
-                                    24000,
-                                    (trackFormat.getInteger(MediaFormat.KEY_SAMPLE_RATE) * 20) / 1000,
-                                    true
-                                )
-                                it.release()
-                            }.onFailure {
-                                SyncUtils.runOnUiThread {
-                                    AlertDialog.Builder(wc)
-                                        .setTitle(it.message)
-                                        .setMessage(it.stackTraceToString())
-                                        .show()
-                                }
-                            }.onSuccess {
-                                SyncUtils.runOnUiThread {
-                                    ChatActivityFacade.sendPttMessage(qqApp, session, save.absolutePath)
-                                    input.setText("")
-                                    Toasts.success(wc, "发送成功 (tryCount=$tryCount)")
-                                }
-                            }
-                        }
+            override fun onStart(utteranceId: String?) {
+                SyncUtils.runOnUiThread {
+                    dialog = AlertDialog.Builder(wc)
+                        .setTitle("合成中")
+                        .setView(ProgressBar(wc))
+                        .setPositiveButton("取消发送") { _, _ ->
+                            TTS.instance.setOnUtteranceProgressListener(null)
+                        }.show()
                 }
-            })
-            TTS.toFile(wc, toSend, mp3, "send_tts")
-        }
-        trySend()
+            }
+
+            override fun onDone(utteranceId: String?) {
+                TTS.instance.setOnUtteranceProgressListener(null)
+                runCatching {
+                    SilkEncodeUtils.nativePcm16leToSilkSS(
+                        pcm.absolutePath,
+                        silk.absolutePath,
+                        sampleRateInHz,
+                        24000,
+                        (sampleRateInHz * 20) / 1000,
+                        true
+                    )
+                }.onFailure {
+                    SyncUtils.runOnUiThread {
+                        dialog.dismiss()
+                        AlertDialog.Builder(wc)
+                            .setTitle(it.message)
+                            .setMessage(it.stackTraceToString())
+                            .show()
+                    }
+                }.onSuccess {
+                    SyncUtils.runOnUiThread {
+                        dialog.dismiss()
+                        ChatActivityFacade.sendPttMessage(qqApp, session, silk.absolutePath)
+                        input.setText("")
+                        Toasts.success(wc, "发送成功")
+                    }
+                }
+            }
+
+            @Deprecated("Deprecated in Java")
+            override fun onError(utteranceId: String?) {}
+
+            override fun onBeginSynthesis(utteranceId: String?, sampleRateInHz: Int, audioFormat: Int, channelCount: Int) {
+                this.sampleRateInHz = sampleRateInHz
+                pcm.delete()
+            }
+
+            override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
+                FileOutputStream(pcm, true).use { out ->
+                    out.write(audio)
+                }
+            }
+        })
+        TTS.toFile(wc, toSend, File(wc.externalCacheDir, "send_tts/audio").apply { parentFile!!.mkdirs() }, "send_tts")
         return true
     }
 }
