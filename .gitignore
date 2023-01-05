@@ -77,3 +77,4 @@ app/signing.properties
 .vscode
 /app/src/main/assets/open_source_licenses.json
 /app/src/main/assets/eulaAndPrivacy.html
+/app/src/main/rust/target/

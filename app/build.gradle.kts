@@ -21,6 +21,7 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.android.build.gradle.tasks.JavaPreCompileTask
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
 import com.android.tools.build.apkzlib.zfile.ZFiles
@@ -28,6 +29,7 @@ import com.android.tools.build.apkzlib.zip.AlignmentRules
 import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
+import com.nishtahir.RustAndroidPlugin
 import org.jetbrains.changelog.markdownToHTML
 import java.io.FileInputStream
 import java.security.KeyStore
@@ -36,6 +38,7 @@ import java.util.UUID
 
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
+    id("org.mozilla.rust-android-gradle.rust-android")
     id("build-logic.android.application")
     alias(libs.plugins.changelog)
     alias(libs.plugins.ksp)
@@ -57,10 +60,14 @@ if (ccacheExecutablePath != null) {
 android {
     namespace = "io.github.qauxv"
     ndkVersion = Version.getNdkVersion(project)
+
+    sourceSets.getByName("main").jniLibs.srcDir("/build/rustJniLibs/android")
+
     defaultConfig {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
+
 
         externalNativeBuild {
             cmake {
@@ -157,12 +164,14 @@ android {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
     packagingOptions {
-        resources.excludes.addAll(arrayOf(
-            "META-INF/**",
-            "kotlin/**",
-            "**.bin",
-            "kotlin-tooling-metadata.json"
-        ))
+        resources.excludes.addAll(
+            arrayOf(
+                "META-INF/**",
+                "kotlin/**",
+                "**.bin",
+                "kotlin-tooling-metadata.json"
+            )
+        )
     }
 
     buildFeatures {
@@ -189,6 +198,24 @@ android {
             }
         }
     }
+}
+
+cargo {
+    module = "src/main/rust"
+    libname = "rust"
+    targets = listOf("arm", "arm64", "x86", "x86_64")
+
+    android.buildTypes.getByName("release") {
+        profile = "release"
+    }
+
+    android.buildTypes.getByName("debug") {
+        profile = "debug"
+    }
+}
+
+tasks.withType<JavaPreCompileTask>().all {
+    dependsOn("cargoBuild")
 }
 
 licenseReport {
