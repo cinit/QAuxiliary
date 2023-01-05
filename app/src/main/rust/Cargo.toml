@@ -11,5 +11,5 @@ crate_type = ["staticlib"]
 [dependencies]
 ndk = "0.7.0"
 log = "0.4.17"
-android_logger = "0.11.1"
+android_logger = "0.11.3"
 jni = "0.20.0"
