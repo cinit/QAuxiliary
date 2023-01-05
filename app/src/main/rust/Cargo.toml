@@ -1,0 +1,15 @@
+[package]
+name = "rust"
+version = "0.1.0"
+edition = "2021"
+
+[lib]
+crate_type = ["staticlib"]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+ndk = "0.7.0"
+log = "0.4.17"
+android_logger = "0.11.1"
+jni = "0.20.0"

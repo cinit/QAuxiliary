@@ -410,6 +410,8 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     }
 }
 
+extern "C" jint RUST_JNI_OnLoad(JavaVM *vm, void *reserved);
+
 EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = nullptr;
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
@@ -429,6 +431,10 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         return retCode;
     }
     retCode = DexKit_JNI_OnLoad(vm, reserved);
+    if (retCode < 0) {
+        return retCode;
+    }
+    retCode = RUST_JNI_OnLoad(vm, reserved);
     if (retCode < 0) {
         return retCode;
     }

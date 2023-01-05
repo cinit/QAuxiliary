@@ -21,6 +21,7 @@
  */
 
 import com.android.build.gradle.internal.tasks.factory.dependsOn
+import com.android.build.gradle.tasks.JavaPreCompileTask
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
 import com.android.tools.build.apkzlib.zfile.ZFiles
@@ -29,6 +30,7 @@ import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.util.capitalizeDecapitalize.toLowerCaseAsciiOnly
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.cert.X509Certificate
@@ -37,6 +39,7 @@ import java.util.UUID
 @Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("build-logic.android.application")
+    id("org.mozilla.rust-android-gradle.rust-android")
     alias(libs.plugins.changelog)
     alias(libs.plugins.ksp)
     alias(libs.plugins.license)
@@ -54,6 +57,8 @@ if (ccacheExecutablePath != null) {
     println("No ccache found.")
 }
 
+val rustBuildProfile = "release"
+
 android {
     namespace = "io.github.qauxv"
     ndkVersion = Version.getNdkVersion(project)
@@ -65,7 +70,8 @@ android {
         externalNativeBuild {
             cmake {
                 arguments += listOf(
-                    "-DQAUXV_VERSION=$versionName"
+                    "-DQAUXV_VERSION=$versionName",
+                    "-DRUST_LIB_PROFILE=$rustBuildProfile"
                 )
                 ccacheExecutablePath?.let {
                     arguments += listOf(
@@ -157,12 +163,14 @@ android {
         additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
     }
     packagingOptions {
-        resources.excludes.addAll(arrayOf(
-            "META-INF/**",
-            "kotlin/**",
-            "**.bin",
-            "kotlin-tooling-metadata.json"
-        ))
+        resources.excludes.addAll(
+            arrayOf(
+                "META-INF/**",
+                "kotlin/**",
+                "**.bin",
+                "kotlin-tooling-metadata.json"
+            )
+        )
     }
 
     buildFeatures {
@@ -188,6 +196,60 @@ android {
                 mergeAssets.dependsOn(this)
             }
         }
+    }
+}
+
+cargo {
+    module = "src/main/rust"
+    libname = "rust"
+    targets = listOf("arm", "arm64", "x86", "x86_64")
+    profile = rustBuildProfile
+}
+
+val rustAbiNames = mapOf(
+    "arm64" to "aarch64-linux-android",
+    "arm" to "armv7-linux-androideabi",
+    "x86" to "i686-linux-android",
+    "x86_64" to "x86_64-linux-android"
+)
+
+val rustBuildBroker = tasks.register("rustBuildBroker") {
+    rustAbiNames.forEach { (k, v) ->
+        outputs.file("src/main/rust/target/${v}/$rustBuildProfile/librust.a")
+    }
+}
+
+tasks.withType<com.android.build.gradle.tasks.ExternalNativeBuildTask>().all {
+    if (name.matches(Regex("buildCMake(Debug|RelWithDebInfo)\\[(x86|x86_64|arm|arm64)\\]\\[qauxv\\]"))) {
+        val groups = Regex("buildCMake(Debug|RelWithDebInfo)\\[(x86|x86_64|arm|arm64)\\]\\[qauxv\\]")
+            .find(name)!!.groupValues
+        val type = groups[1]
+        val abi = groups[2]
+        when (type) {
+            "Debug" -> dependsOn(rustBuildBroker)
+            "RelWithDebInfo" -> dependsOn(rustBuildBroker)
+            else -> error("Unknown build type $type")
+        }
+        val shortBuildTypeName = when (type) {
+            "Debug" -> "debug"
+            "RelWithDebInfo" -> "release"
+            else -> error("Unknown build type $type")
+        }
+        inputs.file("src/main/rust/target/${rustAbiNames[abi]}/${rustBuildProfile}/librust.a")
+    }
+}
+
+tasks.withType<JavaPreCompileTask>().all {
+    dependsOn("cargoBuild")
+}
+
+tasks.withType<com.nishtahir.CargoBuildTask>().all {
+//    println(name)
+    if (name.matches(Regex("cargoBuild(X86|X86_64|Arm|Arm64)"))) {
+        val abi: String = Regex("cargoBuild(X86|X86_64|Arm|Arm64)").find(name)!!.groupValues[1].toLowerCaseAsciiOnly()
+//        outputs.file("src/main/rust/target/${rustAbiNames[abi]}/debug/librust.a")
+//        outputs.file("src/main/rust/target/${rustAbiNames[abi]}/release/librust.a")
+        rustBuildBroker.dependsOn(this)
     }
 }
 

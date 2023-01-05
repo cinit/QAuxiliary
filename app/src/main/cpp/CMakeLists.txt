@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.12)
 project(qauxv)
 
 enable_language(CXX C)
@@ -47,6 +47,21 @@ set_target_properties(qauxv PROPERTIES
 target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
 
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
-target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
+
+if (ANDROID_ABI STREQUAL "arm64-v8a")
+    set(RUST_TARGET_NAME "aarch64-linux-android")
+elseif (ANDROID_ABI STREQUAL "armeabi-v7a")
+    set(RUST_TARGET_NAME "armv7-linux-androideabi")
+elseif (ANDROID_ABI STREQUAL "x86")
+    set(RUST_TARGET_NAME "i686-linux-android")
+elseif (ANDROID_ABI STREQUAL "x86_64")
+    set(RUST_TARGET_NAME "x86_64-linux-android")
+else ()
+    message(FATAL_ERROR "Unsupported ABI: ${ANDROID_ABI}")
+endif ()
+
+set(RUST_LIB_FULL_PATH "${CMAKE_CURRENT_SOURCE_DIR}/../rust/target/${RUST_TARGET_NAME}/${RUST_LIB_PROFILE}/librust.a")
+
+target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main" "-Wl,--whole-archive" "${RUST_LIB_FULL_PATH}" "-Wl,--no-whole-archive")
 
 target_link_libraries(qauxv mmkv dexkit silk c dl z ${ANDROID_LIBS})

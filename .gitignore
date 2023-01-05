@@ -4,6 +4,7 @@
 app/build/
 app/src/main/gen/
 app/src/main/bin/
+/app/src/main/rust/target/
 cmake-build-*
 release/
 

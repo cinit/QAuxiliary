@@ -22,8 +22,10 @@
 
 plugins {
     id("build-logic.root-project")
+    id("org.mozilla.rust-android-gradle.rust-android") version "0.9.3"
 }
 
 tasks.register<Delete>("clean").configure {
     delete(rootProject.buildDir)
+    delete(rootProject.relativePath("app/src/main/rust/target"))
 }
