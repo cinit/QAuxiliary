@@ -98,25 +98,11 @@ android {
             version = Version.getCMakeVersion(project)
         }
     }
-    if (System.getenv("KEYSTORE_PATH") != null) {
-        signingConfigs {
-            create("release") {
-                storeFile = file(System.getenv("KEYSTORE_PATH"))
-                storePassword = System.getenv("KEYSTORE_PASSWORD")
-                keyAlias = System.getenv("KEY_ALIAS")
-                keyPassword = System.getenv("KEY_PASSWORD")
-                enableV2Signing = true
-            }
-        }
-    }
     buildTypes {
         getByName("release") {
             isShrinkResources = true
             isMinifyEnabled = true
             proguardFiles("proguard-rules.pro")
-            if (System.getenv("KEYSTORE_PATH") != null) {
-                signingConfig = signingConfigs.getByName("release")
-            }
             kotlinOptions.suppressWarnings = true
             val ltoCacheFlags = listOf(
                 "-flto=thin",
@@ -139,6 +125,8 @@ android {
             }
         }
         getByName("debug") {
+            @Suppress("ChromeOsAbiSupport")
+            ndk.abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
             isShrinkResources = false
             isMinifyEnabled = false
             isCrunchPngs = false
