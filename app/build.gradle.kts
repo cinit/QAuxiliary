@@ -127,8 +127,6 @@ android {
         getByName("debug") {
             @Suppress("ChromeOsAbiSupport")
             ndk.abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
-            isShrinkResources = false
-            isMinifyEnabled = false
             isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
             val debugFlags = arrayOf<String>(
@@ -196,14 +194,13 @@ dependencies {
     implementation(projects.libs.mmkv)
     implementation(projects.libs.dexkit)
     ksp(projects.libs.ksp)
-    // androidx
+    compileOnly(libs.xposed)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.browser)
     implementation(libs.lifecycle.livedata)
     implementation(libs.lifecycle.common)
     implementation(libs.lifecycle.runtime)
-    compileOnly(libs.xposed)
     implementation(libs.hiddenapibypass)
     implementation(libs.kotlinx.coroutines)
     implementation(libs.material)
@@ -240,42 +237,14 @@ val restartQQ = tasks.register<Exec>("restartQQ") {
     group = "qauxv"
     commandLine(adb, "shell", "am", "start", "$(pm resolve-activity --components $packageName)")
     isIgnoreExitValue = true
-}
-
-tasks.register<Exec>("openTroubleShooting") {
-    group = "qauxv"
-    commandLine(
-        adb, "shell", "am", "start",
-        "-e", "qa_jump_action_cmd", "io.github.qauxv.TROUBLE_SHOOTING_ACTIVITY",
-        "$packageName/com.tencent.mobileqq.activity.JumpActivity"
-    )
-    isIgnoreExitValue = true
-}
+}.dependsOn(killQQ)
 
 androidComponents.onVariants { variant ->
     val variantCapped = variant.name.capitalize()
-    tasks.register("checkTargetNativeLibs$variantCapped") {
-        dependsOn(":app:externalNativeBuild$variantCapped")
-        doLast {
-            val targetAbi = listOf("arm64-v8a", "armeabi-v7a")
-            val soName = "libqauxv.so"
-            val libPath = "app/build/intermediates/cmake/debug/obj"
-            for (abi in targetAbi) {
-                var tmpPath = "$libPath/$abi/$soName"
-                if ("/" != File.separator) {
-                    tmpPath = tmpPath.replace('/', File.separatorChar)
-                }
-                val f = File(rootProject.projectDir, tmpPath)
-                require(f.exists()) { "Target native lib $soName not found in $abi" }
-            }
-        }
-    }
-
     task("install${variantCapped}AndRestartQQ") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped")
-        restartQQ.dependsOn(killQQ)
-        finalizedBy(killQQ, restartQQ)
+        finalizedBy(restartQQ)
     }
 }
 
