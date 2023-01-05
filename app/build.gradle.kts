@@ -57,11 +57,19 @@ if (ccacheExecutablePath != null) {
     println("No ccache found.")
 }
 
+tasks.withType<JavaPreCompileTask>().all {
+    dependsOn("cargoBuild")
+}
+
+cargo {
+    module = "src/main/rust"
+    libname = "rust"
+    targets = listOf("arm", "arm64", "x86", "x86_64")
+}
+
 android {
     namespace = "io.github.qauxv"
     ndkVersion = Version.getNdkVersion(project)
-
-    sourceSets.getByName("main").jniLibs.srcDir("/build/rustJniLibs/android")
 
     defaultConfig {
         applicationId = "io.github.qauxv"
@@ -120,6 +128,7 @@ android {
         getByName("release") {
             isShrinkResources = true
             isMinifyEnabled = true
+            cargo.profile = "release"
             proguardFiles("proguard-rules.pro")
             if (System.getenv("KEYSTORE_PATH") != null) {
                 signingConfig = signingConfigs.getByName("release")
@@ -198,24 +207,6 @@ android {
             }
         }
     }
-}
-
-cargo {
-    module = "src/main/rust"
-    libname = "rust"
-    targets = listOf("arm", "arm64", "x86", "x86_64")
-
-    android.buildTypes.getByName("release") {
-        profile = "release"
-    }
-
-    android.buildTypes.getByName("debug") {
-        profile = "debug"
-    }
-}
-
-tasks.withType<JavaPreCompileTask>().all {
-    dependsOn("cargoBuild")
 }
 
 licenseReport {

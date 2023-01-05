@@ -6,7 +6,11 @@ use log::debug;
 fn init_logger() {
     android_logger::init_once(
         android_logger::Config::default()
-            .with_min_level(log::Level::Debug)
+            .with_min_level(if cfg!(debug_assertions) {
+                log::Level::Debug
+            } else {
+                log::Level::Info
+            })
             .with_tag("RustLib"),
     );
 }
