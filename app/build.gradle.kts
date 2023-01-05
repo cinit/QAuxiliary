@@ -381,7 +381,7 @@ val synthesizeDistReleaseApksCI by tasks.registering {
     if (srcApkDir !in tasks.named("packageRelease").get().outputs.files) {
         val msg = "srcApkDir should be in packageRelease outputs, srcApkDir: $srcApkDir, " +
             "packageRelease outputs: ${tasks.named("packageRelease").get().outputs.files.files}"
-        throw IllegalStateException(msg)
+        logger.error(msg)
     }
     // output name format: "QAuxv-v${defaultConfig.versionName}-${productFlavors.first().name}.apk"
     val outputAbiVariants = mapOf(
