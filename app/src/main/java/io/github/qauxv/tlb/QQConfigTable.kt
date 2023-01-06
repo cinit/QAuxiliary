@@ -137,6 +137,7 @@ class QQConfigTable : ConfigTableInterface {
         ),
 
         QQMessageFacade::class.java.simpleName to mapOf(
+            QQ_8_2_0 to "b",
             QQ_8_8_93 to "z2",
             QQ_8_9_18 to "B2",
         ),
