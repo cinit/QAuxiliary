@@ -118,6 +118,7 @@ android {
                 "-DNDEBUG",
             )
             externalNativeBuild.cmake {
+                // arguments += "-DQAUXV_VERSION=${defaultConfig.versionName}"
                 cFlags += releaseFlags
                 cppFlags += releaseFlags
                 cFlags += ltoCacheFlags
@@ -407,24 +408,15 @@ val generateEulaAndPrivacy by tasks.registering {
     outputs.file("${projectDir}/src/main/assets/eulaAndPrivacy.html")
 
     doFirst {
-        val head = """
-            <head>
-                <meta charset="UTF-8">
-            </head>
-            <body>
-        """.trimIndent()
-
         val html = inputs.files.map { markdownToHTML(it.readText()) }
-
         outputs.files.forEach {
-            it.writeText(
-                buildString {
-                    append("<html>")
-                    append(head)
-                    html.forEach(::append)
-                    append("</body></html>")
-                }
-            )
+            val output = buildString {
+                append("<!DOCTYPE html><head><meta charset=\"UTF-8\"></head><body><html>")
+                html.forEach(::append)
+                append("</body></html>")
+            }.lines().joinToString("")
+            println(output)
+            it.writeText(output)
         }
     }
 }
