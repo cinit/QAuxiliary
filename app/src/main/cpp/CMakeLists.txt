@@ -32,8 +32,8 @@ add_subdirectory(../../../../libs/silk silk)
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
         qauxv_core/version.c
-        qauxv_core/NativeHookEntry.cc
-        qauxv_core/NativeMainHook.cc
+        # qauxv_core/NativeHookEntry.cc
+        # qauxv_core/NativeMainHook.cc
         qauxv_core/shared_memory.cpp
         qauxv_core/SilkCodec.cc
         qauxv_core/auto_close_fd.cc

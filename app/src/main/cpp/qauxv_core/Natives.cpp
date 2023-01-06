@@ -444,7 +444,7 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
             __android_log_print(ANDROID_LOG_INFO, "QAuxv", "register native method[1] failed!\n");
             return -1;
         }
-        NativeHook_initOnce();
+       // NativeHook_initOnce();
     }
     return retCode;
 }
