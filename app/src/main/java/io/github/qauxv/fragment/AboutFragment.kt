@@ -91,10 +91,16 @@ class AboutFragment : BaseRootLayoutFragment() {
                     copyText(moduleVersionName)
                 }
                 textItem("构建时间", value = getBuildTimeString())
-                if (!isInModuleProcess) {
+                if (isInHostProcess) {
                     val hostVersionName = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")"
                     textItem(hostInfo.hostName, value = hostVersionName) {
                         copyText(hostVersionName)
+                    }
+                    textItem("模块热更新设置") {
+                        SettingsUiFragmentHostActivity.startFragmentWithContext(
+                            requireContext(),
+                            HotUpdateConfigFragment::class.java
+                        )
                     }
                 }
             },

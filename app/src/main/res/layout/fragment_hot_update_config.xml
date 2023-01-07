@@ -1,0 +1,132 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/rootBounceScrollView"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:fadeScrollbars="true"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/rootMainLayout"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start|top"
+            android:text="@string/cfg_ui_hot_update_description"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start|top"
+            android:text="@string/cfg_ui_hot_update_bug_report_instruction"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+        <TextView
+            android:id="@+id/hotUpdateConfig_currentInfo"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start|top"
+            android:text="%s"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start|top"
+            android:text="热更新通道"
+            android:textColor="?attr/colorAccent"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_channel_disabled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@drawable/ic_check_24"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_channel_btn_disabled"
+                android:textColor="?attr/colorAccent" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_channel_stable"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_channel_btn_stable"
+                android:textColor="@color/secondTextColor" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_channel_beta"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_channel_btn_beta"
+                android:textColor="@color/secondTextColor" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_channel_canary"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_channel_btn_canary"
+                android:textColor="@color/secondTextColor" />
+
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

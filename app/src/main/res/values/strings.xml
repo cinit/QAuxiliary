@@ -35,4 +35,10 @@
     <string name="action_calculate_size">计算大小</string>
     <string name="action_refresh">刷新</string>
     <string name="action_share_as_file">以文件分享至其他应用</string>
+    <string name="cfg_ui_hot_update_description">热更新可以让您在不手动更新 QAuxiliary 模块的情况下自动保持 QAuxiliary 模块为最新版。如果您不希望使用热更新，可以将热更新通道设置为“禁用”。</string>
+    <string name="cfg_ui_hot_update_bug_report_instruction">如果您正在使用老版本 QQ/TIM 且遇到了问题，请积极反馈问题（带上日志以及宿主和模块的版本号），以便我们能够及时修复问题。</string>
+    <string name="cfg_ui_hot_update_channel_btn_disabled">禁用\n禁用热更新</string>
+    <string name="cfg_ui_hot_update_channel_btn_stable">稳定版\n其实就是“推荐的 CI”，通常不会有问题，更新频率在一个多星期左右</string>
+    <string name="cfg_ui_hot_update_channel_btn_beta">Beta\n测试版，可能存在一些功能性问题（如版本不兼容），更新频率一至两天</string>
+    <string name="cfg_ui_hot_update_channel_btn_canary">Canary\n持续集成版，仅供开发者测试，代码未经测试，可能存在严重问题，更新由开发者代码提交触发</string>
 </resources>
