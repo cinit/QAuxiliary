@@ -27,10 +27,11 @@ plugins {
 }
 
 android {
+    namespace = "io.luckypray.dexkit"
     sourceSets {
         val main by getting
         main.apply {
-            manifest.srcFile("DexKit/Android/dexkit/src/main/AndroidManifest.xml")
+            manifest.srcFile("AndroidManifest.xml")
             java.setSrcDirs(listOf("DexKit/Android/dexkit/src/main/java"))
             res.setSrcDirs(listOf("DexKit/Android/dexkit/src/main/res"))
         }

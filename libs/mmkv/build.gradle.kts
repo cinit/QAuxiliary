@@ -3,6 +3,7 @@ plugins {
 }
 
 android {
+    namespace = "com.tencent.mmkv"
     defaultConfig {
         buildConfigField("String", "FLAVOR", "\"StaticCpp\"")
     }
@@ -14,7 +15,7 @@ android {
     sourceSets {
         val main by getting
         main.apply {
-            manifest.srcFile("MMKV/Android/MMKV/mmkv/src/main/AndroidManifest.xml")
+            manifest.srcFile("AndroidManifest.xml")
             java.setSrcDirs(listOf("MMKV/Android/MMKV/mmkv/src/main/java"))
             aidl.setSrcDirs(listOf("MMKV/Android/MMKV/mmkv/src/main/aidl"))
             res.setSrcDirs(listOf("MMKV/Android/MMKV/mmkv/src/main/res"))
