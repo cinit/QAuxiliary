@@ -295,7 +295,15 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
             return false
         }
         if (file.exists()) {
-            Toasts.error(context, "备份文件已存在")
+            if (file.isDirectory) {
+                AlertDialog.Builder(context)
+                    .setTitle("路径错误")
+                    .setMessage("请输入完整的带文件名的路径，而不是目录！")
+                    .setPositiveButton("确定") { _, _ -> }
+                    .show()
+            } else {
+                Toasts.error(context, "备份文件已存在")
+            }
             return false
         }
         val parentDir = file.parentFile!!

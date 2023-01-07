@@ -36,9 +36,18 @@
         <TextView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
+            android:layout_marginHorizontal="20dp"
             android:layout_marginTop="10dp"
-            android:layout_marginEnd="20dp"
+            android:gravity="start|top"
+            android:text="您可以备份或恢复本模块的配置文件。"
+            android:textColor="@color/secondTextColor"
+            android:textSize="14sp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
             android:gravity="start|top"
             android:text="请选择操作"
             android:textColor="?attr/colorAccent"
