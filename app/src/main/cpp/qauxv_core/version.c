@@ -4,12 +4,12 @@
 #include <stdio.h>
 #include <unistd.h>
 
-#if defined(__aarch64__) || defined(__x86_64__)
-const char so_interp[] __attribute__((used, section(".interp"))) = "/system/bin/linker64";
-#elif defined(__i386__) || defined(__arm__)
-const char so_interp[] __attribute__((used, section(".interp"))) = "/system/bin/linker";
+#if defined(__LP64__)
+const char so_interp[] __attribute__((used, section(".interp"), visibility("default"))) = "/system/bin/linker64";
+_Static_assert(sizeof(void *) == 8, "sizeof(void *) != 8");
 #else
-#error Unknown Arch
+const char so_interp[] __attribute__((used, section(".interp"), visibility("default"))) = "/system/bin/linker";
+_Static_assert(sizeof(void *) == 4, "sizeof(void *) != 4");
 #endif
 
 #ifndef QAUXV_VERSION
