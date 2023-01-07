@@ -120,7 +120,7 @@ object SendTTSHook :
         TTS.instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
             var sampleRateInHz = 0
             val pcm = File(wc.externalCacheDir, "send_tts/pcm")
-            val silk = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/${TimeFormat.format1.format(System.currentTimeMillis())}.silk")
+            val silk = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/${TimeFormat.format1.format(System.currentTimeMillis())}.silk").apply { parentFile!!.mkdirs() }
 
             lateinit var dialog: Dialog
 
