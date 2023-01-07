@@ -21,8 +21,6 @@
  */
 
 import com.android.build.api.dsl.ApplicationExtension
-import me.omico.age.dsl.configure
-import me.omico.age.dsl.withAndroidApplication
 import org.gradle.api.Project
 
 fun Project.configureAppSigningConfigsForRelease() = withAndroidApplication {

@@ -1,14 +1,12 @@
 [versions]
 agp = "7.3.1"
 appCenter = "5.0.0"
-compilesdk = "33"
 kotlin = "1.8.0"
 ksp = "1.8.0-1.0.8"
 lifecycle = "2.5.1"
 materialDialog = "3.3.0"
 
 [libraries]
-age = { module = "me.omico.age:age-dsl", version = "1.0.0-SNAPSHOT" }
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", version.ref = "appCenter" }
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }

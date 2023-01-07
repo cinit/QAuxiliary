@@ -22,20 +22,23 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import me.omico.age.dsl.configureAndroidCommon
+import com.android.build.gradle.BaseExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 plugins {
     id("com.android.base")
     kotlin("android")
 }
 
-configureAndroidCommon {
-    compileSdk = Version.compileSdkVersion
+extensions.findByType(BaseExtension::class)?.run {
+    compileSdkVersion(Version.compileSdkVersion)
     buildToolsVersion = Version.buildToolsVersion
     ndkVersion = Version.getNdkVersion(project)
 
-    defaultConfig {
-        minSdk = Version.minSdk
+    defaultConfig {minSdk = Version.minSdk
+        targetSdk = Version.targetSdk
+        versionCode = Common.getBuildVersionCode(rootProject)
+        versionName = Version.versionName + Common.getGitHeadRefsSuffix(rootProject)
         resourceConfigurations += listOf("zh", "en")
     }
     compileOptions {
@@ -43,13 +46,13 @@ configureAndroidCommon {
         targetCompatibility = Version.java
     }
 
-    /*kotlinOptions {
+    kotlinOptions {
         jvmTarget = Version.java.toString()
-    }*/
+    }
 
     packagingOptions.jniLibs.useLegacyPackaging = false
 }
 
-/*fun CommonExtension.kotlinOptions(block: KotlinJvmOptions.() -> Unit) {
+fun BaseExtension.kotlinOptions(block: KotlinJvmOptions.() -> Unit) {
     (this as ExtensionAware).extensions.configure("kotlinOptions", block)
-}*/
+}

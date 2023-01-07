@@ -19,15 +19,8 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-import com.android.build.gradle.LibraryExtension
 
 plugins {
     id("com.android.library")
     id("build-logic.android.base")
-}
-
-extensions.configure<LibraryExtension> {
-    defaultConfig {
-        targetSdk = Version.targetSdk
-    }
 }

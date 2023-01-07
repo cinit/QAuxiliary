@@ -9,7 +9,6 @@ pluginManagement {
         gradlePluginPortal()
         google()
         mavenCentral()
-        maven(url = "https://s01.oss.sonatype.org/content/repositories/snapshots")
     }
 }
 
@@ -23,10 +22,6 @@ dependencyResolutionManagement {
     }
 }
 
-plugins {
-    id("me.omico.age.settings") version "1.0.0-SNAPSHOT"
-}
-
 rootProject.name = "QAuxiliary"
 include(
     ":app",
@@ -34,4 +29,5 @@ include(
     ":libs:ksp",
     ":libs:mmkv",
     ":libs:dexkit",
+    ":libs:ezXHelper",
 )

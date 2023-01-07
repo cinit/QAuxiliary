@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2023 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is non-free but opensource software: you can redistribute it
@@ -20,33 +20,12 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
+import org.gradle.api.Plugin
+import org.gradle.api.Project
+import org.gradle.api.plugins.ExtensionAware
 
-plugins {
-    `kotlin-dsl`
-}
+fun <T : Any> ExtensionAware.configure(name: String, block: T.() -> Unit) =
+    extensions.configure(name, block)
 
-group = "io.github.qauxv.buildLogic"
-
-repositories {
-    google()
-    gradlePluginPortal()
-    mavenCentral()
-}
-
-dependencies {
-    implementation(libs.android.tools)
-    implementation(libs.kotlin.gradle)
-    implementation(libs.eclipse.jgit)
-}
-
-java {
-    targetCompatibility = JavaVersion.VERSION_11
-    sourceCompatibility = JavaVersion.VERSION_11
-}
-
-tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
-    }
-}
+fun Project.withAndroidApplication(block: Plugin<in Any>.() -> Unit) =
+    plugins.withId("com.android.application", block)

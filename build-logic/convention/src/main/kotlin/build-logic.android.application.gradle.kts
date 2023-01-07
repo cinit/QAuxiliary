@@ -25,12 +25,4 @@ plugins {
     id("build-logic.android.base")
 }
 
-android {
-    defaultConfig {
-        targetSdk = Version.targetSdk
-        versionCode = Common.getBuildVersionCode(rootProject)
-        versionName = Version.versionName + Common.getGitHeadRefsSuffix(rootProject)
-    }
-}
-
 configureAppSigningConfigsForRelease()
