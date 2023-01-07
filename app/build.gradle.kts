@@ -64,9 +64,6 @@ android {
 
         externalNativeBuild {
             cmake {
-                arguments += listOf(
-                    "-DQAUXV_VERSION=$versionName"
-                )
                 ccacheExecutablePath?.let {
                     arguments += listOf(
                         "-DCMAKE_C_COMPILER_LAUNCHER=$it",
@@ -118,7 +115,7 @@ android {
                 "-DNDEBUG",
             )
             externalNativeBuild.cmake {
-                // arguments += "-DQAUXV_VERSION=${defaultConfig.versionName}"
+                arguments += "-DQAUXV_VERSION=${defaultConfig.versionName}"
                 cFlags += releaseFlags
                 cppFlags += releaseFlags
                 cFlags += ltoCacheFlags
@@ -135,6 +132,7 @@ android {
 //                "-DTEST_SIGNATURE",
             )
             externalNativeBuild.cmake {
+                arguments += "-DQAUXV_VERSION=${Version.versionName}.debug"
                 cFlags += debugFlags
                 cppFlags += debugFlags
             }
@@ -415,7 +413,6 @@ val generateEulaAndPrivacy by tasks.registering {
                 html.forEach(::append)
                 append("</body></html>")
             }.lines().joinToString("")
-            println(output)
             it.writeText(output)
         }
     }
