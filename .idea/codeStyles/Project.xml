@@ -62,10 +62,6 @@
     </JetCodeStyleSettings>
     <Objective-C>
       <option name="INDENT_NAMESPACE_MEMBERS" value="0" />
-      <option name="INDENT_C_STRUCT_MEMBERS" value="2" />
-      <option name="INDENT_CLASS_MEMBERS" value="2" />
-      <option name="INDENT_VISIBILITY_KEYWORDS" value="1" />
-      <option name="INDENT_INSIDE_CODE_BLOCK" value="2" />
       <option name="KEEP_STRUCTURES_IN_ONE_LINE" value="true" />
       <option name="FUNCTION_PARAMETERS_WRAP" value="5" />
       <option name="FUNCTION_CALL_ARGUMENTS_WRAP" value="5" />
