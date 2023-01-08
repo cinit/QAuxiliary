@@ -45,7 +45,9 @@ import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
+import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.fragment.EulaFragment;
+import io.github.qauxv.fragment.FuncStatusDetailsFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
@@ -130,13 +132,18 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 item.setId(R.id.setting2Activity_settingEntryItem);
                 Reflex.invokeVirtual(item, "setLeftText", "QAuxiliary", CharSequence.class);
                 Reflex.invokeVirtual(item, "setBgType", 2, int.class);
-                if (LicenseStatus.hasUserAcceptEula()) {
+                if (HookInstaller.getFuncInitException() != null) {
+                    Reflex.invokeVirtual(item, "setRightText", "[严重错误]", CharSequence.class);
+                } else if (LicenseStatus.hasUserAcceptEula()) {
                     Reflex.invokeVirtual(item, "setRightText", BuildConfig.VERSION_NAME, CharSequence.class);
                 } else {
                     Reflex.invokeVirtual(item, "setRightText", "[未激活]", CharSequence.class);
                 }
                 item.setOnClickListener(v -> {
-                    if (LicenseStatus.hasUserAcceptEula()) {
+                    if (HookInstaller.getFuncInitException() != null) {
+                        SettingsUiFragmentHostActivity.startActivityForFragment(activity, FuncStatusDetailsFragment.class,
+                                FuncStatusDetailsFragment.getBundleForLocation(FuncStatusDetailsFragment.TARGET_INIT_EXCEPTION));
+                    } else if (LicenseStatus.hasUserAcceptEula()) {
                         activity.startActivity(new Intent(activity, SettingsUiFragmentHostActivity.class));
                     } else {
                         SettingsUiFragmentHostActivity.startActivityForFragment(activity, EulaFragment.class, null);

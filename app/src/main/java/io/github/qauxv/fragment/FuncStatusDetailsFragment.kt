@@ -51,6 +51,7 @@ import io.github.qauxv.R
 import io.github.qauxv.activity.ShadowShareFileAgentActivity
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.MemoryFileUtils
@@ -66,9 +67,14 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
     private var mTextDetails: String? = null
     private var observerDialog: AlertDialog? = null
     private val observerPaths = HashSet<String>()
+    private var mInitException: Throwable? = null
 
     private val observer = object : ContentObserver(Handler()) {
         override fun onChange(selfChange: Boolean, uri: Uri?) {
+            if (mInitException != null) {
+                // special case...
+                return
+            }
             if (observerPaths.contains(uri?.path ?: "")) return
             observerDialog?.cancel()
             observerDialog = AlertDialog.Builder(requireActivity())
@@ -111,7 +117,11 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         mTextDetails?.let {
             val ctx = requireContext()
             if (!mTextDetails.isNullOrEmpty()) {
-                val name = "${Reflex.getShortClassName(mFunction)}-${System.currentTimeMillis()}.txt"
+                val name = if (mInitException == null) {
+                    "${Reflex.getShortClassName(mFunction)}-${System.currentTimeMillis()}.txt"
+                } else {
+                    "InitError-${System.currentTimeMillis()}.txt"
+                }
                 val bytes = it.toByteArray()
                 var fd: Int = -1
                 try {
@@ -151,18 +161,28 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
             finishFragment()
             return
         }
-        for (entry in FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()) {
-            if (entry.itemAgentProviderUniqueIdentifier == target) {
-                mFunction = entry
-                break
+        if (target == TARGET_INIT_EXCEPTION) {
+            mInitException = HookInstaller.getFuncInitException()
+            if (mInitException == null) {
+                Toasts.show(requireContext(), "没有初始化异常")
+                finishFragment()
+                return
             }
+            subtitle = "初始化异常"
+        } else {
+            for (entry in FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()) {
+                if (entry.itemAgentProviderUniqueIdentifier == target) {
+                    mFunction = entry
+                    break
+                }
+            }
+            if (mFunction == null) {
+                Toasts.show(requireContext(), "未找到对应的功能: $target")
+                finishFragment()
+                return
+            }
+            subtitle = mFunction!!.uiItemAgent.let { it.titleProvider(it) }
         }
-        if (mFunction == null) {
-            Toasts.show(requireContext(), "未找到对应的功能: $target")
-            finishFragment()
-            return
-        }
-        subtitle = mFunction!!.uiItemAgent.let { it.titleProvider(it) }
     }
 
     override fun onResume() {
@@ -179,8 +199,12 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
         val ctx = inflater.context
-        val func = mFunction ?: return null
-        mTextDetails = dumpStatus(func)
+        mTextDetails = if (mInitException != null) {
+            dumpInitException()
+        } else {
+            val func = mFunction ?: return null
+            dumpStatus(func)
+        }
         TextView(ctx).apply {
             text = mTextDetails
             textSize = 14f
@@ -241,6 +265,26 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         }
     }
 
+    private fun dumpInitException() = buildString {
+        append(BuildConfig.VERSION_NAME).append("\n")
+        append(hostInfo.hostName).append(hostInfo.versionName)
+        append('(').append(hostInfo.versionCode).append(')').append('\n')
+        append("PID: ").append(Process.myPid()).append(", UID: ").append(Process.myUid()).append('\n')
+        append(hostInfo.packageName).append("\n")
+        kotlin.runCatching {
+            val ex = mInitException
+            if (ex != null) {
+                append("InitException: ").append(ex.javaClass.name).append("\n")
+                ex.cause?.let {
+                    append(Log.getStackTraceString(it)).append("\n")
+                }
+                append(Log.getStackTraceString(ex)).append("\n")
+            }
+        }.onFailure {
+            append('\n').append("dumpStatus failed: ").append(Log.getStackTraceString(it)).append("\n")
+        }
+    }
+
     override fun onDestroy() {
         super.onDestroy()
         observerDialog = null
@@ -249,6 +293,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     companion object {
         const val TARGET_IDENTIFIER = "FuncStatusDetailsFragment.TARGET_IDENTIFIER"
+        const val TARGET_INIT_EXCEPTION = "FuncStatusDetailsFragment.TARGET_FATAL_EXCEPTION"
 
         @JvmStatic
         fun newInstance(targetUiAgentId: String): SettingsMainFragment {

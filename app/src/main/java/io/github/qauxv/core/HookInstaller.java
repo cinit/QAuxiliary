@@ -25,7 +25,9 @@ package io.github.qauxv.core;
 import android.content.Context;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.HostInfo;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
@@ -39,7 +41,12 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 
 public class HookInstaller {
 
+    private HookInstaller() {
+    }
+
     private static IDynamicHook[] sAnnotatedHooks = null;
+
+    private static volatile Throwable sFuncInitException = null;
 
     @NonNull
     public static IDynamicHook[] queryAllAnnotatedHooks() {
@@ -48,14 +55,29 @@ public class HookInstaller {
         }
         synchronized (HookInstaller.class) {
             if (sAnnotatedHooks == null) {
-                // TODO: 2023-01-08 23:04:48 处理 AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList
+                // 处理 AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList
                 // 可能会抛出异常的情况:
                 // java.lang.ExceptionInInitializerError
                 // 通常不会出现, 但是一旦出现会导致极其严重的问题, 整个模块不可用
-                sAnnotatedHooks = io.github.qauxv.gen.AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList();
+                try {
+                    sAnnotatedHooks = io.github.qauxv.gen.AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList();
+                } catch (ExceptionInInitializerError | NoClassDefFoundError e) {
+                    sFuncInitException = e;
+                    // leave a setting entry for user to report this issue
+                    sAnnotatedHooks = new IDynamicHook[]{
+                            SettingEntryHook.INSTANCE
+                    };
+                    Log.e(e.toString(), e);
+                    XposedBridge.log(e);
+                }
             }
         }
         return sAnnotatedHooks;
+    }
+
+    @Nullable
+    public static Throwable getFuncInitException() {
+        return sFuncInitException;
     }
 
     public static int getHookIndex(@NonNull IDynamicHook hook) {
