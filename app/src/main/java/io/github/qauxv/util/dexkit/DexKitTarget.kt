@@ -621,3 +621,10 @@ object NAIOPictureView_onDownloadOriginalPictureClick : DexKitTarget.UsingDexkit
     override val declaringClass = "com/tencent/mobileqq/activity/aio/photo/AIOPictureView"
     override val filter = DexKitFilter.allowAll
 }
+
+object PaiYiPaiHandler_canSendReq : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com/tencent/mobileqq/paiyipai/PaiYiPaiHandler"
+    override val traitString = arrayOf("pai_yi_pai_user_double_tap_timestamp_")
+    override val filter = DexKitFilter.allowAll
+}
