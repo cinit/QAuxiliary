@@ -48,6 +48,10 @@ public class HookInstaller {
         }
         synchronized (HookInstaller.class) {
             if (sAnnotatedHooks == null) {
+                // TODO: 2023-01-08 23:04:48 处理 AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList
+                // 可能会抛出异常的情况:
+                // java.lang.ExceptionInInitializerError
+                // 通常不会出现, 但是一旦出现会导致极其严重的问题, 整个模块不可用
                 sAnnotatedHooks = io.github.qauxv.gen.AnnotatedFunctionHookEntryList.getAnnotatedFunctionHookEntryList();
             }
         }
