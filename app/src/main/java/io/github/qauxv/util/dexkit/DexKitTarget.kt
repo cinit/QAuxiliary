@@ -629,3 +629,10 @@ object PaiYiPaiHandler_canSendReq : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("pai_yi_pai_user_double_tap_timestamp_")
     override val filter = DexKitFilter.allowAll
 }
+
+object TroopGuildChatPie_flingRToL : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.troop.guild.TroopGuildChatPie"
+    override val traitString = arrayOf("[flingRToL] isMultiSelectState:")
+    override val filter = DexKitFilter.allowAll
+}
