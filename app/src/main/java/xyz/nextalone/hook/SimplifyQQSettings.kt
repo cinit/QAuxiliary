@@ -33,6 +33,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import me.ketal.util.hookMethod
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hide
@@ -72,7 +73,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
         val clazz = arrayOf(
             Initiator._QQSettingSettingActivity(),
             Initiator._QQSettingSettingFragment()
-        )
+        ).filterNotNull()
         clazz.forEach { c ->
             val m = kotlin.runCatching {
                 Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
@@ -98,8 +99,10 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
             if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
                 Initiator._QQSettingSettingActivity().method("doOnCreate")?.hookAfter(this) {
                     val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "cu_open_card_guide_entry")
-                    val cu = (it.thisObject as Activity).findViewById<RelativeLayout>(getId)
+                    val cu = it.thisObject.invoke("findViewById", getId, Int::class.java) as RelativeLayout
                     (cu.parent as LinearLayout).removeView(cu)
+                }!!.callback.let {
+                    Initiator._QQSettingSettingFragment()?.method("doOnCreateView")?.hookMethod(it)
                 }
             } else {
                 try {
