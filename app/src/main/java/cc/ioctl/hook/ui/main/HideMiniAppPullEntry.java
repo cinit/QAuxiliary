@@ -22,7 +22,6 @@
 package cc.ioctl.hook.ui.main;
 
 import static de.robv.android.xposed.XposedHelpers.findAndHookMethod;
-import static io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -41,6 +40,7 @@ import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import io.luckypray.dexkit.builder.BatchFindArgs;
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
+import io.luckypray.dexkit.util.DexDescriptorUtil;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -148,7 +148,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         if (clz == null) {
             return false;
         }
-        String conversationSig = getTypeSig(clz);
+        String conversationSig = DexDescriptorUtil.getTypeSig(clz);
         DexKitDeobfs dexKitDeobfs = (DexKitDeobfs) DexDeobfsProvider.INSTANCE.getCurrentBackend();
         String[] strings = new String[]{
                 "initMiniAppEntryLayout.",
@@ -162,7 +162,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
             map.put("Conversation_" + i, set);
         }
         Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge()
-                .batchFindMethodsUsingStrings(new BatchFindArgs.Builder()
+                .batchFindMethodsUsingStrings(BatchFindArgs.builder()
                         .queryMap(map)
                         .advancedMatch(false)
                         .build());
