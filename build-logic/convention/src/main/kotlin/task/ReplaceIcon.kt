@@ -45,9 +45,9 @@ abstract class ReplaceIcon : Copy() {
         val random = Random(commitHash.toSeed())
         // copy new icons
         val iconFileDirs = listOf(
-            File(iconsDir, "QAPro"),
-            File(iconsDir, "classic"),
-            // File(iconsDir, "ChineseNewYearIcons")
+            // File(iconsDir, "QAPro"),
+            // File(iconsDir, "classic"),
+            File(iconsDir, "ChineseNewYearIcon")
         )
         val iconFile = iconFileDirs.flatMap { it.listFiles()!!.toList() }.random(random)
         println("Select Icon: $iconFile")
