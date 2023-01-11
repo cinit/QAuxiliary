@@ -369,6 +369,12 @@ object CFrameControllerInjectImpl : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/framebusiness/controllerinject/")
 }
 
+object ForwardSendPicUtil : DexKitTarget.UsingStr() {
+    override val declaringClass = "com/tencent/mobileqq/utils/ForwardSendPicUtil"
+    override val traitString = arrayOf("ForwardSendPicUtil")
+    override val filter = DexKitFilter.allowAll
+}
+
 object NBaseChatPie_init : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass: String = _BaseChatPie()?.name ?: "com.tencent.mobileqq.activity.BaseChatPie"
