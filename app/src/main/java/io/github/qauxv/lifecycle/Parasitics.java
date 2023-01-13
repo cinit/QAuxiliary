@@ -62,8 +62,9 @@ import java.lang.reflect.Proxy;
 import java.util.List;
 
 /**
- * Inject module Activities into host process and resources injection. Deprecated, private, internal or other restricted
- * APIs will be used.
+ * Inject module Activities into host process and resources injection.
+ * <p>
+ * Deprecated, private, internal or other restricted APIs will be used.
  *
  * @author cinit
  */
@@ -107,12 +108,10 @@ public class Parasitics {
         try {
             String sModulePath = HookEntry.getModulePath();
             if (sModulePath == null) {
-                throw new RuntimeException(
-                    "get module path failed, loader=" + MainHook.class.getClassLoader());
+                throw new RuntimeException("get module path failed, loader=" + MainHook.class.getClassLoader());
             }
             AssetManager assets = res.getAssets();
-            Method addAssetPath = AssetManager.class
-                .getDeclaredMethod("addAssetPath", String.class);
+            Method addAssetPath = AssetManager.class.getDeclaredMethod("addAssetPath", String.class);
             addAssetPath.setAccessible(true);
             int cookie = (int) addAssetPath.invoke(assets, sModulePath);
             try {
@@ -122,8 +121,7 @@ public class Parasitics {
                 }
             } catch (Resources.NotFoundException e) {
                 Log.e("Fatal: injectModuleResources: test injection failure!");
-                Log.e("injectModuleResources: cookie=" + cookie + ", path=" + sModulePath
-                    + ", loader=" + MainHook.class.getClassLoader());
+                Log.e("injectModuleResources: cookie=" + cookie + ", path=" + sModulePath + ", loader=" + MainHook.class.getClassLoader());
                 long length = -1;
                 boolean read = false;
                 boolean exist = false;
@@ -137,8 +135,7 @@ public class Parasitics {
                 } catch (Throwable e2) {
                     Log.e(e2);
                 }
-                Log.e("sModulePath: exists = " + exist + ", isDirectory = " + isDir + ", canRead = "
-                    + read + ", fileLength = " + length);
+                Log.e("sModulePath: exists = " + exist + ", isDirectory = " + isDir + ", canRead = " + read + ", fileLength = " + length);
             }
         } catch (Exception e) {
             Log.e(e);
@@ -155,15 +152,13 @@ public class Parasitics {
         try {
             sActStubHookBeginTime = System.currentTimeMillis();
             Class<?> clazz_ActivityThread = Class.forName("android.app.ActivityThread");
-            Method currentActivityThread = clazz_ActivityThread
-                .getDeclaredMethod("currentActivityThread");
+            Method currentActivityThread = clazz_ActivityThread.getDeclaredMethod("currentActivityThread");
             currentActivityThread.setAccessible(true);
             Object sCurrentActivityThread = currentActivityThread.invoke(null);
             Field mInstrumentation = clazz_ActivityThread.getDeclaredField("mInstrumentation");
             mInstrumentation.setAccessible(true);
-            Instrumentation instrumentation = (Instrumentation) mInstrumentation
-                .get(sCurrentActivityThread);
-            mInstrumentation.set(sCurrentActivityThread, new MyInstrumentation(instrumentation));
+            Instrumentation instrumentation = (Instrumentation) mInstrumentation.get(sCurrentActivityThread);
+            mInstrumentation.set(sCurrentActivityThread, new ProxyInstrumentation(instrumentation));
             //End of Instrumentation
             Field field_mH = clazz_ActivityThread.getDeclaredField("mH");
             field_mH.setAccessible(true);
@@ -171,8 +166,8 @@ public class Parasitics {
             Field field_mCallback = Handler.class.getDeclaredField("mCallback");
             field_mCallback.setAccessible(true);
             Handler.Callback current = (Handler.Callback) field_mCallback.get(oriHandler);
-            if (current == null || !current.getClass().getName().equals(MyH.class.getName())) {
-                field_mCallback.set(oriHandler, new MyH(current));
+            if (current == null || !current.getClass().getName().equals(ProxyHandlerCallback.class.getName())) {
+                field_mCallback.set(oriHandler, new ProxyHandlerCallback(current));
             }
             //End of Handler
             Class<?> activityManagerClass;
@@ -183,8 +178,7 @@ public class Parasitics {
             } catch (Exception err1) {
                 try {
                     activityManagerClass = Class.forName("android.app.ActivityManager");
-                    gDefaultField = activityManagerClass
-                        .getDeclaredField("IActivityManagerSingleton");
+                    gDefaultField = activityManagerClass.getDeclaredField("IActivityManagerSingleton");
                 } catch (Exception err2) {
                     Log.i("WTF: Unable to get IActivityManagerSingleton");
                     Log.e(err1);
@@ -199,24 +193,22 @@ public class Parasitics {
             mInstanceField.setAccessible(true);
             Object mInstance = mInstanceField.get(gDefault);
             Object amProxy = Proxy.newProxyInstance(
-                Initiator.getPluginClassLoader(),
-                new Class[]{Class.forName("android.app.IActivityManager")},
-                new IActivityManagerHandler(mInstance));
+                    Initiator.getPluginClassLoader(),
+                    new Class[]{Class.forName("android.app.IActivityManager")},
+                    new IActivityManagerHandler(mInstance));
             mInstanceField.set(gDefault, amProxy);
             //End of IActivityManager
             try {
-                Class<?> activityTaskManagerClass = Class
-                    .forName("android.app.ActivityTaskManager");
-                Field fIActivityTaskManagerSingleton = activityTaskManagerClass
-                    .getDeclaredField("IActivityTaskManagerSingleton");
+                Class<?> activityTaskManagerClass = Class.forName("android.app.ActivityTaskManager");
+                Field fIActivityTaskManagerSingleton = activityTaskManagerClass.getDeclaredField("IActivityTaskManagerSingleton");
                 fIActivityTaskManagerSingleton.setAccessible(true);
                 Object singleton = fIActivityTaskManagerSingleton.get(null);
                 singletonClass.getMethod("get").invoke(singleton);
                 Object mDefaultTaskMgr = mInstanceField.get(singleton);
                 Object proxy2 = Proxy.newProxyInstance(
-                    Initiator.getPluginClassLoader(),
-                    new Class[]{Class.forName("android.app.IActivityTaskManager")},
-                    new IActivityManagerHandler(mDefaultTaskMgr));
+                        Initiator.getPluginClassLoader(),
+                        new Class[]{Class.forName("android.app.IActivityTaskManager")},
+                        new IActivityManagerHandler(mDefaultTaskMgr));
                 mInstanceField.set(singleton, proxy2);
             } catch (Exception err3) {
             }
@@ -230,8 +222,8 @@ public class Parasitics {
             Field mPmField = pm.getClass().getDeclaredField("mPM");
             mPmField.setAccessible(true);
             Object pmProxy = Proxy.newProxyInstance(iPackageManagerInterface.getClassLoader(),
-                new Class[]{iPackageManagerInterface},
-                new PackageManagerInvocationHandler(packageManagerImpl));
+                    new Class[]{iPackageManagerInterface},
+                    new PackageManagerInvocationHandler(packageManagerImpl));
             sPackageManagerField.set(currentActivityThread, pmProxy);
             mPmField.set(pm, pmProxy);
             //End of PackageManager
@@ -265,8 +257,8 @@ public class Parasitics {
                     ComponentName component = raw.getComponent();
                     Context hostApp = HostInfo.getApplication();
                     if (hostApp != null && component != null
-                        && hostApp.getPackageName().equals(component.getPackageName())
-                        && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
+                            && hostApp.getPackageName().equals(component.getPackageName())
+                            && ActProxyMgr.isModuleProxyActivity(component.getClassName())) {
                         boolean isTranslucent = false;
                         boolean isToolProcess = "io.github.qauxv.activity.ShadowShareFileAgentActivity".equals(component.getClassName());
                         try {
@@ -298,134 +290,146 @@ public class Parasitics {
         }
     }
 
-    public static class MyH implements Handler.Callback {
+    public static class ProxyHandlerCallback implements Handler.Callback {
 
-        private final Handler.Callback mDefault;
+        private final Handler.Callback mNextCallbackHook;
 
-        public MyH(Handler.Callback def) {
-            mDefault = def;
+        public ProxyHandlerCallback(Handler.Callback next) {
+            mNextCallbackHook = next;
         }
 
         @Override
+        public boolean handleMessage(Message msg) {
+            if (msg.what == 100) {
+                // LAUNCH_ACTIVITY
+                onHandleLaunchActivity(msg);
+            } else if (msg.what == 159) {
+                // EXECUTE_TRANSACTION
+                onHandleExecuteTransaction(msg);
+            }
+            // call next hook
+            if (mNextCallbackHook != null) {
+                return mNextCallbackHook.handleMessage(msg);
+            }
+            return false;
+        }
+
         @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
         @SuppressWarnings("JavaReflectionMemberAccess")
-        public boolean handleMessage(Message msg) {
-            if (msg.what == 100) { // LAUNCH_ACTIVITY
+        private void onHandleLaunchActivity(Message msg) {
+            try {
+                Object activityClientRecord = msg.obj;
+                Field field_intent = activityClientRecord.getClass().getDeclaredField("intent");
+                field_intent.setAccessible(true);
+                Intent intent = (Intent) field_intent.get(activityClientRecord);
+                assert intent != null;
+                Bundle bundle = null;
                 try {
-                    Object record = msg.obj;
-                    Field field_intent = record.getClass().getDeclaredField("intent");
-                    field_intent.setAccessible(true);
-                    Intent intent = (Intent) field_intent.get(record);
-                    assert intent != null;
-                    Bundle bundle = null;
-                    try {
-                        Field fExtras = Intent.class.getDeclaredField("mExtras");
-                        fExtras.setAccessible(true);
-                        bundle = (Bundle) fExtras.get(intent);
-                    } catch (Exception e) {
-                        Log.e(e);
-                    }
-                    if (bundle != null) {
-                        bundle.setClassLoader(Initiator.getHostClassLoader());
-                        //we do NOT have a custom Bundle, but the host may have
-                        if (intent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                            Intent realIntent = intent
-                                .getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
-                            field_intent.set(record, realIntent);
-                        }
-                    }
+                    Field fExtras = Intent.class.getDeclaredField("mExtras");
+                    fExtras.setAccessible(true);
+                    bundle = (Bundle) fExtras.get(intent);
                 } catch (Exception e) {
                     Log.e(e);
                 }
-            } else if (msg.what == 159) {
-                // EXECUTE_TRANSACTION
-                Object clientTransaction = msg.obj;
-                try {
-                    if (clientTransaction != null) {
-                        Method getCallbacks =
-                                Class.forName("android.app.servertransaction.ClientTransaction")
-                                        .getDeclaredMethod("getCallbacks");
-                        getCallbacks.setAccessible(true);
-                        List<?> clientTransactionItems = (List<?>) getCallbacks.invoke(clientTransaction);
-                        if (clientTransactionItems != null && clientTransactionItems.size() > 0) {
-                            for (Object item : clientTransactionItems) {
-                                Class<?> c = item.getClass();
-                                if (c.getName().contains("LaunchActivityItem")) {
-                                    Field fmIntent = c.getDeclaredField("mIntent");
-                                    fmIntent.setAccessible(true);
-                                    Intent wrapper = (Intent) fmIntent.get(item);
-                                    assert wrapper != null;
-                                    Bundle bundle = null;
-                                    try {
-                                        Field fExtras = Intent.class.getDeclaredField("mExtras");
-                                        fExtras.setAccessible(true);
-                                        bundle = (Bundle) fExtras.get(wrapper);
-                                    } catch (Exception e) {
-                                        Log.e(e);
-                                    }
-                                    if (bundle != null) {
-                                        bundle.setClassLoader(Initiator.getHostClassLoader());
-                                        if (wrapper.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                                            Intent realIntent = wrapper.getParcelableExtra(
-                                                ActProxyMgr.ACTIVITY_PROXY_INTENT);
-                                            fmIntent.set(item, realIntent);
-                                            if (Build.VERSION.SDK_INT >= 31) {
-                                                IBinder token = (IBinder) clientTransaction.getClass()
-                                                    .getMethod("getActivityToken").invoke(clientTransaction);
-                                                Class<?> clazz_ActivityThread = Class.forName(
-                                                    "android.app.ActivityThread");
-                                                Method currentActivityThread = clazz_ActivityThread.getDeclaredMethod(
-                                                    "currentActivityThread");
-                                                currentActivityThread.setAccessible(true);
-                                                Object activityThread = currentActivityThread.invoke(null);
-                                                assert activityThread != null;
-                                                // Accessing hidden method Landroid/app/ClientTransactionHandler;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
-                                                // Accessing hidden method Landroid/app/ActivityThread;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
-                                                Object acr = activityThread.getClass()
-                                                    .getMethod("getLaunchingActivity", IBinder.class)
-                                                    .invoke(activityThread, token);
-                                                if (acr != null) {
-                                                    Field fAcrIntent = acr.getClass().getDeclaredField("intent");
-                                                    fAcrIntent.setAccessible(true);
-                                                    fAcrIntent.set(acr, realIntent);
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
+                if (bundle != null) {
+                    bundle.setClassLoader(Initiator.getHostClassLoader());
+                    // we do NOT have a custom Bundle, but the host may have
+                    if (intent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
+                        Intent realIntent = intent.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                        field_intent.set(activityClientRecord, realIntent);
+                    }
+                }
+            } catch (Exception e) {
+                Log.e(e);
+            }
+        }
+
+        @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
+        private void onHandleExecuteTransaction(Message msg) {
+            Object clientTransaction = msg.obj;
+            try {
+                if (clientTransaction != null) {
+                    Method getCallbacks = Class.forName("android.app.servertransaction.ClientTransaction").getDeclaredMethod("getCallbacks");
+                    getCallbacks.setAccessible(true);
+                    List<?> clientTransactionItems = (List<?>) getCallbacks.invoke(clientTransaction);
+                    if (clientTransactionItems != null && !clientTransactionItems.isEmpty()) {
+                        for (Object item : clientTransactionItems) {
+                            Class<?> c = item.getClass();
+                            if (c.getName().contains("LaunchActivityItem")) {
+                                processLaunchActivityItem(item, clientTransaction);
                             }
                         }
                     }
-                } catch (Exception e) {
-                    Log.e(e);
+                }
+            } catch (Exception e) {
+                Log.e(e);
+            }
+        }
+
+        @SuppressLint({"PrivateApi", "DiscouragedPrivateApi"})
+        @SuppressWarnings("JavaReflectionMemberAccess")
+        private void processLaunchActivityItem(Object item, Object clientTransaction) throws ReflectiveOperationException {
+            Class<?> c = item.getClass();
+            Field fmIntent = c.getDeclaredField("mIntent");
+            fmIntent.setAccessible(true);
+            Intent wrapper = (Intent) fmIntent.get(item);
+            assert wrapper != null;
+            Bundle bundle = null;
+            try {
+                Field fExtras = Intent.class.getDeclaredField("mExtras");
+                fExtras.setAccessible(true);
+                bundle = (Bundle) fExtras.get(wrapper);
+            } catch (Exception e) {
+                Log.e(e);
+            }
+            if (bundle != null) {
+                bundle.setClassLoader(Initiator.getHostClassLoader());
+                if (wrapper.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
+                    Intent realIntent = wrapper.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                    fmIntent.set(item, realIntent);
+                    if (Build.VERSION.SDK_INT >= 31) {
+                        IBinder token = (IBinder) clientTransaction.getClass().getMethod("getActivityToken").invoke(clientTransaction);
+                        Class<?> clazz_ActivityThread = Class.forName("android.app.ActivityThread");
+                        Method currentActivityThread = clazz_ActivityThread.getDeclaredMethod("currentActivityThread");
+                        currentActivityThread.setAccessible(true);
+                        Object activityThread = currentActivityThread.invoke(null);
+                        assert activityThread != null;
+                        // Accessing hidden method Landroid/app/ClientTransactionHandler;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
+                        // Accessing hidden method Landroid/app/ActivityThread;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
+                        Object acr = activityThread.getClass()
+                                .getMethod("getLaunchingActivity", IBinder.class)
+                                .invoke(activityThread, token);
+                        if (acr != null) {
+                            Field fAcrIntent = acr.getClass().getDeclaredField("intent");
+                            fAcrIntent.setAccessible(true);
+                            fAcrIntent.set(acr, realIntent);
+                        }
+                    }
                 }
             }
-            if (mDefault != null) {
-                return mDefault.handleMessage(msg);
-            }
-            return false;
         }
     }
 
     @SuppressWarnings("deprecation")
     @SuppressLint("NewApi")
-    public static class MyInstrumentation extends Instrumentation {
+    public static class ProxyInstrumentation extends Instrumentation {
 
         private final Instrumentation mBase;
 
-        public MyInstrumentation(Instrumentation base) {
+        public ProxyInstrumentation(Instrumentation base) {
             this.mBase = base;
         }
 
         @Override
         public Activity newActivity(ClassLoader cl, String className, Intent intent)
-            throws InstantiationException, IllegalAccessException, ClassNotFoundException {
+                throws InstantiationException, IllegalAccessException, ClassNotFoundException {
             try {
                 return mBase.newActivity(cl, className, intent);
             } catch (Exception e) {
                 if (ActProxyMgr.isModuleProxyActivity(className)) {
-                    return (Activity) Initiator.class.getClassLoader()
-                            .loadClass(className).newInstance();
+                    ClassLoader selfClassLoader = Initiator.class.getClassLoader();
+                    assert selfClassLoader != null;
+                    return (Activity) selfClassLoader.loadClass(className).newInstance();
                 }
                 throw e;
             }
@@ -558,8 +562,7 @@ public class Parasitics {
         }
 
         @Override
-        public ActivityMonitor addMonitor(IntentFilter filter, ActivityResult result,
-                                          boolean block) {
+        public ActivityMonitor addMonitor(IntentFilter filter, ActivityResult result, boolean block) {
             return mBase.addMonitor(filter, result, block);
         }
 
@@ -644,9 +647,7 @@ public class Parasitics {
                                     Application application, Intent intent, ActivityInfo info, CharSequence title,
                                     Activity parent, String id, Object lastNonConfigurationInstance)
             throws IllegalAccessException, InstantiationException {
-            return mBase
-                .newActivity(clazz, context, token, application, intent, info, title, parent, id,
-                    lastNonConfigurationInstance);
+            return mBase.newActivity(clazz, context, token, application, intent, info, title, parent, id, lastNonConfigurationInstance);
         }
 
         @Override
@@ -662,8 +663,7 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnCreate(Activity activity, Bundle icicle,
-                                         PersistableBundle persistentState) {
+        public void callActivityOnCreate(Activity activity, Bundle icicle, PersistableBundle persistentState) {
             if (icicle != null) {
                 String className = activity.getClass().getName();
                 if (ActProxyMgr.isModuleBundleClassLoaderRequired(className)) {
@@ -680,15 +680,13 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnRestoreInstanceState(Activity activity,
-                                                       Bundle savedInstanceState) {
+        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState) {
             mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState);
         }
 
 
         @Override
-        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState,
-                                                       PersistableBundle persistentState) {
+        public void callActivityOnRestoreInstanceState(Activity activity, Bundle savedInstanceState, PersistableBundle persistentState) {
             mBase.callActivityOnRestoreInstanceState(activity, savedInstanceState, persistentState);
         }
 
@@ -698,8 +696,7 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnPostCreate(Activity activity, @Nullable Bundle savedInstanceState,
-                                             @Nullable PersistableBundle persistentState) {
+        public void callActivityOnPostCreate(Activity activity, @Nullable Bundle savedInstanceState, @Nullable PersistableBundle persistentState) {
             mBase.callActivityOnPostCreate(activity, savedInstanceState, persistentState);
         }
 
@@ -734,8 +731,7 @@ public class Parasitics {
         }
 
         @Override
-        public void callActivityOnSaveInstanceState(Activity activity, Bundle outState,
-                                                    PersistableBundle outPersistentState) {
+        public void callActivityOnSaveInstanceState(Activity activity, Bundle outState, PersistableBundle outPersistentState) {
             mBase.callActivityOnSaveInstanceState(activity, outState, outPersistentState);
         }
 
