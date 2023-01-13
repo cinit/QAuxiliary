@@ -58,7 +58,7 @@ QAuxiliary 采用滚动更新方式发布新版本，我们总是推荐用户使
 QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 - `CI` 版本为 commit 后自动触发更新，可能包含外围文档或 CI 流程更新，不会编写任何更新文档或说明，
-  具体更新内容可在[Github](https://github.com/cinit/QAuxiliary/commits/master)
+  具体更新内容可在[GitHub](https://github.com/cinit/QAuxiliary/commits/master)
   自行查看，本更新由开源的流程自动编译发布，可能包含严重的功能及行为异常。
 
 - `推荐的CI` 版本为重大功能变更或长期积累更新，发布频率由开发组决定，包含上次`CI`

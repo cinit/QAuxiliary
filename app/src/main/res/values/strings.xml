@@ -16,7 +16,7 @@
     <string name="PageTitle_info">关于</string>
     <string name="ModuleEffectiveVersion">模块生效版本</string>
     <string name="announcement">公告</string>
-    <string name="github">Github</string>
+    <string name="github">GitHub</string>
     <string name="BugCheck">故障排查</string>
     <string name="ModuleVersion">模块版本</string>
     <string name="ModuleVersion_tip">更新模块后需要重启目标应用方可生效</string>
