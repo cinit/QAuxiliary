@@ -168,11 +168,7 @@ android {
         val variantCapped = name.capitalize()
         val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
         mergeAssets.dependsOn(generateEulaAndPrivacy)
-        tasks.whenTaskAdded {
-            if (name == "license${variantCapped}Report") {
-                mergeAssets.dependsOn(this)
-            }
-        }
+        mergeAssets.dependsOn("data${variantCapped}Descriptor")
     }
 }
 
@@ -184,8 +180,6 @@ licenseReport {
 
     copyCsvReportToAssets = false
     copyHtmlReportToAssets = false
-    copyJsonReportToAssets = true
-    copyTextReportToAssets = false
 }
 
 dependencies {
@@ -244,6 +238,19 @@ androidComponents.onVariants { variant ->
         group = "qauxv"
         dependsOn(":app:install$variantCapped")
         finalizedBy(restartQQ)
+    }
+    task("data${variantCapped}Descriptor") {
+        inputs.file("${buildDir}/reports/licenses/license${variantCapped}Report.json")
+        outputs.file("${projectDir}/src/main/assets/open_source_licenses.json")
+        dependsOn("license${variantCapped}Report")
+
+        doFirst {
+            val input = inputs.files.singleFile
+            val output = outputs.files.singleFile
+            this.runCatching {
+                output.writeText(Licenses.transform(input.readText()))
+            }
+        }
     }
 }
 

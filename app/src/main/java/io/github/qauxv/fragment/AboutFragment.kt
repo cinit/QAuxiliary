@@ -50,7 +50,6 @@ import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.util.CliOper
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.data.Licenses
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isInHostProcess
@@ -267,10 +266,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "BSD 3-Clause \"New\" or \"Revised\" License"
             )
         )
-        ret + Licenses.getAll().onFailure {
-            Log.e(it)
-            return@lazy emptyList()
-        }.getOrNull()!!.map {
+        ret + Licenses.list.map {
             LicenseNotice(it.libraryName, it.jumpUrl, it.author, it.license)
         }
     }
