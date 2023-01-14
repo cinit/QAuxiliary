@@ -165,7 +165,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         if (setVisibilityMethods.size != 1) {
             return false
         }
-        NAIOPictureView_setVisibility.descCache = setVisibilityMethods.first().descriptor
+        NAIOPictureView_setVisibility.descCache = setVisibilityMethods.keys.first().descriptor
         return true
     }
 }
