@@ -108,6 +108,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
         return host.endsWith("qq.com")
             || host.endsWith("tenpay.com")
             || host.endsWith("meeting.tencent.com")
+            || host == "qq-web.cdn-go.cn" // for CAPTCHA https://qq-web.cdn-go.cn/captcha_cdn-go/latest/captcha.html
     }
 
     @ColorInt
