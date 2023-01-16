@@ -428,10 +428,6 @@ EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     if (retCode < 0) {
         return retCode;
     }
-    retCode = DexKit_JNI_OnLoad(vm, reserved);
-    if (retCode < 0) {
-        return retCode;
-    }
     JNINativeMethod lMethods[1];
     if (appInterface == nullptr) {
         __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");

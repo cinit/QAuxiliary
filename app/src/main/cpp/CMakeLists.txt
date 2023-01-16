@@ -26,7 +26,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-ty
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
-add_subdirectory(../../../../libs/dexkit dexkit)
+add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
 add_subdirectory(../../../../libs/silk silk)
 
 add_library(qauxv SHARED
@@ -37,6 +37,7 @@ add_library(qauxv SHARED
         qauxv_core/shared_memory.cpp
         qauxv_core/SilkCodec.cc
         qauxv_core/auto_close_fd.cc
+        ../../../../libs/dexkit/DexKit/Android/dexkit/src/main/cpp/native-bridge.cpp
         )
 
 set_target_properties(qauxv PROPERTIES
@@ -49,4 +50,4 @@ target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv dexkit silk c dl z ${ANDROID_LIBS})
+target_link_libraries(qauxv mmkv dex_kit_static silk c dl z ${ANDROID_LIBS})

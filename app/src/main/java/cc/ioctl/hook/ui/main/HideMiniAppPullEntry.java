@@ -40,6 +40,7 @@ import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import io.luckypray.dexkit.builder.BatchFindArgs;
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
+import io.luckypray.dexkit.enums.MatchType;
 import io.luckypray.dexkit.util.DexDescriptorUtil;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -164,7 +165,7 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         Map<String, List<DexMethodDescriptor>> res = dexKitDeobfs.getDexKitBridge()
                 .batchFindMethodsUsingStrings(BatchFindArgs.builder()
                         .queryMap(map)
-                        .advancedMatch(false)
+                        .matchType(MatchType.CONTAINS)
                         .build());
         for (List<DexMethodDescriptor> methods: res.values()) {
             for (DexMethodDescriptor methodDesc: methods) {
