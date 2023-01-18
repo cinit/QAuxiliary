@@ -42,7 +42,7 @@ object CancelPicCompress : CommonSwitchFunctionHook(
     arrayOf(ForwardSendPicUtil)
 ) {
 
-    override val name = "取消分享图片压缩"
+    override val name = "分享图片不压缩"
 
     override val description: CharSequence = "通过QQ分享图片时以原图发送"
 
