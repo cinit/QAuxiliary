@@ -47,7 +47,7 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
         HideTroopLevel,
         ShowMsgAt,
         ChatItemShowQQUin,
-        MultiForwardAvatarHook.INSTANCE
+        MultiForwardAvatarHook
     )
 
     @Throws(Exception::class)
