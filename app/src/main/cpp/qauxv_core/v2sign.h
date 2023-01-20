@@ -67,9 +67,9 @@ namespace {
             0x20, 0x67, 0x69, 0x53, 0x20, 0x4b, 0x50, 0x41,
     };
 
-    const unsigned long long revertMagikFirst = 0x3234206b636f6c42L;
-    const unsigned long long revertMagikSecond = 0x20676953204b5041L;
-    const unsigned long v2Id = 0x7109871a;
+    const uint64_t revertMagikFirst = 0x3234206b636f6c42LL;
+    const uint64_t revertMagikSecond = 0x20676953204b5041LL;
+    const uint32_t v2Id = 0x7109871a;
 
     std::string getModulePath(JNIEnv *env) {
         jclass cMainHook = env->FindClass("io/github/qauxv/startup/HookEntry");
@@ -135,13 +135,13 @@ namespace {
     }
 
     std::string getSignBlock(const uint8_t *base, size_t size) {
-        unsigned long long curr = 0;
+        uint64_t curr = 0;
         std::string signBlock;
         auto *ptr = base + size - 1;
         while (ptr >= base) {
             curr = (curr << 8) | *ptr--;
             if (curr == revertMagikFirst) {
-                unsigned long long tmp = 0;
+                uint64_t tmp = 0;
                 for (int i = 0; i < 8; ++i) {
                     tmp = (tmp << 8) | *(ptr - i);
                 }
@@ -172,26 +172,26 @@ namespace {
         const char *p = block.data();
         const char *last = block.data() + block.size();
         while (p < last) {
-            unsigned long long blockSize = 0;
+            uint64_t blockSize = 0;
             for (int i = 0; i < 8; ++i) {
-                blockSize = (blockSize >> 8) | (((unsigned long long) *p++) << 56);
+                blockSize = (blockSize >> 8) | (((uint64_t) *p++) << (8 * 7));
             }
-            unsigned long id = 0;
+            uint32_t id = 0;
             for (int i = 0; i < 4; ++i) {
-                id = (id >> 8) | (((unsigned long) *p++) << 24);
+                id = (id >> 8) | (((uint32_t) *p++) << (8 * 3));
             }
             if (id != v2Id) {
                 p += blockSize - 12;
                 continue;
             }
             p += 12;
-            unsigned long size = 0;
+            uint32_t size = 0;
             for (int i = 0; i < 4; ++i) {
-                size = (size >> 8) | (((unsigned long) *p++) << 24);
+                size = (size >> 8) | (((uint32_t) *p++) << (8 * 3));
             }
             p += size + 4;
             for (int i = 0; i < 4; ++i) {
-                size = (size >> 8) | (((unsigned long) *p++) << 24);
+                size = (size >> 8) | (((uint32_t) *p++) << (8 * 3));
             }
             for (int i = 0; i < size; ++i) {
                 signature.push_back(*p++);
