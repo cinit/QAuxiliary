@@ -29,6 +29,38 @@ static_assert(sizeof(void *) == 4, "32-bit pointer size expected");
 #define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "QAuxv", __VA_ARGS__)
 #define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "QAuxv", __VA_ARGS__)
 
+namespace qauxv::utils {
+
+int dumpMemory(int fd, const void *address, size_t size) {
+    LOGD("dump memory: %p, %zu to fd %d", address, size, fd);
+    if (size == 0) {
+        return 0;
+    }
+    if (address == nullptr) {
+        return -EINVAL;
+    }
+    if (fd < 0) {
+        return -EBADF;
+    }
+    size_t written = 0;
+    while (written < size) {
+        ssize_t ret = write(fd, (const uint8_t *) (address) + written, size - written);
+        if (ret < 0) {
+            if (errno == EINTR) {
+                continue;
+            } else {
+                int err = errno;
+                LOGE("error write(%d, %p, %zu): %s", fd, (const uint8_t *) (address) + written, size - written, strerror(err));
+                return -err;
+            }
+        }
+        written += ret;
+    }
+    return 0;
+}
+
+}
+
 namespace {
     const char magic[16]{
             0x32, 0x34, 0x20, 0x6b, 0x63, 0x6f, 0x6c, 0x42,

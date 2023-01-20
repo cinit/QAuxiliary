@@ -131,7 +131,7 @@ public class AbiUtils {
         } else if (abiFlags == ABI_ARM64) {
             sCachedModuleAbiFlavor = "arm64";
         } else {
-            throw new IllegalStateException("getModuleFlavorName, unknown abi flags: " + abiFlags);
+            sCachedModuleAbiFlavor = "unknown";
         }
         return sCachedModuleAbiFlavor;
     }
