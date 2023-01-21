@@ -69,4 +69,7 @@ public class TIMVersion {
     public static final long TIM_3_4_3 = 1188;
     public static final long TIM_3_4_8 = 1248;
     public static final long TIM_3_4_8_2 = 1258;
+    public static final long TIM_3_4_9 = 1268;
+    public static final long TIM_3_5_0 = 1278;
+    public static final long TIM_3_5_0_2 = 1288;
 }
