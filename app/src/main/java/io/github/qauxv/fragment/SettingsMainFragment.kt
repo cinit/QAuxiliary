@@ -69,8 +69,6 @@ import me.singleneuron.util.forSuBanXia
 
 class SettingsMainFragment : BaseRootLayoutFragment() {
 
-    override fun getTitle() = title
-    private var title: String = "QAuxiliary"
     private lateinit var mFragmentLocations: Array<String>
     private lateinit var mFragmentDescription: FragmentDescription
     private var mTargetUiAgentNavId: String? = null
@@ -105,7 +103,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
             throw IllegalArgumentException("fragment description is not FragmentDescription, got: " + desc.javaClass.name)
         }
         mFragmentDescription = desc
-        title = mFragmentDescription.name ?: title
+        title = mFragmentDescription.name ?: "QAuxiliary"
         mTargetUiAgentNavId = arguments?.getString(TARGET_UI_AGENT_IDENTIFIER)
     }
 

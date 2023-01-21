@@ -22,6 +22,10 @@
 
 package cc.ioctl.fragment
 
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import cc.ioctl.hook.msg.RevokeMsgHook
 import cc.ioctl.util.Reflex
 import io.github.qauxv.base.ISwitchCellAgent
@@ -34,7 +38,10 @@ import kotlin.reflect.KMutableProperty
 
 class RevokeMsgConfigFragment : BaseHierarchyFragment() {
 
-    override fun getTitle() = "防撤回设置"
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "防撤回设置"
+        return super.doOnCreateView(inflater, container, savedInstanceState)
+    }
 
     override val hierarchy: Array<DslTMsgListItemInflatable> by lazy {
         arrayOf(

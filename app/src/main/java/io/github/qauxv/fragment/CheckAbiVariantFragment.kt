@@ -42,13 +42,12 @@ class CheckAbiVariantFragment : BaseRootLayoutFragment() {
 
     private var mBinding: FragmentAbiVariantInfoBinding? = null
 
-    override fun getTitle() = "原生库 ABI"
-
     override fun doOnCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View {
+        title = "原生库 ABI"
         mBinding = FragmentAbiVariantInfoBinding.inflate(inflater, container, false).apply {
             btnDownloadFromGitHub.setOnClickListener {
                 openUri("https://github.com/cinit/QAuxiliary/releases/latest")

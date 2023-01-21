@@ -60,11 +60,10 @@ import java.nio.charset.StandardCharsets
 
 class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
-    override fun getTitle() = "EULA"
-
     private var mCheckBoxHaveRead: CheckBox? = null
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "EULA"
         val context = inflater.context
         val scrollView: ViewGroup = ScrollView(context, null).apply {
             layoutParams = ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT)

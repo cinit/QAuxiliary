@@ -58,11 +58,10 @@ import java.util.Locale
 
 class AboutFragment : BaseRootLayoutFragment() {
 
-    override fun getTitle() = "关于"
-
     private var mDslListViewController: RecyclerListViewController? = null
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "关于"
         val context = inflater.context
         mDslListViewController = RecyclerListViewController(context, lifecycleScope)
         mDslListViewController!!.items = hierarchy

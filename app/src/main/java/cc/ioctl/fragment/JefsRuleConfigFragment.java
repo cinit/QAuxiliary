@@ -61,15 +61,10 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
     private LinearLayout layoutEdit;
     private boolean currEditMode;
 
-    @Nullable
-    @Override
-    public String getTitle() {
-        return "跳转控制";
-    }
-
     @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                                @Nullable Bundle savedInstanceState) {
+        setTitle("跳转控制");
         Context context = inflater.getContext();
         ViewGroup bounceScrollView = new BounceScrollView(context, null);
         bounceScrollView.setId(R.id.rootBounceScrollView);

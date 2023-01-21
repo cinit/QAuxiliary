@@ -38,8 +38,6 @@ import io.github.qauxv.util.hotupdate.HotUpdateManager
 
 class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
-    override fun getTitle() = "热更新配置"
-
     private var binding: FragmentHotUpdateConfigBinding? = null
 
     private val channelIdToViewId = mapOf(
@@ -52,6 +50,7 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
     private fun viewIdToChannelId(viewId: Int) = channelIdToViewId.filterValues { it == viewId }.keys.first()
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "热更新配置"
         binding = FragmentHotUpdateConfigBinding.inflate(inflater, container, false).apply {
             hotUpdateConfigChannelDisabled.setOnClickListener(this@HotUpdateConfigFragment)
             hotUpdateConfigChannelStable.setOnClickListener(this@HotUpdateConfigFragment)

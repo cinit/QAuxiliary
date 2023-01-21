@@ -51,8 +51,6 @@ import kotlin.system.exitProcess
 
 class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
-    override fun getTitle(): String = "备份与恢复"
-
     private var binding: FragmentBackupRestoreConfigBinding? = null
     private var mBackupSession: BackupConfigSession? = null
     private var mRestoreSession: RestoreConfigSession? = null
@@ -63,6 +61,7 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
     private val mTmpCacheFiles = ArrayList<File>()
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "备份与恢复"
         binding = FragmentBackupRestoreConfigBinding.inflate(inflater, container, false).apply {
             editTextBackupLocation = backupRestoreConfigEditTextBackupPath
             editTextRestoreLocation = backupRestoreConfigEditTextRestorePath

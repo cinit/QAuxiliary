@@ -53,9 +53,8 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
     private var mUseDifferentSplashInDarkMode = false
     private var mEnableFunction = false
 
-    override fun getTitle(): String = "自定义启动图"
-
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+        title = "自定义启动图"
         mBinding = FragmentCustomSplashConfigBinding.inflate(inflater, container, false).apply {
             buttonCustomSplashCancel.setOnClickListener { confirmFinishFragment() }
             buttonCustomSplashSave.setOnClickListener { checkAndSavePreference() }

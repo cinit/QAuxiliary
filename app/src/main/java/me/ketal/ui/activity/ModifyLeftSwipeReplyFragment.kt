@@ -38,9 +38,8 @@ import me.ketal.hook.LeftSwipeReplyHook
 @SuppressLint("Registered")
 class ModifyLeftSwipeReplyFragment : BaseRootLayoutFragment() {
 
-    override fun getTitle() = "修改消息左滑动作"
-
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "修改消息左滑动作"
         val activity = settingsHostActivity!!
         val ll = LinearLayout(activity).apply {
             orientation = LinearLayout.VERTICAL

@@ -73,11 +73,10 @@ import kotlin.system.exitProcess
 
 class TroubleshootFragment : BaseRootLayoutFragment() {
 
-    override fun getTitle() = "故障排查"
-
     private var mDslListViewController: RecyclerListViewController? = null
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "故障排查"
         val context = inflater.context
         mDslListViewController = RecyclerListViewController(context, lifecycleScope)
         mDslListViewController!!.items = hierarchy

@@ -50,10 +50,9 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
     private var mRecyclerView: RecyclerView? = null
     private var mFunction: ArrayList<IUiItemAgentProvider> = ArrayList(160)
 
-    override fun getTitle() = "功能状态"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        title = "功能状态"
         for (entry in FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()) {
             mFunction.add(entry)
         }

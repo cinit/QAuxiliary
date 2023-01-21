@@ -88,14 +88,9 @@ public class FriendListExportFragment extends BaseRootLayoutFragment {
 
     @Nullable
     @Override
-    public String getTitle() {
-        return "导出好友列表";
-    }
-
-    @Nullable
-    @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                                @Nullable Bundle savedInstanceState) {
+        setTitle("导出好友列表");
         Context ctx = inflater.getContext();
         int firstTextColor = ResourcesCompat.getColor(ctx.getResources(), R.color.firstTextColor, ctx.getTheme());
         LinearLayout ll = new LinearLayout(ctx);

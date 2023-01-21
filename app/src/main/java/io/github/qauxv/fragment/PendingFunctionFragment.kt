@@ -40,11 +40,10 @@ import io.github.qauxv.util.Toasts
 
 class PendingFunctionFragment : BaseRootLayoutFragment() {
 
-    override fun getTitle() = "开发中的功能"
-
     private var mDslListViewController: RecyclerListViewController? = null
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "开发中的功能"
         val context = inflater.context
         mDslListViewController = RecyclerListViewController(context, lifecycleScope)
         mDslListViewController!!.items = hierarchy

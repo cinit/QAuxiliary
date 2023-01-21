@@ -69,15 +69,10 @@ public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements
 
     private boolean mMsfResponsive = false;
 
-    @Nullable
-    @Override
-    public String getTitle() {
-        return "自定义电量";
-    }
-
     @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                                @Nullable Bundle savedInstanceState) {
+        setTitle("自定义电量");
         Context context = inflater.getContext();
         LinearLayout ll = new LinearLayout(context);
         ll.setOrientation(LinearLayout.VERTICAL);

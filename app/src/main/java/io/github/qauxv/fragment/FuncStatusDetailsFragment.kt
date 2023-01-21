@@ -150,11 +150,10 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
         }
     }
 
-    override fun getTitle() = "功能详情"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        title = "功能详情"
         val args = arguments
         val target: String? = args?.getString(TARGET_IDENTIFIER)
         if (target == null) {

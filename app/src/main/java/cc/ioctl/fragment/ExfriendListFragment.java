@@ -104,14 +104,9 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
 
     @Nullable
     @Override
-    public String getTitle() {
-        return "历史好友";
-    }
-
-    @Nullable
-    @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
                                @Nullable Bundle savedInstanceState) {
+        setTitle("历史好友");
         Context context = inflater.getContext();
         try {
             face = FaceImpl.getInstance();

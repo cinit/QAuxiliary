@@ -37,13 +37,12 @@ import java.text.SimpleDateFormat
 
 class JunkCodeFragment : BaseRootLayoutFragment(), Runnable {
 
-    override fun getTitle(): String = "动态验证码"
-
     private val mTimeFormat = SimpleDateFormat("HH:mm:ss", java.util.Locale.ROOT)
     private var mLasttc: Int = 0
     private var mBinding: FragmentJunkCodeBinding? = null
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "动态验证码"
         mBinding = FragmentJunkCodeBinding.inflate(inflater, container, false).apply {
             junkCodeCopy.setOnClickListener {
                 val code = getCodeForTime(System.currentTimeMillis())

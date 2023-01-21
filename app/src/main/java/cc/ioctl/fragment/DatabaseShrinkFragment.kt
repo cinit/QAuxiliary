@@ -95,8 +95,6 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
 
     private val mIsCalcSize: AtomicBoolean = AtomicBoolean(false)
 
-    override fun getTitle() = mDatabaseName ?: "null"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
@@ -106,6 +104,7 @@ class DatabaseShrinkFragment : BaseRootLayoutFragment() {
             return
         }
         mDatabaseName = File(mDatabasePath!!).name
+        title = mDatabaseName ?: "null"
     }
 
     override fun doOnCreateView(

@@ -37,6 +37,9 @@ public abstract class BaseSettingFragment extends Fragment {
 
     private SettingsUiFragmentHostActivity mSettingsHostActivity = null;
     @Nullable
+    private String mTitle = null;
+
+    @Nullable
     private String mSubtitle = null;
 
     @Override
@@ -64,7 +67,16 @@ public abstract class BaseSettingFragment extends Fragment {
     }
 
     @Nullable
-    public abstract String getTitle();
+    public String getTitle() {
+        return mTitle;
+    }
+
+    protected void setTitle(@Nullable String title) {
+        mTitle = title;
+        if (mSettingsHostActivity != null) {
+            mSettingsHostActivity.requestInvalidateActionBar();
+        }
+    }
 
     @Nullable
     public String getSubtitle() {

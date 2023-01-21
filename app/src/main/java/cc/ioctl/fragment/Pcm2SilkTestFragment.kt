@@ -43,8 +43,6 @@ class Pcm2SilkTestFragment : BaseRootLayoutFragment() {
 
     private var binding: FragmentPcm2silkTestBinding? = null
 
-    override fun getTitle() = "PCM16LE 转 SILK"
-
     private fun errorDialog(msg: String) {
         runOnUiThread {
             AlertDialog.Builder(requireContext())
@@ -67,6 +65,7 @@ class Pcm2SilkTestFragment : BaseRootLayoutFragment() {
     }
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = "PCM16LE 转 SILK"
         binding = FragmentPcm2silkTestBinding.inflate(inflater, container, false).apply {
             silkTestButtonBrowseInputFile.setOnClickListener {
                 SafUtils.requestOpenFile(requireContext())

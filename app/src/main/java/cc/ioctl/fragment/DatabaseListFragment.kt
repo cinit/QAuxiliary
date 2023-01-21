@@ -67,11 +67,10 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
     // "chat.trace", "toggleFeature.db"
     private val DATABASE_ALLOW_DELETE_REGEX: String = "(chat\\.trace|toggleFeature\\.db)"
 
-    override fun getTitle() = "聊天记录数据库清理"
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        title = "聊天记录数据库清理"
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
