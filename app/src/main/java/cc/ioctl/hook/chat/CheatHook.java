@@ -40,6 +40,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CommonContextWrapper;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.CPicEmoticonInfo;
@@ -106,8 +107,7 @@ public class CheatHook extends CommonSwitchFunctionHook {
             Method = "sendMagicEmoticon";
         }
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-            XposedHelpers.findAndHookMethod(Class.forName("com.tencent.mobileqq.emoticonview" +
-                            ".sender.PicEmoticonInfoSender"),
+            XposedHelpers.findAndHookMethod(Initiator.loadClass("com.tencent.mobileqq.emoticonview.sender.PicEmoticonInfoSender"),
                     Method, _BaseQQAppInterface(), Context.class, _BaseSessionInfo(), _Emoticon(), _StickerInfo(), hook);
         } else {
             XposedHelpers.findAndHookMethod(DexKit.requireClassFromCache(CPicEmoticonInfo.INSTANCE),

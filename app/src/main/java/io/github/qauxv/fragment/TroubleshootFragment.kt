@@ -36,7 +36,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.FrameLayout
-import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.util.ExfriendManager
@@ -62,8 +61,8 @@ import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
-import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
@@ -250,7 +249,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToOpenX5DebugPage = actionOrShowError {
-        val browser = Class.forName("com.tencent.mobileqq.activity.QQBrowserDelegationActivity")
+        val browser = Initiator.loadClass("com.tencent.mobileqq.activity.QQBrowserDelegationActivity")
         val intent = Intent(requireContext(), browser)
         intent.putExtra("fling_action_key", 2)
         intent.putExtra("fling_code_key", this@TroubleshootFragment.hashCode())
@@ -274,7 +273,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToStartHostDebugActivity = actionOrShowError {
-        val browser = Class.forName("com.tencent.mobileqq.debug.DebugActivity")
+        val browser = Initiator.loadClass("com.tencent.mobileqq.debug.DebugActivity")
         val intent = Intent(requireContext(), browser)
         startActivity(intent)
     }

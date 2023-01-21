@@ -43,6 +43,7 @@ import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.ui.CommonContextWrapper;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Toasts;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
@@ -91,7 +92,7 @@ public class CheckCommonGroup implements IUiItemAgentProvider, IUiItemAgent {
                     alertDialog.dismiss();
                     Class<?> browser;
                     try {
-                        browser = Class.forName("com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
+                        browser = Initiator.loadClass("com.tencent.mobileqq.activity.QQBrowserDelegationActivity");
                         Intent intent = new Intent(ctx, browser);
                         intent.putExtra("fling_action_key", 2);
                         intent.putExtra("fling_code_key", ctx.hashCode());
