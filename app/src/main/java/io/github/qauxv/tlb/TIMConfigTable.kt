@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb
+package io.github.qauxv.tlb     
 
 import cc.ioctl.hook.ui.chat.ReplyNoAtHook
 import io.github.qauxv.bridge.QQMessageFacade
@@ -51,6 +51,8 @@ class TIMConfigTable : ConfigTableInterface {
             ReplyNoAtHook::class.java.simpleName to mapOf(
                     TIM_3_1_1 to "wg",
                     TIM_3_3_0 to "wk",
+                    TIM_3_3_1 to "wf",
+                    TIM_3_5_0 to "wf",
             ),
 
             AutoMosaicName::class.java.simpleName to mapOf(
