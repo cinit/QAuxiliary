@@ -56,7 +56,9 @@ class TIMConfigTable : ConfigTableInterface {
             AutoMosaicName::class.java.simpleName to mapOf(
                     TIM_3_0_0 to "jU",
                     TIM_3_1_1 to "wm",
+                    TIM_3_3_0 to "wq",
                     TIM_3_3_1 to "wq",
+                    TIM_3_5_0 to "wl",
             ),
     )
 
