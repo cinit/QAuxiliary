@@ -23,6 +23,7 @@ package cc.ioctl.hook.chat;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -52,6 +53,11 @@ public class DisableEnterEffect extends CommonSwitchFunctionHook {
     @Override
     public String[] getUiItemLocation() {
         return Simplify.CHAT_DECORATION;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !HostInfo.isTim();
     }
 
     @Override
