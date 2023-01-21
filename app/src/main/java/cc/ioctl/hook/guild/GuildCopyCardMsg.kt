@@ -32,6 +32,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.isTim
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -47,6 +48,8 @@ object GuildCopyCardMsg : CommonSwitchFunctionHook() {
 
     override val name = "频道复制卡片消息"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GUILD_CATEGORY
+
+    override val isAvailable: Boolean get() = !isTim()
 
     override fun initOnce() = throwOrTrue {
         val adapterClazz = "com.tencent.mobileqq.guild.message.chatpie.GuildChatpieMenuAdapter".clazz

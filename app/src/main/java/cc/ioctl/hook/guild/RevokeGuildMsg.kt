@@ -32,6 +32,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._MessageRecord
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.isTim
 import me.singleneuron.data.MsgRecordData
 import mqq.app.AppRuntime
 import tencent.im.group_pro_proto.common.common
@@ -49,6 +50,7 @@ object RevokeGuildMsg : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtil
     override val name = "频道防撤回消息"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GUILD_CATEGORY
 
+    override val isAvailable: Boolean get() = !isTim()
     override fun initOnce() = throwOrTrue {
         "com/tencent/mobileqq/guild/message/eventflow/api/impl/GuildEventFlowServiceImpl"
             .clazz?.method("handleDeleteEvent")
