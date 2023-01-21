@@ -396,13 +396,21 @@ public class Parasitics {
                         assert activityThread != null;
                         // Accessing hidden method Landroid/app/ClientTransactionHandler;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
                         // Accessing hidden method Landroid/app/ActivityThread;->getLaunchingActivity(Landroid/os/IBinder;)Landroid/app/ActivityThread$ActivityClientRecord; (blocked, reflection, denied)
-                        Object acr = activityThread.getClass()
-                                .getMethod("getLaunchingActivity", IBinder.class)
-                                .invoke(activityThread, token);
-                        if (acr != null) {
-                            Field fAcrIntent = acr.getClass().getDeclaredField("intent");
-                            fAcrIntent.setAccessible(true);
-                            fAcrIntent.set(acr, realIntent);
+                        try {
+                            Object acr = activityThread.getClass()
+                                    .getMethod("getLaunchingActivity", IBinder.class)
+                                    .invoke(activityThread, token);
+                            if (acr != null) {
+                                Field fAcrIntent = acr.getClass().getDeclaredField("intent");
+                                fAcrIntent.setAccessible(true);
+                                fAcrIntent.set(acr, realIntent);
+                            }
+                        } catch (NoSuchMethodException e) {
+                            if (Build.VERSION.SDK_INT == 33) {
+                                // expected behavior...?!
+                            } else {
+                                throw e;
+                            }
                         }
                     }
                 }
