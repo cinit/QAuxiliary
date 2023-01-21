@@ -28,6 +28,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.CGroupAppActivity
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.isTim
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
@@ -40,6 +41,8 @@ object RemoveGroupApp : CommonSwitchFunctionHook("kr_remove_group_app", arrayOf(
     override val name = "移除右划群应用"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
+
+    override val isAvailable: Boolean get() = !isTim()
 
     override fun initOnce(): Boolean {
         return throwOrTrue {
