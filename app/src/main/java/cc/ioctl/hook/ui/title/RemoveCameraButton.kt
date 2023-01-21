@@ -32,6 +32,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
 
@@ -40,6 +41,8 @@ import xyz.nextalone.util.throwOrTrue
 object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button") {
 
     override val name: String = "屏蔽消息界面相机/小世界图标"
+
+    override val isAvailable: Boolean get() = !isTim()
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
