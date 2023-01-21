@@ -27,6 +27,7 @@ import android.view.View;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -56,6 +57,11 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
     @Override
     public String[] getUiItemLocation() {
         return Auxiliary.PROFILE_CATEGORY;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !HostInfo.isTim();
     }
 
     @Override
