@@ -110,6 +110,11 @@ public class HideMiniAppPullEntry extends CommonSwitchFunctionHook implements De
         return "隐藏下拉小程序";
     }
 
+    @Override
+    public boolean isAvailable() {
+        return !HostInfo.isTim();
+    }
+
     private final Step mStep = new Step() {
         @Override
         public boolean step() {
