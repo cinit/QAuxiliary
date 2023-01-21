@@ -86,7 +86,7 @@ class UiAgentItem(
             // confirm
             AlertDialog.Builder(ctx)
                 .setTitle("不支持的功能")
-                .setMessage("此功能（$funcName）暂不支持在 ${hostInfo.hostName} ${hostInfo.versionName} 上使用，仍然要开启吗？")
+                .setMessage("此功能（$funcName）暂不支持在 ${hostInfo.hostName} ${hostInfo.versionName}(${hostInfo.versionCode32}) 上使用，仍然要开启吗？")
                 .setPositiveButton(android.R.string.ok) { _, _ ->
                     action()
                 }
