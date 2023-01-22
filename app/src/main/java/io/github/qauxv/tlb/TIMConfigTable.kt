@@ -19,7 +19,7 @@
  * <https://www.gnu.org/licenses/>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package io.github.qauxv.tlb     
+package io.github.qauxv.tlb
 
 import cc.ioctl.hook.entertainment.AutoMosaicName
 import cc.ioctl.hook.ui.chat.ReplyNoAtHook
