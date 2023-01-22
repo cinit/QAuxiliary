@@ -111,7 +111,7 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
 
         @Override
         public boolean isCheckable() {
-            return isAvailable();
+            return true;
         }
     };
 
