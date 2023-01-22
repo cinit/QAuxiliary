@@ -34,7 +34,7 @@ object RemovePokeGrayTips : CommonSwitchFunctionHook("kr_remove_poke_tips") {
     val keys = listOf("拍了拍", "戳了戳", "亲了亲", "抱了抱", "揉了揉", "喷了喷", "踢了踢", "舔了舔", "捏了捏", "摸了摸")
 
     override val name = "屏蔽戳一戳灰字提示"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MSG
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MSG_LIST
 
     override fun initOnce() = throwOrTrue {
         val Msg = loadClass("com.tencent.imcore.message.QQMessageFacade\$Message")
