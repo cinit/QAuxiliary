@@ -68,8 +68,15 @@ public class StartupDirectorBridge {
     private void initialize() {
         if (HostInfo.isInModuleProcess() || !SyncUtils.isMainProcess()) {
             mNeedInterceptStartActivity = false;
-            return;
+        } else {
+            initializeInternalNoInline();
         }
+    }
+
+    private void initializeInternalNoInline() {
+        // move access to BaseApplicationImpl in a separate method to avoid R8 instruction optimization
+        // const-class v0, Lcom/tencent/common/app/BaseApplicationImpl;
+        // R8 may move the const-class instruction to the beginning of the method
         // only in host main process
         MobileQQ mqq = BaseApplicationImpl.sMobileQQ;
         if (mqq instanceof BaseApplicationImpl) {
