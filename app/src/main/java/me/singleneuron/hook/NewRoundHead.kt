@@ -35,6 +35,7 @@ import io.github.qauxv.util.dexkit.CAvatarUtil
 import io.github.qauxv.util.dexkit.CFaceManager
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
 
@@ -46,6 +47,8 @@ object NewRoundHead : CommonSwitchFunctionHook() {
     override val description = "From 花Q，支持8.3.6及更高，重启后生效"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+
+    override val isAvailable: Boolean get() = !isTim();
 
     override fun makePreparationSteps(): Array<Step> {
         //特征字符串："FaceManager"/"AvatarUtil"
