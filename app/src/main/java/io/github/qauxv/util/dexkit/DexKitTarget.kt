@@ -642,3 +642,10 @@ object TroopGuildChatPie_flingRToL : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("[flingRToL] isMultiSelectState:")
     override val filter = DexKitFilter.allowAll
 }
+
+object BaseListenTogetherPanel_onUIModuleNeedRefresh : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.listentogether.ui.BaseListenTogetherPanel"
+    override val traitString = arrayOf("onUIModuleNeedRefresh, checkSession is false")
+    override val filter = DexKitFilter.allowAll
+}
