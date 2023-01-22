@@ -48,6 +48,7 @@ abstract class BaseFunctionHook(
     private val mHookKey: String = hookKey ?: this::class.java.simpleName
     private val mDefaultEnabled: Boolean = defaultEnabled
     private val mDexDeobfIndexes: Array<DexKitTarget>? = targets
+    private val mHookEnableConfigKey: String = "$mHookKey.enabled"
 
     override val isInitialized: Boolean
         get() = mInitialized
@@ -103,9 +104,9 @@ abstract class BaseFunctionHook(
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = enableAllHook() || ConfigManager.getDefaultConfig().getBooleanOrDefault("$mHookKey.enabled", mDefaultEnabled)
+        get() = enableAllHook() || ConfigManager.getDefaultConfig().getBooleanOrDefault(mHookEnableConfigKey, mDefaultEnabled)
         set(value) {
-            ConfigManager.getDefaultConfig().putBoolean("$mHookKey.enabled", value)
+            ConfigManager.getDefaultConfig().putBoolean(mHookEnableConfigKey, value)
         }
 
     override fun traceError(e: Throwable) {
