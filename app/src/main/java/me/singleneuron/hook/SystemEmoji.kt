@@ -22,37 +22,41 @@
 
 package me.singleneuron.hook
 
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedHelpers
+import cc.ioctl.util.Reflex
+import cc.ioctl.util.beforeHookIfEnabled
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.clazz
-import xyz.nextalone.util.throwOrTrue
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.EmotcationConstants
 
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object SystemEmoji : CommonSwitchFunctionHook(defaultEnabled = true) {
+object SystemEmoji : CommonSwitchFunctionHook(
+    targets = arrayOf(EmotcationConstants),
+    defaultEnabled = true
+) {
 
     override val name: String = "强制使用系统Emoji"
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce(): Boolean {
-        return throwOrTrue {
-            val r: XC_MethodHook = object : XC_MethodHook() {
-                @Throws(Throwable::class)
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    // this will be called before the clock was updated by the original
-                    // method
-                    param.result = -1
-                }
-            }
-            val loadClass: Class<*>? = "com.tencent.mobileqq.text.EmotcationConstants".clazz
-            XposedHelpers.findAndHookMethod(loadClass, "getSingleEmoji", Integer.TYPE, r)
-            XposedHelpers.findAndHookMethod(loadClass, "getDoubleEmoji", Integer.TYPE, Integer.TYPE, r)
+        // com.tencent.mobileqq.text.EmotcationConstants.getSingleEmoji(II)I
+        // com.tencent.mobileqq.text.EmotcationConstants.getDoubleEmoji(I)I
+        val r = beforeHookIfEnabled { param ->
+            // this will be called before the clock was updated by the original
+            // method
+            param.result = -1
         }
+        val kEmotcationConstants = DexKit.requireClassFromCache(EmotcationConstants)
+        val getSingleEmoji = Reflex.findSingleMethod(kEmotcationConstants, Integer.TYPE, false, Integer.TYPE)
+        val getDoubleEmoji = Reflex.findSingleMethod(kEmotcationConstants, Integer.TYPE, false, Integer.TYPE, Integer.TYPE)
+        XposedBridge.hookMethod(getSingleEmoji, r)
+        XposedBridge.hookMethod(getDoubleEmoji, r)
+        return true
     }
 }
