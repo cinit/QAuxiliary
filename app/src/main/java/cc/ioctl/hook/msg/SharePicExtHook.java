@@ -32,12 +32,12 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.content.FileProvider;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.FaultyDialog;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.activity.ShadowShareFileAgentActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -47,6 +47,7 @@ import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import java.io.BufferedInputStream;
 import java.io.File;
@@ -86,6 +87,11 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
     @Override
     public String[] getUiItemLocation() {
         return FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !HostInfo.isTim();
     }
 
     @Override
