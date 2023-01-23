@@ -36,6 +36,9 @@
     <string name="action_refresh">刷新</string>
     <string name="action_share_as_file">以文件分享至其他应用</string>
     <string name="action_save_as_file">保存为文件</string>
+    <string name="btn_do_not_show_again">不再显示</string>
+    <string name="wsa_warning_dialog_title">警告</string>
+    <string name="wsa_warning_dialog_message">使用前详阅\nQAuxiliary 模块并没有完全适配 Windows Subsystem for Android.\n在 WSA 的 QQ/TIM/… 上使用 QAuxiliary 模块时，如果当前界面位于 QAuxiliary 模块的界面（如模块设置，本模块提供的功能的对话框等），请勿移动、拖拽、放大或缩小本应用的窗口，否则会导致应用崩溃。</string>
     <string name="cfg_ui_hot_update_description">热更新可以让您在不手动更新 QAuxiliary 模块的情况下自动保持 QAuxiliary 模块为最新版。如果您不希望使用热更新，可以将热更新通道设置为“禁用”。</string>
     <string name="cfg_ui_hot_update_bug_report_instruction">如果您正在使用老版本 QQ/TIM 且遇到了问题，请积极反馈问题（带上日志以及宿主和模块的版本号），以便我们能够及时修复问题。</string>
     <string name="cfg_ui_hot_update_channel_btn_disabled">禁用\n禁用热更新</string>

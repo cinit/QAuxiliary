@@ -96,6 +96,8 @@ class TitleValueCell(
             // disable click for default because this behavior is managed by the recycler view,
             // but they can still set onCheckedChangeListener if they want
             isClickable = false
+            textOn = ""
+            textOff = ""
         }.also {
             addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
                     Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))

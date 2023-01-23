@@ -37,6 +37,7 @@ import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.res.ResourcesCompat
+import cc.ioctl.dialog.WsaWarningDialog
 import cc.ioctl.hook.experimental.FakeBatteryHook
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.LayoutHelper.WRAP_CONTENT
@@ -51,6 +52,7 @@ import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.LicenseStatus.CURRENT_EULA_VERSION
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.isInHostProcess
 import io.github.qauxv.util.isInModuleProcess
 import java.io.BufferedReader
 import java.io.IOException
@@ -150,6 +152,9 @@ class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
         }
         scrollView.addView(ll)
         rootLayoutView = scrollView
+        if (isInHostProcess) {
+            WsaWarningDialog.showWsaWarningDialogIfNecessary(requireContext())
+        }
         return scrollView
     }
 
