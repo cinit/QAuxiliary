@@ -56,6 +56,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.MemoryFileUtils
 import io.github.qauxv.util.Natives
+import io.github.qauxv.util.SafUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import xyz.nextalone.util.SystemServiceUtils
@@ -100,7 +101,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
                 if (it.length > 1024) {
                     AlertDialog.Builder(ctx)
                         .setTitle("日志较长")
-                        .setMessage("日志较长，建议使用文件方式分享（点击右上角的以文件分享按钮）")
+                        .setMessage("日志较长，建议使用文件方式分享（点击右上角的以文件分享按钮，或者保存为文件）")
                         .setPositiveButton("仍然复制") { _, _ -> copy() }
                         .setNegativeButton("取消", null)
                         .setCancelable(true)
@@ -145,6 +146,39 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
                             Natives.close(fd)
                         }
                     }
+                }
+            }
+        }
+    }
+
+    private fun saveDebugLogAsFile() {
+        mTextDetails?.let { textDetails ->
+            val ctx = requireContext()
+            if (!mTextDetails.isNullOrEmpty()) {
+                val name = if (mInitException == null) {
+                    "${Reflex.getShortClassName(mFunction)}-${System.currentTimeMillis()}.txt"
+                } else {
+                    "InitError-${System.currentTimeMillis()}.txt"
+                }
+                try {
+                    SafUtils.requestSaveFile(ctx)
+                        .setMimeType("text/plain")
+                        .setDefaultFileName(name)
+                        .onResult { uri ->
+                            try {
+                                ctx.contentResolver.openOutputStream(uri)?.use { os ->
+                                    val bytes = textDetails.toByteArray()
+                                    os.write(bytes)
+                                    os.flush()
+                                    Toasts.show(ctx, "保存成功")
+                                } ?: FaultyDialog.show(ctx, IOException("contentResolver.openOutputStream failed"))
+                            } catch (e: Exception) {
+                                FaultyDialog.show(ctx, e)
+                            }
+                        }
+                        .commit()
+                } catch (e: Exception) {
+                    FaultyDialog.show(ctx, e)
                 }
             }
         }
@@ -229,10 +263,17 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
                 copyDebugLog()
                 true
             }
+
             R.id.menu_item_share_as_file -> {
                 shareDebugLogAsFile()
                 true
             }
+
+            R.id.menu_item_save_as_file -> {
+                saveDebugLogAsFile()
+                true
+            }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }

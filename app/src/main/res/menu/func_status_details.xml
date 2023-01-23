@@ -11,4 +11,8 @@
         android:icon="@drawable/ic_share_baseline_24"
         android:title="@string/action_share_as_file"
         app:showAsAction="ifRoom" />
+    <item
+        android:id="@+id/menu_item_save_as_file"
+        android:title="@string/action_save_as_file"
+        app:showAsAction="never" />
 </menu>
