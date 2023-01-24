@@ -50,7 +50,7 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         if (items.contains(data?.msgType)) {
             data?.msgRecord?.set("isread", true)
             return true
-        } else if (data?.msg?.contains("@全体成员 ") == true && items.contains(0)) {
+        } else if (data?.msg?.contains("@全体成员") == true && items.contains(0)) {
             data.msgRecord.set("isread", true)
             return true
         }

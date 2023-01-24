@@ -23,6 +23,7 @@ package cc.ioctl.util.msg;
 
 import androidx.annotation.NonNull;
 import cc.ioctl.hook.notification.AntiMessage;
+import cn.lliiooll.hook.AntiRobotMessage;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import me.singleneuron.hook.decorator.RegexAntiMeg;
@@ -35,7 +36,8 @@ public class MessageManager {
     private static final MessageReceiver[] receivers = {
         // 在这里添加消息处理
         RegexAntiMeg.INSTANCE,
-        AntiMessage.INSTANCE,
+        AntiMessage.INSTANCE, 
+        AntiRobotMessage.INSTANCE,
     };
     public static Class<?> intType = int.class;
     public static Class<?> booleanType = boolean.class;
@@ -50,6 +52,7 @@ public class MessageManager {
         if (MSG.containsKey(uid)) {
             return;
         }
+
         // 以上是为了防止消息重复广播
         for (MessageReceiver receiver : receivers) {
             if (receiver.onReceive(data)) {
