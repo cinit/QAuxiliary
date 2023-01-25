@@ -358,7 +358,12 @@ public class ShadowFileProvider {
             if (item == null) {
                 return null;
             }
-            return item.pfd;
+            try {
+                return item.pfd.dup();
+            } catch (IOException e) {
+                Log.e(e);
+                return null;
+            }
         }
 
         @Override
