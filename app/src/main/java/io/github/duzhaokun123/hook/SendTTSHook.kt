@@ -149,10 +149,16 @@ object SendTTSHook :
                 }.onFailure {
                     SyncUtils.runOnUiThread {
                         dialog.dismiss()
-                        AlertDialog.Builder(wc)
-                            .setTitle(it.message)
-                            .setMessage(it.stackTraceToString())
-                            .show()
+                        if (it.message == "SKP_Silk_SDK_Get_Encoder_Size returned -2") {
+                            AlertDialog.Builder(wc)
+                                .setTitle("不支持的采样率 ${sampleRateInHz}Hz")
+                                .setMessage("仅支持 8000Hz 12000Hz 16000Hz 24000Hz")
+                        } else {
+                            AlertDialog.Builder(wc)
+                                .setTitle(it.message)
+                                .setMessage(it.stackTraceToString())
+                                .show()
+                        }
                     }
                 }.onSuccess {
                     SyncUtils.runOnUiThread {
