@@ -224,7 +224,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
             try {
-                ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, file);
+                ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, file, true);
             } catch (ActivityNotFoundException e) {
                 FaultyDialog.show(ctx, e);
             }

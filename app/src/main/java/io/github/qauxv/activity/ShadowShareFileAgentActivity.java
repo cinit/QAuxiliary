@@ -50,6 +50,7 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
 
     public static final String SHADOW_FILE_PROVIDER_BINDER = "ShadowFileProvider.BINDER";
 
+    public static final String TARGET_OPTION_USE_CHOOSER = "ShadowShareFileAgentActivity.TARGET_OPTION_USE_CHOOSER";
     public static final String TARGET_FILE_PATH = "ShadowShareFileAgentActivity.TARGET_FILE_PATH";
     public static final String TARGET_FILE_URI = "ShadowShareFileAgentActivity.TARGET_FILE_URI";
     public static final String TARGET_FILE_ATTR_MIME_TYPE = "ShadowShareFileAgentActivity.TARGET_FILE_ATTR_MIME_TYPE";
@@ -59,15 +60,17 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
     protected void onCreate(@Nullable Bundle savedInstanceState) {
         setTheme(android.R.style.Theme_Translucent_NoTitleBar);
         super.onCreate(savedInstanceState);
-        Intent startIntent = getIntent();
+        final Intent startIntent = getIntent();
         Bundle extras = startIntent.getExtras();
         if (extras == null) {
             finish();
             return;
         }
-        Intent targetIntent = extras.getParcelable(TARGET_INTENT);
-        String targetFilePath = extras.getString(TARGET_FILE_PATH);
-        String targetFileUri = extras.getString(TARGET_FILE_URI);
+        final Intent targetIntent = extras.getParcelable(TARGET_INTENT);
+        final String targetFilePath = extras.getString(TARGET_FILE_PATH);
+        final String targetFileUri = extras.getString(TARGET_FILE_URI);
+        String targetDisplayNameNullable = extras.getString(TARGET_FILE_ATTR_DISPLAY_NAME);
+        final boolean useChooser = extras.getBoolean(TARGET_OPTION_USE_CHOOSER, false);
         if (targetIntent == null || TextUtils.isEmpty(targetFilePath) && TextUtils.isEmpty(targetFileUri)) {
             Log.e("targetIntent or targetFilePath and targetFileUri is null");
             finish();
@@ -91,13 +94,27 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
         } else {
             uri = Uri.parse(targetFileUri);
         }
+        if (TextUtils.isEmpty(targetDisplayNameNullable)) {
+            targetDisplayNameNullable = uri.getLastPathSegment();
+        }
         targetIntent.setDataAndType(uri, targetIntent.getType());
         targetIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
         targetIntent.putExtra(Intent.EXTRA_STREAM, uri);
+        final Intent finalIntent;
+        if (useChooser) {
+            boolean hasNewActivityFlag = (targetIntent.getFlags() & Intent.FLAG_ACTIVITY_NEW_TASK) != 0;
+            finalIntent = Intent.createChooser(targetIntent, targetDisplayNameNullable);
+            if (hasNewActivityFlag) {
+                startIntent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+            }
+        } else {
+            finalIntent = targetIntent;
+        }
         try {
-            startActivity(targetIntent);
+            startActivity(finalIntent);
             finish();
         } catch (ActivityNotFoundException e) {
+            Log.e("ShadowShareFileAgentActivity startActivity failed", e);
             new AlertDialog.Builder(this)
                     .setTitle(Reflex.getShortClassName(e))
                     .setMessage(e.getMessage())
@@ -109,7 +126,8 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
         }
     }
 
-    public static void startShareFileActivity(@NonNull Context context, @NonNull Intent intent, @NonNull File targetFile) {
+    public static void startShareFileActivity(@NonNull Context context, @NonNull Intent intent,
+                                              @NonNull File targetFile, boolean useChooser) {
         Objects.requireNonNull(context, "context == null");
         Objects.requireNonNull(intent, "intent == null");
         Objects.requireNonNull(targetFile, "targetFile == null");
@@ -119,22 +137,25 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
         Intent startIntent = new Intent(context, ShadowShareFileAgentActivity.class);
         startIntent.putExtra(TARGET_INTENT, intent);
         startIntent.putExtra(TARGET_FILE_PATH, targetFile.getAbsolutePath());
+        startIntent.putExtra(TARGET_OPTION_USE_CHOOSER, useChooser);
         context.startActivity(startIntent);
     }
 
-    public static void startShareFileActivity(@NonNull Context context, @NonNull Intent intent, @NonNull Uri targetUri) {
+    public static void startShareFileActivity(@NonNull Context context, @NonNull Intent intent,
+                                              @NonNull Uri targetUri, boolean useChooser) {
         Objects.requireNonNull(context, "context == null");
         Objects.requireNonNull(intent, "intent == null");
         Objects.requireNonNull(targetUri, "targetUri == null");
         Intent startIntent = new Intent(context, ShadowShareFileAgentActivity.class);
         startIntent.putExtra(TARGET_INTENT, intent);
         startIntent.putExtra(TARGET_FILE_URI, targetUri.toString());
+        startIntent.putExtra(TARGET_OPTION_USE_CHOOSER, useChooser);
         context.startActivity(startIntent);
     }
 
     public static void startShareFileActivity(@NonNull Context context, @NonNull Intent intent,
                                               @NonNull String displayName, @Nullable String mimeType,
-                                              @NonNull ParcelFileDescriptor pfd) {
+                                              @NonNull ParcelFileDescriptor pfd, boolean useChooser) {
         if (!SyncUtils.isMainProcess()) {
             throw new IllegalArgumentException("fd only support in main process");
         }
@@ -144,6 +165,7 @@ public class ShadowShareFileAgentActivity extends Activity implements WindowIsTr
         Objects.requireNonNull(pfd, "pfd == null");
         Intent startIntent = new Intent(context, ShadowShareFileAgentActivity.class);
         startIntent.putExtra(TARGET_INTENT, intent);
+        startIntent.putExtra(TARGET_OPTION_USE_CHOOSER, useChooser);
         startIntent.putExtra(TARGET_FILE_ATTR_DISPLAY_NAME, displayName);
         startIntent.putExtra(TARGET_FILE_ATTR_MIME_TYPE, mimeType);
         String uriStr = ShadowFileProvider.addItem(displayName, mimeType, pfd);

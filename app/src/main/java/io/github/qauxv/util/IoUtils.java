@@ -205,6 +205,29 @@ public class IoUtils {
         }
     }
 
+    @NonNull
+    public static String getShortFileName(@NonNull String fileName) {
+        Objects.requireNonNull(fileName, "fileName == null");
+        if (fileName.isEmpty()) {
+            throw new IllegalArgumentException("fileName is empty");
+        }
+        if (fileName.endsWith(File.separator)) {
+            throw new IllegalArgumentException("fileName ends with File.separatorChar");
+        }
+        int index = fileName.lastIndexOf(File.separatorChar);
+        if (index == -1) {
+            return fileName;
+        } else {
+            return fileName.substring(index + 1);
+        }
+    }
+
+    @NonNull
+    public static String getShortFileName(@NonNull File file) {
+        Objects.requireNonNull(file, "file == null");
+        return getShortFileName(file.getPath());
+    }
+
     private static final char[] HEX_LOWER_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'a', 'b', 'c', 'd', 'e', 'f'};
     private static final char[] HEX_UPPER_DIGITS = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F'};
 

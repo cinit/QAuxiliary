@@ -137,7 +137,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
                     intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                     intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     val pfd = ParcelFileDescriptor.fromFd(fd)
-                    ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, name, "text/plain", pfd)
+                    ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, name, "text/plain", pfd, true)
                     Natives.close(fd)
                 } catch (e: Exception) {
                     FaultyDialog.show(ctx, e)
