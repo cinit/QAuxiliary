@@ -22,6 +22,7 @@
 package io.github.qauxv.util.dexkit;
 
 import java.io.Serializable;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -47,6 +48,15 @@ public class DexMethodDescriptor implements Serializable {
         declaringClass = getTypeSig(method.getDeclaringClass());
         name = method.getName();
         signature = getMethodTypeSig(method);
+    }
+
+    public DexMethodDescriptor(Constructor<?> ctor) {
+        if (ctor == null) {
+            throw new NullPointerException();
+        }
+        declaringClass = getTypeSig(ctor.getDeclaringClass());
+        name = "<init>";
+        signature = getConstructorTypeSig(ctor);
     }
 
     public DexMethodDescriptor(String desc) {
@@ -87,6 +97,18 @@ public class DexMethodDescriptor implements Serializable {
         }
         buf.append(")");
         buf.append(getTypeSig(method.getReturnType()));
+        return buf.toString();
+    }
+
+    public static String getConstructorTypeSig(final Constructor<?> ctor) {
+        final StringBuilder buf = new StringBuilder();
+        buf.append("(");
+        final Class<?>[] types = ctor.getParameterTypes();
+        for (Class<?> type : types) {
+            buf.append(getTypeSig(type));
+        }
+        buf.append(")");
+        buf.append("V");
         return buf.toString();
     }
 
