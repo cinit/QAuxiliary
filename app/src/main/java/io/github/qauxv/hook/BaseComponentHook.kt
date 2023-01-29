@@ -22,32 +22,17 @@
 
 package io.github.qauxv.hook
 
-import io.github.qauxv.BuildConfig
 import io.github.qauxv.base.ITraceableDynamicHook
-import io.github.qauxv.base.IUiItemAgentProvider
-import io.github.qauxv.config.ConfigManager
-import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.DexKitFinder
-import io.github.qauxv.util.dexkit.DexKitTarget
 import java.util.Arrays
 
-abstract class BaseFunctionHook(
-    hookKey: String? = null,
-    defaultEnabled: Boolean = false,
-    targets: Array<DexKitTarget>? = null
-) : ITraceableDynamicHook, IUiItemAgentProvider {
+abstract class BaseComponentHook : ITraceableDynamicHook {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
     private var mInitializeResult = false
-    private val mHookKey: String = hookKey ?: this::class.java.simpleName
-    private val mDefaultEnabled: Boolean = defaultEnabled
-    private val mDexDeobfIndexes: Array<DexKitTarget>? = targets
-    private val mHookEnableConfigKey: String = "$mHookKey.enabled"
 
     override val isInitialized: Boolean
         get() = mInitialized
@@ -63,7 +48,6 @@ abstract class BaseFunctionHook(
             initOnce()
         } catch (e: Throwable) {
             traceError(e)
-            // don't throw exception here, except errors like OutOfMemoryError or StackOverflowError
             if (e is Error && e !is AssertionError && e !is LinkageError) {
                 // wtf Throwable
                 throw e
@@ -85,30 +69,17 @@ abstract class BaseFunctionHook(
 
     override val isAvailable = true
 
-    override val isPreparationRequired: Boolean
-        get() {
-            if (this is DexKitFinder) {
-                if (this.isNeedFind) {
-                    return true
-                }
-            }
-            if (mDexDeobfIndexes == null) return false
-            return mDexDeobfIndexes.any {
-                DexKit.isRunDexDeobfuscationRequired(it)
-            }
-        }
+    override val isPreparationRequired = false
 
-    override fun makePreparationSteps(): Array<Step>? = mDexDeobfIndexes?.map { DexDeobfStep(it) }?.toTypedArray()
+    override fun makePreparationSteps(): Array<Step>? = null
 
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = enableAllHook() || ConfigManager.getDefaultConfig().getBooleanOrDefault(mHookEnableConfigKey, mDefaultEnabled)
+        get() = false
         set(value) {
-            ConfigManager.getDefaultConfig().putBoolean(mHookEnableConfigKey, value)
+            // do nothing, because a component is lazy initialized on demand
         }
-
-    override val dependentComponents: List<ITraceableDynamicHook>? = null
 
     override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
@@ -122,9 +93,5 @@ abstract class BaseFunctionHook(
             mErrors.add(e)
         }
         Log.e(e)
-    }
-
-    private fun enableAllHook(): Boolean {
-        return BuildConfig.DEBUG && ConfigManager.getDefaultConfig().getBooleanOrDefault("EnableAllHook.enabled", false)
     }
 }

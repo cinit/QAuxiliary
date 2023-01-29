@@ -23,7 +23,7 @@
 package io.github.qauxv.hook
 
 import io.github.qauxv.base.IDynamicHook
-import io.github.qauxv.base.RuntimeErrorTracer
+import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
@@ -34,7 +34,7 @@ import java.util.Arrays
 
 abstract class BaseHookDispatcher<T : IDynamicHook>(
     targets: Array<DexKitTarget>?
-) : IDynamicHook, RuntimeErrorTracer {
+) : ITraceableDynamicHook {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
@@ -76,6 +76,8 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
     override val isTargetProcess by lazy { SyncUtils.isTargetProcess(targetProcesses) }
 
     override val isAvailable = true
+
+    override val dependentComponents: List<ITraceableDynamicHook>? = null
 
     override val isPreparationRequired: Boolean
         get() {

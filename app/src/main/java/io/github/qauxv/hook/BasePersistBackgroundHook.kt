@@ -22,14 +22,13 @@
 
 package io.github.qauxv.hook
 
-import io.github.qauxv.base.IDynamicHook
-import io.github.qauxv.base.RuntimeErrorTracer
+import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import java.util.Arrays
 
-abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {
+abstract class BasePersistBackgroundHook : ITraceableDynamicHook {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
@@ -75,6 +74,8 @@ abstract class BasePersistBackgroundHook : IDynamicHook, RuntimeErrorTracer {
     override fun makePreparationSteps(): Array<Step>? = null
 
     override val isApplicationRestartRequired = false
+
+    override val dependentComponents: List<ITraceableDynamicHook>? = null
 
     override var isEnabled: Boolean
         get() = true
