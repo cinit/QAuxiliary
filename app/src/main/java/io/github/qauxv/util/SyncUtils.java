@@ -50,6 +50,10 @@ import java.util.concurrent.Executors;
 @SuppressLint("PrivateApi")
 public class SyncUtils {
 
+    // grep ':process=' $INPUT |
+    // awk '{gsub(/[ "]/,"");sub(/\/>/,"");sub(/>/,"");sub(/android:process=/,"");print $0}'
+    // | sort -n | uniq
+
     //*MSF -- PROC_MSF
     //:TMAssistantDownloadSDKService
     //:avgame
@@ -197,8 +201,10 @@ public class SyncUtils {
         }
         String[] parts = getProcessName().split(":");
         if (parts.length == 1) {
-            if (parts[0].equals("unknown")) {
+            if ("unknown".equals(parts[0])) {
                 return PROC_MAIN;
+            } else if ("com.tencent.ilink.ServiceProcess".equals(parts[0])) {
+                mProcType = PROC_OTHERS;
             } else {
                 mProcType = PROC_MAIN;
             }
