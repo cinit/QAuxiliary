@@ -75,6 +75,8 @@ abstract class BaseComponentHook : ITraceableDynamicHook {
 
     override val isApplicationRestartRequired = false
 
+    override val dependentComponents: List<ITraceableDynamicHook>? = null
+
     override var isEnabled: Boolean
         get() = false
         set(value) {
