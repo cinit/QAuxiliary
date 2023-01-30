@@ -121,6 +121,7 @@
         <package android:name="com.tencent.mobileqqi" />
         <package android:name="com.tencent.tim" />
         <package android:name="com.tencent.qqlite" />
+        <package android:name="com.tencent.minihd.qq" />
         <package android:name="me.weishu.exp" />
         <package android:name="de.robv.android.xposed.installer" />
         <package android:name="org.lsposed.manager" />
