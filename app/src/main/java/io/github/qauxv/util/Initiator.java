@@ -310,6 +310,7 @@ public class Initiator {
     }
 
     public static Class<?> _AllInOne() {
+        // com.tencent.mobileqq.profilecard.data.AllInOne: since QQ version x, where x in (8.5.0.1596, 8.6.5]
         return findClassWithSynthetics("com/tencent/mobileqq/activity/ProfileActivity$AllInOne",
                 "com.tencent.mobileqq.profilecard.data.AllInOne");
     }

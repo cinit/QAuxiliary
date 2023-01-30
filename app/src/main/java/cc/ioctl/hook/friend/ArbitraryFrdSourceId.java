@@ -97,6 +97,7 @@ public class ArbitraryFrdSourceId extends CommonSwitchFunctionHook {
         Bundle argv = intent.getExtras();
         assert argv != null : "Intent extra for AddFriendVerifyActivity should not be null";
         int uinType = argv.getInt("k_uin_type", 0);
+        // 1: user, 4: group
         if (uinType == 4) {
             //Pointless for group entry
             return;

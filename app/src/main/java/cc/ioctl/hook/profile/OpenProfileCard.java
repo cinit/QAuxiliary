@@ -39,6 +39,7 @@ import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import cc.ioctl.hook.misc.QSecO3AddRiskRequestMitigation;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
@@ -122,6 +123,11 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
         if (TextUtils.isEmpty(troopUin)) {
             return;
         }
+        try {
+            QSecO3AddRiskRequestMitigation.INSTANCE.initialize();
+        } catch (Exception | LinkageError e) {
+            Log.e("QSecO3AddRiskRequestMitigation init fail", e);
+        }
         String knPublicFragmentActivity = "com.tencent.mobileqq.activity.PublicFragmentActivity";
         Class<?> kVisitorTroopCardFragment = Initiator.load("com.tencent.mobileqq.troop.troopCard.VisitorTroopCardFragment");
         if (kVisitorTroopCardFragment == null) {
@@ -136,26 +142,31 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
         intent.setComponent(new ComponentName(context, knPublicFragmentActivity));
         intent.setFlags(Intent.FLAG_ACTIVITY_NO_USER_ACTION);
         intent.putExtra("fling_action_key", 2);
-        intent.putExtra("preAct", "QRJumpActivity");
-        intent.putExtra("leftViewText", "返回");
         intent.putExtra("keyword", (String) null);
         intent.putExtra("authKey", (String) null);
-        intent.putExtra("preAct_time", System.currentTimeMillis());
-        intent.putExtra("preAct_elapsedRealtime", System.nanoTime());
+        // TODO: 2023-01-28 check whether troop_info_from is appropriate
         intent.putExtra("troop_info_from", 14);
         intent.putExtra("troop_uin", troopUin);
         intent.putExtra("vistor_type", 2);
         intent.putExtra("public_fragment_class", kVisitorTroopCardFragment.getName());
+        // TODO: 2023-01-28 warn user if authSig is missing
+        intent.putExtra(QSecO3AddRiskRequestMitigation.KEY_UIN_IS_FROM_VOID, true);
         context.startActivity(intent);
     }
 
     public static void openUserProfileCard(@NonNull Context ctx, long uin) {
+        try {
+            QSecO3AddRiskRequestMitigation.INSTANCE.initialize();
+        } catch (Exception | LinkageError e) {
+            Log.e("QSecO3AddRiskRequestMitigation init fail", e);
+        }
         try {
             Parcelable allInOne = (Parcelable) Reflex.newInstance(
                     Initiator._AllInOne(), "" + uin, 35,
                     String.class, int.class);
             Intent intent = new Intent(ctx, Initiator._FriendProfileCardActivity());
             intent.putExtra("AllInOne", allInOne);
+            intent.putExtra(QSecO3AddRiskRequestMitigation.KEY_UIN_IS_FROM_VOID, true);
             ctx.startActivity(intent);
         } catch (Exception e) {
             Toasts.error(ctx, e.toString().replace("java.lang.", ""));

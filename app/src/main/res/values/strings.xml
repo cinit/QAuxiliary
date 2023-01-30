@@ -45,4 +45,11 @@
     <string name="cfg_ui_hot_update_channel_btn_stable">稳定版\n其实就是“推荐的 CI”，通常不会有问题，更新频率在一个多星期左右</string>
     <string name="cfg_ui_hot_update_channel_btn_beta">Beta\n测试版，可能存在一些功能性问题（如版本不兼容），更新频率一至两天</string>
     <string name="cfg_ui_hot_update_channel_btn_canary">Canary\n持续集成版，仅供开发者测试，代码未经测试，可能存在严重问题，更新由开发者代码提交触发</string>
+    <string name="dialog_btn_cancel">取消</string>
+    <string name="dialog_tx_risk_control_general_title">风控警告</string>
+    <string name="dialog_tx_risk_control_btn_copy_user_uin">复制QQ号</string>
+    <string name="dialog_tx_risk_control_btn_copy_troop_uin">复制群号</string>
+    <string name="dialog_tx_risk_control_btn_ignore_risk_warning">忽略警告</string>
+    <string name="dialog_tx_risk_control_msg_for_add_friend_from_void">由于 QQ 服务器端风控措施的存在，您无法从 QAuxiliary 模块界面打开的用户资料卡加好友。建议您复制对方 QQ 号后通过 QQ 官方的搜索渠道打开此人的资料卡后再发送好友申请。\n如您执意需要从本模块打开的资料卡加好友，请点击“忽略警告”（不推荐），但是请注意，即使您的客户端显示“已发送请求”，对方很可能根本收不到您的好友申请。</string>
+    <string name="dialog_tx_risk_control_msg_for_add_group_from_void">由于 QQ 服务器端风控措施的存在，您无法从 QAuxiliary 模块界面打开的群资料卡加群。建议您复制群号后通过 QQ 官方的搜索渠道打开此群的资料卡后再发送加群申请。\n如您执意需要从本模块打开的资料卡加群，请点击“忽略警告”（不推荐），但是请注意，即使您的客户端显示“已发送请求”，管理员一定收不到您的加群申请。</string>
 </resources>
