@@ -24,12 +24,16 @@ package cc.ioctl.util;
 import android.view.View;
 import android.view.ViewGroup;
 import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.Arrays;
 
 /**
  * Handy utils used for debug/development env, not to use in production.
@@ -42,74 +46,35 @@ public class DebugUtils {
 
     public static final XC_MethodHook INVOKE_RECORD = new XC_MethodHook(200) {
         @Override
-        protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-            Member m = param.method;
-            StringBuilder ret = new StringBuilder(m.getDeclaringClass().getSimpleName()
-                    + "->" + ((m instanceof Method) ? m.getName() : "<init>") + "(");
-            Class<?>[] argt;
-            if (m instanceof Method) {
-                argt = ((Method) m).getParameterTypes();
-            } else if (m instanceof Constructor) {
-                argt = ((Constructor<?>) m).getParameterTypes();
-            } else {
-                argt = new Class[0];
-            }
-            for (int i = 0; i < argt.length; i++) {
-                if (i != 0) {
-                    ret.append(",\n");
-                }
-                ret.append(param.args[i]);
-            }
-            ret.append(")=").append(param.getResult());
-            Log.i(ret.toString());
-            ret = new StringBuilder("↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
-            Field[] fs = m.getDeclaringClass().getDeclaredFields();
-            for (int i = 0; i < fs.length; i++) {
-                fs[i].setAccessible(true);
-                ret.append(i < fs.length - 1 ? "├" : "↓").append(fs[i].getName()).append("=")
-                        .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
-            }
-            Log.i(ret.toString());
-            Throwable t = new Throwable("Trace dump");
-            Log.i(t);
+        protected void afterHookedMethod(MethodHookParam param) {
+            dumpParam(param);
         }
     };
 
-    public static final XC_MethodHook INVOKE_INTERCEPTOR = new XC_MethodHook(200) {
-        @Override
-        protected void beforeHookedMethod(MethodHookParam param) throws ReflectiveOperationException {
-            Member m = param.method;
-            StringBuilder ret = new StringBuilder(
-                    m.getDeclaringClass().getSimpleName()
-                            + "->" + ((m instanceof Method) ? m.getName() : "<init>") + "(");
-            Class<?>[] argt;
-            if (m instanceof Method) {
-                argt = ((Method) m).getParameterTypes();
-            } else if (m instanceof Constructor) {
-                argt = ((Constructor<?>) m).getParameterTypes();
-            } else {
-                argt = new Class[0];
-            }
-            for (int i = 0; i < argt.length; i++) {
-                if (i != 0) {
-                    ret.append(",\n");
-                }
-                ret.append(param.args[i]);
-            }
-            ret.append(")=").append(param.getResult());
-            Log.i(ret.toString());
-            ret = new StringBuilder("↑dump object:" + m.getDeclaringClass().getCanonicalName() + "\n");
-            Field[] fs = m.getDeclaringClass().getDeclaredFields();
-            for (int i = 0; i < fs.length; i++) {
-                fs[i].setAccessible(true);
-                ret.append(i < fs.length - 1 ? "├" : "↓").append(fs[i].getName()).append("=")
-                        .append(en_toStr(fs[i].get(param.thisObject))).append("\n");
-            }
-            Log.i(ret.toString());
-            Throwable t = new Throwable("Trace dump");
-            Log.i(t);
+    public static void dumpParam(MethodHookParam param) {
+        Member m = param.method;
+        String desc;
+        if (m instanceof Constructor) {
+            desc = new DexMethodDescriptor((Constructor<?>) m).toString();
+        } else {
+            desc = new DexMethodDescriptor((Method) m).toString();
         }
-    };
+        Log.d("+++ DUMP TRACE START");
+        Log.d(desc);
+        Log.d("argc: " + param.args.length);
+        for (int i = 0; i < param.args.length; i++) {
+            Log.d("arg" + i + ": " + valueToString(param.args[i]));
+        }
+        Log.d("ret: " + valueToString(param.getResult()));
+        if (param.thisObject != null) {
+            Log.d("this object: ");
+            dumpObject(param.thisObject);
+        }
+        Throwable t = new Throwable("Trace dump");
+        Log.d(t);
+//        Log.d(stackTraceElementsToString(getStackTrace(4,6)));
+        Log.d("+++ DUMP TRACE END");
+    }
 
     public static void dumpObject(Object obj) {
         try {
@@ -117,13 +82,53 @@ public class DebugUtils {
             Field[] fs = obj.getClass().getDeclaredFields();
             for (int i = 0; i < fs.length; i++) {
                 fs[i].setAccessible(true);
-                ret.append(i < fs.length - 1 ? "+-" : "--").append(fs[i].getName()).append("=")
-                        .append(en_toStr(fs[i].get(obj))).append("\n");
+                int mod = fs[i].getModifiers();
+                boolean isStatic = (mod & Modifier.STATIC) != 0;
+                String accessName = "DEF";
+                if ((Modifier.PUBLIC & mod) != 0) {
+                    accessName = "PUB";
+                } else if ((Modifier.PROTECTED & mod) != 0) {
+                    accessName = "PRO";
+                } else if ((Modifier.PRIVATE & mod) != 0) {
+                    accessName = "PRI";
+                }
+                Class<?> type = fs[i].getType();
+                String shortyName = type.isPrimitive() ? DexMethodDescriptor.getTypeSig(fs[i].getType()) : "L";
+                ret.append(i < fs.length - 1 ? "+-" : "--")
+                        .append(accessName)
+                        .append(' ')
+                        .append(isStatic ? "STA" : "   ")
+                        .append(' ')
+                        .append(shortyName)
+                        .append(' ')
+                        .append(fs[i].getName())
+                        .append(" = ")
+                        .append(valueToString(fs[i].get(obj)))
+                        .append("\n");
             }
             Log.d(ret.toString());
         } catch (Exception e) {
             Log.d(e);
         }
+    }
+
+    public static String valueToString(Object value) {
+        String valueString;
+        if (value == null) {
+            valueString = "null";
+        } else {
+            Class<?> type = value.getClass();
+            if (type == String.class) {
+                valueString = en_toStr(value);
+            } else if (type.isPrimitive()) {
+                valueString = String.valueOf(value);
+            } else if (type.isArray()) {
+                valueString = primitiveArrayToString(value);
+            } else {
+                valueString = value.toString();
+            }
+        }
+        return valueString;
     }
 
     public static void dumpViewHierarchy(View view) {
@@ -138,6 +143,40 @@ public class DebugUtils {
             }
             Log.d(sb.toString());
         }
+    }
+
+    public static String primitiveArrayToString(Object array) {
+        if (array == null) {
+            return "null";
+        }
+        if (!array.getClass().isArray()) {
+            return array.toString();
+        }
+        if (array instanceof boolean[]) {
+            return Arrays.toString((boolean[]) array);
+        }
+        if (array instanceof byte[]) {
+            return Arrays.toString((byte[]) array);
+        }
+        if (array instanceof char[]) {
+            return Arrays.toString((char[]) array);
+        }
+        if (array instanceof double[]) {
+            return Arrays.toString((double[]) array);
+        }
+        if (array instanceof float[]) {
+            return Arrays.toString((float[]) array);
+        }
+        if (array instanceof int[]) {
+            return Arrays.toString((int[]) array);
+        }
+        if (array instanceof long[]) {
+            return Arrays.toString((long[]) array);
+        }
+        if (array instanceof short[]) {
+            return Arrays.toString((short[]) array);
+        }
+        return Arrays.toString((Object[]) array);
     }
 
     private static void dumpViewGroupHierarchyImpl(ViewGroup vg, int currentLevel, StringBuilder ret) {
@@ -197,5 +236,26 @@ public class DebugUtils {
     public static String getPathTail(String path) {
         String[] arr = path.split("/");
         return arr[arr.length - 1];
+    }
+
+    public static StackTraceElement[] getStackTrace(int skipDepth, int depth) {
+        Throwable t = new Throwable();
+        StackTraceElement[] src = t.getStackTrace();
+        int start = skipDepth + 2;
+        int end = start + depth;
+        if (end > src.length) {
+            end = src.length;
+        }
+        StackTraceElement[] ret = new StackTraceElement[end - start];
+        System.arraycopy(src, start, ret, 0, ret.length);
+        return ret;
+    }
+
+    private static String stackTraceElementsToString(StackTraceElement[] elements) {
+        StringBuilder sb = new StringBuilder();
+        for (StackTraceElement element : elements) {
+            sb.append(element.toString()).append("\n");
+        }
+        return sb.toString();
     }
 }
