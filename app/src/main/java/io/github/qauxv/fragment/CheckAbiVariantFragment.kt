@@ -72,7 +72,7 @@ class CheckAbiVariantFragment : BaseRootLayoutFragment() {
             if (isTaiChiYin && abiStatus.suggestedApkAbiVariant != "universal") {
                 abiStatus.suggestedApkAbiVariant = "armAll"
             }
-            if (!abiStatus.isAbiMatch || (isTaiChiYin && abiStatus.suggestedApkAbiVariant != "universal")) {
+            if (!abiStatus.isAbiMatch || (isTaiChiYin && abiStatus.suggestedApkAbiVariant != "universal" && "armAll" != AbiUtils.getModuleFlavorName())) {
                 warnAbiMismatchBar.visibility = View.VISIBLE
                 recommendedModuleAbiVariant.text = "推荐您将模块更换为使用 ${abiStatus.suggestedApkAbiVariant} 原生库的版本" +
                     (if (isTaiChiYin) "\n太极用户请使用 armAll 原生库，其他版本将不会生效" else "")

@@ -44,6 +44,7 @@ public class CheckAbiVariantModel {
             "com.tencent.mobileqq",
             "com.tencent.tim",
             "com.tencent.qqlite",
+            "com.tencent.minihd.qq",
             // "com.tencent.mobileqqi",
     };
 
