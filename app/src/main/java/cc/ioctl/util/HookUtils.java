@@ -25,6 +25,7 @@ package cc.ioctl.util;
 import androidx.annotation.NonNull;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.base.ITraceableDynamicHook;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
@@ -183,28 +184,23 @@ public class HookUtils {
         hookBeforeIfEnabled(this0, method, 50, beforeHookedMethod);
     }
 
-    public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+    public static void hookAfterAlways(final @NonNull ITraceableDynamicHook this0, final @NonNull Method method,
                                        int priority, final @NonNull AfterHookedMethod afterHookedMethod) {
         Objects.requireNonNull(this0, "this0 == null");
         Objects.requireNonNull(method, "method == null");
-        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                try {
-                    afterHookedMethod.afterHookedMethod(param);
-                } catch (Throwable e) {
-                    this0.traceError(e);
-                    throw e;
-                }
-            }
-        });
+        XposedBridge.hookMethod(method, afterAlways(this0, priority, afterHookedMethod));
     }
 
-    public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+    public static void hookBeforeAlways(final @NonNull ITraceableDynamicHook this0, final @NonNull Method method,
                                         int priority, final @NonNull BeforeHookedMethod beforeHookedMethod) {
         Objects.requireNonNull(this0, "this0 == null");
         Objects.requireNonNull(method, "method == null");
-        XposedBridge.hookMethod(method, new XC_MethodHook(priority) {
+        XposedBridge.hookMethod(method, beforeAlways(this0, priority, beforeHookedMethod));
+    }
+
+    public static XC_MethodHook beforeAlways(final @NonNull ITraceableDynamicHook this0, int priority,
+                                             final @NonNull BeforeHookedMethod beforeHookedMethod) {
+        return new XC_MethodHook(priority) {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
                 try {
@@ -214,7 +210,22 @@ public class HookUtils {
                     throw e;
                 }
             }
-        });
+        };
+    }
+
+    public static XC_MethodHook afterAlways(final @NonNull ITraceableDynamicHook this0, int priority,
+                                            final @NonNull AfterHookedMethod afterHookedMethod) {
+        return new XC_MethodHook(priority) {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                try {
+                    afterHookedMethod.afterHookedMethod(param);
+                } catch (Throwable e) {
+                    this0.traceError(e);
+                    throw e;
+                }
+            }
+        };
     }
 
     public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
