@@ -153,6 +153,7 @@ object SendTTSHook :
                             AlertDialog.Builder(wc)
                                 .setTitle("不支持的采样率 ${sampleRateInHz}Hz")
                                 .setMessage("仅支持 8000Hz 12000Hz 16000Hz 24000Hz")
+                                .show()
                         } else {
                             AlertDialog.Builder(wc)
                                 .setTitle(it.message)
