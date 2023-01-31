@@ -163,16 +163,8 @@ class SearchOverlaySubFragment {
     private val mOnSearchHistoryItemLongClickListener = View.OnLongClickListener {
         val keyword = (it as TextView).text.toString()
         if (keyword.isNotEmpty()) {
-            AlertDialog.Builder(context!!)
-                .setTitle("删除搜索历史")
-                .setMessage("确定要删除搜索历史 '$keyword' 吗？")
-                .setPositiveButton("确定") { _, _ ->
-                    ConfigEntrySearchHistoryManager.removeHistory(keyword)
-                    updateHistoryListForView()
-                }
-                .setCancelable(true)
-                .setNegativeButton("取消", null)
-                .show()
+            ConfigEntrySearchHistoryManager.removeHistory(keyword)
+            updateHistoryListForView()
             true
         } else {
             false
@@ -468,7 +460,7 @@ class SearchOverlaySubFragment {
             searchSettingClearHistory.setOnClickListener {
                 AlertDialog.Builder(requireContext()).apply {
                     setTitle("清除历史记录")
-                    setMessage("确定要清除历史记录吗？")
+                    setMessage("确定要清除所有历史记录吗？\n您也可以通过长按来删除单个历史记录。")
                     setPositiveButton(android.R.string.ok) { _, _ ->
                         ConfigEntrySearchHistoryManager.clearHistoryList()
                         searchHistoryList = ConfigEntrySearchHistoryManager.historyList
