@@ -32,8 +32,6 @@ import io.github.qauxv.util.dexkit.NVipUtils_getUserStatus
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
-import xyz.nextalone.util.isSimpleUi
-import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -46,21 +44,19 @@ object DisabledRedNick : CommonSwitchFunctionHook(
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
-    override fun initOnce() = throwOrTrue {
-        if (!isSimpleUi) {
-
-            DexKit.loadMethodFromCache(NVipUtils_getUserStatus)?.hookBefore(this) {
-                if (updating) {
-                    it.result = -1
-                }
-            }
-            DexKit.loadMethodFromCache(NFriendChatPie_updateUITitle)?.hookBefore(this) {
-                updating = true
-            }
-            DexKit.loadMethodFromCache(NFriendChatPie_updateUITitle)?.hookAfter(this) {
-                updating = false
+    override fun initOnce(): Boolean {
+        DexKit.requireMethodFromCache(NVipUtils_getUserStatus).hookBefore(this) {
+            if (updating) {
+                it.result = -1
             }
         }
+        DexKit.requireMethodFromCache(NFriendChatPie_updateUITitle).hookBefore(this) {
+            updating = true
+        }
+        DexKit.requireMethodFromCache(NFriendChatPie_updateUITitle).hookAfter(this) {
+            updating = false
+        }
+        return true
     }
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5)
