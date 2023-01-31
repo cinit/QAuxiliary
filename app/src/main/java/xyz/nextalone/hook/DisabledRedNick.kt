@@ -32,6 +32,7 @@ import io.github.qauxv.util.dexkit.NVipUtils_getUserStatus
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.isSimpleUi
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -46,7 +47,7 @@ object DisabledRedNick : CommonSwitchFunctionHook(
 
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(NVipUtils_getUserStatus).hookBefore(this) {
-            if (updating) {
+            if (updating && !isSimpleUi) {
                 it.result = -1
             }
         }
