@@ -226,7 +226,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "QQHelper",
                 "https://github.com/Qiwu2542284182/QQHelper",
                 "祈无",
-                ""
+                "No License"
             ),
             LicenseNotice(
                 "noapplet",
