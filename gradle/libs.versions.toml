@@ -1,5 +1,5 @@
 [versions]
-agp = "7.4.0"
+agp = "7.4.1"
 appCenter = "5.0.0"
 kotlin = "1.8.0"
 ksp = "1.8.0-1.0.9"
