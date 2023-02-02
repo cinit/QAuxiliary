@@ -1,7 +1,7 @@
 [versions]
 agp = "7.4.1"
 appCenter = "5.0.0"
-kotlin = "1.8.0"
+kotlin = "1.8.10"
 ksp = "1.8.0-1.0.9"
 lifecycle = "2.5.1"
 materialDialog = "3.3.0"
