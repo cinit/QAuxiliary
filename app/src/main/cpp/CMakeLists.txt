@@ -37,7 +37,7 @@ add_library(qauxv SHARED
         qauxv_core/shared_memory.cpp
         qauxv_core/SilkCodec.cc
         qauxv_core/auto_close_fd.cc
-        ../../../../libs/dexkit/DexKit/Android/dexkit/src/main/cpp/native-bridge.cpp
+        ../../../../libs/dexkit/DexKit/dexkit/src/main/cpp/native-bridge.cpp
         )
 
 set_target_properties(qauxv PROPERTIES
