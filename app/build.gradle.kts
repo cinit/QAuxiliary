@@ -158,17 +158,24 @@ android {
     lint {
         checkDependencies = true
     }
-    kotlin {
-        sourceSets.configureEach {
-            kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
-        }
-        jvmToolchain(11)
+    kotlinOptions {
+        freeCompilerArgs += listOf(
+            "-Xno-call-assertions",
+            "-Xno-receiver-assertions",
+            "-Xno-param-assertions",
+        )
     }
     applicationVariants.all {
         val variantCapped = name.capitalize()
         val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
         mergeAssets.dependsOn(generateEulaAndPrivacy)
         mergeAssets.dependsOn("data${variantCapped}Descriptor")
+    }
+}
+
+kotlin {
+    sourceSets.configureEach {
+        kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
     }
 }
 
@@ -275,18 +282,6 @@ tasks.register<Delete>("cleanOldIcon") {
         ?.forEach(::delete)
     delete(file("src/main/res/drawable-anydpi-v26/icon.xml"))
 }.also { tasks.clean.dependsOn(it) }
-
-tasks.withType<org.jetbrains.kotlin.gradle.tasks.KotlinCompile>().all {
-    if (name.contains("release", true)) {
-        kotlinOptions {
-            freeCompilerArgs = freeCompilerArgs + listOf(
-                "-Xno-call-assertions",
-                "-Xno-receiver-assertions",
-                "-Xno-param-assertions",
-            )
-        }
-    }
-}
 
 tasks.register("checkGitSubmodule") {
     group = "qauxv"
