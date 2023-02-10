@@ -65,6 +65,7 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import kotlin.collections.ArraysKt;
 
 public class ExfriendManager {
 
@@ -89,6 +90,13 @@ public class ExfriendManager {
     private ConcurrentHashMap mStdRemarks;
     private ArrayList<FriendChunk> cachedFriendChunks;
     private boolean dirtySerializedFlag = true;
+
+    private static final long[] ROBOT_ENTERPRISE_UIN_ARRAY = new long[]{
+            66600000L, // BabyQ
+            2854196306L, // 小冰
+            2854204259L, // 赞噢机器人
+            2854196925L, // 小店助手
+    };
 
     private ExfriendManager(long uin) {
         persons = new ConcurrentHashMap<>();
@@ -690,14 +698,17 @@ public class ExfriendManager {
                 }
             }
             Iterator<Map.Entry<Long, FriendRecord>> it = del.entrySet().iterator();
-            Map.Entry<Long, FriendRecord> ent;
-            EventRecord ev;
             ptr[0] = 0;//num,ticker,title,content
             while (it.hasNext()) {
-                ent = it.next();
+                Map.Entry<Long, FriendRecord> ent = it.next();
                 fr = ent.getValue();
                 if (fr.friendStatus == FriendRecord.STATUS_FRIEND_MUTUAL) {
-                    ev = new EventRecord();
+                    if (ArraysKt.contains(ROBOT_ENTERPRISE_UIN_ARRAY, fr.uin)) {
+                        // for enterprise robots we don't report because they are not real friends
+                        fr.friendStatus = FriendRecord.STATUS_EXFRIEND;
+                        continue;
+                    }
+                    EventRecord ev = new EventRecord();
                     ev._friendStatus = fr.friendStatus;
                     ev._nick = fr.nick;
                     ev._remark = fr.remark;
@@ -740,7 +751,7 @@ public class ExfriendManager {
         }
     }
 
-    @SuppressLint("MissingPermission")
+    @SuppressLint({"MissingPermission", "NotificationPermission"})
     public void doNotifyDelFlAndSave(Object[] ptr) {
         dirtySerializedFlag = true;
         mConfig.putLong("lastUpdateFl", lastUpdateTimeSec);
