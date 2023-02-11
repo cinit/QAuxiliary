@@ -138,7 +138,7 @@ public class InjectDelayableHooks {
                 ShadowBatchDexDeobfStep shadowBatchStep = new ShadowBatchDexDeobfStep(backend, ids.toArray(new DexKitTarget[0]));
                 steps.add(shadowBatchStep);
             }
-            steps.sort(Collections.reverseOrder());
+            Collections.sort(steps, Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
                 final int j = idx;
                 if (SyncUtils.isMainProcess() && ctx != null) {

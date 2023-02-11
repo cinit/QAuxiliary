@@ -766,7 +766,7 @@ public class ExfriendManager {
                 wrapper.setClassName(HostInfo.getApplication().getPackageName(), ActProxyMgr.STUB_DEFAULT_ACTIVITY);
                 wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner);
                 PendingIntent pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper,
-                        VERSION.SDK_INT >= VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
+                        Build.VERSION.SDK_INT >= Build.VERSION_CODES.M ? PendingIntent.FLAG_IMMUTABLE : 0);
                 NotificationManager nm = (NotificationManager) app.getSystemService(Context.NOTIFICATION_SERVICE);
                 Notification n = createNotiComp(nm, (String) ptr[1], (String) ptr[2], (String) ptr[3],
                         new long[]{100, 200, 200, 100}, pi);

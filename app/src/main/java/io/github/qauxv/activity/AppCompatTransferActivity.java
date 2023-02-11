@@ -84,6 +84,9 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
         if ((decorView.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_HIDE_NAVIGATION) == 0) {
             return 0;
         } else {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                return 0;
+            }
             WindowInsets insets = decorView.getRootWindowInsets();
             if (insets != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
@@ -102,6 +105,9 @@ public abstract class AppCompatTransferActivity extends AppCompatActivity {
         if ((decorView.getSystemUiVisibility() & View.SYSTEM_UI_FLAG_LAYOUT_FULLSCREEN) == 0) {
             return 0;
         } else {
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+                return 0;
+            }
             WindowInsets insets = decorView.getRootWindowInsets();
             if (insets != null) {
                 if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {

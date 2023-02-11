@@ -22,7 +22,7 @@
 
 package io.github.duzhaokun123.util
 
-import android.icu.text.SimpleDateFormat
+import java.text.SimpleDateFormat
 import java.util.Locale
 
 object TimeFormat {

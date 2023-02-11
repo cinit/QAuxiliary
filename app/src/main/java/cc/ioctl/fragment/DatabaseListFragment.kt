@@ -123,7 +123,7 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
     private fun updateStatus() {
         val ctx = requireContext()
         val sb = SpannableStringBuilder()
-        val databaseDir = File(ctx.dataDir, "databases")
+        val databaseDir = File(ctx.filesDir.parentFile!!, "databases")
         val databaseList = databaseDir.listFiles()
         if (databaseList != null) {
             for (db: File in databaseList) {

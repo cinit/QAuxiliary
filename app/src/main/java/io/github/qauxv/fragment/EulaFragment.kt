@@ -23,6 +23,7 @@ package io.github.qauxv.fragment
 
 import android.content.Intent
 import android.net.Uri
+import android.os.Build
 import android.os.Bundle
 import android.text.Html
 import android.text.SpannableStringBuilder
@@ -97,7 +98,12 @@ class EulaFragment : BaseRootLayoutFragment(), View.OnClickListener {
             val sb = SpannableStringBuilder()
             try {
                 val eulaAndPrivacy = ResUtils.openAsset("eulaAndPrivacy.html").readText()
-                sb.append(Html.fromHtml(eulaAndPrivacy, Html.FROM_HTML_MODE_LEGACY))
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N) {
+                    sb.append(Html.fromHtml(eulaAndPrivacy, Html.FROM_HTML_MODE_LEGACY))
+                } else {
+                    @Suppress("DEPRECATION")
+                    sb.append(Html.fromHtml(eulaAndPrivacy, null, null))
+                }
             } catch (e: IOException) {
                 sb.append(Log.getStackTraceString(e))
             }

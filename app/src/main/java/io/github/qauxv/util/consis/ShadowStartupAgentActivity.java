@@ -46,7 +46,9 @@ public class ShadowStartupAgentActivity extends AppActivity implements WindowIsT
         }
         window.setAttributes(params);
         window.setLayout(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT);
-        window.setElevation(0);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP_MR1) {
+            window.setElevation(0);
+        }
         window.setStatusBarColor(Color.TRANSPARENT);
         window.setBackgroundDrawable(null);
         View decorView = window.getDecorView();

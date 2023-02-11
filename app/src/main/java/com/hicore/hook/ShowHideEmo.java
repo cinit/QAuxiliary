@@ -78,7 +78,7 @@ public class ShowHideEmo extends CommonSwitchFunctionHook {
 
     public static boolean isSticker(int i) {
         try {
-            File faceConfig = new File(HostInfo.getApplication().getDataDir(), "files/qq_emoticon_res/face_config.json");
+            File faceConfig = new File(HostInfo.getApplication().getFilesDir(), "qq_emoticon_res/face_config.json");
             if (!faceConfig.exists()) {
                 return false;
             }

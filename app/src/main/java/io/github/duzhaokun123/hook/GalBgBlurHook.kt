@@ -30,6 +30,7 @@ import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import androidx.core.widget.doAfterTextChanged
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.duzhaokun123.util.blurBackground
@@ -69,7 +70,7 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
                     text = "聊天界面查看图片背景模糊"
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 addView(TextView(ctx).apply {
-                    setTextColor(ctx.getColor(R.color.firstTextColor))
+                    setTextColor(ResourcesCompat.getColor(ctx.resources, R.color.firstTextColor, ctx.theme))
                     text = "模糊半径"
                 })
                 addView(com.google.android.material.textfield.TextInputEditText(ctx).apply {
@@ -81,7 +82,7 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
                     }
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 addView(TextView(ctx).apply {
-                    setTextColor(ctx.getColor(R.color.firstTextColor))
+                    setTextColor(ResourcesCompat.getColor(ctx.resources, R.color.firstTextColor, ctx.theme))
                     text = "暗淡系数"
                 })
                 addView(com.google.android.material.textfield.TextInputEditText(ctx).apply {

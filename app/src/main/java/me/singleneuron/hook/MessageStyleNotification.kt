@@ -22,6 +22,7 @@
 
 package me.singleneuron.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
@@ -98,6 +99,8 @@ object NewQNotifyEvolution : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
     private val avatarCache: LruCache<String, IconCompat> = LruCache(50)
     private var windowHeight = -1
 
+    @RequiresApi(Build.VERSION_CODES.O)
+    @SuppressLint("NotificationPermission")
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {

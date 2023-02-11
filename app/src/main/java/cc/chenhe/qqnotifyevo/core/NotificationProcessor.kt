@@ -9,6 +9,7 @@ import android.content.res.Resources
 import android.graphics.Bitmap
 import android.graphics.Color
 import android.graphics.drawable.Drawable
+import android.os.Build
 import android.util.Log
 import androidx.annotation.VisibleForTesting
 import androidx.core.app.NotificationCompat
@@ -539,6 +540,9 @@ abstract class NotificationProcessor(context: Context) {
      * @return 通知的大图标。
      */
     private fun getNotifyLargeIcon(context: Context, notification: Notification): Bitmap? {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            return notification.largeIcon
+        }
         return notification.getLargeIcon()?.loadDrawable(context)?.toBitmap()
     }
 
@@ -710,13 +714,15 @@ abstract class NotificationProcessor(context: Context) {
         tag: Tag,
         isQzone: Boolean
     ) {
-        builder.setSmallIcon(IconCompat.createWithBitmap((
-            if (isQzone)
-                res_inject_ic_notify_qzone
-            else
-                res_inject_ic_notify_qq
-            ).toBitmap()
-        ))
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
+            // not possible to set icon on Android M and below
+            return
+        }
+        builder.setSmallIcon(
+            IconCompat.createWithBitmap(
+                (if (isQzone) res_inject_ic_notify_qzone else res_inject_ic_notify_qq).toBitmap()
+            )
+        )
     }
 
     /**

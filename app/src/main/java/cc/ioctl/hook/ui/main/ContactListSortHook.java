@@ -46,6 +46,7 @@ import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import kotlin.Unit;
@@ -122,7 +123,7 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
         if (false) {
             throw new ReflectiveOperationException();
         }
-        list.sort(mFriendHolderComparator);
+        Collections.sort(list, mFriendHolderComparator);
     }
 
     // private void sortContactListLegacy(List<Object> list) throws ReflectiveOperationException {
