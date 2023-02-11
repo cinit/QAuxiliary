@@ -36,6 +36,14 @@ object Common {
         }
     }
 
+    fun getExtraSuffix(): String {
+        return if (Version.minSdk < 24) ".lvs" else ""
+    }
+
+    fun getBuildVersionName(project: Project): String {
+        return Version.versionName + getGitHeadRefsSuffix(project) + getExtraSuffix()
+    }
+
     fun findInPath(executable: String): String? {
         val pathEnv = System.getenv("PATH")
         return pathEnv.split(File.pathSeparator).map { folder ->

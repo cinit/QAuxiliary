@@ -35,12 +35,14 @@ extensions.findByType(BaseExtension::class)?.run {
     buildToolsVersion = Version.buildToolsVersion
     ndkVersion = Version.getNdkVersion(project)
 
-    defaultConfig {minSdk = Version.minSdk
+    defaultConfig {
+        minSdk = Version.minSdk
         targetSdk = Version.targetSdk
         versionCode = Common.getBuildVersionCode(rootProject)
-        versionName = Version.versionName + Common.getGitHeadRefsSuffix(rootProject)
+        versionName = Common.getBuildVersionName(rootProject)
         resourceConfigurations += listOf("zh", "en")
     }
+
     compileOptions {
         sourceCompatibility = Version.java
         targetCompatibility = Version.java
