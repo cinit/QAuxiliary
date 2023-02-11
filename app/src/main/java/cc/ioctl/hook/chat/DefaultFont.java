@@ -51,8 +51,7 @@ import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
-import java.util.Set;
-import java.util.stream.Collectors;
+import kotlin.collections.CollectionsKt;
 
 //强制使用默认字体
 @FunctionHookEntry
@@ -148,9 +147,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                             .callerMethodReturnType("void")
                             .callerMethodParamTypes(new String[]{"", Initiator._ChatMessage().getName()})
                             .build());
-            List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
-                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
-                    .collect(Collectors.toList());
+            List<DexMethodDescriptor> methods = CollectionsKt.filter(resultMethods.keySet(),
+                    s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"));
             if (methods.size() == 1) {
                 try {
                     DexMethodDescriptor descriptor = methods.get(0);
@@ -172,12 +170,9 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                             .beInvokedMethodReturnType("boolean")
                             .build()
             );
-            Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
-                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
-                    .collect(Collectors.toSet());
-            List<DexMethodDescriptor> res = methods.stream()
-                    .filter(s -> !methodSet.contains(s))
-                    .collect(Collectors.toList());
+            List<DexMethodDescriptor> methodSet = CollectionsKt.filter(resMap.keySet(),
+                    s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"));
+            List<DexMethodDescriptor> res = CollectionsKt.filter(methods, s -> !methodSet.contains(s));
             if (res.size() == 1) {
                 try {
                     DexMethodDescriptor descriptor = res.get(0);
