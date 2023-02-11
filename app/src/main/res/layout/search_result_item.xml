@@ -29,6 +29,7 @@
     android:paddingRight="16dp"
     android:background="@drawable/bg_ripple_rect"
     android:clickable="true"
+    android:focusable="true"
     android:orientation="vertical">
 
     <TextView
