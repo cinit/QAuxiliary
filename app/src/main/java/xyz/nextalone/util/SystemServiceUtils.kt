@@ -22,6 +22,7 @@
 
 package xyz.nextalone.util
 
+import android.annotation.SuppressLint
 import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
@@ -66,6 +67,7 @@ object SystemServiceUtils {
      * @param context [Context]
      * @param uri     [Uri]
      */
+    @SuppressLint("Recycle")
     @JvmStatic
     fun copyToClipboard(context: Context, uri: Uri) {
         val item = ClipData.Item(uri)

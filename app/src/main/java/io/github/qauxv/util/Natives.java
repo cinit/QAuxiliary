@@ -340,10 +340,10 @@ public class Natives {
         return soFile;
     }
 
-    public static String getAbiForLibrary() {
-        boolean is64Bit;
+    @SuppressWarnings("deprecation")
+    public static boolean is64Bit() {
         if (VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-            is64Bit = Process.is64Bit();
+            return Process.is64Bit();
         } else {
             // It's possible to have a 64-bit ART on Android 5.0 or 5.1
             try {
@@ -351,15 +351,18 @@ public class Natives {
                 Method getRuntime = kVMRuntime.getDeclaredMethod("getRuntime");
                 Method method = kVMRuntime.getDeclaredMethod("is64Bit");
                 Object runtime = getRuntime.invoke(null);
-                is64Bit = (Boolean) method.invoke(runtime);
+                return (Boolean) method.invoke(runtime);
             } catch (ReflectiveOperationException e) {
                 android.util.Log.e("QAuxv", "Failed to detect 64-bit ART", e);
                 String abi1 = Build.CPU_ABI;
                 String abi2 = Build.CPU_ABI2;
-                is64Bit = (abi1 != null && abi1.contains("64")) || (abi2 != null && abi2.contains("64"));
+                return (abi1 != null && abi1.contains("64")) || (abi2 != null && abi2.contains("64"));
             }
         }
-        String[] supported = is64Bit ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
+    }
+
+    public static String getAbiForLibrary() {
+        String[] supported = is64Bit() ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
         if (supported == null || supported.length == 0) {
             throw new IllegalStateException("No supported ABI in this device");
         }

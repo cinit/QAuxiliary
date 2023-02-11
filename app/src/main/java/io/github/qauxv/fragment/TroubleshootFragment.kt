@@ -63,6 +63,7 @@ import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Natives
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
@@ -119,7 +120,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 description(
                     "PID: " + android.os.Process.myPid() +
                         ", UID: " + android.os.Process.myUid() +
-                        ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+                        ", " + (if (Natives.is64Bit()) "64 bit" else "32 bit") + "\n" +
                         "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
                         HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
                 )
