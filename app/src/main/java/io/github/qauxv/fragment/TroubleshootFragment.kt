@@ -28,6 +28,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
+import android.os.Build
 import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
@@ -266,7 +267,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         wrapper.setClassName(HostInfo.getApplication().packageName, ActProxyMgr.STUB_DEFAULT_ACTIVITY)
         wrapper.putExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT, inner)
         val pi = PendingIntent.getActivity(HostInfo.getApplication(), 0, wrapper,
-                if (VERSION.SDK_INT >= VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) PendingIntent.FLAG_IMMUTABLE else 0)
         val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val n = ExfriendManager.getCurrent().createNotiComp(nm, "Ticker", "Title", "Content", longArrayOf(100, 200, 200, 100), pi)
         nm.notify(ExfriendManager.ID_EX_NOTIFY, n)

@@ -250,7 +250,7 @@ public class Natives {
                     Log.e("Build.SUPPORTED_32_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
                     Log.e("Build.SUPPORTED_64_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
                     // check whether this is a 64-bit ART runtime
-                    if (VERSION.SDK_INT >= VERSION_CODES.M) {
+                    if (VERSION.SDK_INT >= Build.VERSION_CODES.M) {
                         Log.e("Process.is64bit is: " + Process.is64Bit());
                     }
                     StructUtsname uts = Os.uname();

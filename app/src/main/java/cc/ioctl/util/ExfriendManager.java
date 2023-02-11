@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.os.Build;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -808,7 +809,7 @@ public class ExfriendManager {
             builder.setSmallIcon(Icon.createWithBitmap(
                 BitmapFactory.decodeResource(app.getResources(), R.drawable.ic_del_friend_top)));
         } else {
-            // 2022 now, still using <23?
+            // 2023 now, still using SDK < 23?
             builder.setSmallIcon(android.R.drawable.ic_delete);
         }
         builder.setTicker(ticker);

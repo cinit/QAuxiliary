@@ -23,6 +23,7 @@
 package me.ketal.hook
 
 import android.app.Activity
+import android.os.Build
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
