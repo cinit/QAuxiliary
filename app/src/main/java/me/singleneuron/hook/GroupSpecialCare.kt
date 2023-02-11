@@ -22,8 +22,10 @@
 
 package me.singleneuron.hook
 
+import cc.ioctl.util.afterHookIfEnabled
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
@@ -33,6 +35,7 @@ import xyz.nextalone.util.throwOrTrue
 import java.util.concurrent.ConcurrentHashMap
 
 @UiItemAgentEntry
+@FunctionHookEntry
 object GroupSpecialCare : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF) {
 
     override val name = "关闭群普通消息特别关心提示"
@@ -45,12 +48,10 @@ object GroupSpecialCare : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUt
         val notificationIdManager = "com.tencent.util.notification.NotifyIdManager".clazz
         val message = "com.tencent.imcore.message.Message".clazz
 
-        val hook = object : XC_MethodHook() {
-            override fun afterHookedMethod(param: MethodHookParam) {
-                val map: ConcurrentHashMap<String, Boolean> = XposedHelpers.getObjectField(param.thisObject, "h") as ConcurrentHashMap<String, Boolean>
-                val frienduin: String = XposedHelpers.getObjectField(param.args[1], "frienduin") as String
-                map.remove(frienduin)
-            }
+        val hook = afterHookIfEnabled { param ->
+            val map: ConcurrentHashMap<String, Boolean> = XposedHelpers.getObjectField(param.thisObject, "h") as ConcurrentHashMap<String, Boolean>
+            val frienduin: String = XposedHelpers.getObjectField(param.args[1], "frienduin") as String
+            map.remove(frienduin)
         }
 
         XposedHelpers.findAndHookMethod(notificationIdManager, "m", String::class.java, message, hook)
