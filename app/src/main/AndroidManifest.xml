@@ -128,4 +128,6 @@
         <package android:name="com.android.shell" />
     </queries>
 
+    <uses-sdk tools:overrideLibrary="com.github.kyuubiran.ezxhelper" />
+
 </manifest>
