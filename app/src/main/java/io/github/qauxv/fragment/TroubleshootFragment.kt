@@ -25,6 +25,7 @@ package io.github.qauxv.fragment
 import android.annotation.SuppressLint
 import android.app.NotificationManager
 import android.app.PendingIntent
+import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
 import android.graphics.Color
@@ -32,10 +33,14 @@ import android.os.Bundle
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.ForegroundColorSpan
+import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import android.widget.FrameLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.util.ExfriendManager
@@ -68,6 +73,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
+import xyz.nextalone.util.SystemServiceUtils
 import kotlin.system.exitProcess
 
 
@@ -111,6 +117,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             },
             CategoryItem("测试") {
                 textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
+                textItem("打开内置浏览器", "使用内置浏览器打开指定页面", onClick = clickToOpenBrowser)
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
@@ -256,6 +263,54 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         intent.putExtra("param_force_internal_browser", true)
         intent.putExtra("url", "http://debugx5.qq.com/")
         startActivity(intent)
+    }
+
+    private val clickToOpenBrowser = actionOrShowError {
+        val ctx = requireContext()
+        val browser = Initiator.loadClass("com.tencent.mobileqq.activity.QQBrowserDelegationActivity")
+        val r = { url: String ->
+            val intent = Intent(requireContext(), browser)
+            intent.putExtra("fling_action_key", 2)
+            intent.putExtra("fling_code_key", this@TroubleshootFragment.hashCode())
+            intent.putExtra("useDefBackText", true)
+            intent.putExtra("param_force_internal_browser", true)
+            intent.putExtra("url", url)
+            startActivity(intent)
+        }
+        val input = EditText(ctx).apply {
+            id = R.id.input_value
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+        }
+        AlertDialog.Builder(ctx).apply {
+            setTitle("请输入 URL")
+            setCancelable(true)
+            setNeutralButton(android.R.string.paste, null) // set listener later
+            setPositiveButton(android.R.string.ok, null)  // set listener later
+            setNegativeButton(android.R.string.cancel, null)
+            setView(input)
+        }.show().apply {
+            getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                val clipSvc = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = clipSvc.primaryClip
+                if (clip != null && clip.itemCount > 0) {
+                    input.setText(clip.getItemAt(0).text)
+                }
+            }
+            getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val url = input.text.toString()
+                if (url.isEmpty()) {
+                    Toasts.error(ctx, "URL 不能为空")
+                    return@setOnClickListener
+                }
+                if (!url.matches(Regex("[A-Za-z0-9]+?://.*"))) {
+                    Toasts.error(ctx, "URL 不合法")
+                    return@setOnClickListener
+                }
+                dismiss()
+                r(url)
+            }
+        }
     }
 
     @SuppressLint("NotificationPermission")
