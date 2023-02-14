@@ -23,7 +23,6 @@
 @file:Suppress("UnstableApiUsage")
 
 import com.android.build.gradle.BaseExtension
-import org.jetbrains.kotlin.gradle.dsl.KotlinJvmOptions
 
 plugins {
     id("com.android.base")
@@ -48,13 +47,9 @@ extensions.findByType(BaseExtension::class)?.run {
         targetCompatibility = Version.java
     }
 
-    kotlinOptions {
-        jvmTarget = Version.java.toString()
-    }
-
     packagingOptions.jniLibs.useLegacyPackaging = false
 }
 
-fun BaseExtension.kotlinOptions(block: KotlinJvmOptions.() -> Unit) {
-    (this as ExtensionAware).extensions.configure("kotlinOptions", block)
+kotlin {
+    jvmToolchain(Version.java.toString().toInt())
 }
