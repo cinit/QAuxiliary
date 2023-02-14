@@ -1,5 +1,3 @@
-import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
-
 plugins {
     kotlin("jvm")
 }
@@ -9,8 +7,8 @@ dependencies {
     implementation(libs.kotlinpoet.ksp)
 }
 
-tasks.withType<KotlinCompile> {
-    kotlinOptions.jvmTarget = Version.java.toString()
+kotlin {
+    jvmToolchain(Version.java.toString().toInt())
 }
 
 tasks.withType<JavaCompile> {

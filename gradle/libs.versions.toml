@@ -40,4 +40,5 @@ sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version = "0
 changelog = { id = "org.jetbrains.changelog", version = "2.0.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 license = { id = "com.jaredsburrows.license", version = "0.9.0" }
+kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
