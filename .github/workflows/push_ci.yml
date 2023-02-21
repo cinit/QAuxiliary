@@ -40,7 +40,7 @@ jobs:
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
           ccache -zp
       - name: Cache Native Build
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.2.6
         with:
           path: |
             ~/.cache/ccache
@@ -49,7 +49,7 @@ jobs:
           key: native-cache-${{ github.sha }}
           restore-keys: native-cache-
       - name: Cache Gradle Dependencies
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.2.6
         with:
           path: |
             ~/.gradle/caches
@@ -59,7 +59,7 @@ jobs:
           restore-keys: |
             gradle-deps
       - name: Cache Gradle Build
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.2.6
         with:
           path: |
             ~/.gradle/caches/build-cache-*
@@ -199,7 +199,7 @@ jobs:
           git status telegram-bot-api >> telegram-bot-api-status
       - name: Cache Bot API Binary
         id: cache-bot-api
-        uses: actions/cache@v3.2.5
+        uses: actions/cache@v3.2.6
         with:
           path: telegram-bot-api-binary
           key: CI-telegram-bot-api-${{ hashFiles('telegram-bot-api-status') }}
