@@ -100,11 +100,13 @@ public class Parasitics {
         if (res == null) {
             return;
         }
-        try {
-            res.getString(R.string.res_inject_success);
-            return;
-        } catch (Resources.NotFoundException ignored) {
-        }
+        // FIXME: 去除资源注入成功检测，每次重复注入资源，可以修复一些内置 Hook 框架注入虽然成功但是依然找不到资源 ID 的问题
+        //        复现：梦境框架、应用转生、LSPatch，QQ 版本 8.3.9、8.4.1
+        //        try {
+        //            res.getString(R.string.res_inject_success);
+        //            return;
+        //        } catch (Resources.NotFoundException ignored) {
+        //        }
         try {
             String sModulePath = HookEntry.getModulePath();
             if (sModulePath == null) {
@@ -641,7 +643,7 @@ public class Parasitics {
 
         @Override
         public Application newApplication(ClassLoader cl, String className, Context context)
-            throws ClassNotFoundException, IllegalAccessException, InstantiationException {
+                throws ClassNotFoundException, IllegalAccessException, InstantiationException {
             return mBase.newApplication(cl, className, context);
         }
 
@@ -652,9 +654,9 @@ public class Parasitics {
 
         @Override
         public Activity newActivity(Class<?> clazz, Context context, IBinder token,
-                                    Application application, Intent intent, ActivityInfo info, CharSequence title,
-                                    Activity parent, String id, Object lastNonConfigurationInstance)
-            throws IllegalAccessException, InstantiationException {
+                Application application, Intent intent, ActivityInfo info, CharSequence title,
+                Activity parent, String id, Object lastNonConfigurationInstance)
+                throws IllegalAccessException, InstantiationException {
             return mBase.newActivity(clazz, context, token, application, intent, info, title, parent, id, lastNonConfigurationInstance);
         }
 
