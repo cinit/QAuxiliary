@@ -60,9 +60,13 @@ public class SafeModeManager {
         return isAvailable() && mSafeModeEnableFile.exists();
     }
 
-    public void setEnabled(boolean isEnable) {
+    public boolean setEnabled(boolean isEnable) {
         if (!isAvailable()) {
-            return;
+            return false;
+        }
+        if (HookEntry.sCurrentPackageName == null || HookEntry.sCurrentPackageName.isBlank()) {
+            Log.e("Failed to enable or disable safe mode, sCurrentPackageName is null or blank");
+            return false;
         }
         if (isEnable) {
             try {
@@ -70,6 +74,7 @@ public class SafeModeManager {
                 if (!isCreated) {
                     throw new IOException("Failed to create file: " + mSafeModeEnableFile.getAbsolutePath());
                 }
+                return true;
             } catch (SecurityException | IOException e) {
                 Log.e("Safe mode enable failed", e);
             }
@@ -80,6 +85,7 @@ public class SafeModeManager {
                     if (!isDeleted) {
                         throw new IOException("Failed to delete file: " + mSafeModeEnableFile.getAbsolutePath());
                     }
+                    return true;
                 } catch (SecurityException | IOException e) {
                     Log.e("Safe mode disable failed", e);
                 }
@@ -87,5 +93,6 @@ public class SafeModeManager {
                 Log.w("Safe mode is not enabled, ignored");
             }
         }
+        return false;
     }
 }

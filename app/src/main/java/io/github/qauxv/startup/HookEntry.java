@@ -61,7 +61,6 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
             return;
         }
         sLoadPackageParam = lpparam;
-        sCurrentPackageName = lpparam.packageName;
         // check LSPosed dex-obfuscation
         Class<?> kXposedBridge = XposedBridge.class;
         if (!"de.robv.android.xposed.XposedBridge".equals(kXposedBridge.getName())) {
@@ -81,6 +80,7 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                 if (sInitZygoteStartupParam == null) {
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
+                sCurrentPackageName = lpparam.packageName;
                 StartupHook.getInstance().initialize(lpparam.classLoader);
                 break;
             }

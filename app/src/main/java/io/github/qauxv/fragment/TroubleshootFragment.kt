@@ -142,11 +142,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             set(value) {
                 val oldValue = SafeModeManager.getManager().isEnabled
                 if (value != oldValue) {
-                    SafeModeManager.getManager().isEnabled = value
-                    if (isResumed) {
-                        context?.let {
-                            Toasts.info(it, "重启应用后生效")
-                        }
+                    val isSuccess = SafeModeManager.getManager().setEnabled(value)
+                    context?.let {
+                        if (isSuccess) {
+                            if (isResumed) Toasts.info(it, "重启应用后生效")
+                        } else Toasts.error(it, "${if (value) "启用" else "禁用"}安全模式失败")
                     }
                 }
             }
