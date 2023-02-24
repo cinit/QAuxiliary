@@ -30,6 +30,7 @@ import android.content.ComponentName;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -48,6 +49,7 @@ import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
+import io.github.qauxv.config.SafeModeManager;
 import io.github.qauxv.databinding.MainV2NormalBinding;
 import io.github.qauxv.fragment.AboutFragment;
 import io.github.qauxv.fragment.CheckAbiVariantFragment;
@@ -55,6 +57,7 @@ import io.github.qauxv.fragment.CheckAbiVariantModel;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.startup.HookEntry;
 import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.UiThread;
 import io.github.qauxv.util.hookstatus.AbiUtils;
 import io.github.qauxv.util.hookstatus.HookStatus;
@@ -63,6 +66,7 @@ import me.ketal.util.ComponentUtilKt;
 import name.mikanoshi.customiuizer.holidays.HolidayHelper;
 import name.mikanoshi.customiuizer.utils.Helpers;
 import name.mikanoshi.customiuizer.utils.Helpers.Holidays;
+import xyz.nextalone.util.SystemServiceUtils;
 
 public class ConfigV2Activity extends AppCompatTransferActivity {
 
@@ -242,7 +246,22 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                                 }
                             }
                         })
-                        .setPositiveButton(android.R.string.ok, null).show();
+                        .setPositiveButton(android.R.string.ok, null)
+                        .setNegativeButton("无法进入？", (dialog, which) -> {
+                            new AlertDialog.Builder(this).setTitle("手动启用安全模式")
+                                    .setMessage("如果模块已经激活但无法进入故障排除界面，或在点击进入故障排除后卡死，"
+                                            + "你可以手动在以下位置建立一个空文件来强制启用 QAuxiliary 的安全模式。\n\n" +
+                                            Environment.getExternalStorageDirectory().getAbsolutePath() +
+                                            "/Android/data/包名(例如 QQ 是 com.tencent.mobileqq)/" +
+                                            SafeModeManager.SAFE_MODE_FILE_NAME + "\n\n"
+                                            + "请注意这个位置在 Android 11 及以上的系统是无法直接访问的，"
+                                            + "你可以使用一些支持访问 Android/data 的第三方文件管理器来操作，例如 MT 管理器。")
+                                    .setPositiveButton(android.R.string.ok, null)
+                                    .setNegativeButton("复制文件名", (dialog1, which1) -> {
+                                        SystemServiceUtils.copyToClipboard(this, SafeModeManager.SAFE_MODE_FILE_NAME);
+                                        Toasts.info(this, "复制成功");
+                                    }).show();
+                        }).show();
                 break;
             }
             default: {

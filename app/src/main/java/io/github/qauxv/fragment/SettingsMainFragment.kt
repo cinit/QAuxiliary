@@ -27,12 +27,7 @@ import android.animation.AnimatorListenerAdapter
 import android.content.Context
 import android.graphics.Rect
 import android.os.Bundle
-import android.view.LayoutInflater
-import android.view.Menu
-import android.view.MenuInflater
-import android.view.MenuItem
-import android.view.View
-import android.view.ViewGroup
+import android.view.*
 import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
@@ -48,19 +43,10 @@ import io.github.qauxv.R
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.bridge.ContactUtils
 import io.github.qauxv.config.ConfigManager
-import io.github.qauxv.core.MainHook
+import io.github.qauxv.config.SafeModeManager
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.dsl.func.CategoryDescription
-import io.github.qauxv.dsl.func.FragmentDescription
-import io.github.qauxv.dsl.func.IDslFragmentNode
-import io.github.qauxv.dsl.func.IDslItemNode
-import io.github.qauxv.dsl.func.IDslParentNode
-import io.github.qauxv.dsl.func.UiItemAgentDescription
-import io.github.qauxv.dsl.item.CategoryItem
-import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
-import io.github.qauxv.dsl.item.SimpleListItem
-import io.github.qauxv.dsl.item.TMsgListItem
-import io.github.qauxv.dsl.item.UiAgentItem
+import io.github.qauxv.dsl.func.*
+import io.github.qauxv.dsl.item.*
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.SyncUtils.async
 import io.github.qauxv.util.SyncUtils.runOnUiThread
@@ -211,7 +197,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         if (!mTargetUiAgentNavId.isNullOrEmpty() && !mTargetUiAgentNavigated) {
             navigateToTargetUiAgentItem()
         }
-        val safeMode = ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+        val safeMode = SafeModeManager.getManager().isEnabled
         subtitle = if (safeMode) {
             "安全模式（停用所有功能）"
         } else {

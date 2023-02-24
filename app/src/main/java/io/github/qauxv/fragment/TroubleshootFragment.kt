@@ -58,7 +58,7 @@ import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createS
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.bridge.AppRuntimeHelper.getLongAccountUin
 import io.github.qauxv.config.ConfigManager
-import io.github.qauxv.core.MainHook
+import io.github.qauxv.config.SafeModeManager
 import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
@@ -73,7 +73,6 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
-import xyz.nextalone.util.SystemServiceUtils
 import kotlin.system.exitProcess
 
 
@@ -138,12 +137,12 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         override val isCheckable = true
         override var isChecked: Boolean
             get() {
-                return ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+                return SafeModeManager.getManager().isEnabled
             }
             set(value) {
-                val oldValue = ConfigManager.getDefaultConfig().getBooleanOrDefault(MainHook.KEY_SAFE_MODE, false)
+                val oldValue = SafeModeManager.getManager().isEnabled
                 if (value != oldValue) {
-                    ConfigManager.getDefaultConfig().putBoolean(MainHook.KEY_SAFE_MODE, value).apply()
+                    SafeModeManager.getManager().isEnabled = value
                     if (isResumed) {
                         context?.let {
                             Toasts.info(it, "重启应用后生效")

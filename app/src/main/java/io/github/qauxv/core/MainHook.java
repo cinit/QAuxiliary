@@ -28,21 +28,22 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
+import cc.ioctl.hook.SettingEntryHook;
+import cc.ioctl.hook.bak.MuteAtAllAndRedPacket;
+import cc.ioctl.hook.chat.GagInfoDisclosure;
 import cc.ioctl.hook.experimental.FileRecvRedirect;
 import cc.ioctl.hook.experimental.ForcePadMode;
-import cc.ioctl.hook.chat.GagInfoDisclosure;
-import cc.ioctl.hook.bak.MuteAtAllAndRedPacket;
+import cc.ioctl.hook.misc.CustomSplash;
+import cc.ioctl.hook.msg.RevokeMsgHook;
 import cc.ioctl.hook.notification.MuteQZoneThumbsUp;
 import cc.ioctl.hook.ui.misc.OptXListViewScrollBar;
-import cc.ioctl.hook.msg.RevokeMsgHook;
-import cc.ioctl.hook.SettingEntryHook;
+import cc.ioctl.hook.ui.title.RemoveCameraButton;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import cc.ioctl.hook.misc.CustomSplash;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.config.ConfigItems;
-import io.github.qauxv.config.ConfigManager;
+import io.github.qauxv.config.SafeModeManager;
 import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
@@ -53,7 +54,6 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import cc.ioctl.hook.ui.title.RemoveCameraButton;
 import xyz.nextalone.hook.RemoveSuperQQShow;
 
 /*TitleKit:Lcom/tencent/mobileqq/widget/navbar/NavBarCommon*/
@@ -61,8 +61,6 @@ import xyz.nextalone.hook.RemoveSuperQQShow;
 public class MainHook {
 
     private static MainHook SELF;
-
-    public static final String KEY_SAFE_MODE = "safe_mode";
 
     boolean third_stage_inited = false;
 
@@ -102,7 +100,7 @@ public class MainHook {
             Log.w("WSA detected, aggressive resource injection is required to prevent ResourceNotFound crash.");
             // TODO: 2023-1-20 implement aggressive resource injection
         }
-        boolean safeMode = ConfigManager.getDefaultConfig().getBooleanOrDefault(KEY_SAFE_MODE, false);
+        boolean safeMode = SafeModeManager.getManager().isEnabled();
         if (safeMode) {
             LicenseStatus.sDisableCommonHooks = true;
             Log.i("Safe mode enabled, disable hooks");
