@@ -47,10 +47,12 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
     override val description = "致敬 “去你大爷的内置浏览器”"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
     override val dispatcher = StartActivityHook
+    const val EXTRA_BYPASS_FQB_HOOK = "me.singleneuron.hook.decorator.EXTRA_BYPASS_FQB_HOOK"
 
     @SuppressLint("ResourceType")
     override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         val url = intent.getStringExtra("url")
+        if (intent.getBooleanExtra(EXTRA_BYPASS_FQB_HOOK, false)) return false
         /*intent.dump()
         val check1 = !url.isNullOrBlank()
         val check2 = url?.contains(Regex("http|https",RegexOption.IGNORE_CASE))

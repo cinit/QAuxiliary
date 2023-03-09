@@ -73,6 +73,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
+import me.singleneuron.hook.decorator.FxxkQQBrowser
 import kotlin.system.exitProcess
 
 
@@ -274,6 +275,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             intent.putExtra("useDefBackText", true)
             intent.putExtra("param_force_internal_browser", true)
             intent.putExtra("url", url)
+            intent.putExtra(FxxkQQBrowser.EXTRA_BYPASS_FQB_HOOK, true)
             startActivity(intent)
         }
         val input = EditText(ctx).apply {
