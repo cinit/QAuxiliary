@@ -44,6 +44,7 @@ object DisableColorNickName : CommonSwitchFunctionHook("rq_disable_color_nick_na
     public override fun initOnce(): Boolean {
         // public static void ColorNickManager.?(QQAppInterface, TextView, Spannable)
         // public static void ColorNickManager.?(QQAppInterface, TextView, Spannable, int, boolean)
+        // public static void ColorNickManager.?(QQAppInterface, TextView, Spannable, int, boolean, boolean)
         val methods = Initiator._ColorNickManager().declaredMethods.filter { m ->
             if (m.isStatic && m.returnType == Void::class.javaPrimitiveType) {
                 val argt = m.parameterTypes
@@ -52,7 +53,7 @@ object DisableColorNickName : CommonSwitchFunctionHook("rq_disable_color_nick_na
             } else false
         }
         check(methods.isNotEmpty()) { "ColorNickManager.?(QQAppInterface, TextView, Spannable, ...) not found" }
-        check(methods.size <= 2) {
+        check(methods.size <= 3) {
             "too many ColorNickManager.?(QQAppInterface, TextView, Spannable, ...) found, got ${methods.size}"
         }
         methods.forEach { method ->
