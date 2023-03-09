@@ -108,7 +108,7 @@ public class ResUtils {
         try {
             String themeId = (String) Reflex.invokeStatic(_ThemeUtil(),
                 "getUserCurrentThemeId", getAppRuntime(), load("mqq/app/AppRuntime"));
-            return "1103".endsWith(themeId) || "2920".endsWith(themeId);
+            return "1103".endsWith(themeId) || "2920".endsWith(themeId) || "2963".endsWith(themeId);
         } catch (Exception e) {
             if (HostInfo.isTim() || HostInfo.isQQHD()) {
                 return false;
