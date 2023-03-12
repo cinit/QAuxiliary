@@ -273,7 +273,7 @@ public class Natives {
         if (!cacheDir.exists()) {
             cacheDir.mkdir();
         }
-        MMKV.initialize(mmkvDir.getAbsolutePath(), s -> {
+        MMKV.initialize(ctx, mmkvDir.getAbsolutePath(), s -> {
             // nop, mmkv is attached with libqauxv.so already
         });
         MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
