@@ -41,10 +41,13 @@ import java.lang.reflect.Method;
 public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     public static final UnlockLeftSlipLimit INSTANCE = new UnlockLeftSlipLimit();
-    public static final String methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "H" : "h";
+    public static final String methodName =
+            !HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "h" : HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_33) ? "I" : "H";
+
     private UnlockLeftSlipLimit() {
         super(new DexKitTarget[]{NLeftSwipeReplyHelper_reply.INSTANCE});
     }
+
     @NonNull
     @Override
     public String[] getUiItemLocation() {
@@ -53,7 +56,8 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Method m = MMethod.FindMethod(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class, new Class[0]);
+        Method m = MMethod.FindMethod(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class,
+                new Class[0]);
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
         return true;
     }
