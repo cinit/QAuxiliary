@@ -1,19 +1,39 @@
 package com.hicore.hook;
 
+import static cc.ioctl.util.Reflex.getFirstNSFByType;
+import static com.hicore.hook.RepeaterPlus.INSTANCE;
+import static io.github.qauxv.util.Initiator._SessionInfo;
+import static io.github.qauxv.util.Initiator.load;
+
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.content.Context;
+import android.os.Parcelable;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
+import cc.ioctl.hook.msg.PicMd5Hook;
+import cc.ioctl.hook.msg.PicMd5Hook.GetMenuItemCallBack;
+import cc.ioctl.hook.msg.PicMd5Hook.MenuItemClickCallback;
 import cc.ioctl.util.LayoutHelper;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
 import com.hicore.messageUtils.QQEnvUtils;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
+import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.R;
+import io.github.qauxv.util.CustomMenu;
+import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import java.lang.reflect.Array;
+import java.lang.reflect.Method;
 import java.util.HashMap;
+import java.util.List;
 
 @SuppressLint("ResourceType")
 public class RepeaterHelper {
@@ -37,7 +57,9 @@ public class RepeaterHelper {
         supportMessageTypes.put("MessageForPokeEmo", "RelativeLayout");
         supportMessageTypes.put("MessageForStructing", "RelativeLayout");
     }
+
     private static volatile long click_time = 0;
+
     public static void createRepeatIcon(RelativeLayout baseChatItem, Object ChatMsg, Object session) throws Exception {
         boolean isSendFromLocal;
         int istroop = MField.GetField(ChatMsg, "istroop", int.class);
@@ -57,18 +79,21 @@ public class RepeaterHelper {
                 imageButton = new ImageButton(context);
                 imageButton.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
                 RelativeLayout.LayoutParams param = new RelativeLayout.LayoutParams(
-                        LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()), LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()));
+                        LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()),
+                        LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()));
                 imageButton.setAdjustViewBounds(true);
                 imageButton.getBackground().setAlpha(0);
                 imageButton.setMaxHeight(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()));
-                imageButton.setMaxWidth(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()));
+                imageButton.setMaxWidth(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()));
                 imageButton.setId(88486666);
                 imageButton.setTag(ChatMsg);
                 imageButton.setOnClickListener(v -> {
-                    if (RepeaterPlusIconSettingDialog.getIsDoubleClick()){
+                    if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
                         try {
-                            if (System.currentTimeMillis() - 200 > click_time)return;
-                        }finally {
+                            if (System.currentTimeMillis() - 200 > click_time) {
+                                return;
+                            }
+                        } finally {
                             click_time = System.currentTimeMillis();
                         }
                     }
@@ -89,7 +114,7 @@ public class RepeaterHelper {
             String attachName = supportMessageTypes.get(clzName);
             View attachView = findView(attachName, baseChatItem);
             if (attachView != null) {
-                if (RepeaterPlusIconSettingDialog.getIsShowUpper()){
+                if (RepeaterPlusIconSettingDialog.getIsShowUpper()) {
                     param.removeRule(RelativeLayout.ALIGN_RIGHT);
                     param.removeRule(RelativeLayout.ALIGN_TOP);
                     param.removeRule(RelativeLayout.ALIGN_LEFT);
@@ -99,24 +124,24 @@ public class RepeaterHelper {
                         param.leftMargin = -(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
                     } else {
                         param.addRule(RelativeLayout.ALIGN_RIGHT, attachView.getId());
-                        param.rightMargin = - (LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                        param.rightMargin = -(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
                     }
-                    param.topMargin = -(LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
-                }else {
+                    param.topMargin = -(LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 4);
+                } else {
                     if (isSendFromLocal) {
                         param.removeRule(RelativeLayout.RIGHT_OF);
                         param.addRule(RelativeLayout.LEFT_OF, attachView.getId());
                         int AddedLength = attachView.getTop();
-                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-                        int OffsetV = LayoutHelper.dip2px(context,12);
+                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
+                        int OffsetV = LayoutHelper.dip2px(context, 12);
                         param.leftMargin = -OffsetV;
                         param.topMargin = AddedLength;
                     } else {
                         param.removeRule(RelativeLayout.LEFT_OF);
                         param.addRule(RelativeLayout.RIGHT_OF, attachView.getId());
                         int AddedLength = attachView.getTop();
-                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context,  RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
-                        int OffsetV = LayoutHelper.dip2px(context,12);
+                        AddedLength += attachView.getHeight() / 2 - LayoutHelper.dip2px(context, RepeaterPlusIconSettingDialog.getDpiSet()) / 2;
+                        int OffsetV = LayoutHelper.dip2px(context, 12);
                         param.rightMargin = -OffsetV;
                         param.topMargin = AddedLength;
                     }
@@ -131,10 +156,10 @@ public class RepeaterHelper {
         }
     }
     private static boolean checkIsAvailStruct(Object msg) throws Exception {
-        if (msg.getClass().getSimpleName().equals("MessageForStructing")){
-            Object struct = MField.GetField(msg,"structingMsg");
-            if (struct != null){
-                int id = MField.GetField(struct,"mMsgServiceID");
+        if (msg.getClass().getSimpleName().equals("MessageForStructing")) {
+            Object struct = MField.GetField(msg, "structingMsg");
+            if (struct != null) {
+                int id = MField.GetField(struct, "mMsgServiceID");
                 return id == 5;
             }
             return false;
@@ -150,4 +175,60 @@ public class RepeaterHelper {
         }
         return null;
     }
+
+
+    public static class GetMenuItemCallBack extends XC_MethodHook {
+
+        public GetMenuItemCallBack() {
+            super(60);
+        }
+
+        @Override
+        protected void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+            if (LicenseStatus.sDisableCommonHooks) {
+                return;
+            }
+            if (!INSTANCE.isEnabled()) {
+                return;
+            }
+            try {
+                Object arr = param.getResult();
+                Class<?> clQQCustomMenuItem = arr.getClass().getComponentType();
+                Object item_copy = CustomMenu.createItem(clQQCustomMenuItem, R.id.item_repeat, "+1");
+                Object ret = Array.newInstance(clQQCustomMenuItem, Array.getLength(arr) + 1);
+                //noinspection SuspiciousSystemArraycopy
+                System.arraycopy(arr, 0, ret, 0, Array.getLength(arr));
+                Array.set(ret, Array.getLength(arr), item_copy);
+                param.setResult(ret);
+            } catch (Throwable e) {
+                INSTANCE.traceError(e);
+                throw e;
+            }
+        }
+    }
+
+    public static class MenuItemClickCallback extends XC_MethodHook {
+
+        public MenuItemClickCallback() {
+            super(60);
+        }
+
+        @Override
+        protected void beforeHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
+            int id = (int) param.args[0];
+            final Activity ctx = (Activity) param.args[1];
+            final Object chatMessage = param.args[2];
+            if (id == R.id.item_repeat) {
+                param.setResult(null);
+                try {
+                    Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    Repeater.Repeat(session, chatMessage);
+                } catch (Throwable e) {
+                    INSTANCE.traceError(e);
+                    Toasts.error(ctx, e.toString().replace("java.lang.", ""));
+                }
+            }
+        }
+    }
+
 }
