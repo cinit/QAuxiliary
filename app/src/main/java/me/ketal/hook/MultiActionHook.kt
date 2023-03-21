@@ -22,6 +22,7 @@
 package me.ketal.hook
 
 import android.content.Context
+import android.os.Message
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -39,13 +40,10 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
-import io.github.qauxv.util.dexkit.CMessageCache
-import io.github.qauxv.util.dexkit.CMessageRecordFactory
-import io.github.qauxv.util.dexkit.CMultiMsgManager
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
+import io.github.qauxv.util.dexkit.*
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
+import java.lang.Thread.sleep
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -70,7 +68,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
             val context = rootView.context as BaseActivity
             baseChatPie = if (m.declaringClass.isAssignableFrom(_BaseChatPie())) it.thisObject
-                else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
+            else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
             val count = rootView.childCount
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
             val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
@@ -82,15 +80,10 @@ object MultiActionHook : CommonSwitchFunctionHook(
         }
     }
 
-    private fun recall(ctx: Context) {
-        runCatching {
-            val clazz = DexKit.requireClassFromCache(CMultiMsgManager)
-            val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
-            val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
-                .invoke(manager) as List<*>
-            if (list.isNotEmpty()) {
-                for (msg in list) QQMessageFacade.revokeMessage(msg)
-            }
+    // I'm writing more bugs...
+    class MsgHandler : android.os.Handler() {
+        override fun handleMessage(msg: Message) {
+            super.handleMessage(msg)
             Reflex.invokeVirtualAny(
                 baseChatPie,
                 false,
@@ -101,9 +94,28 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 Boolean::class.javaPrimitiveType
             )
             baseChatPie = null
-        }.onFailure {
-            FaultyDialog.show(ctx, it)
         }
+    }
+
+    private fun recall(ctx: Context) {
+        val msgHandler = MsgHandler()
+        Thread {
+            try {
+                val clazz = DexKit.requireClassFromCache(CMultiMsgManager)
+                val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
+                val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
+                    .invoke(manager) as List<*>
+                if (list.isNotEmpty()) {
+                    for (msg in list) {
+                        QQMessageFacade.revokeMessage(msg)
+                        sleep(500)
+                    }
+                }
+                msgHandler.sendMessage(Message())
+            } catch (t: Throwable) {
+                FaultyDialog.show(ctx, t)
+            }
+        }.start()
     }
 
     private fun setMargin(rootView: LinearLayout) {
