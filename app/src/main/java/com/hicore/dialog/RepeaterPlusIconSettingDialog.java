@@ -44,6 +44,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
@@ -299,6 +300,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                 dialog.dismiss();
                 sCachedRepeaterIcon = null;
             }
+            Toasts.info(ctx, "重启" + HostInfo.getAppName() + "生效");
         } else if (v == browseBtn) {
             SafUtils.requestOpenFile(ctx).setMimeType("image/*").onResult(uri -> {
                         try (InputStream is = SafUtils.openInputStream(ctx, uri)) {
