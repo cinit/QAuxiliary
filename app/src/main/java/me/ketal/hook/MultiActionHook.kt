@@ -22,7 +22,6 @@
 package me.ketal.hook
 
 import android.content.Context
-import android.os.Message
 import android.view.View
 import android.widget.ImageView
 import android.widget.LinearLayout
@@ -40,6 +39,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.*
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
@@ -80,25 +80,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         }
     }
 
-    // I'm writing more bugs...
-    class MsgHandler : android.os.Handler() {
-        override fun handleMessage(msg: Message) {
-            super.handleMessage(msg)
-            Reflex.invokeVirtualAny(
-                baseChatPie,
-                false,
-                null,
-                false,
-                Boolean::class.javaPrimitiveType,
-                Initiator._ChatMessage(),
-                Boolean::class.javaPrimitiveType
-            )
-            baseChatPie = null
-        }
-    }
-
     private fun recall(ctx: Context) {
-        val msgHandler = MsgHandler()
         Thread {
             try {
                 val clazz = DexKit.requireClassFromCache(CMultiMsgManager)
@@ -111,7 +93,18 @@ object MultiActionHook : CommonSwitchFunctionHook(
                         sleep(500)
                     }
                 }
-                msgHandler.sendMessage(Message())
+                SyncUtils.runOnUiThread {
+                    Reflex.invokeVirtualAny(
+                        baseChatPie,
+                        false,
+                        null,
+                        false,
+                        Boolean::class.javaPrimitiveType,
+                        Initiator._ChatMessage(),
+                        Boolean::class.javaPrimitiveType
+                    )
+                    baseChatPie = null
+                }
             } catch (t: Throwable) {
                 FaultyDialog.show(ctx, t)
             }
