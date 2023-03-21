@@ -3,7 +3,6 @@ package com.hicore.hook;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static com.hicore.hook.RepeaterPlus.INSTANCE;
 import static io.github.qauxv.util.Initiator._SessionInfo;
-import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -13,27 +12,19 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
-import cc.ioctl.hook.msg.PicMd5Hook;
-import cc.ioctl.hook.msg.PicMd5Hook.GetMenuItemCallBack;
-import cc.ioctl.hook.msg.PicMd5Hook.MenuItemClickCallback;
 import cc.ioctl.util.LayoutHelper;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
 import com.hicore.messageUtils.QQEnvUtils;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.R;
 import io.github.qauxv.util.CustomMenu;
-import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Array;
-import java.lang.reflect.Method;
 import java.util.HashMap;
-import java.util.List;
 
 @SuppressLint("ResourceType")
 public class RepeaterHelper {
