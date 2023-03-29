@@ -44,6 +44,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.UiThread;
 import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
+import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
@@ -69,7 +70,8 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     public static final String qn_repeat_icon_dpi = "qn_repeat_plus_icon_dpi";
     public static final String qn_repeat_last_file = "qn_repeat_plus_last_file";
     public static final String qn_repeat_double_click = "qn_repeat_plus_use_double_click";
-    public static final String qn_repeat_show_in_upper_righ = "qn_repeat_plus_show_in_upper_right";
+    public static final String qn_repeat_show_in_upper_right = "qn_repeat_plus_show_in_upper_right";
+    public static final String qn_repeat_show_in_menu = "qn_repeat_plus_show_in_menu";
 
 
     private static Bitmap sCachedRepeaterIcon;
@@ -86,6 +88,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     private final EditText InputDPI;
     private final CheckBox check_double_click;
     private final CheckBox check_showUpper;
+    private final CheckBox check_showInMenu;
 
 
     private byte[] targetIconData;
@@ -126,7 +129,9 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         check_double_click = v.findViewById(R.id.RepeaterPlus_Check_DoubleClick);
         check_double_click.setChecked(cfg.getBooleanOrFalse(qn_repeat_double_click));
         check_showUpper = v.findViewById(R.id.RepeaterPlus_Check_ShowInUpperRight);
-        check_showUpper.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_upper_righ));
+        check_showUpper.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_upper_right));
+        check_showInMenu=v.findViewById(R.id.RepeaterPlus_Check_ShowInMenu);
+        check_showInMenu.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_menu));
 
         InputDPI.addTextChangedListener(this);
         InputDPI.setText(String.valueOf(getDpiSet()));
@@ -136,7 +141,10 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_double_click);
     }
     public static boolean getIsShowUpper(){
-        return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_upper_righ);
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_upper_right);
+    }
+    public static boolean getIsShowInMenu(){
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_menu);
     }
     public static Bitmap getRepeaterIcon() {
         if (sCachedRepeaterIcon != null) {
@@ -270,7 +278,8 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         } else if (v == saveBtn) {
             ConfigManager cfg = ConfigManager.getDefaultConfig();
             cfg.putBoolean(qn_repeat_double_click,check_double_click.isChecked());
-            cfg.putBoolean(qn_repeat_show_in_upper_righ,check_showUpper.isChecked());
+            cfg.putBoolean(qn_repeat_show_in_upper_right,check_showUpper.isChecked());
+            cfg.putBoolean(qn_repeat_show_in_menu,check_showInMenu.isChecked());
             if (targetIconData != null) {
                 int dpi = getCurrentDPI();
                 cfg.putBytes(qn_repeat_icon_data, targetIconData);
@@ -291,6 +300,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                 dialog.dismiss();
                 sCachedRepeaterIcon = null;
             }
+            Toasts.info(ctx, "重启" + HostInfo.getAppName() + "生效");
         } else if (v == browseBtn) {
             SafUtils.requestOpenFile(ctx).setMimeType("image/*").onResult(uri -> {
                         try (InputStream is = SafUtils.openInputStream(ctx, uri)) {

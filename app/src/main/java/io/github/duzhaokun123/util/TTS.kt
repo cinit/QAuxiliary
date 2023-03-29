@@ -22,13 +22,25 @@
 
 package io.github.duzhaokun123.util
 
+import android.app.Dialog
 import android.content.Context
+import android.os.Parcelable
 import android.speech.tts.TextToSpeech
+import android.speech.tts.UtteranceProgressListener
 import android.view.LayoutInflater
+import android.widget.EditText
+import android.widget.ProgressBar
 import androidx.appcompat.app.AlertDialog
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.github.qauxv.bridge.ChatActivityFacade
+import io.github.qauxv.databinding.DialogSendTtsBinding
 import io.github.qauxv.databinding.Tts2DialogBinding
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.ptt.SilkEncodeUtils
+import mqq.app.AppRuntime
 import java.io.File
+import java.io.FileOutputStream
 
 object TTS {
     lateinit var instance: TextToSpeech
@@ -91,6 +103,38 @@ object TTS {
         return r == TextToSpeech.SUCCESS
     }
 
+    private fun changeVoice(wc: Context, onChange: (String) -> Unit) {
+        val voices = instance.voices
+        val byLocal = voices.groupBy { it.locale }
+        val localKeys = byLocal.keys.toList().sortedBy { it.toLanguageTag() }
+        AlertDialog.Builder(wc)
+            .setTitle("local")
+            .setItems(localKeys.map { it.toLanguageTag() }.toTypedArray()) { _, which ->
+                val local = localKeys[which]
+                val voices2 = byLocal[local]
+                val names = voices2!!.map { it.name }.sorted().toTypedArray()
+                AlertDialog.Builder(wc)
+                    .setTitle(local.toLanguageTag())
+                    .setItems(names) {_, which2 ->
+                        val selectedVoice = voices2[which2]
+                        AlertDialog.Builder(wc)
+                            .setTitle(selectedVoice.name)
+                            .setMessage(selectedVoice.toString())
+                            .setPositiveButton("确定") { _, _ ->
+                                val r = instance.setVoice(selectedVoice)
+                                if (r == TextToSpeech.ERROR) {
+                                    Toasts.error(wc, "TTS 请求失败")
+                                } else {
+                                    onChange(selectedVoice.toString())
+                                }
+                            }.setNegativeButton(android.R.string.cancel, null)
+                            .show()
+                    }.setNegativeButton(android.R.string.cancel, null)
+                    .show()
+            }.setNegativeButton(android.R.string.cancel, null)
+            .show()
+    }
+
     fun showConfigDialog(wc: Context, text: String = "") {
         val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
         binding.etMsg.setText(text)
@@ -100,39 +144,105 @@ object TTS {
             speak(wc, binding.etMsg.text.toString())
         }
         binding.btnChange.setOnClickListener {
-            val voices = instance.voices
-            val byLocal = voices.groupBy { it.locale }
-            val localKeys = byLocal.keys.toList().sortedBy { it.toLanguageTag() }
-            AlertDialog.Builder(wc)
-                .setTitle("local")
-                .setItems(localKeys.map { it.toLanguageTag() }.toTypedArray()) { _, which ->
-                    val local = localKeys[which]
-                    val voices2 = byLocal[local]
-                    val names = voices2!!.map { it.name }.sorted().toTypedArray()
-                    AlertDialog.Builder(wc)
-                        .setTitle(local.toLanguageTag())
-                        .setItems(names) {_, which2 ->
-                            val selectedVoice = voices2[which2]
-                            AlertDialog.Builder(wc)
-                                .setTitle(selectedVoice.name)
-                                .setMessage(selectedVoice.toString())
-                                .setPositiveButton("确定") { _, _ ->
-                                    val r = instance.setVoice(selectedVoice)
-                                    if (r == TextToSpeech.ERROR) {
-                                        Toasts.error(wc, "TTS 请求失败")
-                                    } else {
-                                        binding.tvVoice.text = instance.voice.toString()
-                                    }
-                                }.setNegativeButton(android.R.string.cancel, null)
-                                .show()
-                        }.setNegativeButton(android.R.string.cancel, null)
-                        .show()
-                }.setNegativeButton(android.R.string.cancel, null)
-                .show()
+            changeVoice(wc) {
+                binding.tvVoice.text = it
+            }
         }
         AlertDialog.Builder(wc)
             .setView(binding.root)
             .setTitle("TTS 设置")
+            .show()
+    }
+
+    fun showSendDialog(wc: Context, text: String, session: Parcelable, input: EditText, qqApp: AppRuntime) {
+        var editDialog: Dialog? = null
+        val binding = DialogSendTtsBinding.inflate(LayoutInflater.from(wc))
+        binding.etMsg.setText(text)
+        binding.tvVoice.text = instance.voice?.toString() ?: "null"
+        binding.tvPackage.text = instance.defaultEngine
+        binding.btnSpeak.setOnClickListener {
+            speak(wc, binding.etMsg.text.toString())
+        }
+        binding.btnChange.setOnClickListener {
+            changeVoice(wc) {
+                binding.tvVoice.text = it
+            }
+        }
+        binding.btnSend.setOnClickListener {
+            instance.setOnUtteranceProgressListener(object : UtteranceProgressListener() {
+                var sampleRateInHz = 0
+                val pcm = File(wc.externalCacheDir, "send_tts/pcm")
+                val silk = File(wc.externalCacheDir!!, "../Tencent/MobileQQ/tts/${TimeFormat.format1.format(System.currentTimeMillis())}.silk").apply { parentFile!!.mkdirs() }
+
+                lateinit var dialog: Dialog
+
+                override fun onStart(utteranceId: String?) {
+                    SyncUtils.runOnUiThread {
+                        dialog = AlertDialog.Builder(wc)
+                            .setTitle("合成中")
+                            .setView(ProgressBar(wc))
+                            .setPositiveButton("取消发送") { _, _ ->
+                                instance.setOnUtteranceProgressListener(null)
+                            }.show()
+                    }
+                }
+
+                override fun onDone(utteranceId: String?) {
+                    instance.setOnUtteranceProgressListener(null)
+                    runCatching {
+                        SilkEncodeUtils.nativePcm16leToSilkSS(
+                            pcm.absolutePath,
+                            silk.absolutePath,
+                            sampleRateInHz,
+                            24000,
+                            (sampleRateInHz * 20) / 1000,
+                            true
+                        )
+                    }.onFailure {
+                        SyncUtils.runOnUiThread {
+                            dialog.dismiss()
+                            if (it.message != null && it.message!!.endsWith("-2")) {
+                                AlertDialog.Builder(wc)
+                                    .setTitle("不支持的采样率 ${sampleRateInHz}Hz")
+                                    .setMessage("仅支持 8000Hz 12000Hz 16000Hz 24000Hz")
+                                    .show()
+                            } else {
+                                AlertDialog.Builder(wc)
+                                    .setTitle(it.message)
+                                    .setMessage(it.stackTraceToString())
+                                    .show()
+                            }
+                        }
+                    }.onSuccess {
+                        SyncUtils.runOnUiThread {
+                            dialog.dismiss()
+                            ChatActivityFacade.sendPttMessage(qqApp, session, silk.absolutePath)
+                            input.setText("")
+                            Toasts.success(wc, "发送成功")
+                            editDialog?.dismiss()
+                        }
+                    }
+                }
+
+                @Deprecated("Deprecated in Java")
+                override fun onError(utteranceId: String?) {}
+
+                override fun onBeginSynthesis(utteranceId: String?, sampleRateInHz: Int, audioFormat: Int, channelCount: Int) {
+                    this.sampleRateInHz = sampleRateInHz
+                    pcm.delete()
+                }
+
+                override fun onAudioAvailable(utteranceId: String?, audio: ByteArray) {
+                    FileOutputStream(pcm, true).use { out ->
+                        out.write(audio)
+                    }
+                }
+            })
+            toFile(wc, binding.etMsg.text.toString(), File(wc.externalCacheDir, "send_tts/audio").apply { parentFile!!.mkdirs() }, "send_tts")
+        }
+        editDialog = MaterialAlertDialogBuilder(wc)
+            .setView(binding.root)
+            .setTitle("TTS 发送")
             .show()
     }
 }

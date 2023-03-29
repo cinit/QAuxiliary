@@ -8,6 +8,7 @@
     <item type="id" name="item_copy_code" />
     <item type="id" name="item_ptt_save" />
     <item type="id" name="item_ptt_forward" />
+    <item type="id" name="item_repeat" />
     <item type="id" name="rootBounceScrollView"/>
     <item type="id" name="rootMainLayout"/>
     <item type="id" name="rootMainList"/>

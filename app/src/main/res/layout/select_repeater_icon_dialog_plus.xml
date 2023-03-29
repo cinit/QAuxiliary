@@ -59,6 +59,11 @@
             android:layout_height="wrap_content"
             android:text="显示在右上角"
             android:id="@+id/RepeaterPlus_Check_ShowInUpperRight"/>
+        <CheckBox
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="显示在长按菜单"
+            android:id="@+id/RepeaterPlus_Check_ShowInMenu"/>
     </LinearLayout>
 
     <LinearLayout
