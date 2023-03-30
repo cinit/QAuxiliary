@@ -94,16 +94,20 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     }
                 }
                 SyncUtils.runOnUiThread {
-                    Reflex.invokeVirtualAny(
-                        baseChatPie,
-                        false,
-                        null,
-                        false,
-                        Boolean::class.javaPrimitiveType,
-                        Initiator._ChatMessage(),
-                        Boolean::class.javaPrimitiveType
-                    )
-                    baseChatPie = null
+                    try {   // 为了防止多次点击导致闪退
+                        Reflex.invokeVirtualAny(
+                            baseChatPie,
+                            false,
+                            null,
+                            false,
+                            Boolean::class.javaPrimitiveType,
+                            Initiator._ChatMessage(),
+                            Boolean::class.javaPrimitiveType
+                        )
+                        baseChatPie = null
+                    } catch (e: Throwable) {
+                        FaultyDialog.show(ctx, "批量撤回不需要重复点击哟~", e)
+                    }
                 }
             } catch (t: Throwable) {
                 FaultyDialog.show(ctx, t)
