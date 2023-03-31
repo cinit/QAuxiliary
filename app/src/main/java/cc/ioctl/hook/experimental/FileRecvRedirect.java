@@ -37,6 +37,7 @@ import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.config.ConfigItems;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -169,6 +170,14 @@ public class FileRecvRedirect extends CommonConfigFunctionHook {
                             param.setResult(getRedirectPath()+getResult.substring(CacheDefPath.length()));
                         }
                     });
+                    try {
+                        HookUtils.hookAfterIfEnabled(this,XposedHelpers.findMethodBestMatch(Initiator.load("com.tencent.guild.api.msg.impl.GuildMsgApiImpl"),"getNTKernelExtDataPath"),param -> {
+                            param.setResult(HostInfo.getApplication().getExternalCacheDir().getParentFile().getAbsolutePath()+"/Tencent/QQfile_recv/");
+                        });
+                    }catch (Exception ignored){
+
+                    }
+
                 }
             }else {
                 Field[] fields = DexKit.requireClassFromCache(CAppConstants.INSTANCE).getFields();
