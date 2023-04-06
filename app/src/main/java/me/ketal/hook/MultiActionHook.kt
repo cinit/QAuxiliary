@@ -90,7 +90,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 if (list.isNotEmpty()) {
                     for (msg in list) {
                         QQMessageFacade.revokeMessage(msg)
-                        sleep(252)
+                        sleep(250)
                     }
                 }
                 SyncUtils.runOnUiThread {
