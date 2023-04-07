@@ -24,6 +24,7 @@ package io.github.duzhaokun123.hook
 
 import android.app.Activity
 import android.os.Build
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
@@ -31,7 +32,6 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
-import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.duzhaokun123.util.blurBackground
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -42,7 +42,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.SyncUtils
-import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 
 @FunctionHookEntry
@@ -99,16 +98,14 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
         }
 
     override fun initOnce(): Boolean {
-        listOf(
-            "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
-            "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
-            "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity"
-        ).forEach {
-            it.clazz!!.findMethod {
-                name == "onCreate"
-            }.hookAfter(this) {
-                val activity = it.thisObject as Activity
-                activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
+        Activity::class.java.hookAfter(this, "onCreate", Bundle::class.java) {
+            val activity = it.thisObject as Activity
+            when(activity::class.java.name) {
+                "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
+                "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
+                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity" -> {
+                    activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
+                }
             }
         }
         return true
