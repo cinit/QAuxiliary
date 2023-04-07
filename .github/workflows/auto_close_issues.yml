@@ -10,6 +10,6 @@ jobs:
       - if: contains(github.event.issue.body, '最新版' ) 
         id: close-latest-version
         name: Close Issue(template)
-        uses: peter-evans/close-issue@v2
+        uses: peter-evans/close-issue@v3
         with:
           comment: 我不知道什么是最新版捏，具体版本号pls
