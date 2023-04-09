@@ -127,7 +127,6 @@ object TranslateTextMsg : CommonSwitchFunctionHook() {
         XposedHelpers.findMethodExactIfExists(
             "com.tencent.mobileqq.ocr.api.IOCRHandler".clazz!!, "batchTranslate", String::class.java, String::class.java, String::class.java
         ).invoke(ocrHandler, content, src, dst)
-        XposedBridge.log("调用")
     }
 
     private fun m245294i3(str: String): Boolean {
