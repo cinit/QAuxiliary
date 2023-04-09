@@ -23,6 +23,7 @@
 package me.ketal.hook
 
 import android.content.Context
+import android.os.Build
 import android.view.View
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
@@ -85,7 +86,11 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 }
                 try {
                     copyToClipboard(context, File(path.first()))
-                    Toasts.success(context, "已复制图片")
+                    // on Android 13+, the system will show something like "Copied to clipboard".
+                    // We only need to show a hint on Android 12 and below.
+                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                        Toasts.success(context, "已复制图片")
+                    }
                 } catch (e: IllegalAccessException) {
                     FaultyDialog.show(context, e);
                 }
