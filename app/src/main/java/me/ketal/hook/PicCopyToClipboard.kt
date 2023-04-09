@@ -25,6 +25,7 @@ package me.ketal.hook
 import android.content.Context
 import android.view.View
 import cc.ioctl.util.Reflex
+import cc.ioctl.util.ui.FaultyDialog
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
@@ -39,6 +40,7 @@ import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Initiator._MarketFaceItemBuilder
 import io.github.qauxv.util.Initiator._MixedMsgItemBuilder
 import io.github.qauxv.util.Initiator._PicItemBuilder
+import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.isAndroidxFileProviderAvailable
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
@@ -74,13 +76,19 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                     && parameterTypes.contentEquals(arrayOf(Int::class.java, Context::class.java, _ChatMessage()))
             }.hookBefore(this) { m ->
                 val (id, context, chatMessage) = m.args
+                context as Context
                 if (id != R.id.item_copyToClipboard) return@hookBefore
                 m.result = null
                 val path = getPicPath(chatMessage)
                 if (path.size > 1) {
                     // todo Let the user select one of the items to copy
                 }
-                copyToClipboard(context as Context, File(path.first()))
+                try {
+                    copyToClipboard(context, File(path.first()))
+                    Toasts.success(context, "已复制图片")
+                } catch (e: IllegalAccessException) {
+                    FaultyDialog.show(context, e);
+                }
             }
             it.findMethodOrNull {
                 returnType.isArray
