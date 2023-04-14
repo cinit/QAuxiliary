@@ -158,21 +158,13 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     public void openModuleSettingForHost(View view) {
         String pkg = null;
-        switch (view.getId()) {
-            case R.id.mainRelativeLayoutButtonOpenQQ: {
-                pkg = HookEntry.PACKAGE_NAME_QQ;
-                break;
-            }
-            case R.id.mainRelativeLayoutButtonOpenTIM: {
-                pkg = HookEntry.PACKAGE_NAME_TIM;
-                break;
-            }
-            case R.id.mainRelativeLayoutButtonOpenQQLite: {
-                pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
-                break;
-            }
-            default: {
-            }
+        var id = view.getId();
+        if (id == R.id.mainRelativeLayoutButtonOpenQQ) {
+            pkg = HookEntry.PACKAGE_NAME_QQ;
+        } else if (id == R.id.mainRelativeLayoutButtonOpenTIM) {
+            pkg = HookEntry.PACKAGE_NAME_TIM;
+        } else if (id == R.id.mainRelativeLayoutButtonOpenQQLite) {
+            pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
         }
         if (pkg != null) {
             Intent intent = new Intent();
@@ -191,86 +183,78 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
     }
 
     public void handleClickEvent(View v) {
-        switch (v.getId()) {
-            case R.id.mainV2_githubRepo: {
-                Intent intent = new Intent(Intent.ACTION_VIEW);
-                intent.setData(Uri.parse("https://github.com/cinit/QAuxiliary"));
-                startActivity(intent);
-                break;
-            }
-            case R.id.mainV2_help: {
-                new AlertDialog.Builder(this)
-                        .setMessage("如模块无法使用，EdXp可尝试取消优化+开启兼容模式  "
-                                + "ROOT用户可尝试 用幸运破解器-工具箱-移除odex更改 移除QQ与本模块的优化, 太极尝试取消优化")
-                        .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
-                break;
-            }
-            case R.id.mainV2_troubleshoot: {
-                new AlertDialog.Builder(this)
-                        .setTitle("你想要进入哪个App的故障排除")
-                        .setItems(new String[]{"QQ", "TIM", "QQ极速版", "QQ HD"}, (dialog, which) -> {
-                            String pkg = null;
-                            switch (which) {
-                                case 0: {
-                                    pkg = HookEntry.PACKAGE_NAME_QQ;
-                                    break;
-                                }
-                                case 1: {
-                                    pkg = HookEntry.PACKAGE_NAME_TIM;
-                                    break;
-                                }
-                                case 2: {
-                                    pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
-                                    break;
-                                }
-                                case 3: {
-                                    pkg = HookEntry.PACKAGE_NAME_QQ_HD;
-                                    break;
-                                }
-                                default: {
-                                }
+        var id = v.getId();
+        if (id == R.id.mainV2_githubRepo) {
+            Intent intent = new Intent(Intent.ACTION_VIEW);
+            intent.setData(Uri.parse("https://github.com/cinit/QAuxiliary"));
+            startActivity(intent);
+        } else if (id == R.id.mainV2_help) {
+            new AlertDialog.Builder(this)
+                    .setMessage("如模块无法使用，EdXp可尝试取消优化+开启兼容模式  "
+                            + "ROOT用户可尝试 用幸运破解器-工具箱-移除odex更改 移除QQ与本模块的优化, 太极尝试取消优化")
+                    .setCancelable(true).setPositiveButton(android.R.string.ok, null).show();
+        } else if (id == R.id.mainV2_troubleshoot) {
+            new AlertDialog.Builder(this)
+                    .setTitle("你想要进入哪个App的故障排除")
+                    .setItems(new String[]{"QQ", "TIM", "QQ极速版", "QQ HD"}, (dialog, which) -> {
+                        String pkg = null;
+                        switch (which) {
+                            case 0: {
+                                pkg = HookEntry.PACKAGE_NAME_QQ;
+                                break;
                             }
-                            if (pkg != null) {
-                                Intent intent = new Intent();
-                                intent.setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
-                                intent.setAction(Intent.ACTION_VIEW);
-                                intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD,
-                                        JumpActivityEntryHook.JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY);
-                                try {
-                                    startActivity(intent);
-                                } catch (ActivityNotFoundException e) {
-                                    new AlertDialog.Builder(this).setTitle("出错啦")
-                                            .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
-                                            .setPositiveButton(android.R.string.ok, null)
-                                            .show();
-                                }
+                            case 1: {
+                                pkg = HookEntry.PACKAGE_NAME_TIM;
+                                break;
                             }
-                        })
-                        .setPositiveButton(android.R.string.ok, null)
-                        .setNegativeButton("无法进入？", (dialog, which) -> {
-                            new AlertDialog.Builder(this).setTitle("手动启用安全模式")
-                                    .setMessage("如果模块已经激活但无法进入故障排除界面，或在点击进入故障排除后卡死，"
-                                            + "你可以手动在以下位置建立一个空文件来强制启用 QAuxiliary 的安全模式。\n\n" +
-                                            Environment.getExternalStorageDirectory().getAbsolutePath() +
-                                            "/Android/data/包名(例如 QQ 是 com.tencent.mobileqq)/" +
-                                            SafeModeManager.SAFE_MODE_FILE_NAME + "\n\n"
-                                            + "请注意这个位置在 Android 11 及以上的系统是无法直接访问的，"
-                                            + "你可以使用一些支持访问 Android/data 的第三方文件管理器来操作，例如 MT 管理器。")
-                                    .setPositiveButton(android.R.string.ok, null)
-                                    .setNegativeButton("复制文件名", (dialog1, which1) -> {
-                                        SystemServiceUtils.copyToClipboard(this, SafeModeManager.SAFE_MODE_FILE_NAME);
-                                        Toasts.info(this, "复制成功");
-                                    }).show();
-                        }).show();
-                break;
-            }
-            default: {
-            }
+                            case 2: {
+                                pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
+                                break;
+                            }
+                            case 3: {
+                                pkg = HookEntry.PACKAGE_NAME_QQ_HD;
+                                break;
+                            }
+                            default: {
+                            }
+                        }
+                        if (pkg != null) {
+                            Intent intent = new Intent();
+                            intent.setComponent(new ComponentName(pkg, "com.tencent.mobileqq.activity.JumpActivity"));
+                            intent.setAction(Intent.ACTION_VIEW);
+                            intent.putExtra(JumpActivityEntryHook.JUMP_ACTION_CMD,
+                                    JumpActivityEntryHook.JUMP_ACTION_TROUBLE_SHOOTING_ACTIVITY);
+                            try {
+                                startActivity(intent);
+                            } catch (ActivityNotFoundException e) {
+                                new AlertDialog.Builder(this).setTitle("出错啦")
+                                        .setMessage("拉起模块设置失败, 请确认 " + pkg + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
+                                        .setPositiveButton(android.R.string.ok, null)
+                                        .show();
+                            }
+                        }
+                    })
+                    .setPositiveButton(android.R.string.ok, null)
+                    .setNegativeButton("无法进入？", (dialog, which) -> {
+                        new AlertDialog.Builder(this).setTitle("手动启用安全模式")
+                                .setMessage("如果模块已经激活但无法进入故障排除界面，或在点击进入故障排除后卡死，"
+                                        + "你可以手动在以下位置建立一个空文件来强制启用 QAuxiliary 的安全模式。\n\n" +
+                                        Environment.getExternalStorageDirectory().getAbsolutePath() +
+                                        "/Android/data/包名(例如 QQ 是 com.tencent.mobileqq)/" +
+                                        SafeModeManager.SAFE_MODE_FILE_NAME + "\n\n"
+                                        + "请注意这个位置在 Android 11 及以上的系统是无法直接访问的，"
+                                        + "你可以使用一些支持访问 Android/data 的第三方文件管理器来操作，例如 MT 管理器。")
+                                .setPositiveButton(android.R.string.ok, null)
+                                .setNegativeButton("复制文件名", (dialog1, which1) -> {
+                                    SystemServiceUtils.copyToClipboard(this, SafeModeManager.SAFE_MODE_FILE_NAME);
+                                    Toasts.info(this, "复制成功");
+                                }).show();
+                    }).show();
         }
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public boolean onCreateOptionsMenu(@NonNull Menu menu) {
         super.onCreateOptionsMenu(menu);
         if (HostInfo.isInModuleProcess()) {
             getMenuInflater().inflate(R.menu.main_v2_toolbar, menu);
@@ -283,48 +267,36 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
 
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.menu_item_nativeLibVariantInfo: {
-                SettingsUiFragmentHostActivity.startActivityForFragment(this, CheckAbiVariantFragment.class, null);
-                return true;
+        var id = item.getItemId();
+        if (id == R.id.menu_item_nativeLibVariantInfo) {
+            SettingsUiFragmentHostActivity.startActivityForFragment(this, CheckAbiVariantFragment.class, null);
+        } else if (id == R.id.menu_item_about) {
+            SettingsUiFragmentHostActivity.startActivityForFragment(this, AboutFragment.class, null);
+        } else if (id == R.id.menu_item_test_pcm2silk) {
+            SettingsUiFragmentHostActivity.startActivityForFragment(this, Pcm2SilkTestFragment.class, null);
+        } else if (id == R.id.mainV2_menuItem_toggleDesktopIcon) {
+            setLauncherIconEnabled(!isLauncherIconEnabled());
+            SyncUtils.postDelayed(this::updateMenuItems, 500);
+        } else if (id == R.id.menu_item_changeTheme) {
+            showChangeThemeDialog();
+        } else if (id == R.id.menu_item_switch_to_module_process) {
+            Intent intent = new Intent();
+            intent.setComponent(new ComponentName(BuildConfig.APPLICATION_ID, ConfigV2Activity.class.getName()));
+            intent.setAction(Intent.ACTION_MAIN);
+            intent.addCategory("de.robv.android.xposed.category.MODULE_SETTINGS");
+            try {
+                startActivity(intent);
+                finish();
+            } catch (ActivityNotFoundException e) {
+                new AlertDialog.Builder(this).setTitle("出错啦")
+                        .setMessage("拉起模块失败, 请确认 " + BuildConfig.APPLICATION_ID + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
+                        .setPositiveButton(android.R.string.ok, null)
+                        .show();
             }
-            case R.id.menu_item_about: {
-                SettingsUiFragmentHostActivity.startActivityForFragment(this, AboutFragment.class, null);
-                return true;
-            }
-            case R.id.menu_item_test_pcm2silk: {
-                SettingsUiFragmentHostActivity.startActivityForFragment(this, Pcm2SilkTestFragment.class, null);
-                return true;
-            }
-            case R.id.mainV2_menuItem_toggleDesktopIcon: {
-                setLauncherIconEnabled(!isLauncherIconEnabled());
-                SyncUtils.postDelayed(this::updateMenuItems, 500);
-                return true;
-            }
-            case R.id.menu_item_changeTheme: {
-                showChangeThemeDialog();
-                return true;
-            }
-            case R.id.menu_item_switch_to_module_process: {
-                Intent intent = new Intent();
-                intent.setComponent(new ComponentName(BuildConfig.APPLICATION_ID, ConfigV2Activity.class.getName()));
-                intent.setAction(Intent.ACTION_MAIN);
-                intent.addCategory("de.robv.android.xposed.category.MODULE_SETTINGS");
-                try {
-                    startActivity(intent);
-                    finish();
-                } catch (ActivityNotFoundException e) {
-                    new AlertDialog.Builder(this).setTitle("出错啦")
-                            .setMessage("拉起模块失败, 请确认 " + BuildConfig.APPLICATION_ID + " 已安装并启用(没有被关冰箱或被冻结停用)\n" + e)
-                            .setPositiveButton(android.R.string.ok, null)
-                            .show();
-                }
-                return true;
-            }
-            default: {
-                return ConfigV2Activity.super.onOptionsItemSelected(item);
-            }
+        } else {
+            return ConfigV2Activity.super.onOptionsItemSelected(item);
         }
+        return true;
     }
 
     @Override

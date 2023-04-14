@@ -20,6 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
+import android.databinding.tool.ext.capitalizeUS
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
@@ -139,9 +140,12 @@ android {
         }
     }
     androidResources {
-        additionalParameters("--allow-reserved-package-id", "--package-id", "0x39")
+        additionalParameters += arrayOf(
+            "--allow-reserved-package-id",
+            "--package-id", "0x39"
+        )
     }
-    packagingOptions {
+    packaging {
         resources.excludes.addAll(arrayOf(
             "META-INF/**",
             "kotlin/**",
@@ -166,7 +170,7 @@ android {
         )
     }
     applicationVariants.all {
-        val variantCapped = name.capitalize()
+        val variantCapped = name.capitalizeUS()
         val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
         mergeAssets.dependsOn(generateEulaAndPrivacy)
         mergeAssets.dependsOn("data${variantCapped}Descriptor")
@@ -240,7 +244,7 @@ val restartQQ = tasks.register<Exec>("restartQQ") {
 }.dependsOn(killQQ)
 
 androidComponents.onVariants { variant ->
-    val variantCapped = variant.name.capitalize()
+    val variantCapped = variant.name.capitalizeUS()
     task("install${variantCapped}AndRestartQQ") {
         group = "qauxv"
         dependsOn(":app:install$variantCapped")
