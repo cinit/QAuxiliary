@@ -33,7 +33,6 @@ android {
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
             java.setSrcDirs(listOf("DexKit/dexkit/src/main/java"))
-            res.setSrcDirs(listOf("DexKit/dexkit/src/main/res"))
         }
     }
 }

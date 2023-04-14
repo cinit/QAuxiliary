@@ -35,6 +35,7 @@ import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.RadioButton;
 import android.widget.RadioGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -212,18 +213,19 @@ public class RepeaterIconSettingDialog implements View.OnClickListener,
             return 0;
         }
         int id = dpiGroup.getCheckedRadioButtonId();
-        switch (id) {
-            case R.id.selectRepeaterIcon_RadioButtonXxxhdpi:
+        RadioButton button = dpiGroup.findViewById(id);
+        switch (button.getText().toString()) {
+            case "xxxhdpi":
                 return 640;
-            case R.id.selectRepeaterIcon_RadioButtonXxhdpi:
+            case "xxhdpi":
                 return 480;
-            case R.id.selectRepeaterIcon_RadioButtonXhdpi:
+            case "xhdpi":
                 return 320;
-            case R.id.selectRepeaterIcon_RadioButtonHdpi:
+            case "hdpi":
                 return 240;
-            case R.id.selectRepeaterIcon_RadioButtonMdpi:
+            case "mdpi":
                 return 160;
-            case R.id.selectRepeaterIcon_RadioButtonLdpi:
+            case "ldpi":
                 return 120;
             default:
                 return 0;

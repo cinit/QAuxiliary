@@ -129,12 +129,12 @@ public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements
         ll.addView(charging, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 3 * _5dp, _5dp, 2 * _5dp, _5dp));
         Button apply = new Button(context);
         btnApply = apply;
-        apply.setId(R.id.btn_apply);
+        apply.setTag("btn_apply");
         apply.setOnClickListener(this);
 //        ResUtils.applyStyleCommonBtnBlue(apply);
         ll.addView(apply, newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, 2 * _5dp, _5dp, 2 * _5dp, _5dp));
         Button dis = new Button(context);
-        dis.setId(R.id.btn_disable);
+        dis.setTag("btn_disable");
         btnDisable = dis;
         dis.setOnClickListener(this);
 //        ResUtils.applyStyleCommonBtnBlue(dis);
@@ -185,8 +185,8 @@ public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements
     @Override
     public void onClick(View v) {
         Context context = requireContext();
-        switch (v.getId()) {
-            case R.id.btn_apply:
+        switch (v.getTag().toString()) {
+            case "btn_apply":
                 if (mMsfResponsive) {
                     doUpdateBatCfg();
                 } else {
@@ -233,7 +233,7 @@ public class FakeBatteryConfigFragment extends BaseRootLayoutFragment implements
                             });
                 }
                 break;
-            case R.id.btn_disable:
+            case "btn_disable":
                 FakeBatteryHook.INSTANCE.setEnabled(false);
                 showStatus();
                 break;

@@ -7,18 +7,34 @@ pluginManagement {
     includeBuild("build-logic")
     repositories {
         gradlePluginPortal()
-        google()
         mavenCentral()
+        google()
     }
 }
 
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google()
         mavenCentral()
-        maven("https://jitpack.io")
-        maven("https://api.xposed.info/")
+        google() {
+            mavenContent {
+                includeGroupByRegex("androidx.*")
+                includeGroupByRegex("com.google.*")
+                includeGroupByRegex("com.android.*")
+            }
+        }
+        maven("https://jitpack.io") {
+            mavenContent {
+                includeGroup("com.github.livefront.sealed-enum")
+                includeGroup("com.github.MatteoBattilana")
+                includeGroup("com.github.plattysoft")
+            }
+        }
+        maven("https://api.xposed.info/") {
+            mavenContent {
+                includeGroup("de.robv.android.xposed")
+            }
+        }
     }
 }
 

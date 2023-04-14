@@ -108,7 +108,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
                     LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, __5));
 
             Button editBtn = new Button(context);
-            editBtn.setId(R.id.jefsRulesEditButton);
+            editBtn.setTag("jefsRulesEditButton");
             editBtn.setOnClickListener(this);
             editBtn.setText("编辑规则");
 //            ResUtils.applyStyleCommonBtnBlue(editBtn);
@@ -148,7 +148,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
                     LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT, __10));
 
             Button saveBtn = new Button(context);
-            saveBtn.setId(R.id.jefsRulesSaveButton);
+            saveBtn.setTag("jefsRulesSaveButton");
             saveBtn.setOnClickListener(this);
             saveBtn.setText("确认");
 //            ResUtils.applyStyleCommonBtnBlue(saveBtn);
@@ -161,7 +161,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
                 TextView cancelBtn = new TextView(context);
 //                cancelBtn.setTextColor(ResUtils.skin_black);
                 cancelBtn.setTextSize(16);
-                cancelBtn.setId(R.id.jefsRulesCancelButton);
+                cancelBtn.setTag("jefsRulesCancelButton");
                 cancelBtn.setGravity(Gravity.CENTER);
                 cancelBtn.setPadding(__10, __5, __10, __10 / 2);
                 cancelBtn.setText("取消");
@@ -171,7 +171,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
                 TextView resetBtn = new TextView(context);
 //                resetBtn.setTextColor(ResUtils.skin_black);
                 resetBtn.setTextSize(16);
-                resetBtn.setId(R.id.jefsRulesResetButton);
+                resetBtn.setTag("jefsRulesResetButton");
                 resetBtn.setGravity(Gravity.CENTER);
                 resetBtn.setPadding(__10, __5, __10, __10 / 2);
                 resetBtn.setText("恢复默认规则");
@@ -202,20 +202,20 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
 
     @Override
     public void onClick(View v) {
-        switch (v.getId()) {
-            case R.id.jefsRulesEditButton: {
+        switch (v.getTag().toString()) {
+            case "jefsRulesEditButton": {
                 goToEditMode();
                 break;
             }
-            case R.id.jefsRulesCancelButton: {
+            case "jefsRulesCancelButton": {
                 confirmLeaveEditMode();
                 break;
             }
-            case R.id.jefsRulesResetButton: {
+            case "jefsRulesResetButton": {
                 confirmResetRules();
                 break;
             }
-            case R.id.jefsRulesSaveButton: {
+            case "jefsRulesSaveButton": {
                 checkAndSaveRules(rulesEt.getText().toString());
                 break;
             }
