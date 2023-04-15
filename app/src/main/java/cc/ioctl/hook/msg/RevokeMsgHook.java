@@ -23,7 +23,6 @@ package cc.ioctl.hook.msg;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
-import static io.github.qauxv.util.Initiator._C2CMessageProcessor;
 import static io.github.qauxv.util.Initiator._QQMessageFacade;
 
 import android.app.Activity;
@@ -230,9 +229,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             throw new IllegalStateException("onRevokeMsg, istroop=" + istroop);
         }
 
-        if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
-            return;
-        }
+        //下方代码导致没收到的消息不显示撤回灰字提示(没收到)
+        //if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
+        //    return;
+        //}
 
         if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
             return;
