@@ -30,6 +30,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
+import java.util.Objects;
 
 //屏蔽头像挂件
 @FunctionHookEntry
@@ -59,26 +60,19 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
         for (Method m : Initiator.load("com.tencent.mobileqq.vas.PendantInfo").getDeclaredMethods()) {
             if (m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
-                if (argt.length != 5) {
-                    continue;
+                if (argt.length == 5 && argt[0] == View.class && argt[1] == int.class
+                        && argt[2] == long.class && argt[3] == String.class && argt[4] == int.class) {
+                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
                 }
-                if (argt[0] != View.class) {
-                    continue;
-                }
-                if (argt[1] != int.class) {
-                    continue;
-                }
-                if (argt[2] != long.class) {
-                    continue;
-                }
-                if (argt[3] != String.class) {
-                    continue;
-                }
-                if (argt[4] != int.class) {
-                    continue;
-                }
-                HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
             }
+        }
+        //Lcom/tencent/mobileqq/vas/pendant/drawable/PendantInfo;->setDrawable(Landroid/view/View;IJLjava/lang/String;I)V
+        try {
+            Method method = Objects.requireNonNull(Initiator.load("com.tencent.mobileqq.vas.pendant.drawable.PendantInfo"))
+                    .getMethod("setDrawable", View.class, int.class, long.class, String.class, int.class);
+            HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
+        } catch (Exception e) {
+            // 老版本无此方法，忽略
         }
         return true;
     }
