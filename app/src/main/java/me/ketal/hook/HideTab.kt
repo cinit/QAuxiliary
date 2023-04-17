@@ -29,18 +29,18 @@ import android.widget.LinearLayout
 import android.widget.TabHost
 import android.widget.TextView
 import androidx.core.view.get
-import androidx.core.view.isVisible
 import androidx.core.view.plusAssign
+import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
+import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.util.findViewByType
-import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
-import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.util.*
 
 @SuppressLint("StaticFieldLeak")
@@ -49,9 +49,10 @@ import xyz.nextalone.util.*
 object HideTab : CommonSwitchFunctionHook() {
 
     override val name = "隐藏底栏"
-    override val description = "底栏项目移到侧滑"
+    override val description = "底栏项目移到侧滑。慎重开启，存在界面不对应甚至无法打开侧滑（例如切换到频道界面后）等严重问题"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable: Boolean get() = !isTim()
+    override val isApplicationRestartRequired: Boolean get() = true
 
     private lateinit var tab: TabHost
 
@@ -62,13 +63,13 @@ object HideTab : CommonSwitchFunctionHook() {
                 m.hookBefore(this) {
                     tab = it.thisObject as TabHost
                     val blur = tab.findViewByType("com.tencent.mobileqq.widget.QQBlurView".clazz!!) as View
-                    tab.tabWidget.isVisible = !isEnabled
-                    blur.hide()
+                    tab.tabWidget.setViewZeroSize()
+                    blur.setViewZeroSize()
                 }
             }
         }
-
-        "com.tencent.mobileqq.activity.QQSettingMe".clazz?.hookAfterAllConstructors {
+        (if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView" else
+            "com.tencent.mobileqq.activity.QQSettingMe").clazz?.hookAfterAllConstructors {
             if (!isEnabled) return@hookAfterAllConstructors
             val midContentName = ConfigTable.getConfig<String>(SimplifyQQSettingMe.MidContentName)
             val linearLayout = if (requireMinQQVersion(QQVersion.QQ_8_6_5)) {
