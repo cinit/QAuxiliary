@@ -49,7 +49,7 @@ import xyz.nextalone.util.*
 object HideTab : CommonSwitchFunctionHook() {
 
     override val name = "隐藏底栏"
-    override val description = "底栏项目移到侧滑。慎重开启，存在界面不对应甚至无法打开侧滑（例如切换到频道界面后）等严重问题"
+    override val description = "底栏项目移到侧滑，只支持传统三大件，不支持新版侧滑栏。"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable: Boolean get() = !isTim()
     override val isApplicationRestartRequired: Boolean get() = true
@@ -81,7 +81,7 @@ object HideTab : CommonSwitchFunctionHook() {
                 tab.currentTab = 0
             }
             addSettingItem(linearLayout, "skin_tab_icon_contact_normal", "联系人") {
-                tab.currentTab = 1
+                tab.currentTab = tab.tabWidget.tabCount - 2
             }
             addSettingItem(linearLayout, "skin_tab_icon_plugin_normal", "动态") {
                 tab.currentTab = tab.tabWidget.tabCount - 1
