@@ -52,6 +52,14 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
+      - name: Cache Gradle Dependencies
+        uses: actions/cache@v3.3.1
+        with:
+          path: |
+            ~/.gradle/caches
+          key: gradle-deps-cache-${{ hashFiles('**/build.gradle.kts', '**/libs.versions.toml') }}
+          restore-keys: gradle-deps-cache-
+
       - name: Build with Gradle
         run: |
           [ $(du -s ~/.gradle/wrapper | awk '{ print $1 }') -gt 250000 ] && rm -rf ~/.gradle/wrapper/* || true
