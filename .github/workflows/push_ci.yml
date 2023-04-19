@@ -15,6 +15,11 @@ jobs:
   build:
     name: Build CI (Push)
     runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+      CCACHE_BASEDIR: "${{ github.workspace }}"
     if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }} && success() && github.ref == 'refs/heads/main' }}
 
     steps:
@@ -52,21 +57,11 @@ jobs:
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v3.3.1
-        with:
-          path: |
-            ~/.gradle/caches
-          key: gradle-deps-cache-${{ hashFiles('**/build.gradle.kts', '**/libs.versions.toml') }}
-          restore-keys: gradle-deps-cache-
-
       - name: Build with Gradle
         run: |
-          [ $(du -s ~/.gradle/wrapper | awk '{ print $1 }') -gt 250000 ] && rm -rf ~/.gradle/wrapper/* || true
-          find ~/.gradle/caches -exec touch -d "2 days ago" {} + || true
-          echo 'org.gradle.caching=true' >> gradle.properties
           echo 'org.gradle.parallel=true' >> gradle.properties
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
+          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:synthesizeDistReleaseApksCI
@@ -124,7 +119,7 @@ jobs:
       - build
       - telegram-bot-api
     steps:
-      - name: Donwload Artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
@@ -158,13 +153,13 @@ jobs:
           pkill telegram-bot
 
   upload-taichi:
-    name: Upload taichi
+    name: Upload TaiChi
     if: ${{ success() && github.ref == 'refs/heads/main' }}
     runs-on: ubuntu-latest
     needs:
       - build
     steps:
-      - name: Donwload Artifacts
+      - name: Download Artifacts
         uses: actions/download-artifact@v3
         with:
           path: artifacts
@@ -212,42 +207,3 @@ jobs:
         with:
           name: telegram-bot-api-binary
           path: telegram-bot-api-binary
-#  upload-lsp:
-#    name: Upload to LSPosed repo
-#    if: ${{ github.event_name != 'pull_request' && success() && github.ref == 'refs/heads/main' }}
-#    runs-on: ubuntu-latest
-#    needs:
-#      - build
-#    steps:
-#      - name: Donwload Artifacts
-#        uses: actions/download-artifact@v2
-#        id: download
-#        with:
-#          path: artifacts
-#      - name: Generate Changelog
-#        env:
-#          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
-#          COMMIT_URL: ${{ github.event.head_commit.url }}
-#        run: echo "$(python3 -c 'import json,os,urllib.parse; msg = json.dumps(os.environ["COMMIT_MESSAGE"]); print(urllib.parse.quote(msg if len(msg) <= 1024 else json.dumps(os.environ["COMMIT_URL"])))')" > ${{ github.workspace }}-CHANGELOG.txt
-#      - name: find apk
-#        run: echo "APK_FILE=$(find ${{steps.download.outputs.download-path}} -name '*.apk')" >> $GITHUB_ENV
-#      - name: Get Apk Info
-#        id: apk
-#        uses: JantHsueh/get-apk-info-action@master
-#        with:
-#          apkPath: ${{ env.APK_FILE }}
-#      - name: Get Date
-#        id: date
-#        run: echo "::set-output name=date::$(date +'%Y-%m-%d')"
-#      - name: Release
-#        uses: softprops/action-gh-release@v1
-#        with:
-#          tag_name: ${{steps.apk.outputs.versionCode}}
-#          name: CI-${{ steps.date.outputs.date }}
-#          body_path: ${{ github.workspace }}-CHANGELOG.txt
-#          token: ${{ secrets.PAT_GH_QAUXV_GCS_CI_UPLOAD }}
-#          files: ${{ env.APK_FILE }}
-#          prerelease: true
-#          repository: Xposed-Modules-Repo/io.github.qauxv
-#        env:
-#          GITHUB_REPOSITORY: Xposed-Modules-Repo/io.github.qauxv

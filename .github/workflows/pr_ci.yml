@@ -13,6 +13,11 @@ jobs:
   build:
     name: Build CI (Pull Request)
     runs-on: ubuntu-latest
+    env:
+      CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
+      CCACHE_NOHASHDIR: "true"
+      CCACHE_HARDLINK: "true"
+      CCACHE_BASEDIR: "${{ github.workspace }}"
 
     steps:
       - uses: actions/checkout@v3.5.2
@@ -54,10 +59,8 @@ jobs:
 
       - name: Build with Gradle
         run: |
-          [ $(du -s ~/.gradle/wrapper | awk '{ print $1 }') -gt 250000 ] && rm -rf ~/.gradle/wrapper/* || true
-          find ~/.gradle/caches -exec touch -d "2 days ago" {} + || true
-          echo 'org.gradle.caching=true' >> gradle.properties
           echo 'org.gradle.parallel=true' >> gradle.properties
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
+          sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           ./gradlew :app:packageDebug
           ccache -s
