@@ -30,6 +30,8 @@ import de.robv.android.xposed.XposedHelpers;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
+import java.util.HashMap;
 
 /**
  * Startup hook for QQ/TIM They should act differently according to the process they belong to. I don't want to cope
@@ -195,11 +197,18 @@ public class StartupHook {
                     }
                 }
             };
-            Class<?> loadDex = rtLoader.loadClass("com.tencent.mobileqq.startup.step.LoadDex");
+            Class<?> loadDex = findLoadDexTaskClass(rtLoader);
             Method[] ms = loadDex.getDeclaredMethods();
             Method m = null;
             for (Method method : ms) {
                 if (method.getReturnType().equals(boolean.class) && method.getParameterTypes().length == 0) {
+                    m = method;
+                    break;
+                }
+                // QQ NT: 8.9.58.11040 (4054)+
+                // public void run(Context)
+                if (method.getReturnType() == void.class && method.getParameterTypes().length == 1 &&
+                        method.getParameterTypes()[0] == Context.class) {
                     m = method;
                     break;
                 }
@@ -227,4 +236,47 @@ public class StartupHook {
         } catch (ClassNotFoundException ignored) {
         }
     }
+
+    @SuppressWarnings("unchecked")
+    private static Class<?> findLoadDexTaskClass(ClassLoader cl) throws ClassNotFoundException {
+        try {
+            return cl.loadClass("com.tencent.mobileqq.startup.step.LoadDex");
+        } catch (ClassNotFoundException ignored) {
+            // ignore
+        }
+        // for NT QQ
+        // TODO: 2023-04-19 'com.tencent.mobileqq.startup.task.config.a' is not a good way to find the class
+        Class<?> kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.a");
+        Class<?> kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.d");
+        // check cast so that we can sure that we have found the right class
+        if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
+            throw new AssertionError(kITaskFactory + " is not assignable from " + kTaskFactory);
+        }
+        Field taskClassMapField = null;
+        for (Field field : kTaskFactory.getDeclaredFields()) {
+            if (field.getType() == HashMap.class && Modifier.isStatic(field.getModifiers())) {
+                taskClassMapField = field;
+                break;
+            }
+        }
+        if (taskClassMapField == null) {
+            throw new AssertionError("taskClassMapField not found");
+        }
+        taskClassMapField.setAccessible(true);
+        HashMap<String, Class<?>> taskClassMap;
+        try {
+            // XXX: this will cause <clinit>() to be called, check whether it will cause any problem
+            taskClassMap = (HashMap<String, Class<?>>) taskClassMapField.get(null);
+        } catch (IllegalAccessException e) {
+            // should not happen
+            throw new AssertionError(e);
+        }
+        assert taskClassMap != null;
+        Class<?> loadDexTaskClass = taskClassMap.get("LoadDexTask");
+        if (loadDexTaskClass == null) {
+            throw new AssertionError("loadDexTaskClass not found");
+        }
+        return loadDexTaskClass;
+    }
+
 }
