@@ -73,6 +73,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
+import me.ketal.base.PluginDelayableHook
 import me.singleneuron.hook.decorator.FxxkQQBrowser
 import kotlin.system.exitProcess
 
@@ -103,6 +104,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         arrayOf(
             CategoryItem("安全模式") {
                 add(TextSwitchItem(title = "启用安全模式", summary = "停用所有功能，重启应用后生效", switchAgent = mSafeModeSwitch))
+                add(
+                    TextSwitchItem(
+                        title = "禁用 PluginDelayableHook",
+                        summary = "(仅供调试) 暂时关闭全部 PluginDelayableHook 功能，重启应用后生效",
+                        switchAgent = mDisablePluginHookSwitch
+                    )
+                )
             },
             CategoryItem("功能") {
                 textItem("功能异常列表", null, onClick = clickToShowFuncList)
@@ -150,6 +158,15 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         } else Toasts.error(it, "${if (value) "启用" else "禁用"}安全模式失败")
                     }
                 }
+            }
+    }
+
+    private val mDisablePluginHookSwitch: ISwitchCellAgent = object : ISwitchCellAgent {
+        override val isCheckable = true
+        override var isChecked: Boolean
+            get() = PluginDelayableHook.disablePluginDelayableHook
+            set(value) {
+                PluginDelayableHook.disablePluginDelayableHook = value
             }
     }
 

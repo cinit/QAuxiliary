@@ -27,6 +27,7 @@ import android.content.Context
 import android.view.View
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -51,6 +52,9 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
     abstract fun startHook(classLoader: ClassLoader): Boolean
 
     override fun initOnce() = throwOrTrue {
+        if (disablePluginDelayableHook) {
+            error("disablePluginDelayableHook")
+        }
         val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
         startHook(classLoader)
     }
@@ -102,4 +106,16 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
         override var onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
         override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     }
+
+    companion object {
+
+        private const val KEY_DISABLE_PLUGIN_DELAYABLE_HOOK = "disable_plugin_delayable_hook"
+        var disablePluginDelayableHook: Boolean
+            get() = ConfigManager.getDefaultConfig().getBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, false)
+            set(value) {
+                ConfigManager.getDefaultConfig().putBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, value)
+            }
+
+    }
+
 }
