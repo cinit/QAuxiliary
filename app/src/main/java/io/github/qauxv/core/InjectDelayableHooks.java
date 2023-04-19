@@ -30,7 +30,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
 import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.LayoutHelper;
@@ -61,16 +61,23 @@ public class InjectDelayableHooks {
 
     private static boolean inited = false;
 
-    public static boolean step(@NonNull Object director) {
+    public static boolean step(@Nullable Object director) {
         if (inited) {
             return true;
         }
         inited = true;
-        Activity activity = Reflex.getInstanceObjectOrNull(director, "a", AppActivity.class);
-        if (activity == null) {
-            activity = Reflex.getFirstNSFByType(director, AppActivity.class);
+        // TODO: 2023-04-19 check whether NT QQ has an Activity for foreground startup
+        final Activity activity;
+        if (director != null) {
+            Activity act = Reflex.getInstanceObjectOrNull(director, "a", AppActivity.class);
+            if (act == null) {
+                act = Reflex.getFirstNSFByType(director, AppActivity.class);
+            }
+            act = Reflex.getInstanceObjectOrNull(director, "a", AppActivity.class);
+            activity = act;
+        } else {
+            activity = null;
         }
-        final Activity ctx = activity;
         boolean needDeobf = false;
         IDynamicHook[] hooks = HookInstaller.queryAllAnnotatedHooks();
         for (IDynamicHook h : hooks) {
@@ -141,43 +148,43 @@ public class InjectDelayableHooks {
             steps.sort(Collections.reverseOrder());
             for (int idx = 0; idx < steps.size(); idx++) {
                 final int j = idx;
-                if (SyncUtils.isMainProcess() && ctx != null) {
-                    ctx.runOnUiThread(() -> {
+                if (SyncUtils.isMainProcess() && activity != null) {
+                    activity.runOnUiThread(() -> {
                         if (overlay[0] == null) {
-                            overlay[0] = new LinearLayout(ctx);
+                            overlay[0] = new LinearLayout(activity);
                             overlay[0].setOrientation(LinearLayout.VERTICAL);
                             overlay[0].setGravity(Gravity.CENTER_HORIZONTAL | Gravity.BOTTOM);
                             overlay[0].setLayoutParams(new ViewGroup.LayoutParams(MATCH_PARENT, MATCH_PARENT));
-                            main[0] = new LinearLayout(ctx);
+                            main[0] = new LinearLayout(activity);
                             overlay[0].addView(main[0]);
                             main[0].setOrientation(LinearLayout.VERTICAL);
                             main[0].setGravity(Gravity.CENTER);
                             LinearLayout.LayoutParams llp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-                            llp.bottomMargin = LayoutHelper.dip2px(ctx, 55);
+                            llp.bottomMargin = LayoutHelper.dip2px(activity, 55);
                             main[0].setLayoutParams(llp);
-                            LinearLayout lprop = new LinearLayout(ctx);
+                            LinearLayout lprop = new LinearLayout(activity);
                             ViewCompat.setBackground(lprop, new SimpleBgDrawable(0, 0xA0808080, 2));
-                            final View _v = new View(ctx);
+                            final View _v = new View(activity);
                             prog[0] = new ProportionDrawable(0xA0202020, 0x40FFFFFF,
                                     Gravity.LEFT, 0);
                             ViewCompat.setBackground(_v, prog[0]);
-                            int __3_ = LayoutHelper.dip2px(ctx, 3);
+                            int __3_ = LayoutHelper.dip2px(activity, 3);
                             LinearLayout.LayoutParams _tmp_lllp = new LinearLayout.LayoutParams(
-                                    MATCH_PARENT, LayoutHelper.dip2px(ctx, 4));
+                                    MATCH_PARENT, LayoutHelper.dip2px(activity, 4));
                             _tmp_lllp.setMargins(__3_, __3_, __3_, __3_);
                             lprop.addView(_v, _tmp_lllp);
                             LinearLayout.LayoutParams plp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
-                            int __5_ = LayoutHelper.dip2px(ctx, 5);
+                            int __5_ = LayoutHelper.dip2px(activity, 5);
                             plp.setMargins(__5_ * 2, 0, __5_ * 2, __5_);
                             main[0].addView(lprop, plp);
-                            text[0] = new TextView(ctx);
+                            text[0] = new TextView(activity);
                             text[0].setTextSize(16);
                             text[0].setGravity(Gravity.CENTER_HORIZONTAL);
                             text[0].setTextColor(0xFF000000);
                             text[0].setShadowLayer(__5_ * 2, -0, -0, 0xFFFFFFFF);
                             LinearLayout.LayoutParams tlp = new LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT);
                             main[0].addView(text[0], tlp);
-                            ((ViewGroup) ctx.getWindow().getDecorView()).addView(overlay[0]);
+                            ((ViewGroup) activity.getWindow().getDecorView()).addView(overlay[0]);
                         }
                         String statusText;
                         try {
@@ -219,9 +226,9 @@ public class InjectDelayableHooks {
         } else {
             SettingEntryHook.INSTANCE.initialize();
         }
-        if (ctx != null && main[0] != null) {
+        if (activity != null && main[0] != null) {
             System.gc();
-            ctx.runOnUiThread(() -> ((ViewGroup) ctx.getWindow().getDecorView()).removeView(overlay[0]));
+            activity.runOnUiThread(() -> ((ViewGroup) activity.getWindow().getDecorView()).removeView(overlay[0]));
         }
         return true;
     }
