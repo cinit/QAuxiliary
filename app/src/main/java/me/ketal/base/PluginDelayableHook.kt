@@ -25,6 +25,7 @@ package me.ketal.base
 import android.app.Activity
 import android.content.Context
 import android.view.View
+import cc.ioctl.util.HostInfo
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.config.ConfigManager
@@ -111,10 +112,17 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
 
         private const val KEY_DISABLE_PLUGIN_DELAYABLE_HOOK = "disable_plugin_delayable_hook"
         var disablePluginDelayableHook: Boolean
-            get() = ConfigManager.getDefaultConfig().getBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, false)
+            get() = ConfigManager.getDefaultConfig().getBoolean(
+                KEY_DISABLE_PLUGIN_DELAYABLE_HOOK,
+                getDefValForDisablePluginDelayableHook()
+            )
             set(value) {
                 ConfigManager.getDefaultConfig().putBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, value)
             }
+
+        private fun getDefValForDisablePluginDelayableHook(): Boolean {
+            return HostInfo.isQQ() && hostInfo.versionCode == 4056L
+        }
 
     }
 
