@@ -4,7 +4,6 @@ enableFeaturePreview("TYPESAFE_PROJECT_ACCESSORS")
 // enableFeaturePreview("STABLE_CONFIGURATION_CACHE")
 
 pluginManagement {
-    includeBuild("build-logic")
     repositories {
         gradlePluginPortal()
         mavenCentral()
@@ -37,6 +36,8 @@ dependencyResolutionManagement {
         }
     }
 }
+
+includeBuild("build-logic")
 
 plugins {
     `gradle-enterprise`
