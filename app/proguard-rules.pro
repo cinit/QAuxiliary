@@ -6,6 +6,7 @@
 -keep class org.** { *; }
 -keep class com.microsoft.** { *; }
 -keep class com.rymmmmm.** { *; }
+-keep class com.codepwn.** { *; }
 -keep class com.hicore.** { *; }
 -keep class cn.lliiooll.** { *; }
 -keep class xyz.nextalone.** { *; }
