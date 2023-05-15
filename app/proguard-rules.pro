@@ -8,6 +8,7 @@
 -keep class com.rymmmmm.** { *; }
 -keep class com.codepwn.** { *; }
 -keep class com.hicore.** { *; }
+-keep class com.xiaoniu.** { *; }
 -keep class cn.lliiooll.** { *; }
 -keep class xyz.nextalone.** { *; }
 -keep class cc.ioctl.** { *; }
