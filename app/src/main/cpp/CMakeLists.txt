@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(qauxv)
 
+macro(SET_OPTION option value)
+    set(${option} ${value} CACHE INTERNAL "" FORCE)
+endmacro()
+
 enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
@@ -29,6 +33,9 @@ add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
 add_subdirectory(../../../../libs/silk silk)
 
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
+add_subdirectory(../../../../libs/Dobby dobby)
+
 add_library(qauxv SHARED
         qauxv_core/Natives.cpp
         qauxv_core/version.c
@@ -50,4 +57,4 @@ target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv mmkv dex_kit_static silk c dl z ${ANDROID_LIBS})
+target_link_libraries(qauxv dobby mmkv dex_kit_static silk c dl z ${ANDROID_LIBS})

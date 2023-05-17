@@ -10,3 +10,6 @@
 [submodule "libs/linux-syscall-support"]
 	path = libs/linux-syscall-support
 	url = https://chromium.googlesource.com/linux-syscall-support
+[submodule "libs/Dobby"]
+	path = libs/Dobby
+	url = https://github.com/LSPosed/Dobby
