@@ -27,6 +27,7 @@ import android.content.Context;
 import android.os.Build;
 import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
 import io.github.qauxv.core.MainHook;
+import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Natives;
@@ -60,6 +61,8 @@ public class StartupRoutine {
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
         Natives.load(ctx);
+        NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
+                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
         MainHook.getInstance().performHook(ctx, step);
     }
 

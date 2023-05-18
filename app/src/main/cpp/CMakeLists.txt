@@ -24,7 +24,8 @@ else ()
     SET(CLANG_CXX_EXTRA_OPT "")
     SET(CLANG_C_EXTRA_OPT "")
 endif ()
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=delete-non-virtual-dtor -Werror=return-type -Werror=non-virtual-dtor -Wno-invalid-offsetof")
+# -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=return-type -Wno-invalid-offsetof")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-type")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
@@ -37,14 +38,24 @@ SET_OPTION(DOBBY_GENERATE_SHARED OFF)
 add_subdirectory(../../../../libs/Dobby dobby)
 
 add_library(qauxv SHARED
-        qauxv_core/Natives.cpp
-        qauxv_core/version.c
-        # qauxv_core/NativeHookEntry.cc
-        # qauxv_core/NativeMainHook.cc
-        qauxv_core/shared_memory.cpp
-        qauxv_core/SilkCodec.cc
-        qauxv_core/auto_close_fd.cc
+        misc/version.c
+
         ../../../../libs/dexkit/DexKit/dexkit/src/main/cpp/native-bridge.cpp
+
+        qauxv_core/Natives.cpp
+        qauxv_core/SilkCodec.cc
+        qauxv_core/HostInfo.cc
+        qauxv_core/NativeCoreBridge.cc
+
+        utils/shared_memory.cpp
+        utils/auto_close_fd.cc
+        utils/JniUtils.cc
+        utils/TextUtils.cc
+        utils/ProcessView.cpp
+        utils/ElfView.cpp
+
+        ntkernel/NtRecallMsgHook.cc
+
         )
 
 set_target_properties(qauxv PROPERTIES
@@ -53,6 +64,7 @@ set_target_properties(qauxv PROPERTIES
         )
 
 target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
+target_include_directories(qauxv PRIVATE .)
 
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")

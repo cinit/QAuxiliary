@@ -163,6 +163,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        nativeInitNtKernelRecallMsgHook();
         Method revokeMsg = null;
         for (Method m : _QQMessageFacade().getDeclaredMethods()) {
             if (m.getReturnType().equals(void.class)) {
@@ -192,6 +193,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         });
         return true;
     }
+
+    private native boolean nativeInitNtKernelRecallMsgHook();
 
     private void onRevokeMsg(Object revokeMsgInfo) throws Exception {
         RevokeMsgInfoImpl info = new RevokeMsgInfoImpl((Parcelable) revokeMsgInfo);

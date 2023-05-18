@@ -10,7 +10,7 @@
 #include <sys/mman.h>
 #include <android/log.h>
 
-#include "auto_close_fd.h"
+#include "utils/auto_close_fd.h"
 #include "SKP_Silk_SDK_API.h"
 
 /* Define codec specific settings */
