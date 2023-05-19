@@ -9,6 +9,10 @@ enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
 
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
+SET_OPTION(Plugin.SymbolResolver OFF)
+add_subdirectory(../../../../libs/Dobby dobby)
+
 find_library( # Defines the name of the path variable that stores the
         # location of the NDK library.
         ANDROID_LIBS
@@ -24,8 +28,8 @@ else ()
     SET(CLANG_CXX_EXTRA_OPT "")
     SET(CLANG_C_EXTRA_OPT "")
 endif ()
-# -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=return-type -Wno-invalid-offsetof")
+
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor -Werror=return-type -Wno-invalid-offsetof")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-type")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
@@ -33,9 +37,6 @@ set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib
 add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
 add_subdirectory(../../../../libs/silk silk)
-
-SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-add_subdirectory(../../../../libs/Dobby dobby)
 
 add_library(qauxv SHARED
         misc/version.c
@@ -53,6 +54,7 @@ add_library(qauxv SHARED
         utils/TextUtils.cc
         utils/ProcessView.cpp
         utils/ElfView.cpp
+        utils/FileMemMap.cpp
 
         ntkernel/NtRecallMsgHook.cc
 
