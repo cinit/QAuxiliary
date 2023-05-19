@@ -23,6 +23,7 @@ package cc.ioctl.hook.msg;
 
 import static de.robv.android.xposed.XposedHelpers.callMethod;
 import static de.robv.android.xposed.XposedHelpers.setObjectField;
+import static io.github.qauxv.util.Initiator._C2CMessageProcessor;
 import static io.github.qauxv.util.Initiator._QQMessageFacade;
 
 import android.app.Activity;
@@ -232,11 +233,6 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             throw new IllegalStateException("onRevokeMsg, istroop=" + istroop);
         }
 
-        //下方代码导致没收到的消息不显示撤回灰字提示(没收到)
-        //if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
-        //    return;
-        //}
-
         if (!isKeepSelfMsgEnabled() && selfUin.equals(revokerUin)) {
             return;
         }
@@ -258,10 +254,12 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             String revokerPron = selfUin.equals(revokerUin) ? "你" : "对方";
             if (msgObject == null) {
                 if (isShowShmsgseqEnabled()) {
-                    greyMsg = revokerPron + "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                    greyMsg = revokerPron + "撤回了一条消息（没收到）, shmsgseq: " + shmsgseq;
                 } else {
-                    greyMsg = revokerPron + "撤回了一条消息(没收到)";
+                    greyMsg = revokerPron + "撤回了一条消息（没收到）";
                 }
+            } else if (Reflex.isCallingFrom(_C2CMessageProcessor().getName())) {
+                return;
             } else {
                 String message = getMessageContentStripped(msgObject);
                 int msgtype = getMessageType(msgObject);
@@ -301,9 +299,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     }
                 } else {
                     if (isShowShmsgseqEnabled()) {
-                        greyMsg += "撤回了一条消息(没收到), shmsgseq: " + shmsgseq;
+                        greyMsg += "撤回了一条消息（没收到）, shmsgseq: " + shmsgseq;
                     } else {
-                        greyMsg += "撤回了一条消息(没收到)";
+                        greyMsg += "撤回了一条消息（没收到）";
                     }
                 }
                 revokeGreyTip = createBareHighlightGreyTip(aioSessionUin, istroop, revokerUin, time + 1, greyMsg, newMsgUid, shmsgseq);
