@@ -13,3 +13,6 @@
 [submodule "libs/Dobby"]
 	path = libs/Dobby
 	url = https://github.com/LSPosed/Dobby
+[submodule "libs/libunwindstack"]
+	path = libs/libunwindstack
+	url = https://github.com/cinit/libunwindstack

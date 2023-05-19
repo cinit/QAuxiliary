@@ -41,6 +41,7 @@ set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
 add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
 add_subdirectory(../../../../libs/silk silk)
+add_subdirectory(../../../../libs/libunwindstack unwindstack)
 
 add_library(qauxv SHARED
         misc/version.c
@@ -59,6 +60,7 @@ add_library(qauxv SHARED
         utils/ProcessView.cpp
         utils/ElfView.cpp
         utils/FileMemMap.cpp
+        utils/ThreadUtils.cc
 
         ntkernel/NtRecallMsgHook.cc
 
@@ -75,4 +77,4 @@ target_include_directories(qauxv PRIVATE .)
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv dobby mmkv dex_kit_static silk c dl z ${ANDROID_LIBS})
+target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack silk c dl z ${ANDROID_LIBS})

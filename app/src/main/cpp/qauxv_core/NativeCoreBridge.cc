@@ -72,7 +72,7 @@ void HandleLoadLibrary(const char* name, void* handle) {
         std::scoped_lock lock(sCallbacksMutex);
         callbacks = sCallbacks;
     }
-    for (auto& callback: callbacks) {
+    for (const auto& callback: callbacks) {
         callback(name, handle);
     }
 }

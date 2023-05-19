@@ -13,10 +13,12 @@
 #include "utils/Log.h"
 #include "qauxv_core/HostInfo.h"
 #include "utils/ProcessView.h"
+#include "utils/ThreadUtils.h"
 
 namespace ntqq::hook {
 
 using namespace qauxv;
+using namespace utils;
 
 static bool sIsHooked = false;
 
@@ -25,10 +27,12 @@ void (* gC2cGroupSysMsgCallback)(void*, void*, void*) = nullptr;
 
 void HandleRecallGroupSysMsgCallback(void* p1, void* p2, void* p3) {
     LOGD("HandleRecallGroupSysMsgCallback, p1: %p, p2: %p, p3: %p", p1, p2, p3);
+    DumpCurrentThreadStackTraceToLogcat(ANDROID_LOG_DEBUG);
 }
 
 void HandleC2cGroupSysMsgCallback(void* p1, void* p2, void* p3) {
     LOGD("HandleC2cGroupSysMsgCallback, p1: %p, p2: %p, p3: %p", p1, p2, p3);
+    DumpCurrentThreadStackTraceToLogcat(ANDROID_LOG_DEBUG);
 }
 
 bool InitInitNtKernelRecallMsgHook() {
