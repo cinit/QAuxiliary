@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.10)
 project(qauxv)
 
+find_library(ANDROID_LIBS log)
+
 macro(SET_OPTION option value)
     set(${option} ${value} CACHE INTERNAL "" FORCE)
 endmacro()
@@ -8,17 +10,6 @@ endmacro()
 enable_language(CXX C)
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_C_STANDARD 11)
-
-SET_OPTION(DOBBY_GENERATE_SHARED OFF)
-SET_OPTION(Plugin.SymbolResolver OFF)
-add_subdirectory(../../../../libs/Dobby dobby)
-
-find_library( # Defines the name of the path variable that stores the
-        # location of the NDK library.
-        ANDROID_LIBS
-        # Specifies the name of the NDK library that
-        # CMake needs to locate.
-        log)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-invalid-specifier -Werror=return-type -Wno-invalid-offsetof")
 if ("${CMAKE_CXX_COMPILER_ID}" MATCHES "Clang")
@@ -29,10 +20,23 @@ else ()
     SET(CLANG_C_EXTRA_OPT "")
 endif ()
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor -Werror=return-type -Wno-invalid-offsetof")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} ${CLANG_CXX_EXTRA_OPT} -fPIC -Werror=return-type -Wno-invalid-offsetof")
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} ${CLANG_C_EXTRA_OPT} -fPIC -Werror=return-type")
 
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,--no-allow-shlib-undefined,--no-undefined")
+
+SET_OPTION(DOBBY_GENERATE_SHARED OFF)
+SET_OPTION(Plugin.SymbolResolver ON)
+add_subdirectory(../../../../libs/Dobby dobby)
+
+# set -fno-omit-frame-pointer for Dobby if ANDROID_ABI is armeabi-v7a
+if ("${ANDROID_ABI}" STREQUAL "armeabi-v7a")
+    target_compile_options(dobby PRIVATE -fomit-frame-pointer)
+endif ()
+
+# add -fno-omit-frame-pointer -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -Werror=non-virtual-dtor -Werror=delete-non-virtual-dtor")
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)

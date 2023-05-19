@@ -111,37 +111,11 @@ void HookLoadLibrary() {
         soname = "linker";
     }
     // __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv
-    ProcessView self;
-    if (int err;(err = self.readProcess(getpid())) != 0) {
-        LOGE("HookLoadLibrary: failed to read self process: %d", err);
-        return;
-    }
-    std::optional<ProcessView::Module> linker;
-    for (const auto& m: self.getModules()) {
-        if (m.name == soname) {
-            linker = m;
-            break;
-        }
-    }
-    if (!linker.has_value()) {
-        LOGE("HookLoadLibrary: failed to find linker module");
-        return;
-    }
-    uint64_t linkerBase = linker->baseAddress;
-    std::string linkerPath = linker->path;
-    FileMemMap linkerFile;
-    if (int err;(err = linkerFile.mapFilePath(linkerPath.c_str()) != 0)) {
-        LOGE("HookLoadLibrary: failed to map linker file, path: %s, error: %s", linkerPath.c_str(), strerror(err));
-        return;
-    }
-    ElfView linkerView;
-    linkerView.attachFileMemMapping(linkerFile.getAddress(), linkerFile.getLength());
-    auto symbolOffset = linkerView.getSymbolAddress("__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
-    if (symbolOffset == 0) {
+    void* symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
+    if (symbol == nullptr) {
         LOGE("HookLoadLibrary: failed to find __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
         return;
     }
-    void* symbol = (void*) (linkerBase + (uint64_t) symbolOffset);
     if (DobbyHook(symbol, (dobby_dummy_func_t) qauxv::fake_do_dlopen, (dobby_dummy_func_t*) &qauxv::backup_do_dlopen) != RS_SUCCESS) {
         LOGE("HookLoadLibrary: failed to hook __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
         return;
