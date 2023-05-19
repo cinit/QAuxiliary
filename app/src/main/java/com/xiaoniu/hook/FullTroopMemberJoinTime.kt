@@ -1,0 +1,63 @@
+/*
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2023 QAuxiliary developers
+ * https://github.com/cinit/QAuxiliary
+ *
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or any later version and our eula as published
+ * by QAuxiliary contributors.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+ */
+
+package com.xiaoniu.hook
+
+import android.content.Context
+import cc.ioctl.util.HostInfo.isQQ
+import cc.ioctl.util.afterHookIfEnabled
+import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
+
+@FunctionHookEntry
+@UiItemAgentEntry
+object FullTroopMemberJoinTime : CommonSwitchFunctionHook() {
+
+    override val name = "显示完整群成员入群时间"
+
+    override val description = "体验模式下比较有用"
+
+    override val uiItemLocation: Array<String> = Auxiliary.PROFILE_CATEGORY
+
+    override val isAvailable: Boolean get() = isQQ()    //新版资料卡是什么时候出现的？
+
+    override fun initOnce(): Boolean {
+        XposedHelpers.findAndHookMethod(
+            Initiator.loadClass("com/tencent/mobileqq/profilecard/component/troop/ElegantProfileTroopMemInfoComponent"), "getTroopMemeJoinTime",
+            Context::class.java, Initiator.loadClass("com/tencent/mobileqq/profilecard/data/ProfileCardInfo"), callback
+        )
+        return true
+    }
+
+    private val callback = afterHookIfEnabled {
+        val s = it.result as String
+        if (s.endsWith("年加入该群")) {
+            val profile = it.args[1].javaClass.getDeclaredField("troopMemberCard").apply { isAccessible = true }.get(it.args[1])
+            val time = profile.javaClass.getDeclaredField("joinTime").apply { isAccessible = true }.get(profile) as Long * 1000
+            it.result = android.text.format.DateFormat.format("yyyy年MM月dd日加入该群", time)
+        }
+    }
+}
