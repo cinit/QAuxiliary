@@ -37,9 +37,9 @@ object ForceEnableQQSettingMeV9 : CommonSwitchFunctionHook() {
 
     override val name = "强制启用新样式侧滑栏"
 
-    override val description = "与禁用新样式状态栏冲突\n(目前仅支持8.9.35及以后)"
+    override val description = "与禁用新样式侧滑栏冲突(目前仅支持8.9.35及以后，仅普通模式生效)"
 
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_35)
 
