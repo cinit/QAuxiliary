@@ -56,7 +56,6 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -134,7 +133,7 @@ public class RepeaterPlus extends BaseFunctionHook {
 
                 @Override
                 public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
-                    return (agent, context) -> "点击设置自定义+1图标";
+                    return (agent, context) -> "点击设置自定义+1图标和显示位置";
                 }
 
                 @NonNull

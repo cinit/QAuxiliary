@@ -141,7 +141,7 @@ public class RepeaterHook extends BaseFunctionHook {
 
                 @Override
                 public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
-                    return (agent, context) -> "点击设置自定义+1图标";
+                    return (agent, context) -> "此功能不支持较新的版本，推荐使用消息+1 Plus。点击设置自定义+1图标";
                 }
 
                 @NonNull
