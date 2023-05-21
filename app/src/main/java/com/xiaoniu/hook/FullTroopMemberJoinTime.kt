@@ -38,7 +38,7 @@ object FullTroopMemberJoinTime : CommonSwitchFunctionHook() {
 
     override val name = "显示完整群成员入群时间"
 
-    override val description = "体验模式下比较有用"
+    override val description = "群成员资料卡中的入群时间始终精确到日"
 
     override val uiItemLocation: Array<String> = Auxiliary.PROFILE_CATEGORY
 
