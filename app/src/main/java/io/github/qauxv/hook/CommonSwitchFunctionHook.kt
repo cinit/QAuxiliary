@@ -64,27 +64,27 @@ abstract class CommonSwitchFunctionHook(
 
     open val extraSearchKeywords: Array<String>? = null
 
-    override val uiItemAgent: IUiItemAgent by lazy {
-        object : IUiItemAgent {
-            override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
-            override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
-            override val valueState: MutableStateFlow<String?>? = null
-            override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
-            override val switchProvider: ISwitchCellAgent? by lazy {
-                object : ISwitchCellAgent {
-                    override val isCheckable = true
-                    override var isChecked: Boolean
-                        get() = isEnabled
-                        set(value) {
-                            if (value != isEnabled) {
-                                isEnabled = value
-                            }
+    override val uiItemAgent by lazy { uiItemAgent() }
+
+    private fun uiItemAgent() = object : IUiItemAgent {
+        override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
+        override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
+        override val valueState: MutableStateFlow<String?>? = null
+        override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
+        override val switchProvider: ISwitchCellAgent? by lazy {
+            object : ISwitchCellAgent {
+                override val isCheckable = true
+                override var isChecked: Boolean
+                    get() = isEnabled
+                    set(value) {
+                        if (value != isEnabled) {
+                            isEnabled = value
                         }
-                }
+                    }
             }
-            override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-            override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
-                get() = extraSearchKeywords?.let { { _, _ -> it } }
         }
+        override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
+        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
+            get() = extraSearchKeywords?.let { { _, _ -> it } }
     }
 }

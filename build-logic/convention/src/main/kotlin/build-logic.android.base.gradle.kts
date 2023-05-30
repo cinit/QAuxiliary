@@ -52,4 +52,9 @@ extensions.findByType(BaseExtension::class)?.run {
 
 kotlin {
     jvmToolchain(Version.java.toString().toInt())
+    sourceSets.all {
+        languageSettings {
+            languageVersion = "2.0"
+        }
+    }
 }

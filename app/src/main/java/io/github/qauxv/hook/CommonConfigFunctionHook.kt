@@ -74,17 +74,17 @@ abstract class CommonConfigFunctionHook(
 
     open val extraSearchKeywords: Array<String>? = null
 
-    override val uiItemAgent: IUiItemAgent by lazy {
-        object : IUiItemAgent {
-            override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
-            override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
-            override val valueState: MutableStateFlow<String?>?
-                get() = this@CommonConfigFunctionHook.valueState
-            override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
-            override val switchProvider: ISwitchCellAgent? = null
-            override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit) = onUiItemClickListener
-            override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
-                get() = extraSearchKeywords?.let { { _, _ -> it } }
-        }
+    override val uiItemAgent by lazy { uiItemAgent() }
+    private fun uiItemAgent() = object : IUiItemAgent {
+        override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
+        override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
+        override val valueState: MutableStateFlow<String?>?
+            get() = this@CommonConfigFunctionHook.valueState
+        override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
+        override val switchProvider: ISwitchCellAgent? = null
+        override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit) = onUiItemClickListener
+        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)?
+            get() = extraSearchKeywords?.let { { _, _ -> it } }
     }
+
 }
