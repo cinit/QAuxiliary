@@ -10,9 +10,11 @@ import com.google.devtools.ksp.processing.SymbolProcessorProvider
 import com.google.devtools.ksp.symbol.KSAnnotated
 import com.google.devtools.ksp.symbol.KSClassDeclaration
 import com.squareup.kotlinpoet.AnnotationSpec
+import com.squareup.kotlinpoet.ClassName
 import com.squareup.kotlinpoet.CodeBlock
 import com.squareup.kotlinpoet.FileSpec
 import com.squareup.kotlinpoet.FunSpec
+import com.squareup.kotlinpoet.ParameterizedTypeName.Companion.parameterizedBy
 import com.squareup.kotlinpoet.ksp.toClassName
 import com.squareup.kotlinpoet.ksp.writeTo
 
@@ -31,7 +33,11 @@ class FunctionHookEntryItemProcessor(
 
         logger.info("FunctionHookEntryProcessor start.")
         val simpleNameMap = HashMap<String, String>(symbols.size)
+        val array = ClassName("kotlin", "Array")
+        val hook = ClassName("io.github.qauxv.base", "IDynamicHook")
+        val arrayOfHook = array.parameterizedBy(hook)
         val mGetApi = FunSpec.builder("getAnnotatedFunctionHookEntryList").run {
+            returns(arrayOfHook)
             addCode(CodeBlock.Builder().run {
                 add("return arrayOf(«")
                 symbols.forEachIndexed { index, ksClassDeclaration ->
