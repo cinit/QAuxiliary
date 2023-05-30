@@ -17,7 +17,7 @@ androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.10.1" }
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.5.0.202303070854-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "4.3" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.14.1"}
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.14.2"}
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.1"}
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.5.1"}
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp"}
