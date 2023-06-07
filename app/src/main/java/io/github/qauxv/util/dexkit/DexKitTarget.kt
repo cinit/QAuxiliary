@@ -656,3 +656,10 @@ object EmotcationConstants : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("setEmojiMap emoji's file is null")
     override val filter = DexKitFilter.allowAll
 }
+
+object GroupSpecialCare_getCareTroopMemberMsgText : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.util.notification.NotifyIdManager"
+    override val traitString = arrayOf("getCareTroopMemberMsgText: invoked.  troopMemberIsCared: ")
+    override val filter = DexKitFilter.allowAll
+}

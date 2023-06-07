@@ -22,21 +22,24 @@
 
 package me.singleneuron.hook
 
-import cc.ioctl.util.afterHookIfEnabled
-import de.robv.android.xposed.XC_MethodHook
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.SyncUtils
-import xyz.nextalone.util.clazz
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.GroupSpecialCare_getCareTroopMemberMsgText
 import xyz.nextalone.util.throwOrTrue
 import java.util.concurrent.ConcurrentHashMap
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object GroupSpecialCare : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF) {
+object GroupSpecialCare : CommonSwitchFunctionHook(
+    SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF,
+    arrayOf(GroupSpecialCare_getCareTroopMemberMsgText)
+) {
 
     override val name = "关闭群普通消息特别关心提示"
     override val description: String = "仅在特别关心发送群消息时提示，阻止群内存在特别关心消息时其他成员普通消息使用特别关心提示"
@@ -45,16 +48,11 @@ object GroupSpecialCare : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or SyncUt
 
     override fun initOnce() = throwOrTrue {
 
-        val notificationIdManager = "com.tencent.util.notification.NotifyIdManager".clazz
-        val message = "com.tencent.imcore.message.Message".clazz
-
-        val hook = afterHookIfEnabled { param ->
+        DexKit.requireMethodFromCache(GroupSpecialCare_getCareTroopMemberMsgText).hookAfter { param ->
             val map: ConcurrentHashMap<String, Boolean> = XposedHelpers.getObjectField(param.thisObject, "h") as ConcurrentHashMap<String, Boolean>
             val frienduin: String = XposedHelpers.getObjectField(param.args[1], "frienduin") as String
             map.remove(frienduin)
         }
-
-        XposedHelpers.findAndHookMethod(notificationIdManager, "m", String::class.java, message, hook)
 
     }
 }
