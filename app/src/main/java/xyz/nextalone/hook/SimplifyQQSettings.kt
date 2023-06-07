@@ -38,6 +38,7 @@ import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
@@ -96,7 +97,17 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
         }
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
-            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+            if (requireMinQQVersion(4054)) {    //TODO:正式版发布后修改正式版本号
+                //Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng;->b(I)Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng$a;
+                Initiator.loadClass("com/tencent/mobileqq/managers/CUOpenCardGuideMng").let { clz ->
+                    val m = clz.declaredMethods.firstOrNull {
+                        it.parameterTypes.size == 1 && it.parameterTypes[0] == Int::class.java
+                    } ?: return@throwOrTrue
+                    m.hookBefore(this) {
+                        it.result = null
+                    }
+                }
+            } else if (requireMinQQVersion(QQVersion.QQ_8_8_93)) {
                 Initiator._QQSettingSettingActivity().method("doOnCreate")?.hookAfter(this) {
                     val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "cu_open_card_guide_entry")
                     val cu = it.thisObject.invoke("findViewById", getId, Int::class.java) as RelativeLayout
