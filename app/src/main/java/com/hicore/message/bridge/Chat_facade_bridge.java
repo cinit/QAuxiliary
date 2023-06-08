@@ -1,11 +1,35 @@
-package com.hicore.messageUtils;
+/*
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2023 QAuxiliary developers
+ * https://github.com/cinit/QAuxiliary
+ *
+ * This software is non-free but opensource software: you can redistribute it
+ * and/or modify it under the terms of the GNU Affero General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or any later version and our eula as published
+ * by QAuxiliary contributors.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
+ * Affero General Public License for more details.
+ *
+ * You should have received a copy of the GNU Affero General Public License
+ * and eula along with this software.  If not, see
+ * <https://www.gnu.org/licenses/>
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+ */
+
+package com.hicore.message.bridge;
 
 import android.content.Context;
 import android.os.Environment;
 import cc.ioctl.util.HostInfo;
+import com.hicore.QApp.QAppUtils;
 import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.Utils.FileUtils;
+import com.hicore.message.common.MsgBuilder;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
@@ -13,7 +37,7 @@ import java.io.File;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 
-public class QQMsgSender {
+public class Chat_facade_bridge {
 
     public static void sendText(Object _Session, String text, ArrayList atList) {
         try {
@@ -24,7 +48,7 @@ public class QQMsgSender {
                     String.class,
                     ArrayList.class
             });
-            CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), HostInfo.getApplication(), _Session, text, atList);
+            CallMethod.invoke(null, QAppUtils.getAppRuntime(), HostInfo.getApplication(), _Session, text, atList);
         } catch (Exception e) {
             Log.e(e);
         }
@@ -32,7 +56,7 @@ public class QQMsgSender {
 
     public static void sendPic(Object _Session, File pic) {
         try {
-            var picRecord = QQMsgBuilder.buildPicMsg(_Session, pic.getAbsolutePath());
+            var picRecord = MsgBuilder.build_pic(_Session, pic.getAbsolutePath());
             sendPic(_Session, picRecord);
         } catch (Exception e) {
             Log.e(e);
@@ -48,7 +72,7 @@ public class QQMsgSender {
                     int.class
             });
             hookMethod.invoke(null,
-                    QQEnvUtils.getAppRuntime(), _Session, picRecord, 0
+                    QAppUtils.getAppRuntime(), _Session, picRecord, 0
             );
         } catch (Exception e) {
             Log.e(e);
@@ -63,7 +87,7 @@ public class QQMsgSender {
                             MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
                             MClass.loadClass("com.tencent.mobileqq.structmsg.AbsStructMsg")
                     });
-            CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, structMsg);
+            CallMethod.invoke(null, QAppUtils.getAppRuntime(), _Session, structMsg);
         } catch (Throwable th) {
             Log.e(th);
         }
@@ -77,7 +101,7 @@ public class QQMsgSender {
                             MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
                             MClass.loadClass("com.tencent.mobileqq.data.ArkAppMessage")
                     });
-            CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, arkAppMsg);
+            CallMethod.invoke(null, QAppUtils.getAppRuntime(), _Session, arkAppMsg);
         } catch (Throwable th) {
             Log.e(th);
         }
@@ -85,8 +109,8 @@ public class QQMsgSender {
 
     public static void sendVoice(Object _Session, String path) {
         try {
-            if (!path.contains("com.tencent.mobileqq/Tencent/MobileQQ/" + QQEnvUtils.getCurrentUin())) {
-                String newPath = Environment.getExternalStorageDirectory() + "/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/" + QQEnvUtils.getCurrentUin()
+            if (!path.contains("com.tencent.mobileqq/Tencent/MobileQQ/" + QAppUtils.getCurrentUin())) {
+                String newPath = Environment.getExternalStorageDirectory() + "/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/" + QAppUtils.getCurrentUin()
                         + "/ptt/" + new File(path).getName();
                 FileUtils.copy(path, newPath);
                 path = newPath;
@@ -99,7 +123,7 @@ public class QQMsgSender {
                             MMethod.FindMethod("com.tencent.mobileqq.activity.ChatActivityFacade", null, long.class,
                                     new Class[]{MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                                             MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"), String.class});
-            CallMethod.invoke(null, QQEnvUtils.getAppRuntime(), _Session, path);
+            CallMethod.invoke(null, QAppUtils.getAppRuntime(), _Session, path);
         } catch (Exception e) {
             Log.e(e);
         }
@@ -117,7 +141,7 @@ public class QQMsgSender {
                 });
                 Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.d"), null,
                         MClass.loadClass("com.tencent.mobileqq.replymsg.d"));
-                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
+                mMethod.invoke(Call, QAppUtils.getAppRuntime(), mixRecord, _Session, 0);
             }else {
                 Method mMethod = MMethod.FindMethod("com.tencent.mobileqq.replymsg.ReplyMsgSender", null, void.class, new Class[]{
                         MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
@@ -127,7 +151,7 @@ public class QQMsgSender {
                 });
                 Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
                         MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
-                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), mixRecord, _Session, 0);
+                mMethod.invoke(Call, QAppUtils.getAppRuntime(), mixRecord, _Session, 0);
             }
 
         } catch (Exception e) {
@@ -150,7 +174,7 @@ public class QQMsgSender {
                         int.class,
                         boolean.class
                 });
-                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
+                mMethod.invoke(Call, QAppUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
             }else {
                 Object Call = MMethod.CallStaticMethodNoParam(MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"), null,
                         MClass.loadClass("com.tencent.mobileqq.replymsg.ReplyMsgSender"));
@@ -162,7 +186,7 @@ public class QQMsgSender {
                         int.class,
                         boolean.class
                 });
-                mMethod.invoke(Call, QQEnvUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
+                mMethod.invoke(Call, QAppUtils.getAppRuntime(), replyRecord, _Session, 2, 0, false);
             }
 
         } catch (Exception e) {
@@ -191,9 +215,22 @@ public class QQMsgSender {
                     MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                     MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
                     MClass.loadClass("com.tencent.mobileqq.data.MessageForShortVideo")
-            }, QQEnvUtils.getAppRuntime(), _SessionInfo, ChatMessage);
+            }, QAppUtils.getAppRuntime(), _SessionInfo, ChatMessage);
         } catch (Exception e) {
             Log.e(e);
         }
+    }
+    public static void AddAndSendMsg(Object MessageRecord) {
+        try {
+            Object MessageFacade = MMethod.CallMethodNoParam(QAppUtils.getAppRuntime(), "getMessageFacade",
+                    MClass.loadClass("com.tencent.imcore.message.QQMessageFacade"));
+            Method mMethod = MMethod.FindMethod("com.tencent.imcore.message.BaseQQMessageFacade", null, void.class, new Class[]{
+                    MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),
+                    MClass.loadClass("com.tencent.mobileqq.app.BusinessObserver"),boolean.class
+            });
+            mMethod.invoke(MessageFacade, MessageRecord, null,false);
+        } catch (Exception e) {
+        }
+
     }
 }

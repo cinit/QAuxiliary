@@ -13,10 +13,10 @@ import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import cc.ioctl.util.LayoutHelper;
+import com.hicore.QApp.QAppUtils;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
 import com.hicore.dialog.RepeaterPlusIconSettingDialog;
-import com.hicore.messageUtils.QQEnvUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.R;
 import io.github.qauxv.util.CustomMenu;
@@ -56,7 +56,7 @@ public class RepeaterHelper {
         int istroop = MField.GetField(ChatMsg, "istroop", int.class);
         if (istroop == 1 || istroop == 0) {
             String UserUin = MField.GetField(ChatMsg, "senderuin", String.class);
-            isSendFromLocal = UserUin.equals(QQEnvUtils.getCurrentUin());
+            isSendFromLocal = UserUin.equals(QAppUtils.getCurrentUin());
         } else {
             isSendFromLocal = MMethod.CallMethodNoParam(ChatMsg, "isSendFromLocal", boolean.class);
         }

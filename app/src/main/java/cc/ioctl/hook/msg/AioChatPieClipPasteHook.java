@@ -46,7 +46,7 @@ import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
-import com.hicore.messageUtils.QQMsgSender;
+import com.hicore.message.bridge.Chat_facade_bridge;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
@@ -273,7 +273,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                                            @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
         try {
             File file = SendCacheUtils.saveAsCacheFile(context, data);
-            QQMsgSender.sendPic(session, file);
+            Chat_facade_bridge.sendPic(session, file);
         } catch (IOException e) {
             FaultyDialog.show(context, e);
         }

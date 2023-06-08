@@ -3,9 +3,9 @@ package com.hicore.hook;
 import com.hicore.ReflectUtil.MClass;
 import com.hicore.ReflectUtil.MField;
 import com.hicore.ReflectUtil.MMethod;
-import com.hicore.messageUtils.QQMessageUtils;
-import com.hicore.messageUtils.QQMsgBuilder;
-import com.hicore.messageUtils.QQMsgSender;
+import com.hicore.message.common.MsgBuilder;
+import com.hicore.message.common.MsgUtils;
+import com.hicore.message.bridge.Chat_facade_bridge;
 import io.github.qauxv.util.Toasts;
 import java.util.ArrayList;
 import org.json.JSONObject;
@@ -33,58 +33,54 @@ public class Repeater {
                     AtList1 = AtList3;
                 }
                 String nowMsg = MField.GetField(chatMsg, "msg", String.class);
-                QQMsgSender.sendText(Session, nowMsg, AtList1);
+                Chat_facade_bridge.sendText(Session, nowMsg, AtList1);
                 break;
             }
             case "MessageForPic": {
-                QQMsgSender.sendPic(Session, chatMsg);
+                Chat_facade_bridge.sendPic(Session, chatMsg);
                 break;
             }
             case "MessageForPtt": {
                 String pttPath = MMethod.CallMethodNoParam(chatMsg, "getLocalFilePath", String.class);
-                QQMsgSender.sendVoice(Session, pttPath);
+                Chat_facade_bridge.sendVoice(Session, pttPath);
                 break;
             }
             case "MessageForMixedMsg": {
-                QQMsgSender.sendMix(Session, chatMsg);
+                Chat_facade_bridge.sendMix(Session, chatMsg);
                 break;
             }
             case "MessageForReplyText": {
-                QQMsgSender.sendReply(Session, chatMsg);
-                break;
-            }
-            case "MessageForScribble": {
-                QQMessageUtils.AddAndSendMsg(QQMsgBuilder.CopyToTYMessage(chatMsg));
+                Chat_facade_bridge.sendReply(Session, chatMsg);
                 break;
             }
             case "MessageForMarketFace": {
-                QQMessageUtils.AddAndSendMsg(QQMsgBuilder.CopyToMacketFaceMessage(chatMsg));
+                Chat_facade_bridge.AddAndSendMsg(MsgBuilder.copy_market_face_msg(chatMsg));
                 break;
             }
             case "MessageForArkApp": {
-                QQMsgSender.sendArkApp(Session, MField.GetField(chatMsg, "ark_app_message"));
+                Chat_facade_bridge.sendArkApp(Session, MField.GetField(chatMsg, "ark_app_message"));
                 break;
             }
             case "MessageForStructing":
             case "MessageForTroopPobing": {
-                QQMsgSender.sendStruct(Session, MField.GetField(chatMsg, "structingMsg"));
+                Chat_facade_bridge.sendStruct(Session, MField.GetField(chatMsg, "structingMsg"));
                 break;
             }
             case "MessageForAniSticker": {
-                int servID = QQMessageUtils.DecodeAntEmoCode(MField.GetField(chatMsg, "sevrId", int.class));
-                QQMsgSender.sendAnimation(Session, servID);
+                int servID = MsgUtils.DecodeAntEmoCode(MField.GetField(chatMsg, "sevrId", int.class));
+                Chat_facade_bridge.sendAnimation(Session, servID);
                 break;
             }
             case "MessageForArkFlashChat": {
-                QQMessageUtils.AddAndSendMsg(QQMsgBuilder.Copy_NewFlashChat(chatMsg));
+                Chat_facade_bridge.AddAndSendMsg(MsgBuilder.copy_new_flash_chat(chatMsg));
                 break;
             }
             case "MessageForShortVideo": {
-                QQMsgSender.QQ_Forward_ShortVideo(Session, chatMsg);
+                Chat_facade_bridge.QQ_Forward_ShortVideo(Session, chatMsg);
                 break;
             }
             case "MessageForPokeEmo": {
-                QQMessageUtils.AddAndSendMsg(QQMsgBuilder.Copy_PokeMsg(chatMsg));
+                Chat_facade_bridge.AddAndSendMsg(MsgBuilder.copy_poke_msg(chatMsg));
                 break;
             }
             default: {
