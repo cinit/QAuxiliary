@@ -32,11 +32,12 @@ android {
         val main by getting
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(listOf("/XPopup/library/src/main/java","EasyAdapter/easy-adapter/src/main/java"))
-            res.setSrcDirs(listOf("EasyAdapter/easy-adapter/src/main/res","/XPopup/library/src/main/res"))
+            java.setSrcDirs(listOf("XPopup/library/src/main/java", "EasyAdapter/easy-adapter/src/main/java"))
+            res.setSrcDirs(listOf("EasyAdapter/easy-adapter/src/main/res", "XPopup/library/src/main/res"))
         }
     }
 }
+
 dependencies {
     implementation("androidx.appcompat:appcompat:1.3.1")
     implementation("com.google.android.material:material:1.4.0")
