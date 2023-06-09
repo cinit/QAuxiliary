@@ -16,3 +16,9 @@
 [submodule "libs/libunwindstack"]
 	path = libs/libunwindstack
 	url = https://github.com/cinit/libunwindstack
+[submodule "libs/xView/EasyAdapter"]
+	path = libs/xView/EasyAdapter
+	url = https://github.com/Hicores/EasyAdapter
+[submodule "libs/xView/XPopup"]
+	path = libs/xView/XPopup
+	url = https://github.com/Hicores/XPopup

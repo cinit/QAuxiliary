@@ -186,6 +186,7 @@ dependencies {
     compileOnly(projects.libs.stub)
     implementation(projects.libs.mmkv)
     implementation(projects.libs.dexkit)
+    implementation(projects.libs.xView)
     ksp(projects.libs.ksp)
     compileOnly(libs.xposed)
     implementation(libs.androidx.core.ktx)
@@ -209,6 +210,7 @@ dependencies {
     implementation(libs.appcenter.crashes)
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.sealedEnum.runtime)
+    implementation(libs.glide)
     ksp(libs.sealedEnum.ksp)
 }
 
