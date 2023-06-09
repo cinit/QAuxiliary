@@ -33,6 +33,7 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.livefront.sealedenum.GenSealedEnum
 import com.tencent.common.app.AppInterface
 import com.tencent.mobileqq.app.QQAppInterface
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Initiator._ChatMessage
@@ -601,6 +602,13 @@ data object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
             m.isStatic && m.returnType == Void.TYPE
                 && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
         }
+}
+data object NCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {
+    // guess
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
+    override val traitString = arrayOf("^NEW$")
+    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/chats")
 }
 
 data object NPadUtil_initDeviceType : DexKitTarget.UsingStr() {

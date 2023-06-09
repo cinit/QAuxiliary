@@ -24,7 +24,9 @@ package cc.ioctl.hook.msg;
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HostInfo;
+import cc.ioctl.util.LayoutHelper;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -36,6 +38,7 @@ import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
+import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt_NT;
 import java.lang.reflect.Method;
 
 /**
@@ -50,7 +53,10 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     public static final ShowMsgCount INSTANCE = new ShowMsgCount();
 
     private ShowMsgCount() {
-        super(new DexKitTarget[]{NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE});
+        super(new DexKitTarget[]{
+                NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE,
+                NCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE
+        });
     }
 
     @NonNull
@@ -68,6 +74,9 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() {
         Method updateCustomNoteTxt = DexKit.loadMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
+        if (QAppUtils.isQQnt()){
+            updateCustomNoteTxt = DexKit.loadMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
+        }
         XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
             @Override
             protected void beforeHookedMethod(MethodHookParam param) {
@@ -83,13 +92,26 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
                     return;
                 }
                 try {
-                    if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
-                        TextView tv = (TextView) param.args[0];
-                        tv.setMaxWidth(Integer.MAX_VALUE);
-                        ViewGroup.LayoutParams lp = tv.getLayoutParams();
-                        lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                        tv.setLayoutParams(lp);
+                    if (QAppUtils.isQQnt()){
+                        int Type = (int) param.args[1];
+                        if (Type == 4 || Type == 7 || Type == 9 || Type == 3) {
+                            TextView t = (TextView) param.args[0];
+                            int Count = (int) param.args[2];
+                            String str = "" + Count;
+                            ViewGroup.LayoutParams params = t.getLayoutParams();
+                            params.width = LayoutHelper.dip2px(t.getContext(), 9 + 7 * str.length());
+                            t.setLayoutParams(params);
+                        }
+                    }else {
+                        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
+                            TextView tv = (TextView) param.args[0];
+                            tv.setMaxWidth(Integer.MAX_VALUE);
+                            ViewGroup.LayoutParams lp = tv.getLayoutParams();
+                            lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
+                            tv.setLayoutParams(lp);
+                        }
                     }
+
                 } catch (Throwable e) {
                     traceError(e);
                     throw e;
