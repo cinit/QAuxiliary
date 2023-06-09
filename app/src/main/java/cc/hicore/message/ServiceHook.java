@@ -22,6 +22,7 @@
 
 package cc.hicore.message;
 
+import cc.hicore.Utils.XLog;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -30,20 +31,22 @@ import io.github.qauxv.util.Initiator;
 
 public class ServiceHook {
     public static IKernelMsgService kernel_service;
-    public static IKernelMsgService get_kernel_service(){
-        return kernel_service;
-    }
+    private static volatile boolean isInit;
     public static void requireHook(){
-        if (kernel_service == null) {
-            XposedHelpers.findAndHookConstructor("com.tencent.qqnt.kernel.api.impl.MsgService", Initiator.getHostClassLoader(),
-                    com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService.class, "com.tencent.qqnt.kernel.api.impl.ServiceContent", new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                            super.beforeHookedMethod(param);
-                            kernel_service = (IKernelMsgService) param.args[0];
-                        }
-                    });
-
+        if (!isInit) {
+            try {
+                isInit = true;
+                XposedHelpers.findAndHookConstructor("com.tencent.qqnt.kernel.api.impl.MsgService", Initiator.getHostClassLoader(),
+                        com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService.class, "com.tencent.qqnt.kernel.api.impl.ServiceContent", new XC_MethodHook() {
+                            @Override
+                            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                                super.beforeHookedMethod(param);
+                                kernel_service = (IKernelMsgService) param.args[0];
+                            }
+                        });
+            }catch (Exception e){
+                XLog.e("ServiceHook.requireHook",e);
+            }
         }
     }
 

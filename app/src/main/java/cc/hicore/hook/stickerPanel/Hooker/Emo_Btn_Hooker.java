@@ -55,8 +55,9 @@ public class Emo_Btn_Hooker extends CommonSwitchFunctionHook {
                 ChatPanel_InitPanel_QQNT.INSTANCE,
                 AIO_Create_QQNT.INSTANCE
         });
-
-        ServiceHook.requireHook();
+        if (QAppUtils.isQQnt()){
+            ServiceHook.requireHook();
+        }
     }
 
     @NonNull
