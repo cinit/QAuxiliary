@@ -84,7 +84,7 @@ android {
                     "-Wno-unused-command-line-argument",
                     "-DMMKV_DISABLE_CRYPT",
                 )
-                cppFlags("-std=c++17", *flags)
+                cppFlags("-std=c++20", *flags)
                 cFlags("-std=c18", *flags)
                 targets += "qauxv"
             }

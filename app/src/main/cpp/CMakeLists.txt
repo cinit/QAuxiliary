@@ -42,6 +42,9 @@ add_subdirectory(../../../../libs/mmkv mmkv)
 add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
 add_subdirectory(../../../../libs/silk silk)
 add_subdirectory(../../../../libs/libunwindstack unwindstack)
+add_subdirectory(../../../../libs/fmt fmt)
+
+target_compile_definitions(fmt-header-only INTERFACE FMT_STATIC_THOUSANDS_SEPARATOR=1 FMT_USE_FLOAT=0 FMT_USE_DOUBLE=0 FMT_USE_LONG_DOUBLE=0)
 
 add_library(qauxv SHARED
         misc/version.c
@@ -77,4 +80,4 @@ target_include_directories(qauxv PRIVATE .)
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack silk c dl z ${ANDROID_LIBS})
+target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack base silk c dl fmt-header-only z ${ANDROID_LIBS})
