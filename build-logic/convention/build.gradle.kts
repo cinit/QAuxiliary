@@ -24,7 +24,6 @@ import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 
 plugins {
     `kotlin-dsl`
-    kotlin("plugin.serialization") version embeddedKotlinVersion
 }
 
 group = "io.github.qauxv.buildLogic"
@@ -39,7 +38,6 @@ dependencies {
     implementation(libs.android.tools)
     implementation(libs.kotlin.gradle)
     implementation(libs.eclipse.jgit)
-    implementation(libs.kotlinx.serialization.json)
 }
 
 java {

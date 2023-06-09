@@ -266,7 +266,7 @@ class AboutFragment : BaseRootLayoutFragment() {
             )
         )
         ret + Licenses.list.map {
-            LicenseNotice(it.libraryName, it.jumpUrl, it.author, it.license)
+            LicenseNotice(it.uniqueId, it.website!!, it.getAuthor(), it.licenses.first())
         }
     }
 

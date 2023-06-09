@@ -40,8 +40,8 @@ plugins {
     id("build-logic.android.application")
     alias(libs.plugins.changelog)
     alias(libs.plugins.ksp)
-    alias(libs.plugins.license)
     alias(libs.plugins.serialization)
+    alias(libs.plugins.aboutlibraries)
 }
 
 val currentBuildUuid = UUID.randomUUID().toString()
@@ -173,7 +173,6 @@ android {
         val variantCapped = name.capitalizeUS()
         val mergeAssets = tasks.getByName("merge${variantCapped}Assets")
         mergeAssets.dependsOn(generateEulaAndPrivacy)
-        mergeAssets.dependsOn("data${variantCapped}Descriptor")
     }
 }
 
@@ -181,16 +180,6 @@ kotlin {
     sourceSets.configureEach {
         kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
     }
-}
-
-licenseReport {
-    generateCsvReport = false
-    generateHtmlReport = false
-    generateJsonReport = true
-    generateTextReport = false
-
-    copyCsvReportToAssets = false
-    copyHtmlReportToAssets = false
 }
 
 dependencies {
@@ -249,19 +238,6 @@ androidComponents.onVariants { variant ->
         group = "qauxv"
         dependsOn(":app:install$variantCapped")
         finalizedBy(restartQQ)
-    }
-    task("data${variantCapped}Descriptor") {
-        inputs.file("${buildDir}/reports/licenses/license${variantCapped}Report.json")
-        outputs.file("${projectDir}/src/main/assets/open_source_licenses.json")
-        dependsOn("license${variantCapped}Report")
-
-        doFirst {
-            val input = inputs.files.singleFile
-            val output = outputs.files.singleFile
-            this.runCatching {
-                output.writeText(Licenses.transform(input.readText()))
-            }
-        }
     }
 }
 
