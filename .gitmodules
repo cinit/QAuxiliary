@@ -22,3 +22,6 @@
 [submodule "libs/xView/XPopup"]
 	path = libs/xView/XPopup
 	url = https://github.com/Hicores/XPopup
+[submodule "libs/fmt"]
+	path = libs/fmt
+	url = https://github.com/fmtlib/fmt
