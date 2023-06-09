@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2023 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is non-free but opensource software: you can redistribute it
@@ -20,24 +20,39 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package xyz.nextalone.data
+package cc.hicore.message.chat;
 
-import cc.hicore.ReflectUtil.MMethod
-import io.github.qauxv.bridge.ManagerHelper
-import io.github.qauxv.util.Initiator._TroopInfo
-import xyz.nextalone.util.get
-
-data class TroopInfo(val troopUin: String?) {
-
-    private val troopInfo = MMethod.CallMethod<Any>(
-        ManagerHelper.getTroopManager(),
-        _TroopInfo(),
-        arrayOf(String::class.java),
-        troopUin
-    )
-
-    var troopName = troopInfo.get("troopname")
-    var troopOwnerUin = troopInfo.get("troopowneruin", String::class.java)
-    var troopAdmin = troopInfo.get("Administrator", String::class.java)?.split("|")
-    var troopGrade = troopInfo.get("grade", Int::class.java)
+public class ChatBuilder {
+    private final CommonChat chat;
+    public static ChatBuilder group(){
+        return new ChatBuilder(0);
+    }
+    public static ChatBuilder user(){
+        return new ChatBuilder(1);
+    }
+    public static ChatBuilder pri(){
+        return new ChatBuilder(2);
+    }
+    private ChatBuilder(){
+        chat = new CommonChat();
+    }
+    private ChatBuilder(int type){
+        this();
+        chat.type = type;
+    }
+    public ChatBuilder uid(String uid){
+        chat.uid = uid;
+        return this;
+    }
+    public ChatBuilder groupUin(String groupUin){
+        chat.groupUin = groupUin;
+        return this;
+    }
+    public ChatBuilder userUin(String userUin){
+        chat.userUin = userUin;
+        return this;
+    }
+    public CommonChat build(){
+        return chat;
+    }
 }

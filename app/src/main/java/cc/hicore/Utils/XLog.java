@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2023 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is non-free but opensource software: you can redistribute it
@@ -20,24 +20,12 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package xyz.nextalone.data
+package cc.hicore.Utils;
 
-import cc.hicore.ReflectUtil.MMethod
-import io.github.qauxv.bridge.ManagerHelper
-import io.github.qauxv.util.Initiator._TroopInfo
-import xyz.nextalone.util.get
+import io.github.qauxv.util.Log;
 
-data class TroopInfo(val troopUin: String?) {
-
-    private val troopInfo = MMethod.CallMethod<Any>(
-        ManagerHelper.getTroopManager(),
-        _TroopInfo(),
-        arrayOf(String::class.java),
-        troopUin
-    )
-
-    var troopName = troopInfo.get("troopname")
-    var troopOwnerUin = troopInfo.get("troopowneruin", String::class.java)
-    var troopAdmin = troopInfo.get("Administrator", String::class.java)?.split("|")
-    var troopGrade = troopInfo.get("grade", Int::class.java)
+public class XLog {
+    public static void e(String TAG,Throwable msg){
+        Log.e("[QAuxv]"+"("+TAG+")"+Log.getStackTraceString(msg));
+    }
 }

@@ -40,7 +40,7 @@ import androidx.core.view.children
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
-import com.hicore.ReflectUtil.MField
+import cc.hicore.ReflectUtil.MField
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry

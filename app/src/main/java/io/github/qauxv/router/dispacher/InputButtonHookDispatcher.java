@@ -35,7 +35,7 @@ import androidx.annotation.NonNull;
 import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
 import cc.ioctl.hook.experimental.CardMsgSender;
 import cc.ioctl.util.HookUtils;
-import com.hicore.hook.ReplyMsgWithImg;
+import cc.hicore.hook.ReplyMsgWithImg;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;

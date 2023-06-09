@@ -26,7 +26,7 @@ import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import cc.ioctl.util.Reflex
-import com.hicore.ReflectUtil.MField
+import cc.hicore.ReflectUtil.MField
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
