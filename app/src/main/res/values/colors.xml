@@ -32,4 +32,8 @@
     <color name="hostShareSheetActionIconForegroundColorLight">#03081A</color>
     <color name="hostShareSheetActionIconForegroundColorNight">#8D8D93</color>
 
+    <color name="font_plugin">#FF000000</color>
+    <color name="bg_plugin">#FFFFFFFF</color>
+
+
 </resources>

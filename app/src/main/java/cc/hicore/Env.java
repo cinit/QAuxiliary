@@ -20,15 +20,9 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.hicore.Utils;
+package cc.hicore;
 
-import io.github.qauxv.util.Log;
-
-public class XLog {
-    public static void e(String TAG,Throwable msg){
-        Log.e("[QAuxv]"+"("+TAG+")"+Log.getStackTraceString(msg));
-    }
-    public static void e(String TAG,String msg){
-        Log.e("[QAuxv]"+"("+TAG+")"+msg);
-    }
+public class Env {
+    public static String app_save_path = "/sdcard/Android/data/com.tencent.mobileqq/files/.tool";
+    public static Object AIOParam;
 }

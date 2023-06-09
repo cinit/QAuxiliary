@@ -20,19 +20,13 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package cc.hicore.message.chat;
+package cc.hicore.ReflectUtil;
 
-import io.github.qauxv.bridge.SessionInfoImpl;
+import android.view.View;
 
-public class SessionBuilder {
-    public static Object buildSession(CommonChat chat){
-        if (chat.type == 0){
-            return SessionInfoImpl.createSessionInfo(chat.groupUin,1);
-        }else if (chat.type == 1){
-            return SessionInfoImpl.createSessionInfo(chat.userUin,0);
-        }else {
-            throw new RuntimeException("Not support type");
-        }
-
+public class MRes {
+    public static String getViewResName(View v){
+        if (v == null)return "";
+        return v.getContext().getResources().getResourceEntryName(v.getId());
     }
 }

@@ -23,6 +23,7 @@
 package cc.hicore.message.bridge;
 
 import cc.hicore.QApp.QAppUtils;
+import cc.hicore.message.ServiceHook;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
@@ -37,16 +38,12 @@ import java.util.ArrayList;
 import java.util.HashMap;
 
 public class Nt_kernel_bridge {
-    private static IKernelMsgService kernel_service;
-    private static void checkKernelMsgService(){
-        assert kernel_service != null;
-    }
+
     public static void send_msg(Contact contact, ArrayList<MsgElement> elements){
-        checkKernelMsgService();
         HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
         attrMap.put(0,getDefaultAttributeInfo());
 
-        kernel_service.sendMsg(kernel_service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
+        ServiceHook.kernel_service.sendMsg(ServiceHook.kernel_service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
 
         });
     }
@@ -61,6 +58,6 @@ public class Nt_kernel_bridge {
         VASMsgElement element = new VASMsgElement(plate,bubble,pendant,font,iceBreak);
 
 
-        return new MsgAttributeInfo(0,0,element,null,null,null,null,null,null,null);
+        return new MsgAttributeInfo(0,0,element,null,null,null,null,null,null,null,null);
     }
 }

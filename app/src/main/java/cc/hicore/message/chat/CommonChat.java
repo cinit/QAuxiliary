@@ -22,9 +22,16 @@
 
 package cc.hicore.message.chat;
 
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
+
 public class CommonChat {
+    public static final int TYPE_GROUP = 1;
+    public static final int TYPE_USER= 0;
+    public static final int TYPE_PRIVATE = 2;
     public int type;
     public String uid;
     public String groupUin;
     public String userUin;
+
+    public Contact contact;
 }

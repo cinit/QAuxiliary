@@ -22,8 +22,10 @@
 
 package cc.hicore.QApp;
 
+import cc.hicore.Env;
 import cc.hicore.ReflectUtil.MClass;
 import cc.hicore.ReflectUtil.MMethod;
+import io.github.qauxv.util.Initiator;
 
 public class QAppUtils {
     public static long getServiceTime(){
@@ -42,7 +44,12 @@ public class QAppUtils {
         }
     }
     public static boolean isQQnt(){
-        return false;
+        try {
+            return Initiator.load("com.tencent.qqnt.base.BaseActivity") != null;
+        }catch (Exception e){
+            return false;
+        }
+
     }
     public static String getCurrentUin(){
         try {

@@ -26,36 +26,32 @@ import android.text.TextUtils;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
-import cc.hicore.message.chat.SessionBuilder;
+import cc.hicore.message.chat.SessionUtils;
 import cc.hicore.message.chat.CommonChat;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
+import de.robv.android.xposed.XposedBridge;
 import java.util.ArrayList;
 
 public class MsgSender {
     public static void send_text(CommonChat chat,String text){
         if (QAppUtils.isQQnt()){
-            Contact contact = new Contact();
-            if (chat.type == 0) contact.setChatType(2);
-            else if (chat.type == 1) contact.setChatType(1);
-            else if (chat.type == 2) contact.setChatType(100);
-            if (TextUtils.isEmpty(chat.uid)){
-                if (chat.type == 0)contact.setPeerUid(chat.groupUin);
-                else if (chat.type == 1)contact.setPeerUid(QAppUtils.UserUinToPeerID(chat.userUin));
-                else if (chat.type == 2) throw new RuntimeException("Not support.");
-            }else {
-                contact.setPeerUid(chat.uid);
-            }
 
             ArrayList<MsgElement> newMsgArr = new ArrayList<>();
             newMsgArr.add(MsgBuilder.nt_build_text(text));
-            Nt_kernel_bridge.send_msg(contact,newMsgArr);
+            Nt_kernel_bridge.send_msg(SessionUtils.buildContact(chat),newMsgArr);
         }else {
-            Chat_facade_bridge.sendText(SessionBuilder.buildSession(chat),text,new ArrayList<>());
+            Chat_facade_bridge.sendText(SessionUtils.buildSession(chat),text,new ArrayList<>());
         }
     }
-    public static void send_pic(CommonChat chat,String pic){
-
+    public static void send_pic(CommonChat chat,String picPath){
+        if (QAppUtils.isQQnt()){
+            ArrayList<MsgElement> newMsgArr = new ArrayList<>();
+            newMsgArr.add(MsgBuilder.nt_build_pic(picPath));
+            Nt_kernel_bridge.send_msg(SessionUtils.buildContact(chat),newMsgArr);
+        }else {
+            Chat_facade_bridge.sendPic(SessionUtils.buildSession(chat),picPath);
+        }
     }
     public static void send_voice(CommonChat chat,String voicePath){
 

@@ -663,3 +663,15 @@ data object GroupSpecialCare_getCareTroopMemberMsgText : DexKitTarget.UsingStr()
     override val traitString = arrayOf("getCareTroopMemberMsgText: invoked.  troopMemberIsCared: ")
     override val filter = DexKitFilter.allowAll
 }
+data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("funBtnLayout.findViewById(R.id.fun_btn)")
+    override val declaringClass = "I don't know."
+    override val filter = DexKitFilter.allowAll
+}
+data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("rootVMBuild")
+    override val declaringClass = "I don't know."
+    override val filter = DexKitFilter.allowAll
+}

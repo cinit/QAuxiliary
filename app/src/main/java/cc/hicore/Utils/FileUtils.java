@@ -32,6 +32,32 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class FileUtils {
+    public static void WriteToFile(String File, String FileContent) {
+        try {
+            File parent = new File(File).getParentFile();
+            if (!parent.exists()) parent.mkdirs();
+            FileOutputStream fOut = new FileOutputStream(File);
+            fOut.write(FileContent.getBytes(StandardCharsets.UTF_8));
+            fOut.close();
+        } catch (Exception e) {
+        }
+    }
+    public static void deleteFile(File file) {
+        if (file == null) {
+            return;
+        }
+        File[] files = file.listFiles();
+        if (files == null) return;
+        //遍历该目录下的文件对象
+        for (File f : files) {
+            if (f.isDirectory()) {
+                deleteFile(f);
+            } else {
+                f.delete();
+            }
+        }
+        file.delete();
+    }
     public static String ReadFileString(File f) {
         try {
             FileInputStream fInp = new FileInputStream(f);

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:clickable="true"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="这是表情包的名字"
+        android:layout_marginLeft="10dp"
+        android:id="@+id/Sticker_Panel_Item_Name"
+        android:layout_marginBottom="10dp"
+        android:layout_marginTop="3dp"
+        android:textSize="16sp"
+        android:textColor="#888888"/>
+    <ImageButton
+        android:layout_width="22dp"
+        android:layout_height="22dp"
+        android:background="@drawable/sticker_pack_set_icon"
+        android:id="@+id/Sticker_Panel_Set_Item"
+        android:layout_marginTop="5dp"
+        android:layout_marginRight="10dp"
+        android:layout_alignParentRight="true"/>
+    <LinearLayout
+        android:layout_below="@+id/Sticker_Panel_Item_Name"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:id="@+id/Sticker_Item_Container"/>
+
+
+</RelativeLayout>

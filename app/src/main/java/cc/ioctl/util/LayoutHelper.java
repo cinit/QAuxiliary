@@ -22,14 +22,18 @@
 
 package cc.ioctl.util;
 
+import android.app.Activity;
 import android.content.Context;
 import android.content.res.TypedArray;
+import android.graphics.Point;
+import android.graphics.Rect;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
+import cc.hicore.Utils.ContextUtils;
 import io.github.qauxv.util.Log;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -176,5 +180,33 @@ public class LayoutHelper {
         } finally {
             obtainStyledAttributes.recycle();
         }
+    }
+    public static int getScreenWidth(Context context) {
+        return context.getResources().getDisplayMetrics().widthPixels;
+    }
+
+    public static int getScreenHeight(Context context) {
+        return context.getResources().getDisplayMetrics().heightPixels;
+    }
+    public static boolean isSmallWindowNeedPlay(View v) {
+        Rect rect = new Rect();
+        boolean visibleRect = v.getGlobalVisibleRect(rect);
+
+        if (visibleRect) {
+            Point point = new Point();
+            Context baseContext = v.getContext();
+            if (baseContext instanceof ContextUtils.FixContext) {
+                ContextUtils.FixContext fix = (ContextUtils.FixContext) v.getContext();
+                baseContext = fix.getBaseContext();
+            }
+
+
+            if (baseContext instanceof Activity) {
+                ((Activity) baseContext).getWindowManager().getDefaultDisplay().getSize(point);
+
+                return rect.top >= 0 && rect.top <= point.y && rect.left >= 0 && rect.left <= point.x;
+            }
+        }
+        return false;
     }
 }
