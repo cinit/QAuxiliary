@@ -14,7 +14,9 @@ namespace utils {
 
 void DumpCurrentThreadStackTraceToLogcat(android_LogPriority priority);
 
-void ThreadStackTraceToLogcat(uint32_t tid, android_LogPriority priority);
+void DumpThreadStackTraceToLogcat(uint32_t tid, android_LogPriority priority);
+
+void DumpCurrentProcessWithUContext(void* uctx, android_LogPriority priority);
 
 } // utils
 

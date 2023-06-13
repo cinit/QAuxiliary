@@ -37,4 +37,13 @@ std::vector<std::string> SplitString(std::string_view str, std::string_view deli
     return result;
 }
 
+inline bool IsPrintableAscii(char c) noexcept {
+    return c >= 0x20 && c <= 0x7E;
+}
+
+std::string LastPartOf(std::string_view str, std::string_view delimiter) {
+    auto parts = SplitString(str, delimiter);
+    return parts[parts.size() - 1];
+}
+
 }

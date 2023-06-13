@@ -34,6 +34,10 @@ namespace utils {
 
 std::vector<std::string> SplitString(std::string_view str, std::string_view delimiter);
 
+bool IsPrintableAscii(char c) noexcept;
+
+std::string LastPartOf(std::string_view str, std::string_view delimiter);
+
 }
 
 #endif //QAUXV_TEXTUTILS_H

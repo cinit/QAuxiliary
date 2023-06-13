@@ -64,6 +64,7 @@ add_library(qauxv SHARED
         utils/ElfView.cpp
         utils/FileMemMap.cpp
         utils/ThreadUtils.cc
+        utils/MemoryUtils.cc
 
         ntkernel/NtRecallMsgHook.cc
 
