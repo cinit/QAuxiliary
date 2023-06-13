@@ -1,6 +1,10 @@
 #ifndef QAUXV_LOG_H
 #define QAUXV_LOG_H
 
+#ifdef __cplusplus
+
+#include <fmt/format.h>
+
 #ifdef __ANDROID__
 
 #include <android/log.h>
@@ -32,9 +36,11 @@ int __android_log_print(int prio, const char* tag, const char* fmt, ...) __attri
 
 #endif
 
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "QAuxv", __VA_ARGS__)
-#define LOGI(...) __android_log_print(ANDROID_LOG_INFO, "QAuxv", __VA_ARGS__)
-#define LOGW(...) __android_log_print(ANDROID_LOG_WARN, "QAuxv",  __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "QAuxv", __VA_ARGS__)
+#define LOGD(...) ::__android_log_write(ANDROID_LOG_DEBUG, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
+#define LOGI(...) ::__android_log_write(ANDROID_LOG_INFO, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
+#define LOGW(...) ::__android_log_write(ANDROID_LOG_WARN, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
+#define LOGE(...) ::__android_log_write(ANDROID_LOG_ERROR, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
+
+#endif
 
 #endif //QAUXV_LOG_H

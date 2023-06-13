@@ -10,7 +10,7 @@
 
 #include <linux_syscall_support.h>
 
-#include "android/log.h"
+#include "utils/Log.h"
 #include "md5.cpp"
 
 #ifndef MODULE_SIGNATURE
@@ -26,13 +26,10 @@ static_assert(sizeof(void *) == 8, "64-bit pointer size expected");
 static_assert(sizeof(void *) == 4, "32-bit pointer size expected");
 #endif
 
-#define LOGD(...) __android_log_print(ANDROID_LOG_DEBUG, "QAuxv", __VA_ARGS__)
-#define LOGE(...) __android_log_print(ANDROID_LOG_ERROR, "QAuxv", __VA_ARGS__)
-
 namespace qauxv::utils {
 
 int dumpMemory(int fd, const void *address, size_t size) {
-    LOGD("dump memory: %p, %zu to fd %d", address, size, fd);
+    LOGD("dump memory: {}, {} to fd {}", address, size, fd);
     if (size == 0) {
         return 0;
     }
@@ -50,7 +47,7 @@ int dumpMemory(int fd, const void *address, size_t size) {
                 continue;
             } else {
                 int err = errno;
-                LOGE("error write(%d, %p, %zu): %s", fd, (const uint8_t *) (address) + written, size - written, strerror(err));
+                LOGE("error write({}, 0x{:x}, {}): {}", fd, (uintptr_t) address + written, size - written, strerror(err));
                 return -err;
             }
         }

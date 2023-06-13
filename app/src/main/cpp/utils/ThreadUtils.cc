@@ -20,11 +20,11 @@ void DumpThreadStackTraceToLogcat(uint32_t tid, android_LogPriority priority) {
     AndroidLocalUnwinder unwinder;
     bool result = unwinder.Unwind(tid, data);
     if (!result) {
-        LOGE("Unwind failed for tid: %d, error: %s", tid, data.GetErrorString().c_str());
+        LOGE("Unwind failed for tid: {}, error: {}", tid, data.GetErrorString());
         return;
     }
     for (const auto& frame: data.frames) {
-        __android_log_print(priority, "QAuxv", "%s", unwinder.FormatFrame(frame).c_str());
+        __android_log_write(priority, "QAuxv", unwinder.FormatFrame(frame).c_str());
     }
 }
 
@@ -260,7 +260,7 @@ void DumpCurrentProcessWithUContext(void* uctx, android_LogPriority priority) {
     AndroidLocalUnwinder unwinder;
     bool result = unwinder.Unwind(const_cast<void*>(uctx), data);
     if (!result) {
-        LOGE("Unwind failed for uctx: %p, error: %s", uctx, data.GetErrorString().c_str());
+        LOGE("Unwind failed for uctx: {}, error: {}", uctx, data.GetErrorString());
         return;
     }
     // dump ucontext
@@ -268,9 +268,9 @@ void DumpCurrentProcessWithUContext(void* uctx, android_LogPriority priority) {
     std::ostringstream os;
     os << "UContext: " << std::endl;
     ucontext.Dump(os);
-    __android_log_print(priority, "QAuxv", "%s", os.str().c_str());
+    __android_log_write(priority, "QAuxv", os.str().c_str());
     for (const auto& frame: data.frames) {
-        __android_log_print(priority, "QAuxv", "%s", unwinder.FormatFrame(frame).c_str());
+        __android_log_write(priority, "QAuxv", unwinder.FormatFrame(frame).c_str());
     }
 }
 
