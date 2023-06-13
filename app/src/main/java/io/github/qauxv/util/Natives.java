@@ -235,7 +235,7 @@ public class Natives {
                 throwIfJniError(e1);
                 // direct memory map load failed, extract and dlopen
                 File libname = extractNativeLibrary(ctx, "qauxv", abi);
-                // registerNativeLibEntry(libname.getName());
+                registerNativeLibEntry(libname.getName());
                 try {
                     System.load(libname.getAbsolutePath());
                     Log.d("dlopen by extract success");
