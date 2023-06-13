@@ -35,6 +35,7 @@ import cc.ioctl.hook.chat.GagInfoDisclosure;
 import cc.ioctl.hook.experimental.FileRecvRedirect;
 import cc.ioctl.hook.experimental.ForcePadMode;
 import cc.ioctl.hook.misc.CustomSplash;
+import cc.ioctl.hook.misc.DisableQQCrashReportManager;
 import cc.ioctl.hook.msg.RevokeMsgHook;
 import cc.ioctl.hook.notification.MuteQZoneThumbsUp;
 import cc.ioctl.hook.ui.misc.OptXListViewScrollBar;
@@ -107,6 +108,7 @@ public class MainHook {
             Log.i("Safe mode enabled, disable hooks");
         }
         if (!safeMode) {
+            HookInstaller.allowEarlyInit(DisableQQCrashReportManager.INSTANCE);
             HookInstaller.allowEarlyInit(RevokeMsgHook.INSTANCE);
             HookInstaller.allowEarlyInit(MuteQZoneThumbsUp.INSTANCE);
             HookInstaller.allowEarlyInit(MuteAtAllAndRedPacket.INSTANCE);
