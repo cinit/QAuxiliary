@@ -46,7 +46,7 @@ static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
  * Method:    mwrite
  * Signature: (JI[BI)V
  */
-EXPORT void Java_io_github_qauxv_util_Natives_mwrite
+EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mwrite
         (JNIEnv *env, jclass clz, jlong ptr, jint len, jbyteArray arr, jint offset) {
     auto *bufptr = (jbyte *) ptr;
     int blen = env->GetArrayLength(arr);
@@ -70,7 +70,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_mwrite
  * Method:    mread
  * Signature: (JI[BI)V
  */
-EXPORT void Java_io_github_qauxv_util_Natives_mread
+EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mread
         (JNIEnv *env, jclass, jlong ptr, jint len, jbyteArray arr, jint offset) {
     auto *bufptr = (jbyte *) ptr;
     int blen = env->GetArrayLength(arr);
@@ -94,7 +94,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_mread
  * Method:    malloc
  * Signature: (I)J
  */
-EXPORT jlong Java_io_github_qauxv_util_Natives_malloc
+EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_malloc
         (JNIEnv *env, jclass, jint len) {
     auto ptr = (jlong) malloc(len);
     return ptr;
@@ -105,7 +105,7 @@ EXPORT jlong Java_io_github_qauxv_util_Natives_malloc
  * Method:    free
  * Signature: (J)V
  */
-EXPORT void Java_io_github_qauxv_util_Natives_free(JNIEnv *, jclass, jlong ptr) {
+EXPORT extern "C" void Java_io_github_qauxv_util_Natives_free(JNIEnv *, jclass, jlong ptr) {
     if (ptr != 0L) {
         free((void *) ptr);
     }
@@ -116,7 +116,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_free(JNIEnv *, jclass, jlong ptr) 
  * Method:    memcpy
  * Signature: (JJI)V
  */
-EXPORT void
+EXPORT extern "C" void
 Java_io_github_qauxv_util_Natives_memcpy(JNIEnv *, jclass, jlong dest, jlong src, jint n) {
     memcpy((void *) dest, (void *) src, n);
 }
@@ -126,7 +126,7 @@ Java_io_github_qauxv_util_Natives_memcpy(JNIEnv *, jclass, jlong dest, jlong src
  * Method:    memset
  * Signature: (JII)V
  */
-EXPORT void Java_io_github_qauxv_util_Natives_memset
+EXPORT extern "C" void Java_io_github_qauxv_util_Natives_memset
         (JNIEnv *, jclass, jlong addr, jint c, jint num) {
     memset((void *) addr, c, num);
 }
@@ -136,7 +136,7 @@ EXPORT void Java_io_github_qauxv_util_Natives_memset
  * Method:    mprotect
  * Signature: (JII)I
  */
-EXPORT jint
+EXPORT extern "C" jint
 Java_io_github_qauxv_util_Natives_mprotect(JNIEnv *, jclass, jlong addr, jint len, jint prot) {
     if (mprotect((void *) addr, len, prot)) {
         return errno;
@@ -150,7 +150,7 @@ Java_io_github_qauxv_util_Natives_mprotect(JNIEnv *, jclass, jlong addr, jint le
  * Method:    dlsym
  * Signature: (JLjava/lang/String;)J
  */
-EXPORT jlong
+EXPORT extern "C" jlong
 Java_io_github_qauxv_util_Natives_dlsym(JNIEnv *env, jclass, jlong h, jstring name) {
     const char *p;
     jboolean copy;
@@ -166,7 +166,7 @@ Java_io_github_qauxv_util_Natives_dlsym(JNIEnv *env, jclass, jlong h, jstring na
  * Method:    dlopen
  * Signature: (Ljava/lang/String;I)J
  */
-EXPORT jlong
+EXPORT extern "C" jlong
 Java_io_github_qauxv_util_Natives_dlopen(JNIEnv *env, jclass, jstring name, jint flag) {
     const char *p;
     jboolean copy;
@@ -182,7 +182,7 @@ Java_io_github_qauxv_util_Natives_dlopen(JNIEnv *env, jclass, jstring name, jint
  * Method:    dlclose
  * Signature: (J)I
  */
-EXPORT jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv *, jclass, jlong h) {
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv *, jclass, jlong h) {
     return (jint) dlclose((void *) h);
 }
 
@@ -191,7 +191,7 @@ EXPORT jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv *, jclass, jlong h)
  * Method:    dlerror
  * Signature: ()Ljava/lang/String;
  */
-EXPORT jstring Java_io_github_qauxv_util_Natives_dlerror
+EXPORT extern "C" jstring Java_io_github_qauxv_util_Natives_dlerror
         (JNIEnv *env, jclass) {
     const char *str = dlerror();
     if (str == nullptr) {
@@ -205,7 +205,7 @@ EXPORT jstring Java_io_github_qauxv_util_Natives_dlerror
  * Method:    sizeofptr
  * Signature: ()I
  */
-EXPORT jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv *, jclass) {
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv *, jclass) {
     return sizeof(void *);
 }
 
@@ -214,7 +214,7 @@ EXPORT jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv *, jclass) {
  * Method:    getpagesize
  * Signature: ()I
  */
-EXPORT jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv *, jclass) {
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv *, jclass) {
     return getpagesize();
 }
 
@@ -223,7 +223,7 @@ EXPORT jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv *, jclass) {
  * Method:    call
  * Signature: (J)J
  */
-EXPORT jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv *env, jclass, jlong addr) {
+EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv *env, jclass, jlong addr) {
     void *(*fun)();
     fun = (void *(*)()) (addr);
     if (fun == nullptr) {
@@ -240,7 +240,7 @@ EXPORT jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv *env, jclass, jlon
  * Method:    call
  * Signature: (JJ)J
  */
-EXPORT jlong Java_io_github_qauxv_util_Natives_call__JJ
+EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__JJ
         (JNIEnv *env, jclass, jlong addr, jlong arg) {
     void *(*fun)(void *);
     fun = (void *(*)(void *)) (addr);
@@ -409,7 +409,7 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     }
 }
 
-EXPORT jint JNI_OnLoad(JavaVM *vm, void *reserved) {
+EXPORT extern "C" jint JNI_OnLoad(JavaVM *vm, void *reserved) {
     JNIEnv *env = nullptr;
     if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;

@@ -4,7 +4,7 @@
 #include <jni.h>
 #include <stdint.h>
 
-#define EXPORT extern "C" __attribute__((visibility("default")))
+#define EXPORT __attribute__((visibility("default")))
 //#define null nullptr
 typedef unsigned char uchar;
 

@@ -126,7 +126,7 @@ void HookLoadLibrary() {
 }
 
 // called by Xposed framework
-EXPORT NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
+EXPORT extern "C" NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
     sNativeHookHandle.hookFunction = entries->hookFunc;
     qauxv::sHandleLoadLibraryCallbackInitialized = true;
     return &qauxv::HandleLoadLibrary;
