@@ -269,14 +269,17 @@ tasks.register("checkGitSubmodule") {
     group = "qauxv"
     val projectDir = rootProject.projectDir
     doLast {
-        listOf(
-            "libs/mmkv/MMKV/Core",
-            "libs/stub/qq-stub",
-            "libs/dexkit/DexKit/Core",
-        ).forEach {
-            val submoduleDir = File(projectDir, it.replace('/', File.separatorChar))
+        val submoduleContentLines = File(projectDir, ".gitmodules").readText().replace('\r', '\n').split('\n')
+        // regex '[submodule "(.+)"]'
+        val prefix = "[submodule \""
+        val suffix = "\"]"
+        val capturedSubmodulePaths = submoduleContentLines
+            .filter { it.startsWith(prefix) && it.endsWith(suffix) }
+            .map { it.substring(prefix.length, it.length - suffix.length) }
+        capturedSubmodulePaths.forEach {
+            val submoduleDir = File(projectDir, it + "/.git")
             if (!submoduleDir.exists()) {
-                throw IllegalStateException(
+                error(
                     "submodule dir not found: $submoduleDir" +
                         "\nPlease run 'git submodule init' and 'git submodule update' manually."
                 )
