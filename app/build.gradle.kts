@@ -82,7 +82,6 @@ android {
                     "-Wno-unused-value",
                     "-Wno-unused-variable",
                     "-Wno-unused-command-line-argument",
-                    "-DMMKV_DISABLE_CRYPT",
                 )
                 cppFlags("-std=c++20", *flags)
                 cFlags("-std=c18", *flags)
