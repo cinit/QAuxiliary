@@ -193,6 +193,18 @@ class AboutFragment : BaseRootLayoutFragment() {
                 "GPL-3.0 License"
             ),
             LicenseNotice(
+                "Dobby",
+                "https://github.com/jmpews/Dobby",
+                "jmpews",
+                "Apache License 2.0"
+            ),
+            LicenseNotice(
+                "{fmt}",
+                "https://github.com/fmtlib/fmt",
+                "Copyright (c) 2012 - present, Victor Zverovich and {fmt} contributors",
+                "MIT License"
+            ),
+            LicenseNotice(
                 "CustoMIUIzer",
                 "https://code.highspec.ru/Mikanoshi/CustoMIUIzer",
                 "Mikanoshi",
