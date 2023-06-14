@@ -36,7 +36,7 @@ import xyz.nextalone.util.isStatic
 @UiItemAgentEntry
 object DisableQQCrashReportManager : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
 
-    override val name = "禁用 QQ 崩溃上报"
+    override val name = "禁用 QQCrashReportManager"
     override val description = "仅限调试，无实际用途"
     override val uiItemLocation = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
     override val isApplicationRestartRequired = true
