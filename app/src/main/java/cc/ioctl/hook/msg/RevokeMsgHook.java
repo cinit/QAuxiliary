@@ -31,6 +31,7 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.view.View;
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
@@ -44,9 +45,11 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
+import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.CMessageRecordFactory;
@@ -348,6 +351,70 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             list.add(revokeGreyTip);
             QQMessageFacade.commitMessageRecordList(list, selfUin);
         }
+    }
+
+    /**
+     * Called by NotifyRecallMsgEventForC2c in NtRecallMsgHook.cc from native.
+     * <p>
+     * We are not allowed to throw any exception in this method.
+     */
+    @Keep
+    private static void handleC2cRecallMsgFromNtKernel(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq) {
+        SyncUtils.async(() -> {
+            try {
+                RevokeMsgHook.INSTANCE.onRecallC2cMsg(fromUid, toUid, random64, timeSeconds, msgUid, msgClientSeq);
+            } catch (Exception | LinkageError | AssertionError e) {
+                RevokeMsgHook.INSTANCE.traceError(e);
+            }
+        });
+    }
+
+    private void onRecallC2cMsg(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq)
+            throws ReflectiveOperationException {
+        String fromUin = RelationNTUinAndUidApi.getUinFromUid(fromUid);
+        String toUin = RelationNTUinAndUidApi.getUinFromUid(toUid);
+        if (TextUtils.isEmpty(fromUin)) {
+            Log.e("onRecallC2cMsg fatal: fromUin is empty");
+            return;
+        }
+        if (TextUtils.isEmpty(toUin)) {
+            Log.e("onRecallC2cMsg fatal: toUin is empty");
+            return;
+        }
+        Random random = new Random();
+        // C2C PM
+        Object msgObject = null; // getMessage(fromUin, 0, msgClientSeq, msgUid); broken unusable
+        String selfUin = AppRuntimeHelper.getAccount();
+        String friendUin = fromUin;
+        String greyMsg;
+//        Log.d("onRecallC2cMsg: selfUin: " + selfUin + ", friendUin: " + friendUin + ", msgUid: " + msgUid
+//                + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds);
+        String revokerPron = selfUin.equals(fromUin) ? "你" : "对方";
+        if (msgObject == null) {
+            greyMsg = revokerPron + "撤回了一条消息（没收到）, msgUid: " + msgUid
+                    + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds;
+        } else {
+            String message = getMessageContentStripped(msgObject);
+            int msgtype = getMessageType(msgObject);
+            boolean hasMsgInfo = false;
+            greyMsg = revokerPron + "尝试撤回一条消息";
+            if (msgtype == -1000 /*text msg*/) {
+                if (!TextUtils.isEmpty(message)) {
+                    greyMsg += ": " + message;
+                }
+            }
+            if (!hasMsgInfo) {
+                greyMsg += ", msgUid: " + msgUid + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds;
+            }
+        }
+        Log.d("---> start add grey tip");
+        Object revokeGreyTip = createBarePlainGreyTip(friendUin, 0, fromUin, timeSeconds + 1, greyMsg, msgUid + random.nextInt(),
+                msgClientSeq + random.nextInt());
+        List<Object> list = new ArrayList<>(1);
+        list.add(revokeGreyTip);
+        QQMessageFacade.commitMessageRecordList(list, selfUin);
+        // TODO: 2023-06-14 add grey tip not working
+        Log.d("---> end add grey tip");
     }
 
     private Bundle createTroopMemberHighlightItem(String memberUin) {

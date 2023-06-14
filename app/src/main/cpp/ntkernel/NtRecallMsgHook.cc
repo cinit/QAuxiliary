@@ -35,10 +35,10 @@ using namespace utils;
 
 static bool sIsHooked = false;
 
-void (* gRecallGroupSysMsgCallback)(void*, void*, void*) = nullptr;
-void (* gC2cGroupSysMsgCallback)(void*, void*, void*) = nullptr;
-
 EXPORT extern "C" void* gLibkernelBaseAddress = nullptr;
+
+jclass klassRevokeMsgHook = nullptr;
+jmethodID handleC2cRecallMsgFromNtKernel = nullptr;
 
 uint64_t ThunkGetInt64Property(const void* thiz, int property) {
     // vtable
@@ -85,17 +85,63 @@ public:
 
 };
 
-void HandleRecallGroupSysMsgCallback(void* p1, void* p2, void* p3) {
-    if (*(void**) p3 == nullptr) {
-        LOGE("[p3] is null, return");
+void (* sOriginHandleGroupRecallSysMsgCallback)(void*, void*, void*) = nullptr;
+
+void HandleGroupRecallSysMsgCallback(void* p1, void* p2, void* p3) {
+    if (p3 == nullptr || *(void**) p3 == nullptr) {
+        LOGE("HandleRecallGroupSysMsgCallback p3 == null, todo, wip, return");
         return;
     }
     // TODO: get group id, etc
 }
 
-void HandleC2cGroupSysMsgCallback(void* p1, void* p2, void* p3) {
-    if (*(void**) p3 == nullptr) {
-        LOGE("[p3] is null, return");
+void (* sOriginHandleC2cRecallSysMsgCallback)(void*, void*, void*) = nullptr;
+
+void NotifyRecallMsgEventForC2c(const std::string& fromUid, const std::string& toUid,
+                                uint64_t random64, uint64_t timeSeconds,
+                                uint64_t msgUid, uint32_t msgClientSeq) {
+    JavaVM* vm = HostInfo::GetJavaVM();
+    if (vm == nullptr) {
+        LOGE("NotifyRecallMsgEventForC2c fatal vm == null");
+        return;
+    }
+    if (klassRevokeMsgHook == nullptr) {
+        LOGE("NotifyRecallMsgEventForC2c fatal klassRevokeMsgHook == null");
+        return;
+    }
+    // check if current thread is attached to jvm
+    JNIEnv* env = nullptr;
+    bool isAttachedManually = false;
+    jint err = vm->GetEnv((void**) &env, JNI_VERSION_1_6);
+    if (err == JNI_EDETACHED) {
+        if (vm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+            LOGE("NotifyRecallMsgEventForC2c fatal AttachCurrentThread failed");
+            return;
+        }
+        isAttachedManually = true;
+    } else if (env == nullptr) {
+        LOGE("NotifyRecallMsgEventForC2c fatal GetEnv failed, err = {}", err);
+        return;
+    }
+    // call java method
+    env->CallStaticVoidMethod(klassRevokeMsgHook, handleC2cRecallMsgFromNtKernel,
+                              env->NewStringUTF(fromUid.c_str()),
+                              env->NewStringUTF(toUid.c_str()),
+                              (jlong) random64, (jlong) timeSeconds, (jlong) msgUid, (jint) msgClientSeq);
+    // check if exception occurred
+    if (env->ExceptionCheck()) {
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+    }
+    // detach thread if attached manually
+    if (isAttachedManually) {
+        vm->DetachCurrentThread();
+    }
+}
+
+void HandleC2cRecallSysMsgCallback(void* p1, void* p2, void* p3) {
+    if (p3 == nullptr || *(void**) p3 == nullptr) {
+        LOGE("HandleC2cGroupSysMsgCallback BUG !!! *p3 = null, this should not happen!!!");
         return;
     }
 
@@ -111,14 +157,6 @@ void HandleC2cGroupSysMsgCallback(void* p1, void* p2, void* p3) {
 
     static_assert(sizeof(std::vector<int>) == sizeof(std::array<void*, 3>), "libcxx vector size not match");
     const auto& objects = *reinterpret_cast<const std::vector<RevokeMsgInfoAccess::UnknownObjectStub16>*>(&vectorResultStub);
-
-    LOGD("vector size={}", (int) objects.size());
-
-    LOGD("aioType={}", 0);
-
-    std::optional<int> pp;
-
-    static_assert(sizeof(pp) == 8);
 
     if (!objects.empty()) {
 
@@ -141,17 +179,16 @@ void HandleC2cGroupSysMsgCallback(void* p1, void* p2, void* p3) {
 //        std::string tmpString;
 //        ThunkCallAPI(x0, x1, 0x10, 1, tmpInt, tmpString);
 
-        auto fromUid = ThunkGetStringProperty(objects[0]._unk0_8, 1);
-        auto toUid = ThunkGetStringProperty(objects[0]._unk0_8, 2);
-        // from_uid:u_PoH6ywXaEZq5_jMgUbjv6w to_uid:u_mDkaosvY6Wp7LmB-QR6sgw
-        auto randomId = ThunkGetInt64Property(objects[0]._unk0_8, 6);
-        auto timeSeconds = ThunkGetInt64Property(objects[0]._unk0_8, 5);
-        auto msgUid = ThunkGetInt64Property(objects[0]._unk0_8, 4);
+        for (const auto& obj: objects) {
+            auto fromUid = ThunkGetStringProperty(obj._unk0_8, 1);
+            auto toUid = ThunkGetStringProperty(obj._unk0_8, 2);
+            auto randomId = ThunkGetInt64Property(obj._unk0_8, 6);
+            auto timeSeconds = ThunkGetInt64Property(obj._unk0_8, 5);
+            auto msgUid = ThunkGetInt64Property(obj._unk0_8, 4);
+            auto msgClientSeq = ThunkGetInt32Property(obj._unk0_8, 3);
 
-        auto unknown3 = ThunkGetInt32Property(objects[0]._unk0_8, 3);
-
-        LOGD("from_uid:{} to_uid:{} random_id:{} time_seconds:{} msg_uid:{}, unknown3:{}",
-             fromUid, toUid, randomId, timeSeconds, msgUid, unknown3);
+            NotifyRecallMsgEventForC2c(fromUid, toUid, randomId, timeSeconds, msgUid, msgClientSeq);
+        }
     }
 }
 
@@ -187,11 +224,11 @@ bool InitInitNtKernelRecallMsgHook() {
             void* c2c = (void*) (baseAddress + offsetC2c);
             void* group = (void*) (baseAddress + offsetGroup);
             LOGI("InitInitNtKernelRecallMsgHook, start hook");
-            if (CreateInlineHook(c2c, (void*) &HandleC2cGroupSysMsgCallback, (void**) &gC2cGroupSysMsgCallback) != 0) {
+            if (CreateInlineHook(c2c, (void*) &HandleC2cRecallSysMsgCallback, (void**) &sOriginHandleC2cRecallSysMsgCallback) != 0) {
                 LOGE("InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed");
                 return false;
             }
-            if (CreateInlineHook(group, (void*) &HandleRecallGroupSysMsgCallback, (void**) &gRecallGroupSysMsgCallback) != 0) {
+            if (CreateInlineHook(group, (void*) &HandleGroupRecallSysMsgCallback, (void**) &sOriginHandleGroupRecallSysMsgCallback) != 0) {
                 LOGE("InitInitNtKernelRecallMsgHook failed, DobbyHook group failed");
                 return false;
             }
@@ -250,7 +287,7 @@ bool InitInitNtKernelRecallMsgHook() {
                     }
                 }
             });
-            return false;
+            return true;
         }
     } else {
         LOGE("InitInitNtKernelRecallMsgHook failed, offsetC2c: {}, offsetGroup: {}", (void*) offsetC2c, (void*) offsetGroup);
@@ -262,6 +299,22 @@ bool InitInitNtKernelRecallMsgHook() {
 
 extern "C" JNIEXPORT jboolean JNICALL
 Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHook(JNIEnv* env, jobject thiz) {
+    using ntqq::hook::klassRevokeMsgHook;
+    using ntqq::hook::handleC2cRecallMsgFromNtKernel;
+    if (klassRevokeMsgHook == nullptr) {
+        jclass clazz = env->GetObjectClass(thiz);
+        if (clazz == nullptr) {
+            LOGE("InitInitNtKernelRecallMsgHook failed, GetObjectClass failed");
+            return false;
+        }
+        klassRevokeMsgHook = (jclass) env->NewGlobalRef(clazz);
+        handleC2cRecallMsgFromNtKernel = env->GetStaticMethodID(clazz, "handleC2cRecallMsgFromNtKernel",
+                                                                "(Ljava/lang/String;Ljava/lang/String;JJJI)V");
+        if (handleC2cRecallMsgFromNtKernel == nullptr) {
+            LOGE("InitInitNtKernelRecallMsgHook failed, GetStaticMethodID failed");
+            return false;
+        }
+    }
     auto ret = ntqq::hook::InitInitNtKernelRecallMsgHook();
     if (!ret) {
         LOGE("InitInitNtKernelRecallMsgHook failed");

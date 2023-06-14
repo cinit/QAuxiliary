@@ -37,6 +37,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.List;
 import java.util.Objects;
+import kotlin.collections.ArraysKt;
 
 public class QQMessageFacade {
 
@@ -118,6 +119,25 @@ public class QQMessageFacade {
         }
         if (messages.isEmpty()) {
             return;
+        }
+        Class<?> kBaseQQMessageFacade = Initiator.load("com.tencent.imcore.message.BaseQQMessageFacade");
+        if (kBaseQQMessageFacade != null) {
+            List<Method> candidates = ArraysKt.filter(kBaseQQMessageFacade.getDeclaredMethods(), it -> {
+                // public void BaseQQMessageFacade.?(List, String, boolean)
+                if (it.getModifiers() != Modifier.PUBLIC || it.getReturnType() != void.class) {
+                    return false;
+                }
+                Class<?>[] types = it.getParameterTypes();
+                if (types.length != 3) {
+                    return false;
+                }
+                return types[0] == List.class && types[1] == String.class && types[2] == boolean.class;
+            });
+            if (candidates.size() == 1) {
+                Method m = candidates.get(0);
+                m.invoke(get(), messages, account, true);
+                return;
+            }
         }
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
             Reflex.invokeVirtual(ManagerHelper.getQQMessageFacade(), "h", messages, account,

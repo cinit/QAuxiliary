@@ -151,8 +151,13 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
         LOGE("initNativeCore: failed to get package name or version name");
         return;
     }
+    JavaVM* vm = nullptr;
+    if (env->GetJavaVM(&vm) != JNI_OK) {
+        LOGE("initNativeCore: failed to get JavaVM");
+        return;
+    }
     HostInfo::InitHostInfo(current_sdk_level, packageName.value(),
-                           versionName.value(), uint64_t(long_version_code));
+                           versionName.value(), uint64_t(long_version_code), vm);
     if (sNativeHookHandle.hookFunction == nullptr) {
         LOGD("initNativeCore: native hook function is null, Dobby will be used");
         sNativeHookHandle.hookFunction = +[](void* func, void* replace, void** backup) {
