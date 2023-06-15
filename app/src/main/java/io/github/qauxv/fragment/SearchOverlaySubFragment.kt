@@ -48,6 +48,7 @@ import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi
 import io.github.qauxv.databinding.FragmentSettingSearchBinding
 import io.github.qauxv.databinding.SearchResultItemBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -55,8 +56,10 @@ import io.github.qauxv.dsl.func.IDslFragmentNode
 import io.github.qauxv.dsl.func.IDslParentNode
 import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.UiThread
 import me.singleneuron.util.processSearchEasterEgg
+import xyz.nextalone.util.SystemServiceUtils
 
 /**
  * The search sub fragment of [SettingsMainFragment]
@@ -76,6 +79,7 @@ class SearchOverlaySubFragment {
     private var searchHistoryList: List<String> = listOf()
     private val searchResults: ArrayList<SearchResult> = ArrayList()
     private var mPossibleInputUin: Long = 0L
+    private var mPossibleInputUid: String? = null
     private val allItemsContainer: ArrayList<SearchResult> by lazy {
         val items = FunctionEntryRouter.queryAnnotatedUiItemAgentEntries()
         ArrayList<SearchResult>(items.size).apply {
@@ -136,7 +140,7 @@ class SearchOverlaySubFragment {
                     it.searchSettingSearchHistoryLayout.visibility = View.VISIBLE
                 }
             } else {
-                if (searchResults.isEmpty() && mPossibleInputUin < 10000L) {
+                if (searchResults.isEmpty() && mPossibleInputUin < 10000L && mPossibleInputUid.isNullOrEmpty()) {
                     it.searchSettingNoResultLayout.visibility = View.VISIBLE
                     it.searchSettingSearchResultLayout.visibility = View.GONE
                     it.searchSettingSearchHistoryLayout.visibility = View.GONE
@@ -204,11 +208,18 @@ class SearchOverlaySubFragment {
 
         override fun onBindViewHolder(holder: SearchResultViewHolder, position: Int) {
             if (mPossibleInputUin >= 10000L) {
-                if (position >= 2) {
-                    val item = searchResults[position - 2]
+                if (position >= 3) {
+                    val item = searchResults[position - 3]
                     bindSearchResultItem(holder.binding, item)
                 } else {
                     bindSearchResultAsUin(holder.binding, mPossibleInputUin, position)
+                }
+            } else if (!mPossibleInputUid.isNullOrEmpty()) {
+                if (position >= 1) {
+                    val item = searchResults[position - 1]
+                    bindSearchResultItem(holder.binding, item)
+                } else {
+                    bindSearchResultAsUid(holder.binding, mPossibleInputUid!!, position)
                 }
             } else {
                 val item = searchResults[position]
@@ -217,7 +228,9 @@ class SearchOverlaySubFragment {
         }
 
         override fun getItemCount(): Int {
-            return searchResults.size + if (mPossibleInputUin >= 10000L) 2 else 0
+            return searchResults.size +
+                (if (mPossibleInputUin >= 10000L) 3 else 0) +
+                (if (!mPossibleInputUid.isNullOrEmpty()) 1 else 0)
         }
     }
 
@@ -253,24 +266,83 @@ class SearchOverlaySubFragment {
         }
     }
 
-    private fun bindSearchResultAsUin(binding: SearchResultItemBinding, uin: Long, uinType: Int) {
-        val title: String = when (uinType) {
-            0 -> "用户"
-            1 -> "群聊"
-            else -> "未知"
-        } + " $uin"
-        val description = "打开资料卡: $title"
-        binding.title.text = title
-        binding.summary.text = description
-        val locationString = ""
-        binding.description.text = locationString
-        binding.root.setTag(R.id.tag_searchResultItem, null)
-        binding.root.setOnClickListener { v ->
-            if (uinType == 0) {
-                OpenProfileCard.openUserProfileCard(v.context, uin)
-            } else if (uinType == 1) {
-                OpenProfileCard.openTroopProfileActivity(v.context, uin.toString())
+    private fun bindSearchResultAsUin(binding: SearchResultItemBinding, uin: Long, position: Int) {
+        if (position < 2) {
+            val uinType = position
+            val title: String = when (uinType) {
+                0 -> "用户"
+                1 -> "群聊"
+                else -> "未知"
+            } + " $uin"
+            val description = "打开资料卡: $title"
+            binding.title.text = title
+            binding.summary.text = description
+            val locationString = ""
+            binding.description.text = locationString
+            binding.root.setTag(R.id.tag_searchResultItem, null)
+            binding.root.setOnClickListener { v ->
+                if (uinType == 0) {
+                    OpenProfileCard.openUserProfileCard(v.context, uin)
+                } else if (uinType == 1) {
+                    OpenProfileCard.openTroopProfileActivity(v.context, uin.toString())
+                }
             }
+        } else {
+            if (RelationNTUinAndUidApi.isAvailable()) {
+                val uid = RelationNTUinAndUidApi.getUidFromUin(uin.toString())
+                if (uid.isNullOrEmpty()) {
+                    binding.title.text = "UixConvert: 无结果"
+                    binding.summary.text = "无本地记录"
+                    binding.description.text = ""
+                    binding.root.setTag(R.id.tag_searchResultItem, null)
+                    binding.root.setOnClickListener(null)
+                } else {
+                    val title: String = uid
+                    binding.title.text = title
+                    binding.summary.text = "[UixConvert] 点击复制 uid"
+                    binding.description.text = ""
+                    binding.root.setTag(R.id.tag_searchResultItem, null)
+                    binding.root.setOnClickListener { v ->
+                        SystemServiceUtils.copyToClipboard(v.context, uid)
+                        Toasts.show(v.context, "已复制 uid: $uid")
+                    }
+                }
+            } else {
+                binding.title.text = "[UixConvert 出错]"
+                binding.summary.text = "UixConvert 目前仅限 NT 版本使用"
+                binding.description.text = ""
+                binding.root.setTag(R.id.tag_searchResultItem, null)
+                binding.root.setOnClickListener(null)
+            }
+        }
+    }
+
+    private fun bindSearchResultAsUid(binding: SearchResultItemBinding, uid: String, position: Int) {
+        if (RelationNTUinAndUidApi.isAvailable()) {
+            val uin = RelationNTUinAndUidApi.getUinFromUid(uid)
+            if (uin.isNullOrEmpty()) {
+                binding.title.text = "UixConvert: 无结果"
+                binding.summary.text = "无本地记录"
+                binding.description.text = ""
+                binding.root.setTag(R.id.tag_searchResultItem, null)
+                binding.root.setOnClickListener(null)
+            } else {
+                val title: String = uin
+                binding.title.text = title
+                binding.summary.text = "[UixConvert] 点击复制 uin"
+                binding.description.text = ""
+                binding.root.setTag(R.id.tag_searchResultItem, null)
+                binding.root.setOnClickListener { v ->
+                    SystemServiceUtils.copyToClipboard(v.context, uin)
+                    Toasts.show(v.context, "已复制 uin: $uin")
+                }
+            }
+        } else {
+            binding.title.text = "[UixConvert 出错]"
+            binding.summary.text = "UixConvert 目前仅限 NT 版本使用"
+            binding.description.text = ""
+            binding.root.setTag(R.id.tag_searchResultItem, null)
+            binding.root.setOnClickListener(null)
         }
     }
 
@@ -279,6 +351,7 @@ class SearchOverlaySubFragment {
         if (query == lastSearchKeyword) return
         currentKeyword = query ?: ""
         mPossibleInputUin = tryParseUin(currentKeyword)
+        mPossibleInputUid = tryParseUid(currentKeyword)
         // search is performed by calculating the score of each item and sort the result by the score
         val keywords: List<String> = currentKeyword.replace("\r", "")
             .replace("\n", "").replace("\t", "")
@@ -499,5 +572,21 @@ class SearchOverlaySubFragment {
         } catch (e: NumberFormatException) {
             0L
         }
+    }
+
+    private val mUidRegex = Regex("u_[A-Za-z0-9_-]{22}")
+
+    private fun tryParseUid(string: String): String? {
+        val trimmed = string.trim()
+        if (trimmed.length != 24) {
+            return null
+        }
+        if (!trimmed.startsWith("u_")) {
+            return null
+        }
+        if (!mUidRegex.matches(trimmed)) {
+            return null
+        }
+        return trimmed
     }
 }

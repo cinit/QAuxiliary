@@ -36,7 +36,7 @@ public class RelationNTUinAndUidApi {
     private static Method sGetUidFromUin = null;
     private static Method sGetUinFromUid = null;
 
-    private static Object getRelationNTUinAndUidApiImpl() throws ReflectiveOperationException {
+    private static Object getRelationNTUinAndUidApiImpl() throws ReflectiveOperationException, LinkageError {
         if (sImpl == null) {
             Class<? extends QRouteApi> klass = (Class<? extends QRouteApi>) Initiator.loadClass("com.tencent.relation.common.api.IRelationNTUinAndUidApi");
             sGetUidFromUin = klass.getMethod("getUidFromUin", String.class);
@@ -52,7 +52,7 @@ public class RelationNTUinAndUidApi {
         try {
             getRelationNTUinAndUidApiImpl();
             return true;
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | LinkageError e) {
             return false;
         }
     }
@@ -61,7 +61,7 @@ public class RelationNTUinAndUidApi {
         try {
             Object impl = getRelationNTUinAndUidApiImpl();
             return (String) sGetUidFromUin.invoke(impl, str);
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | LinkageError e) {
             throw new RuntimeException("RelationNTUinAndUidApi not available", e);
         }
     }
@@ -71,7 +71,7 @@ public class RelationNTUinAndUidApi {
         try {
             Object impl = getRelationNTUinAndUidApiImpl();
             return (String) sGetUinFromUid.invoke(impl, str);
-        } catch (ReflectiveOperationException e) {
+        } catch (ReflectiveOperationException | LinkageError e) {
             throw new RuntimeException("RelationNTUinAndUidApi not available", e);
         }
     }
