@@ -27,6 +27,7 @@ import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.LicenseStatus
+import java.lang.reflect.Constructor
 import java.lang.reflect.Method
 
 fun BaseFunctionHook.hookBeforeIfEnabled(m: Method, priority: Int, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
@@ -61,7 +62,25 @@ fun BaseFunctionHook.hookAfterIfEnabled(m: Method, priority: Int, hook: (XC_Meth
     })
 }
 
+fun BaseFunctionHook.hookAfterIfEnabled(m: Constructor<*>, priority: Int, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
+    XposedBridge.hookMethod(m, object : XC_MethodHook(priority) {
+        override fun afterHookedMethod(param: MethodHookParam) {
+            try {
+                if (isEnabled && !LicenseStatus.sDisableCommonHooks) {
+                    hook(param)
+                }
+            } catch (e: Throwable) {
+                traceError(e)
+            }
+        }
+    })
+}
+
 fun BaseFunctionHook.hookAfterIfEnabled(m: Method, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
+    hookAfterIfEnabled(m, 50, hook)
+}
+
+fun BaseFunctionHook.hookAfterIfEnabled(m: Constructor<*>, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
     hookAfterIfEnabled(m, 50, hook)
 }
 
