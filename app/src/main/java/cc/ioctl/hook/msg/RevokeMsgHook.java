@@ -37,6 +37,8 @@ import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -45,6 +47,8 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
+import io.github.qauxv.bridge.ntapi.ChatTypeConstants;
+import io.github.qauxv.bridge.ntapi.NtGrayTipHelper;
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -76,6 +80,8 @@ import kotlinx.coroutines.flow.StateFlowKt;
  * 2020/03/08 Sun.20:33 Minor changes at GreyTip
  * <p>
  * 2020/04/08 Tue.23:21 Use RevokeMsgInfoImpl for ease, wanna cry
+ * <p>
+ * 2023-06-16 Fri.12:40 Initial support for NT kernel.
  */
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -362,14 +368,14 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
     private static void handleC2cRecallMsgFromNtKernel(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq) {
         SyncUtils.async(() -> {
             try {
-                RevokeMsgHook.INSTANCE.onRecallC2cMsg(fromUid, toUid, random64, timeSeconds, msgUid, msgClientSeq);
+                RevokeMsgHook.INSTANCE.onRecallC2cMsgForNT(fromUid, toUid, random64, timeSeconds, msgUid, msgClientSeq);
             } catch (Exception | LinkageError | AssertionError e) {
                 RevokeMsgHook.INSTANCE.traceError(e);
             }
         });
     }
 
-    private void onRecallC2cMsg(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq)
+    private void onRecallC2cMsgForNT(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq)
             throws ReflectiveOperationException {
         String fromUin = RelationNTUinAndUidApi.getUinFromUid(fromUid);
         String toUin = RelationNTUinAndUidApi.getUinFromUid(toUid);
@@ -386,6 +392,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         Object msgObject = null; // getMessage(fromUin, 0, msgClientSeq, msgUid); broken unusable
         String selfUin = AppRuntimeHelper.getAccount();
         String friendUin = fromUin;
+        String friendUid = fromUid;
         String greyMsg;
 //        Log.d("onRecallC2cMsg: selfUin: " + selfUin + ", friendUin: " + friendUin + ", msgUid: " + msgUid
 //                + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds);
@@ -408,12 +415,12 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             }
         }
         Log.d("---> start add grey tip");
-        Object revokeGreyTip = createBarePlainGreyTip(friendUin, 0, fromUin, timeSeconds + 1, greyMsg, msgUid + random.nextInt(),
-                msgClientSeq + random.nextInt());
-        List<Object> list = new ArrayList<>(1);
-        list.add(revokeGreyTip);
-        QQMessageFacade.commitMessageRecordList(list, selfUin);
-        // TODO: 2023-06-14 add grey tip not working
+        String jsonStr = new NtGrayTipHelper.NtGrayTipJsonBuilder().appendText(greyMsg).build().toString();
+        JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_C2C_NOTICE, jsonStr, greyMsg);
+        Contact contact = new Contact(ChatTypeConstants.C2C, friendUid, "");
+        NtGrayTipHelper.addLocalJsonGrayTipMsg(AppRuntimeHelper.getAppRuntime(), contact, jsonGrayElement, true, true, (result, uin) -> {
+            Log.d("---> add grey tip result:" + result + ",msgId:" + uin);
+        });
         Log.d("---> end add grey tip");
     }
 

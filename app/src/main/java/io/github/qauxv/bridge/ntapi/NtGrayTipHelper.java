@@ -33,6 +33,7 @@ import java.util.Objects;
 import mqq.app.AppRuntime;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -184,9 +185,9 @@ public class NtGrayTipHelper {
                 // {"align":"center","items":[...]}
                 JSONObject json = new JSONObject();
                 json.put("align", "center");
-                ArrayList<JSONObject> items = new ArrayList<>(mItems.size());
+                JSONArray items = new JSONArray();
                 for (Item item : mItems) {
-                    items.add(item.toJson());
+                    items.put(item.toJson());
                 }
                 json.put("items", items);
                 return json;

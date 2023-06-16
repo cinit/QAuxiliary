@@ -29,7 +29,7 @@ import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import mqq.app.AppRuntime;
-import mqq.app.api.impl.IRuntimeService;
+import mqq.app.api.IRuntimeService;
 
 public class MsgServiceHelper {
 
@@ -39,7 +39,7 @@ public class MsgServiceHelper {
     @NonNull
     public static Object getMsgService(@NonNull AppRuntime app) throws ReflectiveOperationException, LinkageError {
         // IMsgService msgService = ((IKernelService) app.getRuntimeService(IKernelService.class, "")).getMsgService();
-        Class<? extends IRuntimeService> kIKernelService = (Class<? extends IRuntimeService>) Initiator.loadClass("com.tencent.qqnt.kernel.api.IMsgService");
+        Class<? extends IRuntimeService> kIKernelService = (Class<? extends IRuntimeService>) Initiator.loadClass("com.tencent.qqnt.kernel.api.IKernelService");
         IRuntimeService kernelService = app.getRuntimeService(kIKernelService, "");
         Method getMsgService = kernelService.getClass().getMethod("getMsgService");
         return getMsgService.invoke(kernelService);
