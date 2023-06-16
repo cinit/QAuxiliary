@@ -99,7 +99,7 @@ void (* sOriginHandleC2cRecallSysMsgCallback)(void*, void*, void*) = nullptr;
 
 void NotifyRecallMsgEventForC2c(const std::string& fromUid, const std::string& toUid,
                                 uint64_t random64, uint64_t timeSeconds,
-                                uint64_t msgUid, uint32_t msgClientSeq) {
+                                uint64_t msgUid, uint64_t msgSeq, uint32_t msgClientSeq) {
     JavaVM* vm = HostInfo::GetJavaVM();
     if (vm == nullptr) {
         LOGE("NotifyRecallMsgEventForC2c fatal vm == null");
@@ -127,7 +127,8 @@ void NotifyRecallMsgEventForC2c(const std::string& fromUid, const std::string& t
     env->CallStaticVoidMethod(klassRevokeMsgHook, handleC2cRecallMsgFromNtKernel,
                               env->NewStringUTF(fromUid.c_str()),
                               env->NewStringUTF(toUid.c_str()),
-                              (jlong) random64, (jlong) timeSeconds, (jlong) msgUid, (jint) msgClientSeq);
+                              (jlong) random64, (jlong) timeSeconds, (jlong) msgUid,
+                              (jlong) msgSeq, (jint) msgClientSeq);
     // check if exception occurred
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
@@ -185,9 +186,9 @@ void HandleC2cRecallSysMsgCallback(void* p1, void* p2, void* p3) {
             auto randomId = ThunkGetInt64Property(obj._unk0_8, 6);
             auto timeSeconds = ThunkGetInt64Property(obj._unk0_8, 5);
             auto msgUid = ThunkGetInt64Property(obj._unk0_8, 4);
+            auto msgSeq = ThunkGetInt64Property(obj._unk0_8, 0x14);
             auto msgClientSeq = ThunkGetInt32Property(obj._unk0_8, 3);
-
-            NotifyRecallMsgEventForC2c(fromUid, toUid, randomId, timeSeconds, msgUid, msgClientSeq);
+            NotifyRecallMsgEventForC2c(fromUid, toUid, randomId, timeSeconds, msgUid, msgSeq, msgClientSeq);
         }
     }
 }
@@ -309,7 +310,7 @@ Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHook(JNIEnv* env
         }
         klassRevokeMsgHook = (jclass) env->NewGlobalRef(clazz);
         handleC2cRecallMsgFromNtKernel = env->GetStaticMethodID(clazz, "handleC2cRecallMsgFromNtKernel",
-                                                                "(Ljava/lang/String;Ljava/lang/String;JJJI)V");
+                                                                "(Ljava/lang/String;Ljava/lang/String;JJJJI)V");
         if (handleC2cRecallMsgFromNtKernel == nullptr) {
             LOGE("InitInitNtKernelRecallMsgHook failed, GetStaticMethodID failed");
             return false;

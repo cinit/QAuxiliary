@@ -38,7 +38,9 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement;
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -48,6 +50,7 @@ import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
 import io.github.qauxv.bridge.ntapi.ChatTypeConstants;
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.bridge.ntapi.NtGrayTipHelper;
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.config.ConfigManager;
@@ -71,6 +74,7 @@ import kotlin.jvm.functions.Function3;
 import kotlin.jvm.internal.Intrinsics;
 import kotlinx.coroutines.flow.MutableStateFlow;
 import kotlinx.coroutines.flow.StateFlowKt;
+import mqq.app.AppRuntime;
 
 /**
  * @author fkzhang Created by fkzhang on 1/20/2016.
@@ -365,20 +369,23 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
      * We are not allowed to throw any exception in this method.
      */
     @Keep
-    private static void handleC2cRecallMsgFromNtKernel(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq) {
+    private static void handleC2cRecallMsgFromNtKernel(String fromUid, String toUid, long random64,
+            long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) {
         SyncUtils.async(() -> {
             try {
-                RevokeMsgHook.INSTANCE.onRecallC2cMsgForNT(fromUid, toUid, random64, timeSeconds, msgUid, msgClientSeq);
+                RevokeMsgHook.INSTANCE.onRecallC2cMsgForNT(fromUid, toUid, random64, timeSeconds, msgUid, msgSeq, msgClientSeq);
             } catch (Exception | LinkageError | AssertionError e) {
                 RevokeMsgHook.INSTANCE.traceError(e);
             }
         });
     }
 
-    private void onRecallC2cMsgForNT(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, int msgClientSeq)
+    private void onRecallC2cMsgForNT(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq)
             throws ReflectiveOperationException {
         String fromUin = RelationNTUinAndUidApi.getUinFromUid(fromUid);
         String toUin = RelationNTUinAndUidApi.getUinFromUid(toUid);
+        String selfUin = AppRuntimeHelper.getAccount();
+        String selfUid = RelationNTUinAndUidApi.getUidFromUin(selfUin);
         if (TextUtils.isEmpty(fromUin)) {
             Log.e("onRecallC2cMsg fatal: fromUin is empty");
             return;
@@ -387,41 +394,53 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             Log.e("onRecallC2cMsg fatal: toUin is empty");
             return;
         }
-        Random random = new Random();
-        // C2C PM
-        Object msgObject = null; // getMessage(fromUin, 0, msgClientSeq, msgUid); broken unusable
-        String selfUin = AppRuntimeHelper.getAccount();
-        String friendUin = fromUin;
-        String friendUid = fromUid;
-        String greyMsg;
-//        Log.d("onRecallC2cMsg: selfUin: " + selfUin + ", friendUin: " + friendUin + ", msgUid: " + msgUid
-//                + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds);
-        String revokerPron = selfUin.equals(fromUin) ? "你" : "对方";
-        if (msgObject == null) {
-            greyMsg = revokerPron + "撤回了一条消息（没收到）, msgUid: " + msgUid
-                    + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds;
-        } else {
-            String message = getMessageContentStripped(msgObject);
-            int msgtype = getMessageType(msgObject);
-            boolean hasMsgInfo = false;
-            greyMsg = revokerPron + "尝试撤回一条消息";
-            if (msgtype == -1000 /*text msg*/) {
-                if (!TextUtils.isEmpty(message)) {
-                    greyMsg += ": " + message;
-                }
-            }
-            if (!hasMsgInfo) {
-                greyMsg += ", msgUid: " + msgUid + ", msgClientSeq: " + msgClientSeq + ", random64: " + random64 + ", timeSeconds: " + timeSeconds;
-            }
+        if (TextUtils.isEmpty(selfUid)) {
+            Log.e("onRecallC2cMsg fatal: selfUid is empty");
+            return;
         }
-        Log.d("---> start add grey tip");
-        String jsonStr = new NtGrayTipHelper.NtGrayTipJsonBuilder().appendText(greyMsg).build().toString();
-        JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_C2C_NOTICE, jsonStr, greyMsg);
+        // C2C PM
+        if (selfUid.equals(fromUid)) {
+            // ignore msg revoked by self
+            return;
+        }
+        String friendUid = fromUid;
         Contact contact = new Contact(ChatTypeConstants.C2C, friendUid, "");
-        NtGrayTipHelper.addLocalJsonGrayTipMsg(AppRuntimeHelper.getAppRuntime(), contact, jsonGrayElement, true, true, (result, uin) -> {
-            Log.d("---> add grey tip result:" + result + ",msgId:" + uin);
-        });
-        Log.d("---> end add grey tip");
+        AppRuntime app = AppRuntimeHelper.getAppRuntime();
+        IKernelMsgService kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
+        ArrayList<Long> queryMsgIds = new ArrayList<>();
+        queryMsgIds.add(msgUid);
+        kmsgSvc.getMsgsByMsgId(contact, queryMsgIds, ((queryResult, errMsg, msgList) -> {
+            try {
+                MsgRecord msgObject = null;
+                if (queryResult == 0 && msgList != null && !msgList.isEmpty()) {
+                    msgObject = msgList.get(0);
+                } else if (queryResult == 0) {
+                    Log.d("onRecallC2cMsg: msg not found, msgUid=" + msgUid);
+                } else {
+                    Log.e("onRecallC2cMsg error: getMsgsByMsgId failed, result=" + queryResult + ", errMsg=" + errMsg);
+                }
+                String revokerPron = selfUin.equals(fromUin) ? "你" : "对方";
+                String summary;
+                NtGrayTipHelper.NtGrayTipJsonBuilder builder = new NtGrayTipHelper.NtGrayTipJsonBuilder();
+                if (msgObject != null) {
+                    builder.appendText(revokerPron + "尝试撤回");
+                    builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgClientSeq));
+                    summary = revokerPron + "尝试撤回一条消息";
+                } else {
+                    builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", cseq=" + msgClientSeq + "]");
+                    summary = revokerPron + "撤回了一条消息(没收到)";
+                }
+                String jsonStr = builder.build().toString();
+                JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_C2C_NOTICE, jsonStr, summary);
+                NtGrayTipHelper.addLocalJsonGrayTipMsg(AppRuntimeHelper.getAppRuntime(), contact, jsonGrayElement, true, true, (result, uin) -> {
+                    if (result != 0) {
+                        Log.e("onRecallC2cMsg error: addLocalJsonGrayTipMsg failed, result=" + result);
+                    }
+                });
+            } catch (Exception | LinkageError e) {
+                traceError(e);
+            }
+        }));
     }
 
     private Bundle createTroopMemberHighlightItem(String memberUin) {
