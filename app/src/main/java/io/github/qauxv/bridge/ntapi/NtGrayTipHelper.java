@@ -133,11 +133,11 @@ public class NtGrayTipHelper {
         public static class MsgRefItem implements Item {
 
             private final String mText;
-            private final int mSeq;
+            private final long mMsgSeq;
 
-            public MsgRefItem(@NonNull String text, int seq) {
+            public MsgRefItem(@NonNull String text, long msgSeq) {
                 mText = Objects.requireNonNull(text);
-                mSeq = seq;
+                mMsgSeq = msgSeq;
             }
 
             public JSONObject toJson() throws JSONException {
@@ -148,7 +148,7 @@ public class NtGrayTipHelper {
                 json.put("col", "3");
                 json.put("local_jp", 58);
                 JSONObject param = new JSONObject();
-                param.put("seq", mSeq);
+                param.put("seq", mMsgSeq);
                 json.put("param", param);
                 return json;
             }

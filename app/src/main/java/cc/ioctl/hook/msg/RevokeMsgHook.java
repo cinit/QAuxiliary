@@ -407,9 +407,11 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         Contact contact = new Contact(ChatTypeConstants.C2C, friendUid, "");
         AppRuntime app = AppRuntimeHelper.getAppRuntime();
         IKernelMsgService kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
-        ArrayList<Long> queryMsgIds = new ArrayList<>();
-        queryMsgIds.add(msgUid);
-        kmsgSvc.getMsgsByMsgId(contact, queryMsgIds, ((queryResult, errMsg, msgList) -> {
+        // I don't know why, but...
+        // IKernelMsgService.getMsgsByMsgId callback: result=0, errMsg=null, msgList=[](empty list)
+        // IKernelMsgService.getMsgsBySeqList does not invoke callback at all, and no log
+        // Only kmsgSvc.getSingleMsg works.
+        kmsgSvc.getSingleMsg(contact, msgSeq, ((queryResult, errMsg, msgList) -> {
             try {
                 MsgRecord msgObject = null;
                 if (queryResult == 0 && msgList != null && !msgList.isEmpty()) {
@@ -424,10 +426,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                 NtGrayTipHelper.NtGrayTipJsonBuilder builder = new NtGrayTipHelper.NtGrayTipJsonBuilder();
                 if (msgObject != null) {
                     builder.appendText(revokerPron + "尝试撤回");
-                    builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgClientSeq));
+                    builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
                     summary = revokerPron + "尝试撤回一条消息";
                 } else {
-                    builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", cseq=" + msgClientSeq + "]");
+                    builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
                     summary = revokerPron + "撤回了一条消息(没收到)";
                 }
                 String jsonStr = builder.build().toString();
