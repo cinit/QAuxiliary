@@ -21,6 +21,8 @@
  */
 package xyz.nextalone.hook
 
+import cc.hicore.QApp.QAppUtils
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -28,6 +30,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
@@ -59,34 +62,50 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
         "转发文字",
         "免提播放",
         "2X",
-        "保存"
+        "保存",
+        "群待办"
     )
     override val defaultItems = setOf<String>()
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
     override fun initOnce() = throwOrTrue {
-        val callback: (XC_MethodHook.MethodHookParam) -> Unit = callback@{
-            if (!isEnabled) return@callback
-            val str = it.args[1] as String
-            if (activeItems.contains(str))
-                it.result = null
-        }
-        "com.tencent.mobileqq.utils.dialogutils.QQCustomMenuImageLayout".clazz?.declaredMethods.run {
-            this?.forEach { method ->
-                if (method.name == "setMenu") {
-                    val customMenu = method.parameterTypes[0].name
-                    runCatching {
-                        customMenu.clazz?.method {
-                            it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java, Int::class.java))
-                        }?.hookBefore(this@SimplifyChatLongItem, callback)
+        if (QAppUtils.isQQnt()) {
+            "com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout".clazz!!
+                .method("setMenu")!!
+                .hookBefore {
+                    val list = it.args[0].javaClass.getDeclaredField("a")
+                        .apply { isAccessible = true }
+                        .get(it.args[0]) as MutableList<*>
+                    list.forEach { item ->
+                        val str = item?.invoke("c") as String
+                        if (activeItems.contains(str))
+                            list.remove(item)
                     }
-                    runCatching {
-                        customMenu.clazz?.method {
-                            it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java))
-                        }?.hookBefore(this@SimplifyChatLongItem, callback)
+                }
+        } else {
+            val callback: (XC_MethodHook.MethodHookParam) -> Unit = callback@{
+                if (!isEnabled) return@callback
+                val str = it.args[1] as String
+                if (activeItems.contains(str))
+                    it.result = null
+            }
+            "com.tencent.mobileqq.utils.dialogutils.QQCustomMenuImageLayout".clazz?.declaredMethods.run {
+                this?.forEach { method ->
+                    if (method.name == "setMenu") {
+                        val customMenu = method.parameterTypes[0].name
+                        runCatching {
+                            customMenu.clazz?.method {
+                                it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java, Int::class.java))
+                            }?.hookBefore(this@SimplifyChatLongItem, callback)
+                        }
+                        runCatching {
+                            customMenu.clazz?.method {
+                                it.parameterTypes.contentEquals(arrayOf(Int::class.java, String::class.java, Int::class.java))
+                            }?.hookBefore(this@SimplifyChatLongItem, callback)
+                        }
+                        return@forEach
                     }
-                    return@forEach
                 }
             }
         }
