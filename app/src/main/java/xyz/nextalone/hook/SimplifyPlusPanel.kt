@@ -21,6 +21,7 @@
  */
 package xyz.nextalone.hook
 
+import cc.hicore.QApp.QAppUtils
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -96,7 +97,9 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                         try {
                             (item.javaClass.getDeclaredField("a").get(item) as String).toString()
                         } catch (e: Throwable) {
-                            (item.javaClass.getDeclaredField("d").get(item) as String).toString()
+                            (item.javaClass.getDeclaredField("d").apply {
+                                isAccessible = true
+                            }.get(item) as String).toString()
                         }
                     }
                     if (activeItems.any { string ->
@@ -126,7 +129,12 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
             targetMethods[1]!!.hookBefore(this, callback)
         } else {
             // assert QQ.version <= QQVersion.QQ_8_4_8
-            if (hostInfo.versionCode >= QQVersion.QQ_8_4_8) {
+            if (QAppUtils.isQQnt()) {
+                "Lcom/tencent/qqnt/pluspanel/adapter/PanelAdapter;->p(Ljava/util/ArrayList;)V".method.hookBefore(
+                    this,
+                    callback
+                )
+            } else if (hostInfo.versionCode >= QQVersion.QQ_8_4_8) {
                 "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/ArrayList;)V".method.hookBefore(
                     this,
                     callback
