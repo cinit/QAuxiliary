@@ -33,6 +33,7 @@ import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.ui.FaultyDialog
 import io.github.qauxv.base.ISwitchCellAgent
@@ -108,15 +109,30 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
     fun startFriendChatHistoryActivity(context: Context, uin: Long) {
         if (uin < 10000L) return
         try {
-            val kChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.ChatHistoryActivity")
-            val intent = Intent(context, kChatHistoryActivity).apply {
-                putExtra("uin", uin.toString())
-                putExtra("SissionUin", uin.toString())
-                putExtra("uintype", 0)
-                putExtra("TargetTabPos", 0)
-                putExtra("FromType", 3011)
+            if (QAppUtils.isQQnt()) {
+                val peerId = QAppUtils.UserUinToPeerID(uin.toString())
+                if (peerId == null) {
+                    FaultyDialog.show(context, "打开好友聊天记录错误", "无法获取 peerId")
+                    return
+                }
+                val kNTChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.NTChatHistoryActivity")
+                val intent = Intent(context, kNTChatHistoryActivity).apply {
+                    //putExtra("nt_chat_history_session_name", name)    //显示在标题栏的昵称
+                    putExtra("nt_chat_history_peerId", peerId)
+                    putExtra("nt_chat_history_chatType", 1)
+                }
+                context.startActivity(intent)
+            } else {
+                val kChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.ChatHistoryActivity")
+                val intent = Intent(context, kChatHistoryActivity).apply {
+                    putExtra("uin", uin.toString())
+                    putExtra("SissionUin", uin.toString())
+                    putExtra("uintype", 0)
+                    putExtra("TargetTabPos", 0)
+                    putExtra("FromType", 3011)
+                }
+                context.startActivity(intent)
             }
-            context.startActivity(intent)
         } catch (e: Exception) {
             FaultyDialog.show(context, "打开好友聊天记录错误", e)
         }

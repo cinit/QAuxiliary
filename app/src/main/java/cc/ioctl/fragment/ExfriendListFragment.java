@@ -289,7 +289,7 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
             switch (which) {
                 case 0: {
                     SystemServiceUtils.copyToClipboard(ctx, String.valueOf(r.operand));
-                    Toasts.show(ctx, "已复制 QQ 号");
+                    Toasts.info(ctx, "已复制 QQ 号");
                     break;
                 }
                 case 1: {
