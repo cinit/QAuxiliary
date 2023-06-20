@@ -29,8 +29,11 @@ import static io.github.qauxv.util.TIMVersion.TIM_3_1_1;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -77,7 +80,15 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
-        if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
+        if (QAppUtils.isQQnt()) {
+            XposedHelpers.findAndHookMethod(Initiator.load("com.tencent.mobileqq.aio.input.e.k"), "o",
+                    Initiator.load("com.tencent.mobileqq.aio.msg.AIOMsgItem"), new XC_MethodHook() {
+                        @Override
+                        protected void beforeHookedMethod(MethodHookParam param) {
+                            param.setResult(null);
+                        }
+                    });
+        } else if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
             String className = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
             if (className == null) {
                 return false;
