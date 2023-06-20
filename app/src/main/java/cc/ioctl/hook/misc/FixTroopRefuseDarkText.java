@@ -26,14 +26,15 @@ import android.os.Bundle;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.SyncUtils;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
@@ -57,6 +58,11 @@ public class FixTroopRefuseDarkText extends CommonSwitchFunctionHook {
     @Override
     public String getDescription() {
         return "修复夜间模式下群申请拒绝消息中的拒绝原因看不清的问题";
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !QAppUtils.isQQnt();
     }
 
     @NonNull

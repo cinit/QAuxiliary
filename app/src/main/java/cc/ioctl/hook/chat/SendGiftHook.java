@@ -24,6 +24,7 @@ package cc.ioctl.hook.chat;
 import android.app.Activity;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
@@ -55,6 +56,11 @@ public class SendGiftHook extends CommonSwitchFunctionHook {
     @Override
     public String getDescription() {
         return "禁止聊天时输入$自动弹出[选择赠送对象]窗口";
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !QAppUtils.isQQnt();
     }
 
     @NonNull

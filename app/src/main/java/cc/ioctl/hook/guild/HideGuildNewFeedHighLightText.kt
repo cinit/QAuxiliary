@@ -26,6 +26,7 @@ import android.content.Context
 import android.text.Spanned
 import android.text.style.ForegroundColorSpan
 import androidx.core.text.buildSpannedString
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -50,7 +51,7 @@ object HideGuildNewFeedHighLightText : CommonSwitchFunctionHook() {
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MSG_LIST
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_23)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_23) && !QAppUtils.isQQnt()
 
     override fun initOnce(): Boolean {
         // com.tencent.troopguild.api.impl.TroopGuildApiImpl->getHighLightStringByOptType(Context, int)String

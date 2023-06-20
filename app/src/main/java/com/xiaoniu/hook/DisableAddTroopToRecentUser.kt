@@ -22,6 +22,7 @@
 
 package com.xiaoniu.hook
 
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -43,10 +44,9 @@ object DisableAddTroopToRecentUser : CommonSwitchFunctionHook(arrayOf(TroopGuild
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MSG_LIST
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_23)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_23) && !QAppUtils.isQQnt()
 
     override fun initOnce(): Boolean {
-        if (!requireMinQQVersion(QQVersion.QQ_8_9_23)) return false
         // Lcom/tencent/troopguild/api/impl/TroopGuildRecentServiceImpl;->addTroopToRecentUser(Ljava/lang/String;)V
         val kTroopGuildRecentServiceImpl = Initiator.loadClass("com.tencent.troopguild.api.impl.TroopGuildRecentServiceImpl")
         val addTroopToRecentUser = kTroopGuildRecentServiceImpl.getDeclaredMethod("addTroopToRecentUser", String::class.java)
