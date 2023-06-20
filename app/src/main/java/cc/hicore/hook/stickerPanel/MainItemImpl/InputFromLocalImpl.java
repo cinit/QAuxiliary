@@ -15,63 +15,55 @@ import cc.hicore.Utils.RandomUtils;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
 import cc.hicore.hook.stickerPanel.MainPanelAdapter;
+import cc.ioctl.util.ui.FaultyDialog;
 import io.github.qauxv.R;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.SyncUtils;
 import java.io.File;
 import java.util.List;
 
-public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem{
+public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
+
     @Override
     public View getView(ViewGroup parent) {
         ViewGroup vgInput = (ViewGroup) View.inflate(parent.getContext(), R.layout.sticker_panel_impl_input_from_local, null);
         EditText edPath = vgInput.findViewById(R.id.input_path);
         Button btnPath = vgInput.findViewById(R.id.btn_confirm_input);
-        btnPath.setOnClickListener(v->{
+        btnPath.setOnClickListener(v -> {
             String path = edPath.getText().toString();
             File[] f = new File(path).listFiles();
-            if (f == null){
-                new AlertDialog.Builder(parent.getContext(),3)
-                        .setTitle("错误")
-                        .setMessage("路径无效")
-                        .setPositiveButton("确定", null)
-                        .show();
-            }else {
+            if (f == null) {
+                FaultyDialog.show(parent.getContext(), "错误", "路径无效");
+            } else {
                 EditText ed = new EditText(parent.getContext());
-                new AlertDialog.Builder(parent.getContext(),3)
-                        .setTitle("输入显示的名字")
+                new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(parent.getContext()))
+                        .setTitle("输入表情包名称")
                         .setView(ed)
                         .setNegativeButton("确定导入", (dialog, which) -> {
-                            inputWorker(parent.getContext(), path,ed.getText().toString());
+                            inputWorker(parent.getContext(), path, ed.getText().toString());
                         }).show();
             }
 
         });
         return vgInput;
     }
-    private static void inputWorker(Context context,String path,String name){
-        if (TextUtils.isEmpty(name)){
-            new AlertDialog.Builder(context,3)
-                    .setTitle("错误")
-                    .setMessage("名字不能为空")
-                    .setPositiveButton("确定", null)
-                    .show();
+
+    private static void inputWorker(Context context, String path, String name) {
+        if (TextUtils.isEmpty(name)) {
+            FaultyDialog.show(context, "错误", "名称不能为空");
             return;
         }
-        ProgressDialog progressDialog = new ProgressDialog(context,3);
+        ProgressDialog progressDialog = new ProgressDialog(CommonContextWrapper.createAppCompatContext(context));
         progressDialog.setTitle("正在导入...");
         progressDialog.setCancelable(false);
         progressDialog.show();
 
-        SyncUtils.async(()->{
+        SyncUtils.async(() -> {
             File[] f = new File(path).listFiles();
-            if (f == null){
-                SyncUtils.runOnUiThread(()->{
+            if (f == null) {
+                SyncUtils.runOnUiThread(() -> {
                     progressDialog.dismiss();
-                    new AlertDialog.Builder(context,3)
-                            .setTitle("错误")
-                            .setMessage("路径无效")
-                            .setPositiveButton("确定", null)
-                            .show();
+                    FaultyDialog.show(context, "错误", "路径无效");
                 });
                 return;
             }
@@ -86,11 +78,11 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem{
             int finish = 0;
             int available = 0;
             for (File file : f) {
-                if (file.isFile()){
+                if (file.isFile()) {
                     BitmapFactory.Options options = new BitmapFactory.Options();
                     options.inJustDecodeBounds = true;
-                    BitmapFactory.decodeFile(file.getAbsolutePath(),options);
-                    if (options.outWidth > 0 && options.outHeight > 0){
+                    BitmapFactory.decodeFile(file.getAbsolutePath(), options);
+                    if (options.outWidth > 0 && options.outHeight > 0) {
                         LocalDataHelper.LocalPicItems localItem = new LocalDataHelper.LocalPicItems();
                         localItem.url = "";
                         localItem.type = 1;
@@ -99,37 +91,32 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem{
                         localItem.fileName = localItem.MD5;
                         localItem.thumbUrl = "";
 
+                        FileUtils.copy(file.getAbsolutePath(), LocalDataHelper.getLocalItemPath(newPath, localItem));
 
-                        FileUtils.copy(file.getAbsolutePath(),LocalDataHelper.getLocalItemPath(newPath,localItem));
-
-                        LocalDataHelper.addPicItem(ID,localItem);
+                        LocalDataHelper.addPicItem(ID, localItem);
                         available++;
                     }
                 }
                 finish++;
                 int finalFinish = finish;
                 int finalAvailable = available;
-                SyncUtils.runOnUiThread(()->{
-                    progressDialog.setMessage("已完成"+ finalFinish +"/"+size+"个文件,有效文件"+ finalAvailable +"个");
+                SyncUtils.runOnUiThread(() -> {
+                    progressDialog.setMessage("已完成" + finalFinish + "/" + size + "个文件，有效文件" + finalAvailable + "个");
                 });
             }
 
-            List<LocalDataHelper.LocalPicItems> list =  LocalDataHelper.getPicItems(ID);
-            if (list.size() > 0){
-                LocalDataHelper.setPathCover(newPath,list.get(0));
+            List<LocalDataHelper.LocalPicItems> list = LocalDataHelper.getPicItems(ID);
+            if (list.size() > 0) {
+                LocalDataHelper.setPathCover(newPath, list.get(0));
             }
-            SyncUtils.runOnUiThread(()->{
+            SyncUtils.runOnUiThread(() -> {
                 progressDialog.dismiss();
-                new AlertDialog.Builder(context,3)
-                        .setTitle("导入完成")
-                        .setMessage("导入完成")
-                        .setPositiveButton("确定", null)
-                        .show();
-
+                FaultyDialog.show(context, "导入完成", "导入完成");
                 ICreator.dismissAll();
             });
         });
     }
+
     private static boolean isImageFile(String filePath) {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;

@@ -10,6 +10,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -133,7 +134,7 @@ public class HttpUtils {
         }
     }
     public static void ProgressDownload(String url, String filepath, Runnable callback, Context context) {
-        AlertDialog al = new AlertDialog.Builder(context, 3).create();
+        AlertDialog al = new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context)).create();
         al.setTitle("下载中...");
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);

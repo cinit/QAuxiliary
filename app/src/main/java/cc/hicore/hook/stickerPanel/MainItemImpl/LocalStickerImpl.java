@@ -24,6 +24,7 @@ import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
@@ -81,12 +82,12 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     private void onSetButtonClick() {
-        new AlertDialog.Builder(mContext, 3)
+        new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(mContext))
                 .setTitle("选择你的操作").setItems(new String[]{
                         "删除该表情包", "表情包本地化"
                 }, (dialog, which) -> {
                     if (which == 0) {
-                        new AlertDialog.Builder(mContext, 3)
+                        new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(mContext))
                                 .setTitle("提示")
                                 .setMessage("是否删除该表情包(" + tv_title.getText() + "),该表情包内的本地表情将被删除并不可恢复")
                                 .setNeutralButton("确定删除", (dialog1, which1) -> {
@@ -103,7 +104,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     private void updateAllResToLocal() {
-        ProgressDialog progressDialog = new ProgressDialog(mContext, 3);
+        ProgressDialog progressDialog = new ProgressDialog(CommonContextWrapper.createAppCompatContext(mContext));
         progressDialog.setTitle("正在更新表情包");
         progressDialog.setMessage("正在更新表情包,请稍等...");
         progressDialog.setCancelable(false);
@@ -209,7 +210,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
             } else {
                 Glide.with(HostInfo.getApplication()).load(coverView).fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(LayoutHelper.getScreenWidth(v.getContext()) / 2, LayoutHelper.getScreenWidth(v.getContext()) / 2).into(preView);
             }
-            new AlertDialog.Builder(mContext, 3)
+            new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(mContext))
                     .setTitle("选择你对该表情的操作")
                     .setView(preView)
                     .setOnDismissListener(dialog -> {

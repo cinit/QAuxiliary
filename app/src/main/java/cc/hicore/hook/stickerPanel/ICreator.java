@@ -2,7 +2,6 @@ package cc.hicore.hook.stickerPanel;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
@@ -153,7 +152,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
 
         TextView titleView = new TextView(getContext());
         titleView.setText(title);
-        titleView.setTextColor(Color.BLACK);
+        titleView.setTextColor(0xff888888);
         titleView.setGravity(Gravity.CENTER_HORIZONTAL);
         titleView.setTextSize(10);
         titleView.setSingleLine();
@@ -177,7 +176,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         panel.setLayoutParams(panel_param);
 
         View greenTip = new View(getContext());
-        greenTip.setBackgroundColor(Color.GREEN);
+        greenTip.setBackgroundColor(0xff339933);
         panel_param = new LinearLayout.LayoutParams(LayoutHelper.dip2px(getContext(), 30), 50);
         panel_param.leftMargin = LayoutHelper.dip2px(getContext(), 5);
         panel_param.rightMargin = LayoutHelper.dip2px(getContext(), 5);
@@ -211,7 +210,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         TextView titleView = new TextView(getContext());
         titleView.setText(title);
         titleView.setGravity(Gravity.CENTER_HORIZONTAL);
-        titleView.setTextColor(Color.BLACK);
+        titleView.setTextColor(0xff888888);
         titleView.setTextSize(10);
         titleView.setSingleLine();
         panel.addView(titleView);
@@ -224,7 +223,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         panel.setLayoutParams(panel_param);
 
         View greenTip = new View(getContext());
-        greenTip.setBackgroundColor(Color.GREEN);
+        greenTip.setBackgroundColor(0xff339933);
         panel_param = new LinearLayout.LayoutParams(LayoutHelper.dip2px(getContext(), 30), 50);
         panel_param.leftMargin = LayoutHelper.dip2px(getContext(), 5);
         panel_param.rightMargin = LayoutHelper.dip2px(getContext(), 5);
