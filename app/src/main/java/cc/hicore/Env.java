@@ -23,6 +23,6 @@
 package cc.hicore;
 
 public class Env {
-    public static String app_save_path = "/sdcard/Android/data/com.tencent.mobileqq/files/.tool";
+    public static String app_save_path = "/sdcard/Android/data/com.tencent.mobileqq/files/.tool/";
     public static Object AIOParam;
 }
