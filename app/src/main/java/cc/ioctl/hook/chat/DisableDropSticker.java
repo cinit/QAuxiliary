@@ -22,6 +22,7 @@
 package cc.ioctl.hook.chat;
 
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -62,7 +63,13 @@ public class DisableDropSticker extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
-        Class<?> kAioAnimationConfigHelper = Initiator.loadClass("com.tencent.mobileqq.activity.aio.anim.AioAnimationConfigHelper");
+        String className;
+        if (QAppUtils.isQQnt()) {
+            className = "com.tencent.mobileqq.aio.animation.util.AioAnimationConfigHelper";
+        } else {
+            className = "com.tencent.mobileqq.activity.aio.anim.AioAnimationConfigHelper";
+        }
+        Class<?> kAioAnimationConfigHelper = Initiator.loadClass(className);
         Method doParseRules = Reflex.findSingleMethod(kAioAnimationConfigHelper, ArrayList.class, false, org.xmlpull.v1.XmlPullParser.class);
         HookUtils.hookBeforeIfEnabled(this, doParseRules, param -> param.setResult(new ArrayList<>()));
         return true;
