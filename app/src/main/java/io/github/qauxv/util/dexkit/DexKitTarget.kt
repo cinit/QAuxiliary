@@ -33,7 +33,6 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.livefront.sealedenum.GenSealedEnum
 import com.tencent.common.app.AppInterface
 import com.tencent.mobileqq.app.QQAppInterface
-import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Initiator._ChatMessage
@@ -671,15 +670,25 @@ data object GroupSpecialCare_getCareTroopMemberMsgText : DexKitTarget.UsingStr()
     override val traitString = arrayOf("getCareTroopMemberMsgText: invoked.  troopMemberIsCared: ")
     override val filter = DexKitFilter.allowAll
 }
+
 data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("funBtnLayout.findViewById(R.id.fun_btn)")
     override val declaringClass = "I don't know."
     override val filter = DexKitFilter.allowAll
 }
+
 data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("rootVMBuild")
     override val declaringClass = "I don't know."
     override val filter = DexKitFilter.allowAll
+}
+
+data object EmoMsgUtils_isSingleLottie : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("is Valid EmojiFaceId")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/utils")
+                                                     // "com/tencent/guild/aio/util" 是频道的
 }

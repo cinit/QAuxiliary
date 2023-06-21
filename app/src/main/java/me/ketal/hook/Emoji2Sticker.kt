@@ -22,30 +22,39 @@
 
 package me.ketal.hook
 
+import cc.hicore.QApp.QAppUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.EmoMsgUtils_isSingleLottie
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object Emoji2Sticker : CommonSwitchFunctionHook() {
+object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLottie)) {
 
-    override val name = "关闭大号emoji"
-    override val description = "禁用新版QQ输入单个emoji后发送大表情"
+    override val name = "关闭大号Emoji"
+    override val description = "禁用新版QQ输入单个Emoji后发送大表情"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val isAvailable: Boolean
         get() = requireMinQQVersion(QQVersion.QQ_8_7_5)
 
     override fun initOnce() = throwOrTrue {
+        if (QAppUtils.isQQnt()) {
+            DexKit.requireMethodFromCache(EmoMsgUtils_isSingleLottie).hookBefore(this) {
+                it.result = false
+            }
+        }
         "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")
             ?.hookAfter(this) {
                 it.result.set("singleAniSticker", false)
