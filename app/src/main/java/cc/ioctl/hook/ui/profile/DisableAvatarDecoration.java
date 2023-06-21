@@ -23,7 +23,9 @@ package cc.ioctl.hook.ui.profile;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
+import com.tencent.qqnt.kernel.nativeinterface.VASMsgAvatarPendant;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -56,7 +58,10 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
+    public boolean initOnce() throws NoSuchMethodException {
+        if (QAppUtils.isQQnt()){
+            HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantId"),param -> param.setResult(0L));
+        }
         for (Method m : Initiator.load("com.tencent.mobileqq.vas.PendantInfo").getDeclaredMethods()) {
             if (m.getReturnType() == void.class) {
                 Class<?>[] argt = m.getParameterTypes();
