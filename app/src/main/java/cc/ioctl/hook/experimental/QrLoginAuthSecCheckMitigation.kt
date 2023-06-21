@@ -23,15 +23,20 @@
 package cc.ioctl.hook.experimental
 
 import android.app.Activity
+import android.os.CountDownTimer
 import android.view.View
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.isPrivate
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.hostInfo
+import xyz.nextalone.util.clazz
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 import java.util.Arrays
@@ -45,6 +50,21 @@ object QrLoginAuthSecCheckMitigation : CommonSwitchFunctionHook() {
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
 
     override fun initOnce(): Boolean {
+        if (QAppUtils.isQQnt()) {
+            //com.tencent.biz.qrcode.activity.QRLoginAuthActivity$h
+            for (i in 97 until 112) {
+                val clazz = "com.tencent.biz.qrcode.activity.QRLoginAuthActivity\$${i.toChar()}".clazz ?: break
+                if (clazz.superclass != CountDownTimer::class.java) continue
+                XposedBridge.hookAllConstructors(clazz, object : XC_MethodHook() {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        param.args[1] = 0
+                        param.args[2] = 0
+                    }
+                })
+                return true
+            }
+            return false
+        }
         val kQRLoginAuthActivity = Initiator.loadClass("com.tencent.biz.qrcode.activity.QRLoginAuthActivity")
         val confirm_risk_login_btn = Initiator.loadClass(hostInfo.packageName + ".R\$id")
             .getDeclaredField("confirm_risk_login_btn").get(null) as Int
