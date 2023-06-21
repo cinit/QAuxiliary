@@ -124,6 +124,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         if (QAppUtils.isQQnt()){
             Method getFontID = VASMsgFont.class.getDeclaredMethod("getFontId");
             HookUtils.hookBeforeIfEnabled(this, getFontID, param -> param.setResult(0));
+            Method getMagicFontType = VASMsgFont.class.getDeclaredMethod("getMagicFontType");
+            HookUtils.hookBeforeIfEnabled(this, getMagicFontType, param -> param.setResult(0));
             return true;
         }else {
             Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
