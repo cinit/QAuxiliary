@@ -26,7 +26,9 @@ import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
+import com.tencent.qqnt.kernel.nativeinterface.VASMsgFont;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -119,14 +121,21 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
-        Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
-        Objects.requireNonNull(method, "NTextItemBuilder_setETText.INSTANCE");
-        HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
+        if (QAppUtils.isQQnt()){
+            Method getFontID = VASMsgFont.class.getDeclaredMethod("getFontId");
+            HookUtils.hookBeforeIfEnabled(this, getFontID, param -> param.setResult(0));
+            return true;
+        }else {
+            Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
+            Objects.requireNonNull(method, "NTextItemBuilder_setETText.INSTANCE");
+            HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
 
-        Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
-                .getDeclaredMethod("enlargeTextMsg", TextView.class);
-        HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
-        return true;
+            Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
+                    .getDeclaredMethod("enlargeTextMsg", TextView.class);
+            HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
+            return true;
+        }
+
     }
 
     @Override
