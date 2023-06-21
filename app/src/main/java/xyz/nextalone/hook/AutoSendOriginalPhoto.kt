@@ -21,10 +21,16 @@
  */
 package xyz.nextalone.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
+import cc.hicore.QApp.QAppUtils
+import cc.ioctl.util.HookUtils
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.tencent.mobileqq.widget.QUICheckBox
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -34,6 +40,7 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
@@ -46,7 +53,19 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or S
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
+    @SuppressLint("ResourceType")
     override fun initOnce() = throwOrTrue {
+        if (QAppUtils.isQQnt()) {   //截至2023.6.21，仍有一些项目在使用旧版组件（如频道），故保留其他hook
+            //Lcom/tencent/mobileqq/e/a/ac;->f:Lcom/tencent/mobileqq/widget/QUICheckBox;    //普通模式半屏Panel的原图勾选框
+            XposedBridge.hookAllConstructors("com.tencent.mobileqq.e.a.ac".clazz!!,HookUtils.afterIfEnabled(this) { param->
+                param.thisObject.get("f", QUICheckBox::class.java)!!.isChecked = true
+            })
+            //新全屏相册活动
+            "com.tencent.qqnt.qbasealbum.WinkHomeActivity".clazz!!.method("onCreate")!!.hookBefore {
+                val ctx=it.thisObject as Activity
+                ctx.intent.putExtra("key_is_quality_raw",true)
+            }
+        }
         val method = when {
             requireMinQQVersion(QQVersion.QQ_8_9_33) -> "d0"
             requireMinQQVersion(QQVersion.QQ_8_9_18) -> "c0"
