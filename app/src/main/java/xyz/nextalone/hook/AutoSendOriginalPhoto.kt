@@ -21,7 +21,6 @@
  */
 package xyz.nextalone.hook
 
-import android.annotation.SuppressLint
 import android.app.Activity
 import android.os.Bundle
 import android.view.View
@@ -53,17 +52,16 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or S
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
-    @SuppressLint("ResourceType")
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {   //截至2023.6.21，仍有一些项目在使用旧版组件（如频道），故保留其他hook
             //Lcom/tencent/mobileqq/e/a/ac;->f:Lcom/tencent/mobileqq/widget/QUICheckBox;    //普通模式半屏Panel的原图勾选框
-            XposedBridge.hookAllConstructors("com.tencent.mobileqq.e.a.ac".clazz!!,HookUtils.afterIfEnabled(this) { param->
+            XposedBridge.hookAllConstructors("com.tencent.mobileqq.e.a.ac".clazz!!, HookUtils.afterIfEnabled(this) { param ->
                 param.thisObject.get("f", QUICheckBox::class.java)!!.isChecked = true
             })
             //新全屏相册活动
             "com.tencent.qqnt.qbasealbum.WinkHomeActivity".clazz!!.method("onCreate")!!.hookBefore {
-                val ctx=it.thisObject as Activity
-                ctx.intent.putExtra("key_is_quality_raw",true)
+                val ctx = it.thisObject as Activity
+                ctx.intent.putExtra("key_is_quality_raw", true)
             }
         }
         val method = when {
