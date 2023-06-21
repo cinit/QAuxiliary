@@ -685,10 +685,17 @@ data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object EmoMsgUtils_isSingleLottie : DexKitTarget.UsingStr() {
+data object EmoMsgUtils_isSingleLottie_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("is Valid EmojiFaceId")
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/utils")
                                                      // "com/tencent/guild/aio/util" 是频道的
+}
+
+data object Reply_At_QQNT : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("msgItem.msgRecord.senderUid")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }

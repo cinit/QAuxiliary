@@ -32,14 +32,15 @@ import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.tlb.ConfigTable;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.Reply_At_QQNT;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Objects;
@@ -75,19 +76,14 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     public static final ReplyNoAtHook INSTANCE = new ReplyNoAtHook();
 
     private ReplyNoAtHook() {
-        super();
+        super(new DexKitTarget[]{Reply_At_QQNT.INSTANCE});
     }
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
         if (QAppUtils.isQQnt()) {
-            XposedHelpers.findAndHookMethod(Initiator.load("com.tencent.mobileqq.aio.input.e.k"), "o",
-                    Initiator.load("com.tencent.mobileqq.aio.msg.AIOMsgItem"), new XC_MethodHook() {
-                        @Override
-                        protected void beforeHookedMethod(MethodHookParam param) {
-                            param.setResult(null);
-                        }
-                    });
+            HookUtils.hookBeforeIfEnabled(this, DexKit.requireMethodFromCache(Reply_At_QQNT.INSTANCE),
+                    49, param -> param.setResult(null));
         } else if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
             String className = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
             if (className == null) {

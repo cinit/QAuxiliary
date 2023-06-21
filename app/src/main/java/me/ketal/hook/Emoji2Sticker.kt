@@ -29,7 +29,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.EmoMsgUtils_isSingleLottie
+import io.github.qauxv.util.dexkit.EmoMsgUtils_isSingleLottie_QQNT
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
@@ -40,7 +40,7 @@ import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLottie)) {
+object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLottie_QQNT)) {
 
     override val name = "关闭大号Emoji"
     override val description = "禁用新版QQ输入单个Emoji后发送大表情"
@@ -51,7 +51,7 @@ object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLott
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
-            DexKit.requireMethodFromCache(EmoMsgUtils_isSingleLottie).hookBefore(this) {
+            DexKit.requireMethodFromCache(EmoMsgUtils_isSingleLottie_QQNT).hookBefore(this) {
                 it.result = false
             }
         }
