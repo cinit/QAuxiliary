@@ -55,7 +55,7 @@ public class DefaultBubbleHook implements IDynamicHook, IUiItemAgentProvider, IU
     private DefaultBubbleHook() {
     }
 
-    private static final String[] paths = {"/bubble_info", "/files/bubble_info", "/files/bubble_paster"};
+    private static final String[] paths = {"/bubble_info", "/files/bubble_info", "/files/bubble_paster", "/files/vas_material_folder/bubble_dir"};
 
     @Override
     public boolean isAvailable() {
