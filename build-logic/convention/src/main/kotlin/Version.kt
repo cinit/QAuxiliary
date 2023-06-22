@@ -7,7 +7,7 @@ object Version {
     val java = JavaVersion.VERSION_11
 
     const val compileSdkVersion = 33
-    const val buildToolsVersion = "33.0.1"
+    val buildToolsVersion = findBuildToolsVersion()
     const val minSdk = 24
     const val targetSdk = 33
     const val versionName = "1.4.1"
@@ -48,5 +48,11 @@ object Version {
 
     private fun getEnvVariable(name: String): String? {
         return System.getenv(name)
+    }
+
+    private fun findBuildToolsVersion(): String {
+        val defaultBuildToolsVersion = "33.0.0"
+        return File(System.getenv("ANDROID_HOME"), "build-tools").listFiles()?.filter { it.isDirectory }?.maxOfOrNull { it.name }?.also { println("Using build tools version $it") }
+            ?: defaultBuildToolsVersion
     }
 }
