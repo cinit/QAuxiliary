@@ -28,8 +28,10 @@ import static io.github.qauxv.util.Initiator.load;
 import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -83,6 +85,14 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        if (QAppUtils.isQQnt()){
+            HookUtils.hookAfterIfEnabled(this, MsgRecord.class.getDeclaredMethod("getSubMsgType"),param -> {
+                int result = (int) param.getResult();
+                if (result == 8194)param.setResult(2);
+                else if (result == 12288)param.setResult(4096);
+            });
+            return true;
+        }
         Class<?> clz = DexKit.loadClassFromCache(CFlashPicHelper.INSTANCE);
         Objects.requireNonNull(clz, "CFLASH_PIC_HELPER.INSTANCE");
         Method isFlashPic = null;
