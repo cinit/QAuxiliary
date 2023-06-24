@@ -33,6 +33,7 @@
 #include <algorithm>
 #include <cinttypes>
 #include <string>
+#include <cerrno>
 #include <regex>
 #include <array>
 
@@ -168,19 +169,25 @@ bool IsMemoryReadable(const void* ptr, size_t length) {
     for (uint64_t i = 0; i < pageCount; ++i) {
         addresses.push_back(startPage + i * pageSize);
     }
+    // use IsPageReadable to check each page
+    return std::all_of(addresses.begin(), addresses.end(), [](uint64_t addr) {
+        return IsPageReadable(reinterpret_cast<void*>(addr));
+    });
+}
+
+bool IsPageReadable(const void* ptr) {
+    uint64_t alignedAddr = reinterpret_cast<uint64_t>(ptr) & ~(GetPageSize() - 1);
     // use process_vm_readv to try first word of each page
-    std::vector<uint64_t> buffers(pageCount);
-    std::vector<iovec> locals(pageCount);
-    std::vector<iovec> remotes(pageCount);
-    for (uint64_t i = 0; i < pageCount; ++i) {
-        locals[i].iov_base = &buffers[i];
-        locals[i].iov_len = sizeof(uint64_t);
-        remotes[i].iov_base = reinterpret_cast<void*>(addresses[i]);
-        remotes[i].iov_len = sizeof(uint64_t);
-    }
+    uint64_t buffer;
+    iovec local;
+    iovec remote;
+    local.iov_base = &buffer;
+    local.iov_len = sizeof(uint64_t);
+    remote.iov_base = reinterpret_cast<void*>(alignedAddr);
+    remote.iov_len = sizeof(uint64_t);
     errno = 0;
-    auto readCount = process_vm_readv(getpid(), locals.data(), locals.size(), remotes.data(), remotes.size(), 0);
-    return readCount == static_cast<ssize_t>(pageCount);
+    auto size = process_vm_readv(getpid(), &local, 1, &remote, 1, 0);
+    return size == sizeof(uint64_t);
 }
 
 bool IsMemoryReadable(const std::vector<MemoryMapEntry>& maps, uint64_t ptr, size_t length) {

@@ -42,6 +42,7 @@
 #include "utils/FileMemMap.h"
 #include "utils/ProcessView.h"
 #include "utils/ElfView.h"
+#include "utils/ConfigManager.h"
 
 #include "natives_utils.h"
 

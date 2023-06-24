@@ -48,6 +48,7 @@ public class MmkvConfigManagerImpl extends ConfigManager {
     private final MMKV mmkv;
     private final File file;
     private final String mmkvId;
+    // keep the following the same as ConfigManager.cc
     public static final String TYPE_SUFFIX = "$shadow$type";
     private static final String CLASS_SUFFIX = "$shadow$class";
     private static final int TYPE_BOOL = 0x80 + 2;

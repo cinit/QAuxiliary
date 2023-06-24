@@ -11,6 +11,7 @@
 #include <jni.h>
 #include <unistd.h>
 #include <cstring>
+#include <span>
 #include <optional>
 #include <sys/mman.h>
 #include <ucontext.h>
@@ -25,6 +26,7 @@
 #include "utils/ProcessView.h"
 #include "utils/ThreadUtils.h"
 #include "utils/TextUtils.h"
+#include "utils/ElfScan.h"
 #include "utils/MemoryUtils.h"
 #include "qauxv_core/natives_utils.h"
 
@@ -32,6 +34,55 @@ namespace ntqq::hook {
 
 using namespace qauxv;
 using namespace utils;
+
+/**
+    void RecallC2cSysMsg(void * param_1, void ** param_2, void * param_3)
+
+    a01604234 fd 7b ba a9     stp        x29,x30,[sp, #local_60]!
+    a01604238 91 16 00 94     bl         _prologue_save_regs_a01609c7c
+    a0160423c ff c3 0f d1     sub        sp,sp,#0x3f0
+    a01604240 54 d0 3b d5     mrs        x20,tpidr_el0
+    a01604244 88 16 40 f9     ldr        x8,[x20, #0x28]
+    a01604248 a8 03 1f f8     stur       x8,[x29, #-0x10]=>DAT_fffffffffffffff0
+    a0160424c 48 00 40 f9     ldr        x8,[x2]
+    a01604250 48 52 00 b4     cbz        x8,LAB_a01604c98
+                                 TAG_C2C_KEY_START
+    a01604254 09 8d 40 f8     ldr        x9,[x8, #0x8]!
+    a01604258 f5 03 00 aa     mov        x21,x0
+    a0160425c 21 00 80 52     mov        w1,#0x1
+    a01604260 f3 03 02 aa     mov        x19,x2
+    a01604264 29 8d 40 f9     ldr        x9,[x9, #0x118]
+                                 TAG_C2C_KEY_END
+    [ 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 8d 40 f9 ]
+ */
+static constexpr uint8_t kTraitRecallC2cSysMsg[] =
+        {0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9};
+static constexpr uint64_t kTraitOffsetRecallC2cSysMsg = 4 * 8;
+
+/**
+    void __cdecl RecallGroupSysMsg(void * param_1, void * param_2, void * param_3)
+
+    a01605904 fd 7b ba a9     stp        x29,x30,[sp, #local_60]!
+    a01605908 dd 10 00 94     bl         _prologue_save_regs_a01609c7c
+    a0160590c ff 83 0d d1     sub        sp,sp,#0x360
+    a01605910 bc 12 00 94     bl         FUN_a0160a400
+    a01605914 c6 12 00 94     bl         FUN_a0160a42c
+    a01605918 a8 03 1f f8     stur       x8,[x29, #-0x10]=>DAT_fffffffffffffff0
+                                 TAG_GROUP_KEY_START
+    a0160591c 28 00 40 f9     ldr        x8,[x1]
+    a01605920 61 00 80 52     mov        w1,#0x3
+    a01605924 09 8d 40 f8     ldr        x9,[x8, #0x8]!
+    a01605928 29 8d 40 f9     ldr        x9,[x9, #0x118]
+                                 TAG_GROUP_KEY_END
+    a0160592c 53 12 00 94     bl         __call__FUN_a0160a278
+                          msg_common::Msg::kBody
+    a01605930 00 04 00 36     tbz        w0,#0x0,LAB_a016059b0
+
+    [ 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9 ]
+ */
+static constexpr uint8_t kTraitRecallGroupSysMsg[] =
+        {0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9};
+static constexpr uint64_t kTraitOffsetRecallGroupSysMsg = 4 * 6;
 
 static bool sIsHooked = false;
 
@@ -201,98 +252,142 @@ bool InitInitNtKernelRecallMsgHook() {
         LOGW("InitInitNtKernelRecallMsgHook failed, already hooked");
         return false;
     }
-    auto version = HostInfo::GetVersionCode32();
-    uint64_t offsetGroup = 0;
-    uint64_t offsetC2c = 0;
-    switch (version) {
-        case 4160: {
-            offsetGroup = 0x1605904;
-            offsetC2c = 0x1604234;
-            break;
-        }
-        default: {
-            LOGE("InitInitNtKernelRecallMsgHook failed, unsupported version: {}", version);
+    auto fnHookProc = [](uint64_t baseAddress) {
+        if (sIsHooked) {
             return false;
         }
-    }
-    if (offsetC2c != 0 && offsetGroup != 0) {
-        auto fnHookProc = [offsetGroup, offsetC2c, version](uint64_t baseAddress) {
-            if (sIsHooked) {
-                return false;
+        sIsHooked = true;
+        bool hasError = false;
+        gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
+        // LOGD("baseAddress = {}", baseAddress);
+        auto c2cCandidates = FindByteSequenceForLoadedImage(gLibkernelBaseAddress, kTraitRecallC2cSysMsg, true, 4);
+        auto groupCandidates = FindByteSequenceForLoadedImage(gLibkernelBaseAddress, kTraitRecallGroupSysMsg, true, 4);
+        uint64_t offsetC2c = 0;
+        uint64_t offsetGroup = 0;
+        if (c2cCandidates.size() != 1) {
+            std::string logStr = "InitInitNtKernelRecallMsgHook failed, c2cCandidates.size()=" + std::to_string(c2cCandidates.size());
+            logStr += ", [";
+            for (auto& item: c2cCandidates) {
+                logStr += std::to_string(item) + ",";
             }
-            sIsHooked = true;
-            gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
+            logStr += "]";
+            LOGE("{}", logStr);
+            hasError = true;
+        } else {
+            uintptr_t offset = c2cCandidates[0] - kTraitOffsetRecallC2cSysMsg;
+            const uint32_t* p = reinterpret_cast<const uint32_t*>(baseAddress + offset);
+            uint32_t inst = *p;
+            // expect  fd 7b ba a9     stp        x29,x30,[sp, #???]!
+            if ((inst & ((0b11111111u << 24) | (0b11000000u << 16u) | (0b01111111u << 8u) | 0xFF))
+                    == ((0b10101001u << 24u) | (0b10000000u << 16u) | (0x7b << 8u) | 0xfd)) {
+                offsetC2c = offset;
+                LOGD("c2cCandidates = [{:x}], offsetC2c = {:x}", c2cCandidates[0], offsetC2c);
+            } else {
+                LOGE("c2c: inst = {:x} not match, expect 'stp x29,x30,[sp, #???]!'", inst);
+            }
+        }
+        if (groupCandidates.size() != 1) {
+            std::string logStr = "InitInitNtKernelRecallMsgHook failed, groupCandidates.size()=" + std::to_string(groupCandidates.size());
+            logStr += ", [";
+            for (auto& item: groupCandidates) {
+                logStr += std::to_string(item) + ",";
+            }
+            logStr += "]";
+            LOGE("{}", logStr);
+            hasError = true;
+        } else {
+            uintptr_t offset = groupCandidates[0] - kTraitOffsetRecallGroupSysMsg;
+            const uint32_t* p = reinterpret_cast<const uint32_t*>(baseAddress + offset);
+            uint32_t inst = *p;
+            // expect  fd 7b ba a9     stp        x29,x30,[sp, #???]!
+            if ((inst & ((0b11111111u << 24) | (0b11000000u << 16u) | (0b01111111u << 8u) | 0xFF))
+                    == ((0b10101001u << 24u) | (0b10000000u << 16u) | (0x7b << 8u) | 0xfd)) {
+                offsetGroup = offset;
+                LOGD("groupCandidates = [{:x}], offsetGroup = {:x}", groupCandidates[0], offsetGroup);
+            } else {
+                LOGE("group: inst = {:x} not match, expect 'stp x29,x30,[sp, #???]!'", inst);
+            }
+        }
+        if (offsetC2c != 0) {
             void* c2c = (void*) (baseAddress + offsetC2c);
-            void* group = (void*) (baseAddress + offsetGroup);
-            LOGI("InitInitNtKernelRecallMsgHook, start hook");
             if (CreateInlineHook(c2c, (void*) &HandleC2cRecallSysMsgCallback, (void**) &sOriginHandleC2cRecallSysMsgCallback) != 0) {
                 LOGE("InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed");
                 return false;
             }
+        } else {
+            LOGE("InitInitNtKernelRecallMsgHook failed, offsetC2c == 0");
+        }
+        if (offsetGroup != 0) {
+            void* group = (void*) (baseAddress + offsetGroup);
             if (CreateInlineHook(group, (void*) &HandleGroupRecallSysMsgCallback, (void**) &sOriginHandleGroupRecallSysMsgCallback) != 0) {
                 LOGE("InitInitNtKernelRecallMsgHook failed, DobbyHook group failed");
                 return false;
             }
-            LOGI("InitInitNtKernelRecallMsgHook success, version: {}", version);
-            return true;
-        };
-        ProcessView self;
-        if (int err;(err = self.readProcess(getpid())) != 0) {
-            LOGE("InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);
-            return false;
-        }
-        std::optional<ProcessView::Module> libkernel;
-        for (const auto& m: self.getModules()) {
-            if (m.name == "libkernel.so") {
-                libkernel = m;
-                break;
-            }
-        }
-        if (libkernel.has_value()) {
-            // hook now
-            return fnHookProc(libkernel->baseAddress);
         } else {
-            RegisterLoadLibraryCallback([fnHookProc](const char* name, void* handle) {
-                if (name == nullptr) {
+            LOGE("InitInitNtKernelRecallMsgHook failed, offsetGroup == 0");
+        }
+        if (hasError) {
+            LOGE("InitInitNtKernelRecallMsgHook failed, hasError");
+        }
+        return true;
+    };
+    ProcessView self;
+    if (int err;(err = self.readProcess(getpid())) != 0) {
+        LOGE("InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);
+        return false;
+    }
+    std::optional<ProcessView::Module> libkernel;
+    for (const auto& m: self.getModules()) {
+        if (m.name == "libkernel.so") {
+            libkernel = m;
+            break;
+        }
+    }
+    if (libkernel.has_value()) {
+        // LOGD("libkernel.so is already loaded");
+        // hook now
+        return fnHookProc(libkernel->baseAddress);
+    } else {
+        RegisterLoadLibraryCallback([fnHookProc](const char* name, void* handle) {
+            if (name == nullptr) {
+                return;
+            }
+            std::string soname;
+            // LOGD("dl_dlopen: {}", name);
+            // get suffix
+            auto suffix = strrchr(name, '/');
+            if (suffix == nullptr) {
+                soname = name;
+            } else {
+                soname = suffix + 1;
+            }
+            if (soname == "libkernel.so") {
+                // LOGD("dl_dlopen: libkernel.so is loaded, start hook");
+                // get base address
+                ProcessView self2;
+                if (int err;(err = self2.readProcess(getpid())) != 0) {
+                    LOGE("InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);
                     return;
                 }
-                std::string soname;
-                // get suffix
-                auto suffix = strrchr(name, '/');
-                if (suffix == nullptr) {
-                    soname = name;
+                std::optional<ProcessView::Module> libkernel2;
+                for (const auto& m: self2.getModules()) {
+                    if (m.name == "libkernel.so") {
+                        libkernel2 = m;
+                        break;
+                    }
+                }
+                if (libkernel2.has_value()) {
+                    // hook now
+                    if (!fnHookProc(libkernel2->baseAddress)) {
+                        LOGE("InitInitNtKernelRecallMsgHook failed, fnHookProc failed");
+                    }
                 } else {
-                    soname = suffix + 1;
+                    LOGE("InitInitNtKernelRecallMsgHook failed, but it was loaded");
                 }
-                if (soname == "libkernel.so") {
-                    // get base address
-                    ProcessView self2;
-                    if (int err;(err = self2.readProcess(getpid())) != 0) {
-                        LOGE("InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);
-                        return;
-                    }
-                    std::optional<ProcessView::Module> libkernel2;
-                    for (const auto& m: self2.getModules()) {
-                        if (m.name == "libkernel.so") {
-                            libkernel2 = m;
-                            break;
-                        }
-                    }
-                    if (libkernel2.has_value()) {
-                        // hook now
-                        if (!fnHookProc(libkernel2->baseAddress)) {
-                            LOGE("InitInitNtKernelRecallMsgHook failed, fnHookProc failed");
-                        }
-                    } else {
-                        LOGE("InitInitNtKernelRecallMsgHook failed, but it was loaded");
-                    }
-                }
-            });
-            return true;
-        }
-    } else {
-        LOGE("InitInitNtKernelRecallMsgHook failed, offsetC2c: {}, offsetGroup: {}", (void*) offsetC2c, (void*) offsetGroup);
-        return false;
+            }
+        });
+        // LOGD("libkernel.so is not loaded, register callback");
+        return true;
     }
 }
 

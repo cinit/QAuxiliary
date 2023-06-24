@@ -50,8 +50,9 @@ std::vector<uint32_t> GetMemoryProtects(const std::vector<MemoryMapEntry>& maps,
 
 bool CheckMemoryProtect(const std::vector<MemoryMapEntry>& maps, uint64_t ptr, size_t length, uint32_t protect);
 
-[[deprecated("not tested")]]
 bool IsMemoryReadable(const void* ptr, size_t length = 1);
+
+bool IsPageReadable(const void* ptr);
 
 bool IsMemoryReadable(const std::vector<MemoryMapEntry>& maps, uint64_t ptr, size_t length = 1);
 
