@@ -23,10 +23,11 @@ package me.ketal.hook
 
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.mobileqq.app.BaseActivity
@@ -42,6 +43,8 @@ import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.*
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.Thread.sleep
 
@@ -63,6 +66,10 @@ object MultiActionHook : CommonSwitchFunctionHook(
     private var baseChatPie: Any? = null
 
     public override fun initOnce() = throwOrTrue {
+        if (QAppUtils.isQQnt()) {
+            hookNt()
+            return@throwOrTrue
+        }
         val m = DexKit.loadMethodFromCache(NBaseChatPie_createMulti)!!
         m.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
@@ -78,6 +85,23 @@ object MultiActionHook : CommonSwitchFunctionHook(
             )
             setMargin(rootView)
         }
+    }
+
+    private fun hookNt() {
+        Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVB")
+            .method("onCreateView")!!
+            .hookAfter(this) {
+                val rootView = findViewNt(it.method.declaringClass, it.thisObject) ?: return@hookAfter
+                val context = rootView.context as BaseActivity
+                val count = rootView.childCount
+                val enableTalkBack = rootView.getChildAt(0).contentDescription != null
+                val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
+                if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
+                    create(context, iconResId, enableTalkBack),
+                    count - 1
+                )
+                setMargin(rootView)
+            }
     }
 
     private fun recall(ctx: Context) {
@@ -115,10 +139,14 @@ object MultiActionHook : CommonSwitchFunctionHook(
         }.start()
     }
 
+    private fun recallNt(ctx: Context) {
+        // todo: implement this
+    }
+
     private fun setMargin(rootView: LinearLayout) {
         val width = rootView.resources.displayMetrics.widthPixels
         val count = rootView.childCount
-        var rootMargin = (rootView.layoutParams as RelativeLayout.LayoutParams).leftMargin
+        var rootMargin = (rootView.layoutParams as ViewGroup.MarginLayoutParams).leftMargin
         if (rootMargin == 0) {
             rootMargin = (rootView.getChildAt(0).layoutParams as LinearLayout.LayoutParams).leftMargin
         }
@@ -127,7 +155,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         for (i in 1 until count) {
             val view = rootView.getChildAt(i)
             val layoutParams = LinearLayout.LayoutParams(w, w)
-            layoutParams.setMargins(leftMargin, 0, 0, 0)
+            layoutParams.marginStart = leftMargin
             layoutParams.gravity = 16
             view.layoutParams = layoutParams
         }
@@ -145,9 +173,23 @@ object MultiActionHook : CommonSwitchFunctionHook(
         return null
     }
 
+    private fun findViewNt(clazz: Class<*>, obj: Any): LinearLayout? {
+        for (f in clazz.declaredFields) {
+            if (f.type.name == "kotlin.Lazy") {
+                f.isAccessible = true
+                val lazyObj = f[obj]!!.invoke("getValue")
+                if (lazyObj is LinearLayout && check(lazyObj))
+                    return lazyObj
+            }
+        }
+        return null
+    }
+
     private fun check(rootView: LinearLayout): Boolean {
         val count = rootView.childCount
-        if (count <= 1) return false
+        val num = if (QAppUtils.isQQnt()) 2 else 1
+        // 完全想不起来为啥是 1
+        if (count <= num) return false
         for (i in 0 until count) {
             val view = rootView.getChildAt(i)
             if (view is TextView) return false
@@ -160,7 +202,13 @@ object MultiActionHook : CommonSwitchFunctionHook(
         if (enableTalkBack) {
             imageView.contentDescription = "撤回"
         }
-        imageView.setOnClickListener { recall(it.context) }
+        imageView.setOnClickListener {
+            if (QAppUtils.isQQnt()) {
+                recallNt(it.context)
+            } else {
+                recall(it.context)
+            }
+        }
         imageView.setImageResource(resId)
         imageView.id = R.id.ketalRecallImageView
         return imageView
