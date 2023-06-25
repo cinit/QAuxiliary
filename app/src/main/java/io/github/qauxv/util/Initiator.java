@@ -217,6 +217,14 @@ public class Initiator {
         return findClassWithSynthetics("com/tencent/mobileqq/startup/director/StartupDirector", 1);
     }
 
+    public static Class<?> _NtStartupDirector() {
+        Class<?> klass = Initiator.load("com.tencent.mobileqq.startup.director.a");
+        if (klass == _StartupDirector()) {
+            return null;
+        }
+        return klass;
+    }
+
     public static Class<?> _BaseQQMessageFacade() {
         return load("com/tencent/imcore/message/BaseQQMessageFacade");
     }

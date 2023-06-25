@@ -64,6 +64,8 @@ public class StartupDirectorBridge {
     private boolean mStartupFinished = false;
     private boolean mProbeStarted = false;
     private Field mDirectorField;
+    private Field mNtStartupDirectorInstanceField = null;
+    private Field mNtStartupDirectorStatusStringField = null;
 
     private void initialize() {
         if (HostInfo.isInModuleProcess() || !SyncUtils.isMainProcess()) {
@@ -80,6 +82,38 @@ public class StartupDirectorBridge {
         // only in host main process
         MobileQQ mqq = BaseApplicationImpl.sMobileQQ;
         if (mqq instanceof BaseApplicationImpl) {
+            // NT version
+            Class<?> kNtStartupDirector = Initiator._NtStartupDirector();
+            if (kNtStartupDirector != null) {
+                // find instance field
+                Field fInstance = Reflex.findFirstDeclaredStaticFieldByTypeOrNull(kNtStartupDirector, kNtStartupDirector);
+                if (fInstance != null) {
+                    fInstance.setAccessible(true);
+                    // find status string field, there should be only one
+                    Field candidate = null;
+                    for (Field f : kNtStartupDirector.getDeclaredFields()) {
+                        if (f.getType() == String.class) {
+                            if (candidate == null) {
+                                candidate = f;
+                            } else {
+                                Log.e("multiple status string fields found in StartupDirector");
+                                candidate = null;
+                                break;
+                            }
+                        }
+                    }
+                    if (candidate != null) {
+                        candidate.setAccessible(true);
+                        mNtStartupDirectorInstanceField = fInstance;
+                        mNtStartupDirectorStatusStringField = candidate;
+                        mNeedInterceptStartActivity = true;
+                    } else {
+                        Log.e("no status string field found in StartupDirector");
+                    }
+                    return;
+                }
+            }
+            // older
             try {
                 Field fDirector = BaseApplicationImpl.class.getDeclaredField("sDirector");
                 fDirector.setAccessible(true);
@@ -150,19 +184,46 @@ public class StartupDirectorBridge {
         if (mStartupFinished || !mNeedInterceptStartActivity) {
             return false;
         }
-        Object director;
-        try {
-            director = mDirectorField.get(null);
-        } catch (IllegalAccessException e) {
-            throw new AssertionError(e);
-        }
-        // after startup finished, the director is null
-        if (director == null) {
+        if (mNtStartupDirectorInstanceField != null && mNtStartupDirectorStatusStringField != null) {
+            // NT
+            Object director = null;
+            try {
+                director = mNtStartupDirectorInstanceField.get(null);
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(e);
+            }
+            if (director == null) {
+                mNeedInterceptStartActivity = false;
+                return false;
+            }
+            String status = null;
+            try {
+                status = (String) mNtStartupDirectorStatusStringField.get(director);
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(e);
+            }
+            Log.d("director status: " + status);
+            if ("BackgroundCreate".equals(status) || "ApplicationCreate".equals(status)) {
+                return true;
+            }
             mNeedInterceptStartActivity = false;
             return false;
         } else {
-            Log.d("director is not null");
-            return true;
+            // older
+            Object director;
+            try {
+                director = mDirectorField.get(null);
+            } catch (IllegalAccessException e) {
+                throw new AssertionError(e);
+            }
+            // after startup finished, the director is null
+            if (director == null) {
+                mNeedInterceptStartActivity = false;
+                return false;
+            } else {
+                Log.d("director is not null");
+                return true;
+            }
         }
     }
 
