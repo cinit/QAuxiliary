@@ -78,10 +78,14 @@ public class SendGiftHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         {
-            Method m = Reflex.findSingleMethod(Objects.requireNonNull(DexKit.loadClassFromCache(CTroopGiftUtil.INSTANCE), "CTROOP_GIFT_UTIL.INSTANCE"),
+            Class<?> kTroopGiftUtil = Objects.requireNonNull(DexKit.loadClassFromCache(CTroopGiftUtil.INSTANCE), "CTROOP_GIFT_UTIL.INSTANCE");
+            Method startSendGiftActivity = Reflex.findSingleMethodOrNull(kTroopGiftUtil,
                     void.class, false,
                     Activity.class, String.class, String.class, Initiator._QQAppInterface());
-            HookUtils.hookBeforeIfEnabled(this, m, 47, param -> param.setResult(null));
+            if (startSendGiftActivity != null) {
+                // startSendGiftActivity was not used on NT and was removed iin 8.9.63 near 4190
+                HookUtils.hookBeforeIfEnabled(this, startSendGiftActivity, 47, param -> param.setResult(null));
+            }
         }
         {
             Class<?> kQWalletTextChangeCallback = Initiator.load("com/tencent/mobileqq/activity/aio/rebuild/input/edittext/QWalletTextChangeCallback");
