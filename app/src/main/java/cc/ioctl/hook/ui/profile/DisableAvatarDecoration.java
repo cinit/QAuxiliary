@@ -61,6 +61,8 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
     public boolean initOnce() throws NoSuchMethodException {
         if (QAppUtils.isQQnt()){
             HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantId"),param -> param.setResult(0L));
+            HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantDiyInfoId"),param -> param.setResult(0));
+            return true;
         }
         for (Method m : Initiator.load("com.tencent.mobileqq.vas.PendantInfo").getDeclaredMethods()) {
             if (m.getReturnType() == void.class) {
