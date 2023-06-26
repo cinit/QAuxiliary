@@ -54,7 +54,7 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return Simplify.UI_PROFILE;
+        return Simplify.CHAT_DECORATION;
     }
 
     @Override
