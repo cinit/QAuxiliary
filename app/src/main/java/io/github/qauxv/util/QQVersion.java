@@ -93,4 +93,7 @@ public class QQVersion {
     public static final long QQ_8_9_35 = 3814;
     public static final long QQ_8_9_53 = 3964;
     public static final long QQ_8_9_55 = 4030;
+
+    // The first NT version
+    public static final long QQ_8_9_63 = 4194;
 }

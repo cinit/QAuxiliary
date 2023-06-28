@@ -699,3 +699,10 @@ data object Reply_At_QQNT : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }
+
+data object TroopSendFile_QQNT : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("send local to troop file use nt, filePath:")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.allowAll
+}
