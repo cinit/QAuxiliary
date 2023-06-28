@@ -30,6 +30,10 @@ import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.github.kyuubiran.ezxhelper.utils.argTypes
+import com.github.kyuubiran.ezxhelper.utils.args
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.newInstance
 import com.tencent.mobileqq.app.BaseActivity
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -40,13 +44,16 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.*
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.Thread.sleep
+import kotlin.concurrent.thread
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -80,7 +87,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val enableTalkBack = rootView.getChildAt(0).contentDescription != null
             val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
-                create(context, iconResId, enableTalkBack),
+                create(context, iconResId, enableTalkBack, null),
                 count - 1
             )
             setMargin(rootView)
@@ -97,25 +104,49 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 val enableTalkBack = rootView.getChildAt(0).contentDescription != null
                 val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
                 if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
-                    create(context, iconResId, enableTalkBack),
+                    create(context, iconResId, enableTalkBack, it.thisObject),
                     count - 1
                 )
                 setMargin(rootView)
             }
+        val intentClass = Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.c\$h")
+        val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
+        Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM")
+            .method("handleIntent")!!
+            .hookBefore(this) {
+                // 劫持一个 intent 自己传参
+                val intent = it.args[0]
+                if (intent.javaClass.isAssignableFrom(intentClass)) {
+                    val flags = Reflex.getFirstByType(intent, Int::class.java)
+                    if (flags != -114514) return@hookBefore
+                    val mContext = it.thisObject.invoke("getMContext")!!
+                    val selectUtil = Reflex.getStaticObject(multiSelectUtilClazz, "a")
+                    val m = multiSelectUtilClazz.findMethod { returnType.isAssignableFrom(List::class.java) }
+                    val list = (m.invoke(selectUtil, mContext) as List<*>)
+                        .map { it!!.invoke("getMsgRecord") }
+                    Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
+                    thread {
+                        for (msg in list) {
+                            // todo: revokeMessage
+                            sleep(250)
+                        }
+                        // todo: 关闭多选菜单
+                    }
+                    it.result = null
+                }
+            }
     }
 
     private fun recall(ctx: Context) {
-        Thread {
+        thread {
             try {
                 val clazz = DexKit.requireClassFromCache(CMultiMsgManager)
                 val manager = Reflex.findMethodByTypes_1(clazz, clazz).invoke(null)
                 val list = Reflex.findMethodByTypes_1(clazz, MutableList::class.java)
                     .invoke(manager) as List<*>
-                if (list.isNotEmpty()) {
-                    for (msg in list) {
-                        QQMessageFacade.revokeMessage(msg)
-                        sleep(250)
-                    }
+                for (msg in list) {
+                    QQMessageFacade.revokeMessage(msg)
+                    sleep(250)
                 }
                 SyncUtils.runOnUiThread {
                     try {   // 为了防止多次点击导致闪退
@@ -136,11 +167,19 @@ object MultiActionHook : CommonSwitchFunctionHook(
             } catch (t: Throwable) {
                 FaultyDialog.show(ctx, t)
             }
-        }.start()
+        }
     }
 
-    private fun recallNt(ctx: Context) {
-        // todo: implement this
+    private fun recallNt(ctx: Context, vb: Any) {
+        runCatching {
+            val baseVB = Initiator.loadClass("com.tencent.mvi.mvvm.BaseVB")
+            val intentClass = Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.c\$h")
+            val flags: Int = -114514
+            val intent = intentClass.newInstance(args(flags), argTypes(Int::class.java))!!
+            baseVB.method("sendIntent")!!.invoke(vb, intent)
+        }.onFailure {
+            Log.e(it)
+        }
     }
 
     private fun setMargin(rootView: LinearLayout) {
@@ -197,14 +236,14 @@ object MultiActionHook : CommonSwitchFunctionHook(
         return true
     }
 
-    private fun create(context: Context, resId: Int, enableTalkBack: Boolean): ImageView {
+    private fun create(context: Context, resId: Int, enableTalkBack: Boolean, vb: Any?): ImageView {
         val imageView = ImageView(context)
         if (enableTalkBack) {
             imageView.contentDescription = "撤回"
         }
         imageView.setOnClickListener {
             if (QAppUtils.isQQnt()) {
-                recallNt(it.context)
+                recallNt(it.context, vb!!)
             } else {
                 recall(it.context)
             }
