@@ -28,6 +28,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
+import cc.hicore.message.chat.SessionUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
 import com.github.kyuubiran.ezxhelper.utils.argTypes
@@ -35,10 +36,13 @@ import com.github.kyuubiran.ezxhelper.utils.args
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.newInstance
 import com.tencent.mobileqq.app.BaseActivity
+import com.tencent.qqnt.kernel.nativeinterface.IOperateCallback
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.bridge.QQMessageFacade
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
@@ -123,14 +127,13 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     val selectUtil = Reflex.getStaticObject(multiSelectUtilClazz, "a")
                     val m = multiSelectUtilClazz.findMethod { returnType.isAssignableFrom(List::class.java) }
                     val list = (m.invoke(selectUtil, mContext) as List<*>)
-                        .map { it!!.invoke("getMsgRecord") }
+                        .map { it!!.invoke("getMsgId") }
                     Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
-                    thread {
-                        for (msg in list) {
-                            // todo: revokeMessage
-                            sleep(250)
+                    val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
+                    msgServer!!.recallMsg(SessionUtils.getCurrentSession().contact,ArrayList<Long>(list as List<Long>)) { i2, str ->
+                        run {
+                            Log.d("do recallMsg result:$str")
                         }
-                        // todo: 关闭多选菜单
                     }
                     it.result = null
                 }
