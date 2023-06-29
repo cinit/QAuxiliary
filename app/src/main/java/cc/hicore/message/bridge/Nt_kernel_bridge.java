@@ -23,7 +23,7 @@
 package cc.hicore.message.bridge;
 
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.message.ServiceHook;
+import cc.hicore.Utils.XLog;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
@@ -34,6 +34,8 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgFont;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgIceBreak;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
+import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,9 +45,14 @@ public class Nt_kernel_bridge {
         HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
         attrMap.put(0,getDefaultAttributeInfo());
 
-        ServiceHook.kernel_service.sendMsg(ServiceHook.kernel_service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
+        try {
+            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+            service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
 
-        });
+            });
+        } catch (Exception e) {
+            XLog.e("Nt_kernel_bridge.send_msg",e);
+        }
     }
     public static MsgAttributeInfo getDefaultAttributeInfo(){
 

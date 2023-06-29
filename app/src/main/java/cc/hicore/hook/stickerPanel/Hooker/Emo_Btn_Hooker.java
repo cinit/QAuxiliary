@@ -26,21 +26,18 @@ import android.view.View;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
-import cc.hicore.Env;
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.MMethod;
 import cc.hicore.ReflectUtil.MRes;
 import cc.hicore.Utils.XLog;
 import cc.hicore.hook.stickerPanel.ICreator;
-import cc.hicore.message.ServiceHook;
+import cc.hicore.message.chat.SessionHooker;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.dexkit.AIO_Create_QQNT;
 import io.github.qauxv.util.dexkit.ChatPanel_InitPanel_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
@@ -48,16 +45,13 @@ import java.lang.reflect.Field;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class Emo_Btn_Hooker extends CommonSwitchFunctionHook {
+public class Emo_Btn_Hooker extends CommonSwitchFunctionHook implements SessionHooker.IAIOParamUpdate {
     public static final Emo_Btn_Hooker INSTANCE = new Emo_Btn_Hooker();
+    public static Object AIOParam;
     private Emo_Btn_Hooker() {
         super(new DexKitTarget[]{
-                ChatPanel_InitPanel_QQNT.INSTANCE,
-                AIO_Create_QQNT.INSTANCE
+                ChatPanel_InitPanel_QQNT.INSTANCE
         });
-        if (QAppUtils.isQQnt()){
-            ServiceHook.requireHook();
-        }
     }
 
     @NonNull
@@ -100,11 +94,6 @@ public class Emo_Btn_Hooker extends CommonSwitchFunctionHook {
                         return true;
                     });
                 });
-
-        HookUtils.hookAfterIfEnabled(this,DexKit.loadMethodFromCache(AIO_Create_QQNT.INSTANCE),param -> {
-            Object pie = param.thisObject;
-            Env.AIOParam = MField.GetFirstField(pie,Initiator.loadClass("com.tencent.aio.data.AIOParam"));
-        });
         return true;
     }
 
@@ -117,5 +106,10 @@ public class Emo_Btn_Hooker extends CommonSwitchFunctionHook {
     @Override
     public boolean isAvailable() {
         return QAppUtils.isQQnt();
+    }
+
+    @Override
+    public void onAIOParamUpdate(Object AIOParam) {
+        Emo_Btn_Hooker.AIOParam = AIOParam;
     }
 }

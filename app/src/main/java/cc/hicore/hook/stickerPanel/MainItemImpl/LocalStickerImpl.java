@@ -12,6 +12,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
 import cc.hicore.Utils.HttpUtils;
+import cc.hicore.hook.stickerPanel.Hooker.Emo_Btn_Hooker;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
 import cc.hicore.hook.stickerPanel.MainPanelAdapter;
@@ -184,13 +185,13 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
         img.setOnClickListener(v -> {
             if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
                 HttpUtils.ProgressDownload(coverView, Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")), () -> {
-                    MsgSender.send_pic(SessionUtils.getCurrentSession(), Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
+                    MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(Emo_Btn_Hooker.AIOParam), Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
                     RecentStickerHelper.addPicItemToRecentRecord(mPathInfo, item);
                 }, mContext);
                 ICreator.dismissAll();
 
             } else {
-                MsgSender.send_pic(SessionUtils.getCurrentSession(),
+                MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(Emo_Btn_Hooker.AIOParam),
                         LocalDataHelper.getLocalItemPath(mPathInfo, item));
                 RecentStickerHelper.addPicItemToRecentRecord(mPathInfo, item);
                 ICreator.dismissAll();

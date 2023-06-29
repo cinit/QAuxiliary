@@ -32,11 +32,11 @@ import io.github.qauxv.bridge.SessionInfoImpl;
 import io.github.qauxv.util.Initiator;
 
 public class SessionUtils {
-    public static CommonChat getCurrentSession(){
+    public static CommonChat AIOParam2CommonChat(Object AIOParam){
         try {
             if (QAppUtils.isQQnt()){
                 CommonChat chat = new CommonChat();
-                Contact contact = AIOParam2Contact(Env.AIOParam);
+                Contact contact = AIOParam2Contact(AIOParam);
                 if (contact.getChatType() == 1){
                     chat.type = 0;
                 }else if (contact.getChatType() == 2){

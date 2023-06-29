@@ -28,6 +28,7 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
+import cc.hicore.message.chat.SessionHooker
 import cc.hicore.message.chat.SessionUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
@@ -68,13 +69,14 @@ object MultiActionHook : CommonSwitchFunctionHook(
         NBaseChatPie_createMulti,
         CMultiMsgManager
     )
-) {
+) , SessionHooker.IAIOParamUpdate{
 
     override val name = "批量撤回消息"
     override val description = "多选消息后撤回"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     private var baseChatPie: Any? = null
+    private var nt_aioParam: Any? = null
 
     public override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
@@ -130,7 +132,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
                         .map { it!!.invoke("getMsgId") }
                     Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
                     val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
-                    msgServer!!.recallMsg(SessionUtils.getCurrentSession().contact,ArrayList<Long>(list as List<Long>)) { i2, str ->
+                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam),ArrayList<Long>(list as List<Long>)) { i2, str ->
                         run {
                             Log.d("do recallMsg result:$str")
                         }
@@ -254,5 +256,9 @@ object MultiActionHook : CommonSwitchFunctionHook(
         imageView.setImageResource(resId)
         imageView.id = R.id.ketalRecallImageView
         return imageView
+    }
+
+    override fun onAIOParamUpdate(AIOParam: Any?) {
+        nt_aioParam = AIOParam
     }
 }
