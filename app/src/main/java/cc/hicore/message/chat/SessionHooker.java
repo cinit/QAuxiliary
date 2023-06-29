@@ -77,6 +77,11 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
         return QAppUtils.isQQnt();
     }
 
+    @Override
+    public boolean isEnabled() {
+        return QAppUtils.isQQnt() && super.isEnabled();
+    }
+
     public interface IAIOParamUpdate extends IDynamicHook {
         void onAIOParamUpdate(Object AIOParam);
     }

@@ -129,14 +129,13 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     val selectUtil = Reflex.getStaticObject(multiSelectUtilClazz, "a")
                     val m = multiSelectUtilClazz.findMethod { returnType.isAssignableFrom(List::class.java) }
                     val list = (m.invoke(selectUtil, mContext) as List<*>)
-                        .map { it!!.invoke("getMsgId") }
+                        .map { it!!.invoke("getMsgId") as Long }
                     Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
                     val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
-                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam),ArrayList<Long>(list as List<Long>)) { i2, str ->
-                        run {
-                            Log.d("do recallMsg result:$str")
-                        }
+                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam),ArrayList<Long>(list)) { i2, str ->
+                        Log.d("do recallMsg result:$str")
                     }
+                    // todo: 关闭多选菜单
                     it.result = null
                 }
             }
