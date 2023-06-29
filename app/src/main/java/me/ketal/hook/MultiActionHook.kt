@@ -21,6 +21,7 @@
  */
 package me.ketal.hook
 
+import android.app.Activity
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
@@ -135,7 +136,6 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam),ArrayList<Long>(list)) { i2, str ->
                         Log.d("do recallMsg result:$str")
                     }
-                    // todo: 关闭多选菜单
                     it.result = null
                 }
             }
@@ -181,6 +181,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val flags: Int = -114514
             val intent = intentClass.newInstance(args(flags), argTypes(Int::class.java))!!
             baseVB.method("sendIntent")!!.invoke(vb, intent)
+            (ctx as Activity).onBackPressed()
         }.onFailure {
             Log.e(it)
         }
