@@ -65,6 +65,9 @@
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
 
 # ByteBuddy混淆
+-dontwarn com.sun.jna.**
+-dontwarn edu.umd.cs.findbugs.annotations.**
+-dontwarn java.lang.instrument.**
 -keep class com.android.dx.** {
     *;
 }
