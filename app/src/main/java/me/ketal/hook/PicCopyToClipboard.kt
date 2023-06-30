@@ -25,24 +25,36 @@ package me.ketal.hook
 import android.content.Context
 import android.os.Build
 import android.view.View
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
 import cc.hicore.QQDecodeUtils.DecodeForEncPic
+import com.github.kyuubiran.ezxhelper.utils.Log
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Initiator._MarketFaceItemBuilder
 import io.github.qauxv.util.Initiator._MixedMsgItemBuilder
 import io.github.qauxv.util.Initiator._PicItemBuilder
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isAndroidxFileProviderAvailable
+import net.bytebuddy.ByteBuddy
+import net.bytebuddy.android.AndroidClassLoadingStrategy
+import net.bytebuddy.implementation.FixedValue
+import net.bytebuddy.implementation.MethodCall
+import net.bytebuddy.matcher.ElementMatchers.named
+import net.bytebuddy.matcher.ElementMatchers.returns
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -52,7 +64,11 @@ import xyz.nextalone.util.invoke
 import java.io.File
 
 @[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
-object PicCopyToClipboard : CommonSwitchFunctionHook() {
+object PicCopyToClipboard : CommonSwitchFunctionHook(
+    arrayOf(
+        AbstractQQCustomMenuItem
+    )
+) {
     override val name: String = "复制图片到剪贴板"
 
     override val description: String = "复制图片到剪贴板，可以在聊天窗口中粘贴使用"
@@ -61,7 +77,20 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
 
     override val isAvailable: Boolean = isAndroidxFileProviderAvailable
 
+    private val strategy by lazy {
+        AndroidClassLoadingStrategy.Wrapping(
+            hostInfo.application.getDir(
+                "generated",
+                Context.MODE_PRIVATE
+            )
+        )
+    }
+
     override fun initOnce() = tryOrLogFalse {
+        if (QAppUtils.isQQnt()) {
+            hookNt()
+            return@tryOrLogFalse
+        }
         val clsPicItemBuilder = _PicItemBuilder()
         val clazz = arrayOf(
             clsPicItemBuilder,
@@ -114,6 +143,67 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
         }
     }
 
+    private fun hookNt() {
+        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+        val picContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent")
+        val listMethod = picContentComponent.findMethod {
+            returnType == List::class.java && parameterTypes.isEmpty()
+        }
+        val getMsg = picContentComponent.findMethod(findSuper = true) {
+            parameterTypes.isEmpty() && returnType == msgClass
+        }
+        listMethod.hookAfter(this) {
+            val list = it.result as MutableList<Any>
+            val msg = getMsg.invoke(it.thisObject)!!
+            val context = it.thisObject.invoke("getMContext")!!
+            val item = getMenuItem(msg, "复制图片", R.id.item_copyToClipboard) {
+                runCatching {
+                    onClick(context as Context, msg)
+                }.onFailure { t ->
+                    Log.e(t)
+                }
+            }
+            list.add(item)
+        }
+    }
+
+    private fun getMenuItem(msg: Any, text: String, id: Int, click: () -> Unit): Any {
+        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+        val absMenuItem = DexKit.loadClassFromCache(AbstractQQCustomMenuItem)!!
+        val clickName = absMenuItem.findMethod {
+            returnType == Void.TYPE && parameterTypes.isEmpty()
+        }.name
+        val menuItemClass = ByteBuddy()
+            .subclass(absMenuItem)
+            .method(returns(String::class.java))
+            .intercept(FixedValue.value(text))
+            .method(returns(Int::class.java))
+            .intercept(FixedValue.value(id))
+            .method(named(clickName))
+            .intercept(MethodCall.call { click() })
+            .make()
+            .load(absMenuItem.classLoader, strategy)
+            .loaded
+        return menuItemClass.getDeclaredConstructor(msgClass)
+            .newInstance(msg)
+    }
+
+    private fun onClick(context: Context, msg: Any) {
+        // 第一次获取的时候会出错
+        val path = getFilePathNt(msg)
+        Log.d("pic path: $path")
+        try {
+            copyToClipboard(context, File(path))
+            // on Android 13+, the system will show something like "Copied to clipboard".
+            // We only need to show a hint on Android 12 and below.
+            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                Toasts.success(context, "已复制图片")
+            }
+        } catch (e: IllegalAccessException) {
+            FaultyDialog.show(context, e);
+        }
+    }
+
     // find chatMessage from view
     private tailrec fun getMessage(view: View): Any {
         return if (view.parent.javaClass.simpleName.endsWith("ListView")) {
@@ -131,17 +221,20 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                     .map { getFilePath(it) }
                     .toTypedArray()
             }
+
             "MessageForMixedMsg" -> {
                 val list = message.get("msgElemList") as List<Any>
                 return list.filter { Reflex.getShortClassName(it) == "MessageForPic" }
                     .map { getFilePath(it) }
                     .toTypedArray()
             }
+
             "MessageForStructing" -> {
                 val text = message.get("structingMsg")?.invoke("getXml") as String
                 // todo parse structingmsg
                 emptyArray()
             }
+
             "MessageForMarketFace" -> {
                 val tmpPath = DecodeForEncPic.decodeGifForLocalPath(
                     message.get("mMarkFaceMessage").get("dwTabID") as Int,
@@ -150,8 +243,15 @@ object PicCopyToClipboard : CommonSwitchFunctionHook() {
                 if (tmpPath.isEmpty()) return emptyArray()
                 arrayOf(tmpPath)
             }
+
             else -> emptyArray()
         }
+    }
+
+    private fun getFilePathNt(message: Any): String {
+        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+        val clazz = Initiator.load("com.tencent.qqnt.aio.msg.api.impl.AIOMsgItemApiImpl")!!
+        return clazz.newInstance().invoke("getLocalPath", message, msgClass) as String
     }
 
     private fun getFilePath(message: Any): String {

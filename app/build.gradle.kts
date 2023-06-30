@@ -211,6 +211,7 @@ dependencies {
     implementation(libs.kotlinx.serialization.json)
     implementation(libs.sealedEnum.runtime)
     implementation(libs.glide)
+    implementation(libs.byte.buddy.android)
     ksp(libs.sealedEnum.ksp)
 }
 

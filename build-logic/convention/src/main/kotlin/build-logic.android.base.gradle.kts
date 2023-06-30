@@ -54,7 +54,7 @@ kotlin {
     jvmToolchain(Version.java.toString().toInt())
     sourceSets.all {
         languageSettings {
-            languageVersion = "2.0"
+            // languageVersion = "2.0"
         }
     }
 }

@@ -38,7 +38,6 @@ import com.github.kyuubiran.ezxhelper.utils.args
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.newInstance
 import com.tencent.mobileqq.app.BaseActivity
-import com.tencent.qqnt.kernel.nativeinterface.IOperateCallback
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -70,7 +69,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         NBaseChatPie_createMulti,
         CMultiMsgManager
     )
-) , SessionHooker.IAIOParamUpdate{
+), SessionHooker.IAIOParamUpdate {
 
     override val name = "批量撤回消息"
     override val description = "多选消息后撤回"
@@ -133,7 +132,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
                         .map { it!!.invoke("getMsgId") as Long }
                     Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
                     val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
-                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam),ArrayList<Long>(list)) { i2, str ->
+                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam), ArrayList<Long>(list)) { i2, str ->
                         Log.d("do recallMsg result:$str")
                     }
                     it.result = null
