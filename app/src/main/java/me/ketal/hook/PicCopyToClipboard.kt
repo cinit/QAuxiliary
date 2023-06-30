@@ -44,6 +44,7 @@ import io.github.qauxv.util.Initiator._ChatMessage
 import io.github.qauxv.util.Initiator._MarketFaceItemBuilder
 import io.github.qauxv.util.Initiator._MixedMsgItemBuilder
 import io.github.qauxv.util.Initiator._PicItemBuilder
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.DexKit
@@ -62,6 +63,7 @@ import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
 import java.io.File
+import kotlin.concurrent.thread
 
 @[FunctionHookEntry UiItemAgentEntry Suppress("UNCHECKED_CAST")]
 object PicCopyToClipboard : CommonSwitchFunctionHook(
@@ -113,16 +115,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
                 if (path.size > 1) {
                     // todo Let the user select one of the items to copy
                 }
-                try {
-                    copyToClipboard(context, File(path.first()))
-                    // on Android 13+, the system will show something like "Copied to clipboard".
-                    // We only need to show a hint on Android 12 and below.
-                    if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                        Toasts.success(context, "已复制图片")
-                    }
-                } catch (e: IllegalAccessException) {
-                    FaultyDialog.show(context, e);
-                }
+                onClick(context, File(path.first()))
             }
             it.findMethodOrNull {
                 returnType.isArray
@@ -158,7 +151,8 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
             val context = it.thisObject.invoke("getMContext")!!
             val item = getMenuItem(msg, "复制图片", R.id.item_copyToClipboard) {
                 runCatching {
-                    onClick(context as Context, msg)
+                    val file = File(getFilePathNt(msg))
+                    onClick(context as Context, file)
                 }.onFailure { t ->
                     Log.e(t)
                 }
@@ -188,19 +182,24 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
             .newInstance(msg)
     }
 
-    private fun onClick(context: Context, msg: Any) {
-        // 第一次获取的时候会出错
-        val path = getFilePathNt(msg)
-        Log.d("pic path: $path")
+    private fun onClick(context: Context, file: File) {
+        if (!file.exists()) {
+            FaultyDialog.show(context, "图片不存在", "尝试打开一次图片")
+            return
+        }
         try {
-            copyToClipboard(context, File(path))
-            // on Android 13+, the system will show something like "Copied to clipboard".
-            // We only need to show a hint on Android 12 and below.
-            if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
-                Toasts.success(context, "已复制图片")
+            thread {
+                copyToClipboard(context, file)
+                // on Android 13+, the system will show something like "Copied to clipboard".
+                // We only need to show a hint on Android 12 and below.
+                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) {
+                    SyncUtils.runOnUiThread {
+                        Toasts.success(context, "已复制图片")
+                    }
+                }
             }
         } catch (e: IllegalAccessException) {
-            FaultyDialog.show(context, e);
+            FaultyDialog.show(context, e)
         }
     }
 
