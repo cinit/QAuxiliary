@@ -108,13 +108,8 @@ public class RepeaterPlus extends BaseFunctionHook {
                 @Override
                 public Function3<IUiItemAgent, Activity, View, Unit> getOnClickListener() {
                     return (agent, activity, view) -> {
-                        // temporary
-//                        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-//                            Toasts.info(activity, "当前QQ版本暂不支持自定义");
-//                        } else {
-                            RepeaterPlusIconSettingDialog dialog = new RepeaterPlusIconSettingDialog(activity);
-                            dialog.show();
-                        //}
+                        RepeaterPlusIconSettingDialog dialog = new RepeaterPlusIconSettingDialog(activity);
+                        dialog.show();
                         return Unit.INSTANCE;
                     };
                 }
@@ -164,6 +159,7 @@ public class RepeaterPlus extends BaseFunctionHook {
             // temporary
             XC_MethodHook callback = new XC_MethodHook() {
                 private ImageView img;
+                private volatile long click_time = 0;
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                     ImageView imageView;
@@ -176,6 +172,24 @@ public class RepeaterPlus extends BaseFunctionHook {
                     } else if (param.args.length == 3 && (imageView = this.img) != null) {
                         if (img.getContext().getClass().getName().contains("MultiForwardActivity")) {
                             return;
+                        }
+                        if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
+                            img.setOnClickListener(v -> {
+                                try {
+                                    if (System.currentTimeMillis() - 200 > click_time) {
+                                        return;
+                                    }
+                                } finally {
+                                    click_time = System.currentTimeMillis();
+                                }
+                                try {
+                                    Object a = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.a")
+                                            .getDeclaredConstructor(param.thisObject.getClass()).newInstance(param.thisObject);
+                                    a.getClass().getMethod("onClick", View.class).invoke(a, v);
+                                } catch (Exception e) {
+                                    Log.e(e);
+                                }
+                            });
                         }
                         imageView.setVisibility(0);
                     }
