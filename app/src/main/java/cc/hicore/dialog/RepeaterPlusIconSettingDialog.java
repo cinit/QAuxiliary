@@ -53,6 +53,7 @@ import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SafUtils;
 import io.github.qauxv.util.Toasts;
 import java.io.ByteArrayOutputStream;
@@ -132,6 +133,13 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         check_showUpper.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_upper_right));
         check_showInMenu=v.findViewById(R.id.RepeaterPlus_Check_ShowInMenu);
         check_showInMenu.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_menu));
+
+        // temporary
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            check_double_click.setEnabled(false);
+            check_showUpper.setEnabled(false);
+            check_showInMenu.setEnabled(false);
+        }
 
         InputDPI.addTextChangedListener(this);
         InputDPI.setText(String.valueOf(getDpiSet()));
