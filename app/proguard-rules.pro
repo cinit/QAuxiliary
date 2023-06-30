@@ -63,3 +63,11 @@
 
 # @Serializable and @Polymorphic are used at runtime for polymorphic serialization.
 -keepattributes RuntimeVisibleAnnotations,AnnotationDefault
+
+# ByteBuddy混淆
+-keep class com.android.dx.** {
+    *;
+}
+-keep class net.bytebuddy.** {
+    *;
+}
