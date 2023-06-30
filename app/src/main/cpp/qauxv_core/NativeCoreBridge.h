@@ -27,6 +27,9 @@
 
 #include <cstdint>
 #include <functional>
+#include <string_view>
+#include <jni.h>
+#include <fmt/format.h>
 
 #include "lsp_native_api.h"
 
@@ -39,6 +42,26 @@ void RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 // void UnregisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 
 int CreateInlineHook(void* func, void* replace, void** backup);
+
+/**
+ * Add some error message to the error list.
+ * @param env  JNI environment, optional, may be nullptr.
+ * @param thiz  the ITraceableDynamicHook object which owns the error list.
+ * @param errMsg  error message.
+ */
+void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg);
+
+/**
+ * Add some error message to the error list.
+ * @param env  JNI environment, optional, may be nullptr.
+ * @param thiz  the ITraceableDynamicHook object which owns the error list.
+ * @param fmt  error message format.
+ * @param args  error message format arguments.
+ */
+template<typename... T>
+static inline void TraceErrorF(JNIEnv* env, jobject thiz, ::fmt::format_string<T...> fmt, T&& ... args) {
+    TraceError(env, thiz, ::fmt::format(fmt, std::forward<T>(args)...));
+}
 
 }
 

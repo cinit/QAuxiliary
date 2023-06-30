@@ -124,6 +124,138 @@ void HookLoadLibrary() {
     LOGD("HookLoadLibrary: hooked __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
 }
 
+void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg) {
+    bool isAttachedManually = false;
+    if (thiz == nullptr) {
+        LOGE("TraceError fatal thiz == null");
+        return;
+    }
+    if (errMsg.empty()) {
+        LOGE("TraceError fatal errMsg == null");
+        return;
+    }
+    if (env == nullptr) {
+        JavaVM* vm = HostInfo::GetJavaVM();
+        if (vm == nullptr) {
+            LOGE("TraceError fatal vm == null");
+            return;
+        }
+        // check if current thread is attached to jvm
+        jint err = vm->GetEnv((void**) &env, JNI_VERSION_1_6);
+        if (err == JNI_EDETACHED) {
+            if (vm->AttachCurrentThread(&env, nullptr) != JNI_OK) {
+                LOGE("TraceError fatal AttachCurrentThread failed");
+                return;
+            }
+            isAttachedManually = true;
+        } else if (env == nullptr) {
+            LOGE("TraceError fatal GetEnv failed, err = {}", err);
+            return;
+        }
+    }
+    const auto fnDetachCurrentThread = [isAttachedManually, env]() {
+        if (isAttachedManually) {
+            JavaVM* vm = nullptr;
+            if (env->GetJavaVM(&vm) != JNI_OK) {
+                LOGE("TraceError fatal GetJavaVM failed");
+                return;
+            }
+            if (vm->DetachCurrentThread() != JNI_OK) {
+                LOGE("TraceError fatal DetachCurrentThread failed");
+                return;
+            }
+        }
+    };
+    // this method is typically not called frequently, so we don't need to care about performance
+    if (env->PushLocalFrame(16) != JNI_OK) {
+        LOGE("TraceError fatal PushLocalFrame failed");
+        env->ExceptionDescribe();
+        env->ExceptionClear();
+        fnDetachCurrentThread();
+        return;
+    }
+    const auto fnPopLocalFrame = [env]() {
+        if (env->PopLocalFrame(nullptr) != JNI_OK) {
+            LOGE("TraceError fatal PopLocalFrame failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+        }
+    };
+    const auto fnGetClassLoader = [env, thiz]() -> jobject {
+        jclass clazz = env->GetObjectClass(thiz);
+        if (clazz == nullptr) {
+            LOGE("TraceError fatal GetObjectClass failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return nullptr;
+        }
+        jclass kClass = env->FindClass("java/lang/Class");
+        if (kClass == nullptr) {
+            LOGE("TraceError fatal GetObjectClass failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return nullptr;
+        }
+        jmethodID getClassLoaderMethod = env->GetMethodID(kClass, "getClassLoader", "()Ljava/lang/ClassLoader;");
+        if (getClassLoaderMethod == nullptr) {
+            LOGE("TraceError fatal GetMethodID getClassLoader failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return nullptr;
+        }
+        jobject classLoader = env->CallObjectMethod(clazz, getClassLoaderMethod);
+        if (classLoader == nullptr) {
+            LOGE("TraceError fatal CallObjectMethod getClassLoader failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return nullptr;
+        }
+        return classLoader;
+    };
+    const auto fnCallTraceErrorMethod = [env, thiz, errMsg](jobject classloader) {
+        jclass kClassLoader = env->FindClass("java/lang/ClassLoader");
+        jmethodID loadClassMethod = env->GetMethodID(kClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+        jclass kClass = (jclass) env->CallObjectMethod(classloader, loadClassMethod, env->NewStringUTF("io.github.qauxv.core.NativeCoreBridge"));
+        if (kClass == nullptr) {
+            LOGE("TraceError fatal CallObjectMethod loadClass NativeCoreBridge failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return;
+        }
+        jmethodID nativeTraceErrorHelperMethod = env->GetStaticMethodID(kClass, "nativeTraceErrorHelper", "(Ljava/lang/Object;Ljava/lang/Throwable;)V");
+        if (nativeTraceErrorHelperMethod == nullptr) {
+            LOGE("TraceError fatal GetStaticMethodID nativeTraceErrorHelper failed");
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return;
+        }
+        jstring errMsgJString = env->NewStringUTF(errMsg.data());
+        if (errMsgJString == nullptr) {
+            LOGE("TraceError fatal NewStringUTF failed, original error message: {}", errMsg);
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return;
+        }
+        auto th = (jthrowable) env->NewObject(env->FindClass("java/lang/RuntimeException"),
+                                              env->GetMethodID(env->FindClass("java/lang/RuntimeException"),
+                                                               "<init>", "(Ljava/lang/String;)V"),
+                                              errMsgJString);
+        env->CallStaticVoidMethod(kClass, nativeTraceErrorHelperMethod, thiz, th);
+        if (env->ExceptionCheck()) {
+            LOGE("TraceError fatal CallStaticVoidMethod nativeTraceErrorHelper failed, original error message: {}", errMsg);
+            env->ExceptionDescribe();
+            env->ExceptionClear();
+            return;
+        }
+    };
+    auto classLoader = fnGetClassLoader();
+    if (classLoader != nullptr) {
+        fnCallTraceErrorMethod(classLoader);
+    }
+    fnPopLocalFrame();
+    fnDetachCurrentThread();
+}
+
 }
 
 // called by Xposed framework
