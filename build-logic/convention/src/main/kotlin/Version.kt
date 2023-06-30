@@ -51,7 +51,7 @@ object Version {
     }
 
     private fun findBuildToolsVersion(): String {
-        val defaultBuildToolsVersion = "33.0.0"
+        val defaultBuildToolsVersion = "33.0.2" // 33.0.0 AIDL is broken on Windows
         return File(System.getenv("ANDROID_HOME"), "build-tools").listFiles()?.filter { it.isDirectory }?.maxOfOrNull { it.name }?.also { println("Using build tools version $it") }
             ?: defaultBuildToolsVersion
     }
