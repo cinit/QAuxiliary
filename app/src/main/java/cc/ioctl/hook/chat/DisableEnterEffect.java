@@ -29,6 +29,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.TroopEnterEffect_QQNT;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -40,7 +44,7 @@ public class DisableEnterEffect extends CommonSwitchFunctionHook {
     public static final DisableEnterEffect INSTANCE = new DisableEnterEffect();
 
     protected DisableEnterEffect() {
-        super("rq_disable_enter_effect");
+        super("rq_disable_enter_effect", new DexKitTarget[]{TroopEnterEffect_QQNT.INSTANCE});
     }
 
     @NonNull
@@ -62,6 +66,11 @@ public class DisableEnterEffect extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            Method m = DexKit.requireMethodFromCache(TroopEnterEffect_QQNT.INSTANCE);
+            HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
+            return true;
+        }
         for (Method m : Initiator._TroopEnterEffectController().getDeclaredMethods()) {
             if ((m.getName().equals("a") || m.getName().equals("l")) && !Modifier.isStatic(m.getModifiers())
                     && m.getParameterTypes().length == 0 && m.getReturnType() == void.class) {
