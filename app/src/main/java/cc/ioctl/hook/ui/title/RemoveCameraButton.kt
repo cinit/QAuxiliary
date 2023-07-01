@@ -23,7 +23,6 @@
 package cc.ioctl.hook.ui.title
 
 import android.view.View
-import cc.hicore.QApp.QAppUtils
 import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
@@ -43,13 +42,12 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
 
     override val name: String = "屏蔽主界面相机/小世界图标"
 
-    override val description: CharSequence = "高版本QQ请使用“屏蔽主界面超级QQ秀图标”"
-
-    override val isAvailable: Boolean get() = !isTim() && !QAppUtils.isQQnt()
+    override val isAvailable: Boolean get() = !isTim()
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
             val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_63) -> "D"
                 requireMinQQVersion(QQVersion.QQ_8_9_10) -> "C"
                 requireMinQQVersion(QQVersion.QQ_8_8_93) -> "G"
                 else -> "a"
@@ -62,6 +60,7 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
         }
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
             val methodName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_63) -> "C"
                 requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
                 requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
                 requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
