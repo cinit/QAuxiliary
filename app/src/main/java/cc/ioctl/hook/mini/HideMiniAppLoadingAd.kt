@@ -23,6 +23,7 @@
 package cc.ioctl.hook.mini
 
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -33,6 +34,8 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -49,10 +52,19 @@ object HideMiniAppLoadingAd : CommonSwitchFunctionHook(
         get() = requireMinQQVersion(QQVersion.QQ_8_3_9) || requireMinTimVersion(TIMVersion.TIM_3_5_0)
 
     override fun initOnce(): Boolean {
-        val kMiniLoadingAdManager = Initiator.loadClass("com.tencent.qqmini.sdk.manager.MiniLoadingAdManager")
-        val method = kMiniLoadingAdManager.declaredMethods.single { it.name == "updateLoadingAdLayoutAndShow" }
-        hookBeforeIfEnabled(method) { param ->
-            param.result = null
+        try {
+            Initiator.loadClass("com.tencent.mobileqq.mini.widget.MiniLoadingAdLayout")
+                .method("show")!!
+                .hookBefore { param ->
+                    param.args[0].invoke("onDismiss", true)
+                    param.result = null
+                }
+        } catch (_: Exception) {
+            val kMiniLoadingAdManager = Initiator.loadClass("com.tencent.qqmini.sdk.manager.MiniLoadingAdManager")
+            val method = kMiniLoadingAdManager.declaredMethods.single { it.name == "updateLoadingAdLayoutAndShow" }
+            hookBeforeIfEnabled(method) { param ->
+                param.result = null
+            }
         }
         return true
     }
