@@ -29,6 +29,7 @@ import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.hook.bak.MuteAtAllAndRedPacket;
 import cc.ioctl.hook.chat.GagInfoDisclosure;
@@ -172,6 +173,11 @@ public class MainHook {
     @Nullable
     private static Object getStartDirector(Object step) {
         Class<?> director = Initiator._StartupDirector();
+        if (director == null && (QAppUtils.isQQnt())) {
+            // NT QQ has different StartupDirector, and removed in 8.9.63(4190)
+            // TODO: 2023-07-02 handle NT QQ correctly
+            return null;
+        }
         Object dir = Reflex.getInstanceObjectOrNull(step, "mDirector", director);
         if (dir == null) {
             dir = Reflex.getInstanceObjectOrNull(step, "a", director);
