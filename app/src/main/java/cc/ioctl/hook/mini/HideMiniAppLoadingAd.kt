@@ -23,7 +23,9 @@
 package cc.ioctl.hook.mini
 
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -34,8 +36,6 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
-import xyz.nextalone.util.invoke
-import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -53,11 +53,10 @@ object HideMiniAppLoadingAd : CommonSwitchFunctionHook(
 
     override fun initOnce(): Boolean {
         try {
-            Initiator.loadClass("com.tencent.mobileqq.mini.widget.MiniLoadingAdLayout")
-                .method("show")!!
-                .hookBefore { param ->
-                    param.args[0].invoke("onDismiss", true)
-                    param.result = null
+            Initiator.loadClass("com.tencent.mobileqq.mini.helper.MiniAdExposureHelper").findMethod {
+                    name == "checkAdExpoFreqAvailable" && paramCount == 0
+                }.hookBefore { param ->
+                    param.result = false
                 }
         } catch (_: Exception) {
             val kMiniLoadingAdManager = Initiator.loadClass("com.tencent.qqmini.sdk.manager.MiniLoadingAdManager")
