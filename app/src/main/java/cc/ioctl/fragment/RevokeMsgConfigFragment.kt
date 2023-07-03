@@ -106,8 +106,8 @@ class RevokeMsgConfigFragment : BaseHierarchyFragment() {
         val setterName = "set" + name.substring(2).replaceFirstChar {
             if (it.isLowerCase()) it.titlecase(Locale.ROOT) else it.toString()
         }
-        val getter = Reflex.findMethod(owner.javaClass, java.lang.Boolean.TYPE, name)
-        val setter = Reflex.findMethod(owner.javaClass, Void.TYPE, setterName, java.lang.Boolean.TYPE)
+        val getter = owner.javaClass.getMethod(name)
+        val setter = owner.javaClass.getMethod(setterName, java.lang.Boolean.TYPE)
         return object : ISwitchCellAgent {
             override val isCheckable: Boolean = true
             override var isChecked: Boolean
