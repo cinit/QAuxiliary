@@ -24,18 +24,25 @@ package cc.ioctl.hook.ui.title
 import android.widget.LinearLayout
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.HostInfo
+import com.github.kyuubiran.ezxhelper.utils.findField
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.getObjectAs
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator.loadClass
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
+import java.lang.reflect.Field
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -67,6 +74,34 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
             XposedBridge.hookAllConstructors(loadClass("com.tencent.mobileqq.activity.QQSettingMeView"), callback)
         } else {
             XposedBridge.hookAllConstructors(loadClass("com.tencent.mobileqq.activity.QQSettingMe"), callback)
+        }
+        // for NT QQ 8.9.68.11450
+        val clazz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMeViewV9")
+        if (clazz != null) {
+            clazz.findField {
+                val cz = type
+                if (cz.name.contains("com.tencent.mobileqq.activity.qqsettingme.bizParts")) {
+                    var i = 0
+                    for (f in cz.declaredFields) {
+                        if (f.type == LinearLayout::class.java) {
+                            i++
+                        }
+                    }
+                    i > 2
+                } else {
+                    false
+                }
+            }
+                .type
+                ?.findMethod { name == "onInitView" }?.hookAfter {
+                    val fields = arrayListOf<Field>()
+                    for (f in it.thisObject.javaClass.declaredFields) {
+                        if (f.type == LinearLayout::class.java) {
+                            fields.add(f)
+                        }
+                    }
+                    it.thisObject.getObjectAs<LinearLayout>(fields[1].name, LinearLayout::class.java).setViewZeroSize()
+                }
         }
         return true
     }
