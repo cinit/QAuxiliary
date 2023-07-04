@@ -23,12 +23,16 @@ package me.ketal.hook
 
 import cc.ioctl.util.Reflex.getFirstByType
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.paramCount
+import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
@@ -58,6 +62,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
     const val sessionInfoTroopUin = "SortAtPanel.sessionInfoTroopUin"
     private var isSort: Boolean? = null
     override fun initOnce() = throwOrTrue {
+
         val showDialogAtView = DexKit.loadMethodFromCache(NAtPanel_showDialogAtView)
         showDialogAtView?.hookAfter(this) {
             isSort = (it.args[1] as String?)?.isNotEmpty()
@@ -82,6 +87,51 @@ object SortAtPanel : CommonSwitchFunctionHook(
             }
             list.removeAll(admin.toSet())
             list.addAll(if (isAdmin) 1 else 0, admin)
+        }
+
+        // for NT QQ 8.9.68.11450
+        val clazz = Initiator.load("com.tencent.mobileqq.aio.input.at.business.AIOAtSelectMemberUseCase")
+        for (m in clazz?.declaredMethods!!) {
+            if ( m.paramCount == 1 && m.returnType == Map::class.java && m.parameterTypes[0] == List::class.java) {
+                m.hookAfter {
+                    val backMap = it.result as Map<String, List<Any>>
+                    val map = backMap.toMutableMap()
+                    map.clear()
+                    backMap.forEach { (k, l) ->
+                        val list = l.toMutableList()
+                        val ob = l.toMutableList()
+                        val ab = l.toMutableList()
+                        list.clear()
+                        ob.clear()
+                        ab.clear()
+                        l.forEach { v ->
+                            for (vf in v.javaClass.declaredFields) {
+                                if (vf.type.name.contains("MemberInfo")) {
+                                    val info = XposedHelpers.getObjectField(v, vf.name)
+                                    val role = XposedHelpers.getObjectField(info, "role")
+                                    if (role.toString().contains("OWNER")) {
+                                        // 群主
+                                        ob.add(v)
+                                    } else if (role.toString().contains("ADMIN")) {
+                                        // 管理
+                                        ab.add(v)
+                                    } else {
+                                        list.add(v)
+                                    }
+                                }
+                            }
+                        }
+                        map[k] = list
+                        val f = map.keys.toMutableList()[0]
+                        val c = map[f]?.toMutableList()
+                        c?.addAll(ob)
+                        c?.addAll(ab)
+                        map[f] = c?.toList()!!
+                    }
+                    it.result = map.toMap()
+                }
+            }
+
         }
     }
 
