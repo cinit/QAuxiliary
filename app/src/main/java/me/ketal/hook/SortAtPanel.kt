@@ -32,7 +32,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
@@ -92,7 +91,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
         // for NT QQ 8.9.68.11450
         val clazz = Initiator.load("com.tencent.mobileqq.aio.input.at.business.AIOAtSelectMemberUseCase")
         for (m in clazz?.declaredMethods!!) {
-            if ( m.paramCount == 1 && m.returnType == Map::class.java && m.parameterTypes[0] == List::class.java) {
+            if (m.paramCount == 1 && m.returnType == Map::class.java && m.parameterTypes[0] == List::class.java) {
                 m.hookAfter {
                     val backMap = it.result as Map<String, List<Any>>
                     val map = backMap.toMutableMap()
@@ -105,6 +104,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
                         ob.clear()
                         ab.clear()
                         l.forEach { v ->
+                            var added = false
                             for (vf in v.javaClass.declaredFields) {
                                 if (vf.type.name.contains("MemberInfo")) {
                                     val info = XposedHelpers.getObjectField(v, vf.name)
@@ -112,21 +112,28 @@ object SortAtPanel : CommonSwitchFunctionHook(
                                     if (role.toString().contains("OWNER")) {
                                         // 群主
                                         ob.add(v)
+                                        added = true
+                                        break
                                     } else if (role.toString().contains("ADMIN")) {
                                         // 管理
                                         ab.add(v)
-                                    } else {
-                                        list.add(v)
+                                        added = true
+                                        break
                                     }
                                 }
                             }
+                            if (!added) {
+                                list.add(v)
+                            }
+
                         }
+
                         map[k] = list
-                        val f = map.keys.toMutableList()[0]
-                        val c = map[f]?.toMutableList()
-                        c?.addAll(ob)
-                        c?.addAll(ab)
-                        map[f] = c?.toList()!!
+                        val f = "★"
+                        val c = map.getOrDefault(f, arrayListOf()).toMutableList()
+                        c.addAll(ob)
+                        c.addAll(ab)
+                        map[f] = c.toList()
                     }
                     it.result = map.toMap()
                 }
