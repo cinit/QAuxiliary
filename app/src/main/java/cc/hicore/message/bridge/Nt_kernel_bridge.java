@@ -36,6 +36,8 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgIceBreak;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
+import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.QQVersion;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -64,7 +66,10 @@ public class Nt_kernel_bridge {
 
         VASMsgElement element = new VASMsgElement(plate,bubble,pendant,font,iceBreak);
 
-
-        return new MsgAttributeInfo(0,0,element,null,null,null,null,null,null,null,null);
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_68)) {
+            return new MsgAttributeInfo(0, 0, element, null, null, null, null, null, null, null, null, null);
+        } else {
+            return new MsgAttributeInfo(0, 0, element, null, null, null, null, null, null, null, null);
+        }
     }
 }
