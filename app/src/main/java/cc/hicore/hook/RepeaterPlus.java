@@ -44,12 +44,10 @@ import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionHooker;
 import cc.hicore.message.chat.SessionUtils;
-import cc.hicore.message.common.MsgSender;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
-import com.tencent.qqnt.kernel.nativeinterface.IForwardOperateCallback;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import de.robv.android.xposed.XC_MethodHook;
@@ -198,25 +196,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                                     } finally {
                                         click_time = System.currentTimeMillis();
                                     }
-                                    try {
-                                        Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
-                                        long msgID = (long) Reflex.invokeVirtual(param.args[1],"getMsgId");
-                                        ArrayList<Contact> c = new ArrayList<>();
-                                        c.add(contact);
-
-                                        ArrayList<Long> l = new ArrayList<>();
-                                        l.add(msgID);
-
-                                        IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
-                                        HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
-                                        attrMap.put(0,Nt_kernel_bridge.getDefaultAttributeInfo());
-                                        service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
-
-                                        });
-
-                                    } catch (Exception e) {
-                                        Log.e(e);
-                                    }
+                                    repeatByForwardNt(param.args[1]);
                                 });
                             }
                             imageView.setVisibility(0);
@@ -238,19 +218,21 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
             } else {
                 Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
-                Class picContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent");
-                //TODO: 添加其他Component
-                Method listMethod = null;
+                String[] component = new String[]{
+                        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.anisticker.AIOAniStickerContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.video.AIOVideoContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.multifoward.AIOMultifowardContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.longmsg.AIOLongMsgContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.file.AIOFileContentComponent",
+                        "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent"
+                };
                 Method getMsg = null;
-                Method[] methods = picContentComponent.getDeclaredMethods();
-                for (Method method : methods) {
-                    if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
-                        listMethod = method;
-                        listMethod.setAccessible(true);
-                        break;
-                    }
-                }
-                methods = picContentComponent.getSuperclass().getDeclaredMethods();
+                Method[] methods = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").getDeclaredMethods();
                 for (Method method : methods) {
                     if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
                         getMsg = method;
@@ -258,33 +240,32 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                         break;
                     }
                 }
-                Method finalGetMsg = getMsg;
-                HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
-                    List list = (List) param.getResult();
-                    Object msg = finalGetMsg.invoke(param.thisObject);
-                    Object context = param.thisObject.getClass().getMethod("getMContext").invoke(param.thisObject);
-                    Object item = CustomMenu.createItemNt(msg, "+1", R.id.item_repeat, () -> {
-                        //TODO: 复读实现,IKernelMsgService.forwardMsg
-                        try {
-                            // 这里抄的是 8.9.68 Lcom/tencent/mobileqq/aio/msglist/holder/component/c;->t(Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;)V
-                            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
-                            ArrayList<Long> msgIds = new ArrayList<>();
-                            msgIds.add((Long) msg.getClass().getMethod("getMsgId").invoke(msg));
-                            // context不对，无法继续，请修改...
-                            Object AIOParam = context.getClass().getMethod("f").invoke(context);
-                            Object AIOSession = AIOParam.getClass().getMethod("r").invoke(AIOParam);
-                            Object AIOUtil = Initiator.loadClass("com.tencent.mobileqq.aio.utils.AIOUtil").getDeclaredField("a").get(null);
-                            Contact contact = (Contact) AIOUtil.getClass().getMethod("f", AIOSession.getClass()).invoke(AIOUtil, AIOSession);
-                            ArrayList<Contact> contacts = new ArrayList<>();
-                            contacts.add(contact);
-                            service.forwardMsg(msgIds, contact, contacts, null, null);
-                        } catch (Exception e) {
-                            Log.e(e);
+                for (String s : component) {
+                    Class componentClazz = Initiator.loadClass(s);
+                    Method listMethod = null;
+                    methods = componentClazz.getDeclaredMethods();
+                    for (Method method : methods) {
+                        if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
+                            listMethod = method;
+                            listMethod.setAccessible(true);
+                            break;
                         }
-                        return Unit.INSTANCE;
+                    }
+                    Method finalGetMsg = getMsg;
+                    HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
+                        Object msg = finalGetMsg.invoke(param.thisObject);
+                        Object item = CustomMenu.createItemNt(msg, "+1", R.id.item_repeat, () -> {
+                            repeatByForwardNt(msg);
+                            return Unit.INSTANCE;
+                        });
+                        List list = (List) param.getResult();
+                        List result = new ArrayList<>();
+                        result.add(0,item);
+                        result.addAll(list);
+                        param.setResult(result);
                     });
-                    list.add(0, item);
-                });
+                }
+
             }
             return true;
         }
@@ -365,8 +346,6 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
         }
 
-
-
         return true;
     }
 
@@ -374,10 +353,34 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     public boolean isAvailable() {
         return HostInfo.isQQ() && HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0);
     }
+
     private static Object AIOParam;
 
     @Override
     public void onAIOParamUpdate(Object AIOParam) {
         RepeaterPlus.AIOParam = AIOParam;
+    }
+
+    private void repeatByForwardNt(Object msg) {
+        try {
+            Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
+            long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
+            ArrayList<Contact> c = new ArrayList<>();
+            c.add(contact);
+
+            ArrayList<Long> l = new ArrayList<>();
+            l.add(msgID);
+
+            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+            HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
+            attrMap.put(0, Nt_kernel_bridge.getDefaultAttributeInfo());
+            service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
+
+            });
+
+        } catch (Exception e) {
+            Log.e(e);
+        }
+
     }
 }
