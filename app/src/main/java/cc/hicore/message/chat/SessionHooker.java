@@ -25,6 +25,7 @@ package cc.hicore.message.chat;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
+import cc.hicore.hook.RepeaterPlus;
 import cc.hicore.hook.stickerPanel.Hooker.Emo_Btn_Hooker;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -48,7 +49,8 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
 
     private static final SessionHooker.IAIOParamUpdate[] DECORATORS = {
             Emo_Btn_Hooker.INSTANCE,
-            MultiActionHook.INSTANCE
+            MultiActionHook.INSTANCE,
+            RepeaterPlus.INSTANCE
     };
 
     @NonNull

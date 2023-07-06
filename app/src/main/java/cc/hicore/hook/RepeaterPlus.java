@@ -41,10 +41,17 @@ import androidx.annotation.Nullable;
 import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.MMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
+import cc.hicore.message.bridge.Nt_kernel_bridge;
+import cc.hicore.message.chat.SessionHooker;
+import cc.hicore.message.chat.SessionUtils;
+import cc.hicore.message.common.MsgSender;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
+import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.tencent.qqnt.kernel.nativeinterface.IForwardOperateCallback;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
+import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -64,6 +71,7 @@ import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.atomic.AtomicReference;
@@ -75,7 +83,7 @@ import kotlinx.coroutines.flow.MutableStateFlow;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class RepeaterPlus extends BaseFunctionHook {
+public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIOParamUpdate {
 
     public static final RepeaterPlus INSTANCE = new RepeaterPlus();
 
@@ -191,10 +199,21 @@ public class RepeaterPlus extends BaseFunctionHook {
                                         click_time = System.currentTimeMillis();
                                     }
                                     try {
-                                        // TODO: 存在BUG，建议改为调用IKernelMsgService.forwardMsg
-                                        Object a = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.a")
-                                                .getDeclaredConstructor(param.thisObject.getClass()).newInstance(param.thisObject);
-                                        a.getClass().getMethod("onClick", View.class).invoke(a, v);
+                                        Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
+                                        long msgID = (long) Reflex.invokeVirtual(param.args[1],"getMsgId");
+                                        ArrayList<Contact> c = new ArrayList<>();
+                                        c.add(contact);
+
+                                        ArrayList<Long> l = new ArrayList<>();
+                                        l.add(msgID);
+
+                                        IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+                                        HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
+                                        attrMap.put(0,Nt_kernel_bridge.getDefaultAttributeInfo());
+                                        service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
+
+                                        });
+
                                     } catch (Exception e) {
                                         Log.e(e);
                                     }
@@ -269,77 +288,84 @@ public class RepeaterPlus extends BaseFunctionHook {
             }
             return true;
         }
-        Class<?> kChatAdapter1 = Initiator.load("com.tencent.mobileqq.activity.aio.ChatAdapter1");
-        if (kChatAdapter1 == null) {
-            Class<?> kGuildPieAdapter = Initiator.load("com.tencent.mobileqq.guild.chatpie.GuildPieAdapter");
-            kChatAdapter1 = kGuildPieAdapter == null ? null : kGuildPieAdapter.getSuperclass();
-        }
-        Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
-        if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
-            HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod(kChatAdapter1, "getView", View.class, new Class[]{
-                    int.class,
-                    View.class,
-                    ViewGroup.class
-            }), param -> {
-                Object mGetView = param.getResult();
-                RelativeLayout baseChatItem = null;
-                if (mGetView instanceof RelativeLayout) {
-                    baseChatItem = (RelativeLayout) mGetView;
-                } else {
-                    return;
-                }
-                Context context = baseChatItem.getContext();
-                if (context.getClass().getName().contains("MultiForwardActivity")) {
-                    return;
-                }
-                List<Object> MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
-                if (MessageRecoreList == null) {
-                    return;
-                }
-                Object ChatMsg = MessageRecoreList.get((int) param.args[0]);
-                if (ChatMsg == null) {
-                    return;
-                }
-                Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
-                AtomicReference<OnGlobalLayoutListener> listenerContainer = new AtomicReference<>();
-                RelativeLayout finalBaseChatItem = baseChatItem;
-                listenerContainer.set(() -> {
-                    try {
-                        RepeaterHelper.createRepeatIcon(finalBaseChatItem, ChatMsg, session);
-                        finalBaseChatItem.getViewTreeObserver().removeOnGlobalLayoutListener(listenerContainer.get());
-                    } catch (Exception e) {
-                        Log.e(e);
+
+        //Below Not QQNT
+
+        else {
+            Class<?> kChatAdapter1 = Initiator.load("com.tencent.mobileqq.activity.aio.ChatAdapter1");
+            if (kChatAdapter1 == null) {
+                Class<?> kGuildPieAdapter = Initiator.load("com.tencent.mobileqq.guild.chatpie.GuildPieAdapter");
+                kChatAdapter1 = kGuildPieAdapter == null ? null : kGuildPieAdapter.getSuperclass();
+            }
+            Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
+            if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
+                HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod(kChatAdapter1, "getView", View.class, new Class[]{
+                        int.class,
+                        View.class,
+                        ViewGroup.class
+                }), param -> {
+                    Object mGetView = param.getResult();
+                    RelativeLayout baseChatItem = null;
+                    if (mGetView instanceof RelativeLayout) {
+                        baseChatItem = (RelativeLayout) mGetView;
+                    } else {
+                        return;
                     }
+                    Context context = baseChatItem.getContext();
+                    if (context.getClass().getName().contains("MultiForwardActivity")) {
+                        return;
+                    }
+                    List<Object> MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
+                    if (MessageRecoreList == null) {
+                        return;
+                    }
+                    Object ChatMsg = MessageRecoreList.get((int) param.args[0]);
+                    if (ChatMsg == null) {
+                        return;
+                    }
+                    Parcelable session = getFirstNSFByType(param.thisObject, _SessionInfo());
+                    AtomicReference<OnGlobalLayoutListener> listenerContainer = new AtomicReference<>();
+                    RelativeLayout finalBaseChatItem = baseChatItem;
+                    listenerContainer.set(() -> {
+                        try {
+                            RepeaterHelper.createRepeatIcon(finalBaseChatItem, ChatMsg, session);
+                            finalBaseChatItem.getViewTreeObserver().removeOnGlobalLayoutListener(listenerContainer.get());
+                        } catch (Exception e) {
+                            Log.e(e);
+                        }
+
+                    });
+
+                    finalBaseChatItem.getViewTreeObserver().addOnGlobalLayoutListener(listenerContainer.get());
 
                 });
+                HookUtils.hookBeforeIfEnabled(this, MMethod.FindMethod("com.tencent.mobileqq.data.ChatMessage", "isFollowMessage", boolean.class, new Class[0]),
+                        param -> param.setResult(false));
 
-                finalBaseChatItem.getViewTreeObserver().addOnGlobalLayoutListener(listenerContainer.get());
-
-            });
-            HookUtils.hookBeforeIfEnabled(this, MMethod.FindMethod("com.tencent.mobileqq.data.ChatMessage", "isFollowMessage", boolean.class, new Class[0]),
-                    param -> param.setResult(false));
-
-        } else {
-            List<Class<?>> list = Arrays.asList(
-                    Initiator._TextItemBuilder(),
-                    Initiator._PicItemBuilder(),
-                    Initiator._PicItemBuilder().getSuperclass(),
-                    Initiator._MixedMsgItemBuilder());
-            list.forEach(item -> {
-                XposedHelpers.findAndHookMethod(item, "a", int.class, Context.class,
-                        load("com/tencent/mobileqq/data/ChatMessage"), new RepeaterHelper.MenuItemClickCallback());
-                for (Method m : item.getDeclaredMethods()) {
-                    if (!m.getReturnType().isArray()) {
-                        continue;
+            } else {
+                List<Class<?>> list = Arrays.asList(
+                        Initiator._TextItemBuilder(),
+                        Initiator._PicItemBuilder(),
+                        Initiator._PicItemBuilder().getSuperclass(),
+                        Initiator._MixedMsgItemBuilder());
+                list.forEach(item -> {
+                    XposedHelpers.findAndHookMethod(item, "a", int.class, Context.class,
+                            load("com/tencent/mobileqq/data/ChatMessage"), new RepeaterHelper.MenuItemClickCallback());
+                    for (Method m : item.getDeclaredMethods()) {
+                        if (!m.getReturnType().isArray()) {
+                            continue;
+                        }
+                        Class<?>[] ps = m.getParameterTypes();
+                        if (ps.length == 1 && ps[0].equals(View.class)) {
+                            XposedBridge.hookMethod(m, new RepeaterHelper.GetMenuItemCallBack());
+                            break;
+                        }
                     }
-                    Class<?>[] ps = m.getParameterTypes();
-                    if (ps.length == 1 && ps[0].equals(View.class)) {
-                        XposedBridge.hookMethod(m, new RepeaterHelper.GetMenuItemCallBack());
-                        break;
-                    }
-                }
-            });
+                });
+            }
         }
+
+
 
         return true;
     }
@@ -347,5 +373,11 @@ public class RepeaterPlus extends BaseFunctionHook {
     @Override
     public boolean isAvailable() {
         return HostInfo.isQQ() && HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0);
+    }
+    private static Object AIOParam;
+
+    @Override
+    public void onAIOParamUpdate(Object AIOParam) {
+        RepeaterPlus.AIOParam = AIOParam;
     }
 }
