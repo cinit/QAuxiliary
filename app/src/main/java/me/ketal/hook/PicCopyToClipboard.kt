@@ -26,13 +26,13 @@ import android.content.Context
 import android.os.Build
 import android.view.View
 import cc.hicore.QApp.QAppUtils
+import cc.hicore.QQDecodeUtils.DecodeForEncPic
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
-import cc.hicore.QQDecodeUtils.DecodeForEncPic
-import com.github.kyuubiran.ezxhelper.utils.Log
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -47,15 +47,7 @@ import io.github.qauxv.util.Initiator._PicItemBuilder
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isAndroidxFileProviderAvailable
-import net.bytebuddy.ByteBuddy
-import net.bytebuddy.android.AndroidClassLoadingStrategy
-import net.bytebuddy.implementation.FixedValue
-import net.bytebuddy.implementation.MethodCall
-import net.bytebuddy.matcher.ElementMatchers.named
-import net.bytebuddy.matcher.ElementMatchers.returns
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -78,15 +70,6 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override val isAvailable: Boolean = isAndroidxFileProviderAvailable
-
-    private val strategy by lazy {
-        AndroidClassLoadingStrategy.Wrapping(
-            hostInfo.application.getDir(
-                "generated",
-                Context.MODE_PRIVATE
-            )
-        )
-    }
 
     override fun initOnce() = tryOrLogFalse {
         if (QAppUtils.isQQnt()) {
@@ -149,7 +132,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
             val list = it.result as MutableList<Any>
             val msg = getMsg.invoke(it.thisObject)!!
             val context = it.thisObject.invoke("getMContext")!!
-            val item = getMenuItem(msg, "复制图片", R.id.item_copyToClipboard) {
+            val item = CustomMenu.createItemNt(msg, "复制图片", R.id.item_copyToClipboard) {
                 runCatching {
                     val file = File(getFilePathNt(msg))
                     onClick(context as Context, file)
@@ -159,27 +142,6 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
             }
             list.add(item)
         }
-    }
-
-    private fun getMenuItem(msg: Any, text: String, id: Int, click: () -> Unit): Any {
-        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-        val absMenuItem = DexKit.loadClassFromCache(AbstractQQCustomMenuItem)!!
-        val clickName = absMenuItem.findMethod {
-            returnType == Void.TYPE && parameterTypes.isEmpty()
-        }.name
-        val menuItemClass = ByteBuddy()
-            .subclass(absMenuItem)
-            .method(returns(String::class.java))
-            .intercept(FixedValue.value(text))
-            .method(returns(Int::class.java))
-            .intercept(FixedValue.value(id))
-            .method(named(clickName))
-            .intercept(MethodCall.call { click() })
-            .make()
-            .load(absMenuItem.classLoader, strategy)
-            .loaded
-        return menuItemClass.getDeclaredConstructor(msgClass)
-            .newInstance(msg)
     }
 
     private fun onClick(context: Context, file: File) {

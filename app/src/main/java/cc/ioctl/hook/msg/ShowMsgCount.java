@@ -73,7 +73,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws NoSuchMethodException {
-        Method updateCustomNoteTxt = DexKit.requireMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
+        Method updateCustomNoteTxt = null;
         if (QAppUtils.isQQnt()) {
             Class clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
             for (Method method : clz.getDeclaredMethods()) {
@@ -82,6 +82,8 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
                     break;
                 }
             }
+        } else {
+            updateCustomNoteTxt = DexKit.requireMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
         }
         XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
             @Override

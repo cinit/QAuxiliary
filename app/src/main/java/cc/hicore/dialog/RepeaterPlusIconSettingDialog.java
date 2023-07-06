@@ -151,6 +151,10 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_upper_right);
     }
     public static boolean getIsShowInMenu(){
+        // temporary
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            return false;
+        }
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(qn_repeat_show_in_menu);
     }
     public static Bitmap getRepeaterIcon() {

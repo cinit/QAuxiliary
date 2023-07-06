@@ -43,19 +43,26 @@ import cc.hicore.ReflectUtil.MMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.R;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
+import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Objects;
@@ -156,56 +163,109 @@ public class RepeaterPlus extends BaseFunctionHook {
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            // temporary
-            XC_MethodHook callback = new XC_MethodHook() {
-                private ImageView img;
-                private volatile long click_time = 0;
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    ImageView imageView;
-                    if (param.args.length == 0) {
-                        Object result = param.getResult();
-                        if (result instanceof ImageView) {
-                            this.img = (ImageView) result;
-                            this.img.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
-                        }
-                    } else if (param.args.length == 3 && (imageView = this.img) != null) {
-                        if (img.getContext().getClass().getName().contains("MultiForwardActivity")) {
-                            return;
-                        }
-                        if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
-                            img.setOnClickListener(v -> {
-                                try {
-                                    if (System.currentTimeMillis() - 200 > click_time) {
-                                        return;
+            if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
+                XC_MethodHook callback = new XC_MethodHook() {
+                    private ImageView img;
+                    private volatile long click_time = 0;
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) {
+                        ImageView imageView;
+                        if (param.args.length == 0) {
+                            Object result = param.getResult();
+                            if (result instanceof ImageView) {
+                                this.img = (ImageView) result;
+                                this.img.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
+                            }
+                        } else if (param.args.length == 3 && (imageView = this.img) != null) {
+                            if (img.getContext().getClass().getName().contains("MultiForwardActivity")) {
+                                return;
+                            }
+                            if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
+                                img.setOnClickListener(v -> {
+                                    try {
+                                        if (System.currentTimeMillis() - 200 > click_time) {
+                                            return;
+                                        }
+                                    } finally {
+                                        click_time = System.currentTimeMillis();
                                     }
-                                } finally {
-                                    click_time = System.currentTimeMillis();
-                                }
-                                try {
-                                    Object a = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.a")
-                                            .getDeclaredConstructor(param.thisObject.getClass()).newInstance(param.thisObject);
-                                    a.getClass().getMethod("onClick", View.class).invoke(a, v);
-                                } catch (Exception e) {
-                                    Log.e(e);
-                                }
-                            });
+                                    try {
+                                        // TODO: 存在BUG，建议改为调用IKernelMsgService.forwardMsg
+                                        Object a = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.a")
+                                                .getDeclaredConstructor(param.thisObject.getClass()).newInstance(param.thisObject);
+                                        a.getClass().getMethod("onClick", View.class).invoke(a, v);
+                                    } catch (Exception e) {
+                                        Log.e(e);
+                                    }
+                                });
+                            }
+                            imageView.setVisibility(0);
                         }
-                        imageView.setVisibility(0);
+                    }
+                };
+                Class clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.AIOMsgFollowComponent");
+                for (Method method : clz.getDeclaredMethods()) {
+                    Class<?>[] parameterTypes = method.getParameterTypes();
+                    boolean z = true;
+                    boolean z2 = parameterTypes.length == 0 && method.getReturnType().equals(ImageView.class);
+                    if (parameterTypes.length != 3 || !parameterTypes[0].equals(Integer.TYPE) || !parameterTypes[2].equals(List.class)) {
+                        z = z2;
+                    }
+                    if (z) {
+                        XposedBridge.hookMethod(method, callback);
                     }
                 }
-            };
-            Class clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.AIOMsgFollowComponent");
-            for (Method method : clz.getDeclaredMethods()) {
-                Class<?>[] parameterTypes = method.getParameterTypes();
-                boolean z = true;
-                boolean z2 = parameterTypes.length == 0 && method.getReturnType().equals(ImageView.class);
-                if (parameterTypes.length != 3 || !parameterTypes[0].equals(Integer.TYPE) || !parameterTypes[2].equals(List.class)) {
-                    z = z2;
+
+            } else {
+                Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
+                Class picContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent");
+                //TODO: 添加其他Component
+                Method listMethod = null;
+                Method getMsg = null;
+                Method[] methods = picContentComponent.getDeclaredMethods();
+                for (Method method : methods) {
+                    if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
+                        listMethod = method;
+                        listMethod.setAccessible(true);
+                        break;
+                    }
                 }
-                if (z) {
-                    XposedBridge.hookMethod(method, callback);
+                methods = picContentComponent.getSuperclass().getDeclaredMethods();
+                for (Method method : methods) {
+                    if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
+                        getMsg = method;
+                        getMsg.setAccessible(true);
+                        break;
+                    }
                 }
+                Method finalGetMsg = getMsg;
+                HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
+                    List list = (List) param.getResult();
+                    Object msg = finalGetMsg.invoke(param.thisObject);
+                    Object context = param.thisObject.getClass().getMethod("getMContext").invoke(param.thisObject);
+                    Object item = CustomMenu.createItemNt(msg, "+1", R.id.item_repeat, () -> {
+                        //TODO: 复读实现,IKernelMsgService.forwardMsg
+                        try {
+                            // 这里抄的是 8.9.68 Lcom/tencent/mobileqq/aio/msglist/holder/component/c;->t(Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;)V
+                            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+                            ArrayList<Long> msgIds = new ArrayList<>();
+                            msgIds.add((Long) msg.getClass().getMethod("getMsgId").invoke(msg));
+                            // context不对，无法继续，请修改...
+                            Object AIOParam = context.getClass().getMethod("f").invoke(context);
+                            Object AIOSession = AIOParam.getClass().getMethod("r").invoke(AIOParam);
+                            Object AIOUtil = Initiator.loadClass("com.tencent.mobileqq.aio.utils.AIOUtil").getDeclaredField("a").get(null);
+                            Contact contact = (Contact) AIOUtil.getClass().getMethod("f", AIOSession.getClass()).invoke(AIOUtil, AIOSession);
+                            ArrayList<Contact> contacts = new ArrayList<>();
+                            contacts.add(contact);
+                            service.forwardMsg(msgIds, contact, contacts, null, null);
+                        } catch (Exception e) {
+                            Log.e(e);
+                        }
+                        return Unit.INSTANCE;
+                    });
+                    list.add(0, item);
+                });
             }
             return true;
         }
@@ -232,7 +292,7 @@ public class RepeaterPlus extends BaseFunctionHook {
                 if (context.getClass().getName().contains("MultiForwardActivity")) {
                     return;
                 }
-                List MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
+                List<Object> MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
                 if (MessageRecoreList == null) {
                     return;
                 }
