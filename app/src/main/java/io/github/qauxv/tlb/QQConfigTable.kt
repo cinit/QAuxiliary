@@ -21,7 +21,11 @@
  */
 package io.github.qauxv.tlb
 
+import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
+import cc.ioctl.hook.troop.RemovePlayTogether
 import cc.ioctl.hook.ui.chat.ReplyNoAtHook
+import io.github.qauxv.bridge.QQMessageFacade
+import io.github.qauxv.util.QQVersion.QQ_8_2_0
 import io.github.qauxv.util.QQVersion.QQ_8_2_6
 import io.github.qauxv.util.QQVersion.QQ_8_3_6
 import io.github.qauxv.util.QQVersion.QQ_8_4_1
@@ -49,17 +53,14 @@ import io.github.qauxv.util.QQVersion.QQ_8_8_93
 import io.github.qauxv.util.QQVersion.QQ_8_8_98
 import io.github.qauxv.util.QQVersion.QQ_8_9_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_13
-import io.github.qauxv.util.QQVersion.QQ_8_9_2
-import io.github.qauxv.util.QQVersion.QQ_8_9_3
-import io.github.qauxv.util.QQVersion.QQ_8_9_8
-import me.ketal.hook.SortAtPanel
-import cc.ioctl.hook.troop.RemovePlayTogether
-import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
-import io.github.qauxv.bridge.QQMessageFacade
-import io.github.qauxv.util.QQVersion.QQ_8_2_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_18
+import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_25
 import io.github.qauxv.util.QQVersion.QQ_8_9_28
+import io.github.qauxv.util.QQVersion.QQ_8_9_3
+import io.github.qauxv.util.QQVersion.QQ_8_9_68
+import io.github.qauxv.util.QQVersion.QQ_8_9_8
+import me.ketal.hook.SortAtPanel
 import xyz.nextalone.hook.ChatWordsCount
 
 class QQConfigTable : ConfigTableInterface {
@@ -113,6 +114,7 @@ class QQConfigTable : ConfigTableInterface {
             // gap
             QQ_8_9_25 to "l0",
             QQ_8_9_28 to "m0",
+            QQ_8_9_68 to "l0",
         ),
 
         SortAtPanel.sessionInfoTroopUin to mapOf(

@@ -26,13 +26,11 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
 import cc.ioctl.util.HookUtils
-import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.getStaticObjectOrNull
@@ -53,7 +51,6 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
-import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
@@ -61,7 +58,6 @@ import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.throwOrTrue
-import java.util.HashMap
 import java.util.SortedMap
 
 //侧滑栏精简
@@ -164,7 +160,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                 param.thisObject.get(midContentName, View::class.java) as LinearLayout
             }
             //底端部分 设置 夜间模式 达人 等
-            val (_, _, vg) = param.args
+            val vg = param.args[param.args.size - 1]
             val id = "${hostInfo.packageName}.R\$id".clazz?.getStaticObjectOrNull("drawer_bottom_container")
             val underSettingsLayout = if (id is Int && vg is ViewGroup) {
                 vg.findViewById(id)
