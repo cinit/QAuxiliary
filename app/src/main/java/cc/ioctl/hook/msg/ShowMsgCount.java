@@ -35,10 +35,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
-import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt_NT;
 import java.lang.reflect.Method;
 
 /**
@@ -55,7 +55,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     private ShowMsgCount() {
         super(new DexKitTarget[]{
                 NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE,
-                NCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE
+                CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE
         });
     }
 
@@ -72,10 +72,16 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() {
-        Method updateCustomNoteTxt = DexKit.loadMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
-        if (QAppUtils.isQQnt()){
-            updateCustomNoteTxt = DexKit.loadMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
+    public boolean initOnce() throws NoSuchMethodException {
+        Method updateCustomNoteTxt = DexKit.requireMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
+        if (QAppUtils.isQQnt()) {
+            Class clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
+            for (Method method : clz.getDeclaredMethods()) {
+                if (method.getParameterTypes().length == 6) {
+                    updateCustomNoteTxt = method;
+                    break;
+                }
+            }
         }
         XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
             @Override
@@ -92,8 +98,9 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
                     return;
                 }
                 try {
-                    if (QAppUtils.isQQnt()){
+                    if (QAppUtils.isQQnt()) {
                         int Type = (int) param.args[1];
+                        // 8.9.68 该方法代码有所变化，但似乎影响不大
                         if (Type == 4 || Type == 7 || Type == 9 || Type == 3) {
                             TextView t = (TextView) param.args[0];
                             int Count = (int) param.args[2];
@@ -102,7 +109,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
                             params.width = LayoutHelper.dip2px(t.getContext(), 9 + 7 * str.length());
                             t.setLayoutParams(params);
                         }
-                    }else {
+                    } else {
                         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
                             TextView tv = (TextView) param.args[0];
                             tv.setMaxWidth(Integer.MAX_VALUE);

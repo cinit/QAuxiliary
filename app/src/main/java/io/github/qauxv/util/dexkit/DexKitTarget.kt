@@ -608,11 +608,10 @@ object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
                 && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
         }
 }
-object NCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {
+object CCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {
     // guess
-    override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
-    override val traitString = arrayOf("^NEW$")
+    override val traitString = arrayOf("fixTextViewLayout wrong: params wrong")
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/chats")
 }
 
