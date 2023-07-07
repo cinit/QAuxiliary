@@ -43,6 +43,7 @@ import cc.ioctl.util.hookBeforeIfEnabled
 import cc.ioctl.util.ui.FaultyDialog
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.DexDeobfs
@@ -94,10 +95,9 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
                             it.type.name == "com.tencent.mobileqq.aio.msg.AIOMsgItem"
                         }.forEach {
                             it.isAccessible = true
-                            it.get(param.thisObject)!!.invoke("getMsgRecord")!!.let {
-                                val senderUid = it.invoke("getSenderUid") as String
-                                val senderUin = it.invoke("getSenderUin") as Long   //对方QQ
-                                val peerUid = it.invoke("getPeerUid") as String //对方，如果是群聊则是群号，如果是私聊则是u_串
+                            (it.get(param.thisObject)!!.invoke("getMsgRecord")!! as MsgRecord).let {
+                                val senderUin = it.senderUin   //对方QQ
+                                val peerUid = it.peerUid as String //对方，如果是群聊则是群号，如果是私聊则是u_串
                                 if (peerUid.startsWith("u_")) {
                                     createAndShowDialogCommon(layout!!.context, it, senderUin, null)
                                 } else {

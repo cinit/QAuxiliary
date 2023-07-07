@@ -29,20 +29,21 @@ import java.lang.reflect.Field;
 import java.util.Map;
 
 public class ContextUtils {
+
     public static Activity getCurrentActivity() {
         try {
-            Class<?> cls = Class.forName("android.app.ActivityThread", false, Application.class.getClassLoader());
-            Object invoke = cls.getMethod("currentActivityThread", new Class[0]).invoke(null, new Object[0]);
-            Field declaredField = cls.getDeclaredField("mActivities");
-            declaredField.setAccessible(true);
-            for (Object obj : ((Map) declaredField.get(invoke)).values()) {
-                Class<?> cls2 = obj.getClass();
-                Field declaredField2 = cls2.getDeclaredField("paused");
-                declaredField2.setAccessible(true);
-                if (!declaredField2.getBoolean(obj)) {
-                    Field declaredField3 = cls2.getDeclaredField("activity");
-                    declaredField3.setAccessible(true);
-                    return (Activity) declaredField3.get(obj);
+            Class<?> activityThreadClass = Class.forName("android.app.ActivityThread", false, Application.class.getClassLoader());
+            Object activityThread = activityThreadClass.getMethod("currentActivityThread", new Class[0]).invoke(null, new Object[0]);
+            Field activitiesField = activityThreadClass.getDeclaredField("mActivities");
+            activitiesField.setAccessible(true);
+            for (Object activityRecord : ((Map) activitiesField.get(activityThread)).values()) {
+                Class<?> activityRecordClass = activityRecord.getClass();
+                Field pausedField = activityRecordClass.getDeclaredField("paused");
+                pausedField.setAccessible(true);
+                if (!pausedField.getBoolean(activityRecord)) {
+                    Field activityField = activityRecordClass.getDeclaredField("activity");
+                    activityField.setAccessible(true);
+                    return (Activity) activityField.get(activityRecord);
                 }
             }
         } catch (Exception e) {

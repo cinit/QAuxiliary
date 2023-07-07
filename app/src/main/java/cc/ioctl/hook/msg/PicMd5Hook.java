@@ -31,6 +31,7 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import com.tencent.qqnt.kernel.nativeinterface.PicElement;
 import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -105,19 +106,18 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
             Method finalGetMsg = getMsg;
             HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
                 Object msg = finalGetMsg.invoke(param.thisObject);
-                Activity context = ContextUtils.getCurrentActivity();
                 Object item = CustomMenu.createItemNt(msg, "MD5", R.id.item_showPicMd5, () -> {
                     try {
                         Method getElement = null;
                         for (Method m : msg.getClass().getDeclaredMethods()) {
-                            if (m.getReturnType().getName().endsWith("PicElement")) {
+                            if (m.getReturnType() == PicElement.class) {
                                 getElement = m;
                                 break;
                             }
                         }
-                        Object element = getElement.invoke(msg);
-                        String md5 = (String) Reflex.invokeVirtual(element, "getMd5HexStr");
-                        showMd5Dialog(ContextUtils.getCurrentActivity(), md5.toUpperCase());
+                        PicElement element = (PicElement) getElement.invoke(msg);
+                        String md5 = element.getMd5HexStr().toUpperCase();
+                        showMd5Dialog(ContextUtils.getCurrentActivity(), md5);
                     } catch (Throwable e) {
                         traceError(e);
                     }

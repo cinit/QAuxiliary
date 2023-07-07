@@ -56,6 +56,7 @@ import cc.ioctl.util.DebugUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
+import com.tencent.qqnt.kernel.nativeinterface.PttElement;
 import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -491,13 +492,13 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
         try {
             Method getElement = null;
             for (Method m : msg.getClass().getDeclaredMethods()) {
-                if (m.getReturnType().getName().endsWith("PttElement")) {
+                if (m.getReturnType() == PttElement.class) {
                     getElement = m;
                     break;
                 }
             }
-            Object element = getElement.invoke(msg);
-            String filename = (String) Reflex.invokeVirtual(element, "getFileName");
+            PttElement element = (PttElement) getElement.invoke(msg);
+            String filename = element.getFileName();
             String filePath =
                     "/storage/emulated/0/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/" + AppRuntimeHelper.getAccount() + "/ptt/" + filename;
             // 严谨性有待考证
