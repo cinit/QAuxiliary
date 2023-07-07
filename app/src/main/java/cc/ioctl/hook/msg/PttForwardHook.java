@@ -56,11 +56,13 @@ import cc.ioctl.util.DebugUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
+import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
+import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ChatActivityFacade;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.bridge.SessionInfoImpl;
@@ -71,7 +73,10 @@ import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.CustomMenu;
+import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.data.ContactDescriptor;
@@ -87,6 +92,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.List;
+import kotlin.Unit;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -375,6 +382,57 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                 dialog.show();
             }
         });
+
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
+            Method getMsg = null;
+            Method[] methods = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
+                    getMsg = method;
+                    getMsg.setAccessible(true);
+                    break;
+                }
+            }
+            Class componentClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.ptt.AIOPttContentComponent");
+            Method listMethod = null;
+            methods = componentClazz.getDeclaredMethods();
+            for (Method method : methods) {
+                if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
+                    listMethod = method;
+                    listMethod.setAccessible(true);
+                    break;
+                }
+            }
+            Method finalGetMsg = getMsg;
+            HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
+                Object msg = finalGetMsg.invoke(param.thisObject);
+                Activity context = ContextUtils.getCurrentActivity();
+                Object item = CustomMenu.createItemNt(msg, "转发", R.id.item_ptt_forward, () -> {
+                    File file = getPttFileByMsgNt(msg);
+                    if (!file.exists()) {
+                        Toasts.error(context, "未找到语音文件");
+                    } else {
+                        sendForwardIntent(context, file);
+                    }
+                    return Unit.INSTANCE;
+                });
+                Object item2 = CustomMenu.createItemNt(msg, "保存", R.id.item_ptt_save, () -> {
+                    File file = getPttFileByMsgNt(msg);
+                    if (!file.exists()) {
+                        Toasts.error(context, "未找到语音文件");
+                    } else {
+                        showSavePttFileDialog(context, file);
+                    }
+                    return Unit.INSTANCE;
+                });
+                List list = (List) param.getResult();
+                list.add(item);
+                list.add(item2);
+            });
+
+            return true;
+        }
         Class<?> kPttItemBuilder = _PttItemBuilder();
         findAndHookMethod(kPttItemBuilder, "a", int.class, Context.class,
                 load("com/tencent/mobileqq/data/ChatMessage"), new XC_MethodHook(60) {
@@ -389,29 +447,18 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                             File file = new File(url);
                             if (!file.exists()) {
                                 Toasts.error(context, "未找到语音文件");
-                                return;
+                            } else {
+                                sendForwardIntent(context, file);
                             }
-                            Intent intent = new Intent(context,
-                                    load("com/tencent/mobileqq/activity/ForwardRecentActivity"));
-                            intent.putExtra("selection_mode", 0);
-                            intent.putExtra("direct_send_if_dataline_forward", false);
-                            intent.putExtra("forward_text", "null");
-                            intent.putExtra("ptt_forward_path", file.getPath());
-                            intent.putExtra("forward_type", -1);
-                            intent.putExtra("caller_name", "ChatActivity");
-                            intent.putExtra("k_smartdevice", false);
-                            intent.putExtra("k_dataline", false);
-                            intent.putExtra("k_forward_title", "语音转发");
-                            context.startActivity(intent);
                         } else if (id == R.id.item_ptt_save) {
                             param.setResult(null);
                             String url = (String) Reflex.invokeVirtual(chatMessage, "getLocalFilePath");
                             File file = new File(url);
                             if (!file.exists()) {
                                 Toasts.error(context, "未找到语音文件");
-                                return;
+                            } else {
+                                showSavePttFileDialog(context, file);
                             }
-                            showSavePttFileDialog(context, file);
                         }
                     }
                 });
@@ -439,4 +486,42 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
         }
         return true;
     }
+
+    private File getPttFileByMsgNt(Object msg) {
+        try {
+            Method getElement = null;
+            for (Method m : msg.getClass().getDeclaredMethods()) {
+                if (m.getReturnType().getName().endsWith("PttElement")) {
+                    getElement = m;
+                    break;
+                }
+            }
+            Object element = getElement.invoke(msg);
+            String filename = (String) Reflex.invokeVirtual(element, "getFileName");
+            String filePath =
+                    "/storage/emulated/0/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/" + AppRuntimeHelper.getAccount() + "/ptt/" + filename;
+            // 严谨性有待考证
+            File file = new File(filePath);
+            return file;
+        } catch (Throwable e) {
+            traceError(e);
+            return new File("");
+        }
+    }
+
+    private void sendForwardIntent(Context context, File file) {
+        Intent intent = new Intent(context,
+                load("com/tencent/mobileqq/activity/ForwardRecentActivity"));
+        intent.putExtra("selection_mode", 0);
+        intent.putExtra("direct_send_if_dataline_forward", false);
+        intent.putExtra("forward_text", "null");
+        intent.putExtra("ptt_forward_path", file.getPath());
+        intent.putExtra("forward_type", -1);
+        intent.putExtra("caller_name", "ChatActivity");
+        intent.putExtra("k_smartdevice", false);
+        intent.putExtra("k_dataline", false);
+        intent.putExtra("k_forward_title", "语音转发");
+        context.startActivity(intent);
+    }
+
 }
