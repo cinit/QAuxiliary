@@ -31,6 +31,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.RelativeLayout
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.text.buildSpannedString
 import cc.ioctl.hook.profile.OpenProfileCard
@@ -40,6 +41,8 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookBeforeIfEnabled
 import cc.ioctl.util.ui.FaultyDialog
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.DexDeobfs
@@ -51,12 +54,15 @@ import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.UiThread
 import io.github.qauxv.util.dexkit.CAIOUtils
 import io.github.qauxv.util.dexkit.DexKit.loadClassFromCache
+import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.invoke
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
 
@@ -73,6 +79,38 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
     @SuppressLint("DiscouragedApi")
     @Throws(Exception::class)
     public override fun initOnce(): Boolean {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            val clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent")
+            // 设置头像点击和长按事件的方法，基于8.9.68适配
+            clz.findMethod { name == "Q0" }.hookBefore { param ->
+                var layout: RelativeLayout? = null
+                clz.declaredFields.filter { it.name == "h" }.forEach {
+                    it.isAccessible = true  //Lazy
+                    layout = (it.get(param.thisObject))!!.invoke("getValue") as RelativeLayout
+                }
+                if (layout!!.context.javaClass.name == "com.tencent.mobileqq.activity.MultiForwardActivity") {
+                    layout!!.setOnClickListener {
+                        clz.declaredFields.filter {
+                            it.type.name == "com.tencent.mobileqq.aio.msg.AIOMsgItem"
+                        }.forEach {
+                            it.isAccessible = true
+                            it.get(param.thisObject)!!.invoke("getMsgRecord")!!.let {
+                                val senderUid = it.invoke("getSenderUid") as String
+                                val senderUin = it.invoke("getSenderUin") as Long   //对方QQ
+                                val peerUid = it.invoke("getPeerUid") as String //对方，如果是群聊则是群号，如果是私聊则是u_串
+                                if (peerUid.startsWith("u_")) {
+                                    createAndShowDialogCommon(layout!!.context, it, senderUin, null)
+                                } else {
+                                    createAndShowDialogCommon(layout!!.context, it, senderUin, peerUid.toLong())
+                                }
+                            }
+                        }
+                    }
+                    param.result = null
+                }
+            }
+            return true
+        }
         BaseBubbleBuilderHook.initialize()
         val kBaseBubbleBuilder = Initiator.loadClass("com/tencent/mobileqq/activity/aio/BaseBubbleBuilder")
         val onClick = kBaseBubbleBuilder.getMethod("onClick", View::class.java)
