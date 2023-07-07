@@ -28,6 +28,7 @@ import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import cc.ioctl.util.beforeHookIfEnabled
+import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
@@ -45,7 +46,6 @@ import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
-import xyz.nextalone.util.hookAllConstructors
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
@@ -59,33 +59,26 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
-    var hasInitNt = false
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+            val getMsg: Method = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").declaredMethods.first {
+                it.returnType == msgClass && it.parameterTypes.isEmpty()
+            }.apply { isAccessible = true }
             val componentClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent")
-            componentClazz.hookAllConstructors(afterHookIfEnabled {
-                if (hasInitNt) {
-                    return@afterHookIfEnabled
+            val listMethod: Method = componentClazz.declaredMethods.first {
+                it.returnType == MutableList::class.java && it.parameterTypes.isEmpty()
+            }.apply { isAccessible = true }
+            HookUtils.hookAfterIfEnabled(this, listMethod) { param: MethodHookParam ->
+                val ctx = ContextUtils.getCurrentActivity()
+                val msg = getMsg.invoke(param.thisObject)
+                val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
+                    copyToClipboard(ctx, msg.invoke("q1") as String)
+                    Toasts.info(ctx, "复制成功")
                 }
-                val ctx = it.args[0] as Context
-                val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-                val getMsg: Method = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").declaredMethods.first {
-                    it.returnType == msgClass && it.parameterTypes.isEmpty()
-                }.apply { isAccessible = true }
-                val listMethod: Method = componentClazz.declaredMethods.first {
-                    it.returnType == MutableList::class.java && it.parameterTypes.isEmpty()
-                }.apply { isAccessible = true }
-                HookUtils.hookAfterIfEnabled(this, listMethod) { param: MethodHookParam ->
-                    val msg = getMsg.invoke(param.thisObject)
-                    val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
-                        copyToClipboard(ctx, msg.invoke("q1") as String)
-                        Toasts.info(ctx, "复制成功")
-                    }
-                    val list = param.result as MutableList<Any>
-                    list.add(item)
-                }
-                hasInitNt = true
-            })
+                val list = param.result as MutableList<Any>
+                list.add(item)
+            }
             return@throwOrTrue
         }
 
