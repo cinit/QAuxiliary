@@ -22,7 +22,6 @@
 
 package io.github.qauxv.dsl
 
-import io.github.qauxv.BuildConfig
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.fragment.AboutFragment

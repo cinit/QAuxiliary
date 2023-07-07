@@ -27,7 +27,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import cc.ioctl.hook.msg.RevokeMsgHook
-import cc.ioctl.util.Reflex
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable

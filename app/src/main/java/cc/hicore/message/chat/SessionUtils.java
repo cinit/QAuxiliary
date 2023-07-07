@@ -23,7 +23,6 @@
 package cc.hicore.message.chat;
 
 import android.text.TextUtils;
-import cc.hicore.Env;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
 import cc.hicore.Utils.XLog;

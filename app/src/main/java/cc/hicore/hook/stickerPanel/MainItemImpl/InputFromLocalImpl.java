@@ -121,10 +121,7 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
         BitmapFactory.Options options = new BitmapFactory.Options();
         options.inJustDecodeBounds = true;
         BitmapFactory.decodeFile(filePath, options);
-        if (options.outWidth == -1) {
-            return false;
-        }
-        return true;
+        return options.outWidth != -1;
     }
 
     @Override

@@ -80,19 +80,15 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
     private void notifyDataSetChanged() {
         for (ImageView img : cacheImageView) {
             String coverView = (String) img.getTag();
-            try {
-                if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
-                    Glide.with(HostInfo.getApplication()).load(new URL(coverView)).into(img);
-                } else {
-                    if (new File(coverView+"_thumb").exists()){
-                        Glide.with(HostInfo.getApplication()).load(coverView+"_thumb").into(img);
-                    }else {
-                        Glide.with(HostInfo.getApplication()).load(coverView).into(img);
-                    }
-
+            if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
+                Glide.with(HostInfo.getApplication()).load(coverView).into(img);
+            } else {
+                if (new File(coverView+"_thumb").exists()){
+                    Glide.with(HostInfo.getApplication()).load(coverView+"_thumb").into(img);
+                }else {
+                    Glide.with(HostInfo.getApplication()).load(coverView).into(img);
                 }
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
+
             }
         }
     }

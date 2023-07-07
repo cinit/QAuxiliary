@@ -22,15 +22,12 @@
 
 package cc.hicore.message.common;
 
-import android.text.TextUtils;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionUtils;
 import cc.hicore.message.chat.CommonChat;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
-import de.robv.android.xposed.XposedBridge;
 import java.util.ArrayList;
 
 public class MsgSender {

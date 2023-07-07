@@ -397,7 +397,7 @@ val generateEulaAndPrivacy by tasks.registering {
         val html = inputs.files.map { markdownToHTML(it.readText()) }
         outputs.files.forEach {
             val output = buildString {
-                append("<!DOCTYPE html><head><meta charset=\"UTF-8\"></head><body><html>")
+                append("<!DOCTYPE html ><head><meta charset=\"UTF-8\"></head><html><body>")
                 html.forEach(::append)
                 append("</body></html>")
             }.lines().joinToString("")

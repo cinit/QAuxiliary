@@ -41,8 +41,6 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.databinding.ItemFuncStatusBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
-import io.github.qauxv.util.dexkit.DexDeobfsProvider
-import io.github.qauxv.util.dexkit.DexKitFinder
 import kotlin.math.max
 
 class FuncStatListFragment : BaseRootLayoutFragment() {

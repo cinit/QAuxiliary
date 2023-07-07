@@ -96,7 +96,7 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
 
         binding.hotUpdateConfigCurrentInfo.text = "别看了，这个功能还没做好，选什么都没用"
 
-        val channelButtons = arrayOf<AppCompatTextView>(
+        val channelButtons = arrayOf(
             binding.hotUpdateConfigChannelDisabled,
             binding.hotUpdateConfigChannelStable,
             binding.hotUpdateConfigChannelBeta,

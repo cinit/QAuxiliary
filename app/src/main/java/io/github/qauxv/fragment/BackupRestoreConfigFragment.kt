@@ -444,13 +444,9 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
         }
         if (path.startsWith("/proc/")) {
             // allow /proc/[pid]/fd/[fd], where [pid] may be self and thread-self
-            if (path.startsWith("/proc/self/fd/")
+            return !(path.startsWith("/proc/self/fd/")
                 || path.startsWith("/proc/thread-self/fd/")
-                || path.matches("/proc/\\d+/fd/\\d+".toRegex())
-            ) {
-                return false
-            }
-            return true
+                || path.matches("/proc/\\d+/fd/\\d+".toRegex()))
         }
         return false
     }

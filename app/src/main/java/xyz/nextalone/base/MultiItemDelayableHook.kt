@@ -41,7 +41,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import me.ketal.data.ConfigData
 
-abstract class MultiItemDelayableHook constructor(keyName: String) :
+abstract class MultiItemDelayableHook(keyName: String) :
     CommonConfigFunctionHook(keyName) {
     abstract val preferenceTitle: String
     open val preferenceSummary = ""

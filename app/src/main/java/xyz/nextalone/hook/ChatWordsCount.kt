@@ -289,7 +289,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
                 putExFriend(strCfg, DEFAULT_MESSAGE_FORMAT)
             }
             .setNegativeButton("取消", null)
-            .create() as AlertDialog
+            .create()
         alertDialog.show()
         alertDialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
             val text = editText.text.toString()

@@ -22,7 +22,6 @@
 
 package cc.hicore.QApp;
 
-import cc.hicore.Env;
 import cc.hicore.ReflectUtil.MClass;
 import cc.hicore.ReflectUtil.MMethod;
 import io.github.qauxv.util.Initiator;

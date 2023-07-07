@@ -179,12 +179,12 @@ public class HttpUtils {
                 }
                 fos.close();
                 inp.close();
-                new Handler(Looper.getMainLooper()).post(() -> al.dismiss());
+                new Handler(Looper.getMainLooper()).post(al::dismiss);
                 callback.run();
             } catch (Throwable th) {
                 Toasts.info(context,"下载失败:\n" + th);
                 new File(filepath).delete();
-                new Handler(Looper.getMainLooper()).post(() -> al.dismiss());
+                new Handler(Looper.getMainLooper()).post(al::dismiss);
             }
         }).start();
     }

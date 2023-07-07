@@ -160,11 +160,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
 
 
         if (imgPath.startsWith("http://") || imgPath.startsWith("https://")) {
-            try {
-                Glide.with(HostInfo.getApplication()).load(new URL(imgPath)).into(img);
-            } catch (MalformedURLException e) {
-                e.printStackTrace();
-            }
+            Glide.with(HostInfo.getApplication()).load(imgPath).into(img);
         } else {
             Glide.with(HostInfo.getApplication()).load(Env.app_save_path + "本地表情包/" + path.storePath + "/" + imgPath).into(img);
         }

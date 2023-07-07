@@ -33,6 +33,7 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -114,7 +115,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
             try {
                 ExecutorService threadPool = Executors.newFixedThreadPool(8);
                 AtomicInteger finishCount = new AtomicInteger();
-                int taskCount = mPicItems.size();
+                CountDownLatch latch = new CountDownLatch(mPicItems.size());
                 for (LocalDataHelper.LocalPicItems item : mPicItems) {
                     threadPool.execute(() -> {
                         try {
@@ -140,16 +141,12 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
                         } catch (Exception e) {
                             XposedBridge.log(Log.getStackTraceString(e));
                         } finally {
+                            latch.countDown();
                             SyncUtils.runOnUiThread(() -> progressDialog.setMessage("正在更新表情包,请稍等...(" + finishCount.getAndIncrement() + "/" + mPicItems.size() + ")"));
                         }
                     });
                 }
-                while (true) {
-                    if (finishCount.get() == taskCount) {
-                        break;
-                    }
-                    Thread.sleep(100);
-                }
+                latch.await();
                 SyncUtils.runOnUiThread(progressDialog::dismiss);
                 Toasts.info(mContext,"已更新完成");
                 SyncUtils.runOnUiThread(ICreator::dismissAll);

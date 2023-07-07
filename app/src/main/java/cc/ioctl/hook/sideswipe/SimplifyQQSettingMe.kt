@@ -223,21 +223,18 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
 
         // for NT QQ 8.9.68.11450
         val clazz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMeViewV9")
-        if (clazz != null) {
-            clazz.findAllMethods { paramCount == 1 && parameterTypes[0].name.contains("com.tencent.mobileqq.activity.qqsettingme") }
-                .hookAfter {
-                    val cz = clazz.superclass.superclass
-                    val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
-                    for (activeItem in activeItems) {
-                        if (items2Hide.contains(activeItem)) {
-                            val viewObj = m.invoke(null, items2Hide[activeItem])
-                            if (viewObj != null) {
-                                val view = viewObj as View
-                                view.visibility = View.GONE
-                            }
-                        }
+        clazz?.findAllMethods { paramCount == 1 && parameterTypes[0].name.contains("com.tencent.mobileqq.activity.qqsettingme") }?.hookAfter {
+            val cz = clazz.superclass.superclass
+            val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
+            for (activeItem in activeItems) {
+                if (items2Hide.contains(activeItem)) {
+                    val viewObj = m.invoke(null, items2Hide[activeItem])
+                    if (viewObj != null) {
+                        val view = viewObj as View
+                        view.visibility = View.GONE
                     }
                 }
+            }
         }
     }
 

@@ -96,14 +96,11 @@ object OpenMultiFwdMsg : IUiItemAgent, IUiItemAgentProvider {
         if (!multiUri.matches(Regex("^[\\dA-Za-z+/]+$"))) {
             return false
         }
-        try {
+        return try {
             val bytes = Base64.decode(multiUri, Base64.DEFAULT)
-            if (bytes.size != 0x30) {
-                return false
-            }
-            return true
+            bytes.size == 0x30
         } catch (e: IllegalArgumentException) {
-            return false
+            false
         }
     }
 

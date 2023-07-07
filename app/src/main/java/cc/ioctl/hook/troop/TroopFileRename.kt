@@ -64,7 +64,6 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.FILE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_6_0)
 
-    @Suppress("UNCHECKED_CAST")
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
         val builder = if (requireMinQQVersion(QQVersion.QQ_8_9_0)) {
             "com.tencent.mobileqq.troop.widget.g"

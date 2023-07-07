@@ -60,7 +60,7 @@ public class NtGrayTipHelper {
 
     public static class NtGrayTipJsonBuilder {
 
-        public static interface Item {
+        public interface Item {
 
             JSONObject toJson() throws JSONException;
 

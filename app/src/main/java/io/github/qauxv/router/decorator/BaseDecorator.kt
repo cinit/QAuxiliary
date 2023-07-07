@@ -59,8 +59,8 @@ abstract class BaseDecorator(
     override val isPreparationRequired: Boolean get() = dispatcher.isPreparationRequired || super.isPreparationRequired
 
     private fun <T> mergeArray(a1: Array<T>?, a2: Array<T>?): Array<T>? {
-        if (a1 == null || a1.isEmpty()) return a2
-        if (a2 == null || a2.isEmpty()) return a1
+        if (a1.isNullOrEmpty()) return a2
+        if (a2.isNullOrEmpty()) return a1
         return a1 + a2
     }
 

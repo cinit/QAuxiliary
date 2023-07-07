@@ -42,7 +42,7 @@ public class DataUtils {
         return out.toByteArray();
     }
 
-    private static final byte hexToByte(String inHex) {
+    private static byte hexToByte(String inHex) {
         return (byte) Integer.parseInt(inHex, 16);
     }
 
@@ -75,9 +75,9 @@ public class DataUtils {
         }
     }
     public static String ByteArrayToHex(byte[] bytes) {
-        StringBuffer sb = new StringBuffer();
-        for (int i = 0; i < bytes.length; i++) {
-            String hex = Integer.toHexString(bytes[i] & 0xFF);
+        StringBuilder sb = new StringBuilder();
+        for (byte aByte : bytes) {
+            String hex = Integer.toHexString(aByte & 0xFF);
             if (hex.length() < 2) {
                 sb.append(0);
             }
@@ -92,7 +92,7 @@ public class DataUtils {
         }
         MessageDigest digest = null;
         FileInputStream in = null;
-        byte buffer[] = new byte[1024];
+        byte[] buffer = new byte[1024];
         int len;
         try {
             digest = MessageDigest.getInstance("MD5");

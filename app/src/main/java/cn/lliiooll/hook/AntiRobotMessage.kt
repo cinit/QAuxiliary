@@ -30,7 +30,6 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Log
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.invoke

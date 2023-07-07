@@ -48,7 +48,7 @@ object NewRoundHead : CommonSwitchFunctionHook() {
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
-    override val isAvailable: Boolean get() = !isTim();
+    override val isAvailable: Boolean get() = !isTim()
 
     override fun makePreparationSteps(): Array<Step> {
         //特征字符串："FaceManager"/"AvatarUtil"

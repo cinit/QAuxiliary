@@ -42,10 +42,8 @@ public class RelationNTUinAndUidApi {
             sGetUidFromUin = klass.getMethod("getUidFromUin", String.class);
             sGetUinFromUid = klass.getMethod("getUinFromUid", String.class);
             sImpl = QRoute.api(klass);
-            return sImpl;
-        } else {
-            return sImpl;
         }
+        return sImpl;
     }
 
     public static boolean isAvailable() {
