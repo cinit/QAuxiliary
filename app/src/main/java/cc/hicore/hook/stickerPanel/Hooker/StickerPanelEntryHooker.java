@@ -148,7 +148,7 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                 Method finalGetMsg = getMsg;
                 HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
                     Object msg = finalGetMsg.invoke(param.thisObject);
-                    Object item = CustomMenu.createItemNt(msg, "保存到面板", R.id.item_repeat, () -> {
+                    Object item = CustomMenu.createItemNt(msg, "保存到面板", R.id.item_save_to_panel, () -> {
                         try {
                             long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
                             IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
