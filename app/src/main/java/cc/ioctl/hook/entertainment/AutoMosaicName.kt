@@ -21,10 +21,13 @@
  */
 package cc.ioctl.hook.entertainment
 
+import cc.hicore.QApp.QAppUtils
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NBaseChatPie_mosaic
 import xyz.nextalone.util.hookBefore
@@ -40,8 +43,30 @@ object AutoMosaicName : CommonSwitchFunctionHook(arrayOf(NBaseChatPie_mosaic)) {
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override fun initOnce() = throwOrTrue {
+        if (QAppUtils.isQQnt()) {
+            hookNt()
+            return@throwOrTrue
+        }
         DexKit.requireMethodFromCache(NBaseChatPie_mosaic).hookBefore(this) {
             it.args[0] = true
         }
+    }
+
+    private fun hookNt() {
+        val ll = arrayOf(
+            // "com.tencent.mobileqq.aio.title.AIOTitleVM",
+            "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent",
+            "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.MainNickNameBlock"
+        ).map {
+            Initiator.load(it)!!
+        }
+        ll.forEach { clazz ->
+            clazz.findMethod {
+                parameterTypes.size == 1 && parameterTypes[0] == Boolean::class.java
+            }.hookBefore(this) {
+                it.args[0] = true
+            }
+        }
+
     }
 }
