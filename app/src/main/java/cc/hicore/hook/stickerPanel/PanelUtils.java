@@ -2,6 +2,7 @@ package cc.hicore.hook.stickerPanel;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -63,8 +64,8 @@ public class PanelUtils {
         for (LocalDataHelper.LocalPath path : paths) {
             RadioButton button = new RadioButton(context);
             button.setText(path.Name);
+            button.setTextColor(context.getColor(R.color.font_plugin));
             button.setTextSize(16);
-            button.setTextColor(Color.BLACK);
             button.setOnCheckedChangeListener((v, ischeck) -> {
                 if (v.isPressed() && ischeck) {
                     choicePath = path;
@@ -79,7 +80,7 @@ public class PanelUtils {
             new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
                     .setTitle("创建新目录")
                     .setView(edNew)
-                    .setNeutralButton("确定创建", (dialog, which) -> {
+                    .setPositiveButton("确定创建", (dialog, which) -> {
                         String newName = edNew.getText().toString();
                         if (TextUtils.isEmpty(newName)) {
                             Toasts.info(v.getContext(),"名字不能为空");
@@ -97,7 +98,7 @@ public class PanelUtils {
                             RadioButton button = new RadioButton(context);
                             button.setText(pathItem.Name);
                             button.setTextSize(16);
-                            button.setTextColor(Color.BLACK);
+                            button.setTextColor(context.getColor(R.color.font_plugin));
                             button.setOnCheckedChangeListener((vaa, ischeck) -> {
                                 if (vaa.isPressed() && ischeck) {
                                     choicePath = pathItem;
@@ -111,9 +112,8 @@ public class PanelUtils {
         });
 
         new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
-                .setTitle("是否保存")
                 .setView(mRoot)
-                .setNeutralButton("保存", (dialog, which) -> {
+                .setPositiveButton("保存", (dialog, which) -> {
                     if (choicePath == null) {
                         Toasts.info(context,"没有选择任何的保存列表");
                     } else if (TextUtils.isEmpty(NewInfo.Path)) {
@@ -130,7 +130,10 @@ public class PanelUtils {
 
                         Toasts.info(context,"已保存到:" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                     }
-                }).setOnDismissListener(dialog -> {
+                }).setNeutralButton("取消", (dialog, which) -> {
+
+                })
+                .setOnDismissListener(dialog -> {
                     Glide.with(HostInfo.getApplication()).clear(preView);
                 }).show();
     }

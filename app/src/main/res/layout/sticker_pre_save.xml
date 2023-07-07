@@ -12,7 +12,7 @@
         android:text="是否保存如下图片"
         android:textColor="@color/font_plugin"
         android:gravity="center_horizontal"
-        android:textSize="16sp"/>
+        android:textSize="20sp"/>
     <ImageView
         android:id="@+id/emo_pre_container"
         android:layout_width="160dp"

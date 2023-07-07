@@ -15,5 +15,7 @@
     <color name="defaultThemeBackgroundColor">#FF303030</color>
     <color name="defaultThemeBackgroundColorAlpha80">#CC303030</color>
 
+
+    <color name="font_plugin">#FFFFFFFF</color>
     <color name="bg_plugin">#FF3C3C3C</color>
 </resources>
