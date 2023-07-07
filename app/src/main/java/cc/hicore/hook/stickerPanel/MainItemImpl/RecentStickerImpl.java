@@ -9,7 +9,7 @@ import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
 import cc.hicore.Utils.HttpUtils;
-import cc.hicore.hook.stickerPanel.Hooker.Emo_Btn_Hooker;
+import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
 import cc.hicore.hook.stickerPanel.MainPanelAdapter;
@@ -22,8 +22,6 @@ import com.bumptech.glide.Glide;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 
@@ -108,7 +106,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
         img.setOnClickListener(v -> {
             if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
                 HttpUtils.ProgressDownload(coverView, Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")), () -> {
-                    MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(Emo_Btn_Hooker.AIOParam),
+                    MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam),
                             Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
 
                     RecentStickerHelper.addPicItemToRecentRecord(item);
@@ -116,7 +114,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
                 ICreator.dismissAll();
 
             } else {
-                MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(Emo_Btn_Hooker.AIOParam),
+                MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam),
                         coverView);
                 RecentStickerHelper.addPicItemToRecentRecord(item);
                 ICreator.dismissAll();

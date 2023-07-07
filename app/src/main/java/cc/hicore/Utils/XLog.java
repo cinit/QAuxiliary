@@ -31,4 +31,7 @@ public class XLog {
     public static void e(String TAG,String msg){
         Log.e("[QAuxv]"+"("+TAG+")"+msg);
     }
+    public static void d(String TAG,String msg){
+        Log.d("[QAuxv]"+"("+TAG+")"+msg);
+    }
 }
