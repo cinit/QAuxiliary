@@ -27,8 +27,6 @@ import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.util.XPopupUtils;
 import io.github.qauxv.R;
 import io.github.qauxv.lifecycle.Parasitics;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -114,7 +112,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
 
     private void initDefItemsLast() {
 
-        ViewGroup inputView = (ViewGroup) createPicImage(R.drawable.input, "导入图片", v -> {
+        ViewGroup inputView = (ViewGroup) createPicImage(R.drawable.input, "导入表情", v -> {
             listView.setSelection(IdOfInputPic);
             listView.smoothScrollToPositionFromTop(IdOfInputPic, -5);
         });

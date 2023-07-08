@@ -2,21 +2,15 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical"
     android:layout_width="match_parent"
-    android:background="@color/bg_plugin"
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal"
     android:layout_height="match_parent">
-    <TextView
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="是否保存如下图片"
-        android:textColor="@color/font_plugin"
-        android:gravity="center_horizontal"
-        android:textSize="20sp"/>
+
     <ImageView
         android:id="@+id/emo_pre_container"
         android:layout_width="160dp"
         android:layout_height="160dp"/>
+
     <ScrollView
         android:layout_width="160dp"
         android:layout_height="200dp">
@@ -31,7 +25,6 @@
         android:id="@+id/createNew"
         android:layout_width="160dp"
         android:layout_height="40dp"
-        android:text="新建项目"/>
-
+        android:text="创建分组"/>
 
 </LinearLayout>

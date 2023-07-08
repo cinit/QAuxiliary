@@ -2,8 +2,6 @@ package cc.hicore.hook.stickerPanel;
 
 import android.app.AlertDialog;
 import android.content.Context;
-import android.content.DialogInterface;
-import android.graphics.Color;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.widget.Button;
@@ -19,7 +17,6 @@ import cc.ioctl.util.HostInfo;
 import com.bumptech.glide.Glide;
 import io.github.qauxv.R;
 import io.github.qauxv.lifecycle.Parasitics;
-import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.util.ArrayList;
@@ -77,13 +74,13 @@ public class PanelUtils {
         Button btnCreate = mRoot.findViewById(R.id.createNew);
         btnCreate.setOnClickListener(v -> {
             EditText edNew = new EditText(context);
-            new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
-                    .setTitle("创建新目录")
+            new AlertDialog.Builder(context)
+                    .setTitle("创建分组")
                     .setView(edNew)
                     .setPositiveButton("确定创建", (dialog, which) -> {
                         String newName = edNew.getText().toString();
                         if (TextUtils.isEmpty(newName)) {
-                            Toasts.info(v.getContext(),"名字不能为空");
+                            Toasts.info(v.getContext(),"名称不能为空");
                             return;
                         }
                         LocalDataHelper.LocalPath path = new LocalDataHelper.LocalPath();
@@ -107,17 +104,19 @@ public class PanelUtils {
                             group.addView(button);
                         }
                     })
+                    .setNeutralButton("取消", null)
                     .show();
 
         });
 
-        new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
+        new AlertDialog.Builder(context)
+                .setTitle("选择保存分组")
                 .setView(mRoot)
                 .setPositiveButton("保存", (dialog, which) -> {
                     if (choicePath == null) {
-                        Toasts.info(context,"没有选择任何的保存列表");
+                        Toasts.info(context,"没有选择分组");
                     } else if (TextUtils.isEmpty(NewInfo.Path)) {
-                        Toasts.info(context,"图片尚未加载完毕,保存失败");
+                        Toasts.info(context,"图片尚未加载完毕，保存失败");
                     } else {
                         FileUtils.copy(NewInfo.Path, Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                         LocalDataHelper.LocalPicItems item = new LocalDataHelper.LocalPicItems();
@@ -128,11 +127,9 @@ public class PanelUtils {
                         LocalDataHelper.addPicItem(choicePath.storePath, item);
 
 
-                        Toasts.info(context,"已保存到:" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
+                        Toasts.info(context,"已保存到：" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                     }
-                }).setNeutralButton("取消", (dialog, which) -> {
-
-                })
+                }).setNeutralButton("取消", null)
                 .setOnDismissListener(dialog -> {
                     Glide.with(HostInfo.getApplication()).clear(preView);
                 }).show();
@@ -140,7 +137,7 @@ public class PanelUtils {
 
     //如果要保存的是多张图片则弹出MD5选择,选择后才弹出确认图片保存框
     public static void PreSaveMultiPicList(ArrayList<String> url, ArrayList<String> MD5, Context context) {
-        new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(context))
+        new AlertDialog.Builder(context)
                 .setTitle("选择需要保存的图片")
                 .setItems(MD5.toArray(new String[0]), (dialog, which) -> {
                     PreSavePicToList(url.get(which), MD5.get(which), context);

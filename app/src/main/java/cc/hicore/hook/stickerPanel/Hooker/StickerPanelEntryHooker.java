@@ -37,12 +37,10 @@ import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
-import com.tencent.qqnt.kernel.nativeinterface.IMsgOperateCallback;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
 import com.xiaoniu.util.ContextUtils;
-import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -50,6 +48,7 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
@@ -170,9 +169,9 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                                         }
                                         if (!md5s.isEmpty()){
                                             if (md5s.size() > 1){
-                                                PanelUtils.PreSaveMultiPicList(urls,md5s, ContextUtils.getCurrentActivity());
+                                                PanelUtils.PreSaveMultiPicList(urls,md5s, CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
                                             }else {
-                                                PanelUtils.PreSavePicToList(urls.get(0),md5s.get(0), ContextUtils.getCurrentActivity());
+                                                PanelUtils.PreSavePicToList(urls.get(0),md5s.get(0), CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
                                             }
                                         }
                                     }
