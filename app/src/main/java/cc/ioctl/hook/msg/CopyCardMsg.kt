@@ -28,6 +28,7 @@ import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import cc.ioctl.util.beforeHookIfEnabled
+import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedBridge
@@ -46,7 +47,6 @@ import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
-import xyz.nextalone.util.invoke
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
 import java.lang.reflect.Method
@@ -73,7 +73,10 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
                 val ctx = ContextUtils.getCurrentActivity()
                 val msg = getMsg.invoke(param.thisObject)
                 val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
-                    copyToClipboard(ctx, msg.invoke("q1") as String)
+                    val element = (msg.javaClass.declaredMethods.first {
+                        it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
+                    }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement
+                    copyToClipboard(ctx, element.bytesData)
                     Toasts.info(ctx, "复制成功")
                 }
                 val list = param.result as MutableList<Any>
