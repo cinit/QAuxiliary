@@ -82,18 +82,21 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
     public override fun initOnce(): Boolean {
         if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
             val clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent")
-            // 设置头像点击和长按事件的方法，基于8.9.68适配
-            clz.findMethod { name == "Q0" }.hookBefore { param ->
-                var layout: RelativeLayout? = null
-                clz.declaredFields.filter { it.name == "h" }.forEach {
+            // 设置头像点击和长按事件的方法
+            clz.findMethod {
+                name == if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "Q0"
+                else "R0"   //8.9.63
+            }.hookBefore { param ->
+                var layout: RelativeLayout?
+                clz.declaredFields.first { it.name == "h" }.let {
                     it.isAccessible = true  //Lazy
                     layout = (it.get(param.thisObject))!!.invoke("getValue") as RelativeLayout
                 }
                 if (layout!!.context.javaClass.name == "com.tencent.mobileqq.activity.MultiForwardActivity") {
                     layout!!.setOnClickListener {
-                        clz.declaredFields.filter {
+                        clz.declaredFields.first {
                             it.type.name == "com.tencent.mobileqq.aio.msg.AIOMsgItem"
-                        }.forEach {
+                        }.let {
                             it.isAccessible = true
                             (it.get(param.thisObject)!!.invoke("getMsgRecord")!! as MsgRecord).let {
                                 val senderUin = it.senderUin   //对方QQ
