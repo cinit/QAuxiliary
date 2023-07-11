@@ -35,6 +35,7 @@ import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.getStaticObjectOrNull
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodReplacement
@@ -96,6 +97,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         "王卡免流量特权",   //开通王卡 [0,1,0,0,0,1,4,0,15] || [0,1,0,0,0,1,4,0,1,15,1] || d_vip_card
         "厘米秀", // d_cmshow
         "超级QQ秀", // d_zplan
+        "下拉形象展示",
         "等级"
     )
 
@@ -235,6 +237,12 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                     }
                 }
             }
+        }
+
+        // 关闭下拉形象展示abtest开关
+        if (activeItems.contains("下拉形象展示")) {
+            Initiator.load("com.tencent.mobileqq.activity.qqsettingme.utils.a")?.getDeclaredMethod("f")!!
+                .hookBefore { it.result = false }
         }
     }
 
