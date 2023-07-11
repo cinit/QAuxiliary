@@ -66,6 +66,8 @@ import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -86,7 +88,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     public static final RepeaterPlus INSTANCE = new RepeaterPlus();
 
     private RepeaterPlus() {
-        super();
+        super(null, false, new DexKitTarget[]{AbstractQQCustomMenuItem.INSTANCE});
     }
 
     private IUiItemAgent mUiAgent = null;
@@ -260,7 +262,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                         });
                         List list = (List) param.getResult();
                         List result = new ArrayList<>();
-                        result.add(0,item);
+                        result.add(0, item);
                         result.addAll(list);
                         param.setResult(result);
                     });

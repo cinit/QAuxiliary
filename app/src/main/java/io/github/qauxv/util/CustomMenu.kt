@@ -94,10 +94,13 @@ object CustomMenu {
         )
     }
 
+    /**
+     * Remember to add DexKitTarget AbstractQQCustomMenuItem to the constructor!
+     */
     @JvmStatic
     fun createItemNt(msg: Any, text: String, id: Int, click: () -> Unit): Any {
         val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-        val absMenuItem = DexKit.loadClassFromCache(AbstractQQCustomMenuItem)!!
+        val absMenuItem = DexKit.requireClassFromCache(AbstractQQCustomMenuItem)
         val clickName = absMenuItem.findMethod {
             returnType == Void.TYPE && parameterTypes.isEmpty()
         }.name

@@ -43,6 +43,7 @@ import io.github.qauxv.util.CustomMenu.createItemNt
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
@@ -53,7 +54,7 @@ import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayOf(CArkAppItemBubbleBuilder)) {
+object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayOf(CArkAppItemBubbleBuilder, AbstractQQCustomMenuItem)) {
 
     override val name = "复制卡片消息"
 

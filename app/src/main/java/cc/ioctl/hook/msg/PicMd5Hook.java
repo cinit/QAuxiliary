@@ -47,6 +47,8 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
+import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.List;
@@ -60,6 +62,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
     public static final PicMd5Hook INSTANCE = new PicMd5Hook();
 
     private PicMd5Hook() {
+        super(new DexKitTarget[]{AbstractQQCustomMenuItem.INSTANCE});
     }
 
     @NonNull
