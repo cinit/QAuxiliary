@@ -98,14 +98,18 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
                             it.type.name == "com.tencent.mobileqq.aio.msg.AIOMsgItem"
                         }.let {
                             it.isAccessible = true
-                            (it.get(param.thisObject)!!.invoke("getMsgRecord")!! as MsgRecord).let {
-                                val senderUin = it.senderUin   //对方QQ
-                                val peerUid = it.peerUid as String //对方，如果是群聊则是群号，如果是私聊则是u_串
-                                if (peerUid.startsWith("u_")) {
-                                    createAndShowDialogCommon(layout!!.context, it, senderUin, null)
-                                } else {
-                                    createAndShowDialogCommon(layout!!.context, it, senderUin, peerUid.toLong())
+                            try {
+                                (it.get(param.thisObject)!!.invoke("getMsgRecord")!! as MsgRecord).let {
+                                    val senderUin = it.senderUin   //对方QQ
+                                    val troopUin = try {
+                                        it.peerUid.toLong() //对方，如果是群聊则是群号，如果是私聊则是u_串
+                                    } catch (_: NumberFormatException) {
+                                        null
+                                    }
+                                    createAndShowDialogCommon(layout!!.context, it, senderUin, troopUin)
                                 }
+                            } catch (e: Exception) {
+                                FaultyDialog.show(layout!!.context, e)
                             }
                         }
                     }
