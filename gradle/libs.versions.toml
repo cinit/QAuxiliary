@@ -40,8 +40,8 @@ glide = { module = "com.github.bumptech.glide:glide", version = "4.15.1" }
 byte-buddy-android = { module = "net.bytebuddy:byte-buddy-android", version = "1.14.5" }
 
 [plugins]
-changelog = { id = "org.jetbrains.changelog", version = "2.1.0" }
+changelog = { id = "org.jetbrains.changelog", version = "2.1.2" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "10.8.0" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "10.8.2" }
