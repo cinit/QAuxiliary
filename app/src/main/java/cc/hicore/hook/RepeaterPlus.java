@@ -189,8 +189,8 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                             if (img.getContext().getClass().getName().contains("MultiForwardActivity")) {
                                 return;
                             }
-                            if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
-                                img.setOnClickListener(v -> {
+                            img.setOnClickListener(v -> {
+                                if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
                                     try {
                                         if (System.currentTimeMillis() - 200 > click_time) {
                                             return;
@@ -198,9 +198,9 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                                     } finally {
                                         click_time = System.currentTimeMillis();
                                     }
-                                    repeatByForwardNt(param.args[1]);
-                                });
-                            }
+                                }
+                                repeatByForwardNt(param.args[1]);
+                            });
                             imageView.setVisibility(0);
                         }
                     }
