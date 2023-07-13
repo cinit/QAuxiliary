@@ -29,7 +29,6 @@ import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
 import android.os.Build
-import android.util.Log
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.MessagingStyle
@@ -53,6 +52,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.LicenseStatus
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import moe.zapic.util.QQAvatarHelper
@@ -81,12 +81,12 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannels()
         }
-        val cNotificationFacede = "com.tencent.qqnt.notification.NotificationFacade".clazz!!
+        val cNotificationFacade = "com.tencent.qqnt.notification.NotificationFacade".clazz!!
         val cAppRuntime = "mqq.app.AppRuntime".clazz!!
         val cCommonInfo = "com.tencent.qqnt.kernel.nativeinterface.NotificationCommonInfo".clazz!!
         val cRecentInfo = "com.tencent.qqnt.kernel.nativeinterface.RecentContactInfo".clazz!!
         val postNotification = Reflex.findSingleMethod(
-            cNotificationFacede,
+            cNotificationFacade,
             null,
             false,
             Notification::class.java,
@@ -94,7 +94,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         )
         lateinit var buildNotification: Method
         lateinit var recentInfoBuilder: Method
-        cNotificationFacede.declaredMethods.forEach {
+        cNotificationFacade.declaredMethods.forEach {
             if (it.parameterTypes.size != 3) return@forEach
             if (it.parameterTypes[0] != cAppRuntime) return@forEach
             if (it.parameterTypes[2] == cCommonInfo) {
@@ -125,8 +125,8 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             val pair = notificationInfoMap[oldNotification.contentIntent] ?: return@hookBeforeIfEnabled
             val info = QQRecentContactInfo(pair.first)
             notificationInfoMap.remove(oldNotification.contentIntent)
-            if (info.chatType == 1 || info.chatType == 2){
-                val content = info.abstractContent?.joinToString { it.get("content", String::class.java) ?: "[未解析消息]" } ?: return@hookBeforeIfEnabled
+            if (info.chatType == 1 || info.chatType == 2) {
+                val content = info.abstractContent?.joinToString(separator = "") { it.get("content", String::class.java) ?: "[未解析消息]" } ?: return@hookBeforeIfEnabled
                 val senderName = info.getUserName() ?: return@hookBeforeIfEnabled
                 val senderUin = info.senderUin ?: return@hookBeforeIfEnabled
                 val senderIcon: IconCompat
@@ -265,7 +265,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         if (notificationChannels.any { notificationChannel ->
                 notificationManager.getNotificationChannel(notificationChannel.id) == null
             }) {
-            Log.i("QNotifyEvolutionXp", "Creating channels...")
+            Log.i("QNotifyEvolutionXp: Creating channels...")
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)
             notificationManager.createNotificationChannels(notificationChannels)
         }
