@@ -13,6 +13,7 @@
 -keep class xyz.nextalone.** { *; }
 -keep class cc.ioctl.** { *; }
 -keep class sakura.kooi.** { *; }
+-keep class moe.zapic.** { *; }
 -keep class com.tencent.mmkv.** { *; }
 
 -keepclasseswithmembernames class * {
