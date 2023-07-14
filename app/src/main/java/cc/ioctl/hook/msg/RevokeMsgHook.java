@@ -68,6 +68,7 @@ import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.Random;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
@@ -364,47 +365,54 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
     }
 
     /**
-     * Called by NotifyRecallMsgEventForC2c in NtRecallMsgHook.cc from native.
+     * Called NtRecallMsgHook.cc from native.
      * <p>
      * We are not allowed to throw any exception in this method.
      */
     @Keep
-    private static void handleC2cRecallMsgFromNtKernel(String fromUid, String toUid, long random64,
-            long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) {
+    private static void handleRecallSysMsgFromNtKernel(int chatType, String peerUid, String recallOpUid, String toUid,
+            long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) {
         SyncUtils.async(() -> {
             try {
-                RevokeMsgHook.INSTANCE.onRecallC2cMsgForNT(fromUid, toUid, random64, timeSeconds, msgUid, msgSeq, msgClientSeq);
+                RevokeMsgHook.INSTANCE.onRecallSysMsgForNT(chatType, peerUid, recallOpUid, toUid, random64, timeSeconds,
+                        msgUid, msgSeq, msgClientSeq);
             } catch (Exception | LinkageError | AssertionError e) {
                 RevokeMsgHook.INSTANCE.traceError(e);
             }
         });
     }
 
-    private void onRecallC2cMsgForNT(String fromUid, String toUid, long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq)
-            throws ReflectiveOperationException {
-        String fromUin = RelationNTUinAndUidApi.getUinFromUid(fromUid);
-        String toUin = RelationNTUinAndUidApi.getUinFromUid(toUid);
-        String selfUin = AppRuntimeHelper.getAccount();
-        String selfUid = RelationNTUinAndUidApi.getUidFromUin(selfUin);
-        if (TextUtils.isEmpty(fromUin)) {
-            Log.e("onRecallC2cMsg fatal: fromUin is empty");
+    private void onRecallSysMsgForNT(int chatType, String peerUid, String recallOpUid, String toUid,
+            long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) throws ReflectiveOperationException {
+        if (TextUtils.isEmpty(peerUid)) {
+            Log.e("onRecallSysMsgForNT fatal: peerUid is empty");
             return;
         }
-        if (TextUtils.isEmpty(toUin)) {
-            Log.e("onRecallC2cMsg fatal: toUin is empty");
+        if (chatType != 1 && chatType != 2) {
+            Log.e("onRecallSysMsgForNT fatal: chatType is not c2c or troop");
+            return;
+        }
+        String operatorUin = RelationNTUinAndUidApi.getUinFromUid(recallOpUid);
+        String selfUin = AppRuntimeHelper.getAccount();
+        String selfUid = RelationNTUinAndUidApi.getUidFromUin(selfUin);
+        if (TextUtils.isEmpty(operatorUin)) {
+            Log.e("onRecallSysMsgForNT fatal: recallOpUin is empty");
+            // dump all available info
+            Log.e("onRecallSysMsgForNT dump: chatType=" + chatType + ", peerUid=" + peerUid + ", recallOpUid=" + recallOpUid + ", toUid=" + toUid + ", random64=" + random64 + ", timeSeconds=" + timeSeconds + ", msgUid=" + msgUid + ", msgSeq=" + msgSeq + ", msgClientSeq=" + msgClientSeq + ", operatorUin=" + operatorUin + ", selfUin=" + selfUin + ", selfUid=" + selfUid);
             return;
         }
         if (TextUtils.isEmpty(selfUid)) {
-            Log.e("onRecallC2cMsg fatal: selfUid is empty");
+            Log.e("onRecallSysMsgForNT fatal: selfUid is empty");
             return;
         }
-        // C2C PM
-        if (selfUid.equals(fromUid)) {
+        if (selfUid.equals(recallOpUid)) {
             // ignore msg revoked by self
             return;
         }
-        String friendUid = fromUid;
-        Contact contact = new Contact(ChatTypeConstants.C2C, friendUid, "");
+        if ((chatType == 1 && !Objects.equals(selfUid, toUid)) || (chatType == 2 && !Objects.equals(peerUid, toUid))) {
+            Log.w("!!! onRecallSysMsgForNT potential bug: chatType=" + chatType + ", peerUid=" + peerUid + ", toUid=" + toUid + ", selfUid=" + selfUid);
+        }
+        Contact contact = new Contact(chatType, peerUid, "");
         AppRuntime app = AppRuntimeHelper.getAppRuntime();
         IKernelMsgService kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
         // I don't know why, but...
@@ -417,32 +425,96 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                 if (queryResult == 0 && msgList != null && !msgList.isEmpty()) {
                     msgObject = msgList.get(0);
                 } else if (queryResult == 0) {
-                    Log.d("onRecallC2cMsg: msg not found, msgUid=" + msgUid);
+                    Log.d("onRecallSysMsgForNT: msg not found, msgUid=" + msgUid);
                 } else {
-                    Log.e("onRecallC2cMsg error: getMsgsByMsgId failed, result=" + queryResult + ", errMsg=" + errMsg);
+                    Log.e("onRecallSysMsgForNT error: getMsgsByMsgId failed, result=" + queryResult + ", errMsg=" + errMsg);
                 }
-                String revokerPron = selfUin.equals(fromUin) ? "你" : "对方";
-                String summary;
                 NtGrayTipHelper.NtGrayTipJsonBuilder builder = new NtGrayTipHelper.NtGrayTipJsonBuilder();
-                if (msgObject != null) {
-                    builder.appendText(revokerPron + "尝试撤回");
-                    builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
-                    summary = revokerPron + "尝试撤回一条消息";
+                String summary;
+                if (chatType == ChatTypeConstants.C2C) {
+                    String revokerPron = selfUid.equals(peerUid) ? "你" : "对方";
+                    if (msgObject != null && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
+                        builder.appendText(revokerPron + "尝试撤回");
+                        builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                        summary = revokerPron + "尝试撤回一条消息";
+                    } else if (msgObject != null && (msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
+                        // C2C only: msg not actually received, system message: "对方撤回了一条消息"
+                        // We don't need to do anything here, otherwise we will have duplicated gray tip.
+                        return;
+                    } else {
+                        builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
+                        summary = revokerPron + "撤回了一条消息(没收到)";
+                    }
+                } else if (chatType == ChatTypeConstants.GROUP) {
+                    String operatorName = ContactUtils.getDisplayNameForUid(recallOpUid, peerUid);
+                    // do we have the original message?
+                    if (msgObject != null && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
+                        // good, we have the original message
+                        // then, is the original message sent by the operator?
+                        String msgAuthorUid = msgObject.getSenderUid();
+                        long msgAuthorUin = msgObject.getSenderUin();
+                        String msgAuthorName = getMsgSenderReferenceName(msgObject, true);
+                        if (recallOpUid.equals(msgAuthorUid)) {
+                            // by themselves
+                            builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
+                            builder.appendText("尝试撤回");
+                            builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                            summary = operatorName + "尝试撤回一条消息";
+                        } else {
+                            builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
+                            builder.appendText("尝试撤回");
+                            builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(msgAuthorUin), msgAuthorUid, msgAuthorName));
+                            builder.appendText("的");
+                            builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                            summary = operatorName + "尝试撤回" + msgAuthorName + "的一条消息";
+                        }
+                    } else {
+                        // we don't have the original message, so we can't get the sender's name
+                        builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
+                        builder.appendText("撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
+                        summary = operatorName + "撤回了一条消息(没收到)";
+                    }
                 } else {
-                    builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
-                    summary = revokerPron + "撤回了一条消息(没收到)";
+                    throw new AssertionError("onRecallSysMsgForNT chatType=" + chatType);
                 }
                 String jsonStr = builder.build().toString();
-                JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_C2C_NOTICE, jsonStr, summary);
+                int busiId = (chatType == ChatTypeConstants.C2C) ? NtGrayTipHelper.AIO_AV_C2C_NOTICE : NtGrayTipHelper.AIO_AV_GROUP_NOTICE;
+                JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(busiId, jsonStr, summary);
                 NtGrayTipHelper.addLocalJsonGrayTipMsg(AppRuntimeHelper.getAppRuntime(), contact, jsonGrayElement, true, true, (result, uin) -> {
                     if (result != 0) {
-                        Log.e("onRecallC2cMsg error: addLocalJsonGrayTipMsg failed, result=" + result);
+                        Log.e("onRecallSysMsgForNT error: addLocalJsonGrayTipMsg failed, result=" + result);
                     }
                 });
             } catch (Exception | LinkageError e) {
+                // dump all args to logcat
+                Log.e("error: onRecallSysMsgForNT failed, chatType=" + chatType + ", peerUid=" + peerUid + ", msgUid=" + msgUid + ", msgSeq=" + msgSeq
+                        + ", msgClientSeq=" + msgClientSeq + ", recallOpUid=" + recallOpUid + ", selfUid=" + selfUid, e);
                 traceError(e);
             }
         }));
+    }
+
+    private static String getMsgSenderReferenceName(@NonNull MsgRecord msgRecord, boolean isInGroup) {
+        if (isInGroup) {
+            String memberName = msgRecord.getSendMemberName();
+            if (!TextUtils.isEmpty(memberName)) {
+                return memberName;
+            }
+        }
+        String remarkName = msgRecord.getSendRemarkName();
+        if (!TextUtils.isEmpty(remarkName)) {
+            return remarkName;
+        }
+        String nickName = msgRecord.getSendNickName();
+        if (!TextUtils.isEmpty(nickName)) {
+            return nickName;
+        }
+        long uin = msgRecord.getSenderUin();
+        if (uin > 0) {
+            return String.valueOf(uin);
+        }
+        // wtf?
+        return msgRecord.getSenderUid();
     }
 
     private Bundle createTroopMemberHighlightItem(String memberUin) {

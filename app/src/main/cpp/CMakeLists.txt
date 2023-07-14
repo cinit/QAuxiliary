@@ -67,6 +67,8 @@ add_library(qauxv SHARED
         utils/MemoryUtils.cc
         utils/ConfigManager.cc
         utils/ElfScan.cc
+        utils/AobScanUtils.cc
+        utils/arch_utils.cc
 
         ntkernel/NtRecallMsgHook.cc
 

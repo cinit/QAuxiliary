@@ -28,6 +28,7 @@ import cc.ioctl.util.Reflex;
 import com.tencent.common.app.AppInterface;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.DexDeobfs;
+import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexKit;
@@ -160,5 +161,48 @@ public class ContactUtils {
             Log.e(e);
             return troopUin;
         }
+    }
+
+    @NonNull
+    public static String getDisplayNameForUid(@NonNull String peerUid) {
+        return getDisplayNameForUid(peerUid, 0);
+    }
+
+    @NonNull
+    public static String getDisplayNameForUid(@NonNull String peerUid, long groupNumber) {
+        try {
+            String uin = RelationNTUinAndUidApi.getUinFromUid(peerUid);
+            if (TextUtils.isEmpty(uin)) {
+                return peerUid;
+            }
+            return getDisplayNameForUin(uin, groupNumber);
+        } catch (RuntimeException e) {
+            return peerUid;
+        }
+    }
+
+    @NonNull
+    public static String getDisplayNameForUid(@NonNull String peerUid, @Nullable String groupNumber) {
+        if (TextUtils.isEmpty(groupNumber)) {
+            return getDisplayNameForUid(peerUid);
+        }
+        return getDisplayNameForUid(peerUid, Long.parseLong(groupNumber));
+    }
+
+    @NonNull
+    public static String getDisplayNameForUin(@NonNull String uin) {
+        return getDisplayNameForUin(uin, 0);
+    }
+
+    @NonNull
+    public static String getDisplayNameForUin(@NonNull String uin, long groupNumber) {
+        if (groupNumber > 0) {
+            return getTroopMemberNick(String.valueOf(groupNumber), uin);
+        }
+        String ret = getBuddyName(AppRuntimeHelper.getQQAppInterface(), uin);
+        if (ret != null) {
+            return ret;
+        }
+        return uin;
     }
 }

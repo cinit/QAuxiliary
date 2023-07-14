@@ -16,6 +16,8 @@ std::vector<uint64_t> FindByteSequenceForImageFile(const void* baseAddress, std:
 
 std::vector<uint64_t> FindByteSequenceForLoadedImage(const void* baseAddress, std::span<const uint8_t> sequence, bool execMemOnly, int step);
 
+std::vector<uint64_t> FindByteSequenceImpl(const void* baseAddress, bool isLoaded, std::span<const uint8_t> sequence, bool execMemOnly, int step);
+
 }
 
 #endif //QAUXV_ELFSCAN_H
