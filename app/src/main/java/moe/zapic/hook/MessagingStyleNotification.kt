@@ -492,14 +492,14 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     if (uinType != -1) {
                         param.result = null
                         val uin = intent.getStringExtra("TO_UIN") ?:  return
-                        val result = RemoteInput.getResultsFromIntent(intent)?.getString("KEY_REPLY")?: return
+                        val result = RemoteInput.getResultsFromIntent(intent)?.getCharSequence("KEY_REPLY") ?: return
                         val selfUin = AppRuntimeHelper.getAccount()
                         // send message
                         ChatActivityFacade.sendMessage(
                             AppRuntimeHelper.getQQAppInterface(),
                             hostInfo.application,
                             SessionInfoImpl.createSessionInfo(uin, uinType),
-                            result
+                            result.toString()
                         )
 
                         // update exist notification
