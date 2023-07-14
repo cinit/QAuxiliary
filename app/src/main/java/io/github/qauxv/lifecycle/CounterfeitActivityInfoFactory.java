@@ -39,17 +39,24 @@ public class CounterfeitActivityInfoFactory {
         try {
             Context ctx = HostInfo.getApplication();
             Class<?> cl = Class.forName(className);
-            try {
-                // TODO: 2022-02-11 cast flags from long to int loses information
-                ActivityInfo proto = ctx.getPackageManager().getActivityInfo(new ComponentName(
-                        ctx.getPackageName(), "com.tencent.mobileqq.activity.QQSettingSettingActivity"), (int) flags);
-                // init style here, comment it out if it crashes on Android >= 10
-                proto.theme = R.style.Theme_MaiTungTMDesign_DayNight;
-                return initCommon(proto, className);
-            } catch (PackageManager.NameNotFoundException e) {
-                throw new IllegalStateException(
-                    "QQSettingSettingActivity not found, are we in the host?", e);
+            String[] candidates = new String[]{
+                    "com.tencent.mobileqq.activity.QQSettingSettingActivity",
+                    "com.tencent.mobileqq.activity.QPublicFragmentActivity"
+            };
+            PackageManager.NameNotFoundException last = null;
+            for (String activityName : candidates) {
+                try {
+                    // TODO: 2022-02-11 cast flags from long to int loses information
+                    ActivityInfo proto = ctx.getPackageManager().getActivityInfo(new ComponentName(
+                            ctx.getPackageName(), activityName), (int) flags);
+                    // init style here, comment it out if it crashes on Android >= 10
+                    proto.theme = R.style.Theme_MaiTungTMDesign_DayNight;
+                    return initCommon(proto, className);
+                } catch (PackageManager.NameNotFoundException e) {
+                    last = e;
+                }
             }
+            throw new IllegalStateException("QQSettingSettingActivity not found, are we in the host?", last);
         } catch (ClassNotFoundException e) {
             return null;
         }
