@@ -98,7 +98,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
 
     private void injectSettingEntryForMainSettingConfigProvider() throws ReflectiveOperationException {
         // 8.9.70+
-        Class<?> kMainSettingFragment = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingFragment");
+        Class<?> kMainSettingFragment = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingFragment");
         if (kMainSettingFragment != null) {
             Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
             Method getItemProcessList = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
