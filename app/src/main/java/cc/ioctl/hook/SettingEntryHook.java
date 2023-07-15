@@ -25,6 +25,7 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static io.github.qauxv.util.Initiator.load;
 
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -35,6 +36,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
@@ -49,12 +51,20 @@ import io.github.qauxv.core.HookInstaller;
 import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.fragment.FuncStatusDetailsFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
+import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.lang.reflect.Proxy;
+import java.util.ArrayList;
+import java.util.Comparator;
+import java.util.List;
+import kotlin.collections.ArraysKt;
+import kotlin.jvm.functions.Function0;
 
 @FunctionHookEntry
 public class SettingEntryHook extends BasePersistBackgroundHook {
@@ -71,7 +81,12 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        XposedHelpers.findAndHookMethod(Initiator._QQSettingSettingActivity(), "doOnCreate", Bundle.class, mAddModuleEntry);
+        injectSettingEntryForMainSettingConfigProvider();
+        // below 8.9.70
+        Class<?> kQQSettingSettingActivity = Initiator._QQSettingSettingActivity();
+        if (kQQSettingSettingActivity != null) {
+            XposedHelpers.findAndHookMethod(kQQSettingSettingActivity, "doOnCreate", Bundle.class, mAddModuleEntry);
+        }
         Class<?> kQQSettingSettingFragment = Initiator._QQSettingSettingFragment();
         if (kQQSettingSettingFragment != null) {
             Method doOnCreateView = kQQSettingSettingFragment.getDeclaredMethod("doOnCreateView",
@@ -79,6 +94,60 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             XposedBridge.hookMethod(doOnCreateView, mAddModuleEntry);
         }
         return true;
+    }
+
+    private void injectSettingEntryForMainSettingConfigProvider() throws ReflectiveOperationException {
+        // 8.9.70+
+        Class<?> kMainSettingFragment = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingFragment");
+        if (kMainSettingFragment != null) {
+            Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
+            Method getItemProcessList = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
+            Class<?> kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.g");
+            if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
+                throw new IllegalStateException("kSImpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
+            }
+            Method setOnClickListener;
+            {
+                List<Method> candidates = ArraysKt.filter(kSimpleItemProcessor.getDeclaredMethods(), m -> {
+                    Class<?>[] argt = m.getParameterTypes();
+                    // NOSONAR java:S1872 not same class
+                    return m.getReturnType() == void.class && argt.length == 1 && Function0.class.getName().equals(argt[0].getName());
+                });
+                candidates.sort(Comparator.comparing(Method::getName));
+                if (candidates.size() != 2) {
+                    throw new IllegalStateException("com.tencent.mobileqq.setting.processor.g.?(Function0)V candidates.size() != 2");
+                }
+                setOnClickListener = candidates.get(0);
+            }
+            Constructor<?> ctorSimpleItemProcessor = kSimpleItemProcessor.getDeclaredConstructor(Context.class, int.class, CharSequence.class, int.class);
+            HookUtils.hookAfterAlways(this, getItemProcessList, 50, param -> {
+                List<Object> result = (List<Object>) param.getResult();
+                Context ctx = (Context) param.args[0];
+                Class<?> kItemProcessorGroup = result.get(0).getClass();
+                Constructor<?> ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
+                Parasitics.injectModuleResources(ctx.getResources());
+                @SuppressLint("DiscouragedApi")
+                int resId = ctx.getResources().getIdentifier("qui_tuning", "drawable", ctx.getPackageName());
+                Object entryItem = ctorSimpleItemProcessor.newInstance(ctx, R.id.setting2Activity_settingEntryItem, "QAuxiliary", resId);
+                Class<?> thatFunction0 = setOnClickListener.getParameterTypes()[0];
+                Object theUnit = thatFunction0.getClassLoader().loadClass("kotlin.Unit").getField("INSTANCE").get(null);
+                ClassLoader hostClassLoader = Initiator.getHostClassLoader();
+                Object func0 = Proxy.newProxyInstance(hostClassLoader, new Class<?>[]{thatFunction0}, (proxy, method, args) -> {
+                    if (method.getName().equals("invoke")) {
+                        onSettingEntryClick(ctx);
+                        return theUnit;
+                    }
+                    // must be sth from Object
+                    return method.invoke(this, args);
+                });
+                setOnClickListener.invoke(entryItem, func0);
+                ArrayList<Object> list = new ArrayList<>(1);
+                list.add(entryItem);
+                Object group = ctor.newInstance(list, "", "");
+                result.add(1, group);
+            });
+        }
     }
 
     private final XC_MethodHook mAddModuleEntry = new XC_MethodHook(51) {
@@ -140,15 +209,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     Reflex.invokeVirtual(item, "setRightText", "[未激活]", CharSequence.class);
                 }
                 item.setOnClickListener(v -> {
-                    if (HookInstaller.getFuncInitException() != null) {
-                        SettingsUiFragmentHostActivity.startActivityForFragment(activity, FuncStatusDetailsFragment.class,
-                                FuncStatusDetailsFragment.getBundleForLocation(FuncStatusDetailsFragment.TARGET_INIT_EXCEPTION));
-                    } else if (LicenseStatus.hasUserAcceptEula()) {
-                        activity.startActivity(new Intent(activity, SettingsUiFragmentHostActivity.class));
-                    } else {
-                        SettingsUiFragmentHostActivity.startActivityForFragment(activity, EulaFragment.class, null);
-                        activity.finish();
-                    }
+                    onSettingEntryClick(activity);
                 });
                 if (itemRef != null && !HostInfo.isQQHD()) {
                     //modern age
@@ -204,6 +265,20 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             }
         }
     };
+
+    private void onSettingEntryClick(@NonNull Context context) {
+        if (HookInstaller.getFuncInitException() != null) {
+            SettingsUiFragmentHostActivity.startActivityForFragment(context, FuncStatusDetailsFragment.class,
+                    FuncStatusDetailsFragment.getBundleForLocation(FuncStatusDetailsFragment.TARGET_INIT_EXCEPTION));
+        } else if (LicenseStatus.hasUserAcceptEula()) {
+            context.startActivity(new Intent(context, SettingsUiFragmentHostActivity.class));
+        } else {
+            SettingsUiFragmentHostActivity.startActivityForFragment(context, EulaFragment.class, null);
+            if (context instanceof Activity) {
+                ((Activity) context).finish();
+            }
+        }
+    }
 
     private void fixBackgroundType(@NonNull ViewGroup parent, @NonNull View itemView, int index) {
         int lastClusterId = index - 1;
