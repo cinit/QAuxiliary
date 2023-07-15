@@ -21,7 +21,13 @@
  */
 package cc.ioctl.hook.ui.main
 
+import android.view.View
+import android.view.ViewGroup
 import cc.ioctl.util.HostInfo
+import com.github.kyuubiran.ezxhelper.utils.findAllMethods
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -40,6 +46,7 @@ import io.luckypray.dexkit.builder.BatchFindArgs.Companion.builder
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import io.luckypray.dexkit.enums.MatchType
 import io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
+import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -60,10 +67,55 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
             traceError(RuntimeException("getInitMiniAppObfsName() == null"))
             return false
         }
+
+
+        val zQQChatListTwoLevelHeader = Initiator.load("com.tencent.qqnt.chats.view.QQChatListTwoLevelHeader")
+        val zMiniOldStyleHeader = Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeader")
+        if (zQQChatListTwoLevelHeader != null) {
+            zQQChatListTwoLevelHeader
+                .findAllMethods { !Modifier.isStatic(modifiers) }
+                .hookAfter {
+                    if (it.thisObject is ViewGroup) {
+                        val vg = it.thisObject as ViewGroup
+                        vg.visibility = View.GONE
+                        vg.removeAllViews()
+                    }
+                    XposedHelpers.callMethod(it.thisObject, "g")
+                }
+        }
+
+        if (zMiniOldStyleHeader != null) {
+            zMiniOldStyleHeader
+                .findMethod { name == "a" && paramCount == 3 }
+                .hookAfter {
+                    XposedHelpers.callMethod(it.args[0], "finishRefresh")
+                }
+        }
+
+
         XposedHelpers.findAndHookMethod(
             Initiator._Conversation(), methodName,
             XC_MethodReplacement.returnConstant(null)
         )
+        /*
+        Initiator.load("com.tencent.mobileqq.activity.home.chats.c")
+            ?.findAllMethods { true }
+            ?.hookAfter {
+                for (f in it.thisObject.javaClass.declaredFields) {
+                    if (f.name == "o") {
+                        f.isAccessible = true
+                        val lObj = f.get(it.thisObject)
+                        if (lObj is List<*>) {
+                            val list = lObj.toMutableList()
+                            list.clear()
+                            f.set(it.thisObject, list.toList())
+                        }
+                    }
+                }
+            }
+
+         */
+
 //        val m = Reflex.findMethod(Initiator._Conversation(), Void.TYPE, "j0")
 //        XposedBridge.hookMethod(m, XC_MethodReplacement.returnConstant(null))
         return true
