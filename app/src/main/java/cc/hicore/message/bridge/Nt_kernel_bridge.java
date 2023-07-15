@@ -37,39 +37,59 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
+import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
 
 public class Nt_kernel_bridge {
 
-    public static void send_msg(Contact contact, ArrayList<MsgElement> elements){
+    public static void send_msg(Contact contact, ArrayList<MsgElement> elements) {
         HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
-        attrMap.put(0,getDefaultAttributeInfo());
+        MsgAttributeInfo info = getDefaultAttributeInfo();
+        if (info != null) {
+            attrMap.put(0, info);
 
-        try {
-            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
-            service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
+            try {
+                IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+                service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
 
-            });
-        } catch (Exception e) {
-            XLog.e("Nt_kernel_bridge.send_msg",e);
+                });
+            } catch (Exception e) {
+                XLog.e("Nt_kernel_bridge.send_msg", e);
+            }
         }
     }
-    public static MsgAttributeInfo getDefaultAttributeInfo(){
 
-        VASMsgNamePlate plate = new VASMsgNamePlate(258,64,0,0,0,0,258,0,new ArrayList<>(),0,0);
-        VASMsgBubble bubble = new VASMsgBubble(0,0,0,0);
-        VASMsgFont font = new VASMsgFont(65536,0L,0,0,2000);
+    public static MsgAttributeInfo getDefaultAttributeInfo() {
+
+        VASMsgNamePlate plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
+        VASMsgBubble bubble = new VASMsgBubble(0, 0, 0, 0);
+        VASMsgFont font = new VASMsgFont(65536, 0L, 0, 0, 2000);
         VASMsgAvatarPendant pendant = new VASMsgAvatarPendant();
-        VASMsgIceBreak iceBreak = new VASMsgIceBreak(null,null);
-
-        VASMsgElement element = new VASMsgElement(plate,bubble,pendant,font,iceBreak);
-
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_68)) {
-            return new MsgAttributeInfo(0, 0, element, null, null, null, null, null, null, null, null, null);
-        } else {
-            return new MsgAttributeInfo(0, 0, element, null, null, null, null, null, null, null, null);
+        VASMsgIceBreak iceBreak = new VASMsgIceBreak(null, null);
+        VASMsgElement element = new VASMsgElement(plate, bubble, pendant, font, iceBreak);
+        try {
+            Class<?> msgAttributeInfoClazz = Initiator.load("com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo");
+            if (msgAttributeInfoClazz != null) {
+                for (Constructor<?> constructor : msgAttributeInfoClazz.getDeclaredConstructors()) {
+                    if (constructor.getParameterTypes().length < 1) continue;
+                    List<Object> args = new ArrayList<>();
+                    args.add(0);
+                    args.add(0);
+                    args.add(element);
+                    for (int i = 0; i < constructor.getParameterTypes().length - 3; i++) {
+                        args.add(null);
+                    }
+                    return (MsgAttributeInfo) constructor.newInstance(args.toArray());
+                }
+            }
+        } catch (Throwable e) {
+            e.printStackTrace();
         }
+        return null;
     }
 }

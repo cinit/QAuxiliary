@@ -375,10 +375,14 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
             IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
             HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
-            attrMap.put(0, Nt_kernel_bridge.getDefaultAttributeInfo());
-            service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
+            MsgAttributeInfo info = Nt_kernel_bridge.getDefaultAttributeInfo();
+            if (info != null) {
+                attrMap.put(0, info);
+                service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
 
-            });
+                });
+            }
+
 
         } catch (Exception e) {
             Log.e(e);
