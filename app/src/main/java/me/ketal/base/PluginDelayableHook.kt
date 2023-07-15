@@ -30,10 +30,13 @@ import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.InvocationTargetException
 
 abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) {
 
@@ -56,8 +59,30 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
         if (disablePluginDelayableHook) {
             error("disablePluginDelayableHook")
         }
-        val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
-        startHook(classLoader)
+        try {
+            Log.i("startHook: $pluginID")
+            if ("Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->getProxy()Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;".method.apply {
+                    isAccessible = true
+                }.invoke(null) == null) {
+                Log.i("getProxy: null")
+                "Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->setProxy(Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;)V".method.apply {
+                    isAccessible = true
+                }.invoke(
+                    null, listOf(
+                        "Lcooperation/plugin/c;",   //8.9.70
+                        "Lcooperation/plugin/PluginAdapterImpl;",   //8.8.50
+                        "Lbghq;",   //8.2.11 Play
+                        "Lbfdk;"    //8.2.6
+                    ).firstNotNullOf { it.clazz }.newInstance()
+                    // implements Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;
+                )
+                Log.i("setProxy success")
+            }
+            val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
+            startHook(classLoader)
+        } catch (e: InvocationTargetException) {
+            traceError(e.targetException)
+        }
     }
 
     fun uiSwitchPreference(init: UiSwitchPreferenceItemFactory.() -> Unit): IUiItemAgent {
