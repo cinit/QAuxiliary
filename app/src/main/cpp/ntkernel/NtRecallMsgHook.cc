@@ -203,7 +203,7 @@ void NotifyRecallMsgEventForGroup(const std::string& peerUid, const std::string&
 
 void (* sOriginHandleGroupRecallSysMsgCallback)(void*, void*, void*) = nullptr;
 
-void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[maybe_unused]] void* x2) {
+void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[maybe_unused]] void* x2, [[maybe_unused]] int x3) {
     // LOGD("HandleGroupRecallSysMsgCallback start p1={:p}, p2={:p}, p3={:p}", x0, x1, x2);
     // we can still do it... hitherto p3 == null... we need to decode the message manually...
     uintptr_t base = (uintptr_t) gLibkernelBaseAddress;
@@ -293,7 +293,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
 
 void (* sOriginHandleC2cRecallSysMsgCallback)(void*, void*, void*) = nullptr;
 
-void HandleC2cRecallSysMsgCallback([[maybe_unused]] void* p1, [[maybe_unused]] void* p2, void* p3) {
+void HandleC2cRecallSysMsgCallback([[maybe_unused]] void* p1, [[maybe_unused]] void* p2, void* p3, [[maybe_unused]] int x3) {
     if (p3 == nullptr || *(void**) p3 == nullptr) {
         LOGE("HandleC2cGroupSysMsgCallback BUG !!! *p3 = null, this should not happen!!!");
         return;
@@ -360,29 +360,31 @@ bool InitInitNtKernelRecallMsgHook() {
         }
         sIsHooked = true;
         gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
-
+        // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 8d 40 f9
         auto targetRecallC2cSysMsg = AobScanTarget()
                 .WithName("RecallC2cSysMsg")
                 .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
                 .WithStep(4)
                 .WithExecMemOnly(true)
-                .WithOffsetForResult(-4 * 8)
+                .WithOffsetsForResult({-4 * 8, -0x24})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
+        // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9
         auto targetRecallGroupSysMsg = AobScanTarget()
                 .WithName("RecallGroupSysMsg")
                 .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
                 .WithStep(4)
                 .WithExecMemOnly(true)
-                .WithOffsetForResult(-4 * 6)
+                .WithOffsetsForResult({-4 * 6, -0x24})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
+        // GetDecoder 3f 8d 01 f8 f4 03 00 aa 1f 10 00 f9
         auto targetGetDecoder = AobScanTarget()
                 .WithName("GetDecoder")
                 .WithSequence({0x3f, 0x8d, 0x01, 0xf8, 0xf4, 0x03, 0x00, 0xaa, 0x1f, 0x10, 0x00, 0xf9})
                 .WithStep(4)
                 .WithExecMemOnly(true)
-                .WithOffsetForResult(-0x78)
+                .WithOffsetsForResult({-0x78})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
         std::vector<std::string> errorMsgList;

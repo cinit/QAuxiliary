@@ -31,17 +31,17 @@ public:
     std::vector<uint8_t> sequence;
     int step = 0;
     bool execMemOnly = false;
-    int64_t offsetForResult = 0;
+    std::vector<int64_t> offsetsForResult;
     std::optional<Validator> resultValidator;
 
     std::vector<uint64_t> results;
 
     AobScanTarget() = default;
 
-    AobScanTarget(std::string name, std::vector<uint8_t> sequence, int step, bool execMemOnly, int64_t offsetForResult,
+    AobScanTarget(std::string name, std::vector<uint8_t> sequence, int step, bool execMemOnly, int64_t offsetsForResult,
                   std::optional<Validator> resultValidator)
             : name(std::move(name)), sequence(std::move(sequence)), step(step), execMemOnly(execMemOnly),
-              offsetForResult(offsetForResult), resultValidator(std::move(resultValidator)) {}
+              offsetsForResult(std::move(offsetsForResult)), resultValidator(std::move(resultValidator)) {}
 
     inline AobScanTarget& WithName(std::string newName) {
         this->name = std::move(newName);
@@ -63,8 +63,8 @@ public:
         return *this;
     }
 
-    inline AobScanTarget& WithOffsetForResult(int64_t newOffsetForResult) {
-        this->offsetForResult = newOffsetForResult;
+    inline AobScanTarget& WithOffsetsForResult(std::vector<int64_t> newOffsetsForResult) {
+        this->offsetsForResult = std::move(newOffsetsForResult);
         return *this;
     }
 
