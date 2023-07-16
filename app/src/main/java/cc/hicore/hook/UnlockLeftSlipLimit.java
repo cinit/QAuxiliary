@@ -30,6 +30,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
@@ -56,6 +57,16 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            Method[] ms = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.leftswipearea.AIOContentLeftSwipeHelper").getDeclaredMethods();
+            for (Method m : ms) {
+                if (m.getParameterTypes().length == 1 && m.getParameterTypes()[0] == boolean.class) {
+                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.args[0] = true);
+                    break;
+                }
+            }
+            return true;
+        }
         Method m = MMethod.FindMethod(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class,
                 new Class[0]);
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
