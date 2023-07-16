@@ -719,3 +719,10 @@ data object TroopEnterEffect_QQNT : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
                             // 理论上非NT也能用，但祖法不可变
 }
+
+data object NQZMoment_EntranceEnabled : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("KEY_OPEN_QZMOMENT_ENTRANCE")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/qzone/reborn/qzmoment/util")
+}
