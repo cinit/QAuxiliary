@@ -21,12 +21,10 @@
  */
 package cc.ioctl.hook.ui.main
 
-import android.view.View
-import android.view.ViewGroup
 import cc.ioctl.util.HostInfo
-import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import de.robv.android.xposed.XC_MethodReplacement
 import de.robv.android.xposed.XposedHelpers
@@ -46,7 +44,18 @@ import io.luckypray.dexkit.builder.BatchFindArgs.Companion.builder
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor
 import io.luckypray.dexkit.enums.MatchType
 import io.luckypray.dexkit.util.DexDescriptorUtil.getTypeSig
-import java.lang.reflect.Modifier
+import kotlin.collections.HashMap
+import kotlin.collections.HashSet
+import kotlin.collections.MutableMap
+import kotlin.collections.MutableSet
+import kotlin.collections.Set
+import kotlin.collections.component1
+import kotlin.collections.component2
+import kotlin.collections.filter
+import kotlin.collections.first
+import kotlin.collections.indices
+import kotlin.collections.iterator
+import kotlin.collections.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -68,28 +77,27 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
             return false
         }
 
+//        val zQQChatListTwoLevelHeader = Initiator.load("com.tencent.qqnt.chats.view.QQChatListTwoLevelHeader")
+//        zQQChatListTwoLevelHeader?.findAllMethods { !Modifier.isStatic(modifiers) }?.hookAfter {
+//            /*if (it.thisObject is ViewGroup) {
+//                val vg = it.thisObject as ViewGroup
+//                vg.visibility = View.GONE
+//                vg.removeAllViews()
+//            }*/
+//            XposedHelpers.callMethod(it.thisObject, "g")
+//              // lliiooll：自动收回，二层包装了，在这个方法里面调用的finishTwoLevelHeader
+//        }
 
-        val zQQChatListTwoLevelHeader = Initiator.load("com.tencent.qqnt.chats.view.QQChatListTwoLevelHeader")
+
         val zMiniOldStyleHeader = Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeader")
-        if (zQQChatListTwoLevelHeader != null) {
-            zQQChatListTwoLevelHeader
-                .findAllMethods { !Modifier.isStatic(modifiers) }
-                .hookAfter {
-                    if (it.thisObject is ViewGroup) {
-                        val vg = it.thisObject as ViewGroup
-                        vg.visibility = View.GONE
-                        vg.removeAllViews()
-                    }
-                    XposedHelpers.callMethod(it.thisObject, "g")
-                }
+        zMiniOldStyleHeader?.hookAllConstructorAfter {
+            // Lcom/scwang/smart/refresh/header/TwoLevelHeader;
+            it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first {
+                it.name == "D"  //mEnableTwoLevel
+            }.apply { isAccessible = true }.set(it.thisObject, false)
         }
-
-        if (zMiniOldStyleHeader != null) {
-            zMiniOldStyleHeader
-                .findMethod { name == "a" && paramCount == 3 }
-                .hookAfter {
-                    XposedHelpers.callMethod(it.args[0], "finishRefresh")
-                }
+        zMiniOldStyleHeader?.findMethod { name == "a" && paramCount == 3 }?.hookAfter {
+            XposedHelpers.callMethod(it.args[0], "finishRefresh")
         }
 
 
