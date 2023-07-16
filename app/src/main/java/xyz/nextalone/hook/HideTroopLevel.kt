@@ -23,6 +23,7 @@ package xyz.nextalone.hook
 
 import android.view.ViewGroup
 import androidx.core.view.isVisible
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -65,5 +66,10 @@ object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
         val levelView = rootView.findViewByType(levelClass)
         val isAdmin = admin?.contains(sendUin) == true || ownerUin == sendUin
         levelView?.isVisible = isAdmin
+    }
+
+    override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
+        if (!isEnabled) return
+
     }
 }

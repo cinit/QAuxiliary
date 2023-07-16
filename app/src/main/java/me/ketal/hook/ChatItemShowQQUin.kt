@@ -43,6 +43,7 @@ import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -282,6 +283,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             text = "闪照 $text"
         }
         pfnSetTailMessage.invoke(rootView, true, text, if (mEnableDetailInfo) mOnTailMessageClickListener else null)
+    }
+
+    override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
+        if (!isEnabled) return
+
     }
 
     private fun isFlashPic(chatMessage: MsgRecordData): Boolean {

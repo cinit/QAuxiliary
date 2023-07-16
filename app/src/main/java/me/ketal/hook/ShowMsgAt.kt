@@ -31,6 +31,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.core.view.forEach
 import cc.ioctl.hook.profile.OpenProfileCard
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -87,6 +88,22 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
                 return
             }
         }
+    }
+
+    override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
+        if (!isEnabled) return
+
+        Log.i("----------------onGetViewNt")
+        Log.i(chatMessage.toString())
+        //if (!isEnabled || 1 != chatMessage.chatType) return
+        val elements = chatMessage.elements ?: return
+        elements.forEach {
+            if (it.textElement != null && it.textElement.atType != 0) {
+                Log.i(it.textElement.content)
+            }
+        }
+        val tv = rootView.findHostView<TextView>("ex1")
+        //tv?.text = "12345"
     }
 
     private fun copeAtInfo(textView: TextView, atList: List<*>) {

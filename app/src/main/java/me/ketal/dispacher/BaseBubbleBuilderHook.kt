@@ -25,15 +25,22 @@ package me.ketal.dispacher
 import android.view.View
 import android.view.ViewGroup
 import cc.ioctl.hook.msg.MultiForwardAvatarHook
+import cc.ioctl.util.HostInfo
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.paramCount
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.hook.HideTroopLevel
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -52,6 +59,33 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            val kBaseContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent")
+            val getView = kBaseContentComponent.declaredMethods.singleOrNull { it.name == "onCreateView" }!!
+            getView.hookAfter(this) {param->
+//                Log.d("BaseContentComponent.onCreateView")
+                if (param.result == null) return@hookAfter
+                val rootView = param.result as ViewGroup
+                var clz = param.thisObject.javaClass.superclass
+                while (clz != kBaseContentComponent) {
+                    clz = clz.superclass
+                }
+                // onCreateView时AIOMsgItem还没被设置
+                clz.method { it.paramCount == 1 && it.parameterTypes[0].name == "com.tencent.mobileqq.aio.msg.AIOMsgItem" }!!.hookBefore {
+                    val item = it.args[0]
+                    val msg = item.invoke("getMsgRecord")!! as MsgRecord
+//                    Log.i("get!!!!!!")
+                    for (decorator in decorators) {
+                        try {
+                            decorator.onGetViewNt(rootView, msg, it)
+                        } catch (e: Exception) {
+                            traceError(e)
+                        }
+                    }
+                }
+            }
+            return true
+        }
         val kBaseBubbleBuilder = Initiator.loadClass("com.tencent.mobileqq.activity.aio.BaseBubbleBuilder")
         val getView: Method? = kBaseBubbleBuilder.declaredMethods.singleOrNull { m ->
             if (m.parameterTypes.size == 6 && m.returnType == View::class.java && m.modifiers == Modifier.PUBLIC) {
@@ -81,6 +115,13 @@ interface OnBubbleBuilder {
     fun onGetView(
         rootView: ViewGroup,
         chatMessage: MsgRecordData,
+        param: XC_MethodHook.MethodHookParam
+    )
+
+    @Throws(Exception::class)
+    fun onGetViewNt(
+        rootView: ViewGroup,
+        chatMessage: MsgRecord,
         param: XC_MethodHook.MethodHookParam
     )
 }

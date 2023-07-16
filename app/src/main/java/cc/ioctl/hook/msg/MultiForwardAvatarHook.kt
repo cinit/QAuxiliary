@@ -188,6 +188,10 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
         headIconView.setOnClickListener(baseBubbleBuilderOnClick)
     }
 
+    override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: MethodHookParam) {
+        // 此处无需实现
+    }
+
     private var mLeftCheckBoxVisible: Field? = null
 
     /**
