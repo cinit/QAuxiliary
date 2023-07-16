@@ -33,6 +33,7 @@ import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
@@ -178,40 +179,43 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        nativeInitNtKernelRecallMsgHook();
-        Method revokeMsg = null;
-        for (Method m : _QQMessageFacade().getDeclaredMethods()) {
-            if (m.getReturnType().equals(void.class)) {
-                Class<?>[] argt = m.getParameterTypes();
-                if (argt.length == 2 && argt[0].equals(ArrayList.class) && argt[1]
-                        .equals(boolean.class)) {
-                    revokeMsg = m;
-                    break;
+        if (QAppUtils.isQQnt()) {
+            nativeInitNtKernelRecallMsgHook();
+        } else {
+            Method revokeMsg = null;
+            for (Method m : _QQMessageFacade().getDeclaredMethods()) {
+                if (m.getReturnType().equals(void.class)) {
+                    Class<?>[] argt = m.getParameterTypes();
+                    if (argt.length == 2 && argt[0].equals(ArrayList.class) && argt[1]
+                            .equals(boolean.class)) {
+                        revokeMsg = m;
+                        break;
+                    }
                 }
             }
+            HookUtils.hookBeforeIfEnabled(this, revokeMsg, -10086, param -> {
+                mQQMsgFacade = param.thisObject;
+                ArrayList<?> list = (ArrayList<?>) param.args[0];
+                param.setResult(null);
+                if (list == null || list.isEmpty()) {
+                    return;
+                }
+                for (Object revokeMsgInfo : list) {
+                    try {
+                        onRevokeMsgLegacy(revokeMsgInfo);
+                    } catch (Exception | LinkageError | AssertionError t) {
+                        traceError(t);
+                    }
+                }
+                list.clear();
+            });
         }
-        HookUtils.hookBeforeIfEnabled(this, revokeMsg, -10086, param -> {
-            mQQMsgFacade = param.thisObject;
-            ArrayList<?> list = (ArrayList<?>) param.args[0];
-            param.setResult(null);
-            if (list == null || list.isEmpty()) {
-                return;
-            }
-            for (Object revokeMsgInfo : list) {
-                try {
-                    onRevokeMsg(revokeMsgInfo);
-                } catch (Exception | LinkageError | AssertionError t) {
-                    traceError(t);
-                }
-            }
-            list.clear();
-        });
         return true;
     }
 
     private native boolean nativeInitNtKernelRecallMsgHook();
 
-    private void onRevokeMsg(Object revokeMsgInfo) throws Exception {
+    private void onRevokeMsgLegacy(Object revokeMsgInfo) throws Exception {
         RevokeMsgInfoImpl info = new RevokeMsgInfoImpl((Parcelable) revokeMsgInfo);
         // 1. C2C chat session, istroop=0, RevokeMsgInfo is always the same on both side. e.g.
         // istroop=0, shmsgseq=***(valid),
@@ -251,7 +255,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             return;
         }
 
-        Object msgObject = getMessage(aioSessionUin, istroop, shmsgseq, info.msgUid);
+        Object msgObject = getMessageLegacy(aioSessionUin, istroop, shmsgseq, info.msgUid);
         // long id = getMessageUid(msgObject);
         long newMsgUid;
         if (info.msgUid != 0) {
@@ -392,15 +396,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             Log.e("onRecallSysMsgForNT fatal: chatType is not c2c or troop");
             return;
         }
-        String operatorUin = RelationNTUinAndUidApi.getUinFromUid(recallOpUid);
+        // operatorUin may be empty, in the case when in a group chat, someone recalled a message by an admin or owner,
+        // but your NT kernel are not so familiar with the admin or owner, and it doesn't know the uin of the admin or owner.
         String selfUin = AppRuntimeHelper.getAccount();
         String selfUid = RelationNTUinAndUidApi.getUidFromUin(selfUin);
-        if (TextUtils.isEmpty(operatorUin)) {
-            Log.e("onRecallSysMsgForNT fatal: recallOpUin is empty");
-            // dump all available info
-            Log.e("onRecallSysMsgForNT dump: chatType=" + chatType + ", peerUid=" + peerUid + ", recallOpUid=" + recallOpUid + ", toUid=" + toUid + ", random64=" + random64 + ", timeSeconds=" + timeSeconds + ", msgUid=" + msgUid + ", msgSeq=" + msgSeq + ", msgClientSeq=" + msgClientSeq + ", operatorUin=" + operatorUin + ", selfUin=" + selfUin + ", selfUid=" + selfUid);
-            return;
-        }
         if (TextUtils.isEmpty(selfUid)) {
             Log.e("onRecallSysMsgForNT fatal: selfUid is empty");
             return;
@@ -447,6 +446,8 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     }
                 } else if (chatType == ChatTypeConstants.GROUP) {
                     String operatorName = ContactUtils.getDisplayNameForUid(recallOpUid, peerUid);
+                    String operatorUin = RelationNTUinAndUidApi.getUinFromUid(recallOpUid);
+                    // note: operatorUin may be empty, in the case when in a group chat, NT kernel are not so familiar with the one
                     // do we have the original message?
                     if (msgObject != null && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
                         // good, we have the original message
@@ -564,7 +565,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         }
     }
 
-    private Object getMessage(String uin, int istroop, long shmsgseq, long msgUid) {
+    private Object getMessageLegacy(String uin, int istroop, long shmsgseq, long msgUid) {
         List<?> list = null;
         try {
             // message is query by shmsgseq, not by time ---> queryMessagesByShmsgseqFromDB

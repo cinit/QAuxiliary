@@ -96,12 +96,13 @@ public class NtGrayTipHelper {
 
         public static class UserItem implements Item {
 
+            // after testing, uin is not really required, but better to keep it
             private final String mUin;
             private final String mUid;
             private final String mNick;
 
-            public UserItem(@NonNull String uin, @NonNull String uid, @NonNull String nick) {
-                mUin = requireValidUin(uin);
+            public UserItem(@Nullable String uin, @NonNull String uid, @NonNull String nick) {
+                mUin = uin;
                 mUid = requireValidUid(uid);
                 mNick = Objects.requireNonNull(nick);
             }
@@ -115,7 +116,9 @@ public class NtGrayTipHelper {
                 json.put("tp", "0");
                 json.put("type", "qq");
                 json.put("uid", mUid);
-                json.put("uin", mUin);
+                if (isValidateUin(mUin)) {
+                    json.put("uin", mUin);
+                }
                 return json;
             }
 
@@ -221,6 +224,25 @@ public class NtGrayTipHelper {
             throw new IllegalArgumentException("uid is not a valid uid, uid=" + uid);
         }
         return uid;
+    }
+
+    public static boolean isValidateUid(String uid) {
+        if (TextUtils.isEmpty(uid)) {
+            return false;
+        }
+        return uid.length() == 24 && uid.startsWith("u_");
+    }
+
+    public static boolean isValidateUin(String uin) {
+        if (TextUtils.isEmpty(uin)) {
+            return false;
+        }
+        try {
+            // allow uid such as 9915
+            return Long.parseLong(uin) > 0;
+        } catch (NumberFormatException e) {
+            return false;
+        }
     }
 
 }
