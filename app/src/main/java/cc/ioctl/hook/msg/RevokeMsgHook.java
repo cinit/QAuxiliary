@@ -449,7 +449,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     String operatorUin = RelationNTUinAndUidApi.getUinFromUid(recallOpUid);
                     // note: operatorUin may be empty, in the case when in a group chat, NT kernel are not so familiar with the one
                     // do we have the original message?
-                    if (msgObject != null && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
+                    if (msgObject != null && msgObject.getMsgType() != 1 && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
                         // good, we have the original message
                         // then, is the original message sent by the operator?
                         String msgAuthorUid = msgObject.getSenderUid();
