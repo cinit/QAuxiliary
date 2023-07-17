@@ -22,12 +22,12 @@
 
 package me.ketal.dispacher
 
+import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.msg.MultiForwardAvatarHook
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.paramCount
+import cc.ioctl.util.HookUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -38,7 +38,6 @@ import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
 import xyz.nextalone.hook.HideTroopLevel
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.method
 import java.lang.reflect.Method
 import java.lang.reflect.Modifier
 
@@ -58,22 +57,21 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            val kBaseContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent")
-            val kAbsAIOMsgItemComponent = kBaseContentComponent.superclass
-            val containerViewField = kAbsAIOMsgItemComponent.declaredFields.single {
-                it.type == View::class.java
-            }.also {
-                it.isAccessible = true
-            }
+            val kAIOBubbleMsgItemVB = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
+            val getHostView = kAIOBubbleMsgItemVB.getMethod("getHostView")
             val kAIOMsgItem = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-            val setAIOMsgItem = kBaseContentComponent.method {
-                it.returnType == Void.TYPE && it.paramCount == 1 && it.parameterTypes[0] == kAIOMsgItem
+            val bindMethod = kAIOBubbleMsgItemVB.declaredMethods.single {
+                val argt = it.parameterTypes
+                it.returnType == Void.TYPE && argt.size == 4 &&
+                    argt[0] == Integer.TYPE &&
+                    argt[1] == kAIOMsgItem.superclass &&
+                    argt[2] == List::class.java &&
+                    argt[3] == Bundle::class.java
             }
             val getMsgRecord = kAIOMsgItem.getMethod("getMsgRecord")
-            setAIOMsgItem!!.hookAfter {
-                val item = it.args[0]
-                val rootView = containerViewField.get(it.thisObject) as ViewGroup
-                val msg = getMsgRecord.invoke(item) as MsgRecord
+            HookUtils.hookAfterAlways(this, bindMethod, 50) {
+                val msg = getMsgRecord.invoke(it.args[1]) as MsgRecord
+                val rootView = getHostView.invoke(it.thisObject) as ViewGroup
                 for (decorator in decorators) {
                     try {
                         decorator.onGetViewNt(rootView, msg, it)
