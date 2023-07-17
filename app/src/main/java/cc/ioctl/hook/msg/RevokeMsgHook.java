@@ -374,19 +374,19 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
      * We are not allowed to throw any exception in this method.
      */
     @Keep
-    private static void handleRecallSysMsgFromNtKernel(int chatType, String peerUid, String recallOpUid, String toUid,
-            long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) {
+    private static void handleRecallSysMsgFromNtKernel(int chatType, String peerUid, String recallOpUid, String msgAuthorUid,
+            String toUid, long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) {
         SyncUtils.async(() -> {
             try {
-                RevokeMsgHook.INSTANCE.onRecallSysMsgForNT(chatType, peerUid, recallOpUid, toUid, random64, timeSeconds,
-                        msgUid, msgSeq, msgClientSeq);
+                RevokeMsgHook.INSTANCE.onRecallSysMsgForNT(chatType, peerUid, recallOpUid, msgAuthorUid, toUid,
+                        random64, timeSeconds, msgUid, msgSeq, msgClientSeq);
             } catch (Exception | LinkageError | AssertionError e) {
                 RevokeMsgHook.INSTANCE.traceError(e);
             }
         });
     }
 
-    private void onRecallSysMsgForNT(int chatType, String peerUid, String recallOpUid, String toUid,
+    private void onRecallSysMsgForNT(int chatType, String peerUid, String recallOpUid, String msgAuthorUid, String toUid,
             long random64, long timeSeconds, long msgUid, long msgSeq, int msgClientSeq) throws ReflectiveOperationException {
         if (TextUtils.isEmpty(peerUid)) {
             Log.e("onRecallSysMsgForNT fatal: peerUid is empty");
@@ -402,6 +402,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         String selfUid = RelationNTUinAndUidApi.getUidFromUin(selfUin);
         if (TextUtils.isEmpty(selfUid)) {
             Log.e("onRecallSysMsgForNT fatal: selfUid is empty");
+            return;
+        }
+        if (TextUtils.isEmpty(msgAuthorUid)) {
+            Log.e("onRecallSysMsgForNT fatal: msgAuthorUid is empty");
             return;
         }
         if (selfUid.equals(recallOpUid)) {
@@ -452,7 +456,6 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     if (msgObject != null && msgObject.getMsgType() != 1 && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
                         // good, we have the original message
                         // then, is the original message sent by the operator?
-                        String msgAuthorUid = msgObject.getSenderUid();
                         long msgAuthorUin = msgObject.getSenderUin();
                         String msgAuthorName = getMsgSenderReferenceName(msgObject, true);
                         if (recallOpUid.equals(msgAuthorUid)) {
@@ -470,10 +473,15 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                             summary = operatorName + "尝试撤回" + msgAuthorName + "的一条消息";
                         }
                     } else {
-                        // we don't have the original message, so we can't get the sender's name
+                        // we don't have the original message
+                        String msgAuthorName = ContactUtils.getDisplayNameForUid(msgAuthorUid, peerUid);
+                        String msgAuthorUin = RelationNTUinAndUidApi.getUinFromUid(msgAuthorUid);
+                        // msgAuthorUin may be empty, in the case when in a group chat, NT kernel are not so familiar with the one
                         builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
-                        builder.appendText("撤回了一条消息(没收到) [seq=" + msgSeq + "]");
-                        summary = operatorName + "撤回了一条消息(没收到)";
+                        builder.appendText("撤回了");
+                        builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(msgAuthorUin), msgAuthorUid, msgAuthorName));
+                        builder.appendText("的一条消息(没收到) [seq=" + msgSeq + "]");
+                        summary = operatorName + "撤回了" + msgAuthorName + "的一条消息(没收到)";
                     }
                 } else {
                     throw new AssertionError("onRecallSysMsgForNT chatType=" + chatType);

@@ -148,8 +148,8 @@ public:
 };
 
 
-void NotifyRecallSysMsgEvent(int chatType, const std::string& peerUid, const std::string& recallOpUid, const std::string& toUid,
-                             uint64_t random64, uint64_t timeSeconds, uint64_t msgUid, uint64_t msgSeq, uint32_t msgClientSeq) {
+void NotifyRecallSysMsgEvent(int chatType, const std::string& peerUid, const std::string& recallOpUid, const std::string& msgAuthorUid,
+                             const std::string& toUid, uint64_t random64, uint64_t timeSeconds, uint64_t msgUid, uint64_t msgSeq, uint32_t msgClientSeq) {
     JavaVM* vm = HostInfo::GetJavaVM();
     if (vm == nullptr) {
         LOGE("NotifyRecallSysMsgEvent fatal vm == null");
@@ -176,8 +176,8 @@ void NotifyRecallSysMsgEvent(int chatType, const std::string& peerUid, const std
     // call java method
     env->CallStaticVoidMethod(klassRevokeMsgHook, handleRecallSysMsgFromNtKernel,
                               jint(chatType), env->NewStringUTF(peerUid.c_str()), env->NewStringUTF(recallOpUid.c_str()),
-                              env->NewStringUTF(toUid.c_str()), jlong(random64), jlong(timeSeconds),
-                              jlong(msgUid), jlong(msgSeq), jint(msgClientSeq));
+                              env->NewStringUTF(msgAuthorUid.c_str()), env->NewStringUTF(toUid.c_str()),
+                              jlong(random64), jlong(timeSeconds), jlong(msgUid), jlong(msgSeq), jint(msgClientSeq));
     // check if exception occurred
     if (env->ExceptionCheck()) {
         env->ExceptionDescribe();
@@ -192,12 +192,12 @@ void NotifyRecallSysMsgEvent(int chatType, const std::string& peerUid, const std
 void NotifyRecallMsgEventForC2c(const std::string& fromUid, const std::string& toUid,
                                 uint64_t random64, uint64_t timeSeconds,
                                 uint64_t msgUid, uint64_t msgSeq, uint32_t msgClientSeq) {
-    NotifyRecallSysMsgEvent(1, fromUid, fromUid, toUid, random64, timeSeconds, msgUid, msgSeq, msgClientSeq);
+    NotifyRecallSysMsgEvent(1, fromUid, fromUid, fromUid, toUid, random64, timeSeconds, msgUid, msgSeq, msgClientSeq);
 }
 
-void NotifyRecallMsgEventForGroup(const std::string& peerUid, const std::string& recallOpUid,
+void NotifyRecallMsgEventForGroup(const std::string& peerUid, const std::string& recallOpUid, const std::string& msgAuthorUid,
                                   uint64_t random64, uint64_t timeSeconds, uint64_t msgSeq) {
-    NotifyRecallSysMsgEvent(2, peerUid, recallOpUid, peerUid, random64, timeSeconds, 0, msgSeq, 0);
+    NotifyRecallSysMsgEvent(2, peerUid, recallOpUid, msgAuthorUid, peerUid, random64, timeSeconds, 0, msgSeq, 0);
 }
 
 
@@ -272,6 +272,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
     }
     std::array<void*, 3> vectorResultStub = {nullptr, nullptr, nullptr};
     vcall_x8<0xf0, 8, int>(optMsgRecall[0], &vectorResultStub, 3);
+    std::string recallOpUid = ThunkGetStringProperty(optMsgRecall[0], 1);
     const auto& msgInfoList = *reinterpret_cast<const std::vector<RevokeMsgInfoAccess::UnknownObjectStub16>*>(&vectorResultStub);
     if (msgInfoList.empty()) {
         LOGE("HandleGroupRecallSysMsgCallback: on recall group sys msg! no any msg info");
@@ -282,12 +283,12 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
         uint32_t msgSeq = ThunkGetInt32Property(msgInfo._unk0_8, 1);
         uint32_t random = ThunkGetInt32Property(msgInfo._unk0_8, 3);
         uint64_t time = ThunkGetInt64Property(msgInfo._unk0_8, 2);
-        std::string recallOpUid = ThunkGetStringProperty(msgInfo._unk0_8, 6);
+        std::string msgAuthorUid = ThunkGetStringProperty(msgInfo._unk0_8, 6);
 
         // Unfortunately, I didn't find a way to find the origMsgSenderUid.
         // The only thing we can do is to get message by msgSeq, and get senderUid from it, iff we have the message.
 
-        NotifyRecallMsgEventForGroup(peerUid, recallOpUid, random, time, msgSeq);
+        NotifyRecallMsgEventForGroup(peerUid, recallOpUid, msgAuthorUid, random, time, msgSeq);
     }
 }
 
@@ -502,7 +503,7 @@ Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHook(JNIEnv* env
         klassRevokeMsgHook = (jclass) env->NewGlobalRef(clazz);
         gInstanceRevokeMsgHook = env->NewGlobalRef(thiz);
         handleRecallSysMsgFromNtKernel = env->GetStaticMethodID(clazz, "handleRecallSysMsgFromNtKernel",
-                                                                "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJJI)V");
+                                                                "(ILjava/lang/String;Ljava/lang/String;Ljava/lang/String;Ljava/lang/String;JJJJI)V");
         if (handleRecallSysMsgFromNtKernel == nullptr) {
             LOGE("InitInitNtKernelRecallMsgHook failed, GetStaticMethodID failed");
             return false;
