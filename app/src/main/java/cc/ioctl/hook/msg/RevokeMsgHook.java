@@ -472,7 +472,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     } else {
                         // we don't have the original message, so we can't get the sender's name
                         builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
-                        builder.appendText("撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
+                        builder.appendText("撤回了一条消息(没收到) [seq=" + msgSeq + "]");
                         summary = operatorName + "撤回了一条消息(没收到)";
                     }
                 } else {
