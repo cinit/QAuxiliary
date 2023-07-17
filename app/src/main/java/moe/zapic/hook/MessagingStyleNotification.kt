@@ -264,7 +264,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 .setIcon(mainIcon)
                 .setKey(mainUin.toString())
                 .build())
-            messageStyle.conversationTitle = senderName
+            messageStyle.conversationTitle = mainName
             historyMessage["$mainUin"] = messageStyle
         }
         var senderPerson: Person? = null
