@@ -25,11 +25,11 @@ import android.app.Activity
 import android.view.View
 import android.widget.TextView
 import cc.ioctl.util.Reflex
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
 import me.ketal.util.findClass
@@ -59,37 +59,60 @@ object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
                 val thisObj = it.thisObject as Activity
                 val isHooked = thisObj.intent.getBooleanExtra("bEnterToSelect", false)
                 if (!isHooked) return@hookAfter
-                val tv = findCancelTV(
+                val tv = findTitleTV(
                     thisObj,
                     "com.qqfav.activity.QfavBaseActivity".findClass(classLoader)
-                )
-                val logic = Reflex.newInstance(
-                    "com.qqfav.activity.FavoriteGroupLogic".findClass(classLoader),
-                    thisObj, tv, thisObj::class.java, View::class.java
-                )
-                tv?.setOnClickListener {
-                    throwOrTrue {
-                        Reflex.invokeVirtual(logic, "b")
-                        val menu = logic.get("b", View::class.java)
-                            ?: logic.get("f", View::class.java) !!
-                        if (menu.height == 0 || menu.visibility != View.VISIBLE) {
-                            // show
-                            Reflex.invokeVirtual(logic, "a")
-                        } else {
-                            // hide
-                            Reflex.invokeVirtual(logic, "a", true, Boolean::class.java)
+                )!!
+                try {
+                    val logic = Reflex.newInstance(
+                        "com.qqfav.activity.FavoriteGroupLogic".findClass(classLoader),
+                        thisObj, tv, thisObj::class.java, View::class.java
+                    )
+
+                    tv.setOnClickListener {
+                        throwOrTrue {
+                            Reflex.invokeVirtual(logic, "b")
+                            val menu = logic.get("b", View::class.java)
+                                ?: logic.get("f", View::class.java)!!
+                            if (menu.height == 0 || menu.visibility != View.VISIBLE) {
+                                // show
+                                Reflex.invokeVirtual(logic, "a")
+                            } else {
+                                // hide
+                                Reflex.invokeVirtual(logic, "a", true, Boolean::class.java)
+                            }
                         }
                     }
+                } catch (_: Exception) {
+                    val logic = Reflex.newInstance(
+                        "com.qqfav.activity.a".findClass(classLoader),
+                        thisObj, tv, thisObj::class.java, View::class.java
+                    )
+
+                    tv.setOnClickListener {
+                        throwOrTrue {
+                            Reflex.invokeVirtual(logic, "a")
+                            val menu = logic.get("h", View::class.java)!!
+                            if (menu.height == 0 || menu.visibility != View.VISIBLE) {
+                                // show
+                                Reflex.invokeVirtual(logic, "f")
+                            } else {
+                                // hide
+                                Reflex.invokeVirtual(logic, "b", true, Boolean::class.java)
+                            }
+                        }
+                    }
+
                 }
             }
     }
 
-    private fun findCancelTV(thisObject: Any, clazz: Class<*>): TextView? {
+    private fun findTitleTV(thisObject: Any, clazz: Class<*>): TextView? {
         for (field in clazz.declaredFields) {
             field.isAccessible = true
             if (field[thisObject] is TextView) {
                 val tv = field[thisObject] as TextView
-                if (tv.text == "取消") {
+                if (tv.text == "选择收藏") {
                     tv.text = "选择分组"
                     return tv
                 }
