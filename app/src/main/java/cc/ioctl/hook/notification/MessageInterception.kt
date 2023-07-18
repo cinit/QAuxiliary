@@ -67,8 +67,10 @@ object MessageInterception : BasePersistBackgroundHook() {
                 Int::class.java
             ).hookAfter(this, callback)
             // I don't know what will the 3rd method do
+            // updateMsgTab
             Initiator._C2CMessageManager().methodWithSuper(
                 when {
+                    requireMinQQVersion(QQVersion.QQ_8_9_63) -> "y0"
                     requireMinQQVersion(QQVersion.QQ_8_9_3) -> "E0"
                     requireMinQQVersion(QQVersion.QQ_8_8_93) -> "A0"
                     else -> "d"
