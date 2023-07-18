@@ -86,12 +86,14 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
             is TextView -> {
                 copeAtInfo(content, atList)
             }
+
             is ViewGroup -> {
                 content.forEach {
                     if (it is TextView)
                         copeAtInfo(it, atList)
                 }
             }
+
             else -> {
                 Log.d("暂不支持的控件类型--->$content")
                 return
@@ -134,7 +136,8 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         }
     }
 
-    private fun createAtSpanBySearch(text: String, atElements: List<TextElement>): SpannableString {
+    private fun setAtSpanBySearch(textView: TextView, atElements: List<TextElement>) {
+        val text = textView.text
         val ssb = SpannableString(text)
         for (at in atElements) {
             if (at.content.length >= 2) {
@@ -145,7 +148,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
                 ssb.setSpan(createClickSpanForUid(uid), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
-        return ssb
+        textView.text = ssb
     }
 
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
@@ -167,8 +170,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         val tv = rootView.findHostView<TextView>("ex1")
         // TODO 2023-07-16 有时候 ex1 会为空
         tv?.let {
-            val spannable = createAtSpanBySearch(tv.text.toString(), atElements)
-            tv.text = spannable
+            setAtSpanBySearch(it, atElements)
         }
     }
 
