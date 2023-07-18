@@ -373,7 +373,8 @@ public class Initiator {
     }
 
     public static Class<?> _TroopMemberLevelView() {
-        return findClassWithSynthetics("com.tencent.mobileqq.troop.troopMemberLevel.TroopMemberNewLevelView",
+        return findClassWithSynthetics("com.tencent.qqnt.aio.nick.memberlevel.TroopMemberLevelView",
+                "com.tencent.mobileqq.troop.troopMemberLevel.TroopMemberNewLevelView",
                 "com.tencent.mobileqq.troop.widget.troopmemberlevel.TroopMemberNewLevelView");
     }
 

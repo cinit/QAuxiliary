@@ -22,10 +22,13 @@
 package xyz.nextalone.hook
 
 import android.view.ViewGroup
+import android.widget.LinearLayout
+import androidx.core.view.children
 import androidx.core.view.isVisible
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.ntapi.ChatTypeConstants
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._TroopMemberLevelView
@@ -69,7 +72,16 @@ object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
     }
 
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
-        if (!isEnabled) return
-
+        if (!isEnabled || chatMessage.chatType != ChatTypeConstants.GROUP) return
+        if (levelClass == null) return
+        val levelView = rootView.findViewByType(levelClass) ?: return
+        val sendUin = chatMessage.senderUin.toString()
+        val troopInfo = TroopInfo(chatMessage.peerUid)
+        val ownerUin = troopInfo.troopOwnerUin
+        val admin = troopInfo.troopAdmin
+        val isAdmin = admin?.contains(sendUin) == true || ownerUin == sendUin
+        //levelView.children.filter { it !is TextView }.forEach { it.visibility = android.view.View.GONE }
+        // 如果forEach，则会隐藏昵称右侧的部分图标
+        (levelView as LinearLayout).children.first().isVisible = isAdmin
     }
 }
