@@ -261,13 +261,6 @@ public class Natives {
                     return;
                 } catch (UnsatisfiedLinkError e1) {
                     throwIfJniError(e1);
-                    String errMsg = e1.getMessage();
-                    if (errMsg != null && errMsg.contains(" EM_")) {
-                        // linker or native bridge is complaining about the ELF machine type, try next
-                    } else {
-                        // older linker doesn't support memory map, try extract and dlopen
-                        break;
-                    }
                 }
             }
         }
