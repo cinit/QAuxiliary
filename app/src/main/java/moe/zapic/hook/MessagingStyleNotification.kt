@@ -88,12 +88,12 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         if (!HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
             return NonNTMessageStyleNotification(this).hook()
         }
-        val cNotificationFacede = "com.tencent.qqnt.notification.NotificationFacade".clazz!!
+        val cNotificationFacade = "com.tencent.qqnt.notification.NotificationFacade".clazz!!
         val cAppRuntime = "mqq.app.AppRuntime".clazz!!
         val cCommonInfo = "com.tencent.qqnt.kernel.nativeinterface.NotificationCommonInfo".clazz!!
         val cRecentInfo = "com.tencent.qqnt.kernel.nativeinterface.RecentContactInfo".clazz!!
         val postNotification = Reflex.findSingleMethod(
-            cNotificationFacede,
+            cNotificationFacade,
             null,
             false,
             Notification::class.java,
@@ -101,7 +101,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         )
         lateinit var buildNotification: Method
         lateinit var recentInfoBuilder: Method
-        cNotificationFacede.declaredMethods.forEach {
+        cNotificationFacade.declaredMethods.forEach {
             if (it.parameterTypes.size != 3) return@forEach
             if (it.parameterTypes[0] != cAppRuntime) return@forEach
             if (it.parameterTypes[2] == cCommonInfo) {
@@ -143,19 +143,23 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 var groupIcon: IconCompat? = null
 
                 // 好友消息
-                if (info.chatType == 1) {
-                    senderIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
-                    shortcut = getShortcut("private_$senderUin", senderName, senderIcon, pair.second)
-                } else if (info.chatType == 2) {
-                    groupName = info.peerName ?: return@hookBeforeIfEnabled
-                    groupUin = info.peerUin ?: return@hookBeforeIfEnabled
+                when (info.chatType) {
+                    1 -> {
+                        senderIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
+                        shortcut = getShortcut("private_$senderUin", senderName, senderIcon, pair.second)
+                    }
+                    2 -> {
+                        groupName = info.peerName ?: return@hookBeforeIfEnabled
+                        groupUin = info.peerUin ?: return@hookBeforeIfEnabled
 
-                    senderIcon = avatarHelper.getAvatar(senderUin.toString()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
-                    groupIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
-                    shortcut = getShortcut("group_$groupUin", groupName, groupIcon, pair.second)
-                } else {
-                    // Impossible
-                    throw Error("what the hell?")
+                        senderIcon = avatarHelper.getAvatar(senderUin.toString()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
+                        groupIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
+                        shortcut = getShortcut("group_$groupUin", groupName, groupIcon, pair.second)
+                    }
+                    else -> {
+                        // Impossible
+                        throw Error("what the hell?")
+                    }
                 }
                 val notification = createNotification(
                     content,
