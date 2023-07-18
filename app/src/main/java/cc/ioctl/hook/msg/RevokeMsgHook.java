@@ -181,7 +181,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        nativeInitNtKernelRecallMsgHook();
+        if (QAppUtils.isQQnt()) {
+            nativeInitNtKernelRecallMsgHook();
+        }
         // The method is still there, even on NT.
         // I decided to hook them as long as they are there.
         // There should only be one method with such signature.
