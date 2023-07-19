@@ -47,7 +47,7 @@ import java.lang.reflect.Field
 object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
 
     override val name = "移除侧滑栏左上角打卡"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
 
     override val isAvailable: Boolean get() = !isTim()
 
@@ -56,6 +56,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
         val callback = HookUtils.afterIfEnabled(this) { param ->
             // em_drawer_sign_up
             val dailySignName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_68) -> "h0"
                 requireMinQQVersion(QQVersion.QQ_8_9_28) -> "i0"
                 requireMinQQVersion(QQVersion.QQ_8_9_25) -> "h0"
                 // gap
