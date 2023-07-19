@@ -22,6 +22,7 @@
 
 package me.ketal.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.text.SpannableStringBuilder
@@ -32,17 +33,21 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import android.view.ViewStub
 import android.widget.EditText
+import android.widget.FrameLayout
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.core.view.children
 import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.lxj.xpopup.util.XPopupUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.R
@@ -82,6 +87,12 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     private const val DEFAULT_MSG_FORMAT = "\${shmsgseq}   \${formatTime}"
     private const val DEFAULT_TIME_FORMAT = "yyyy-MM-dd HH:mm:ss"
 
+    // For NT
+    private const val ID_ADD_LAYOUT = 0x114515
+    private const val ID_ADD_TEXTVIEW = 0x114516
+    private const val ID_BUBBLE_LAYOUT = 0x7f0a10ed
+    private const val ID_TAIL_LAYOUT = 0x7f0a3984
+
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
     }
@@ -108,6 +119,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             ConfigManager.getDefaultConfig().putBoolean(CFG_KEY_ENABLE_DETAIL_INFO, value)
         }
 
+    @SuppressLint("SetTextI18n")
     private fun showConfigDialog(ctx: Context) {
         val timeFormat = mCurrentTimeFormat
         val msgFormat = mCurrentMsgFormat
@@ -285,9 +297,76 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         pfnSetTailMessage.invoke(rootView, true, text, if (mEnableDetailInfo) mOnTailMessageClickListener else null)
     }
 
+    private fun formatTailMessageNt(chatMessage: MsgRecord): String {
+        // TODO NT数据类型换血
+        val msgFmt = mCurrentMsgFormat
+        val timeFmt = mCurrentTimeFormat
+        var formatTime = ""
+        if (msgFmt.contains("\${formatTime}")) {
+            if (mDataFormatter == null) {
+                mDataFormatter = SimpleDateFormat(timeFmt, Locale.ROOT)
+            }
+            formatTime = mDataFormatter!!.format(Date(chatMessage.msgTime * 1000L))
+        }
+        return msgFmt
+            .replace("\${senderuin}", chatMessage.senderUin.toString())
+            .replace("\${frienduin}", chatMessage.peerUin.toString())
+            .replace("\${msgtype}", chatMessage.msgType.toString())
+            .replace("\${readableMsgType}", "")
+            .replace("\${extraflag}", "")
+            .replace("\${extStr}", "")
+            .replace("\${formatTime}", formatTime)
+            .replace("\${time}", chatMessage.msgTime.toString())
+            .replace("\${msg}", chatMessage.elements.joinToString { it.toString() })
+            .replace("\${istroop}", "")
+            .replace("\${issend}", chatMessage.sendStatus.toString())
+            .replace("\${isread}", "")
+            .replace("\${msgUid}", "")
+            .replace("\${shmsgseq}", chatMessage.msgSeq.toString())
+            .replace("\${uniseq}", "")
+            .replace("\${simpleName}", chatMessage.javaClass.simpleName)
+    }
+
+    @SuppressLint("ResourceType", "SetTextI18n")
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
 
+        val tailLayout = try {
+            rootView.findViewById(ID_TAIL_LAYOUT) ?: return
+        } catch (_: Exception) {
+            val stub = rootView.findViewById<ViewStub>(ID_TAIL_LAYOUT) ?: return
+            stub.inflate() as FrameLayout
+        }
+        if (!tailLayout.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
+            val layout = LinearLayout(rootView.context).apply {
+                layoutParams = LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT,
+                    LinearLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    marginStart = XPopupUtils.dp2px(rootView.context, 12f)
+                    // 因为tailLayout是FrameLayout，所以继承了会和原消息tailMessage重叠的特性
+                }
+                // 灰色背景不想搞了，弄圆角麻烦
+                id = ID_ADD_LAYOUT
+            }
+            val textView = TextView(rootView.context).apply {
+                id = ID_ADD_TEXTVIEW
+                setOnClickListener {
+                    // 或者不用tag，像上面mOnTailMessageClickListener一样通过view获取message
+                    // Dialog细节没有考虑，MsgRecord里面的冗余内容很多，可考虑格式化/选择性展示
+                    val msgRecord = it.tag as MsgRecord
+                    FaultyDialog.show(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
+                }
+            }
+            layout.addView(textView)
+            tailLayout.addView(layout)
+        }
+
+        rootView.findViewById<TextView>(ID_ADD_TEXTVIEW).let {
+            it.tag = chatMessage
+            it.text = formatTailMessageNt(chatMessage)
+            // TODO 加上闪照信息 现在FlashPicHook了getSubMsgType之后不太好分辨是不是闪照了
+        }
     }
 
     private fun isFlashPic(chatMessage: MsgRecordData): Boolean {
