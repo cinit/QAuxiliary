@@ -44,8 +44,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.isTim
+import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
@@ -63,6 +65,8 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
     override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
+
+    private val NAME_TEXTVIEW = if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "ewl" else "ewk"
 
     override fun initOnce(): Boolean {
         return !isTim() && BaseBubbleBuilderHook.initialize()
@@ -167,11 +171,9 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         if (atElements.isEmpty()) {
             return
         }
-        val tv = rootView.findHostView<TextView>("ex1")
-        // TODO 2023-07-16 有时候 ex1 会为空
-        tv?.let {
-            setAtSpanBySearch(it, atElements)
-        }
+        val tv = rootView.findHostView<TextView>(NAME_TEXTVIEW) ?: throw Exception("TextView not found")
+        // TODO 2023-07-19 更稳定查找TextView
+        setAtSpanBySearch(tv, atElements)
     }
 
     private fun copeAtInfo(textView: TextView, atList: List<*>) {

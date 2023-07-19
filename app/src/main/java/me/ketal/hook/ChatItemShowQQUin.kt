@@ -59,11 +59,14 @@ import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.method
 import java.lang.reflect.Method
 import java.text.SimpleDateFormat
@@ -90,8 +93,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     // For NT
     private const val ID_ADD_LAYOUT = 0x114515
     private const val ID_ADD_TEXTVIEW = 0x114516
-    private const val ID_BUBBLE_LAYOUT = 0x7f0a10ed
-    private const val ID_TAIL_LAYOUT = 0x7f0a3984
+    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "s3o" else "rzs"
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
@@ -329,12 +331,14 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     @SuppressLint("ResourceType", "SetTextI18n")
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
-        if (!isEnabled) return
+        // 因为tailMessage是自己添加的，所以闪照文字也放这里处理
+        val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
+        if (!isEnabled && !isFlashPicTagNeedShow) return
 
         val tailLayout = try {
-            rootView.findViewById(ID_TAIL_LAYOUT) ?: return
+            rootView.findHostView(NAME_TAIL_LAYOUT) ?: throw Exception("TailLayout not found")
         } catch (_: Exception) {
-            val stub = rootView.findViewById<ViewStub>(ID_TAIL_LAYOUT) ?: return
+            val stub = rootView.findHostView<ViewStub>(NAME_TAIL_LAYOUT) ?: return
             stub.inflate() as FrameLayout
         }
         if (!tailLayout.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
@@ -343,7 +347,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT
                 ).apply {
-                    marginStart = XPopupUtils.dp2px(rootView.context, 12f)
+                    marginStart = XPopupUtils.dp2px(rootView.context, 15f)
                     // 因为tailLayout是FrameLayout，所以继承了会和原消息tailMessage重叠的特性
                 }
                 // 灰色背景不想搞了，弄圆角麻烦
@@ -351,9 +355,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             }
             val textView = TextView(rootView.context).apply {
                 id = ID_ADD_TEXTVIEW
+                textSize = 12f
                 setOnClickListener {
                     // 或者不用tag，像上面mOnTailMessageClickListener一样通过view获取message
                     // Dialog细节没有考虑，MsgRecord里面的冗余内容很多，可考虑格式化/选择性展示
+                    if (!mEnableDetailInfo) return@setOnClickListener
                     val msgRecord = it.tag as MsgRecord
                     FaultyDialog.show(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
                 }
@@ -364,8 +370,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
         rootView.findViewById<TextView>(ID_ADD_TEXTVIEW).let {
             it.tag = chatMessage
-            it.text = formatTailMessageNt(chatMessage)
-            // TODO 加上闪照信息 现在FlashPicHook了getSubMsgType之后不太好分辨是不是闪照了
+            it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
         }
     }
 
@@ -373,5 +378,13 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         val msgtype = chatMessage.msgType
         return (msgtype == -2000 || msgtype == -2006) &&
             chatMessage.getExtInfoFromExtStr("commen_flash_pic").isNotEmpty()
+    }
+
+    private fun isFlashPicNt(chatMessage: MsgRecord): Boolean {
+        return chatMessage.javaClass.getDeclaredField("subMsgType").run {
+            isAccessible = true
+            val subMsgType = getInt(chatMessage)
+            subMsgType == 8194 || subMsgType == 12288
+        }
     }
 }
