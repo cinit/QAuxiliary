@@ -38,7 +38,6 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -48,6 +47,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -160,6 +160,10 @@ public class OptXListViewScrollBar extends CommonConfigFunctionHook {
         XposedBridge.hookMethod(ctorScrollView, hook);
         if (ctor3 != null) {
             XposedBridge.hookMethod(ctor3, hook);
+        }
+        Class<?> kRecyclerView = Initiator.load("androidx.recyclerview.widget.RecyclerView");
+        if (kRecyclerView != null) {
+            XposedBridge.hookAllConstructors(kRecyclerView, hook);
         }
         return true;
     }
