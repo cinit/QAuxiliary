@@ -32,6 +32,7 @@ import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
+import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.dexkit.AIO_Create_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
@@ -50,7 +51,8 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
     private static final SessionHooker.IAIOParamUpdate[] DECORATORS = {
             StickerPanelEntryHooker.INSTANCE,
             MultiActionHook.INSTANCE,
-            RepeaterPlus.INSTANCE
+            RepeaterPlus.INSTANCE,
+            InputButtonHookDispatcher.INSTANCE
     };
 
     @NonNull

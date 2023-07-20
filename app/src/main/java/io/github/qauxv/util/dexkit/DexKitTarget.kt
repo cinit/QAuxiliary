@@ -690,6 +690,13 @@ data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
 }
 
+data object AIO_InputRootInit_QQNT : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("inputRoot.findViewById(R.id.send_btn)")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
+}
+
 data object EmoMsgUtils_isSingleLottie_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("is Valid EmojiFaceId")

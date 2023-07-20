@@ -29,13 +29,17 @@ import android.os.Parcelable;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
-import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
-import cc.ioctl.hook.experimental.CardMsgSender;
-import cc.ioctl.util.HookUtils;
+import cc.hicore.QApp.QAppUtils;
+import cc.hicore.ReflectUtil.MRes;
 import cc.hicore.hook.ReplyMsgWithImg;
+import cc.hicore.message.chat.SessionHooker;
+import cc.ioctl.hook.experimental.CardMsgSender;
+import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
+import cc.ioctl.util.HookUtils;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -48,27 +52,34 @@ import io.github.qauxv.ui.widget.InterceptLayout;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.dexkit.AIO_InputRootInit_QQNT;
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
 import io.github.qauxv.util.dexkit.CFaceDe;
 import io.github.qauxv.util.dexkit.CTestStructMsg;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import mqq.app.AppRuntime;
 
 @FunctionHookEntry
-public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDecorator> {
+public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDecorator> implements SessionHooker.IAIOParamUpdate {
 
     public static final InputButtonHookDispatcher INSTANCE = new InputButtonHookDispatcher();
+
+    // NT Only
+    public static Object AIOParam;
+
 
     private InputButtonHookDispatcher() {
         super(new DexKitTarget[]{
                 CArkAppItemBubbleBuilder.INSTANCE,
                 CFaceDe.INSTANCE,
                 NBaseChatPie_init.INSTANCE,
-                CTestStructMsg.INSTANCE
+                CTestStructMsg.INSTANCE,
+                AIO_InputRootInit_QQNT.INSTANCE
         });
     }
 
@@ -87,6 +98,55 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
 
     @Override
     public boolean initOnce() throws Exception {
+        if (QAppUtils.isQQnt()) {
+            HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT.INSTANCE), 40, param -> {
+                Button sendBtn = null;
+                EditText editText = null;
+                Field[] fs = param.thisObject.getClass().getDeclaredFields();
+                for (Field f : fs) {
+                    Class<?> type = f.getType();
+                    if (type.equals(Button.class)) {
+                        f.setAccessible(true);
+                        if ("send_btn".equals(MRes.getViewResName((View) f.get(param.thisObject)))) {
+                            sendBtn = (Button) f.get(param.thisObject);
+                        }
+                    } else if (type.equals(EditText.class)) {
+                        f.setAccessible(true);
+                        editText = (EditText) f.get(param.thisObject);
+                    }
+                }
+                if (sendBtn != null && editText != null) {
+                    EditText finalEditText = editText;
+                    Button finalSendBtn = sendBtn;
+                    sendBtn.setOnLongClickListener(v -> {
+                        Context ctx = v.getContext();
+                        String text = finalEditText.getText().toString();
+                        Toasts.info(ctx, text);
+                        // TODO: AIOParam是不是onFunBtnLongClick的第二个参数？以及qqApp参数的获取
+//                        if (((TextView) v).length() == 0) { //|| !CardMsgHook.INSTANCE.isEnabled()
+//                            return false;
+//                        }
+//                        for (IBaseChatPieDecorator decorator : DECORATORS) {
+//                            if (decorator instanceof IInputButtonDecorator) {
+//                                IInputButtonDecorator d = (IInputButtonDecorator) decorator;
+//                                try {
+//                                    if (d.isEnabled() && d.onFunBtnLongClick(text, (Parcelable) AIOParam, finalEditText, finalSendBtn, ctx, null)) {
+//                                        return true;
+//                                    }
+//                                } catch (Throwable e) {
+//                                    decorator.traceError(e);
+//                                }
+//                            }
+//                        }
+                        // TODO: BaseChatPie已不存在，onInitBaseChatPie何去何从
+                        return true;
+                    });
+                } else {
+                    Log.e("send_btn field not found");
+                }
+            });
+            return true;
+        }
         //Begin: send btn
         HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(NBaseChatPie_init.INSTANCE), 40,
                 param -> {
@@ -211,5 +271,10 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
 
     public static Parcelable getSessionInfo(@NonNull Object baseChatPie) {
         return getFirstNSFByType(baseChatPie, _SessionInfo());
+    }
+
+    @Override
+    public void onAIOParamUpdate(Object AIOParam) {
+        InputButtonHookDispatcher.AIOParam = AIOParam;
     }
 }
