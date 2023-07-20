@@ -101,11 +101,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
                             try {
                                 (it.get(param.thisObject)!!.invoke("getMsgRecord")!! as MsgRecord).let {
                                     val senderUin = it.senderUin   //对方QQ
-                                    val troopUin = try {
-                                        it.peerUid.toLong() //对方，如果是群聊则是群号，如果是私聊则是u_串
-                                    } catch (_: NumberFormatException) {
-                                        null
-                                    }
+                                    val troopUin = if (it.peerUin != senderUin) it.peerUin else null
                                     createAndShowDialogCommon(layout!!.context, it, senderUin, troopUin)
                                 }
                             } catch (e: Exception) {
@@ -218,7 +214,8 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
     @UiThread
     private fun createAndShowDialogCommon(hostContext: Context, msg: Any, senderUin: Long, troopUin: Long?) {
         check(senderUin > 0) { "senderUin must be positive, got $senderUin" }
-        check(troopUin == null || troopUin > 0) { "troopUin must be positive or null, got $troopUin" }
+        //check(troopUin == null || troopUin > 0) { "troopUin must be positive or null, got $troopUin" }
+        // 2023.7.20 NT版收到的合并转发中群号变为0
         val ctx = CommonContextWrapper.createAppCompatContext(hostContext)
         val dialog = CustomDialog.createFailsafe(ctx).setTitle(Reflex.getShortClassName(msg))
             .setPositiveButton("确认", null).setCancelable(true)
@@ -231,8 +228,10 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils)), On
         ll.setPadding(p, p / 3, p, p / 3)
         if (troopUin != null) {
             // troop
-            HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "群号", troopUin.toString(), ll, true) {
-                OpenProfileCard.openTroopProfileActivity(ctx, troopUin.toString())
+            HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "群号", if (troopUin == 0L) "未获取到" else troopUin.toString(), ll, true) {
+                if (troopUin != 0L) {
+                    OpenProfileCard.openTroopProfileActivity(ctx, troopUin.toString())
+                }
             }
             HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "成员", senderUin.toString(), ll, true) {
                 if (senderUin > 10000) {
