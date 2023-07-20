@@ -34,11 +34,8 @@ import java.util.List;
 public class ICreator extends BottomPopupView implements AbsListView.OnScrollListener {
     private static BasePopupView popupView;
     MainPanelAdapter adapter = new MainPanelAdapter();
-    int IdOfShareGroup;
     LinearLayout topSelectBar;
-    int myLovePos = 0;
     int recentUsePos = 0;
-    int IdOfConvertFromTg;
 
     int IdOfInputPic;
     private final List<ViewGroup> newTabView = new ArrayList<>();
@@ -89,18 +86,6 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
     }
 
     private void initDefItemsBefore() {
-        /*
-        ViewGroup likeTab = (ViewGroup) createPicImage(R.drawable.sticker_like,"收藏表情", v->{
-            listView.setSelection(myLovePos);
-            listView.smoothScrollToPositionFromTop(myLovePos,-5);
-        });
-        myLovePos = adapter.addItemData(new MyLoveStickerImpl());
-        likeTab.setTag(myLovePos);
-        topSelectBar.addView(likeTab);
-
-         */
-
-
         ViewGroup recentUse = (ViewGroup) createPicImage(R.drawable.sticker_recent, "最近使用", v -> {
             listView.setSelection(recentUsePos);
             listView.smoothScrollToPositionFromTop(recentUsePos, -5);

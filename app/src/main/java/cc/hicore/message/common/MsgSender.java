@@ -26,34 +26,23 @@ import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionUtils;
-import cc.hicore.message.chat.CommonChat;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import java.util.ArrayList;
 
 public class MsgSender {
-    public static void send_text(CommonChat chat,String text){
-        if (QAppUtils.isQQnt()){
-
-            ArrayList<MsgElement> newMsgArr = new ArrayList<>();
-            newMsgArr.add(MsgBuilder.nt_build_text(text));
-            Nt_kernel_bridge.send_msg(SessionUtils.buildContact(chat),newMsgArr);
-        }else {
-            Chat_facade_bridge.sendText(SessionUtils.buildSession(chat),text,new ArrayList<>());
-        }
-    }
-    public static void send_pic(CommonChat chat,String picPath){
+    public static void send_pic_by_contact(Contact contact,String picPath){
         if (QAppUtils.isQQnt()){
             ArrayList<MsgElement> newMsgArr = new ArrayList<>();
-            newMsgArr.add(MsgBuilder.nt_build_pic(picPath));
-            Nt_kernel_bridge.send_msg(SessionUtils.buildContact(chat),newMsgArr);
+            if (contact.getChatType() == 4){
+                newMsgArr.add(MsgBuilder.nt_build_pic_guild(picPath));
+            }else {
+                newMsgArr.add(MsgBuilder.nt_build_pic(picPath));
+            }
+
+            Nt_kernel_bridge.send_msg(contact,newMsgArr);
         }else {
-            Chat_facade_bridge.sendPic(SessionUtils.buildSession(chat),picPath);
+            Chat_facade_bridge.sendPic(contact,picPath);
         }
-    }
-    public static void send_voice(CommonChat chat,String voicePath){
-
-    }
-    public static void send_reply(CommonChat chat,Object source){
-
     }
 }

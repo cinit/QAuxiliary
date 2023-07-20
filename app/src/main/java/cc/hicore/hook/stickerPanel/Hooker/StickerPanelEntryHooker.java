@@ -23,6 +23,7 @@
 package cc.hicore.hook.stickerPanel.Hooker;
 
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
@@ -56,6 +57,7 @@ import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.ChatPanel_InitPanel_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.Guild_Emo_Btn_Create_QQNT;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -70,7 +72,8 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
     private StickerPanelEntryHooker() {
         super(new DexKitTarget[]{
                 ChatPanel_InitPanel_QQNT.INSTANCE,
-                AbstractQQCustomMenuItem.INSTANCE
+                AbstractQQCustomMenuItem.INSTANCE,
+                Guild_Emo_Btn_Create_QQNT.INSTANCE
         });
     }
 
@@ -100,6 +103,19 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                 });
             }else {
                 XLog.e("Emo_Btn_Hooker","emo_btn field not found");
+            }
+        });
+
+        HookUtils.hookAfterIfEnabled(this,DexKit.loadMethodFromCache(Guild_Emo_Btn_Create_QQNT.INSTANCE),param -> {
+            ViewGroup vg = (ViewGroup) param.getResult();
+            for (int i = 0; i < vg.getChildCount(); i++) {
+                View v = vg.getChildAt(i);
+                if (v instanceof ImageView) {
+                    v.setOnLongClickListener(v1 -> {
+                        ICreator.createPanel(v1.getContext());
+                        return true;
+                    });
+                }
             }
         });
 

@@ -24,9 +24,7 @@ public class LocalDataHelper {
                     localPath.Name = path.getString("Name");
                     localPath.storePath = path.getString("storePath");
                     paths.add(localPath);
-                } catch (Exception e) {
-
-                }
+                } catch (Exception ignored) { }
             }
             return paths;
         } catch (Exception e) {
@@ -54,9 +52,7 @@ public class LocalDataHelper {
                     localPath.thumbUrl = path.optString("thumbUrl");
                     localPath.ocr = path.optString("ocr");
                     items.add(localPath);
-                } catch (Exception e) {
-
-                }
+                } catch (Exception ignored) { }
 
             }
             return items;

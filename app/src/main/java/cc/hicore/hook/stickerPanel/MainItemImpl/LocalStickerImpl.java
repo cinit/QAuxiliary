@@ -1,7 +1,6 @@
 package cc.hicore.hook.stickerPanel.MainItemImpl;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.text.TextUtils;
 import android.util.Log;
@@ -11,6 +10,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
+import cc.hicore.Utils.ContextUtils;
 import cc.hicore.Utils.HttpUtils;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
 import cc.hicore.hook.stickerPanel.ICreator;
@@ -23,14 +23,15 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import com.bumptech.glide.Glide;
 import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.impl.LoadingPopupView;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
-import java.net.MalformedURLException;
-import java.net.URL;
 import java.util.HashSet;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
@@ -68,7 +69,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
                 if (i % 5 == 0) {
                     itemLine = new LinearLayout(mContext);
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.bottomMargin = (int) LayoutHelper.dip2px(mContext, 16);
+                    params.bottomMargin = LayoutHelper.dip2px(mContext, 16);
                     panelContainer.addView(itemLine, params);
                 }
                 if (item.type == 2) {
@@ -106,11 +107,12 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     private void updateAllResToLocal() {
-        ProgressDialog progressDialog = new ProgressDialog(CommonContextWrapper.createAppCompatContext(mContext));
-        progressDialog.setTitle("正在更新表情包");
-        progressDialog.setMessage("正在更新表情包,请稍等...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        LoadingPopupView progress = new XPopup.Builder(ContextUtils.getFixContext(CommonContextWrapper.createAppCompatContext(mContext)))
+                .dismissOnBackPressed(false)
+                .dismissOnTouchOutside(false)
+                .asLoading("正在更新表情包,请稍等...");
+
+        progress.show();
         new Thread(() -> {
             try {
                 ExecutorService threadPool = Executors.newFixedThreadPool(8);
@@ -142,16 +144,16 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
                             XposedBridge.log(Log.getStackTraceString(e));
                         } finally {
                             latch.countDown();
-                            SyncUtils.runOnUiThread(() -> progressDialog.setMessage("正在更新表情包,请稍等...(" + finishCount.getAndIncrement() + "/" + mPicItems.size() + ")"));
+                            SyncUtils.runOnUiThread(() -> progress.setTitle("正在更新表情包,请稍等...(" + finishCount.getAndIncrement() + "/" + mPicItems.size() + ")"));
                         }
                     });
                 }
                 latch.await();
-                SyncUtils.runOnUiThread(progressDialog::dismiss);
+                SyncUtils.runOnUiThread(progress::dismiss);
                 Toasts.info(mContext,"已更新完成");
                 SyncUtils.runOnUiThread(ICreator::dismissAll);
 
-            } catch (Exception e) {
+            } catch (Exception ignored) {
             }
         }).start();
 
@@ -164,8 +166,8 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     private View getItemContainer(Context context, String coverView, int count, LocalDataHelper.LocalPicItems item) {
-        int width_item = LayoutHelper.getScreenWidth(context) / 6;
-        int item_distance = (LayoutHelper.getScreenWidth(context) - width_item * 5) / 4;
+        int sizeLength = LayoutHelper.getScreenWidth(context) / 6;
+        int item_distance = (LayoutHelper.getScreenWidth(context) - sizeLength * 5) / 4;
 
         ImageView img = new ImageView(context);
         ViewInfo info = new ViewInfo();
@@ -174,7 +176,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
 
         cacheImageView.add(info);
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width_item, width_item);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(sizeLength, sizeLength);
         if (count > 0) params.leftMargin = item_distance;
         img.setLayoutParams(params);
 
@@ -182,16 +184,20 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
         img.setOnClickListener(v -> {
             if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
                 HttpUtils.ProgressDownload(coverView, Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")), () -> {
-                    MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam), Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
+                    MsgSender.send_pic_by_contact(SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam), Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
                     RecentStickerHelper.addPicItemToRecentRecord(mPathInfo, item);
                 }, mContext);
                 ICreator.dismissAll();
 
             } else {
-                MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam),
-                        LocalDataHelper.getLocalItemPath(mPathInfo, item));
-                RecentStickerHelper.addPicItemToRecentRecord(mPathInfo, item);
-                ICreator.dismissAll();
+                Contact contact = SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam);
+                if (contact != null){
+                    MsgSender.send_pic_by_contact(contact,
+                            LocalDataHelper.getLocalItemPath(mPathInfo, item));
+                    RecentStickerHelper.addPicItemToRecentRecord(mPathInfo, item);
+                    ICreator.dismissAll();
+                }
+
             }
         });
 
@@ -200,20 +206,14 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
             preView.setScaleType(ImageView.ScaleType.FIT_CENTER);
             preView.setLayoutParams(new ViewGroup.LayoutParams(LayoutHelper.getScreenWidth(v.getContext()) / 2, LayoutHelper.getScreenWidth(v.getContext()) / 2));
             if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
-                try {
-                    Glide.with(HostInfo.getApplication()).load(new URL(coverView)).override(LayoutHelper.getScreenWidth(v.getContext()) / 2, LayoutHelper.getScreenWidth(v.getContext()) / 2).into(preView);
-                } catch (MalformedURLException e) {
-                    e.printStackTrace();
-                }
+                Glide.with(HostInfo.getApplication()).load(coverView).override(LayoutHelper.getScreenWidth(v.getContext()) / 2, LayoutHelper.getScreenWidth(v.getContext()) / 2).into(preView);
             } else {
                 Glide.with(HostInfo.getApplication()).load(coverView).fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(LayoutHelper.getScreenWidth(v.getContext()) / 2, LayoutHelper.getScreenWidth(v.getContext()) / 2).into(preView);
             }
             new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(mContext))
                     .setTitle("选择你对该表情的操作")
                     .setView(preView)
-                    .setOnDismissListener(dialog -> {
-                        Glide.with(HostInfo.getApplication()).clear(preView);
-                    }).setNegativeButton("删除该表情", (dialog, which) -> {
+                    .setOnDismissListener(dialog -> Glide.with(HostInfo.getApplication()).clear(preView)).setNegativeButton("删除该表情", (dialog, which) -> {
                         LocalDataHelper.deletePicItem(mPathInfo, item);
                         ICreator.dismissAll();
                     }).setNeutralButton("设置为标题预览", (dialog, which) -> {
@@ -246,21 +246,16 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
             if (LayoutHelper.isSmallWindowNeedPlay(v.view)) {
                 if (v.status != 1) {
                     v.status = 1;
-                    int width_item = LayoutHelper.getScreenWidth(mContext) / 6;
+                    int item_size = LayoutHelper.getScreenWidth(mContext) / 6;
                     String coverView = (String) v.view.getTag();
-                    try {
-                        if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
-                            Glide.with(HostInfo.getApplication()).load(new URL(coverView)).override(width_item, width_item).into(v.view);
-                        } else {
-                            if(new File(coverView + "_thumb").exists()){
-                                Glide.with(HostInfo.getApplication()).load(coverView + "_thumb").fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(width_item, width_item).into(v.view);
-                            }else {
-                                Glide.with(HostInfo.getApplication()).load(coverView).fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(width_item, width_item).into(v.view);
-                            }
-
+                    if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
+                        Glide.with(HostInfo.getApplication()).load(coverView).override(item_size, item_size).into(v.view);
+                    } else {
+                        if(new File(coverView + "_thumb").exists()){
+                            Glide.with(HostInfo.getApplication()).load(coverView + "_thumb").fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(item_size, item_size).into(v.view);
+                        }else {
+                            Glide.with(HostInfo.getApplication()).load(coverView).fitCenter().diskCacheStrategy(DiskCacheStrategy.RESOURCE).override(item_size, item_size).into(v.view);
                         }
-                    } catch (MalformedURLException e) {
-                        e.printStackTrace();
                     }
                 }
 

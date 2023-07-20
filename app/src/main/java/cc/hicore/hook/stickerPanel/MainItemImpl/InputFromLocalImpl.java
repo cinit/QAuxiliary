@@ -1,7 +1,6 @@
 package cc.hicore.hook.stickerPanel.MainItemImpl;
 
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.BitmapFactory;
 import android.text.TextUtils;
@@ -9,6 +8,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
+import cc.hicore.Utils.ContextUtils;
 import cc.hicore.Utils.DataUtils;
 import cc.hicore.Utils.FileUtils;
 import cc.hicore.Utils.RandomUtils;
@@ -16,6 +16,8 @@ import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
 import cc.hicore.hook.stickerPanel.MainPanelAdapter;
 import cc.ioctl.util.ui.FaultyDialog;
+import com.lxj.xpopup.XPopup;
+import com.lxj.xpopup.impl.LoadingPopupView;
 import io.github.qauxv.R;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.SyncUtils;
@@ -39,9 +41,8 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
                 new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(parent.getContext()))
                         .setTitle("输入分组名称")
                         .setView(ed)
-                        .setPositiveButton("确定导入", (dialog, which) -> {
-                            inputWorker(parent.getContext(), path, ed.getText().toString());
-                        }).setNeutralButton("取消", null)
+                        .setPositiveButton("确定导入", (dialog, which) -> inputWorker(parent.getContext(), path, ed.getText().toString()))
+                        .setNeutralButton("取消", null)
                         .show();
             }
 
@@ -54,16 +55,18 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
             FaultyDialog.show(context, "错误", "名称不能为空");
             return;
         }
-        ProgressDialog progressDialog = new ProgressDialog(CommonContextWrapper.createAppCompatContext(context));
-        progressDialog.setTitle("正在导入...");
-        progressDialog.setCancelable(false);
-        progressDialog.show();
+        LoadingPopupView progress = new XPopup.Builder(ContextUtils.getFixContext(CommonContextWrapper.createAppCompatContext(context)))
+                .dismissOnBackPressed(false)
+                .dismissOnTouchOutside(false)
+                .asLoading("正在导入...");
+
+        progress.show();
 
         SyncUtils.async(() -> {
             File[] f = new File(path).listFiles();
             if (f == null) {
                 SyncUtils.runOnUiThread(() -> {
-                    progressDialog.dismiss();
+                    progress.dismiss();
                     FaultyDialog.show(context, "错误", "路径无效");
                 });
                 return;
@@ -101,9 +104,7 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
                 finish++;
                 int finalFinish = finish;
                 int finalAvailable = available;
-                SyncUtils.runOnUiThread(() -> {
-                    progressDialog.setMessage("已完成" + finalFinish + "/" + size + "个文件，有效文件" + finalAvailable + "个");
-                });
+                SyncUtils.runOnUiThread(() -> progress.setTitle("已完成" + finalFinish + "/" + size + "个文件，有效文件" + finalAvailable + "个"));
             }
 
             List<LocalDataHelper.LocalPicItems> list = LocalDataHelper.getPicItems(ID);
@@ -111,18 +112,11 @@ public class InputFromLocalImpl implements MainPanelAdapter.IMainPanelItem {
                 LocalDataHelper.setPathCover(newPath, list.get(0));
             }
             SyncUtils.runOnUiThread(() -> {
-                progressDialog.dismiss();
+                progress.dismiss();
                 FaultyDialog.show(context, "导入完成", "导入完成");
                 ICreator.dismissAll();
             });
         });
-    }
-
-    private static boolean isImageFile(String filePath) {
-        BitmapFactory.Options options = new BitmapFactory.Options();
-        options.inJustDecodeBounds = true;
-        BitmapFactory.decodeFile(filePath, options);
-        return options.outWidth != -1;
     }
 
     @Override

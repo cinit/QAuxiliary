@@ -28,6 +28,9 @@ public class XLog {
     public static void e(String TAG,Throwable msg){
         Log.e("[QAuxv]"+"("+TAG+")"+Log.getStackTraceString(msg));
     }
+    public static void e(String TAG,String TAG2,Throwable msg){
+        e(TAG+"."+TAG2,msg);
+    }
     public static void e(String TAG,String msg){
         Log.e("[QAuxv]"+"("+TAG+")"+msg);
     }

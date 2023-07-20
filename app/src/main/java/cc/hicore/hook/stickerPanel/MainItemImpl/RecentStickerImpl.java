@@ -8,6 +8,7 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
+import cc.hicore.Utils.ContextUtils;
 import cc.hicore.Utils.HttpUtils;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
 import cc.hicore.hook.stickerPanel.ICreator;
@@ -19,6 +20,8 @@ import cc.hicore.message.common.MsgSender;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import com.bumptech.glide.Glide;
+import com.lxj.xpopup.XPopup;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import java.io.File;
@@ -44,6 +47,9 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
         tv_title.setText("最近使用");
 
         View setButton = cacheView.findViewById(R.id.Sticker_Panel_Set_Item);
+        setButton.setOnClickListener(v-> new XPopup.Builder(ContextUtils.getFixContext(mContext))
+                .asConfirm("提示", "是否要清楚最近的表情记录?", RecentStickerHelper::cleanAllRecentRecord)
+                .show());
 
         try {
             LinearLayout itemLine = null;
@@ -52,7 +58,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
                 if (i % 5 == 0) {
                     itemLine = new LinearLayout(mContext);
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.bottomMargin = (int) LayoutHelper.dip2px(mContext, 16);
+                    params.bottomMargin = LayoutHelper.dip2px(mContext, 16);
                     panelContainer.addView(itemLine, params);
                 }
                 if (item.type == 2) {
@@ -92,13 +98,13 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     private View getItemContainer(Context context, String coverView, int count, RecentStickerHelper.RecentItemInfo item) {
-        int width_item = LayoutHelper.getScreenWidth(context) / 6;
-        int item_distance = (LayoutHelper.getScreenWidth(context) - width_item * 5) / 4;
+        int item_size = LayoutHelper.getScreenWidth(context) / 6;
+        int item_distance = (LayoutHelper.getScreenWidth(context) - item_size * 5) / 4;
 
         ImageView img = new ImageView(context);
         cacheImageView.add(img);
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width_item, width_item);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(item_size, item_size);
         if (count > 0) params.leftMargin = item_distance;
         img.setLayoutParams(params);
 
@@ -106,18 +112,27 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
         img.setOnClickListener(v -> {
             if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
                 HttpUtils.ProgressDownload(coverView, Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")), () -> {
-                    MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam),
-                            Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
+                    Contact contact = SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam);
+                    if (contact != null){
+                        MsgSender.send_pic_by_contact(contact,
+                                Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
 
-                    RecentStickerHelper.addPicItemToRecentRecord(item);
+                        RecentStickerHelper.addPicItemToRecentRecord(item);
+                    }
+
                 }, mContext);
                 ICreator.dismissAll();
 
             } else {
-                MsgSender.send_pic(SessionUtils.AIOParam2CommonChat(StickerPanelEntryHooker.AIOParam),
-                        coverView);
-                RecentStickerHelper.addPicItemToRecentRecord(item);
-                ICreator.dismissAll();
+
+                Contact contact = SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam);
+                if (contact != null){
+                    MsgSender.send_pic_by_contact(contact,
+                            coverView);
+                    RecentStickerHelper.addPicItemToRecentRecord(item);
+                    ICreator.dismissAll();
+                }
+
             }
         });
 

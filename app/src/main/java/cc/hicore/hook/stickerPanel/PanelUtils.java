@@ -41,12 +41,10 @@ public class PanelUtils {
         NewInfo.MD5 = MD5.toUpperCase(Locale.ROOT);
 
         if (URL.startsWith("http")) {
-            EmoOnlineLoader.submit(NewInfo, () -> {
-                Glide.with(HostInfo.getApplication())
-                        .load(new File(NewInfo.Path))
-                        .fitCenter()
-                        .into(preView);
-            });
+            EmoOnlineLoader.submit(NewInfo, () -> Glide.with(HostInfo.getApplication())
+                    .load(new File(NewInfo.Path))
+                    .fitCenter()
+                    .into(preView));
         } else {
             NewInfo.Path = URL;
             Glide.with(HostInfo.getApplication())
@@ -130,18 +128,16 @@ public class PanelUtils {
                         Toasts.info(context,"已保存到：" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                     }
                 }).setNeutralButton("取消", null)
-                .setOnDismissListener(dialog -> {
-                    Glide.with(HostInfo.getApplication()).clear(preView);
-                }).show();
+                .setOnDismissListener(dialog -> Glide.with(HostInfo.getApplication()).clear(preView))
+                .show();
     }
 
     //如果要保存的是多张图片则弹出MD5选择,选择后才弹出确认图片保存框
     public static void PreSaveMultiPicList(ArrayList<String> url, ArrayList<String> MD5, Context context) {
         new AlertDialog.Builder(context)
                 .setTitle("选择需要保存的图片")
-                .setItems(MD5.toArray(new String[0]), (dialog, which) -> {
-                    PreSavePicToList(url.get(which), MD5.get(which), context);
-                }).setOnDismissListener(dialog -> {
+                .setItems(MD5.toArray(new String[0]), (dialog, which) -> PreSavePicToList(url.get(which), MD5.get(which), context))
+                .setOnDismissListener(dialog -> {
 
                 }).show();
     }

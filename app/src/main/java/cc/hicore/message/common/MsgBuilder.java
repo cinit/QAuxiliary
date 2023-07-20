@@ -77,6 +77,15 @@ public class MsgBuilder {
             throw new RuntimeException(e);
         }
     }
+    public static MsgElement nt_build_pic_guild(String path){
+        try {
+            Object helper = MClass.NewInstance(MClass.loadClass("com.tencent.qqnt.msg.api.impl.MsgUtilApiImpl"));
+            return MMethod.CallMethod(helper,"createPicElementForGuild",MsgElement.class,new Class[]{String.class,boolean.class,int.class},path,true,0);
+        } catch (Exception e) {
+            XLog.e("MsgBuilder.nt_build_pic_guild",e);
+            throw new RuntimeException(e);
+        }
+    }
     public static Object build_pic(Object _SessionInfo,String path){
         try {
             Method CallMethod = MMethod.FindMethod("com.tencent.mobileqq.activity.ChatActivityFacade", null, MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"), new Class[]{

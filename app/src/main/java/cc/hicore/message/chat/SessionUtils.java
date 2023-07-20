@@ -31,59 +31,25 @@ import io.github.qauxv.bridge.SessionInfoImpl;
 import io.github.qauxv.util.Initiator;
 
 public class SessionUtils {
-    public static CommonChat AIOParam2CommonChat(Object AIOParam){
+    public static Contact AIOParam2Contact(Object AIOParam) {
         try {
-            if (QAppUtils.isQQnt()){
-                CommonChat chat = new CommonChat();
-                Contact contact = AIOParam2Contact(AIOParam);
-                if (contact.getChatType() == 1){
-                    chat.type = 0;
-                }else if (contact.getChatType() == 2){
-                    chat.type = 1;
-                }
-                //TODO decode private session
-                chat.contact = contact;
-                return chat;
-            }else {
-                return null;
+            Object AIOSession = MField.GetFirstField(AIOParam, Initiator.loadClass("com.tencent.aio.data.AIOSession"));
+            Object AIOContact = MField.GetFirstField(AIOSession,Initiator.loadClass("com.tencent.aio.data.AIOContact"));
+            Contact contact = new Contact();
+            contact.setPeerUid(getCurrentPeerIDByAIOContact(AIOContact));
+
+            int chatType = getCurrentChatTypeByAIOContact(AIOContact);
+            contact.setChatType(chatType);
+
+            if (chatType == 4){
+                contact.setGuildId(getCurrentGuildIDByAIOContact(AIOContact));
             }
+            return contact;
         }catch (Exception e){
-            XLog.e("SessionUtils.getCurrentSession",e);
+            XLog.e("SessionUtils.AIOParam2Contact",e);
             return null;
         }
 
-    }
-    public static Contact buildContact(CommonChat chat){
-        Contact contact = new Contact();
-        if (chat.contact == null){
-            if (chat.type == 0) contact.setChatType(2);
-            else if (chat.type == 1) contact.setChatType(1);
-            else if (chat.type == 2) contact.setChatType(100);
-            if (TextUtils.isEmpty(chat.uid)){
-                if (chat.type == 0)contact.setPeerUid(chat.groupUin);
-                else if (chat.type == 1)contact.setPeerUid(QAppUtils.UserUinToPeerID(chat.userUin));
-                else if (chat.type == 2) throw new RuntimeException("Not support.");
-            }else {
-                contact.setPeerUid(chat.uid);
-            }
-        }else {
-            contact = chat.contact;
-        }
-        return contact;
-    }
-    public static Contact AIOParam2Contact(Object AIOParam) throws Exception {
-        Object AIOSession = MField.GetFirstField(AIOParam, Initiator.loadClass("com.tencent.aio.data.AIOSession"));
-        Object AIOContact = MField.GetFirstField(AIOSession,Initiator.loadClass("com.tencent.aio.data.AIOContact"));
-        Contact contact = new Contact();
-        contact.setPeerUid(getCurrentPeerIDByAIOContact(AIOContact));
-
-        int chatType = getCurrentChatTypeByAIOContact(AIOContact);
-        contact.setChatType(chatType);
-
-        if (chatType == 4){
-            contact.setGuildId(getCurrentGuildIDByAIOContact(AIOContact));
-        }
-        return contact;
     }
     public static String getCurrentPeerIDByAIOContact(Object AIOContact) throws Exception {
         return MField.GetField(AIOContact,"f",String.class);
@@ -93,15 +59,5 @@ public class SessionUtils {
     }
     public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception{
         return MField.GetField(AIOContact,"g",String.class);
-    }
-    public static Object buildSession(CommonChat chat){
-        if (chat.type == 0){
-            return SessionInfoImpl.createSessionInfo(chat.groupUin,1);
-        }else if (chat.type == 1){
-            return SessionInfoImpl.createSessionInfo(chat.userUin,0);
-        }else {
-            throw new RuntimeException("Not support type");
-        }
-
     }
 }
