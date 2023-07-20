@@ -32,6 +32,7 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Toast
 import cc.ioctl.util.LayoutHelper
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -40,12 +41,15 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NBaseChatPie_init
+import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.method
 import xyz.nextalone.util.putDefault
 import xyz.nextalone.util.throwOrTrue
 
@@ -59,18 +63,26 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
     private const val strCfg = "na_chat_input_hint_str"
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.requireMethodFromCache(NBaseChatPie_init).hookAfter(this) {
-            val chatPie: Any = it.thisObject
-            var aioRootView: ViewGroup? = null
-            for (m in Initiator._BaseChatPie().declaredMethods) {
-                if (m.returnType == ViewGroup::class.java
-                    && m.parameterTypes.isEmpty()
-                ) {
-                    aioRootView = m.invoke(chatPie) as ViewGroup
-                    break
-                }
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            "Lcom/tencent/mobileqq/aio/input/b/c;->l()V".method.hookAfter { param ->
+                val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
+                val b = f.javaClass.getDeclaredField("b").apply { isAccessible = true }.get(f) as EditText
+                b.hint = getDefaultConfig().getStringOrDefault(strCfg, "Typing words...")
             }
-            aioRootView?.findHostView<EditText>("input")?.hint = getDefaultConfig().getStringOrDefault(strCfg, "Typing words...")
+        } else {
+            DexKit.requireMethodFromCache(NBaseChatPie_init).hookAfter(this) {
+                val chatPie: Any = it.thisObject
+                var aioRootView: ViewGroup? = null
+                for (m in Initiator._BaseChatPie().declaredMethods) {
+                    if (m.returnType == ViewGroup::class.java
+                        && m.parameterTypes.isEmpty()
+                    ) {
+                        aioRootView = m.invoke(chatPie) as ViewGroup
+                        break
+                    }
+                }
+                aioRootView?.findHostView<EditText>("input")?.hint = getDefaultConfig().getStringOrDefault(strCfg, "Typing words...")
+            }
         }
     }
 
