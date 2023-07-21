@@ -231,6 +231,7 @@ public class LocalStickerImpl implements MainPanelAdapter.IMainPanelItem {
     public void onViewDestroy(ViewGroup parent) {
         for (ViewInfo img : cacheImageView) {
             img.view.setImageBitmap(null);
+            img.status = 0;
             Glide.with(HostInfo.getApplication()).clear(img.view);
         }
     }
