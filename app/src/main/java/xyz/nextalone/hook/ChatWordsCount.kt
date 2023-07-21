@@ -21,6 +21,7 @@
  */
 package xyz.nextalone.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.content.DialogInterface
@@ -37,16 +38,19 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.children
+import cc.hicore.QApp.QAppUtils
+import cc.hicore.ReflectUtil.MField
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.LayoutHelper.newLinearLayoutParams
-import cc.hicore.ReflectUtil.MField
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager.getExFriendCfg
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.tlb.ConfigTable.getConfig
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
@@ -55,8 +59,6 @@ import io.github.qauxv.util.dexkit.NChatActivityFacade_sendMsgButton
 import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
-import io.github.qauxv.config.ConfigManager.getExFriendCfg
-import io.github.qauxv.ui.CommonContextWrapper
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -108,12 +110,13 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
         val kQQSettingMeView: Class<*> = if (requireMinQQVersion(QQVersion.QQ_8_9_25))
             Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMeView")
         else Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
-        val ctor = kQQSettingMeView.constructors.asSequence().first { it.parameterTypes.size > 2 }
+        // From QQ 8.9.68 the constructor of QQSettingMeView has 2 parameters
+        val ctor = kQQSettingMeView.constructors.asSequence().first { it.parameterTypes.size >= 2 }
         // select a method to get view
-        if (ViewGroup::class.java.isAssignableFrom(ctor.parameterTypes[2])) {
+        if (ViewGroup::class.java.isAssignableFrom(ctor.parameterTypes.last())) {
             // for after QQ 8.8.20
             kQQSettingMeView.hookBeforeAllConstructors {
-                val viewGroup = it.args[2] as ViewGroup
+                val viewGroup = it.args.last() as ViewGroup
                 updateChatWordView(viewGroup)
             }
         }
@@ -162,7 +165,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
 
     private fun updateChatWordView(viewGroup: ViewGroup) {
         val relativeLayout: RelativeLayout =
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80) && !QAppUtils.isQQnt()) {
                 val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "drawer_top_sig_layout")
                 viewGroup.findViewById(getId)
             } else {
@@ -183,7 +186,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
 
     private fun injectChatWordView(context: Context, viewGroup: ViewGroup) {
         val relativeLayout: RelativeLayout =
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80)) {
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_80) && !QAppUtils.isQQnt()) {
                 val getId = MField.GetStaticField<Int>("com.tencent.mobileqq.R\$id".clazz, "drawer_top_sig_layout")
                 viewGroup.findViewById(getId)
             } else {
@@ -250,6 +253,7 @@ object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", array
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
+    @SuppressLint("SetTextI18n")
     private fun showChatWordsCountDialog(activity: Context) {
         val dialog = AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(activity))
         val ctx = dialog.context

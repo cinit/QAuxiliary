@@ -380,6 +380,7 @@ data object AbstractQQCustomMenuItem : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("QQCustomMenuItem{title='")
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/menu/ui")
 }
+
 data object Guild_Emo_Btn_Create_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("mEmojiLayout.findViewByI…id.guild_aio_emoji_image)")
@@ -482,7 +483,10 @@ data object NQQSettingMe_onResume : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.mobileqq.activity.QQSettingMe"
     override val traitString = arrayOf("-->onResume!")
-    override val filter = DexKitFilter.strInClsName("QQSettingMe")
+    override val filter = filter@{ it: DexMethodDescriptor ->
+        it.declaringClass.contains("QQSettingMe") && !it.declaringClass.contains("V9")
+        // 暂不支持V9侧滑栏，排除
+    }
 }
 
 data object NVipUtils_getPrivilegeFlags : DexKitTarget.UsingStr() {
@@ -614,6 +618,7 @@ data object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
                 && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
         }
 }
+
 data object CCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {
     // guess
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
@@ -708,7 +713,7 @@ data object EmoMsgUtils_isSingleLottie_QQNT : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("is Valid EmojiFaceId")
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/utils")
-                                                     // "com/tencent/guild/aio/util" 是频道的
+    // "com/tencent/guild/aio/util" 是频道的
 }
 
 data object Reply_At_QQNT : DexKitTarget.UsingStr() {
@@ -730,7 +735,7 @@ data object TroopEnterEffect_QQNT : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("playAnimaions: isSimpleUISwitch = true")
     override val declaringClass = ""
     override val filter = DexKitFilter.allowAll
-                            // 理论上非NT也能用，但祖法不可变
+    // 理论上非NT也能用，但祖法不可变
 }
 
 data object NQZMoment_EntranceEnabled : DexKitTarget.UsingStr() {

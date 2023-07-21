@@ -58,6 +58,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_25
 import io.github.qauxv.util.QQVersion.QQ_8_9_28
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
+import io.github.qauxv.util.QQVersion.QQ_8_9_63
 import io.github.qauxv.util.QQVersion.QQ_8_9_68
 import io.github.qauxv.util.QQVersion.QQ_8_9_8
 import me.ketal.hook.SortAtPanel
@@ -96,6 +97,9 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_68 to "nm7",
             QQ_8_8_80 to "nmx",
             QQ_8_8_83 to "nnl",
+            // NT begin
+            QQ_8_9_63 to "nxj",
+            QQ_8_9_68 to "nyb",
         ),
 
         //中间部分(QQ会员 我的钱包等)
