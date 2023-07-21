@@ -50,6 +50,7 @@ import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
+import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
@@ -255,6 +256,9 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                     }
                     Method finalGetMsg = getMsg;
                     HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
+                        if (ContextUtils.getCurrentActivity().getClass().getName().contains("MultiForwardActivity")) {
+                            return;
+                        }
                         Object msg = finalGetMsg.invoke(param.thisObject);
                         Object item = CustomMenu.createItemNt(msg, "+1", R.id.item_repeat, () -> {
                             repeatByForwardNt(msg);

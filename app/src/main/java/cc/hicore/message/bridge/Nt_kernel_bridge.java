@@ -36,13 +36,10 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgIceBreak;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
-import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.LinkedList;
 import java.util.List;
 
 public class Nt_kernel_bridge {
@@ -68,7 +65,7 @@ public class Nt_kernel_bridge {
 
         VASMsgNamePlate plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
         VASMsgBubble bubble = new VASMsgBubble(0, 0, 0, 0);
-        VASMsgFont font = new VASMsgFont(65536, 0L, 0, 0, 2000);
+        VASMsgFont font = new VASMsgFont(65536, 0L, 0, 0, 0);
         VASMsgAvatarPendant pendant = new VASMsgAvatarPendant();
         VASMsgIceBreak iceBreak = new VASMsgIceBreak(null, null);
         VASMsgElement element = new VASMsgElement(plate, bubble, pendant, font, iceBreak);
