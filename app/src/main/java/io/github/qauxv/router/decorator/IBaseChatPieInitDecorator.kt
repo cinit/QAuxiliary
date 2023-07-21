@@ -29,5 +29,9 @@ import mqq.app.AppRuntime
 
 interface IBaseChatPieInitDecorator : IBaseChatPieDecorator {
     @Throws(Throwable::class)
-    fun onInitBaseChatPie(baseChatPie: Any, aioRootView: ViewGroup, session: Parcelable, ctx: Context, rt: AppRuntime)
+    /**
+     * On NT Version, param session is null, get it by calling InputButtonHookDispatcher.INSTANCE.getSessionByAIOParam().
+     * DO NOT call it right after onInitBaseChatPie, for it is not initialized before entering an AIO.
+     */
+    fun onInitBaseChatPie(baseChatPie: Any, aioRootView: ViewGroup, session: Parcelable?, ctx: Context, rt: AppRuntime)
 }

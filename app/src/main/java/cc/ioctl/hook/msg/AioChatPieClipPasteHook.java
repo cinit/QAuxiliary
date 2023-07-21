@@ -44,9 +44,9 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
+import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
-import cc.hicore.message.bridge.Chat_facade_bridge;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
@@ -150,7 +150,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     @Override
     public void onInitBaseChatPie(@NonNull Object baseChatPie, @NonNull ViewGroup aioRootView,
-                                  @NonNull Parcelable session, @NonNull Context ctx, @NonNull AppRuntime rt) {
+            @Nullable Parcelable session, @NonNull Context ctx, @NonNull AppRuntime rt) {
         int inputTextId = ctx.getResources().getIdentifier("input", "id", ctx.getPackageName());
         EditText input = aioRootView.findViewById(inputTextId);
         Objects.requireNonNull(input, "onInitBaseChatPie: findViewById R.id.input is null");
@@ -160,7 +160,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
                 Uri uri = item.getSecond().getUri();
                 if (uri != null && "content".equals(uri.getScheme())) {
-                    handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                    handleSendUriPicture(ctx, session == null ? InputButtonHookDispatcher.INSTANCE.getSessionByAIOParam() : session, uri, aioRootView, rt);
                     return null;
                 }
             }
@@ -173,7 +173,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                     if (item != null && item.getFirst().hasMimeType(MIME_IMAGE)) {
                         Uri uri = item.getSecond().getUri();
                         if (uri != null && "content".equals(uri.getScheme())) {
-                            handleSendUriPicture(ctx, session, uri, aioRootView, rt);
+                            handleSendUriPicture(ctx, session == null ? InputButtonHookDispatcher.INSTANCE.getSessionByAIOParam() : session, uri, aioRootView, rt);
                             return true;
                         }
                     }
@@ -206,7 +206,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     }
 
     private static void handleSendUriPicture(@NonNull Context ctx, @NonNull Parcelable session, @NonNull Uri uri,
-                                             @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
+            @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
         AtomicBoolean cpTimeout = new AtomicBoolean(true);
         // call ContentResolver#openInputStream(Uri) asynchronously to avoid blocking UI thread
         SyncUtils.async(() -> {
@@ -237,7 +237,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     }
 
     private static void confirmSendMessage(@NonNull Context context, @NonNull Parcelable session, @NonNull byte[] data,
-                                           @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
+            @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
         Bitmap bitmap;
         try {
             bitmap = BitmapFactory.decodeByteArray(data, 0, data.length);
@@ -270,7 +270,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
     }
 
     private static void executeSendMessage(@NonNull Context context, @NonNull Parcelable session, @NonNull byte[] data,
-                                           @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
+            @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
         try {
             File file = SendCacheUtils.saveAsCacheFile(context, data);
             Chat_facade_bridge.sendPic(session, file);

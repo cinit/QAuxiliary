@@ -224,6 +224,8 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
                 Log.d("ReplyMsgWithImg PhotoListPanel.a chatPie is null");
                 return;
             }
+
+            // TODO: NT版本请用getSessionByAIOParam()
             Parcelable sessionInfo = InputButtonHookDispatcher.getSessionInfo(chatPie);
             int isTroop = SessionInfoImpl.getUinType(sessionInfo);
             if (isTroop == 1 || isTroop == 0) {
@@ -488,7 +490,7 @@ public class ReplyMsgWithImg extends CommonSwitchFunctionHook implements IBaseCh
     }
 
     @Override
-    public void onInitBaseChatPie(@NonNull Object baseChatPie, @NonNull ViewGroup aioRootView, @NonNull Parcelable session, @NonNull Context ctx,
+    public void onInitBaseChatPie(@NonNull Object baseChatPie, @NonNull ViewGroup aioRootView, @Nullable Parcelable session, @NonNull Context ctx,
             @NonNull AppRuntime rt) {
         mBaseChatPie = new WeakReference<>(Objects.requireNonNull(baseChatPie, "baseChatPie is null"));
         EditText input = aioRootView.findViewById(ctx.getResources().getIdentifier("input", "id", ctx.getPackageName()));

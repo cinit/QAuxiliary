@@ -34,15 +34,19 @@ import android.widget.EditText;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MRes;
 import cc.hicore.hook.ReplyMsgWithImg;
 import cc.hicore.message.chat.SessionHooker;
+import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.hook.experimental.CardMsgSender;
 import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
 import cc.ioctl.util.HookUtils;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
+import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.SessionInfoImpl;
+import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.router.decorator.IBaseChatPieDecorator;
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
@@ -102,51 +106,67 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
             HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT.INSTANCE), 40, param -> {
                 Button sendBtn = null;
                 EditText editText = null;
+                ViewGroup inputRoot = null;
                 Field[] fs = param.thisObject.getClass().getDeclaredFields();
                 for (Field f : fs) {
                     Class<?> type = f.getType();
                     if (type.equals(Button.class)) {
                         f.setAccessible(true);
-                        if ("send_btn".equals(MRes.getViewResName((View) f.get(param.thisObject)))) {
-                            sendBtn = (Button) f.get(param.thisObject);
-                        }
+                        sendBtn = (Button) f.get(param.thisObject);
                     } else if (type.equals(EditText.class)) {
                         f.setAccessible(true);
                         editText = (EditText) f.get(param.thisObject);
+                    } else if (type.equals(ViewGroup.class)) {
+                        f.setAccessible(true);
+                        inputRoot = (ViewGroup) f.get(param.thisObject);
                     }
                 }
+
+                AppRuntime qqApp = AppRuntimeHelper.getAppRuntime();
+                Objects.requireNonNull(qqApp, "QQAppInterface is null");
+
                 if (sendBtn != null && editText != null) {
                     EditText finalEditText = editText;
                     Button finalSendBtn = sendBtn;
                     sendBtn.setOnLongClickListener(v -> {
                         Context ctx = v.getContext();
                         String text = finalEditText.getText().toString();
-                        Toasts.info(ctx, text);
-                        // TODO: AIOParam是不是onFunBtnLongClick的第二个参数？以及qqApp参数的获取
-//                        if (((TextView) v).length() == 0) { //|| !CardMsgHook.INSTANCE.isEnabled()
-//                            return false;
-//                        }
-//                        for (IBaseChatPieDecorator decorator : DECORATORS) {
-//                            if (decorator instanceof IInputButtonDecorator) {
-//                                IInputButtonDecorator d = (IInputButtonDecorator) decorator;
-//                                try {
-//                                    if (d.isEnabled() && d.onFunBtnLongClick(text, (Parcelable) AIOParam, finalEditText, finalSendBtn, ctx, null)) {
-//                                        return true;
-//                                    }
-//                                } catch (Throwable e) {
-//                                    decorator.traceError(e);
-//                                }
-//                            }
-//                        }
-                        // TODO: BaseChatPie已不存在，onInitBaseChatPie何去何从
+                        for (IBaseChatPieDecorator decorator : DECORATORS) {
+                            if (decorator instanceof IInputButtonDecorator) {
+                                IInputButtonDecorator d = (IInputButtonDecorator) decorator;
+                                try {
+                                    if (d.isEnabled() && d.onFunBtnLongClick(text, getSessionByAIOParam(), finalEditText, finalSendBtn, ctx, qqApp)) {
+                                        return true;
+                                    }
+                                } catch (Throwable e) {
+                                    decorator.traceError(e);
+                                }
+                            }
+                        }
                         return true;
                     });
                 } else {
-                    Log.e("send_btn field not found");
+                    Log.e("SendBtn or EditText field not found");
+                }
+
+                // 这样写比较好地兼容了原有代码，但不太像是onInitBaseChatPie的意思了，有待优化
+                Objects.requireNonNull(inputRoot, "inputRoot is null");
+                for (IBaseChatPieDecorator baseDecorator : DECORATORS) {
+                    if (baseDecorator instanceof IBaseChatPieInitDecorator) {
+                        IBaseChatPieInitDecorator decorator = (IBaseChatPieInitDecorator) baseDecorator;
+                        try {
+                            if (decorator.isEnabled()) {
+                                decorator.onInitBaseChatPie(param.thisObject, inputRoot, null, inputRoot.getContext(), qqApp);
+                            }
+                        } catch (Throwable e) {
+                            decorator.traceError(e);
+                        }
+                    }
                 }
             });
             return true;
         }
+
         //Begin: send btn
         HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(NBaseChatPie_init.INSTANCE), 40,
                 param -> {
@@ -257,6 +277,19 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
                 });
         //End: send btn
         return true;
+    }
+
+    /**
+     * QQNT: Get session info from AIOParam
+     */
+    public Parcelable getSessionByAIOParam() {
+        Contact c = SessionUtils.AIOParam2Contact(AIOParam);
+        int type = c.getChatType() - 1; // chatType: 1 for friend, 2 for group
+        String uin = c.getPeerUid();
+        if (uin.startsWith("u_")) {
+            uin = RelationNTUinAndUidApi.getUinFromUid(uin);
+        }
+        return SessionInfoImpl.createSessionInfo(uin, type);
     }
 
     @Override
