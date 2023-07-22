@@ -125,10 +125,12 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                 new Class[]{Initiator.load("com.tencent.qqnt.aio.shortcutbar.a")}),
                 param -> {
                     ImageView imageView = (ImageView) param.getResult();
-                    imageView.setOnLongClickListener(view -> {
-                        ICreator.createPanel(view.getContext());
-                        return true;
-                    });
+                    if ("表情".contentEquals(imageView.getContentDescription())){
+                        imageView.setOnLongClickListener(view -> {
+                            ICreator.createPanel(view.getContext());
+                            return true;
+                        });
+                    }
                 });
 
         //Hook for longClick msgItem
