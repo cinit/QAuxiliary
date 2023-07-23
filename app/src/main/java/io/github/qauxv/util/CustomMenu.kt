@@ -86,12 +86,7 @@ object CustomMenu {
 
 
     private val strategy by lazy {
-        AndroidClassLoadingStrategy.Wrapping(
-            hostInfo.application.getDir(
-                "generated",
-                Context.MODE_PRIVATE
-            )
-        )
+        AndroidClassLoadingStrategy.Wrapping()
     }
 
     /**
