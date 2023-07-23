@@ -47,6 +47,7 @@ add_subdirectory(../../../../libs/fmt fmt)
 SET_OPTION(DEX_BUILDER_BUILD_SHARED OFF)
 SET_OPTION(LSPLANT_BUILD_SHARED OFF)
 add_subdirectory(../../../../libs/LSPlant/lsplant/src/main/jni lsplant_static)
+target_compile_options(dex_builder_static PRIVATE "-Wno-c++2b-extensions")
 
 target_compile_definitions(fmt-header-only INTERFACE FMT_STATIC_THOUSANDS_SEPARATOR=1 FMT_USE_FLOAT=0 FMT_USE_DOUBLE=0 FMT_USE_LONG_DOUBLE=0)
 

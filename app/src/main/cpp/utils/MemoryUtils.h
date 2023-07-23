@@ -43,7 +43,6 @@ struct MemoryMapEntry {
     std::string path;
 };
 
-[[deprecated("too slow")]]
 std::vector<MemoryMapEntry> GetProcessMemoryMaps(uint32_t pid = 0);
 
 std::vector<uint32_t> GetMemoryProtects(const std::vector<MemoryMapEntry>& maps, const std::vector<uint64_t>& addresses);
