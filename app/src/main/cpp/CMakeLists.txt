@@ -44,6 +44,10 @@ add_subdirectory(../../../../libs/silk silk)
 add_subdirectory(../../../../libs/libunwindstack unwindstack)
 add_subdirectory(../../../../libs/fmt fmt)
 
+SET_OPTION(DEX_BUILDER_BUILD_SHARED OFF)
+SET_OPTION(LSPLANT_BUILD_SHARED OFF)
+add_subdirectory(../../../../libs/LSPlant/lsplant/src/main/jni lsplant_static)
+
 target_compile_definitions(fmt-header-only INTERFACE FMT_STATIC_THOUSANDS_SEPARATOR=1 FMT_USE_FLOAT=0 FMT_USE_DOUBLE=0 FMT_USE_LONG_DOUBLE=0)
 
 add_library(qauxv SHARED
@@ -69,6 +73,7 @@ add_library(qauxv SHARED
         utils/ElfScan.cc
         utils/AobScanUtils.cc
         utils/arch_utils.cc
+        utils/MemoryDexLoader.cc
 
         ntkernel/NtRecallMsgHook.cc
 
@@ -80,9 +85,12 @@ set_target_properties(qauxv PROPERTIES
         )
 
 target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
+target_include_directories(qauxv PRIVATE ../../../../libs/LSPlant/lsplant/src/main/jni)
 target_include_directories(qauxv PRIVATE .)
 
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack base silk c dl fmt-header-only z ${ANDROID_LIBS})
+target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack base silk
+        c dl fmt-header-only z lsplant_static absl::flat_hash_map
+        ${ANDROID_LIBS})

@@ -25,3 +25,6 @@
 [submodule "libs/fmt"]
 	path = libs/fmt
 	url = https://github.com/fmtlib/fmt
+[submodule "libs/LSPlant"]
+	path = libs/LSPlant
+	url = https://github.com/LSPosed/LSPlant
