@@ -155,6 +155,10 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
     }
 
     public static void openUserProfileCard(@NonNull Context ctx, long uin) {
+        openUserProfileCard(ctx, uin, 0);
+    }
+
+    public static void openUserProfileCard(@NonNull Context ctx, long uin, long troopUin) {
         try {
             QSecO3AddRiskRequestMitigation.INSTANCE.initialize();
         } catch (Exception | LinkageError e) {
@@ -162,10 +166,14 @@ public class OpenProfileCard implements IUiItemAgent, IUiItemAgentProvider {
         }
         try {
             Parcelable allInOne = (Parcelable) Reflex.newInstance(
-                    Initiator._AllInOne(), "" + uin, 35,
+                    Initiator._AllInOne(), "" + uin, troopUin != 0 ? 20 : 35,
                     String.class, int.class);
             Intent intent = new Intent(ctx, Initiator._FriendProfileCardActivity());
             intent.putExtra("AllInOne", allInOne);
+            if (troopUin != 0) {
+                intent.putExtra("memberUin", "" + uin);
+                intent.putExtra("troopUin", "" + troopUin);
+            }
             intent.putExtra(QSecO3AddRiskRequestMitigation.KEY_UIN_IS_FROM_VOID, true);
             ctx.startActivity(intent);
         } catch (Exception e) {

@@ -119,7 +119,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
             }.show()
     }
 
-    private fun createClickSpanForUid(uid: String?): ClickableSpan {
+    private fun createClickSpanForUid(uid: String?, troopUin: Long): ClickableSpan {
         return object : ClickableSpan() {
             override fun onClick(widget: View) {
                 val ctx = widget.context
@@ -130,7 +130,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
                             createUnknownUidDialog(ctx, uid)
                             return
                         } else {
-                            OpenProfileCard.openUserProfileCard(ctx, uin.toLong())
+                            OpenProfileCard.openUserProfileCard(ctx, uin.toLong(), troopUin)
                         }
                     } catch (e: Exception) {
                         FaultyDialog.show(ctx, e)
@@ -140,7 +140,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         }
     }
 
-    private fun setAtSpanBySearch(textView: TextView, atElements: List<TextElement>) {
+    private fun setAtSpanBySearch(textView: TextView, atElements: List<TextElement>, troopUin: Long) {
         val text = textView.text
         val ssb = SpannableString(text)
         for (at in atElements) {
@@ -149,7 +149,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
                 val start = text.indexOf(at.content)
                 if (start == -1) continue
                 val end = start + at.content.length
-                ssb.setSpan(createClickSpanForUid(uid), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
+                ssb.setSpan(createClickSpanForUid(uid, troopUin), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
         textView.text = ssb
@@ -171,9 +171,9 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         if (atElements.isEmpty()) {
             return
         }
-        val tv = rootView.findHostView<TextView>(NAME_TEXTVIEW) ?: throw Exception("TextView not found")
+        val tv = rootView.findHostView<TextView>(NAME_TEXTVIEW) ?: return
         // TODO 2023-07-19 更稳定查找TextView
-        setAtSpanBySearch(tv, atElements)
+        setAtSpanBySearch(tv, atElements, chatMessage.peerUin)
     }
 
     private fun copeAtInfo(textView: TextView, atList: List<*>) {
