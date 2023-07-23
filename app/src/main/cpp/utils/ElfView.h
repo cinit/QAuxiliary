@@ -1,86 +1,123 @@
 //
 // Created by kinit on 2021-10-25.
 //
+// This file(ElfView.h) is licensed under the Apache License 2.0.
 
 #ifndef NATIVES_ELFVIEW_H
 #define NATIVES_ELFVIEW_H
 
+#include <cstddef>
 #include <cstdint>
+#include <string_view>
 #include <vector>
+#include <span>
+#include <string>
 // do not #include <elf.h> here, too many macros
-
-#include "utils/MemoryBuffer.h"
 
 namespace utils {
 
 class ElfView {
 public:
-    using ElfInfo = struct {
-        const uint8_t* handle;
-        const void* ehdr;
-        const void* phdr;
-        const void* shdr;
-        const void* dyn;
-        uint32_t dyn_size;
-        const void* symtab;
-        uint32_t sym_size;
-        const void* relplt;
-        uint32_t relplt_size;
-        const void* reldyn;
-        bool use_rela;
-        uint32_t reldyn_size;
-        const void* gnu_hash;
-        uint32_t nbucket;
-        uint32_t nchain;
-        const uint32_t* bucket;
-        const uint32_t* chain;
-        const char* shstr;
-        const char* symstr;
+
+    enum class ElfClass {
+        kNone = 0,
+        kElf32 = 1,
+        kElf64 = 2,
     };
 
-    static constexpr int ARCH_X86 = 3;
-    static constexpr int ARCH_X86_64 = 62;
-    static constexpr int ARCH_ARM = 40;
-    static constexpr int ARCH_AARCH64 = 183;
+    class ElfInfo {
+    public:
+        ElfClass elfClass = ElfClass::kNone;
+        uint16_t machine = 0;
+        std::string soname;
+        size_t loadedSize = 0;
+        const void* sysv_hash = nullptr;
+        uint32_t sysv_hash_nbucket = 0;
+        uint32_t sysv_hash_nchain = 0;
+        const uint32_t* sysv_hash_bucket = nullptr;
+        const uint32_t* sysv_hash_chain = nullptr;
+        const void* gnu_hash = nullptr;
+        const void* symtab = nullptr;
+        size_t symtab_size = 0;
+        const char* strtab = nullptr;
+        const void* dynsym = nullptr;
+        size_t dynsym_size = 0;
+        const char* dynstr = nullptr;
+        bool use_rela = false;
+        const void* reldyn = nullptr;
+        size_t reldyn_size = 0;
+        const void* reladyn = nullptr;
+        size_t reladyn_size = 0;
+        const void* relplt = nullptr;
+        size_t relplt_size = 0;
+    };
+
 private:
-    MemoryBuffer mMemoryBuffer{nullptr, 0};
-    int mPointerSize = 0;
-    int mArchitecture = 0;
+    std::span<const uint8_t> mMemory;
+    bool mIsLoaded = false;
+    ElfInfo mElfInfo;
 
 public:
-    void attachFileMemMapping(void* address, size_t size);
 
-    [[nodiscard]] bool isValid() const noexcept {
-        return mPointerSize != 0;
+    void AttachFileMemMapping(std::span<const uint8_t> fileMap) noexcept;
+
+    inline void AttachFileMemMapping(const void* address, size_t length) noexcept {
+        AttachFileMemMapping(std::span<const uint8_t>((const uint8_t*) address, length));
     }
 
-    inline void detach() {
-        mMemoryBuffer = {nullptr, 0};
-        mPointerSize = 0;
-        mArchitecture = 0;
+    void AttachLoadedMemoryView(std::span<const uint8_t> memory);
+
+    inline void AttachLoadedMemoryView(const void* address, size_t length) {
+        AttachLoadedMemoryView(std::span<const uint8_t>((const uint8_t*) address, length));
     }
 
-    [[nodiscard]] inline int getPointerSize() const noexcept {
-        return mPointerSize;
+    [[nodiscard]] inline bool IsValid() const noexcept {
+        return !mMemory.empty() && mElfInfo.elfClass != ElfClass::kNone;
     }
 
-    [[nodiscard]] inline int getArchitecture() const noexcept {
-        return mArchitecture;
+    inline void Detach() noexcept {
+        mMemory = {};
+        mElfInfo = {};
+        mIsLoaded = false;
     }
 
-    [[nodiscard]] int getElfInfo(ElfInfo& info) const;
+    [[nodiscard]] inline int GetPointerSize() const noexcept {
+        switch (mElfInfo.elfClass) {
+            case ElfClass::kElf32:
+                return 4;
+            case ElfClass::kElf64:
+                return 8;
+            default:
+                return 0;
+        }
+    }
+
+    [[nodiscard]] inline const ElfInfo& GetElfInfo() const noexcept {
+        return mElfInfo;
+    }
+
+    [[nodiscard]] inline int GetArchitecture() const noexcept {
+        return mElfInfo.machine;
+    }
+
+    [[nodiscard]] inline size_t GetLoadedSize() const noexcept {
+        return mElfInfo.loadedSize;
+    }
 
     /**
-     * @return -1 if not found
+     * Get the soname of the elf file.
+     * @return may be empty string.
      */
-    [[nodiscard]] int getSymbolIndex(const char* symbol) const;
+    [[nodiscard]] inline const std::string& GetSoname() const noexcept {
+        return mElfInfo.soname;
+    }
 
-    /**
-     * @return 0 if not found
-     */
-    [[nodiscard]] int getSymbolAddress(const char* symbol) const;
+    [[nodiscard]] uint64_t GetSymbolOffset(std::string_view symbol) const;
 
-    [[nodiscard]] std::vector<uint64_t> getExtSymGotRelVirtAddr(const char* symbol) const;
+    [[nodiscard]] uint64_t GetFirstSymbolOffsetWithPrefix(std::string_view symbolPrefix) const;
+
+    [[nodiscard]] std::vector<uint64_t> GetSymbolGotOffset(std::string_view symbol) const;
+
 };
 
 }
