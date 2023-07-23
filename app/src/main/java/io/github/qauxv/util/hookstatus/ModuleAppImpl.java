@@ -24,6 +24,7 @@ package io.github.qauxv.util.hookstatus;
 
 import android.app.Application;
 import android.os.Build;
+import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Natives;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
@@ -41,5 +42,7 @@ public class ModuleAppImpl extends Application {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             HiddenApiBypass.setHiddenApiExemptions("L");
         }
+        NativeCoreBridge.initNativeCore(getPackageName(), Build.VERSION.SDK_INT,
+                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
     }
 }

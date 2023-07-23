@@ -49,6 +49,7 @@
 
 struct NativeHookHandle {
     int (* hookFunction)(void* func, void* replace, void** backup);
+    int (* unhookFunction)(void* func);
 };
 
 static NativeHookHandle sNativeHookHandle = {};
@@ -91,6 +92,14 @@ int CreateInlineHook(void* func, void* replace, void** backup) {
         return RS_FAILED;
     }
     return sNativeHookHandle.hookFunction(func, replace, backup);
+}
+
+int DestroyInlineHook(void* func) {
+    if (!sIsNativeInitialized) {
+        LOGE("DestroyInlineHook: native core is not initialized");
+        return RS_FAILED;
+    }
+    return sNativeHookHandle.unhookFunction(func);
 }
 
 void* (* backup_do_dlopen)(const char* name, int flags, const void* extinfo, const void* caller) = nullptr;
@@ -261,6 +270,7 @@ void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg) {
 // called by Xposed framework
 EXPORT extern "C" NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
     sNativeHookHandle.hookFunction = entries->hookFunc;
+    sNativeHookHandle.unhookFunction = entries->unhookFunc;
     qauxv::sHandleLoadLibraryCallbackInitialized = true;
     return &qauxv::HandleLoadLibrary;
 }
@@ -295,6 +305,9 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
         LOGD("initNativeCore: native hook function is null, Dobby will be used");
         sNativeHookHandle.hookFunction = +[](void* func, void* replace, void** backup) {
             return DobbyHook((void*) func, (dobby_dummy_func_t) replace, (dobby_dummy_func_t*) backup);
+        };
+        sNativeHookHandle.unhookFunction = +[](void* func) {
+            return DobbyDestroy((void*) func);
         };
         if (!sHandleLoadLibraryCallbackInitialized) {
             HookLoadLibrary();

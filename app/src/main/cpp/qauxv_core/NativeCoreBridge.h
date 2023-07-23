@@ -43,6 +43,8 @@ void RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 
 int CreateInlineHook(void* func, void* replace, void** backup);
 
+int DestroyInlineHook(void* func);
+
 /**
  * Add some error message to the error list.
  * @param env  JNI environment, optional, may be nullptr.
