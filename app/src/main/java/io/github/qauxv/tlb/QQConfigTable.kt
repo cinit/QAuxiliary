@@ -60,6 +60,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_9_28
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
 import io.github.qauxv.util.QQVersion.QQ_8_9_63
 import io.github.qauxv.util.QQVersion.QQ_8_9_68
+import io.github.qauxv.util.QQVersion.QQ_8_9_70
 import io.github.qauxv.util.QQVersion.QQ_8_9_8
 import me.ketal.hook.SortAtPanel
 import xyz.nextalone.hook.ChatWordsCount
@@ -100,6 +101,7 @@ class QQConfigTable : ConfigTableInterface {
             // NT begin
             QQ_8_9_63 to "nxj",
             QQ_8_9_68 to "nyb",
+            QQ_8_9_70 to "nyn"
         ),
 
         //中间部分(QQ会员 我的钱包等)

@@ -93,7 +93,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     // For NT
     private const val ID_ADD_LAYOUT = 0x114515
     private const val ID_ADD_TEXTVIEW = 0x114516
-    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "s3o" else "rzs"
+    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "s55"
+    else if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "s3o"
+    else "rzs"
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
@@ -336,9 +338,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         if (!isEnabled && !isFlashPicTagNeedShow) return
 
         val tailLayout = try {
-            rootView.findHostView(NAME_TAIL_LAYOUT) ?: throw Exception("TailLayout not found")
+            rootView.findHostView(NAME_TAIL_LAYOUT) ?: return
         } catch (_: Exception) {
-            val stub = rootView.findHostView<ViewStub>(NAME_TAIL_LAYOUT) ?: return
+            val stub = rootView.findHostView<ViewStub>(NAME_TAIL_LAYOUT)!!
             stub.inflate() as FrameLayout
         }
         if (!tailLayout.children.map { it.id }.contains(ID_ADD_LAYOUT)) {

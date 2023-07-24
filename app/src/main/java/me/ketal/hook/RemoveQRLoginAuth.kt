@@ -30,6 +30,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.QQVersion.QQ_8_9_0
+import io.github.qauxv.util.QQVersion.QQ_8_9_70
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
@@ -43,7 +44,13 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
 
     override fun initOnce() = throwOrTrue {
-        val clazz = if (requireMinQQVersion(QQ_8_9_0)) "com/tencent/open/agent/QrAgentLoginManager\$a" else "com/tencent/open/agent/QrAgentLoginManager\$2"
+        val clazz = if (requireMinQQVersion(QQ_8_9_70)) {
+            "com/tencent/open/agent/QrAgentLoginManager"
+        } else if (requireMinQQVersion(QQ_8_9_0)) {
+            "com/tencent/open/agent/QrAgentLoginManager\$a"
+        } else {
+            "com/tencent/open/agent/QrAgentLoginManager\$2"
+        }
         Initiator.loadClass(clazz).declaredMethods
             .findMethod {
                 returnType == Void.TYPE && parameterTypes.isNotEmpty() && parameterTypes[0] == Boolean::class.java

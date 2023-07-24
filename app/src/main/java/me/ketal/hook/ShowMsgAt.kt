@@ -66,7 +66,9 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
 
-    private val NAME_TEXTVIEW = if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "ewl" else "ewk"
+    private val NAME_TEXTVIEW = if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "ex1"
+    else if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "ewl"
+    else "ewk"
 
     override fun initOnce(): Boolean {
         return !isTim() && BaseBubbleBuilderHook.initialize()
