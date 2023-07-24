@@ -216,7 +216,7 @@ public class Initiator {
     }
 
     public static Class<?> _StartupDirector() {
-        return findClassWithSynthetics("com/tencent/mobileqq/startup/director/StartupDirector", 1);
+        return findClassWithSyntheticsSilently("com/tencent/mobileqq/startup/director/StartupDirector", 1);
     }
 
     private static Class<?> skNtStartupDirector = null;
@@ -484,6 +484,25 @@ public class Initiator {
             return clazz;
         }
         Log.e("Initiator/E class " + className + " not found");
+        return null;
+    }
+
+    @Nullable
+    private static Class<?> findClassWithSyntheticsSilently(@NonNull String className, int... index) {
+        Class<?> cache = sClassCache.get(className);
+        if (cache != null) {
+            return cache;
+        }
+        Class<?> clazz = load(className);
+        if (clazz != null) {
+            sClassCache.put(className, clazz);
+            return clazz;
+        }
+        clazz = findClassWithSyntheticsImpl(className, index);
+        if (clazz != null) {
+            sClassCache.put(className, clazz);
+            return clazz;
+        }
         return null;
     }
 

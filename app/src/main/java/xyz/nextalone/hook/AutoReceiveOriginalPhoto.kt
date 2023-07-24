@@ -58,16 +58,16 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
-    override fun initOnce() = throwOrTrue {
-        Log.d("AutoReceiveOriginalPhoto initOnce")
-        val kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)!!
+    override fun initOnce(): Boolean {
+        val kAIOPictureView = DexKit.requireClassFromCache(CAIOPictureView)
         val onDownloadOriginalPictureClick = DexKit.loadMethodFromCache(NAIOPictureView_onDownloadOriginalPictureClick)!!
-        val setVisibility = DexKit.loadMethodFromCache(NAIOPictureView_setVisibility)!!
+        val setVisibility = DexKit.requireMethodFromCache(NAIOPictureView_setVisibility)
         setVisibility.replace(this) {
             if (it.args[0] as Boolean) {
                 it.thisObject.invoke(onDownloadOriginalPictureClick.name)
             }
         }
+        return true
     }
 
     override val isAvailable: Boolean get() = requireMinVersion(
