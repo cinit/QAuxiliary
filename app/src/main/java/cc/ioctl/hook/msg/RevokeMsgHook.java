@@ -495,7 +495,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                         String msgAuthorName = ContactUtils.getDisplayNameForUid(msgAuthorUid, peerUid);
                         String msgAuthorUin = RelationNTUinAndUidApi.getUinFromUid(msgAuthorUid);
                         // msgAuthorUin may be empty, in the case when in a group chat, NT kernel are not so familiar with the one
-                        if (recallOpUid.equals(msgAuthorUin)) {
+                        if (recallOpUid.equals(msgAuthorUid)) {
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
                             builder.appendText("撤回了一条消息(没收到) [seq=" + msgSeq + "]");
                             summary = operatorName + "撤回了一条消息(没收到)";
