@@ -749,3 +749,17 @@ data object NQZMoment_EntranceEnabled : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/qzone/reborn/qzmoment/util")
 }
+
+data object DefaultFileModel : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = false
+    override val traitString = arrayOf("onVideoPlayerError : file entity is null")
+    override val declaringClass = "com.tencent.mobileqq.filemanager.fileviewer.model.DefaultFileModel"
+    override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.filemanager.fileviewer.model")
+}
+
+data object FileBrowserActivity_InnerClass_onItemClick : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = true
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("GeneralFileBrowserActivity", "reportShareActionSheetClick"))
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("FileBrowserActivity")
+}
