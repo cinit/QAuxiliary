@@ -59,7 +59,8 @@ object DexKitFilter {
     }
 
     fun strInClsName(str: String, fullMatch: Boolean = false): dexkitFilter = { it: DexMethodDescriptor ->
-        if (fullMatch) str == it.declaringClass else str in it.declaringClass
+        val pattern = str.replace(".", "/")
+        if (fullMatch) pattern == it.declaringClass else pattern in it.declaringClass
     }
 
     fun strInSig(str: String, fullMatch: Boolean = false): dexkitFilter = { it: DexMethodDescriptor ->

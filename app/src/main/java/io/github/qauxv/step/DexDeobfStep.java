@@ -44,8 +44,8 @@ public class DexDeobfStep implements Step {
     @Override
     public boolean step() {
         try {
-            if (target instanceof DexKitTarget.UsingStr) {
-                var t = (DexKitTarget.UsingStr) target;
+            if (target instanceof DexKitTarget) {
+                var t = (DexKitTarget) target;
                 if (t.getFindMethod()) {
                     DexKit.doFindMethod(t);
                 } else {
@@ -70,8 +70,8 @@ public class DexDeobfStep implements Step {
 
     @Override
     public String getDescription() {
-        if (target instanceof DexKitTarget.UsingStr) {
-            var t = (DexKitTarget.UsingStr) target;
+        if (target instanceof DexKitTarget) {
+            var t = (DexKitTarget) target;
             if (t.getFindMethod()) {
                 return "定位被混淆方法: " + getId();
             } else {

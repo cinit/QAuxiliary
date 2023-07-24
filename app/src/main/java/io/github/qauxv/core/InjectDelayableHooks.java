@@ -138,7 +138,7 @@ public class InjectDelayableHooks {
                 List<DexKitTarget> ids = new LinkedList<>();
                 for (String id : deobfIndexList) {
                     DexKitTarget target = DexKitTargetSealedEnum.INSTANCE.valueOf(id);
-                    if (target instanceof DexKitTarget.UsingStr) {
+                    if (target instanceof DexKitTarget) {
                         ids.add(target);
                     }
                 }

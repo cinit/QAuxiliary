@@ -356,7 +356,6 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val colorNotice: Int = ThemeAttrUtils.resolveColorOrDefaultColorInt(ctx, androidx.appcompat.R.attr.colorAccent, Color.BLUE)
         val sb = SpannableStringBuilder()
         val targets = DexKitTarget.values
-            .filterIsInstance<DexKitTarget.UsingStr>()
             .groupBy { it.findMethod }
         targets[false]?.forEach {
             kotlin.runCatching {

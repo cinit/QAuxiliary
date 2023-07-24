@@ -53,6 +53,11 @@ sealed class DexKitTarget {
         abstract val traitString: Array<String>
     }
 
+    sealed class UsingStringVector : DexKitTarget() {
+        // relationship: ((v[0][0] && v[0][1] && ..) || (v[1][0] && v[1][1] && ..) || ..)
+        abstract val traitStringVectors: Array<Array<String>>
+    }
+
     sealed class UsingDexkit : DexKitTarget()
 
     abstract val declaringClass: String

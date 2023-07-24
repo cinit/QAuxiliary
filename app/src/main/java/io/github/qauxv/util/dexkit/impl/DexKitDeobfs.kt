@@ -34,6 +34,7 @@ import io.luckypray.dexkit.DexKitBridge
 import io.luckypray.dexkit.builder.BatchFindArgs
 import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor as MethodDescriptor
 import java.util.concurrent.locks.Lock
+import kotlin.concurrent.withLock
 
 class DexKitDeobfs private constructor(
     private val mReadLock: Lock,
@@ -49,23 +50,33 @@ class DexKitDeobfs private constructor(
     }
 
     override fun doBatchFindMethodImpl(targetArray: Array<DexKitTarget>) {
+        data class TargetHolder(
+            val target: DexKitTarget,
+            val traitStringVectors: Array<Set<String>>
+        )
+
         ensureOpen()
-        mReadLock.lock()
-        try {
+        mReadLock.withLock {
             val helper = mDexKitBridge!!
-            val targets = targetArray.filterIsInstance<DexKitTarget.UsingStr>()
-            val methodDescriptorArray = Array(targets.size) {
-                DexKit.getMethodDescFromCacheImpl(targets[it])
+            val targets: MutableList<TargetHolder> = ArrayList()
+            targetArray.forEach { target ->
+                if (DexKit.getMethodDescFromCacheImpl(target) == null) {
+                    if (target is DexKitTarget.UsingStringVector) {
+                        // v2, Array<Array<String>> -> Array<Set<String>>
+                        targets += TargetHolder(target, target.traitStringVectors.map { it.toSet() }.toTypedArray())
+                    } else if (target is DexKitTarget.UsingStr) {
+                        // v1, Array<String> -> Array<setOf<String>>
+                        targets += TargetHolder(target, target.traitString.map { setOf(it) }.toTypedArray())
+                    }
+                }
             }
             val deobfsMap = mutableMapOf<String, Set<String>>()
-            for (index in methodDescriptorArray.indices) {
-                if (methodDescriptorArray[index] == null) {
-                    val target = targets[index]
-                    val keys = target.traitString
-                    keys.forEachIndexed { idx, key ->
-                        // 可能存在不同版本的关键词，所以需要区分开来
-                        deobfsMap["${target.name}#_#${idx}"] = setOf(key)
-                    }
+            for (index in targets.indices) {
+                val target = targets[index]
+                val keys = target.traitStringVectors
+                keys.forEachIndexed { idx, key ->
+                    // 可能存在不同版本的关键词，所以需要区分开来
+                    deobfsMap["${target.target.name}#_#${idx}"] = key
                 }
             }
 
@@ -94,42 +105,48 @@ class DexKitDeobfs private constructor(
                     target.descCache = ret.toString()
                 }
             }
-        } finally {
-            mReadLock.unlock()
         }
     }
 
     override fun doFindMethodImpl(target: DexKitTarget): DexMethodDescriptor? {
-        if (target !is DexKitTarget.UsingStr) return null
+        if (target !is DexKitTarget.UsingStr && target !is DexKitTarget.UsingStringVector) {
+            return null
+        }
         ensureOpen()
-        mReadLock.lock()
-        try {
-            var ret = DexKit.getMethodDescFromCacheImpl(target)
-            if (ret != null) {
-                return ret
+        mReadLock.withLock {
+            val cached = DexKit.getMethodDescFromCacheImpl(target)
+            if (cached != null) {
+                return if (DexKit.NO_SUCH_METHOD.toString() == cached.toString()) null else cached
             }
-            ensureOpen()
             val helper = mDexKitBridge!!
-            val keys = target.traitString
-            val methods = keys.map { key ->
-                helper.findMethodUsingString {
-                    usingString = key
-                }
-            }.flatMap { desc ->
-                desc.map { DexMethodDescriptor(it.descriptor) }
+            val keys: Array<Set<String>> = if (target is DexKitTarget.UsingStringVector) {
+                target.traitStringVectors.map { it.toSet() }.toTypedArray()
+            } else if (target is DexKitTarget.UsingStr) {
+                target.traitString.map { setOf(it) }.toTypedArray()
+            } else {
+                return null
             }
-            if (methods.isNotEmpty()) {
-                ret = target.verifyTargetMethod(methods)
-                if (ret == null) {
-                    Log.e("${methods.size} methods found for ${target.name}, none satisfactory, save null.")
-                    ret = DexKit.NO_SUCH_METHOD
-                }
+            val resultMap = helper.batchFindMethodsUsingStrings(BatchFindArgs.build {
+                queryMap = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
+            })
+            if(resultMap.isEmpty()){
+                Log.e("no result found for ${target.name}")
+                target.descCache = DexKit.NO_SUCH_METHOD.toString()
+                return null
+            }
+            val resultSet = resultMap.values.reduce { acc, set -> acc + set }
+            // verify
+            val ret = target.verifyTargetMethod(resultSet.map { DexMethodDescriptor(it.descriptor) })
+            if (ret == null) {
+                resultSet.map { it.descriptor }.forEach(Log::i)
+                Log.e("${resultSet.size} candidates found for " + target.name + ", none satisfactory, save null.")
+                target.descCache = DexKit.NO_SUCH_METHOD.toString()
+                return null
+            } else {
                 Log.d("save id: ${target.name},method: $ret")
                 target.descCache = ret.toString()
+                return ret
             }
-            return ret
-        } finally {
-            mReadLock.unlock()
         }
     }
 
