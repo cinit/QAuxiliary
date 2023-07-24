@@ -1131,6 +1131,29 @@ public class Reflex {
         return candidateMethod;
     }
 
+    @NonNull
+    public static Field findSingleField(@NonNull Class<?> clazz, @NonNull Class<?> type, boolean withSuper) throws NoSuchFieldException {
+        Objects.requireNonNull(clazz, "clazz == null");
+        Objects.requireNonNull(type, "type == null");
+        Class<?> clz = clazz;
+        Field candidateField = null;
+        do {
+            for (Field field : clz.getDeclaredFields()) {
+                if (field.getType() == type) {
+                    if (candidateField != null) {
+                        throw new NoSuchFieldException("Multiple fields of type " + type.getName() + " found in " + clazz.getName());
+                    } else {
+                        candidateField = field;
+                    }
+                }
+            }
+        } while ((candidateField == null && withSuper) && (clz = clz.getSuperclass()) != null);
+        if (candidateField == null) {
+            throw new NoSuchFieldException("No field of type " + type.getName() + " found in " + clazz.getName());
+        }
+        return candidateField;
+    }
+
     /**
      * Finds a method with the given return type and parameter types.
      *
