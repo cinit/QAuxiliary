@@ -161,6 +161,15 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
                 return;
             }
             ArrayList<Object> row2 = results[1];
+            // check if already added
+            if (!row2.isEmpty()) {
+                Object lastItem = row2.get(row2.size() - 1);
+                int id = Reflex.getInstanceObject(lastItem, "id", int.class);
+                if (id == R.id.ShareActionSheet_shareFileWithExtApp) {
+                    // already added
+                    return;
+                }
+            }
             Object item = ctorActionSheetItem.newInstance();
             Context ctx = Reflex.getFirstByType(param.thisObject, Activity.class);
             Parasitics.injectModuleResources(ctx.getResources());
