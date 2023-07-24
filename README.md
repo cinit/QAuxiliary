@@ -92,7 +92,7 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 1. 安装 git, ccache(可选), cmake, SDK 和 NDK, 版本参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);
 2. 将本仓库 clone 至本地，本仓库含有 git submodule 所以请使用 git clone 而不是下载源代码压缩包；
-3. 拉取 MMKV, DexKit 等子模块, `git submodule init && git submodule update --recursive`;
+3. 拉取 MMKV, DexKit 等子模块, `git submodule update --init --recursive`;
 4. 使用 Gradle 编译安装包。
 
 ---
