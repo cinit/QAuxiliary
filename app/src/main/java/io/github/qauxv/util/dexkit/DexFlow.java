@@ -28,8 +28,13 @@ import io.github.qauxv.util.NonUiThread;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;
+import java.util.Objects;
 
 public class DexFlow {
+
+    private DexFlow() {
+        throw new AssertionError("No instances");
+    }
 
     private static final byte[] OPCODE_LENGTH_TABLE = new byte[]{
             1, 1, 2, 3, 1, 2, 3, 1, 2, 3, 1, 1, 1, 1, 1, 1,
@@ -105,25 +110,13 @@ public class DexFlow {
     }
 
     @NonUiThread
-    @Deprecated
-    public static String guessNewInstanceType(byte[] buf, DexMethodDescriptor method,
-                                              DexFieldDescriptor field) throws NoSuchMethodException {
-        if (buf == null) {
-            throw new NullPointerException("dex == null");
-        }
-        if (method == null) {
-            throw new NullPointerException("method == null");
-        }
-        if (field == null) {
-            throw new NullPointerException("field == null");
-        }
+    public static int getDexMethodOffset(@NonNull byte[] buf, @NonNull DexMethodDescriptor method) {
         int methodIdsSize = readLe32(buf, 0x58);
         int methodIdsOff = readLe32(buf, 0x5c);
         int classDefsSize = readLe32(buf, 0x60);
         int classDefsOff = readLe32(buf, 0x64);
-        int dexCodeOffset = -1;
+        int dexCodeOffset = 0;
         int[] p = new int[1];
-        int[] ret = new int[1];
         int[] co = new int[1];
         main_loop:
         for (int cn = 0; cn < classDefsSize; cn++) {
@@ -178,7 +171,17 @@ public class DexFlow {
                 }
             }
         }
-        if (dexCodeOffset == -1) {
+        return dexCodeOffset;
+    }
+
+    @NonUiThread
+    @Deprecated
+    public static String guessNewInstanceType(byte[] buf, DexMethodDescriptor method, DexFieldDescriptor field) throws NoSuchMethodException {
+        Objects.requireNonNull(buf, "buf == null");
+        Objects.requireNonNull(method, "method == null");
+        Objects.requireNonNull(field, "field == null");
+        int dexCodeOffset = getDexMethodOffset(buf, method);
+        if (dexCodeOffset == 0) {
             throw new NoSuchMethodException(method.toString());
         }
         int registersSize = readLe16(buf, dexCodeOffset);
@@ -187,7 +190,7 @@ public class DexFlow {
         int triesSize = readLe16(buf, dexCodeOffset + 6);
         int insnsSize = readLe16(buf, dexCodeOffset + 12);
         int insnsOff = dexCodeOffset + 16;
-        //we only handle new-instance and iput-object
+        // we only handle new-instance and iput-object
         String[] regObjType = new String[insSize + outsSize];
         for (int i = 0; i < insnsSize; ) {
             int opv = buf[insnsOff + 2 * i] & 0xff;
@@ -213,6 +216,57 @@ public class DexFlow {
             i += len;
         }
         return null;
+    }
+
+    @NonUiThread
+    public static ArrayList<Integer> getViewSetIdP1Values(byte[] buf, DexMethodDescriptor method) throws NoSuchMethodException {
+        Objects.requireNonNull(buf, "buf == null");
+        Objects.requireNonNull(method, "method == null");
+        int dexCodeOffset = getDexMethodOffset(buf, method);
+        if (dexCodeOffset == 0) {
+            throw new NoSuchMethodException(method.toString());
+        }
+        int registersSize = readLe16(buf, dexCodeOffset);
+        int insSize = readLe16(buf, dexCodeOffset + 2);
+        int outsSize = readLe16(buf, dexCodeOffset + 4);
+        int triesSize = readLe16(buf, dexCodeOffset + 6);
+        int insnsSize = readLe16(buf, dexCodeOffset + 12);
+        int insnsOff = dexCodeOffset + 16;
+        // we only handle const and invoke-virtual Landroid/widget/TextView;->setId(I)V
+        String targetMethodDesc = "Landroid/widget/TextView;->setId(I)V";
+        Integer[] regObjType = new Integer[registersSize];
+        ArrayList<Integer> results = new ArrayList<>();
+        int pc = 0; // program counter
+        while (pc < insnsSize) {
+            int opv = buf[insnsOff + 2 * pc] & 0xff;
+            int len = OPCODE_LENGTH_TABLE[opv];
+            if (len == 0) {
+                throw new RuntimeException(String.format(Locale.ROOT, "Unrecognized opcode = 0x%02x", opv));
+            }
+            if (opv == 0x14) {
+                // 14 31i const vAA, #+BBBBBBBB
+                int reg = buf[insnsOff + 2 * pc + 1] & 0xff;
+                int valLow16 = readLe16(buf, insnsOff + 2 * pc + 2);
+                int valHigh16 = readLe16(buf, insnsOff + 2 * pc + 4);
+                int value = valLow16 | (valHigh16 << 16) & 0xffff0000;
+                regObjType[reg] = value;
+            } else if (opv == 0x6e) {
+                // 6e 35c invoke-kind {vC, vD, vE, vF, vG}, meth@BBBB
+                // [A=2] op {vC, vD}, kind@BBBB
+                int methodIdx = readLe16(buf, insnsOff + 2 * pc + 2);
+                DexMethodDescriptor m = readMethod(buf, methodIdx);
+                if (m.getDescriptor().equals(targetMethodDesc)) {
+                    // get p1/C reg index
+                    int insOffset4 = readLe16(buf, insnsOff + 2 * pc + 4);
+                    int regIndex = (insOffset4 >> 4) & 0xf;
+                    if (regObjType[regIndex] != null) {
+                        results.add(regObjType[regIndex]);
+                    }
+                }
+            }
+            pc += len;
+        }
+        return results;
     }
 
     @NonUiThread
@@ -479,6 +533,15 @@ public class DexFlow {
         String type = readType(buf, readLe16(buf, p + 2));
         String name = readString(buf, readLe32(buf, p + 4));
         return new DexFieldDescriptor(clz, name, type);
+    }
+
+    public static DexMethodDescriptor readMethod(byte[] buf, int idx) {
+        int methodIdsOff = readLe32(buf, 0x5c);
+        int p = methodIdsOff + 8 * idx;
+        String clz = readType(buf, readLe16(buf, p));
+        String sig = readProto(buf, readLe16(buf, p + 2));
+        String name = readString(buf, readLe32(buf, p + 4));
+        return new DexMethodDescriptor(clz, name, sig);
     }
 
     public static String readProto(byte[] buf, int idx) {

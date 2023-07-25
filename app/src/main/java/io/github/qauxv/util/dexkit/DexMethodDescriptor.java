@@ -21,6 +21,7 @@
  */
 package io.github.qauxv.util.dexkit;
 
+import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -155,6 +156,11 @@ public class DexMethodDescriptor implements Serializable {
 
     @Override
     public String toString() {
+        return declaringClass + "->" + name + signature;
+    }
+
+    @NonNull
+    public String getDescriptor() {
         return declaringClass + "->" + name + signature;
     }
 

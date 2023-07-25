@@ -33,6 +33,7 @@ import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.forEach
 import cc.ioctl.hook.profile.OpenProfileCard
+import cc.ioctl.util.HostInfo
 import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.tencent.qqnt.kernel.nativeinterface.TextElement
@@ -40,14 +41,23 @@ import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.ntapi.ChatTypeConstants
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
-import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexDeobfsProvider
+import io.github.qauxv.util.dexkit.DexFlow
+import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
+import io.github.qauxv.util.dexkit.HostMainDexHelper
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
-import io.github.qauxv.util.requireMinQQVersion
+import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
@@ -59,19 +69,25 @@ import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 
 @UiItemAgentEntry
-object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
+object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
 
     override val name = "消息显示At对象"
     override val description = "可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val extraSearchKeywords: Array<String> = arrayOf("@", "艾特")
 
-    private val NAME_TEXTVIEW = if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "ex1"
-    else if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "ewl"
-    else "ewk"
+    private val mTextViewId: Int // 0 for unknown, -1 for not found
+        get() {
+            val cache = ConfigManager.getCache()
+            val lastVersion = cache.getIntOrDefault("ShowMsgAt_ex1_id_version_code", 0)
+            val id = cache.getIntOrDefault("ShowMsgAt_ex1_id_value", 0)
+            return if (HostInfo.getVersionCode() == lastVersion) {
+                id
+            } else 0
+        }
 
     override fun initOnce(): Boolean {
-        return !isTim() && BaseBubbleBuilderHook.initialize()
+        return !isTim() && BaseBubbleBuilderHook.initialize() && mTextViewId > 0
     }
 
     override fun onGetView(
@@ -173,7 +189,10 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         if (atElements.isEmpty()) {
             return
         }
-        val tv = rootView.findHostView<TextView>(NAME_TEXTVIEW) ?: return
+        if (mTextViewId <= 0) {
+            return
+        }
+        val tv = rootView.findViewById<TextView>(mTextViewId) ?: return
         // TODO 2023-07-19 更稳定查找TextView
         setAtSpanBySearch(tv, atElements, chatMessage.peerUin)
     }
@@ -204,6 +223,88 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder {
         textView.text = spannableString
         textView.movementMethod = LinkMovementMethod.getInstance()
     }
+
+    override val isNeedFind: Boolean
+        get() {
+            return mTextViewId == 0
+        }
+
+    @OptIn(DexKitExperimentalApi::class)
+    override fun doFind(): Boolean {
+        val fnSaveResult = { id: Int ->
+            val hostVersion = hostInfo.versionCode32
+            val cache = ConfigManager.getCache()
+            cache.putInt("ShowMsgAt_ex1_id_version_code", hostVersion)
+            cache.putInt("ShowMsgAt_ex1_id_value", id)
+        }
+        // step 1 find target class
+        // "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
+        val dexkitBridge = (DexDeobfsProvider.getCurrentBackend() as DexKitDeobfs).getDexKitBridge()
+        val result = dexkitBridge.findClassUsingAnnotation {
+            annotationUsingString = "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
+        }
+        val klass: Class<*>
+        if (result.size == 1) {
+            klass = Initiator.loadClass(result[0].name)
+        } else {
+            val errMsg = "ShowMsgAt: cannot find class got ${result.size} results" + result.joinToString()
+            fnSaveResult(-1)
+            traceError(RuntimeException(errMsg))
+            return false
+        }
+        // step 2 find specified method
+        val method = klass.declaredMethods.single {
+            val argt = it.parameterTypes
+            argt.size == 3 && argt[0] == Context::class.java && argt[1] == Integer.TYPE
+        }
+        val methodDesc = DexMethodDescriptor(method)
+        // step 3 load dex
+        val dex = HostMainDexHelper.findDexWithClass(klass)
+        if (dex == null) {
+            Log.e("ShowMsgAt: cannot find dex: $klass")
+            return false
+        }
+        // step 4 ???
+        val idList = DexFlow.getViewSetIdP1Values(dex, methodDesc)
+        if (idList.size == 1) {
+            // good
+            fnSaveResult(idList[0])
+            return true
+        } else {
+            // ???
+            val errMsg = "ShowMsgAt: cannot find id got ${idList.size} results" + idList.joinToString()
+            traceError(RuntimeException(errMsg))
+            fnSaveResult(-1)
+            return false
+        }
+    }
+
+    private val mStep: Step = object : Step {
+
+        override fun step(): Boolean {
+            return doFind()
+        }
+
+        override fun isDone(): Boolean {
+            return mTextViewId != 0
+        }
+
+        override fun getPriority() = -99
+
+        override fun getDescription() = "ShowMsgAt: find id"
+
+    }
+
+    private val mSteps by lazy {
+        val steps = mutableListOf(mStep)
+        super.makePreparationSteps()?.let {
+            steps.addAll(it)
+        }
+        steps.toTypedArray()
+    }
+
+    override fun makePreparationSteps(): Array<Step> = mSteps
+
 }
 
 class ProfileCardSpan(val qq: Long) : ClickableSpan() {
