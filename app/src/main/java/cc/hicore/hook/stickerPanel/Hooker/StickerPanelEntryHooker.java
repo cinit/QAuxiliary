@@ -222,6 +222,11 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
     }
 
     @Override
+    public String getDescription() {
+        return "长按表情按钮打开，仅支持QQNT";
+    }
+
+    @Override
     public boolean isAvailable() {
         return QAppUtils.isQQnt();
     }

@@ -42,7 +42,7 @@ import xyz.nextalone.util.throwOrTrue
 object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, arrayOf(NPadUtil_initDeviceType)) {
 
     override val name = "强制平板模式"
-    override val description = "仅支持 QQ 8.9.15, 未经测试, 谨慎使用"
+    override val description = "支持 QQ 8.9.15及以上，未经测试，谨慎使用"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isApplicationRestartRequired = true
 
