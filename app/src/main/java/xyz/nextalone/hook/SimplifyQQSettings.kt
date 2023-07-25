@@ -25,8 +25,11 @@ import android.app.Activity
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
-import cc.ioctl.util.Reflex
 import cc.hicore.ReflectUtil.MField
+import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.paramCount
+import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -71,36 +74,51 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {
-        val clazz = arrayOf(
-            Initiator._QQSettingSettingActivity(),
-            Initiator._QQSettingSettingFragment()
-        ).filterNotNull()
-        clazz.forEach { c ->
-            val m = kotlin.runCatching {
-                Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
-            }.getOrNull() ?: return@forEach
-            m.hookAfter(this) {
-                val thisObject = it.thisObject
-                val activity = if (thisObject is Activity) {
-                    thisObject
-                } else {
-                    thisObject.invoke("getActivity") as Activity
+        if (requireMinQQVersion(QQVersion.QQ_8_9_70)) {
+            val kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.g")
+            val mSetVisibility = kSimpleItemProcessor.declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == Boolean::class.java }
+            XposedBridge.hookAllConstructors(kSimpleItemProcessor, object : XC_MethodHook() {
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val str = param.args[2] as CharSequence
+                    if (activeItems.any { string -> string.isNotEmpty() && string in str }) {
+                        mSetVisibility.invoke(param.thisObject, false)
+                    }
                 }
-                val viewId: Int = it.args[0].toString().toInt()
-                val strId: Int = it.args[1].toString().toInt()
-                val view = thisObject.invoke("findViewById", viewId, Int::class.java) as View
-                val str = activity.getString(strId)
-                if (activeItems.any { string -> string.isNotEmpty() && string in str }) {
-                    view.hide()
+            })
+        } else {
+            val clazz = arrayOf(
+                Initiator._QQSettingSettingActivity(),
+                Initiator._QQSettingSettingFragment()
+            ).filterNotNull()
+            clazz.forEach { c ->
+                val m = kotlin.runCatching {
+                    Reflex.findSingleMethod(c, Void.TYPE, false, Integer.TYPE, Integer.TYPE, Integer.TYPE, Integer.TYPE)
+                }.getOrNull() ?: return@forEach
+                m.hookAfter(this) {
+                    val thisObject = it.thisObject
+                    val activity = if (thisObject is Activity) {
+                        thisObject
+                    } else {
+                        thisObject.invoke("getActivity") as Activity
+                    }
+                    val viewId: Int = it.args[0].toString().toInt()
+                    val strId: Int = it.args[1].toString().toInt()
+                    val view = thisObject.invoke("findViewById", viewId, Int::class.java) as View
+                    val str = activity.getString(strId)
+                    if (activeItems.any { string -> string.isNotEmpty() && string in str }) {
+                        view.hide()
+                    }
                 }
             }
         }
+
+        // 免流量 单独处理
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
-            if (requireMinQQVersion(4054)) {    //TODO:正式版发布后修改正式版本号
+            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
                 //Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng;->b(I)Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng$a;
                 Initiator.loadClass("com/tencent/mobileqq/managers/CUOpenCardGuideMng").let { clz ->
-                    val m = clz.declaredMethods.firstOrNull {
+                    val m = clz.declaredMethods.single {
                         it.parameterTypes.size == 1 && it.parameterTypes[0] == Int::class.java
                     } ?: return@throwOrTrue
                     m.hookBefore(this) {
