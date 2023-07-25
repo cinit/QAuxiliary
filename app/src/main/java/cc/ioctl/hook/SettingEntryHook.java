@@ -25,7 +25,6 @@ import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
 import static io.github.qauxv.util.Initiator.load;
 
-import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.content.Context;
 import android.content.Intent;
@@ -52,6 +51,7 @@ import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.fragment.FuncStatusDetailsFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
@@ -127,8 +127,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 Class<?> kItemProcessorGroup = result.get(0).getClass();
                 Constructor<?> ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
                 Parasitics.injectModuleResources(ctx.getResources());
-                @SuppressLint("DiscouragedApi")
-                int resId = ctx.getResources().getIdentifier("qui_tuning", "drawable", ctx.getPackageName());
+                int resId = ResUtils.isInNightMode() ? R.mipmap.ic_qauxv_entry_item_night : R.mipmap.ic_qauxv_entry_item_day;
                 Object entryItem = ctorSimpleItemProcessor.newInstance(ctx, R.id.setting2Activity_settingEntryItem, "QAuxiliary", resId);
                 Class<?> thatFunction0 = setOnClickListener.getParameterTypes()[0];
                 Object theUnit = thatFunction0.getClassLoader().loadClass("kotlin.Unit").getField("INSTANCE").get(null);
