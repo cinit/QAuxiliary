@@ -26,6 +26,8 @@ import android.content.Intent
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.field
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -39,6 +41,7 @@ import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
 import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Method
@@ -63,6 +66,7 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                         val card = it.args[0]
                         copeCard(card)
                     }
+
                     else -> {
                         if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
                             val card = it.args[1].get("card")
@@ -122,6 +126,16 @@ object RemoveDiyCard : CommonSwitchFunctionHook(
                     Log.e("IgnoreDiyCard/W but info == null")
                 }
             }
+        }
+
+        // 上面是旧的代码，不报错就不去动他
+        try {
+            "Lcom/tencent/mobileqq/profilecard/processor/TempProfileBusinessProcessor;->updateCardTemplate(Lcom/tencent/mobileqq/data/Card;Ljava/lang/String;LSummaryCardTaf/SSummaryCardRsp;)V".method.hookAfter { param ->
+                val card = param.args[0]
+                card.field("lCurrentStyleId", false, Long::class.java).set(card, 0L)
+            }
+        } catch (e: Exception) {
+            Log.e(e)
         }
     }
 
