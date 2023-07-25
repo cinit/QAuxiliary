@@ -142,12 +142,13 @@ public class HookInstaller {
                 }
             }
         } catch (Throwable stepErr) {
-            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
             if (hook instanceof RuntimeErrorTracer) {
                 ((RuntimeErrorTracer) hook).traceError(stepErr);
             }
             err = stepErr;
             isSuccessful = false;
+        } finally {
+            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
         }
         if (isSuccessful) {
             if (hook.isTargetProcess()) {

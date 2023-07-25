@@ -101,71 +101,72 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null
 
     override fun doFind(): Boolean {
-        val deobfs = getCurrentBackend() as? DexKitDeobfs ?: return false
-        val dexKit = deobfs.getDexKitBridge()
-        var kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)
-        if (kAIOPictureView == null) {
-            val clazzList = mutableListOf<DexClassDescriptor>().apply {
-                dexKit.batchFindClassesUsingStrings {
-                    addQuery("1", setOf("AIOPictureView", "0X800A91E"))
-                    addQuery("2", setOf("AIOGalleryPicView", "0X800A91E"))
-                }.values.forEach {
-                    addAll(it)
+        getCurrentBackend().use { backend ->
+            val dexKit = backend.getDexKitBridge()
+            var kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)
+            if (kAIOPictureView == null) {
+                val clazzList = mutableListOf<DexClassDescriptor>().apply {
+                    dexKit.batchFindClassesUsingStrings {
+                        addQuery("1", setOf("AIOPictureView", "0X800A91E"))
+                        addQuery("2", setOf("AIOGalleryPicView", "0X800A91E"))
+                    }.values.forEach {
+                        addAll(it)
+                    }
                 }
+                Log.d("clazz: $clazzList")
+                if (clazzList.size != 1) {
+                    return false
+                }
+                kAIOPictureView = clazzList[0].getClassInstance(getHostClassLoader())
+                // here a method descriptor is used to cache the class descriptor, not a class name
+                CAIOPictureView.descCache = getTypeSig(kAIOPictureView) + "-><clinit>()V"
             }
-            Log.d("clazz: $clazzList")
-            if (clazzList.size != 1) {
+            Log.d("kAIOPictureView: ${kAIOPictureView.name}")
+            val onClickInvokingMethods = dexKit.findMethodInvoking {
+                methodDeclareClass = kAIOPictureView.name
+                methodName = "onClick"
+                beInvokedMethodDeclareClass = kAIOPictureView.name
+                beInvokedMethodReturnType = "V"
+                beInvokedMethodParameterTypes = emptyArray()
+            }
+            Log.d("onClickInvokingMethods: $onClickInvokingMethods")
+            if (onClickInvokingMethods.size != 1) {
                 return false
             }
-            kAIOPictureView = clazzList[0].getClassInstance(getHostClassLoader())
-            // here a method descriptor is used to cache the class descriptor, not a class name
-            CAIOPictureView.descCache = getTypeSig(kAIOPictureView) + "-><clinit>()V"
-        }
-        Log.d("kAIOPictureView: ${kAIOPictureView.name}")
-        val onClickInvokingMethods = dexKit.findMethodInvoking {
-            methodDeclareClass = kAIOPictureView.name
-            methodName = "onClick"
-            beInvokedMethodDeclareClass = kAIOPictureView.name
-            beInvokedMethodReturnType = "V"
-            beInvokedMethodParameterTypes = emptyArray()
-        }
-        Log.d("onClickInvokingMethods: $onClickInvokingMethods")
-        if (onClickInvokingMethods.size != 1) {
-            return false
-        }
-        val calledMethods = onClickInvokingMethods.values.first().toSet()
-        Log.d("calledMethods: $calledMethods")
-        val invokingMethods = dexKit.findMethodInvoking {
-            methodDeclareClass = kAIOPictureView.name
-            methodReturnType = "V"
-            methodParameterTypes = emptyArray()
-            beInvokedMethodReturnType = "V"
-            beInvokedMethodParameterTypes = arrayOf("J", "I", "I")
-        }.map { it.key }.filter { calledMethods.contains(it) }
-        Log.d("invokingMethods: $invokingMethods")
-        if (invokingMethods.size == 1) {
-            NAIOPictureView_onDownloadOriginalPictureClick.descCache = invokingMethods.first().descriptor
-        } else {
-            val filterMethods = invokingMethods
-                .map { it.getMethodInstance(getHostClassLoader()) }
-                .filter { it.isPublic }
-            if (filterMethods.size != 1) {
+            val calledMethods = onClickInvokingMethods.values.first().toSet()
+            Log.d("calledMethods: $calledMethods")
+            val invokingMethods = dexKit.findMethodInvoking {
+                methodDeclareClass = kAIOPictureView.name
+                methodReturnType = "V"
+                methodParameterTypes = emptyArray()
+                beInvokedMethodReturnType = "V"
+                beInvokedMethodParameterTypes = arrayOf("J", "I", "I")
+            }.map { it.key }.filter { calledMethods.contains(it) }
+            Log.d("invokingMethods: $invokingMethods")
+            if (invokingMethods.size == 1) {
+                NAIOPictureView_onDownloadOriginalPictureClick.descCache = invokingMethods.first().descriptor
+            } else {
+                val filterMethods = invokingMethods
+                    .map { it.getMethodInstance(getHostClassLoader()) }
+                    .filter { it.isPublic }
+                if (filterMethods.size != 1) {
+                    return false
+                }
+                Log.d("save: ${filterMethods.first()}")
+                NAIOPictureView_onDownloadOriginalPictureClick.descCache = DexMethodDescriptor(filterMethods.first()).descriptor
+            }
+            val setVisibilityMethods = dexKit.findMethodCaller {
+                methodDescriptor = "Landroid/widget/TextView;->setVisibility(I)V"
+                callerMethodDeclareClass = kAIOPictureView.name
+                callerMethodReturnType = "V"
+                callerMethodParameterTypes = arrayOf("Z")
+            }
+            Log.d("setVisibilityMethods: $setVisibilityMethods")
+            if (setVisibilityMethods.size != 1) {
                 return false
             }
-            Log.d("save: ${filterMethods.first()}")
-            NAIOPictureView_onDownloadOriginalPictureClick.descCache = DexMethodDescriptor(filterMethods.first()).descriptor
+            NAIOPictureView_setVisibility.descCache = setVisibilityMethods.keys.first().descriptor
+            return true
         }
-        val setVisibilityMethods = dexKit.findMethodCaller {
-            methodDescriptor = "Landroid/widget/TextView;->setVisibility(I)V"
-            callerMethodDeclareClass = kAIOPictureView.name
-            callerMethodReturnType = "V"
-            callerMethodParameterTypes = arrayOf("Z")
-        }
-        Log.d("setVisibilityMethods: $setVisibilityMethods")
-        if (setVisibilityMethods.size != 1) {
-            return false
-        }
-        NAIOPictureView_setVisibility.descCache = setVisibilityMethods.keys.first().descriptor
-        return true
     }
 }

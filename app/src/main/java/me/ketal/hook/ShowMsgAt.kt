@@ -38,6 +38,7 @@ import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.tencent.qqnt.kernel.nativeinterface.TextElement
 import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.ntapi.ChatTypeConstants
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi
@@ -54,7 +55,6 @@ import io.github.qauxv.util.dexkit.DexFlow
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.HostMainDexHelper
-import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
 import io.luckypray.dexkit.annotations.DexKitExperimentalApi
@@ -69,6 +69,7 @@ import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 
 @UiItemAgentEntry
+@FunctionHookEntry
 object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
 
     override val name = "消息显示At对象"
@@ -239,9 +240,10 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
         }
         // step 1 find target class
         // "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
-        val dexkitBridge = (DexDeobfsProvider.getCurrentBackend() as DexKitDeobfs).getDexKitBridge()
-        val result = dexkitBridge.findClassUsingAnnotation {
-            annotationUsingString = "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
+        val result = DexDeobfsProvider.getCurrentBackend().use {
+            it.getDexKitBridge().findClassUsingAnnotation {
+                annotationUsingString = "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
+            }
         }
         val klass: Class<*>
         if (result.size == 1) {

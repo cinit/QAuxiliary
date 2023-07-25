@@ -45,7 +45,7 @@ object DexDeobfsProvider {
     /**
      * Create a new instance. Call [DexDeobfsBackend.close] when you are done.
      */
-    fun getCurrentBackend(): DexDeobfsBackend {
+    fun getCurrentBackend(): DexKitDeobfs {
         checkDeobfuscationAvailable()
         return DexKitDeobfs.newInstance()
     }

@@ -157,8 +157,10 @@ class DexKitDeobfs private constructor(
 
     @Synchronized
     override fun close() {
-        mSharedResourceImpl.decreaseRefCount()
-        mDexKitBridge = null
+        if (mDexKitBridge != null) {
+            mSharedResourceImpl.decreaseRefCount()
+            mDexKitBridge = null
+        }
     }
 
     companion object {
