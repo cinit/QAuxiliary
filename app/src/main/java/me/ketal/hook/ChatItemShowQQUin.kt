@@ -234,22 +234,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         try {
             val msg = AIOUtilsImpl.getChatMessage(it)!!
             val chatMessage = MsgRecordData(msg)
-            val ctx = CommonContextWrapper.createAppCompatContext(it.context)
-            val text = AppCompatTextView(ctx).apply {
-                text = chatMessage.msgRecord.toString()
-                textSize = 16f
-                setTextIsSelectable(true)
-                isVerticalScrollBarEnabled = true
-                setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
-                val dp24 = LayoutHelper.dip2px(ctx, 24f)
-                setPadding(dp24, 0, dp24, 0)
-            }
-            AlertDialog.Builder(ctx)
-                .setTitle(Reflex.getShortClassName(chatMessage.msgRecord))
-                .setView(text)
-                .setCancelable(true)
-                .setPositiveButton("确认", null)
-                .show()
+            showDetailInfoDialog(it.context, Reflex.getShortClassName(chatMessage.msgRecord), chatMessage.msgRecord.toString())
         } catch (e: Exception) {
             FaultyDialog.show(it.context, e)
         }
@@ -363,7 +348,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     // Dialog细节没有考虑，MsgRecord里面的冗余内容很多，可考虑格式化/选择性展示
                     if (!mEnableDetailInfo) return@setOnClickListener
                     val msgRecord = it.tag as MsgRecord
-                    FaultyDialog.show(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
+                    showDetailInfoDialog(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
                 }
             }
             layout.addView(textView)
@@ -388,5 +373,24 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             val subMsgType = getInt(chatMessage)
             subMsgType == 8194 || subMsgType == 12288
         }
+    }
+
+    private fun showDetailInfoDialog(context: Context, title: String, msg: String) {
+        val ctx = CommonContextWrapper.createAppCompatContext(context)
+        val text = AppCompatTextView(ctx).apply {
+            text = msg
+            textSize = 16f
+            setTextIsSelectable(true)
+            isVerticalScrollBarEnabled = true
+            setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
+            val dp24 = LayoutHelper.dip2px(ctx, 24f)
+            setPadding(dp24, 0, dp24, 0)
+        }
+        AlertDialog.Builder(ctx)
+            .setTitle(title)
+            .setView(text)
+            .setCancelable(true)
+            .setPositiveButton(android.R.string.ok, null)
+            .show()
     }
 }
