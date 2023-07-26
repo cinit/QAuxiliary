@@ -32,6 +32,7 @@ import android.view.ViewGroup
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.view.forEach
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.profile.OpenProfileCard
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.ui.FaultyDialog
@@ -88,7 +89,16 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
         }
 
     override fun initOnce(): Boolean {
-        return !isTim() && BaseBubbleBuilderHook.initialize() && mTextViewId > 0
+        if (isTim()) {
+            return false
+        }
+        if (!BaseBubbleBuilderHook.initialize()) {
+            return false
+        }
+        if (QAppUtils.isQQnt()) {
+            return mTextViewId > 0
+        }
+        return true
     }
 
     override fun onGetView(
@@ -227,7 +237,7 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
 
     override val isNeedFind: Boolean
         get() {
-            return mTextViewId == 0
+            return QAppUtils.isQQnt() && mTextViewId == 0
         }
 
     @OptIn(DexKitExperimentalApi::class)
@@ -288,6 +298,10 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
         }
 
         override fun isDone(): Boolean {
+            if (!QAppUtils.isQQnt()) {
+                // no need this on non-NT
+                return true
+            }
             return mTextViewId != 0
         }
 
