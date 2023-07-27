@@ -41,6 +41,7 @@ import cc.ioctl.hook.experimental.CardMsgSender;
 import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
 import cc.ioctl.util.HookUtils;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.xiaoniu.hook.CtrlEnterToSend;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -92,6 +93,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
             AioChatPieClipPasteHook.INSTANCE,
             ReplyMsgWithImg.INSTANCE,
             SendTTSHook.INSTANCE,
+            CtrlEnterToSend.INSTANCE
     };
 
     @NonNull
