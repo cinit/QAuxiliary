@@ -32,6 +32,7 @@ import io.github.qauxv.bridge.ntapi.ChatTypeConstants
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator._TroopMemberLevelView
+import io.github.qauxv.util.isTim
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.ketal.util.findViewByType
@@ -49,7 +50,7 @@ object HideTroopLevel : CommonSwitchFunctionHook(), OnBubbleBuilder {
     private val levelClass
         get() = _TroopMemberLevelView()
 
-    override val isAvailable = levelClass != null
+    override val isAvailable = !isTim() && levelClass != null
 
     override fun initOnce(): Boolean {
         return isAvailable && BaseBubbleBuilderHook.initialize()

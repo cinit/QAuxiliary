@@ -30,15 +30,15 @@ import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
-import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.InvocationTargetException
 
-abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) {
+abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey = keyName) {
 
     abstract val pluginID: String
     abstract val preference: IUiItemAgent
@@ -68,13 +68,16 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(keyName) 
                 "Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->setProxy(Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;)V".method.apply {
                     isAccessible = true
                 }.invoke(
-                    null, listOf(
+                    null,
+                    listOf(
                         "Lcooperation/plugin/c;",   //8.9.70
                         "Lcooperation/plugin/PluginAdapterImpl;",   //8.8.50
                         "Lbghq;",   //8.2.11 Play
-                        "Lbfdk;"    //8.2.6
-                    ).firstNotNullOf { it.clazz }.newInstance()
+                        "Lbfdk;",   //8.2.6
+                        "Lavel;",   //TIM 3.5.2
+                    ).firstNotNullOf { Initiator.load(it) }.newInstance()
                     // implements Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;
+//                    DexKit.requireClassFromCache(CPluginAdapterImpl).newInstance()
                 )
                 Log.i("setProxy success")
             }

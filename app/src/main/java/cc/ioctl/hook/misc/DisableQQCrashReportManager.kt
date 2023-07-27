@@ -29,6 +29,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.isTim
 import xyz.nextalone.util.isPublic
 import xyz.nextalone.util.isStatic
 
@@ -40,6 +41,7 @@ object DisableQQCrashReportManager : CommonSwitchFunctionHook(targetProc = SyncU
     override val description = "仅限调试，无实际用途"
     override val uiItemLocation = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
     override val isApplicationRestartRequired = true
+    override val isAvailable = !isTim()
 
     override fun initOnce(): Boolean {
         val kQQCrashReportManager = Initiator.loadClass("com.tencent.qqperf.monitor.crash.QQCrashReportManager")
