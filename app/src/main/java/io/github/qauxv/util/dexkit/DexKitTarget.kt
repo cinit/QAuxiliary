@@ -763,3 +763,9 @@ data object FileBrowserActivity_InnerClass_onItemClick : DexKitTarget.UsingStrin
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("FileBrowserActivity")
 }
+
+data object Multiforward_Avatar_setListener_NT : DexKitTarget.UsingDexkit() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent"
+    override val filter = DexKitFilter.allowAll
+}
