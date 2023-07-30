@@ -63,6 +63,7 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKit.loadClassFromCache
 import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum.nameOf
 import io.github.qauxv.util.dexkit.Multiforward_Avatar_setListener_NT
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
@@ -83,7 +84,8 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
     private var mChatItemHeadIconViewId = 0
 
 
-    override val isNeedFind = QAppUtils.isQQnt() && Multiforward_Avatar_setListener_NT.descCache == null
+    override val isNeedFind: Boolean
+        get() = QAppUtils.isQQnt() && Multiforward_Avatar_setListener_NT.descCache == null
 
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
@@ -95,6 +97,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
                 methodName = "setOnClickListener"
             }
             if (m.size != 1) return false
+            Log.d("save id: " + nameOf(Multiforward_Avatar_setListener_NT) + ",method: " + m.keys.first().descriptor)
             Multiforward_Avatar_setListener_NT.descCache = m.keys.first().descriptor
             return true
         }
@@ -118,9 +121,14 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         }
     }
 
-    override fun makePreparationSteps(): Array<Step> {
-        return arrayOf(mStep)
+    private val mSteps by lazy {
+        val steps = mutableListOf(mStep)
+        super.makePreparationSteps()?.let {
+            steps.addAll(it)
+        }
+        steps.toTypedArray()
     }
+    override fun makePreparationSteps(): Array<Step> = mSteps
 
 
     @SuppressLint("DiscouragedApi")
