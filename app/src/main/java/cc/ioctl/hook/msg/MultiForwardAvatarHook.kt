@@ -128,8 +128,11 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         }
         steps.toTypedArray()
     }
+
     override fun makePreparationSteps(): Array<Step> = mSteps
 
+    override val isPreparationRequired: Boolean
+        get() = isNeedFind || DexKit.isRunDexDeobfuscationRequired(CAIOUtils)
 
     @SuppressLint("DiscouragedApi")
     @Throws(Exception::class)
