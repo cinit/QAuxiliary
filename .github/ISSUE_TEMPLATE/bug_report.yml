@@ -51,13 +51,13 @@ body:
   - type: checkboxes
     id: latest
     attributes:
-      label: Version requirement/版本要求
+      label: Version and Other Requirements/版本和其他要求
       options:
         - label: I am using latest debug CI version of QAuxiliary and enable verbose log/我正在使用最新 CI 调试版本且启用详细日志
           required: true
         - label: I have checked recent Issues (including Open and Closed) and have not found this Issue/我已经查看近期 Issues（包含 Open 和 Closed），未发现已存在此 Issue
           required: true
-        - label: The QQ I use is the official version, not the beta version/我使用的 QQ 是正式版本，而非测试版
+        - label: The QQ I am using is an official release version, not a modified or beta version/我使用的 QQ 是官方发布的正式版本，而非修改版或测试版
           required: true
   - type: textarea
     attributes:
