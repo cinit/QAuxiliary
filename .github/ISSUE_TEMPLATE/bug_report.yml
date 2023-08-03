@@ -55,6 +55,10 @@ body:
       options:
         - label: I am using latest debug CI version of QAuxiliary and enable verbose log/我正在使用最新 CI 调试版本且启用详细日志
           required: true
+        - label: I have checked recent Issues (including Open and Closed) and have not found this Issue/我已经查看近期 Issues（包含 Open 和 Closed），未发现已存在此 Issue
+          required: true
+        - label: The QQ I use is the official version, not the beta version/我使用的 QQ 是正式版本，而非测试版
+          required: true
   - type: textarea
     attributes:
       label: Logs/日志
