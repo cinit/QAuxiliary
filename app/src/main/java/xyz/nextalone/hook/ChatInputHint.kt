@@ -73,7 +73,8 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                 }
             }
             // 群设置hint为空后
-            "Lcom/tencent/mobileqq/aio/input/b/c;->l()V".method.hookAfter(this) { param ->
+            (if (requireMinQQVersion(QQVersion.QQ_8_9_73)) "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
+            else "Lcom/tencent/mobileqq/aio/input/b/c;->l()V").method.hookAfter(this) { param ->
                 val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
                 val b = f.javaClass.getDeclaredField("b").apply { isAccessible = true }.get(f) as EditText
                 b.hint = getValue()

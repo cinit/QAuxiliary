@@ -93,7 +93,8 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     // For NT
     private const val ID_ADD_LAYOUT = 0x114515
     private const val ID_ADD_TEXTVIEW = 0x114516
-    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "s55"
+    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_73)) "s8p"
+    else if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "s55"
     else if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "s3o"
     else "rzs"
 
