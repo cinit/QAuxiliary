@@ -110,6 +110,8 @@ public class ArbitraryFrdSourceId extends CommonSwitchFunctionHook {
         LinearLayout sourceAttrLayout = new LinearLayout(ctx);
         sourceAttrLayout.setOrientation(LinearLayout.VERTICAL);
         sourceAttrLayout.addView(HostStyledViewBuilder.subtitle(ctx, "来源参数"));
+        sourceAttrLayout.addView(newListItemDummy(ctx, "Uin", null,
+                String.valueOf(argv.getString("uin"))));
         sourceAttrLayout.addView(newListItemDummy(ctx, "SourceId", null,
                 String.valueOf(argv.getInt("source_id", 3999))));
         sourceAttrLayout.addView(newListItemDummy(ctx, "SubSourceId", null,

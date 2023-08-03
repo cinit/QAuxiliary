@@ -59,6 +59,7 @@ public class HostStyledViewBuilder {
         }
         if (!TextUtils.isEmpty(value)) {
             root.getValue().setText(value);
+            root.getValue().setTextIsSelectable(true);
         }
         return root;
     }
