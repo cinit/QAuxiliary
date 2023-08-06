@@ -21,8 +21,11 @@
  */
 package cc.ioctl.hook.chat;
 
+import android.graphics.Color;
+import android.graphics.drawable.ColorDrawable;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
@@ -46,11 +49,20 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
     public static final GalleryBgHook INSTANCE = new GalleryBgHook();
 
     private GalleryBgHook() {
-        super(SyncUtils.PROC_PEAK, new DexKitTarget[]{CAbsGalScene.INSTANCE, CGalleryBaseScene.INSTANCE});
+        super(SyncUtils.PROC_PEAK | SyncUtils.PROC_MAIN, new DexKitTarget[]{CAbsGalScene.INSTANCE, CGalleryBaseScene.INSTANCE});
     }
 
     @Override
     public boolean initOnce() throws Exception {
+        // for QQ NT
+        Class<?> kRFWLayerAnimPart = Initiator.load("com.tencent.richframework.gallery.part.RFWLayerAnimPart");
+        if (kRFWLayerAnimPart != null) {
+            Method m = kRFWLayerAnimPart.getDeclaredMethod("initStartAnim", ImageView.class);
+            HookUtils.hookAfterIfEnabled(this, m, param -> {
+                Object mDragLayout = Reflex.getInstanceObject(param.thisObject, "mDragLayout", null);
+                Reflex.setInstanceObject(mDragLayout, "mWindowBgDrawable", new ColorDrawable(Color.TRANSPARENT));
+            });
+        }
         // for QQ >= 8.3.5
         Class<?> kBrowserBaseScene = DexKit.loadClassFromCache(CGalleryBaseScene.INSTANCE);
         if (kBrowserBaseScene != null) {
