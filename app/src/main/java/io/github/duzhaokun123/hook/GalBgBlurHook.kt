@@ -41,12 +41,13 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import xyz.nextalone.util.hookAfter
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
+object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.PROC_MAIN) {
     private const val brCfg = "gal_bg_blur_radius"
     private const val bdCfg = "gal_bg_dim"
     override val name = "聊天界面查看图片背景模糊"
@@ -103,7 +104,8 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK) {
             when(activity::class.java.name) {
                 "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
                 "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
-                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity" -> {
+                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity",
+                "com.tencent.richframework.gallery.QQGalleryActivity"-> {
                     activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
                 }
             }
