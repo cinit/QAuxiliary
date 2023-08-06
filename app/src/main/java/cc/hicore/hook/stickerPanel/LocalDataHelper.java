@@ -46,7 +46,7 @@ public class LocalDataHelper {
                     localPath.MD5 = path.getString("MD5");
                     localPath.fileName = path.optString("fileName");
                     localPath.addTime = path.optLong("addTime");
-                    localPath.type = path.getInt("type");
+                    localPath.type = path.optInt("type",1);
                     localPath.url = path.optString("url");
                     localPath.thumbName = path.optString("thumbName");
                     localPath.thumbUrl = path.optString("thumbUrl");
