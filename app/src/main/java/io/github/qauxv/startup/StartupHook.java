@@ -23,11 +23,14 @@ package io.github.qauxv.startup;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.util.DisplayMetrics;
 import android.util.Log;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
@@ -230,10 +233,52 @@ public class StartupHook {
                     "attachBaseContext", Context.class, new XC_MethodHook() {
                         @Override
                         public void beforeHookedMethod(MethodHookParam param) {
+                            applyTargetDpiIfNecessary((Context) param.args[0]);
                             deleteDirIfNecessaryNoThrow((Context) param.args[0]);
                         }
                     });
         } catch (ClassNotFoundException ignored) {
+        }
+    }
+
+    private static void applyTargetDpiIfNecessary(Context ctx) {
+        String KEY_TARGET_DPI = "qa_target_dpi";
+        File f = new File(ctx.getFilesDir(), KEY_TARGET_DPI);
+        if (!f.exists()) {
+            return;
+        }
+        // read 4 bytes
+        byte[] buf = new byte[4];
+        try (FileInputStream fis = new FileInputStream(f)) {
+            if (fis.read(buf) != 4) {
+                return;
+            }
+        } catch (IOException e) {
+            log_e(e);
+        }
+        // little endian
+        final int targetDpi = (buf[0] & 0xff) | ((buf[1] & 0xff) << 8) | ((buf[2] & 0xff) << 16) | ((buf[3] & 0xff) << 24);
+        if (targetDpi >= 100 && targetDpi <= 1600) {
+            try {
+                Method getDisplayMetrics = ctx.getResources().getClass().getMethod("getDisplayMetrics");
+                XposedBridge.hookMethod(getDisplayMetrics, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        DisplayMetrics dm = (DisplayMetrics) param.getResult();
+                        if (dm == null) {
+                            return;
+                        }
+                        float scaleFactory = dm.scaledDensity / dm.density;
+                        dm.density = targetDpi / 160f;
+                        dm.densityDpi = targetDpi;
+                        dm.scaledDensity = targetDpi / 160f * scaleFactory;
+                        dm.xdpi = targetDpi;
+                        dm.ydpi = targetDpi;
+                    }
+                });
+            } catch (ReflectiveOperationException e) {
+                log_e(e);
+            }
         }
     }
 
