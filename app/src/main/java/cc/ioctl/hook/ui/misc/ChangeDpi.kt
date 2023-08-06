@@ -148,6 +148,9 @@ object ChangeDpi : CommonConfigFunctionHook() {
     var targetDpi: Int
         get() {
             val file = File(hostInfo.application.filesDir, KEY_TARGET_DPI)
+            if (!file.exists()) {
+                return 0;
+            }
             try {
                 // read exact 4 bytes, little endian
                 FileInputStream(file).use {
