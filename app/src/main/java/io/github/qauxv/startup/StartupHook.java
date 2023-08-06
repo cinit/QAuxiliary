@@ -23,6 +23,7 @@ package io.github.qauxv.startup;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import de.robv.android.xposed.XC_MethodHook;
@@ -242,6 +243,11 @@ public class StartupHook {
     }
 
     private static void applyTargetDpiIfNecessary(Context ctx) {
+        File safeMode = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),
+                "Android/data/" + ctx.getPackageName() + "/qauxv_safe_mode");
+        if (safeMode.exists()) {
+            return;
+        }
         String KEY_TARGET_DPI = "qa_target_dpi";
         File f = new File(ctx.getFilesDir(), KEY_TARGET_DPI);
         if (!f.exists()) {

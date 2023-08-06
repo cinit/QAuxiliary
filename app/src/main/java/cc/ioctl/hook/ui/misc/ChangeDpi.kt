@@ -115,6 +115,11 @@ object ChangeDpi : CommonConfigFunctionHook() {
         dialog.setTitle("修改 DPI")
         dialog.setPositiveButton("确定", null) // set later
         dialog.setNegativeButton("取消", null)
+        dialog.setNeutralButton("复原") { _, _ ->
+            this.targetDpi = 0
+            valueState.value = "未设置"
+            Toasts.info(ctx, "重启 " + hostInfo.hostName + " 生效")
+        }
         val alertDialog = dialog.create()
         alertDialog.setOnShowListener {
             alertDialog.getButton(androidx.appcompat.app.AlertDialog.BUTTON_POSITIVE).setOnClickListener {
