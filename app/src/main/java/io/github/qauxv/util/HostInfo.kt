@@ -145,3 +145,16 @@ enum class HostSpecies {
     QAuxiliary,
     Unknown
 }
+
+fun overrideVersionCodeForLSPatchModified1(newVersionCode: Int) {
+    io.github.qauxv.util.Log.w("Overriding version code from ${hostInfo.versionCode32} to $newVersionCode")
+    hostInfo = HostInfoImpl(
+        hostInfo.application,
+        hostInfo.packageName,
+        hostInfo.hostName,
+        newVersionCode.toLong(),
+        newVersionCode,
+        hostInfo.versionName,
+        hostInfo.hostSpecies
+    )
+}

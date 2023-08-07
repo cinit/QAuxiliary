@@ -61,9 +61,35 @@ public class StartupRoutine {
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
         Natives.load(ctx);
+        overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
                 HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
         MainHook.getInstance().performHook(ctx, step);
+    }
+
+    private static void overrideLSPatchModifiedVersionCodeIfNecessary(Context ctx) {
+        if (HostInfo.isInHostProcess() && HostInfo.getHostInfo().getVersionCode32() == 1) {
+            if ("com.tencent.mobileqq".equals(ctx.getPackageName())) {
+                ClassLoader cl = ctx.getClassLoader();
+                // try to get version code from Lcooperation/qzone/QUA;->QUA:Ljava/lang/String;
+                try {
+                    Class<?> kQUA = cl.loadClass("cooperation.qzone.QUA");
+                    Field QUA = kQUA.getDeclaredField("QUA");
+                    QUA.setAccessible(true);
+                    String qua = (String) QUA.get(null);
+                    if (qua != null && qua.startsWith("V1_AND_")) {
+                        // "V1_AND_SQ_8.9.0_3060_YYB_D"
+                        String[] split = qua.split("_");
+                        if (split.length >= 5) {
+                            int versionCode = Integer.parseInt(split[4]);
+                            HostInfo.overrideVersionCodeForLSPatchModified1(versionCode);
+                        }
+                    }
+                } catch (ReflectiveOperationException | NumberFormatException e) {
+                    io.github.qauxv.util.Log.e("Failed to get version code from Lcooperation/qzone/QUA;->QUA:Ljava/lang/String;", e);
+                }
+            }
+        }
     }
 
     private static void ensureHiddenApiAccess() {
