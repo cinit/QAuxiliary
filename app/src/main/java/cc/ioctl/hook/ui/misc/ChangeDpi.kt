@@ -23,16 +23,21 @@
 package cc.ioctl.hook.ui.misc
 
 import android.app.Activity
+import android.content.res.Configuration
+import android.os.Build
 import android.text.InputType
 import android.view.View
 import androidx.appcompat.widget.AppCompatCheckBox
 import androidx.appcompat.widget.AppCompatTextView
+import cc.ioctl.util.HookUtils
+import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -42,12 +47,14 @@ import java.io.IOException
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object ChangeDpi : CommonConfigFunctionHook() {
+object ChangeDpi : CommonConfigFunctionHook(targetProc = SyncUtils.PROC_ANY) {
 
     override val name = "修改 DPI"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
     override val isApplicationRestartRequired = true
     private const val KEY_TARGET_DPI = "qa_target_dpi"
+
+    private var mDpiForThisLife: Int? = null
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(targetDpi.let {
@@ -60,7 +67,37 @@ object ChangeDpi : CommonConfigFunctionHook() {
     }
 
     override fun initOnce(): Boolean {
-        // We don't init here. We init in the very early startup stage of the app.
+        // We don't hook getDisplayMetrics here, we did that in the very early startup stage of the app.
+        mDpiForThisLife = currentDpiInProcess
+        if (mDpiForThisLife != 0) {
+            // handle config change
+            val kCompatibilityInfo = Class.forName("android.content.res.CompatibilityInfo")
+            val kActivityThread = Class.forName("android.app.ActivityThread")
+            val hookCallback = HookUtils.beforeAlways(this, 49) { param ->
+                val originConfig = param.args[0] as Configuration?
+                    ?: // maybe a compatibilityInfo update, ignore
+                    return@beforeAlways
+                originConfig.densityDpi = mDpiForThisLife!!
+            }
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                // Android 12+, hook ConfigurationController.handleConfigurationChanged
+                val kConfigurationController =
+                    Class.forName("android.app.ConfigurationController")
+                val handleConfigurationChanged =
+                    kConfigurationController.getDeclaredMethod(
+                        "handleConfigurationChanged",
+                        Configuration::class.java, kCompatibilityInfo
+                    )
+                XposedBridge.hookMethod(handleConfigurationChanged, hookCallback)
+            } else {
+                // on Android 11 and below, hook ActivityThread.handleConfigurationChanged
+                val handleConfigurationChanged = kActivityThread.getDeclaredMethod(
+                    "handleConfigurationChanged",
+                    Configuration::class.java, kCompatibilityInfo
+                )
+                XposedBridge.hookMethod(handleConfigurationChanged, hookCallback)
+            }
+        }
         return true
     }
 
@@ -193,6 +230,12 @@ object ChangeDpi : CommonConfigFunctionHook() {
             } catch (e: IOException) {
                 traceError(e)
             }
+        }
+
+    override var isEnabled: Boolean
+        get() = targetDpi != 0
+        set(value) {
+            // ignore
         }
 
 }
