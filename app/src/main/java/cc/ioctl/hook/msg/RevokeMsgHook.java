@@ -451,6 +451,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                     if (msgObject != null && !(msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
                         builder.appendText(revokerPron + "尝试撤回");
                         builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                        if (isShowShmsgseqEnabled()) {
+                            builder.appendText(" [seq=" + msgSeq + "]");
+                        }
                         summary = revokerPron + "尝试撤回一条消息";
                     } else if (msgObject != null && (msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
                         // C2C only: msg not actually received, system message: "对方撤回了一条消息"
@@ -475,6 +478,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
                             builder.appendText("尝试撤回");
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                            if (isShowShmsgseqEnabled()) {
+                                builder.appendText(" [seq=" + msgSeq + "]");
+                            }
                             summary = operatorName + "尝试撤回一条消息";
                         } else {
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(operatorUin), recallOpUid, operatorName));
@@ -482,6 +488,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.UserItem(String.valueOf(msgAuthorUin), msgAuthorUid, msgAuthorName));
                             builder.appendText("的");
                             builder.append(new NtGrayTipHelper.NtGrayTipJsonBuilder.MsgRefItem("一条消息", msgSeq));
+                            if (isShowShmsgseqEnabled()) {
+                                builder.appendText(" [seq=" + msgSeq + "]");
+                            }
                             summary = operatorName + "尝试撤回" + msgAuthorName + "的一条消息";
                         }
                     } else {
