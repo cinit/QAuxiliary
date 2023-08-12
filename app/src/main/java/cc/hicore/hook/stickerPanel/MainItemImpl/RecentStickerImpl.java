@@ -48,7 +48,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
 
         View setButton = cacheView.findViewById(R.id.Sticker_Panel_Set_Item);
         setButton.setOnClickListener(v-> new XPopup.Builder(ContextUtils.getFixContext(mContext))
-                .asConfirm("提示", "是否要清楚最近的表情记录?", RecentStickerHelper::cleanAllRecentRecord)
+                .asConfirm("提示", "是否要清除最近的表情记录?", RecentStickerHelper::cleanAllRecentRecord)
                 .show());
 
         try {
