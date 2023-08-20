@@ -164,7 +164,7 @@ fun spacing(text: String): String {
 @UiItemAgentEntry
 object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
     override val name = "发送消息自动 Pangu.kt"
-    override val description = "Pangu: 自动在中英文间加上空格，以美化排版\n开启后发送以空格开头的消息，则此消息不会被 Pangu 化"
+    override val description = "自动在中英文间加上空格，以美化排版\n若消息以空格开头，则不会被 Pangu 化"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
