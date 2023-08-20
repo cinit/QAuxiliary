@@ -769,3 +769,10 @@ data object Multiforward_Avatar_setListener_NT : DexKitTarget.UsingDexkit() {
     override val declaringClass = "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent"
     override val filter = DexKitFilter.allowAll
 }
+
+data object AIOTextElementCtor: DexKitTarget.UsingStr()  {
+    override val findMethod: Boolean = true;
+    override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElement.AIOTextElementCtor"
+    override val traitString = arrayOf("textElement")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/msg")
+}
