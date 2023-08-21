@@ -14,6 +14,7 @@
 -keep class cc.ioctl.** { *; }
 -keep class sakura.kooi.** { *; }
 -keep class moe.zapic.** { *; }
+-keep class cc.microblock.** { *; }
 -keep class com.tencent.mmkv.** { *; }
 
 -keepclasseswithmembernames class * {
