@@ -22,6 +22,7 @@
 
 package cc.microblock.hook
 
+import cc.hicore.QApp.QAppUtils
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -166,7 +167,7 @@ object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElemen
     override val description = "自动在中英文间加上空格，以美化排版\n若消息以空格开头，则不会被 Pangu 化"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
-
+    override val isAvailable = QAppUtils.isQQnt();
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOTextElementCtor)
             .hookBefore {

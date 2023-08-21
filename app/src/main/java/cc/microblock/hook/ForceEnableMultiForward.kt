@@ -23,19 +23,16 @@
 package cc.microblock.hook
 
 import android.view.View
-import cc.hicore.hook.ReplyMsgWithImg
+import android.widget.RelativeLayout
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
-import com.github.kyuubiran.ezxhelper.utils.getObject
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import com.github.kyuubiran.ezxhelper.utils.getObjectAs
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
-import xyz.nextalone.util.get
-import android.widget.RelativeLayout;
-import com.github.kyuubiran.ezxhelper.utils.getObjectAs
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -55,4 +52,5 @@ object ForceEnableMultiForward : CommonSwitchFunctionHook() {
         return true;
     }
 
+    override val isAvailable = QAppUtils.isQQnt();
 }
