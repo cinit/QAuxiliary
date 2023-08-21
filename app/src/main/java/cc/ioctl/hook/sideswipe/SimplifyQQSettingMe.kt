@@ -69,6 +69,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
     const val MidContentName = "SimplifyQQSettingMe::MidContentName"
 
     override val preferenceTitle: String = "侧滑栏精简"
+    override val description: String = "可能需要重启 QQ 后生效"
     override val allItems = setOf<String>()
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
     override val isAvailable = requireMinQQVersion(QQ_8_4_1)
