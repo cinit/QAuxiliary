@@ -776,3 +776,10 @@ data object AIOTextElementCtor: DexKitTarget.UsingStr()  {
     override val traitString = arrayOf("textElement")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/msg")
 }
+
+data object AIOPicElementType: DexKitTarget.UsingStr()  {
+    override val findMethod: Boolean = false;
+    override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElementType.PicElement";
+    override val traitString = arrayOf("PicElement(origPath=");
+    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/");
+}

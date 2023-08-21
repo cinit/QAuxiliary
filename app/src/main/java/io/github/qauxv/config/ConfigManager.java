@@ -39,6 +39,15 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
     protected ConfigManager() {
     }
 
+    private static ConfigManager sLastUseEmoticonStore;
+    @NonNull
+    public static synchronized ConfigManager getLastUseEmoticonStore() {
+        if (sLastUseEmoticonStore == null) {
+            sLastUseEmoticonStore = new MmkvConfigManagerImpl("last_use_emoticon_time");
+        }
+        return sLastUseEmoticonStore;
+    }
+
     @NonNull
     public static synchronized ConfigManager getDefaultConfig() {
         if (sDefConfig == null) {
