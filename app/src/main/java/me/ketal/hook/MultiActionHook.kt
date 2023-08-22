@@ -67,7 +67,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
         CMessageCache,
         CMessageRecordFactory,
         NBaseChatPie_createMulti,
-        CMultiMsgManager
+        CMultiMsgManager,
+        MultiSelectToBottomIntent
     )
 ), SessionHooker.IAIOParamUpdate {
 
@@ -115,13 +116,14 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 )
                 setMargin(rootView)
             }
-        val intentClass = Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.c\$h")
+        val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent);
         val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
         Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM")
             .method("handleIntent")!!
             .hookBefore(this) {
                 // 劫持一个 intent 自己传参
                 val intent = it.args[0]
+
                 if (intent.javaClass.isAssignableFrom(intentClass)) {
                     val flags = Reflex.getFirstByType(intent, Int::class.java)
                     if (flags != -114514) return@hookBefore
@@ -138,6 +140,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     it.result = null
                 }
             }
+
     }
 
     private fun recall(ctx: Context) {
@@ -176,7 +179,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     private fun recallNt(ctx: Context, vb: Any) {
         runCatching {
             val baseVB = Initiator.loadClass("com.tencent.mvi.mvvm.BaseVB")
-            val intentClass = Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.c\$h")
+            val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
             val flags: Int = -114514
             val intent = intentClass.newInstance(args(flags), argTypes(Int::class.java))!!
             baseVB.method("sendIntent")!!.invoke(vb, intent)

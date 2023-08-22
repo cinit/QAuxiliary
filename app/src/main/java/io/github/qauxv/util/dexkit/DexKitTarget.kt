@@ -783,3 +783,10 @@ data object AIOPicElementType: DexKitTarget.UsingStr()  {
     override val traitString = arrayOf("PicElement(origPath=");
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/");
 }
+
+data object MultiSelectToBottomIntent: DexKitTarget.UsingStr()  {
+    override val findMethod: Boolean = false;
+    override val declaringClass = "com.tencent.mobileqq.aio.input.multiselect.c.toBottomIntent";
+    override val traitString = arrayOf("SelectToBottom(dividingLineTop=");
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/multiselect");
+}
