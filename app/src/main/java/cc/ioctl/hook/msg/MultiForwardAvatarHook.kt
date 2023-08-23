@@ -287,6 +287,11 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         ll.setPadding(p, p / 3, p, p / 3)
         if (troopUin != null) {
             // troop
+            HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "群号", if (isTroopUinAvailable) troopUin.toString() else "群号已被腾讯服务器端屏蔽", ll, true) {
+                if (isTroopUinAvailable) {
+                    OpenProfileCard.openTroopProfileActivity(ctx, troopUin.toString())
+                }
+            }
             HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "成员", senderUin.toString(), ll, true) {
                 if (senderUin > 10000) {
                     OpenProfileCard.openUserProfileCard(ctx, senderUin)
