@@ -62,7 +62,8 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
         "免提播放",
         "2X",
         "保存",
-        "群待办"
+        "群待办",
+        "提醒"
     )
     override val defaultItems = setOf<String>()
 
