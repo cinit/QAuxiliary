@@ -62,6 +62,10 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
                 Object mDragLayout = Reflex.getInstanceObject(param.thisObject, "mDragLayout", null);
                 Reflex.setInstanceObject(mDragLayout, "mWindowBgDrawable", new ColorDrawable(Color.TRANSPARENT));
             });
+            Method m2 = kRFWLayerAnimPart.getDeclaredMethod("updateBackgroundAlpha", int.class);
+            HookUtils.hookBeforeIfEnabled(this, m2, param -> {
+                param.args[0] = 0;
+            });
         }
         // for QQ >= 8.3.5
         Class<?> kBrowserBaseScene = DexKit.loadClassFromCache(CGalleryBaseScene.INSTANCE);
