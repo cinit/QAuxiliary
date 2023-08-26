@@ -48,8 +48,15 @@ public class MsgServiceHelper {
     @Nullable
     public static IKernelMsgService getKernelMsgService(@NonNull AppRuntime app) throws ReflectiveOperationException, LinkageError {
         Object msgService = getMsgService(app);
-        Method getKMsgSvc = Reflex.findSingleMethod(msgService.getClass(), IKernelMsgService.class, false);
-        return (IKernelMsgService) getKMsgSvc.invoke(msgService);
+        IKernelMsgService service;
+        try {
+            // 8.9.78起
+            service = (IKernelMsgService) msgService.getClass().getMethod("getService").invoke(msgService);
+        } catch (Exception unused) {
+            Method getKMsgSvc = Reflex.findSingleMethod(msgService.getClass(), IKernelMsgService.class, false);
+            service = (IKernelMsgService) getKMsgSvc.invoke(msgService);
+        }
+        return service;
     }
 
 }

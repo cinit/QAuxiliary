@@ -22,6 +22,7 @@
 package xyz.nextalone.hook
 
 import cc.hicore.QApp.QAppUtils
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -31,6 +32,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
@@ -130,10 +132,11 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
         } else {
             // assert QQ.version <= QQVersion.QQ_8_4_8
             if (QAppUtils.isQQnt()) {
-                "Lcom/tencent/qqnt/pluspanel/adapter/PanelAdapter;->p(Ljava/util/ArrayList;)V".method.hookBefore(
-                    this,
-                    callback
-                )
+                "Lcom/tencent/qqnt/pluspanel/adapter/PanelAdapter;".clazz!!.declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == ArrayList::class.java }
+                    .hookBefore(
+                        this,
+                        callback
+                    )
             } else if (hostInfo.versionCode >= QQVersion.QQ_8_4_8) {
                 "Lcom/tencent/mobileqq/activity/aio/PlusPanel;->a(Ljava/util/ArrayList;)V".method.hookBefore(
                     this,
