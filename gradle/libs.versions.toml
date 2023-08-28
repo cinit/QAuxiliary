@@ -37,7 +37,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.6" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.7" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "11.0.0_r3" }
 
 [plugins]
