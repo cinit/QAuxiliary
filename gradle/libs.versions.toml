@@ -41,7 +41,7 @@ byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.6" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "11.0.0_r3" }
 
 [plugins]
-changelog = { id = "org.jetbrains.changelog", version = "2.1.2" }
+changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
