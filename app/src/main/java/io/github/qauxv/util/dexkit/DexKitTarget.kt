@@ -790,3 +790,10 @@ data object MultiSelectToBottomIntent: DexKitTarget.UsingStr()  {
     override val traitString = arrayOf("SelectToBottom(dividingLineTop=");
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/multiselect");
 }
+
+data object AIOSendMsg: DexKitTarget.UsingStr()  {
+    override val findMethod: Boolean = true;
+    override val declaringClass = "com.tencent.mobileqq.aio.input.sendmsg.AIOSendMsgVMDelegate.sendMsg";
+    override val traitString = arrayOf("[sendMsg] elements is empty");
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/sendmsg/AIOSendMsgVMDelegate");
+}
