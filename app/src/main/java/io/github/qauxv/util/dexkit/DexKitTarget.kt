@@ -770,30 +770,37 @@ data object Multiforward_Avatar_setListener_NT : DexKitTarget.UsingDexkit() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object AIOTextElementCtor: DexKitTarget.UsingStr()  {
+data object AIOTextElementCtor : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true;
     override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElement.AIOTextElementCtor"
     override val traitString = arrayOf("textElement")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/msg")
 }
 
-data object AIOPicElementType: DexKitTarget.UsingStr()  {
+data object AIOPicElementType : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = false;
     override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElementType.PicElement";
     override val traitString = arrayOf("PicElement(origPath=");
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/");
 }
 
-data object MultiSelectToBottomIntent: DexKitTarget.UsingStr()  {
+data object MultiSelectToBottomIntent : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = false;
     override val declaringClass = "com.tencent.mobileqq.aio.input.multiselect.c.toBottomIntent";
     override val traitString = arrayOf("SelectToBottom(dividingLineTop=");
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/multiselect");
 }
 
-data object AIOSendMsg: DexKitTarget.UsingStr()  {
+data object AIOSendMsg : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true;
     override val declaringClass = "com.tencent.mobileqq.aio.input.sendmsg.AIOSendMsgVMDelegate.sendMsg";
     override val traitString = arrayOf("[sendMsg] elements is empty");
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/sendmsg/AIOSendMsgVMDelegate");
+}
+
+data object AIODelegate_ISwipeListener : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = false
+    override val declaringClass = "com.tencent.qqnt.aio.activity"
+    override val traitStringVectors = arrayOf(arrayOf("aio_disappear_type", "close_aio"))
+    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/activity")
 }
