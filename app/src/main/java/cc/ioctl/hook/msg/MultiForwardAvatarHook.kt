@@ -274,6 +274,8 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         // 2023.7.20 NT版收到的合并转发中群号变为0
         // 2023.8.1 收到的合并转发中群号变为284840486
         val isTroopUinAvailable = troopUin != null && troopUin != 0L && troopUin != 284840486L
+        // 2023-09-06 起合并转发中 senderUin 变为 1094950020
+        val isSenderUinAvailable = senderUin != 0L && senderUin != 1094950020L
         val ctx = CommonContextWrapper.createAppCompatContext(hostContext)
         val dialog = CustomDialog.createFailsafe(ctx).setTitle(Reflex.getShortClassName(msg))
             .setPositiveButton("确认", null).setCancelable(true)
@@ -293,17 +295,25 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             } else {
                 HostStyledViewBuilder.newDialogClickableItem(ctx, "群号", "已被服务器端屏蔽", null, null, ll, true)
             }
-            HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "成员", senderUin.toString(), ll, true) {
-                if (senderUin > 10000) {
-                    OpenProfileCard.openUserProfileCard(ctx, senderUin)
+            if (isSenderUinAvailable) {
+                HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "成员", senderUin.toString(), ll, true) {
+                    if (senderUin > 10000) {
+                        OpenProfileCard.openUserProfileCard(ctx, senderUin)
+                    }
                 }
+            } else {
+                HostStyledViewBuilder.newDialogClickableItem(ctx, "成员", "已被服务器端屏蔽", null, null, ll, true)
             }
         } else {
             // private chat
-            HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "发送者", senderUin.toString(), ll, true) {
-                if (senderUin > 10000) {
-                    OpenProfileCard.openUserProfileCard(ctx, senderUin)
+            if (isSenderUinAvailable) {
+                HostStyledViewBuilder.newDialogClickableItemClickToCopy(ctx, "发送者", senderUin.toString(), ll, true) {
+                    if (senderUin > 10000) {
+                        OpenProfileCard.openUserProfileCard(ctx, senderUin)
+                    }
                 }
+            } else {
+                HostStyledViewBuilder.newDialogClickableItem(ctx, "发送者", "已被服务器端屏蔽", null, null, ll, true)
             }
         }
         val disclaimerTextView = AppCompatTextView(ctx).apply {
@@ -317,6 +327,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
                 因此，合并转发消息的内容存在被篡改和伪造的可能。
                 在非恶意情形下，PC 端 QQ 在合并转发提供的群号可能是错误的，而 Android 端 QQ 合并转发提供的群号通常是正确的。
                 以上信息仅供参考，本模块不对以上信息的正确性负责，以上信息不得作为任何依据。
+                问: “已被服务器端屏蔽”是什么意思？ 答：QQ 服务器端屏蔽了该信息，因此无法获取。
             """.trimIndent()
             disclaimerTextView.text = disclaimer
         }
