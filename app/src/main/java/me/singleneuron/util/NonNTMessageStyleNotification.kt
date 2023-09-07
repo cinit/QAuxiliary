@@ -151,7 +151,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
             val builder = NotificationCompat.Builder(context, oldNotification)
                 .setContentTitle(null)
                 .setContentText(null)
-                .setLargeIcon(null)
+                .setLargeIcon(null as Bitmap?)
                 .setStyle(messageStyle)
             if (isTroop == 1) {
                 builder.setLargeIcon(bitmap)
