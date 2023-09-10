@@ -51,7 +51,20 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or S
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        if (QAppUtils.isQQnt()) {   //截至2023.6.21，仍有一些项目在使用旧版组件（如频道），故保留其他hook
+        if (requireMinQQVersion(QQVersion.QQ_8_9_78)) {
+            XposedBridge.hookAllConstructors("Lcom/tencent/mobileqq/aio/b/ad;".clazz!!, HookUtils.afterIfEnabled(this) { param ->
+                param.thisObject.javaClass.declaredFields.forEach { field ->
+                    if (field.type.name.endsWith("QUICheckBox")) {
+                        field.isAccessible = true
+                        (field.get(param.thisObject) as CheckBox).isChecked = true
+                    }
+                }
+            })
+            //启动参数类-isQualityRaw
+            "Lcom/tencent/qqnt/qbasealbum/model/Config;->s()Z".method.hookBefore {
+                it.result = true
+            }
+        } else if (QAppUtils.isQQnt()) {
             //Lcom/tencent/mobileqq/e/a/ac;->f:Lcom/tencent/mobileqq/widget/QUICheckBox;    //普通模式半屏Panel的原图勾选框
             //8.9.68 变为 com.tencent.biz.qui.quicheckbox.QUICheckBox
             XposedBridge.hookAllConstructors("com.tencent.mobileqq.e.a.ac".clazz!!, HookUtils.afterIfEnabled(this) { param ->
@@ -68,6 +81,7 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(SyncUtils.PROC_MAIN or S
                 ctx.intent.putExtra("key_is_quality_raw", true)
             }
         }
+        //截至2023.6.21，仍有一些项目在使用旧版组件（如频道），故保留其他hook
         val method = when {
             requireMinQQVersion(QQVersion.QQ_8_9_33) -> "d0"
             requireMinQQVersion(QQVersion.QQ_8_9_18) -> "c0"
