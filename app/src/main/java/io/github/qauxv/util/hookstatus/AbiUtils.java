@@ -213,6 +213,7 @@ public class AbiUtils {
                 return "x86_64";
             case "arm":
             case "armhf":
+            case "armv7l":
             case "armeabi":
             case "armeabi-v7a":
                 return "arm";
