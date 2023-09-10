@@ -82,6 +82,9 @@ public class CleanUpMitigation extends BasePersistBackgroundHook {
         HookUtils.hookAfterAlways(this, listMethod, p -> {
             File thiz = (File) p.thisObject;
             String path = thiz.getAbsolutePath();
+            if (p.hasThrowable()) {
+                return;
+            }
             String[] result = (String[]) p.getResult();
             if (mPathPrefixList.contains(path)) {
                 p.setResult(filterList(result));
@@ -90,6 +93,9 @@ public class CleanUpMitigation extends BasePersistBackgroundHook {
         HookUtils.hookAfterAlways(this, listFilesMethod, p -> {
             File thiz = (File) p.thisObject;
             String path = thiz.getAbsolutePath();
+            if (p.hasThrowable()) {
+                return;
+            }
             File[] result = (File[]) p.getResult();
             if (mPathPrefixList.contains(path)) {
                 p.setResult(filterListFiles(result));
