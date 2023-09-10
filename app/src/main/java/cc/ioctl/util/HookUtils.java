@@ -228,17 +228,17 @@ public class HookUtils {
         };
     }
 
-    public static void hookAfterAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+    public static void hookAfterAlways(final @NonNull ITraceableDynamicHook this0, final @NonNull Method method,
                                        final @NonNull AfterHookedMethod afterHookedMethod) {
         hookAfterAlways(this0, method, 50, afterHookedMethod);
     }
 
-    public static void hookBeforeAlways(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+    public static void hookBeforeAlways(final @NonNull ITraceableDynamicHook this0, final @NonNull Method method,
                                         final @NonNull BeforeHookedMethod beforeHookedMethod) {
         hookBeforeAlways(this0, method, 50, beforeHookedMethod);
     }
 
-    public static void hookBeforeAndAfterIfEnabled(final @NonNull BaseFunctionHook this0, final @NonNull Method method,
+    public static void hookBeforeAndAfterIfEnabled(final @NonNull ITraceableDynamicHook this0, final @NonNull Method method,
                                                    int priority, final @NonNull BeforeAndAfterHookedMethod hook) {
         Objects.requireNonNull(this0, "this0 == null");
         Objects.requireNonNull(method, "method == null");
