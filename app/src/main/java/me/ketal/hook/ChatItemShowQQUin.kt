@@ -93,11 +93,16 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     // For NT
     private const val ID_ADD_LAYOUT = 0x114515
     private const val ID_ADD_TEXTVIEW = 0x114516
-    private val NAME_TAIL_LAYOUT = if (requireMinQQVersion(QQVersion.QQ_8_9_75)) "s_l"
-    else if (requireMinQQVersion(QQVersion.QQ_8_9_73)) "s8p"
-    else if (requireMinQQVersion(QQVersion.QQ_8_9_70)) "s55"
-    else if (requireMinQQVersion(QQVersion.QQ_8_9_68)) "s3o"
-    else "rzs"
+
+    // X2J_APT <- ???Binding <- AIOSenderBubbleTemplate
+    private val NAME_TAIL_LAYOUT = when {
+        requireMinQQVersion(QQVersion.QQ_8_9_78) -> "s_8"
+        requireMinQQVersion(QQVersion.QQ_8_9_75) -> "s_l"
+        requireMinQQVersion(QQVersion.QQ_8_9_73) -> "s8p"
+        requireMinQQVersion(QQVersion.QQ_8_9_70) -> "s55"
+        requireMinQQVersion(QQVersion.QQ_8_9_68) -> "s3o"
+        else -> "rzs"
+    }
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
