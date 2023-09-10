@@ -25,8 +25,11 @@ package io.github.qauxv.activity
 import android.content.Context
 import android.content.Intent
 import android.graphics.drawable.ColorDrawable
+import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.view.View
+import android.view.WindowInsetsController
 import android.view.WindowManager
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
@@ -34,10 +37,11 @@ import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.fling.SimpleFlingInterceptLayout
 import com.google.android.material.appbar.AppBarLayout
 import io.github.qauxv.R
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.fragment.BaseSettingFragment
 import io.github.qauxv.fragment.SettingsMainFragment
 import io.github.qauxv.ui.ModuleThemeManager
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.isInHostProcess
 import name.mikanoshi.customiuizer.holidays.HolidayHelper
 import java.lang.Integer.max
 
@@ -92,6 +96,22 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
         }
         mAppBarLayout.doOnLayout {
             SyncUtils.postDelayed(0) { initFragments(savedInstanceState) }
+        }
+        if (isInHostProcess) {
+            val isThemeLightMode = resources.getBoolean(R.bool.is_not_night_mode)
+            if (isThemeLightMode) {
+                // QQ 8.9.78(4548)+
+                // We need to tell system we are using a light title bar and we want a dark status bar text
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                    val insetsController = window.decorView.windowInsetsController
+                    val flags = WindowInsetsController.APPEARANCE_LIGHT_STATUS_BARS or
+                        WindowInsetsController.APPEARANCE_LIGHT_NAVIGATION_BARS
+                    insetsController?.setSystemBarsAppearance(flags, flags)
+                } else {
+                    window.decorView.systemUiVisibility = window.decorView.systemUiVisibility or
+                        View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
+                }
+            }
         }
         return true
     }
