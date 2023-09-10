@@ -108,8 +108,8 @@ public class Chat_facade_bridge {
 
     public static void sendVoice(Object _Session, String path) {
         try {
-            if (!path.contains("com.tencent.mobileqq/Tencent/MobileQQ/" + QAppUtils.getCurrentUin())) {
-                String newPath = Environment.getExternalStorageDirectory() + "/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/" + QAppUtils.getCurrentUin()
+            if (!path.contains(HostInfo.getPackageName() + "/Tencent/MobileQQ/" + QAppUtils.getCurrentUin())) {
+                String newPath = Environment.getExternalStorageDirectory() + "/Android/data/" + HostInfo.getPackageName() + "/Tencent/MobileQQ/" + QAppUtils.getCurrentUin()
                         + "/ptt/" + new File(path).getName();
                 FileUtils.copy(path, newPath);
                 path = newPath;
