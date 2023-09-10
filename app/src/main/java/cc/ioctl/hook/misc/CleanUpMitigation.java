@@ -22,6 +22,7 @@
 
 package cc.ioctl.hook.misc;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.system.Os;
 import androidx.annotation.Nullable;
@@ -45,19 +46,29 @@ public class CleanUpMitigation extends BasePersistBackgroundHook {
     public static final CleanUpMitigation INSTANCE = new CleanUpMitigation();
 
     private HashSet<String> mPathPrefixList;
-    private static final HashSet<String> FILES_TO_HIDE = SetsKt.hashSetOf("qa_dyn_lib", "qa_mmkv", "qa_misc", "qa_target_dpi");
+    private static final HashSet<String> FILES_TO_HIDE = SetsKt.hashSetOf(
+            "qa_mmkv", "qa_misc", "qa_dyn_lib", "qa_target_dpi", ".tool",
+            "xa_mmkv", "xa_conf", "xa_lib", "xa_log", "xa_daemon"
+    );
 
+    @SuppressLint("SdCardPath")
     @Override
     protected boolean initOnce() {
         Context ctx = HostInfo.getApplication();
         String packageName = ctx.getPackageName();
         // UserHandle.PER_USER_RANGE
         int userHandleIndex = Os.geteuid() / 100000;
-        // /data/user/%d/%s/files
-        // /data/data/%s/files
+        // /data/user/{user:d}/{pkg:s}/files
+        // /data/data/{pkg:s}/files
+        // /sdcard/Android/data/{pkg:s}/files
+        // /storage/emulated/{user:d}/Android/data/{pkg:s}/files
+        // /storage/self/primary/Android/data/{pkg:s}/files
         mPathPrefixList = SetsKt.hashSetOf(
                 "/data/user/" + userHandleIndex + "/" + packageName + "/files",
-                "/data/data/" + packageName + "/files"
+                "/data/data/" + packageName + "/files",
+                "/sdcard/Android/data/" + packageName + "/files",
+                "/storage/emulated/" + userHandleIndex + "/Android/data/" + packageName + "/files",
+                "/storage/self/primary/Android/data/" + packageName + "/files"
         );
         // hook File.{list,listFiles} to hide files
         Method listMethod;
