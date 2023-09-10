@@ -27,14 +27,20 @@ import static cc.ioctl.util.DateTimeUtil.getIntervalDspMs;
 import static cc.ioctl.util.DateTimeUtil.getRelTimeStrSec;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.text.InputType;
 import android.view.Gravity;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
@@ -53,15 +59,18 @@ import cc.ioctl.util.data.FriendRecord;
 import cc.ioctl.util.ui.FaultyDialog;
 import com.tencent.widget.XListView;
 import io.github.qauxv.R;
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.fragment.BaseRootLayoutFragment;
+import io.github.qauxv.fragment.TroubleshootFragment;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.ui.ResUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.UiThread;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Iterator;
@@ -101,6 +110,17 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
             return ExfriendListFragment.this.getView(position, convertView, parent);
         }
     };
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setHasOptionsMenu(true);
+    }
+
+    @Override
+    public void onCreateOptionsMenu(@NonNull Menu menu, @NonNull MenuInflater inflater) {
+        inflater.inflate(R.menu.exfriend_list_fragment_options, menu);
+    }
 
     @Nullable
     @Override
@@ -329,5 +349,123 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
         } catch (Exception e) {
             FaultyDialog.show(context, e);
         }
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(@NonNull MenuItem item) {
+        int id = item.getItemId();
+        if (id == R.id.menu_item_add_record) {
+            showManualAddRecordDialog();
+            return true;
+        } else if (id == R.id.menu_item_clear_all_record) {
+            Context ctx = requireContext();
+            new AlertDialog.Builder(ctx)
+                    .setTitle("删除所有记录")
+                    .setMessage("您可以前往模块设置的故障排除页面来删除所有历史记录。\n如果您需要删除单个记录，请长按记录进行删除。")
+                    .setPositiveButton("前往", (dialog, which) -> {
+                        dialog.dismiss();
+                        SettingsUiFragmentHostActivity.startFragmentWithContext(ctx, TroubleshootFragment.class);
+                    })
+                    .setNegativeButton(R.string.dialog_btn_cancel, null)
+                    .setCancelable(true)
+                    .show();
+            return true;
+        }
+        return super.onOptionsItemSelected(item);
+    }
+
+    @UiThread
+    public void showManualAddRecordDialog() {
+        Context ctx = requireContext();
+        // title, description, input(uin), input(nick), input(time), ok, cancel
+        TextView desc = new TextView(ctx);
+        desc.setText("您可以手动添加历史好友被删记录，如手动将 QNotified 的历史好友记录搬过来。添加的记录将会被保存到本地。\n" +
+                "其中备注(昵称) 不能为空，填写你给对方设置的备注，或者对方的昵称。\n"
+                + "时间格式为 yyyy-MM-dd HH:mm:ss，填写对方删除您的时间，如 "
+                + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(System.currentTimeMillis())
+                + "\n请填写 QQ 号、备注(昵称)、时间，然后点击添加。");
+        desc.setPadding(0, 0, 0, 16);
+        desc.setTextColor(ResourcesCompat.getColor(ctx.getResources(), R.color.firstTextColor, ctx.getTheme()));
+        desc.setTextSize(13);
+        EditText inputUin = new EditText(ctx);
+        inputUin.setHint("QQ 号");
+        inputUin.setSingleLine();
+        inputUin.setTextSize(16);
+        inputUin.setInputType(InputType.TYPE_CLASS_NUMBER);
+        EditText inputNick = new EditText(ctx);
+        inputNick.setHint("备注(昵称)");
+        inputNick.setSingleLine();
+        inputNick.setTextSize(16);
+        EditText inputTime = new EditText(ctx);
+        inputTime.setHint("yyyy-MM-dd HH:mm:ss");
+        inputTime.setSingleLine();
+        inputTime.setTextSize(16);
+        TextView hintTextV = new TextView(ctx);
+        hintTextV.setTextSize(10);
+        hintTextV.setTextColor(ResourcesCompat.getColor(ctx.getResources(), R.color.thirdTextColor, ctx.getTheme()));
+        hintTextV.setText("友情提示：对方真的值得您这么做吗？(验证码：看不清？换一张)\n"
+                + "\"My name is Linus Torvalds and I am your god.\" -- Linus Torvalds");
+        LinearLayout layout = new LinearLayout(ctx);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(16, 16, 16, 16);
+        layout.setGravity(Gravity.CENTER_HORIZONTAL);
+        layout.addView(desc);
+        layout.addView(inputUin);
+        layout.addView(inputNick);
+        layout.addView(inputTime);
+        layout.addView(hintTextV);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setTitle("添加历史好友记录");
+        builder.setView(layout);
+        builder.setPositiveButton("添加", null); // set later
+        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+        AlertDialog dialog = builder.show();
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String uinStr = inputUin.getText().toString();
+            String nickStr = inputNick.getText().toString();
+            String timeStr = inputTime.getText().toString();
+            if (uinStr.isEmpty() || nickStr.isEmpty() || timeStr.isEmpty()) {
+                Toasts.error(ctx, "输入不能为空");
+                return;
+            }
+            long uin;
+            try {
+                uin = Long.parseLong(uinStr);
+            } catch (NumberFormatException e) {
+                Toasts.error(ctx, "QQ 号格式错误");
+                return;
+            }
+            if (uin < 10000) {
+                Toasts.error(ctx, "QQ 号格式错误");
+                return;
+            }
+            if (!timeStr.matches("\\d{4}-\\d{2}-\\d{2} \\d{2}:\\d{2}:\\d{2}")) {
+                Toasts.error(ctx, "时间格式错误");
+                return;
+            }
+            long time;
+            try {
+                time = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").parse(timeStr).getTime() / 1000;
+            } catch (Exception e) {
+                Toasts.error(ctx, "时间格式错误");
+                return;
+            }
+            EventRecord ev = new EventRecord();
+            ev._friendStatus = FriendRecord.STATUS_EXFRIEND;
+            ev._nick = nickStr;
+            ev._remark = nickStr;
+            ev.event = EventRecord.EVENT_FRIEND_DELETE;
+            ev.operand = uin;
+            ev.executor = -1;
+            ev.timeRangeBegin = time;
+            ev.timeRangeEnd = time;
+            exm.reportEventWithoutSave(ev, null);
+            exm.saveConfigure();
+            // reload
+            reload();
+            adapter.notifyDataSetChanged();
+            Toasts.success(ctx, "添加成功");
+            dialog.dismiss();
+        });
     }
 }
