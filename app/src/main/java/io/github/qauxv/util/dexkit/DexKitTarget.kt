@@ -804,3 +804,10 @@ data object AIODelegate_ISwipeListener : DexKitTarget.UsingStringVector() {
     override val traitStringVectors = arrayOf(arrayOf("aio_disappear_type", "close_aio"))
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/activity")
 }
+
+data object NT_SysAndEmojiResInfo : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = false
+    override val traitStringVectors = arrayOf(arrayOf("NT_SysAndEmojiResInfo", "reloadDrawable restartDownload:"))
+    override val declaringClass = ""
+    override val filter = DexKitFilter.allowAll
+}
