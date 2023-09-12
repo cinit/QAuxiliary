@@ -21,22 +21,22 @@
 
 package cc.hicore.QApp;
 
-import cc.hicore.ReflectUtil.MClass;
-import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XClass;
+import cc.hicore.ReflectUtil.XMethod;
 import io.github.qauxv.util.Initiator;
 
 public class QAppUtils {
     public static long getServiceTime(){
         try {
-            return MMethod.CallStaticMethod(MClass.loadClass("com.tencent.mobileqq.msf.core.NetConnInfoCenter"),"getServerTimeMillis",long.class);
+            return XMethod.clz("com.tencent.mobileqq.msf.core.NetConnInfoCenter").name("getServerTimeMillis").ret(long.class).invoke();
         } catch (Exception e) {
             return 0;
         }
     }
     public static String UserUinToPeerID(String UserUin){
         try {
-            Object convertHelper = MClass.NewInstance(MClass.loadClass("com.tencent.qqnt.kernel.api.impl.UixConvertAdapterApiImpl"));
-            return MMethod.CallMethod(convertHelper,"getUidFromUin",String.class,new Class[]{long.class},Long.parseLong(UserUin));
+            Object convertHelper = XClass.newInstance(Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.UixConvertAdapterApiImpl"));
+            return XMethod.obj(convertHelper).name("getUidFromUin").ret(String.class).param(long.class).invoke(Long.parseLong(UserUin));
         }catch (Exception e){
             return "";
         }
@@ -52,15 +52,13 @@ public class QAppUtils {
     public static String getCurrentUin(){
         try {
             Object AppRuntime = getAppRuntime();
-            return MMethod.CallMethodNoParam(AppRuntime, "getCurrentAccountUin", String.class);
+            return XMethod.obj(AppRuntime).name("getCurrentAccountUin").ret(String.class).invoke();
         } catch (Exception e) {
             return "";
         }
     }
     public static Object getAppRuntime() throws Exception {
-        Object sApplication = MMethod.CallStaticMethod(MClass.loadClass("com.tencent.common.app.BaseApplicationImpl"),
-                "getApplication", MClass.loadClass("com.tencent.common.app.BaseApplicationImpl"));
-
-        return MMethod.CallMethodNoParam(sApplication, "getRuntime", MClass.loadClass("mqq.app.AppRuntime"));
+        Object sApplication = XMethod.clz("com.tencent.common.app.BaseApplicationImpl").name("getApplication").ret(Initiator.load("com.tencent.common.app.BaseApplicationImpl")).invoke();
+        return XMethod.obj(sApplication).name("getRuntime").ret(Initiator.loadClass("mqq.app.AppRuntime")).invoke();
     }
 }

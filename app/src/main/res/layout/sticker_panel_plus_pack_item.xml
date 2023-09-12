@@ -12,11 +12,11 @@
         android:layout_marginBottom="10dp"
         android:layout_marginTop="3dp"
         android:textSize="16sp"
-        android:textColor="#888888"/>
+        android:textColor="@color/global_font_color"/>
     <ImageButton
         android:layout_width="22dp"
         android:layout_height="22dp"
-        android:background="@drawable/sticker_pack_set_icon"
+        android:background="@drawable/sticker_panen_set_button_icon"
         android:id="@+id/Sticker_Panel_Set_Item"
         android:layout_marginTop="5dp"
         android:layout_marginRight="10dp"

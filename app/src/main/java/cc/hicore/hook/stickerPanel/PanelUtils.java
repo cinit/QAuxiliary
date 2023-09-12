@@ -16,7 +16,6 @@ import cc.hicore.Utils.RandomUtils;
 import cc.ioctl.util.HostInfo;
 import com.bumptech.glide.Glide;
 import io.github.qauxv.R;
-import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.util.ArrayList;
@@ -30,7 +29,6 @@ public class PanelUtils {
     //显示确认保存的对话框
     public static void PreSavePicToList(String URL, String MD5, Context context) {
         choicePath = null;
-        Parasitics.injectModuleResources(context.getResources());
         LayoutInflater inflater = LayoutInflater.from(context);
         LinearLayout mRoot = (LinearLayout) inflater.inflate(R.layout.sticker_pre_save, null);
         ImageView preView = mRoot.findViewById(R.id.emo_pre_container);
@@ -41,10 +39,12 @@ public class PanelUtils {
         NewInfo.MD5 = MD5.toUpperCase(Locale.ROOT);
 
         if (URL.startsWith("http")) {
-            EmoOnlineLoader.submit(NewInfo, () -> Glide.with(HostInfo.getApplication())
-                    .load(new File(NewInfo.Path))
-                    .fitCenter()
-                    .into(preView));
+            EmoOnlineLoader.submit(NewInfo, () -> {
+                Glide.with(HostInfo.getApplication())
+                        .load(new File(NewInfo.Path))
+                        .fitCenter()
+                        .into(preView);
+            });
         } else {
             NewInfo.Path = URL;
             Glide.with(HostInfo.getApplication())
@@ -59,8 +59,8 @@ public class PanelUtils {
         for (LocalDataHelper.LocalPath path : paths) {
             RadioButton button = new RadioButton(context);
             button.setText(path.Name);
-            button.setTextColor(context.getColor(R.color.font_plugin));
             button.setTextSize(16);
+            button.setTextColor(context.getResources().getColor(R.color.global_font_color, null));
             button.setOnCheckedChangeListener((v, ischeck) -> {
                 if (v.isPressed() && ischeck) {
                     choicePath = path;
@@ -73,12 +73,12 @@ public class PanelUtils {
         btnCreate.setOnClickListener(v -> {
             EditText edNew = new EditText(context);
             new AlertDialog.Builder(context)
-                    .setTitle("创建分组")
+                    .setTitle("创建新目录")
                     .setView(edNew)
-                    .setPositiveButton("确定创建", (dialog, which) -> {
+                    .setNeutralButton("确定创建", (dialog, which) -> {
                         String newName = edNew.getText().toString();
                         if (TextUtils.isEmpty(newName)) {
-                            Toasts.info(v.getContext(),"名称不能为空");
+                            Toasts.show("名字不能为空");
                             return;
                         }
                         LocalDataHelper.LocalPath path = new LocalDataHelper.LocalPath();
@@ -93,7 +93,7 @@ public class PanelUtils {
                             RadioButton button = new RadioButton(context);
                             button.setText(pathItem.Name);
                             button.setTextSize(16);
-                            button.setTextColor(context.getColor(R.color.font_plugin));
+                            button.setTextColor(context.getResources().getColor(R.color.global_font_color, null));
                             button.setOnCheckedChangeListener((vaa, ischeck) -> {
                                 if (vaa.isPressed() && ischeck) {
                                     choicePath = pathItem;
@@ -102,42 +102,41 @@ public class PanelUtils {
                             group.addView(button);
                         }
                     })
-                    .setNeutralButton("取消", null)
                     .show();
 
         });
 
         new AlertDialog.Builder(context)
-                .setTitle("选择保存分组")
+                .setTitle("是否保存")
                 .setView(mRoot)
-                .setPositiveButton("保存", (dialog, which) -> {
+                .setNegativeButton("保存", (dialog, which) -> {
                     if (choicePath == null) {
-                        Toasts.info(context,"没有选择分组");
+                        Toasts.show("没有选择任何的保存列表");
                     } else if (TextUtils.isEmpty(NewInfo.Path)) {
-                        Toasts.info(context,"图片尚未加载完毕，保存失败");
+                        Toasts.show("图片尚未加载完毕,保存失败");
                     } else {
                         FileUtils.copy(NewInfo.Path, Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                         LocalDataHelper.LocalPicItems item = new LocalDataHelper.LocalPicItems();
-                        item.type = 1;
                         item.MD5 = MD5;
                         item.fileName = MD5;
                         item.addTime = System.currentTimeMillis();
                         LocalDataHelper.addPicItem(choicePath.storePath, item);
 
 
-                        Toasts.info(context,"已保存到：" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
+                        Toasts.show("已保存到:" + Env.app_save_path + "本地表情包/" + choicePath.storePath + "/" + MD5);
                     }
-                }).setNeutralButton("取消", null)
-                .setOnDismissListener(dialog -> Glide.with(HostInfo.getApplication()).clear(preView))
-                .show();
+                }).setOnDismissListener(dialog -> {
+                    Glide.with(HostInfo.getApplication()).clear(preView);
+                }).show();
     }
 
     //如果要保存的是多张图片则弹出MD5选择,选择后才弹出确认图片保存框
     public static void PreSaveMultiPicList(ArrayList<String> url, ArrayList<String> MD5, Context context) {
         new AlertDialog.Builder(context)
                 .setTitle("选择需要保存的图片")
-                .setItems(MD5.toArray(new String[0]), (dialog, which) -> PreSavePicToList(url.get(which), MD5.get(which), context))
-                .setOnDismissListener(dialog -> {
+                .setItems(MD5.toArray(new String[0]), (dialog, which) -> {
+                    PreSavePicToList(url.get(which), MD5.get(which), context);
+                }).setOnDismissListener(dialog -> {
 
                 }).show();
     }

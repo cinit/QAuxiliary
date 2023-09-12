@@ -171,4 +171,7 @@ public class Toasts {
     public static void show(Context ctx, @NonNull CharSequence text) {
         showToast(ctx, TYPE_PLAIN, text, LENGTH_SHORT);
     }
+    public static void show(@NonNull CharSequence text) {
+        showToast(null, TYPE_PLAIN, text, LENGTH_SHORT);
+    }
 }

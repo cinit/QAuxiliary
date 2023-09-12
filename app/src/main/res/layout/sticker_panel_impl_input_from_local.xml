@@ -9,17 +9,24 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:id="@+id/btn_input_from_local"
-        android:text="输入表情包路径导入"/>
+        android:text="输入表情包路径或ID导入"/>
     <EditText
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/input_path"/>
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
+    <LinearLayout
+        android:layout_width="match_parent"
         android:layout_gravity="center_horizontal"
-        android:id="@+id/btn_confirm_input"
-        android:text="确定导入"/>
+        android:gravity="center_horizontal"
+        android:layout_height="wrap_content">
+        <Button
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:id="@+id/btn_confirm_input"
+            android:text="从本地导入"/>
+    </LinearLayout>
+
 
 
 </LinearLayout>

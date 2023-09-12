@@ -38,7 +38,8 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.hicore.ReflectUtil.MField;
-import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XField;
+import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionHooker;
@@ -285,11 +286,11 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
             Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
-                HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod(kChatAdapter1, "getView", View.class, new Class[]{
+                HookUtils.hookAfterIfEnabled(this, XMethod.obj(kChatAdapter1).name( "getView").ret( View.class).param(
                         int.class,
                         View.class,
                         ViewGroup.class
-                }), param -> {
+                ).get(), param -> {
                     Object mGetView = param.getResult();
                     RelativeLayout baseChatItem = null;
                     if (mGetView instanceof RelativeLayout) {
@@ -301,7 +302,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                     if (context.getClass().getName().contains("MultiForwardActivity")) {
                         return;
                     }
-                    List<Object> MessageRecoreList = MField.GetFirstField(param.thisObject, List.class);
+                    List<Object> MessageRecoreList = XField.obj(param.thisObject).type(List.class).get();
                     if (MessageRecoreList == null) {
                         return;
                     }
@@ -325,7 +326,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                     finalBaseChatItem.getViewTreeObserver().addOnGlobalLayoutListener(listenerContainer.get());
 
                 });
-                HookUtils.hookBeforeIfEnabled(this, MMethod.FindMethod("com.tencent.mobileqq.data.ChatMessage", "isFollowMessage", boolean.class, new Class[0]),
+                HookUtils.hookBeforeIfEnabled(this, XMethod.clz("com.tencent.mobileqq.data.ChatMessage").name("isFollowMessage").ret(boolean.class).get(),
                         param -> param.setResult(false));
 
             } else {

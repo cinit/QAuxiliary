@@ -24,16 +24,18 @@ package cc.hicore.message.chat;
 import android.text.TextUtils;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
+import cc.hicore.ReflectUtil.XField;
 import cc.hicore.Utils.XLog;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import io.github.qauxv.bridge.SessionInfoImpl;
 import io.github.qauxv.util.Initiator;
+import java.lang.reflect.Field;
 
 public class SessionUtils {
     public static Contact AIOParam2Contact(Object AIOParam) {
         try {
-            Object AIOSession = MField.GetFirstField(AIOParam, Initiator.loadClass("com.tencent.aio.data.AIOSession"));
-            Object AIOContact = MField.GetFirstField(AIOSession,Initiator.loadClass("com.tencent.aio.data.AIOContact"));
+            Object AIOSession = XField.obj(AIOParam).type(Initiator.loadClass("com.tencent.aio.data.AIOSession")).get();
+            Object AIOContact = XField.obj(AIOSession).type(Initiator.loadClass("com.tencent.aio.data.AIOContact")).get();
             Contact contact = new Contact();
             contact.setPeerUid(getCurrentPeerIDByAIOContact(AIOContact));
 
@@ -51,12 +53,12 @@ public class SessionUtils {
 
     }
     public static String getCurrentPeerIDByAIOContact(Object AIOContact) throws Exception {
-        return MField.GetField(AIOContact,"f",String.class);
+        return XField.obj(AIOContact).name("f").type(String.class).get();
     }
     public static int getCurrentChatTypeByAIOContact(Object AIOContact) throws Exception{
-        return MField.GetField(AIOContact,"e",int.class);
+        return XField.obj(AIOContact).name("e").type(int.class).get();
     }
     public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception{
-        return MField.GetField(AIOContact,"g",String.class);
+        return XField.obj(AIOContact).name("g").type(String.class).get();
     }
 }

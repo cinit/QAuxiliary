@@ -2,21 +2,22 @@ package cc.hicore.hook.stickerPanel;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.Looper;
 import android.view.Gravity;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AbsListView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
-import android.widget.ListView;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.hicore.Env;
-import cc.hicore.Utils.ContextUtils;
+import cc.hicore.Utils.Async;
 import cc.hicore.hook.stickerPanel.MainItemImpl.InputFromLocalImpl;
 import cc.hicore.hook.stickerPanel.MainItemImpl.LocalStickerImpl;
+import cc.hicore.hook.stickerPanel.MainItemImpl.PanelSetImpl;
 import cc.hicore.hook.stickerPanel.MainItemImpl.RecentStickerImpl;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
@@ -26,30 +27,33 @@ import com.lxj.xpopup.core.BasePopupView;
 import com.lxj.xpopup.core.BottomPopupView;
 import com.lxj.xpopup.util.XPopupUtils;
 import io.github.qauxv.R;
-import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.ui.CommonContextWrapper;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicReference;
 
 @SuppressLint("ResourceType")
-public class ICreator extends BottomPopupView implements AbsListView.OnScrollListener {
+public class ICreator extends BottomPopupView{
     private static BasePopupView popupView;
-    MainPanelAdapter adapter = new MainPanelAdapter();
     LinearLayout topSelectBar;
-    int recentUsePos = 0;
+    private ScrollView itemContainer;
+    private IMainPanelItem currentTab;
 
-    int IdOfInputPic;
-    private final List<ViewGroup> newTabView = new ArrayList<>();
-    private ListView listView;
+    ArrayList<ViewGroup> mItems = new ArrayList<>();
+
+    private static long savedSelectID;
+    private static long lastSelectTime;
+    private static int savedScrollTo;
+
+    private ViewGroup recentUse;
 
     public ICreator(@NonNull Context context) {
         super(context);
     }
 
     public static void createPanel(Context context) {
-
-        Parasitics.injectModuleResources(context.getResources());
-        Context fixContext = ContextUtils.getFixContext(context);
-        XPopup.Builder NewPop = new XPopup.Builder(fixContext).isDestroyOnDismiss(true);
+        Context fixContext = CommonContextWrapper.createAppCompatContext(context);
+        XPopup.Builder NewPop = new XPopup.Builder(fixContext).moveUpToKeyboard(false).isDestroyOnDismiss(true);
         popupView = NewPop.asCustom(new ICreator(fixContext));
         popupView.show();
     }
@@ -64,55 +68,77 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         topSelectBar = findViewById(R.id.Sticker_Pack_Select_Bar);
     }
 
+    long scrollTime = 0;
     private void initListView() {
-        listView = findViewById(R.id.Sticker_Panel_Main_List_View);
-        listView.setAdapter(adapter);
-        listView.setVerticalScrollBarEnabled(false);
-        listView.setOnScrollListener(this);
+        itemContainer = findViewById(R.id.sticker_panel_pack_container);
+
+        itemContainer.setOnScrollChangeListener((v, scrollX, scrollY, oldScrollX, oldScrollY) -> {
+            if (System.currentTimeMillis() - scrollTime > 20){
+                currentTab.notifyViewUpdate0();
+                scrollTime = System.currentTimeMillis();
+            }
+        });
     }
 
     private void initStickerPacks() {
         List<LocalDataHelper.LocalPath> paths = LocalDataHelper.readPaths();
         for (LocalDataHelper.LocalPath path : paths) {
-            int localPathPos = adapter.addItemData(new LocalStickerImpl(path, LocalDataHelper.getPicItems(path.storePath), getContext()));
+            IMainPanelItem newItem = new LocalStickerImpl(path, getContext());
+            AtomicReference<ViewGroup> sItemView = new AtomicReference<>();
             ViewGroup sticker_pack_item = (ViewGroup) createPicImage(path.coverName, path.Name, v -> {
-                listView.setSelection(localPathPos);
-                listView.smoothScrollToPositionFromTop(localPathPos, -5);
-
+                itemContainer.scrollTo(0, 0);
+                switchToItem(sItemView.get());
             }, path);
-            sticker_pack_item.setTag(localPathPos);
+            sticker_pack_item.setTag(newItem);
             topSelectBar.addView(sticker_pack_item);
+            sItemView.set(sticker_pack_item);
         }
     }
 
     private void initDefItemsBefore() {
-        ViewGroup recentUse = (ViewGroup) createPicImage(R.drawable.sticker_recent, "最近使用", v -> {
-            listView.setSelection(recentUsePos);
-            listView.smoothScrollToPositionFromTop(recentUsePos, -5);
-        });
-        recentUsePos = adapter.addItemData(new RecentStickerImpl(getContext()));
-        recentUse.setTag(recentUsePos);
+        IMainPanelItem newItem = new RecentStickerImpl(getContext());
+        AtomicReference<ViewGroup> sItemView = new AtomicReference<>();
+        ViewGroup recentUse = (ViewGroup) createPicImage(R.drawable.sticker_panel_recent_icon, "最近使用", v -> switchToItem(sItemView.get()));
+        sItemView.set(recentUse);
+        recentUse.setTag(newItem);
         topSelectBar.addView(recentUse);
+        recentUse.setTag(newItem);
+
+        this.recentUse = recentUse;
+    }
+    private void switchToItem(ViewGroup item){
+        for (ViewGroup i : mItems) {
+            IMainPanelItem mItem = (IMainPanelItem) i.getTag();
+            mItem.onViewDestroy();
+            i.findViewById(887533).setVisibility(GONE);
+        }
+
+        currentTab = (IMainPanelItem) item.getTag();
+        itemContainer.removeAllViews();
+        itemContainer.addView(currentTab.getView());
+        item.findViewById(887533).setVisibility(VISIBLE);
+
+
+        Async.runOnUi(currentTab::notifyViewUpdate0);
+
+
+
     }
 
     private void initDefItemsLast() {
-
-        ViewGroup inputView = (ViewGroup) createPicImage(R.drawable.input, "导入表情", v -> {
-            listView.setSelection(IdOfInputPic);
-            listView.smoothScrollToPositionFromTop(IdOfInputPic, -5);
-        });
-        IdOfInputPic = adapter.addItemData(new InputFromLocalImpl());
+        IMainPanelItem inputPic = new InputFromLocalImpl(getContext());
+        AtomicReference<ViewGroup> sticker_panel_input_view = new AtomicReference<>();
+        ViewGroup inputView = (ViewGroup) createPicImage(R.drawable.sticker_panel_input_icon, "导入图片", v -> switchToItem(sticker_panel_input_view.get()));
+        sticker_panel_input_view.set(inputView);
+        inputView.setTag(inputPic);
         topSelectBar.addView(inputView);
 
-
-        //topSelectBar.addView(createPicImage(R.drawable.sticker_pack_set_icon,"设置分组",v -> Utils.ShowToast("Click")));
-    }
-
-    public void notifyTabViewSelect(ViewGroup vg) {
-        for (ViewGroup v : newTabView) {
-            v.findViewById(887533).setVisibility(GONE);
-        }
-        vg.findViewById(887533).setVisibility(VISIBLE);
+        IMainPanelItem setItem = new PanelSetImpl(getContext());
+        AtomicReference<ViewGroup> sticker_panel_set_view = new AtomicReference<>();
+        ViewGroup setView = (ViewGroup) createPicImage(R.drawable.sticker_panen_set_button_icon, "设置", v -> switchToItem(sticker_panel_set_view.get()));
+        sticker_panel_set_view.set(setView);
+        setView.setTag(setItem);
+        topSelectBar.addView(setView);
     }
 
     //创建贴纸包面板的滑动按钮
@@ -135,18 +161,14 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
 
         TextView titleView = new TextView(getContext());
         titleView.setText(title);
-        titleView.setTextColor(0xff888888);
+        titleView.setTextColor(getResources().getColor(R.color.global_font_color, null));
         titleView.setGravity(Gravity.CENTER_HORIZONTAL);
         titleView.setTextSize(10);
         titleView.setSingleLine();
         panel.addView(titleView);
 
 
-        if (imgPath.startsWith("http://") || imgPath.startsWith("https://")) {
-            Glide.with(HostInfo.getApplication()).load(imgPath).into(img);
-        } else {
-            Glide.with(HostInfo.getApplication()).load(Env.app_save_path + "本地表情包/" + path.storePath + "/" + imgPath).into(img);
-        }
+        Glide.with(HostInfo.getApplication()).load(Env.app_save_path + "本地表情包/" + path.storePath + "/" + imgPath).into(img);
 
 
         LinearLayout.LayoutParams panel_param = new LinearLayout.LayoutParams(LayoutHelper.dip2px(getContext(), 50), ViewGroup.LayoutParams.WRAP_CONTENT);
@@ -155,7 +177,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         panel.setLayoutParams(panel_param);
 
         View greenTip = new View(getContext());
-        greenTip.setBackgroundColor(0xff339933);
+        greenTip.setBackgroundColor(Color.GREEN);
         panel_param = new LinearLayout.LayoutParams(LayoutHelper.dip2px(getContext(), 30), 50);
         panel_param.leftMargin = LayoutHelper.dip2px(getContext(), 5);
         panel_param.rightMargin = LayoutHelper.dip2px(getContext(), 5);
@@ -164,7 +186,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         greenTip.setVisibility(GONE);
         panel.addView(greenTip);
 
-        newTabView.add(panel);
+        mItems.add(panel);
         return panel;
     }
 
@@ -189,7 +211,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         TextView titleView = new TextView(getContext());
         titleView.setText(title);
         titleView.setGravity(Gravity.CENTER_HORIZONTAL);
-        titleView.setTextColor(0xff888888);
+        titleView.setTextColor(getContext().getColor(R.color.global_font_color));
         titleView.setTextSize(10);
         titleView.setSingleLine();
         panel.addView(titleView);
@@ -202,7 +224,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         panel.setLayoutParams(panel_param);
 
         View greenTip = new View(getContext());
-        greenTip.setBackgroundColor(0xff339933);
+        greenTip.setBackgroundColor(Color.GREEN);
         panel_param = new LinearLayout.LayoutParams(LayoutHelper.dip2px(getContext(), 30), 50);
         panel_param.leftMargin = LayoutHelper.dip2px(getContext(), 5);
         panel_param.rightMargin = LayoutHelper.dip2px(getContext(), 5);
@@ -211,8 +233,7 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
         greenTip.setVisibility(GONE);
         panel.addView(greenTip);
 
-        newTabView.add(panel);
-
+        mItems.add(panel);
         return panel;
     }
 
@@ -235,9 +256,24 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
 
             initDefItemsLast();
 
+            if (System.currentTimeMillis() - lastSelectTime > 60 * 1000){
+                switchToItem(recentUse);
+            }else if (savedSelectID != 0){
+                for (ViewGroup item : mItems){
+                    IMainPanelItem iMainPanelItem = (IMainPanelItem) item.getTag();
+                    if (iMainPanelItem.getID() == savedSelectID){
+                        switchToItem(item);
 
-            adapter.notifyDataSetChanged();
-        }, 200);
+                        Async.runOnUi(iMainPanelItem::notifyViewUpdate0,100);
+                        Async.runOnUi(()-> itemContainer.scrollTo(0,savedScrollTo));
+                        break;
+                    }
+                }
+            }else {
+                switchToItem(recentUse);
+            }
+
+        }, 50);
 
 
     }
@@ -253,48 +289,39 @@ public class ICreator extends BottomPopupView implements AbsListView.OnScrollLis
     }
 
     @Override
+    protected void beforeDismiss() {
+        if (currentTab != null){
+            savedScrollTo = itemContainer.getScrollY();
+            savedSelectID = currentTab.getID();
+            lastSelectTime = System.currentTimeMillis();
+        }
+        super.beforeDismiss();
+    }
+
+    @Override
     protected void onDismiss() {
+
         super.onDismiss();
-        adapter.destroyAllViews();
+        for (ViewGroup item : mItems){
+            IMainPanelItem iMainPanelItem = (IMainPanelItem) item.getTag();
+            iMainPanelItem.onViewDestroy();
+        }
+
         Glide.get(HostInfo.getApplication()).clearMemory();
     }
 
     @Override
     protected int getImplLayoutId() {
-        return R.layout.sticker_panel_plus_main;
+        return io.github.qauxv.R.layout.sticker_panel_plus_main;
     }
 
-    @Override
-    public void onScrollStateChanged(AbsListView view, int scrollState) {
+    public interface IMainPanelItem {
+        View getView();
 
-    }
+        void onViewDestroy();
 
-    @Override
-    public void onScroll(AbsListView view, int firstVisibleItem, int visibleItemCount, int totalItemCount) {
-        ViewGroup vg = findViewByItemNumber(firstVisibleItem);
-        if (vg != null) {
-            notifyTabViewSelect(vg);
-        }
+        long getID();
 
-        int first = view.getFirstVisiblePosition();
-        int last = view.getLastVisiblePosition();
-        adapter.notifyViewUpdate(first, last);
-
-    }
-
-    @Override
-    public void onDestroy() {
-        super.onDestroy();
-        adapter.destroyAllViews();
-    }
-
-    private ViewGroup findViewByItemNumber(int number) {
-        for (int i = 0; i < newTabView.size(); i++) {
-            Object tag = newTabView.get(i).getTag();
-            if (tag instanceof Integer && ((Integer) tag) == number) {
-                return newTabView.get(i);
-            }
-        }
-        return null;
+        void notifyViewUpdate0();
     }
 }

@@ -24,6 +24,7 @@ package cc.ioctl.util;
 
 import android.app.Activity;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.TypedArray;
 import android.graphics.Point;
 import android.graphics.Rect;
@@ -195,16 +196,15 @@ public class LayoutHelper {
         if (visibleRect) {
             Point point = new Point();
             Context baseContext = v.getContext();
-            if (baseContext instanceof ContextUtils.FixContext) {
-                ContextUtils.FixContext fix = (ContextUtils.FixContext) v.getContext();
-                baseContext = fix.getBaseContext();
+            if (!(baseContext instanceof Activity) && (baseContext instanceof ContextWrapper)) {
+                baseContext = ((ContextWrapper)baseContext).getBaseContext();
             }
 
 
             if (baseContext instanceof Activity) {
                 ((Activity) baseContext).getWindowManager().getDefaultDisplay().getSize(point);
 
-                return rect.top >= 0 && rect.top <= point.y && rect.left >= 0 && rect.left <= point.x;
+                return rect.top >= 0 && (rect.top - 100) <= point.y && rect.left >= 0 && rect.left <= point.x;
             }
         }
         return false;

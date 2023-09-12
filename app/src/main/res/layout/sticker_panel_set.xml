@@ -1,0 +1,82 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="常规设置"
+        android:textSize="20sp"
+        android:textColor="@color/global_font_color"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/sticker_panel_set_ch_change_title"
+        android:text="开启图片外显修改"/>
+
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:id="@+id/sticker_panel_set_ed_change_title"
+        android:hint="外显文字"
+        android:autofillHints="" />
+
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/sticker_panel_set_dont_close_panel"
+        android:text="发送图片后不关闭面板"/>
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="面板显示设置"
+        android:textSize="20sp"
+        android:textColor="@color/global_font_color"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"/>
+    <RadioGroup
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="10dp"
+            android:layout_marginTop="10dp"
+            android:id="@+id/sticker_panel_set_rb_show_anim_always"
+            android:text="总是显示动图"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:id="@+id/sticker_panel_set_rb_show_anim_need"
+            android:text="过大的图片(4MB以上)显示静态图"/>
+        <RadioButton
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:layout_marginStart="10dp"
+            android:id="@+id/sticker_panel_set_rb_show_never"
+            android:text="总是显示静态图"/>
+    </RadioGroup>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:layout_marginStart="10dp"
+        android:text="排序表情包分组"
+        android:id="@+id/sticker_panel_set_btn_sort_group"/>
+</LinearLayout>
