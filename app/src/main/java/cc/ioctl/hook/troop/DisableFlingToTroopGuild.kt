@@ -21,19 +21,23 @@
 
 package cc.ioctl.hook.troop
 
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.AIODelegate_ISwipeListener
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.TroopGuildChatPie_flingRToL
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisableFlingToTroopGuild : CommonSwitchFunctionHook(arrayOf(TroopGuildChatPie_flingRToL)) {
+object DisableFlingToTroopGuild : CommonSwitchFunctionHook(arrayOf(TroopGuildChatPie_flingRToL, AIODelegate_ISwipeListener)) {
 
     override val name = "禁用右滑切换群帖子"
 
@@ -45,6 +49,10 @@ object DisableFlingToTroopGuild : CommonSwitchFunctionHook(arrayOf(TroopGuildCha
 
     override fun initOnce(): Boolean {
         if (!requireMinQQVersion(QQVersion.QQ_8_9_23)) return false
+        if (QAppUtils.isQQnt()) {
+            DexKit.requireClassFromCache(AIODelegate_ISwipeListener).method("b")!!.hookReturnConstant(null)
+            return true
+        }
         // com.tencent.mobileqq.troop.guild.TroopGuildChatPie#flingRToL()V
         val flingRToL = DexKit.requireMethodFromCache(TroopGuildChatPie_flingRToL)
         hookBeforeIfEnabled(flingRToL) { param ->

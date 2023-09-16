@@ -21,12 +21,14 @@
 
 package cc.hicore.hook;
 
-import cc.hicore.ReflectUtil.MClass;
 import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XField;
+import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.hicore.message.common.MsgBuilder;
 import cc.hicore.message.common.MsgUtils;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Toasts;
 import java.util.ArrayList;
 import org.json.JSONObject;
@@ -39,21 +41,19 @@ public class Repeater {
             case "MessageForText":
             case "MessageForLongTextMsg":
             case "MessageForFoldMsg": {
-                ArrayList AtList1 = MField.GetField(chatMsg, "atInfoTempList", ArrayList.class);
-                ArrayList AtList2 = MField.GetField(chatMsg, "atInfoList", ArrayList.class);
-                String mStr = MField.GetField(chatMsg, "extStr", String.class);
+                ArrayList AtList1 = XField.obj(chatMsg).name("atInfoTempList").type(ArrayList.class).get();
+                ArrayList AtList2 = XField.obj(chatMsg).name("atInfoList").type(ArrayList.class).get();
+                String mStr = XField.obj(chatMsg).name("extStr").type(String.class).get();
                 JSONObject mJson = new JSONObject(mStr);
                 mStr = mJson.optString("troop_at_info_list");
-                ArrayList AtList3 = MMethod
-                        .CallMethod(null, MClass.loadClass("com.tencent.mobileqq.data.MessageForText"), "getTroopMemberInfoFromExtrJson", ArrayList.class,
-                                new Class[]{String.class}, mStr);
+                ArrayList AtList3 = XMethod.clz("com.tencent.mobileqq.data.MessageForText").name("getTroopMemberInfoFromExtrJson").ret(ArrayList.class).param(String.class).invoke(mStr);
                 if (AtList1 == null) {
                     AtList1 = AtList2;
                 }
                 if (AtList1 == null) {
                     AtList1 = AtList3;
                 }
-                String nowMsg = MField.GetField(chatMsg, "msg", String.class);
+                String nowMsg = XField.obj(chatMsg).name("msg").type(String.class).get();
                 Chat_facade_bridge.sendText(Session, nowMsg, AtList1);
                 break;
             }
@@ -79,16 +79,16 @@ public class Repeater {
                 break;
             }
             case "MessageForArkApp": {
-                Chat_facade_bridge.sendArkApp(Session, MField.GetField(chatMsg, "ark_app_message"));
+                Chat_facade_bridge.sendArkApp(Session,XField.obj(chatMsg).name("ark_app_message").get());
                 break;
             }
             case "MessageForStructing":
             case "MessageForTroopPobing": {
-                Chat_facade_bridge.sendStruct(Session, MField.GetField(chatMsg, "structingMsg"));
+                Chat_facade_bridge.sendStruct(Session, XField.obj(chatMsg).name("structingMsg").get());
                 break;
             }
             case "MessageForAniSticker": {
-                int servID = MsgUtils.DecodeAntEmoCode(MField.GetField(chatMsg, "sevrId", int.class));
+                int servID = MsgUtils.DecodeAntEmoCode(XField.obj(chatMsg).name("sevrId").type(int.class).get());
                 Chat_facade_bridge.sendAnimation(Session, servID);
                 break;
             }

@@ -1,19 +1,15 @@
 package cc.hicore.hook.stickerPanel.MainItemImpl;
 
 import android.content.Context;
-import android.util.Log;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
-import cc.hicore.Env;
-import cc.hicore.Utils.ContextUtils;
-import cc.hicore.Utils.HttpUtils;
+import cc.hicore.Utils.FunConf;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
-import cc.hicore.hook.stickerPanel.MainPanelAdapter;
 import cc.hicore.hook.stickerPanel.RecentStickerHelper;
 import cc.hicore.message.chat.SessionUtils;
 import cc.hicore.message.common.MsgSender;
@@ -21,14 +17,12 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import com.bumptech.glide.Glide;
 import com.lxj.xpopup.XPopup;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
-import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.R;
 import java.io.File;
 import java.util.HashSet;
 import java.util.List;
 
-public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
+public class RecentStickerImpl implements ICreator.IMainPanelItem {
     ViewGroup cacheView;
     Context mContext;
     LinearLayout panelContainer;
@@ -36,6 +30,8 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
     TextView tv_title;
 
     List<RecentStickerHelper.RecentItemInfo> items;
+
+    boolean dontAutoClose;
 
     public RecentStickerImpl(Context mContext) {
         this.mContext = mContext;
@@ -47,9 +43,14 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
         tv_title.setText("最近使用");
 
         View setButton = cacheView.findViewById(R.id.Sticker_Panel_Set_Item);
-        setButton.setOnClickListener(v-> new XPopup.Builder(ContextUtils.getFixContext(mContext))
-                .asConfirm("提示", "是否要清除最近的表情记录?", RecentStickerHelper::cleanAllRecentRecord)
-                .show());
+        setButton.setOnClickListener(v->{
+            new XPopup.Builder(mContext)
+                    .asConfirm("提示", "是否要清除最近发送列表", () -> {
+                        RecentStickerHelper.cleanAllRecentRecord();
+                        ICreator.dismissAll();
+                    })
+                    .show();
+        });
 
         try {
             LinearLayout itemLine = null;
@@ -58,82 +59,54 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
                 if (i % 5 == 0) {
                     itemLine = new LinearLayout(mContext);
                     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-                    params.bottomMargin = LayoutHelper.dip2px(mContext, 16);
+                    params.bottomMargin = (int) LayoutHelper.dip2px(mContext, 16);
                     panelContainer.addView(itemLine, params);
                 }
-                if (item.type == 2) {
-                    itemLine.addView(getItemContainer(mContext, item.url, i % 5, item));
-                } else if (item.type == 1) {
-                    itemLine.addView(getItemContainer(mContext, LocalDataHelper.getLocalItemPath(item), i % 5, item));
-                }
+                itemLine.addView(getItemContainer(mContext, LocalDataHelper.getLocalItemPath(item), i % 5, item));
 
             }
         } catch (Exception e) {
-            XposedBridge.log(Log.getStackTraceString(e));
+
         }
     }
 
     @Override
-    public View getView(ViewGroup parent) {
-        onViewDestroy(null);
+    public View getView() {
         notifyDataSetChanged();
-
+        dontAutoClose = FunConf.getBoolean("global", "sticker_panel_set_dont_close_panel", false);
         return cacheView;
     }
 
     private void notifyDataSetChanged() {
         for (ImageView img : cacheImageView) {
             String coverView = (String) img.getTag();
-            if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
+            if (new File(coverView+"_thumb").exists()){
+                Glide.with(HostInfo.getApplication()).load(coverView+"_thumb").into(img);
+            }else {
                 Glide.with(HostInfo.getApplication()).load(coverView).into(img);
-            } else {
-                if (new File(coverView+"_thumb").exists()){
-                    Glide.with(HostInfo.getApplication()).load(coverView+"_thumb").into(img);
-                }else {
-                    Glide.with(HostInfo.getApplication()).load(coverView).into(img);
-                }
-
             }
         }
     }
 
     private View getItemContainer(Context context, String coverView, int count, RecentStickerHelper.RecentItemInfo item) {
-        int item_size = LayoutHelper.getScreenWidth(context) / 6;
-        int item_distance = (LayoutHelper.getScreenWidth(context) - item_size * 5) / 4;
+        int width_item = LayoutHelper.getScreenWidth(context) / 6;
+        int item_distance = (LayoutHelper.getScreenWidth(context) - width_item * 5) / 4;
 
         ImageView img = new ImageView(context);
         cacheImageView.add(img);
 
-        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(item_size, item_size);
+        LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(width_item, width_item);
         if (count > 0) params.leftMargin = item_distance;
         img.setLayoutParams(params);
 
         img.setTag(coverView);
         img.setOnClickListener(v -> {
-            if (coverView.startsWith("http://") || coverView.startsWith("https://")) {
-                HttpUtils.ProgressDownload(coverView, Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")), () -> {
-                    Contact contact = SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam);
-                    if (contact != null){
-                        MsgSender.send_pic_by_contact(contact,
-                                Env.app_save_path + "Cache/" + coverView.substring(coverView.lastIndexOf("/")));
-
-                        RecentStickerHelper.addPicItemToRecentRecord(item);
-                    }
-
-                }, mContext);
+            MsgSender.send_pic_by_contact(SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam), coverView);
+            RecentStickerHelper.addPicItemToRecentRecord(item);
+            if (!dontAutoClose){
                 ICreator.dismissAll();
-
-            } else {
-
-                Contact contact = SessionUtils.AIOParam2Contact(StickerPanelEntryHooker.AIOParam);
-                if (contact != null){
-                    MsgSender.send_pic_by_contact(contact,
-                            coverView);
-                    RecentStickerHelper.addPicItemToRecentRecord(item);
-                    ICreator.dismissAll();
-                }
-
             }
+
         });
 
         return img;
@@ -141,7 +114,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
     }
 
     @Override
-    public void onViewDestroy(ViewGroup parent) {
+    public void onViewDestroy() {
         for (ImageView img : cacheImageView) {
             img.setImageBitmap(null);
             Glide.with(HostInfo.getApplication()).clear(img);
@@ -150,7 +123,7 @@ public class RecentStickerImpl implements MainPanelAdapter.IMainPanelItem {
 
     @Override
     public long getID() {
-        return 0;
+        return 1234;
     }
 
     @Override

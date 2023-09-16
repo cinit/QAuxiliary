@@ -21,14 +21,16 @@
 
 package cc.hicore.hook.stickerPanel.Hooker;
 
+import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MMethod;
 import cc.hicore.ReflectUtil.MRes;
+import cc.hicore.ReflectUtil.XMethod;
+import cc.hicore.Utils.FunConf;
 import cc.hicore.Utils.XLog;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.PanelUtils;
@@ -52,6 +54,7 @@ import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.ChatPanel_InitPanel_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
@@ -105,23 +108,25 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
             }
         });
 
-        HookUtils.hookAfterIfEnabled(this,DexKit.loadMethodFromCache(Guild_Emo_Btn_Create_QQNT.INSTANCE),param -> {
-            ViewGroup vg = (ViewGroup) param.getResult();
-            for (int i = 0; i < vg.getChildCount(); i++) {
-                View v = vg.getChildAt(i);
-                if (v instanceof ImageView) {
-                    v.setOnLongClickListener(v1 -> {
-                        ICreator.createPanel(v1.getContext());
-                        return true;
-                    });
+        HookUtils.hookAfterIfEnabled(
+                this,
+                DexKit.loadMethodFromCache(Guild_Emo_Btn_Create_QQNT.INSTANCE),
+                param -> {
+                    ViewGroup vg = (ViewGroup) param.getResult();
+                    for (int i = 0; i < vg.getChildCount(); i++) {
+                        View v = vg.getChildAt(i);
+                        if (v instanceof ImageView) {
+                            v.setOnLongClickListener(v1 -> {
+                                ICreator.createPanel(v1.getContext());
+                                return true;
+                            });
+                        }
+                    }
                 }
-            }
-        });
-
-        HookUtils.hookAfterIfEnabled(this, MMethod.FindMethod(Initiator.loadClass("com.tencent.qqnt.aio.shortcutbar.PanelIconLinearLayout"),
-                null,
-                ImageView.class,
-                new Class[]{Initiator.load("com.tencent.qqnt.aio.shortcutbar.a")}),
+         );
+        HookUtils.hookAfterIfEnabled(
+                this,
+                XMethod.clz("com.tencent.qqnt.aio.shortcutbar.PanelIconLinearLayout").ret(ImageView.class).ignoreParam().get(),
                 param -> {
                     ImageView imageView = (ImageView) param.getResult();
                     if ("表情".contentEquals(imageView.getContentDescription())){
@@ -130,7 +135,8 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                             return true;
                         });
                     }
-                });
+                }
+        );
 
         //Hook for longClick msgItem
         {
@@ -210,6 +216,35 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
 
 
         }
+
+        //Hook for change title
+
+        Method sendMsgMethod = XMethod
+                .clz("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService$CppProxy")
+                .name("sendMsg")
+                .ignoreParam().get();
+
+
+        HookUtils.hookBeforeIfEnabled(
+                this,
+                sendMsgMethod,
+                param -> {
+                    if (isEnabled()){
+                        ArrayList<MsgElement> elements = (ArrayList<MsgElement>) param.args[2];
+                        if (FunConf.getBoolean("global", "sticker_panel_set_ch_change_title", false)){
+                            String text = FunConf.getString("global", "sticker_panel_set_ed_change_title", "");
+                            if (!TextUtils.isEmpty(text)){
+                                for (MsgElement element : elements){
+                                    if (element.getPicElement() != null){
+                                        PicElement picElement = element.getPicElement();
+                                        picElement.setSummary(text);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+        );
 
         return true;
     }

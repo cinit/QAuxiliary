@@ -137,14 +137,16 @@ public class IoUtils {
         return dir;
     }
 
-    public static void unsafeThrow(@NonNull Throwable t) {
+    public static AssertionError unsafeThrow(@NonNull Throwable t) {
         Objects.requireNonNull(t, "t == null");
         unsafeThrowImpl(t);
+        throw new AssertionError("unreachable");
     }
 
-    public static void unsafeThrowForIteCause(@NonNull Throwable t) {
+    public static AssertionError unsafeThrowForIteCause(@NonNull Throwable t) {
         Objects.requireNonNull(t, "t == null");
         unsafeThrowImpl(getIteCauseOrSelf(t));
+        throw new AssertionError("unreachable");
     }
 
     @NonNull

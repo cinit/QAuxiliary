@@ -5,14 +5,21 @@
     android:layout_gravity="center_horizontal"
     android:gravity="center_horizontal"
     android:layout_height="match_parent">
-
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="是否保存如下图片"
+        android:textColor="@color/global_font_color"
+        android:gravity="center_horizontal"
+        android:textSize="16sp"/>
     <ImageView
         android:id="@+id/emo_pre_container"
         android:layout_width="160dp"
         android:layout_height="160dp"/>
-
     <ScrollView
-        android:layout_width="160dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_width="match_parent"
         android:layout_height="200dp">
         <RadioGroup
             android:layout_width="match_parent"
@@ -25,6 +32,7 @@
         android:id="@+id/createNew"
         android:layout_width="160dp"
         android:layout_height="40dp"
-        android:text="创建分组"/>
+        android:text="新建项目"/>
+
 
 </LinearLayout>

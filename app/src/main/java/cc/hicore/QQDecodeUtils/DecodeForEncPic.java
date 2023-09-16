@@ -22,6 +22,7 @@
 package cc.hicore.QQDecodeUtils;
 
 import android.os.Environment;
+import cc.ioctl.util.HostInfo;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -40,9 +41,9 @@ public class DecodeForEncPic {
     private static final byte[] GIFMask = {0,1,0,1};
     public static String decodeGifForLocalPath(int dwTabID,byte[] sbufID){
         try{
-            String path = Environment.getExternalStorageDirectory()+"/Android/data/com.tencent.mobileqq/Tencent/MobileQQ/.emotionsm/"+dwTabID+"/"
+            String path = Environment.getExternalStorageDirectory()+"/Android/data/" + HostInfo.getPackageName() + "/Tencent/MobileQQ/.emotionsm/"+dwTabID+"/"
                     +bytesToHex(sbufID);
-            String cachePath = Environment.getExternalStorageDirectory()+"/Android/data/com.tencent.mobileqq/cache/" +bytesToHex(sbufID);
+            String cachePath = Environment.getExternalStorageDirectory()+"/Android/data/" + HostInfo.getPackageName() + "/cache/" +bytesToHex(sbufID);
             decodeGif(path,cachePath);
             return cachePath;
         }catch (Exception e){

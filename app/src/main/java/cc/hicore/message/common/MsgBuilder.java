@@ -22,9 +22,10 @@
 package cc.hicore.message.common;
 
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MClass;
 import cc.hicore.ReflectUtil.MField;
-import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XClass;
+import cc.hicore.ReflectUtil.XField;
+import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.Utils.DataUtils;
 import cc.ioctl.util.HostInfo;
 import cc.hicore.Utils.XLog;
@@ -32,6 +33,7 @@ import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.PttElement;
 import com.tencent.qqnt.kernel.nativeinterface.TextElement;
 import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import java.io.File;
 import java.lang.reflect.Method;
@@ -69,8 +71,8 @@ public class MsgBuilder {
     }
     public static MsgElement nt_build_pic(String path){
         try {
-            Object helper = MClass.NewInstance(MClass.loadClass("com.tencent.qqnt.msg.api.impl.MsgUtilApiImpl"));
-            return MMethod.CallMethod(helper,"createPicElement",MsgElement.class,new Class[]{String.class,boolean.class,int.class},path,true,0);
+            Object helper = XClass.newInstance(Initiator.loadClass("com.tencent.qqnt.msg.api.impl.MsgUtilApiImpl"));
+            return XMethod.obj(helper).name("createPicElement").ret(MsgElement.class).param(String.class,boolean.class,int.class).invoke(path,true,0);
         } catch (Exception e) {
             XLog.e("MsgBuilder.nt_build_pic",e);
             throw new RuntimeException(e);
@@ -78,8 +80,8 @@ public class MsgBuilder {
     }
     public static MsgElement nt_build_pic_guild(String path){
         try {
-            Object helper = MClass.NewInstance(MClass.loadClass("com.tencent.qqnt.msg.api.impl.MsgUtilApiImpl"));
-            return MMethod.CallMethod(helper,"createPicElementForGuild",MsgElement.class,new Class[]{String.class,boolean.class,int.class},path,true,0);
+            Object helper = XClass.newInstance(Initiator.loadClass("com.tencent.qqnt.msg.api.impl.MsgUtilApiImpl"));
+            return XMethod.obj(helper).name("createPicElementForGuild").ret(MsgElement.class).param(String.class,boolean.class,int.class).invoke(path,true,0);
         } catch (Exception e) {
             XLog.e("MsgBuilder.nt_build_pic_guild",e);
             throw new RuntimeException(e);
@@ -87,19 +89,17 @@ public class MsgBuilder {
     }
     public static Object build_pic(Object _SessionInfo,String path){
         try {
-            Method CallMethod = MMethod.FindMethod("com.tencent.mobileqq.activity.ChatActivityFacade", null, MClass.loadClass("com.tencent.mobileqq.data.ChatMessage"), new Class[]{
-                    MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
-                    MClass.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
-                    String.class
-            });
-            Object PICMsg = CallMethod.invoke(null,
-                    AppRuntimeHelper.getQQAppInterface(), _SessionInfo, path
-            );
-            MField.SetField(PICMsg, "md5", DataUtils.getFileMD5(new File(path)));
-            MField.SetField(PICMsg, "uuid", DataUtils.getFileMD5(new File(path)) + ".jpg");
-            MField.SetField(PICMsg, "localUUID", UUID.randomUUID().toString());
-            MMethod.CallMethodNoParam(PICMsg, "prewrite", void.class);
-            return PICMsg;
+            Object picObj = XMethod.clz("com.tencent.mobileqq.activity.ChatActivityFacade").ret(Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"))
+                            .param(
+                                    Initiator.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                                    Initiator.loadClass("com.tencent.mobileqq.activity.aio.SessionInfo"),
+                                    String.class
+                            ).invoke(AppRuntimeHelper.getQQAppInterface(), _SessionInfo, path);
+            XField.obj(picObj).name("md5").set(DataUtils.getFileMD5(new File(path)));
+            XField.obj(picObj).name("uuid").set(DataUtils.getFileMD5(new File(path)) + ".jpg");
+            XField.obj(picObj).name("localUUID").set(UUID.randomUUID().toString());
+            XMethod.obj(picObj).name("prewrite").ret(void.class).invoke();
+            return picObj;
         }catch (Exception e){
             XLog.e("MsgBuilder.build_pic", e);
             return null;
@@ -109,30 +109,27 @@ public class MsgBuilder {
         try {
             Method ArkChatObj;
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_90)){
-                ArkChatObj = MMethod.FindMethod("com.tencent.mobileqq.service.h.r", null,
-                        MClass.loadClass("com.tencent.mobileqq.data.MessageForArkFlashChat"),
-                        new Class[]{
-                                MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                ArkChatObj = XMethod.clz("com.tencent.mobileqq.service.h.r")
+                        .ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkFlashChat"))
+                        .param(
+                                Initiator.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                                 String.class, String.class, int.class,
-                                MClass.loadClass("com.tencent.mobileqq.data.ArkFlashChatMessage")
-                        }
-                );
+                                Initiator.loadClass("com.tencent.mobileqq.data.ArkFlashChatMessage")
+                        ).get();
             }else {
-                ArkChatObj = MMethod.FindMethod("com.tencent.mobileqq.service.message.MessageRecordFactory", null,
-                        MClass.loadClass("com.tencent.mobileqq.data.MessageForArkFlashChat"),
-                        new Class[]{
-                                MClass.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
+                ArkChatObj = XMethod.clz("com.tencent.mobileqq.service.message.MessageRecordFactory")
+                        .ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkFlashChat"))
+                        .param(
+                                Initiator.loadClass("com.tencent.mobileqq.app.QQAppInterface"),
                                 String.class, String.class, int.class,
-                                MClass.loadClass("com.tencent.mobileqq.data.ArkFlashChatMessage")
-                        }
-                );
+                                Initiator.loadClass("com.tencent.mobileqq.data.ArkFlashChatMessage")
+                        ).get();
             }
 
-            Object sArk = MField.GetField(source, "ark_app_message");
-            int isTroop = MField.GetField(source, "istroop", int.class);
-            String FriendUin = MField.GetField(source, "frienduin", String.class);
-            Object NewChat = ArkChatObj.invoke(null, QAppUtils.getAppRuntime(), FriendUin, QAppUtils.getCurrentUin(), isTroop, sArk);
-            return NewChat;
+            Object sArk = XField.obj(source).name("ark_app_message").get();
+            int isTroop = XField.obj(source).name("istroop").type(int.class).get();
+            String FriendUin = XField.obj(source).name("frienduin").type(String.class).get();
+            return ArkChatObj.invoke(null, QAppUtils.getAppRuntime(), FriendUin, QAppUtils.getCurrentUin(), isTroop, sArk);
         } catch (Exception e) {
             return null;
         }
@@ -140,18 +137,18 @@ public class MsgBuilder {
     public static Object copy_market_face_msg(Object source){
         try {
             Object mMessageRecord = build_common_message_record(-2007);
-            MMethod.CallMethod(mMessageRecord, mMessageRecord.getClass().getSuperclass().getSuperclass(), "initInner", void.class,
-                    new Class[]{String.class, String.class, String.class, String.class, long.class, int.class, int.class, long.class},
-                    QAppUtils.getCurrentUin(), MField.GetField(source, "frienduin"), QAppUtils.getCurrentUin(), "[原创表情]", System.currentTimeMillis() / 1000,
-                    -2007,
-                    MField.GetField(source, "istroop"), System.currentTimeMillis() / 1000
-            );
-            MField.SetField(mMessageRecord, "msgData", MField.GetField(source, source.getClass(), "msgData", byte[].class));
-            String strName = MField.GetField(source, "sendFaceName");
+            XMethod.obj(mMessageRecord).name("initInner").ret(void.class).param(String.class, String.class, String.class, String.class, long.class, int.class, int.class, long.class)
+                            .invoke(QAppUtils.getCurrentUin(), XField.obj(source).name("frienduin").get(), QAppUtils.getCurrentUin(), "[原创表情]", System.currentTimeMillis() / 1000,
+                                    -2007,
+                                    XField.obj(source).name("istroop").get(), System.currentTimeMillis() / 1000);
+            XField.obj(mMessageRecord).name("msgData").set(XField.obj(source).name("msgData").type(byte[].class).get());
+
+            String strName = XField.obj(source).name("sendFaceName").get();
+
             if (strName != null) {
-                MField.SetField(mMessageRecord, "sendFaceName", strName);
+                XField.obj(mMessageRecord).name("sendFaceName").set(strName);
             }
-            MMethod.CallMethodNoParam(mMessageRecord, "doParse", void.class);
+            XMethod.obj(mMessageRecord).name("doParse").ret(void.class).invoke();
             return rebuild_message(mMessageRecord);
         }catch (Exception e){
             XLog.e("MsgBuilder.copy_market_face_msg", e);
@@ -160,22 +157,30 @@ public class MsgBuilder {
     }
     public static Object copy_poke_msg(Object source){
         try {
-            Object PokeEmo = MClass.NewInstance(MClass.loadClass("com.tencent.mobileqq.data.MessageForPokeEmo"));
-            MField.SetField(PokeEmo, "msgtype", -5018);
-            MField.SetField(PokeEmo, "pokeemoId", 13);
-            MField.SetField(PokeEmo, "pokeemoPressCount", MField.GetField(source, "pokeemoPressCount"));
-            MField.SetField(PokeEmo, "emoIndex", MField.GetField(source, "emoIndex"));
-            MField.SetField(PokeEmo, "summary", MField.GetField(source, "summary"));
-            MField.SetField(PokeEmo, "emoString", MField.GetField(source, "emoString"));
-            MField.SetField(PokeEmo, "emoCompat", MField.GetField(source, "emoCompat"));
-            MMethod.CallMethod(PokeEmo, "initMsg", void.class, new Class[0]);
-            String friendInfo = MField.GetField(source, "frienduin", String.class);
-            int istroop = MField.GetField(source, "istroop", int.class);
-            MMethod.CallStaticMethod(HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0) ? MClass.loadClass("com.tencent.mobileqq.service.h.r"):
-                            MClass.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),
+            Object PokeEmo = XClass.newInstance(Initiator.loadClass("com.tencent.mobileqq.data.MessageForPokeEmo"));
+            XField.obj(PokeEmo).name("msgtype").set(-5018);
+            XField.obj(PokeEmo).name("pokeemoId").set(13);
+            XField.obj(PokeEmo).name("pokeemoPressCount").set(XField.obj(source).name("pokeemoPressCount").get());
+            XField.obj(PokeEmo).name("emoIndex").set(XField.obj(source).name("emoIndex").get());
+            XField.obj(PokeEmo).name("summary").set(XField.obj(source).name("summary").get());
+            XField.obj(PokeEmo).name("emoString").set(XField.obj(source).name("emoString").get());
+            XField.obj(PokeEmo).name("emoCompat").set(XField.obj(source).name("emoCompat").get());
+            XMethod.obj(PokeEmo).name("initMsg").ret(void.class).invoke();
 
-                    null, void.class, new Class[]{MClass.loadClass("com.tencent.common.app.AppInterface"), MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"), String.class, String.class, int.class},
-                    QAppUtils.getAppRuntime(), PokeEmo, friendInfo, QAppUtils.getCurrentUin(), istroop);
+
+            String friendInfo = XField.obj(source).name("frienduin").type(String.class).get();
+            int istroop = XField.obj(source).name("istroop").type(int.class).get();
+
+            XMethod.clz(HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0) ? Initiator.loadClass("com.tencent.mobileqq.service.h.r"):
+                    Initiator.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"))
+                    .ret(void.class)
+                    .param(
+                            Initiator.loadClass("com.tencent.common.app.AppInterface"),
+                            Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord"),
+                            String.class,
+                            String.class,
+                            int.class
+                    ).invoke(QAppUtils.getAppRuntime(), PokeEmo, friendInfo, QAppUtils.getCurrentUin(), istroop);
             return PokeEmo;
         } catch (Exception e) {
             XLog.e("MsgBuilder.copy_poke_msg", e);
@@ -185,9 +190,9 @@ public class MsgBuilder {
     public static Object rebuild_message(Object record){
         try{
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
-                return MMethod.CallStaticMethod(MClass.loadClass("com.tencent.mobileqq.service.h.r"),null,MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),record);
+                return XMethod.clz("com.tencent.mobileqq.service.h.r").ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord")).invoke(record);
             }else {
-                return MMethod.CallStaticMethod(MClass.loadClass("com.tencent.mobileqq.service.message.MessageRecordFactory"),null,MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),record);
+                return XMethod.clz("com.tencent.mobileqq.service.message.MessageRecordFactory").ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord")).invoke(record);
             }
 
         }catch (Exception e){
@@ -198,17 +203,21 @@ public class MsgBuilder {
         try{
             Method CallMethod = null;
             if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)){
-                CallMethod = MMethod.FindMethod("com.tencent.mobileqq.service.h.r","d", MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),new Class[]{
-                        int.class
-                });
+                CallMethod = XMethod.clz("com.tencent.mobileqq.service.h.r")
+                                .name("d")
+                                .ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord"))
+                                .param(int.class).get();
             } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)){
-                CallMethod = MMethod.FindMethod("com.tencent.mobileqq.service.message.MessageRecordFactory","d", MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),new Class[]{
-                        int.class
-                });
+
+                CallMethod = XMethod.clz("com.tencent.mobileqq.service.message.MessageRecordFactory")
+                        .name("d")
+                        .ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord"))
+                        .param(int.class).get();
             }else {
-                CallMethod = MMethod.FindMethod("com.tencent.mobileqq.service.message.MessageRecordFactory","a", MClass.loadClass("com.tencent.mobileqq.data.MessageRecord"),new Class[]{
-                        int.class
-                });
+                CallMethod = XMethod.clz("com.tencent.mobileqq.service.message.MessageRecordFactory")
+                        .name("a")
+                        .ret(Initiator.loadClass("com.tencent.mobileqq.data.MessageRecord"))
+                        .param(int.class).get();
             }
             return CallMethod.invoke(null,type);
         }catch (Exception e){

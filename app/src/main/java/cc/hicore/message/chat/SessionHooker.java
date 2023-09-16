@@ -24,6 +24,7 @@ package cc.hicore.message.chat;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
+import cc.hicore.ReflectUtil.XField;
 import cc.hicore.hook.RepeaterPlus;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
 import de.robv.android.xposed.XC_MethodHook;
@@ -66,7 +67,7 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
             @Override
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Object pie = param.thisObject;
-                Object AIOParam = MField.GetFirstField(pie,Initiator.loadClass("com.tencent.aio.data.AIOParam"));
+                Object AIOParam = XField.obj(pie).type(Initiator.loadClass("com.tencent.aio.data.AIOParam")).get();
                 for (SessionHooker.IAIOParamUpdate decorator : getDecorators()) {
                     decorator.onAIOParamUpdate(AIOParam);
                 }

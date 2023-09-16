@@ -31,7 +31,7 @@ import java.io.OutputStream;
 import java.nio.charset.StandardCharsets;
 
 public class FileUtils {
-    public static void WriteToFile(String File, String FileContent) {
+    public static void writeToFile(String File, String FileContent) {
         try {
             File parent = new File(File).getParentFile();
             if (!parent.exists()) parent.mkdirs();
@@ -57,7 +57,7 @@ public class FileUtils {
         }
         file.delete();
     }
-    public static String ReadFileString(File f) {
+    public static String readFileString(File f) {
         try {
             FileInputStream fInp = new FileInputStream(f);
             String Content = new String(readAllBytes(fInp), StandardCharsets.UTF_8);
@@ -67,8 +67,8 @@ public class FileUtils {
             return null;
         }
     }
-    public static String ReadFileString(String f) {
-        return ReadFileString(new File(f));
+    public static String readFileString(String f) {
+        return readFileString(new File(f));
     }
     public static void copy(String source, String dest) {
 

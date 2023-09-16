@@ -1,7 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:background="@color/bg_plugin"
-    android:theme="@style/AppTheme.Def"
+    android:background="@color/global_background_color"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
     <HorizontalScrollView
@@ -15,12 +14,11 @@
             android:layout_height="match_parent"
             android:orientation="horizontal" />
     </HorizontalScrollView>
-    <ListView
-        android:background="#11000000"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+    <ScrollView
         android:layout_below="@+id/Sticker_Pack_Select_Bar_Container"
-        android:dividerHeight="0dp"
-        android:divider="#ffffff"
-        android:id="@+id/Sticker_Panel_Main_List_View"/>
+        android:background="#22000000"
+        android:id="@+id/sticker_panel_pack_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+    </ScrollView>
 </RelativeLayout>

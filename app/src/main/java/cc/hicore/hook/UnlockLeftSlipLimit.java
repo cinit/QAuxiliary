@@ -22,7 +22,7 @@
 package cc.hicore.hook;
 
 import androidx.annotation.NonNull;
-import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XMethod;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
@@ -68,8 +68,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
                     });
             return true;
         }
-        Method m = MMethod.FindMethod(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass(), methodName, boolean.class,
-                new Class[0]);
+        Method m = XMethod.clz(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass()).name(methodName).ret(boolean.class).get();
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
         return true;
     }

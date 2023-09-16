@@ -87,6 +87,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
             customTabsIntent.intent.apply {
                 putExtra("from_fqb", true)
                 putExtra(JumpController.EXTRA_JMP_JEFS_PERMISSIVE, true)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
             }
             customTabsIntent.launchUrl(hostInfo.application, Uri.parse(url))
             param.result = null

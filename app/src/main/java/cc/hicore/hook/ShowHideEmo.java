@@ -22,6 +22,7 @@
 package cc.hicore.hook;
 
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -31,7 +32,12 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.NT_SysAndEmojiResInfo;
 import java.io.File;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.nio.charset.StandardCharsets;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -43,6 +49,7 @@ public class ShowHideEmo extends CommonSwitchFunctionHook {
     public static final ShowHideEmo INSTANCE = new ShowHideEmo();
 
     private ShowHideEmo() {
+        super(new DexKitTarget[]{NT_SysAndEmojiResInfo.INSTANCE});
     }
 
     @NonNull
@@ -59,6 +66,16 @@ public class ShowHideEmo extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        if (QAppUtils.isQQnt()) {
+            Method[] ms = DexKit.requireClassFromCache(NT_SysAndEmojiResInfo.INSTANCE).getDeclaredMethods();
+            for (Method m : ms) {
+                if (m.getReturnType() == boolean.class && !Modifier.isAbstract(m.getModifiers())) {
+                    HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(false));
+                    return true;
+                }
+            }
+            return false;
+        }
         HookUtils.hookBeforeIfEnabled(this,
                 Initiator.loadClass("com.tencent.mobileqq.emoticon.QQSysAndEmojiResInfo")
                         .getDeclaredMethod("isEmoticonHide", Initiator.loadClass("com.tencent.mobileqq.emoticon.QQSysAndEmojiResInfo$QQEmoConfigItem")),

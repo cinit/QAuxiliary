@@ -27,6 +27,7 @@ import android.app.NotificationChannelGroup
 import android.app.NotificationManager
 import android.app.PendingIntent
 import android.content.Intent
+import android.graphics.Bitmap
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
@@ -258,7 +259,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         val builder = NotificationCompat.Builder(hostInfo.application, oldNotification)
             .setContentTitle(mainName)
             .setContentText(content)
-            .setLargeIcon(null)
+            .setLargeIcon(null as Bitmap?)
             .setStyle(messageStyle)
             .setChannelId(getChannelId(channelId))
 

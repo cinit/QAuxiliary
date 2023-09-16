@@ -35,7 +35,8 @@ import android.widget.ImageButton;
 import android.widget.RelativeLayout;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
-import cc.hicore.ReflectUtil.MMethod;
+import cc.hicore.ReflectUtil.XField;
+import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.ioctl.util.LayoutHelper;
 import de.robv.android.xposed.XC_MethodHook;
@@ -74,12 +75,12 @@ public class RepeaterHelper {
 
     public static void createRepeatIcon(RelativeLayout baseChatItem, Object ChatMsg, Object session) throws Exception {
         boolean isSendFromLocal;
-        int istroop = MField.GetField(ChatMsg, "istroop", int.class);
+        int istroop = XField.obj(ChatMsg).name("istroop").type(int.class).get();
         if (istroop == 1 || istroop == 0) {
-            String UserUin = MField.GetField(ChatMsg, "senderuin", String.class);
+            String UserUin = XField.obj(ChatMsg).name("senderuin").type(String.class).get();
             isSendFromLocal = UserUin.equals(QAppUtils.getCurrentUin());
         } else {
-            isSendFromLocal = MMethod.CallMethodNoParam(ChatMsg, "isSendFromLocal", boolean.class);
+            isSendFromLocal = XMethod.obj(ChatMsg).name("isSendFromLocal").ret( boolean.class).invoke();
         }
 
         Context context = baseChatItem.getContext();
@@ -169,9 +170,9 @@ public class RepeaterHelper {
     }
     private static boolean checkIsAvailStruct(Object msg) throws Exception {
         if (msg.getClass().getSimpleName().equals("MessageForStructing")) {
-            Object struct = MField.GetField(msg, "structingMsg");
+            Object struct = XField.obj(msg).name( "structingMsg").get();
             if (struct != null) {
-                int id = MField.GetField(struct, "mMsgServiceID");
+                int id = XField.obj(struct).name("mMsgServiceID").get();
                 return id == 5;
             }
             return false;

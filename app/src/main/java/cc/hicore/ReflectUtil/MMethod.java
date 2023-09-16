@@ -118,10 +118,6 @@ public class MMethod {
 
     private static final HashMap<String, Method> MethodCache = new HashMap<>();
 
-    public static Method FindMethod(String FindClass, String MethodName, Class<?> ReturnType, Class<?>[] ParamTypes) {
-        return FindMethod(MClass.loadClass(FindClass), MethodName, ReturnType, ParamTypes);
-    }
-
     public static Method FindMethod(Class<?> FindClass, String MethodName, Class<?> ReturnType, Class<?>[] ParamTypes) {
         if (FindClass == null) {
             return null;
@@ -146,7 +142,7 @@ public class MMethod {
 
                     if (params.length == ParamTypes.length) {
                         for (int i = 0; i < params.length; i++) {
-                            if (!MClass.CheckClass(params[i], ParamTypes[i])) {
+                            if (!XClass.CheckClass(params[i], ParamTypes[i])) {
                                 continue Loop;
                             }
                         }
@@ -185,7 +181,7 @@ public class MMethod {
 
                     if (params.length == ParamTypes.length) {
                         for (int i = 0; i < params.length; i++) {
-                            if (!MClass.CheckClass(params[i], ParamTypes[i])) {
+                            if (!XClass.CheckClass(params[i], ParamTypes[i])) {
                                 continue Loop;
                             }
                         }
