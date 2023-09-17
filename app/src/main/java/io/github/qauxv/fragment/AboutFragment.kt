@@ -26,6 +26,7 @@ import android.content.ClipData
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -40,6 +41,7 @@ import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.util.LayoutHelper.MATCH_PARENT
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
+import io.github.qauxv.util.Log
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.R
 import io.github.qauxv.activity.ConfigV2Activity
@@ -90,7 +92,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 }
                 textItem("构建时间", value = getBuildTimeString())
                 if (isInHostProcess) {
-                    val hostVersionName = hostInfo.versionName + "(" + hostInfo.versionCode32 + ")"
+                    val hostVersionName = getHostFullVersionNameAndVersionCode()
                     textItem(hostInfo.hostName, value = hostVersionName) {
                         copyText(hostVersionName)
                     }
@@ -136,6 +138,34 @@ class AboutFragment : BaseRootLayoutFragment() {
                 notices.forEach { this@CategoryItem.add(noticeToUiItem(it)) }
             }
         )
+    }
+
+    private fun getBuildNumberForCurrentTencentHostApplication(): Int {
+        val ctx = hostInfo.application
+        val pm = ctx.packageManager
+        val metaData: Bundle
+        try {
+            metaData = pm.getApplicationInfo(ctx.packageName, PackageManager.GET_META_DATA).metaData ?: return 0
+        } catch (e: PackageManager.NameNotFoundException) {
+            // WTF? in container?
+            Log.e("getBuildNumberForCurrentTencentHostApplication WTF", e)
+            return 0
+        }
+        val rdmUuid = metaData.getString("com.tencent.rdm.uuid") ?: return 0
+        // [0-9]{3,5}_[0-9]{3,5}
+        if (!rdmUuid.matches("[0-9]{3,5}_[0-9]{3,5}".toRegex())) return 0
+        // buildNumber is first part
+        return rdmUuid.split("_")[0].toInt()
+    }
+
+    private fun getHostFullVersionNameAndVersionCode(): String {
+        val buildNumber = getBuildNumberForCurrentTencentHostApplication()
+        val fullVersionName = if (buildNumber == 0) {
+            hostInfo.versionName
+        } else {
+            hostInfo.versionName + "." + buildNumber
+        }
+        return fullVersionName + "(" + hostInfo.versionCode32 + ")"
     }
 
     private fun getBuildTimeString(): String {
