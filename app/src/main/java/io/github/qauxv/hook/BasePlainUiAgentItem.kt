@@ -26,7 +26,7 @@ import android.content.Context
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * Just a button to be shown [IUiItemAgent]
@@ -37,7 +37,7 @@ abstract class BasePlainUiAgentItem(
 ) : IUiItemAgent, IUiItemAgentProvider {
     override val titleProvider: (IUiItemAgent) -> String = { title }
     override val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?) = { _, _ -> description }
-    override val valueState: MutableStateFlow<String?>? = null
+    override val valueState: StateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent? = null
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null

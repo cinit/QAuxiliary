@@ -28,7 +28,7 @@ import android.view.View
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.util.dexkit.DexKitTarget
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 abstract class BaseSwitchFunctionDecorator(
         hookKey: String? = null,
@@ -53,7 +53,7 @@ abstract class BaseSwitchFunctionDecorator(
     private fun uiItemAgent() = object : IUiItemAgent {
         override val titleProvider: (IUiItemAgent) -> String = { _ -> name }
         override val summaryProvider: (IUiItemAgent, Context) -> CharSequence? = { _, _ -> description }
-        override val valueState: MutableStateFlow<String?>? = null
+        override val valueState: StateFlow<String?>? = null
         override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
         override val switchProvider: ISwitchCellAgent? by lazy {
             object : ISwitchCellAgent {

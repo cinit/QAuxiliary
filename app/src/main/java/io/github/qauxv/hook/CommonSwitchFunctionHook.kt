@@ -30,7 +30,7 @@ import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKitTarget
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A function that only has a enable/disable switch function.
@@ -74,7 +74,7 @@ abstract class CommonSwitchFunctionHook(
                 pangu_spacing(description.toString())
             else description
         }
-        override val valueState: MutableStateFlow<String?>? = null
+        override val valueState: StateFlow<String?>? = null
         override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
         override val switchProvider: ISwitchCellAgent? by lazy {
             object : ISwitchCellAgent {

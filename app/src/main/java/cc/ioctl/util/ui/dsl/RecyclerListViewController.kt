@@ -35,7 +35,7 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TMsgListItem
 import io.github.qauxv.dsl.item.UiAgentItem
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 class RecyclerListViewController(
         val context: Context,
@@ -90,7 +90,7 @@ class RecyclerListViewController(
         for (i in itemList.indices) {
             val item = itemList[i]
             if (item is UiAgentItem) {
-                val valueStateFlow: MutableStateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
+                val valueStateFlow: StateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
                 if (valueStateFlow != null) {
                     lifecycleScope.launchWhenStarted {
                         valueStateFlow.collect {

@@ -30,7 +30,7 @@ import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKitTarget
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 
 /**
  * A function that has a custom configuration UI. They usually do NOT have a switch.
@@ -59,7 +59,7 @@ abstract class CommonConfigFunctionHook(
      * The current human-readable state of the function(optional).
      * Keep it as short as possible(e.g. "5 enabled", "disabled", no more than 10 characters).
      */
-    abstract val valueState: MutableStateFlow<String?>?
+    abstract val valueState: StateFlow<String?>?
 
     /**
      * Called when the function UI item is clicked.
@@ -83,7 +83,7 @@ abstract class CommonConfigFunctionHook(
                 pangu_spacing(description.toString())
             else description
          }
-        override val valueState: MutableStateFlow<String?>?
+        override val valueState: StateFlow<String?>?
             get() = this@CommonConfigFunctionHook.valueState
         override val validator: ((IUiItemAgent) -> Boolean) = { _ -> true }
         override val switchProvider: ISwitchCellAgent? = null

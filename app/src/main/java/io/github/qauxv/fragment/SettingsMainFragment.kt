@@ -52,7 +52,7 @@ import io.github.qauxv.util.SyncUtils.async
 import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.UiThread
 import io.github.qauxv.util.isInHostProcess
-import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
 import me.singleneuron.util.forSuBanXia
 
 class SettingsMainFragment : BaseRootLayoutFragment() {
@@ -158,7 +158,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         for (i in itemList.indices) {
             val item = itemList[i]
             if (item is UiAgentItem) {
-                val valueStateFlow: MutableStateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
+                val valueStateFlow: StateFlow<String?>? = item.agentProvider.uiItemAgent.valueState
                 if (valueStateFlow != null) {
                     lifecycleScope.launchWhenResumed {
                         valueStateFlow.collect {
