@@ -26,6 +26,9 @@ import static io.github.qauxv.util.Initiator._PicItemBuilder;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
+import cc.hicore.ReflectUtil.XMethod;
+import cc.ioctl.util.HookUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -50,6 +53,11 @@ public class EmoPicHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        if (QAppUtils.isQQnt()){
+            HookUtils.hookBeforeIfEnabled(this, XMethod.clz("com.tencent.qqnt.aio.adapter.api.impl.RichMediaBrowserApiImpl").name("checkIsFavPicAndShowPreview").ignoreParam().get(),
+                    param -> param.setResult(false));
+            return true;
+        }
         XposedHelpers.findAndHookMethod(_PicItemBuilder(),
                 "onClick", View.class, new XC_MethodHook(51) {
 
