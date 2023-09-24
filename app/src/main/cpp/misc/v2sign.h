@@ -11,6 +11,7 @@
 #include <linux_syscall_support.h>
 
 #include "utils/Log.h"
+#include "zip_helper.h"
 #include "md5.cpp"
 
 #ifndef MODULE_SIGNATURE
@@ -131,11 +132,17 @@ namespace {
         return -1;
     }
 
-    std::string getSignBlock(const uint8_t *base, size_t size) {
+    std::string getSignBlock(uint8_t *base, size_t size) {
+        zip_helper::MemMap memMap(base, size);
+        auto zip_file = zip_helper::ZipFile::Open(memMap);
+        if (!zip_file || zip_file->entries.size() == 0) return {};
+        auto last_entry = zip_file->entries.back();
+        auto zip_entries_end_ptr = reinterpret_cast<uint8_t *>(last_entry->record) + last_entry->getEntrySize();
+        auto apk_end_ptr = memMap.addr() + memMap.len();
         uint64_t curr = 0;
+        uint8_t *ptr = apk_end_ptr - 1;
         std::string signBlock;
-        auto *ptr = base + size - 1;
-        while (ptr >= base) {
+        while (ptr >= zip_entries_end_ptr) {
             curr = (curr << 8) | *ptr--;
             if (curr == revertMagikFirst) {
                 uint64_t tmp = 0;
@@ -199,7 +206,7 @@ namespace {
     }
 
     bool checkSignature(JNIEnv *env, bool isInHostAsModule) {
-        const void *baseAddress = nullptr;
+        void *baseAddress = nullptr;
         size_t fileSize = 0;
         if (isInHostAsModule) {
             std::string apkPath = getModulePath(env);
@@ -262,7 +269,7 @@ namespace {
             }
         }
         // __android_log_print(ANDROID_LOG_INFO, "QAuxv", "isModule: %d, path: %s", isModule, path.c_str());
-        std::string block = getSignBlock(reinterpret_cast<const uint8_t *>(baseAddress), fileSize);
+        std::string block = getSignBlock(reinterpret_cast<uint8_t *>(baseAddress), fileSize);
 
         bool match;
         if (block.empty()) {
