@@ -45,4 +45,4 @@ changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "10.9.0" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "10.9.1" }
