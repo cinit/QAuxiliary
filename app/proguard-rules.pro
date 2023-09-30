@@ -16,6 +16,7 @@
 -keep class moe.zapic.** { *; }
 -keep class cc.microblock.** { *; }
 -keep class com.tencent.mmkv.** { *; }
+-keep class com.alphi.qhmk.** { *; }
 
 -keepclasseswithmembernames class * {
     native <methods>;

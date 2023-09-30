@@ -41,7 +41,7 @@ object AntiUpdate : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽更新"
 
     override fun initOnce(): Boolean {
-        val clz = Initiator._UpgradeController()
+        val kUpgradeController = Initiator._UpgradeController()
             ?: throw ClassNotFoundException("UpgradeController")
         val kUpgradeDetailWrapper = Initiator.load("com.tencent.mobileqq.upgrade.UpgradeDetailWrapper")
             ?: Initiator.loadClass("com.tencent.mobileqq.app.upgrade.UpgradeDetailWrapper")
@@ -64,9 +64,16 @@ object AntiUpdate : CommonSwitchFunctionHook() {
             hookBeforeIfEnabled(method) { param -> param.result = null }
         } else {
             // older versions
-            clz.findAllMethods {
+            kUpgradeController.findAllMethods {
                 emptyParam && returnType == kUpgradeDetailWrapper && name.length == 1
             }.hookBefore { if (isEnabled) it.result = null }
+        }
+        for (m in kUpgradeController.getDeclaredMethods()) {
+            if (m.returnType == Void.TYPE) {
+                hookBeforeIfEnabled(m) { p -> p.setResult(null) }
+            } else if (m.returnType == Boolean::class.javaPrimitiveType) {
+                hookBeforeIfEnabled(m) { p -> p.result = false }
+            }
         }
         return true
     }

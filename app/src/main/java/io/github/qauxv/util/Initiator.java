@@ -470,7 +470,7 @@ public class Initiator {
     }
 
     @Nullable
-    private static Class<?> findClassWithSynthetics(@NonNull String className, int... index) {
+    public static Class<?> findClassWithSynthetics(@NonNull String className, int... index) {
         Class<?> cache = sClassCache.get(className);
         if (cache != null) {
             return cache;
