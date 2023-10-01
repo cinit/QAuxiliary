@@ -30,7 +30,9 @@ import static io.github.qauxv.util.Initiator._StickerInfo;
 
 import android.content.Context;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HostInfo;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -180,5 +182,16 @@ public class CheatHook extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "自定义猜拳骰子";
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getDescription() {
+        return "不支持NT版本，已停止维护";
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return !QAppUtils.isQQnt();
     }
 }
