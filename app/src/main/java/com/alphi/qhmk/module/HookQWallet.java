@@ -1,5 +1,7 @@
 package com.alphi.qhmk.module;
 
+import android.os.Bundle;
+import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
@@ -12,6 +14,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
+import kotlin.collections.ArraysKt;
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -24,6 +27,21 @@ public class HookQWallet extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        // NT
+        Class<?> kQWalletHomeFragment = Initiator.load("com/tencent/mobileqq/qwallet/home/QWalletHomeFragment");
+        if (kQWalletHomeFragment != null) {
+            Class<?> kQWalletHomePreviewController = Initiator.loadClass("com/tencent/mobileqq/qwallet/home/QWalletHomePreviewController");
+            // public final QWalletHomePreviewController.?(QWallBaseFragment|QWalletBaseFragment)Z
+            Method method1 = ArraysKt.single(kQWalletHomePreviewController.getDeclaredMethods(),
+                    it -> it.getReturnType() == boolean.class && it.getParameterTypes().length == 1 &&
+                            it.getParameterTypes()[0].getSimpleName().endsWith("BaseFragment"));
+            HookUtils.hookBeforeIfEnabled(this, method1, param -> param.setResult(true));
+            Method onViewCreated = kQWalletHomeFragment.getDeclaredMethod("onViewCreated", View.class, Bundle.class);
+            HookUtils.hookBeforeIfEnabled(this, onViewCreated, param -> {
+                // 加载广告及视图初始化
+                param.setResult(null);
+            });
+        }
         // 高版本 已测试 8.8.50
         Class<?> aClass = Initiator.load("Lcom/tencent/mobileqq/qwallet/config/impl/QWalletConfigServiceImpl;");
         if (aClass != null) {

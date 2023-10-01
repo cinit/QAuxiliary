@@ -23,6 +23,14 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
     protected boolean initOnce() throws Exception {
         Class<?> qsmClass = Initiator.loadClass("Lcom/tencent/mobileqq/widget/QVipMedalView;");
         Method onLayout = qsmClass.getDeclaredMethod("onLayout", boolean.class, int.class, int.class, int.class, int.class);
+        Method onMeasure = qsmClass.getDeclaredMethod("onMeasure", int.class, int.class);
+        Method setMeasuredDimension = View.class.getDeclaredMethod("setMeasuredDimension", int.class, int.class);
+        setMeasuredDimension.setAccessible(true);
+        HookUtils.hookBeforeIfEnabled(this, onMeasure, param -> {
+            View v = (View) param.thisObject;
+            setMeasuredDimension.invoke(v, 0, 0);
+            param.setResult(null);
+        });
         HookUtils.hookBeforeIfEnabled(this, onLayout, param -> {
             View obj = (View) param.thisObject;
             obj.setClickable(false);

@@ -25,7 +25,15 @@ public class DisableX5 extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        //
+        // NT
+        Class<?> kQbSdk = Initiator.loadClass("com/tencent/smtt/sdk/QbSdk");
+        if (kQbSdk != null) {
+            Method method = kQbSdk.getDeclaredMethod("getIsSysWebViewForcedByOuter");
+            HookUtils.hookBeforeIfEnabled(this, method, param -> {
+                param.setResult(true);
+            });
+        }
+        // older
         Class<?> tbsClass = Initiator.loadClass("com.tencent.smtt.sdk.WebView");
         Class<?> TbsClassConfig = null;
         for (Field field : tbsClass.getDeclaredFields()) {
