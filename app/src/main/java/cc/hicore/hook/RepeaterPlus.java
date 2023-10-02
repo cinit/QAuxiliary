@@ -286,7 +286,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
             Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
-                HookUtils.hookAfterIfEnabled(this, XMethod.obj(kChatAdapter1).name( "getView").ret( View.class).param(
+                HookUtils.hookAfterIfEnabled(this, XMethod.clz(kChatAdapter1).name( "getView").ret( View.class).param(
                         int.class,
                         View.class,
                         ViewGroup.class
