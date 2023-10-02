@@ -109,6 +109,13 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
                 }
             }
         }
+        if (kCommonJsPluginFactory == null) {
+            Class<?> kAbsWebView = Initiator.findClassWithSynthetics("com.tencent.mobileqq.webview.AbsWebView", 1);
+            if (kAbsWebView != null) {
+                Method myCommonJsPlugins = kAbsWebView.getDeclaredMethod("myCommonJsPlugins");
+                kCommonJsPluginFactory = myCommonJsPlugins.getReturnType();
+            }
+        }
         Objects.requireNonNull(kCommonJsPluginFactory, "kCommonJsPluginFactory is null");
         Method m1 = ArraysKt.single(kCommonJsPluginFactory.getDeclaredMethods(), m -> m.getReturnType() == List.class);
         HookUtils.hookAfterIfEnabled(this, m1, param -> {
