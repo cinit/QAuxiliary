@@ -323,16 +323,18 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         val runnable = {
             val disclaimer = """
                 警告：以上信息可能是完全错误的。
+                问: “已被服务器端屏蔽”是什么意思？ 
+                答：QQ 服务器端屏蔽（和谐）了该信息，因此无法获取，我也没有办法。
                 QQ 的合并转发消息内容是由转发者的客户端生成后上传服务器的，而不是在服务器上合并后再下发的。
                 因此，合并转发消息的内容存在被篡改和伪造的可能。
                 在非恶意情形下，PC 端 QQ 在合并转发提供的群号可能是错误的，而 Android 端 QQ 合并转发提供的群号通常是正确的。
                 以上信息仅供参考，本模块不对以上信息的正确性负责，以上信息不得作为任何依据。
-                问: “已被服务器端屏蔽”是什么意思？ 答：QQ 服务器端屏蔽了该信息，因此无法获取。
             """.trimIndent()
             disclaimerTextView.text = disclaimer
         }
         disclaimerTextView.text = buildSpannedString {
             append("单击可打开，长按可复制\n")
+            append("问: “已被服务器端屏蔽”是什么意思？ \n答：QQ 服务器端屏蔽（和谐）了该信息，因此无法获取，我也没有办法。\n")
             append("以上信息仅供参考，本模块不对以上信息的正确性负责，以上信息不得作为任何依据。\n")
             append("了解详情", object : ClickableSpan() {
                 override fun onClick(widget: View) {
