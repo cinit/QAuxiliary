@@ -42,6 +42,7 @@ abstract class BaseFunctionHook(
 ) : ITraceableDynamicHook, IUiItemAgentProvider {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
+    private val mErrorsLock: Any = Any()
     private var mInitialized = false
     private var mInitializeResult = false
     private val mHookKey: String = hookKey ?: this::class.java.simpleName
@@ -113,13 +114,15 @@ abstract class BaseFunctionHook(
     override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
         var alreadyLogged = false
-        for (error in mErrors) {
-            if (error.message == e.message && Arrays.equals(error.stackTrace, e.stackTrace)) {
-                alreadyLogged = true
+        synchronized(mErrorsLock) {
+            for (error in mErrors) {
+                if (error.message == e.message && Arrays.equals(error.stackTrace, e.stackTrace)) {
+                    alreadyLogged = true
+                }
             }
-        }
-        if (!alreadyLogged) {
-            mErrors.add(e)
+            if (!alreadyLogged) {
+                mErrors.add(e)
+            }
         }
         Log.e(e)
     }
