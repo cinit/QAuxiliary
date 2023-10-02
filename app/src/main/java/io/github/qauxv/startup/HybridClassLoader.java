@@ -56,7 +56,9 @@ public class HybridClassLoader extends ClassLoader {
             || name.startsWith("com.google.common.")
             || name.startsWith("com.microsoft.appcenter.")
             || name.startsWith("org.intellij.lang.annotations.")
-            || name.startsWith("org.jetbrains.annotations.");
+            || name.startsWith("org.jetbrains.annotations.")
+            || name.startsWith("com.bumptech.glide.")
+            || name.startsWith("com.google.errorprone.annotations.");
     }
 
     @Override
