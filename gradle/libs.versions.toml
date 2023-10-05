@@ -25,7 +25,7 @@ ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = 
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle"}
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle"}
 lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle"}
-material = { module = "com.google.android.material:material", version = "1.9.0"}
+material = { module = "com.google.android.material:material", version = "1.10.0"}
 material-dialogs-core = { module = "com.afollestad.material-dialogs:core", version.ref = "materialDialog"}
 material-dialogs-input = { module = "com.afollestad.material-dialogs:input", version.ref = "materialDialog"}
 xposed = { module = "de.robv.android.xposed:api", version = "82"}
