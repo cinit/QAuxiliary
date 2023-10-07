@@ -39,7 +39,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -Werror=non-virt
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
-add_subdirectory(../../../../libs/dexkit/DexKit/Core dex_kit_static)
+add_subdirectory(../../../../libs/dexkit/DexKit/Core dexkit_static)
 add_subdirectory(../../../../libs/silk silk)
 add_subdirectory(../../../../libs/libunwindstack unwindstack)
 add_subdirectory(../../../../libs/fmt fmt)
@@ -92,6 +92,6 @@ target_include_directories(qauxv PRIVATE .)
 target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv dobby mmkv dex_kit_static unwindstack base silk
+target_link_libraries(qauxv dobby mmkv dexkit_static unwindstack base silk
         c dl fmt-header-only z lsplant_static absl::flat_hash_map
         ${ANDROID_LIBS})

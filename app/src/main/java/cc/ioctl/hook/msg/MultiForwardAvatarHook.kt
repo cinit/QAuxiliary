@@ -69,6 +69,7 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import org.luckypray.dexkit.query.matchers.MethodMatcher
 import xyz.nextalone.util.invoke
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -90,15 +91,19 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
             val dexKit = backend.getDexKitBridge()
-            val m = dexKit.findMethodCaller {
-                callerMethodDeclareClass = "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent"
-                callerMethodReturnType = "V"
-                callerMethodParameterTypes = emptyArray()
-                methodName = "setOnClickListener"
+            val m = dexKit.findMethod {
+                matcher {
+                    declaredClass = "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent"
+                    returnType = "void"
+                    paramTypes()
+                    addInvoke {
+                        name = "setOnClickListener"
+                    }
+                }
             }
             if (m.size != 1) return false
-            Log.d("save id: " + nameOf(Multiforward_Avatar_setListener_NT) + ",method: " + m.keys.first().descriptor)
-            Multiforward_Avatar_setListener_NT.descCache = m.keys.first().descriptor
+            Log.d("save id: " + nameOf(Multiforward_Avatar_setListener_NT) + ",method: " + m.first().descriptor)
+            Multiforward_Avatar_setListener_NT.descCache = m.first().descriptor
             return true
         }
     }

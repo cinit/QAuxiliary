@@ -30,9 +30,10 @@ import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.name
 import io.github.qauxv.util.dexkit.valueOf
 import io.github.qauxv.util.hostInfo
-import io.luckypray.dexkit.DexKitBridge
-import io.luckypray.dexkit.builder.BatchFindArgs
-import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor as MethodDescriptor
+import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.query.enums.StringMatchType
+import org.luckypray.dexkit.result.ClassData
+import org.luckypray.dexkit.result.MethodData
 import java.util.concurrent.locks.Lock
 import kotlin.concurrent.withLock
 
@@ -80,10 +81,10 @@ class DexKitDeobfs private constructor(
                 }
             }
 
-            val resultMap = helper.batchFindMethodsUsingStrings(BatchFindArgs.build {
-                queryMap = deobfsMap
-            })
-            val resultMap2 = mutableMapOf<String, Set<MethodDescriptor>>()
+            val resultMap = helper.batchFindMethodUsingStrings {
+                matchers(deobfsMap, StringMatchType.SimilarRegex)
+            }
+            val resultMap2 = mutableMapOf<String, Set<MethodData>>()
             resultMap.forEach {
                 val key = it.key.split("#").first()
                 if (resultMap2.containsKey(key)) {
@@ -126,15 +127,16 @@ class DexKitDeobfs private constructor(
             } else {
                 return null
             }
-            val resultMap = helper.batchFindMethodsUsingStrings(BatchFindArgs.build {
-                queryMap = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
-            })
+            val resultMap = helper.batchFindMethodUsingStrings {
+                val map = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
+                matchers(map, StringMatchType.SimilarRegex)
+            }
             if(resultMap.isEmpty()){
                 Log.e("no result found for ${target.name}")
                 target.descCache = DexKit.NO_SUCH_METHOD.toString()
                 return null
             }
-            val resultSet = resultMap.values.reduce { acc, set -> acc + set }
+            val resultSet = resultMap.values.map { it as List<MethodData> }.reduce { acc, set -> acc + set }
             // verify
             val ret = target.verifyTargetMethod(resultSet.map { DexMethodDescriptor(it.descriptor) })
             if (ret == null) {

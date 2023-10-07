@@ -43,18 +43,19 @@ import io.github.qauxv.util.dexkit.DexKitFinder;
 import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
 import io.github.qauxv.util.dexkit.NTextItemBuilder_setETText;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
-import io.luckypray.dexkit.DexKitBridge;
-import io.luckypray.dexkit.builder.MethodInvokingArgs;
-import io.luckypray.dexkit.builder.MethodUsingFieldArgs;
-import io.luckypray.dexkit.descriptor.member.DexFieldDescriptor;
-import io.luckypray.dexkit.descriptor.member.DexMethodDescriptor;
-import io.luckypray.dexkit.enums.FieldUsingType;
 import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.luckypray.dexkit.DexKitBridge;
+import org.luckypray.dexkit.query.FindMethod;
+import org.luckypray.dexkit.query.MethodDataList;
+import org.luckypray.dexkit.query.enums.UsingType;
+import org.luckypray.dexkit.query.matchers.FieldMatcher;
+import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.result.MethodData;
 
 //强制使用默认字体
 @FunctionHookEntry
@@ -151,50 +152,48 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
         DexDeobfsProvider.checkDeobfuscationAvailable();
         try (DexKitDeobfs dexKitDeobfs = DexKitDeobfs.newInstance()) {
             DexKitBridge dexKit = dexKitDeobfs.getDexKitBridge();
-            Map<DexMethodDescriptor, List<DexFieldDescriptor>> resultMethods = dexKit
-                    .findMethodUsingField(new MethodUsingFieldArgs.Builder()
-                            .fieldType("Landroid/widget/TextView;")
-                            .usingType(FieldUsingType.GET)
-                            .callerMethodDeclareClass(Initiator._TextItemBuilder().getName())
-                            .callerMethodReturnType("void")
-                            .callerMethodParamTypes(new String[]{"", Initiator._ChatMessage().getName()})
-                            .build());
-            List<DexMethodDescriptor> methods = resultMethods.keySet().stream()
-                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
+            MethodDataList resultMethods = dexKit.findMethod(FindMethod.create()
+                    .matcher(MethodMatcher.create()
+                            .declaredClass(Initiator._TextItemBuilder().getName())
+                            .returnType("void")
+                            .paramTypes(null, Initiator._ChatMessage().getName())
+                            .addUsingField(FieldMatcher.create().type("android/widget/TextView"), UsingType.Get)
+                    )
+            );
+            List<MethodData> methods = resultMethods.stream()
+                    .filter(s -> s.toDexMethod().getMethodSign().contains("BaseBubbleBuilder"))
                     .collect(Collectors.toList());
             if (methods.size() == 1) {
                 try {
-                    DexMethodDescriptor descriptor = methods.get(0);
-                    descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                    NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
-                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
+                    MethodData methodData = methods.get(0);
+                    methodData.getMethodInstance(Initiator.getHostClassLoader());
+                    NTextItemBuilder_setETText.INSTANCE.setDescCache(methodData.getDescriptor());
+                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + methodData.getDescriptor());
                     return true;
                 } catch (Throwable e) {
                     traceError(e);
                 }
             }
-            Map<DexMethodDescriptor, List<DexMethodDescriptor>> resMap = dexKit.findMethodInvoking(
-                    new MethodInvokingArgs.Builder()
-                            .methodDeclareClass("Lcom/tencent/mobileqq/activity/aio/item/TextItemBuilder;")
-                            .methodReturnType("void")
-                            .methodParameterTypes(new String[]{"", Initiator._ChatMessage().getName()})
-                            .beInvokedMethodDeclareClass("Landroid/text/TextUtils;")
-                            .beInvokedMethodName("isEmpty")
-                            .beInvokedMethodReturnType("boolean")
-                            .build()
+            MethodDataList methods1 = dexKit.findMethod(FindMethod.create()
+                    .matcher(MethodMatcher.create()
+                            .declaredClass("com/tencent/mobileqq/activity/aio/item/TextItemBuilder")
+                            .returnType("void")
+                            .paramTypes(null, Initiator._ChatMessage().getName())
+                            .addInvoke("Landroid/text/TextUtils;->isEmpty(Ljava/lang/CharSequence;)Z")
+                    )
             );
-            Set<DexMethodDescriptor> methodSet = resMap.keySet().stream()
-                    .filter(s -> s.getParameterTypesSig().contains("BaseBubbleBuilder"))
+            Set<MethodData> methodSet = methods1.stream()
+                    .filter(s -> s.toDexMethod().getMethodSign().contains("BaseBubbleBuilder"))
                     .collect(Collectors.toSet());
-            List<DexMethodDescriptor> res = methods.stream()
+            List<MethodData> res = methods1.stream()
                     .filter(s -> !methodSet.contains(s))
                     .collect(Collectors.toList());
             if (res.size() == 1) {
                 try {
-                    DexMethodDescriptor descriptor = res.get(0);
-                    descriptor.getMethodInstance(Initiator.getHostClassLoader());
-                    NTextItemBuilder_setETText.INSTANCE.setDescCache(descriptor.toString());
-                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + descriptor);
+                    MethodData methodData = res.get(0);
+                    methodData.getMethodInstance(Initiator.getHostClassLoader());
+                    NTextItemBuilder_setETText.INSTANCE.setDescCache(methodData.toString());
+                    Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + methodData.getDescriptor());
                     return true;
                 } catch (Throwable e) {
                     traceError(e);

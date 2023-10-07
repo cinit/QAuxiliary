@@ -58,10 +58,10 @@ import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.HostMainDexHelper
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
-import io.luckypray.dexkit.annotations.DexKitExperimentalApi
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import org.luckypray.dexkit.query.enums.StringMatchType
 import xyz.nextalone.util.SystemServiceUtils
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
@@ -240,7 +240,6 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
             return QAppUtils.isQQnt() && mTextViewId == 0
         }
 
-    @OptIn(DexKitExperimentalApi::class)
     override fun doFind(): Boolean {
         val fnSaveResult = { id: Int ->
             val hostVersion = hostInfo.versionCode32
@@ -251,8 +250,23 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
         // step 1 find target class
         // "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
         val result = DexDeobfsProvider.getCurrentBackend().use {
-            it.getDexKitBridge().findClassUsingAnnotation {
-                annotationUsingString = "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;"
+            it.getDexKitBridge().findClass {
+                matcher {
+                    addAnnotation {
+                        type = "kotlin.Metadata"
+                        addElement {
+                            name = "d2"
+                            value {
+                                arrayValue {
+                                    addString(
+                                        "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;",
+                                        StringMatchType.Equals
+                                    )
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
         val klass: Class<*>

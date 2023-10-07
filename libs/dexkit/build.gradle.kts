@@ -27,7 +27,7 @@ plugins {
 }
 
 android {
-    namespace = "io.luckypray.dexkit"
+    namespace = "org.luckypray.dexkit"
     sourceSets {
         val main by getting
         main.apply {
@@ -35,4 +35,8 @@ android {
             java.setSrcDirs(listOf("DexKit/dexkit/src/main/java"))
         }
     }
+}
+
+dependencies {
+    implementation("com.google.flatbuffers:flatbuffers-java:23.5.26")
 }
