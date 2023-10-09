@@ -111,7 +111,7 @@ android {
                 "-ffunction-sections",
                 "-fdata-sections",
                 "-Wl,--gc-sections",
-                "-Oz",
+                "-O3",
                 "-Wl,--exclude-libs,ALL",
                 "-DNDEBUG",
             )
