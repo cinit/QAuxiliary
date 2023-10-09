@@ -39,9 +39,9 @@ android {
 }
 
 dependencies {
-    implementation("androidx.appcompat:appcompat:1.6.1")
-    implementation("com.google.android.material:material:1.9.0")
-    implementation("androidx.recyclerview:recyclerview:1.3.1")
-    implementation("com.github.bumptech.glide:glide:4.16.0")
-    implementation("com.davemorrissey.labs:subsampling-scale-image-view-androidx:3.10.0")
+    implementation(libs.androidx.appcompat)
+    implementation(libs.material)
+    implementation(libs.androidx.recyclerview)
+    implementation(libs.glide)
+    implementation(libs.davemorrissey.subsampling.scale.image.view)
 }
