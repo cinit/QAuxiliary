@@ -32,19 +32,12 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NWebSecurityPluginV2_callback;
-import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Objects;
-import kotlin.collections.ArraysKt;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -94,94 +87,6 @@ public class BrowserRestrictMitigation extends CommonSwitchFunctionHook {
                     Toasts.show(HostInfo.getApplication(), msg);
                 }
             }
-        });
-        Class<?> kCommonJsPluginFactory = Initiator.load("com.tencent.mobileqq.webprocess.WebAccelerateHelper$CommonJsPluginFactory");
-        if (kCommonJsPluginFactory == null) {
-            Class<?> aClassTemp = Initiator.loadClass("com.tencent.mobileqq.webprocess.WebAccelerateHelper");
-            Method[] methods = aClassTemp.getDeclaredMethods();
-            for (Method m : methods) {
-                Class<?>[] parameterTypes = m.getParameterTypes();
-                for (Class<?> ct : parameterTypes) {
-                    if (ct.getSimpleName().contains("CommonJsPluginFactory")) {
-                        kCommonJsPluginFactory = ct;
-                        break;
-                    }
-                }
-            }
-        }
-        if (kCommonJsPluginFactory == null) {
-            Class<?> kAbsWebView = Initiator.findClassWithSynthetics("com.tencent.mobileqq.webview.AbsWebView", 1);
-            if (kAbsWebView != null) {
-                Method myCommonJsPlugins = kAbsWebView.getDeclaredMethod("myCommonJsPlugins");
-                kCommonJsPluginFactory = myCommonJsPlugins.getReturnType();
-            }
-        }
-        Objects.requireNonNull(kCommonJsPluginFactory, "kCommonJsPluginFactory is null");
-        Method m1 = ArraysKt.single(kCommonJsPluginFactory.getDeclaredMethods(), m -> m.getReturnType() == List.class);
-        HookUtils.hookAfterIfEnabled(this, m1, param -> {
-            ArrayList array = (ArrayList) param.getResult();
-            ArrayList arrayTemp = (ArrayList) array.clone();
-            for (Object obj : arrayTemp) {
-                Class<?> mPlugin = obj.getClass();
-                String mPluginNameSpace = (String) mPlugin.getField("mPluginNameSpace").get(obj);
-                if (mPluginNameSpace.equals("forceHttps") || mPluginNameSpace.contains("UrlSaveVerify")
-                        || mPluginNameSpace.equals("Webso") || mPluginNameSpace.contains("Report")) {
-                    array.remove(obj);
-                    Log.d("WebSec: rm-" + mPlugin.getName());
-                    continue;
-                }
-                Method[] methods = mPlugin.getDeclaredMethods();
-                for (Method m : methods) {
-                    Class<?>[] parameterTypes = m.getParameterTypes();
-                    if (parameterTypes.length > 0) {
-                        Class<?> parameterType = parameterTypes[0];
-                        if (parameterType.getSimpleName().equals("MessageRecord")) {
-                            array.remove(obj);
-                        }
-                    }
-                }
-            }
-            param.setResult(array);
-        });
-
-        Class<?> AbsWebViewClass = Initiator.loadClass("com.tencent.mobileqq.webview.AbsWebView");
-        Method method_bindAllJavaScript;
-        try {
-            method_bindAllJavaScript = AbsWebViewClass.getDeclaredMethod("bindAllJavaScript");
-        } catch (NoSuchMethodException e) {
-            try {
-                method_bindAllJavaScript = AbsWebViewClass.getDeclaredMethod("bindBaseJavaScript");
-            } catch (NoSuchMethodException ex) {
-                e.addSuppressed(ex);
-                throw e;
-            }
-        }
-        Field mPluginListField = AbsWebViewClass.getField("mPluginList");
-        HookUtils.hookAfterIfEnabled(this, method_bindAllJavaScript, param -> {
-            ArrayList mPluginList = (ArrayList) mPluginListField.get(AbsWebViewClass);
-            ArrayList arrayTemp = (ArrayList) mPluginList.clone();
-            for (Object o : arrayTemp) {
-                Class<?> mPlugin = o.getClass();
-                String mPluginNameSpace = (String) mPlugin.getField("mPluginNameSpace").get(o);
-                if (mPluginNameSpace.contains("UrlSaveVerify") || mPluginNameSpace.equals("Webso")
-                        || mPluginNameSpace.contains("Report")) {
-                    mPluginList.remove(o);
-                    Log.d("WebSec: rm-" + mPlugin.getName());
-                    continue;
-                }
-                Method[] methods = mPlugin.getMethods();
-                for (Method m : methods) {
-                    Class<?>[] parameterTypes = m.getParameterTypes();
-                    if (parameterTypes.length > 0) {
-                        Class<?> parameterType = parameterTypes[0];
-                        if (parameterType.getSimpleName().equals("MessageRecord")) {
-                            mPluginList.remove(o);
-                            Log.d("HookWebSecurity: hooked!");
-                        }
-                    }
-                }
-            }
-            mPluginListField.set(AbsWebViewClass, mPluginList);
         });
         return true;
     }

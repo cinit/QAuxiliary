@@ -49,7 +49,7 @@ public class HiddenApolloView extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public CharSequence getDescription() {
-        return "最高支持 8.4.10";
+        return "最高支持 8.4.10 致敬QHMK";
     }
 
     @NonNull

@@ -1,6 +1,7 @@
 package com.alphi.qhmk.module;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -32,6 +33,7 @@ public class DisableX5 extends CommonSwitchFunctionHook {
             HookUtils.hookBeforeIfEnabled(this, method, param -> {
                 param.setResult(true);
             });
+            return true;
         }
         // older
         Class<?> tbsClass = Initiator.loadClass("com.tencent.smtt.sdk.WebView");
@@ -72,6 +74,12 @@ public class DisableX5 extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "禁用浏览器X5内核";
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getDescription() {
+        return "致敬QHMK";
     }
 
     @NonNull

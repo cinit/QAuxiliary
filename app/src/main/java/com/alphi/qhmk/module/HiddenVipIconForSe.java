@@ -2,6 +2,7 @@ package com.alphi.qhmk.module;
 
 import android.view.View;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -43,6 +44,12 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "隐藏侧滑面板的VIP图标";
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getDescription() {
+        return "致敬QHMK";
     }
 
     @NonNull

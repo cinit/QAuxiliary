@@ -1,6 +1,7 @@
 package com.alphi.qhmk.module;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import de.robv.android.xposed.XC_MethodHook;
@@ -56,6 +57,12 @@ public class HookSwiftMenuQWeb extends CommonSwitchFunctionHook {
     @Override
     public String getName() {
         return "移除内置浏览器菜单栏的“QQ浏览器”";
+    }
+
+    @Nullable
+    @Override
+    public CharSequence getDescription() {
+        return "致敬QHMK";
     }
 
     @NonNull

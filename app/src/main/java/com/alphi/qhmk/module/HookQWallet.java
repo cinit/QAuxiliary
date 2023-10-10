@@ -13,6 +13,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.SyncUtils;
 import java.lang.reflect.Method;
 import kotlin.collections.ArraysKt;
 
@@ -21,6 +22,7 @@ import kotlin.collections.ArraysKt;
 public class HookQWallet extends CommonSwitchFunctionHook {
 
     private HookQWallet() {
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_TOOL);
     }
 
     public static final HookQWallet INSTANCE = new HookQWallet();
@@ -80,7 +82,7 @@ public class HookQWallet extends CommonSwitchFunctionHook {
     @Nullable
     @Override
     public CharSequence getDescription() {
-        return "省流量方案需重启";
+        return "省流量方案需重启 致敬QHMK";
     }
 
     @Override
