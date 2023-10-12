@@ -102,6 +102,18 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
             }
     }
 
+    private fun ntVersion() {
+        /*
+            contactType Equal:
+            == 1 联系人
+            == 103 公众号
+            == 2 群聊
+            == 131 我的关联QQ账号 uid=9992
+            class: com.tencent.qqnt.chats.core.adapter.holder.deleteMsg extend View.OnClickListener
+         */
+
+    }
+
 
     private fun handler(recentAdapter: Any?, app: Any?, all: Boolean, other: Boolean, includeTopped: Boolean, context: Context) {
         try {

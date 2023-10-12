@@ -27,7 +27,7 @@ public class DisableX5 extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         // NT
-        Class<?> kQbSdk = Initiator.loadClass("com/tencent/smtt/sdk/QbSdk");
+        Class<?> kQbSdk = Initiator.load("com/tencent/smtt/sdk/QbSdk");
         if (kQbSdk != null) {
             Method method = kQbSdk.getDeclaredMethod("getIsSysWebViewForcedByOuter");
             HookUtils.hookBeforeIfEnabled(this, method, param -> {
@@ -36,37 +36,42 @@ public class DisableX5 extends CommonSwitchFunctionHook {
             return true;
         }
         // older
-        Class<?> tbsClass = Initiator.loadClass("com.tencent.smtt.sdk.WebView");
-        Class<?> TbsClassConfig = null;
-        for (Field field : tbsClass.getDeclaredFields()) {
-            Class<?> type = field.getType();
-            if (type.getName().contains("com.tencent.smtt.utils.")) {
-                TbsClassConfig = type;
-            }
-        }
-        if (TbsClassConfig == null) {
-            throw new IllegalStateException("X5Settings init fail!!!");
-        }
-        Method method = ArraysKt.single(TbsClassConfig.getDeclaredMethods(), m -> m.getReturnType() == void.class);
-        HookUtils.hookAfterIfEnabled(this, method, param -> {
-            boolean result = false;
-            Log.d("hook：" + param.thisObject.getClass());
-            for (Field field : param.thisObject.getClass().getFields()) {
-                if (field.getType() == boolean.class) {
-                    try {
-                        field.set(param.thisObject, true);
-                        result = true;
-                    } catch (IllegalAccessException e) {
-                        traceError(e);
-                    }
+        Class<?> tbsClass = Initiator.load("com.tencent.smtt.sdk.WebView");
+        Class<?> tbsClassConfig = null;
+        if (tbsClass != null) {
+            for (Field field : tbsClass.getDeclaredFields()) {
+                Class<?> type = field.getType();
+                Package tPackage = type.getPackage();
+                if (tPackage != null && tPackage.getName().equals("com.tencent.smtt.utils")) {
+                    tbsClassConfig = type;
                 }
             }
-            if (result) {
-                Log.d("ForceUseSystemWebView success!");
-            } else {
-                Log.e("ForceUseSystemWebView fail!!!");
-            }
-        });
+        }
+        if (tbsClassConfig != null) {
+            Method method = ArraysKt.single(tbsClassConfig.getDeclaredMethods(), m -> m.getReturnType() == void.class);
+            HookUtils.hookAfterIfEnabled(this, method, param -> {
+                boolean result = false;
+                Log.d("hook：" + param.thisObject.getClass());
+                for (Field field : param.thisObject.getClass().getFields()) {
+                    if (field.getType() == boolean.class) {
+                        try {
+                            field.set(param.thisObject, true);
+                            result = true;
+                        } catch (IllegalAccessException e) {
+                            traceError(e);
+                        }
+                    }
+                }
+                if (result) {
+                    Log.d("old:ForceUseSystemWebView success!");
+                } else {
+                    Log.e("old:ForceUseSystemWebView fail!!!");
+                }
+            });
+        }
+        if (tbsClassConfig == null && kQbSdk == null) {
+            throw new IllegalStateException("X5Settings init fail!!!  cause by not found class...");
+        }
         return true;
     }
 

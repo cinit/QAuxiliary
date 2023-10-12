@@ -35,8 +35,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import java.lang.reflect.Method
 
-@FunctionHookEntry
-@UiItemAgentEntry
+// instead HookUpgrade
 object AntiUpdate : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽更新"
 

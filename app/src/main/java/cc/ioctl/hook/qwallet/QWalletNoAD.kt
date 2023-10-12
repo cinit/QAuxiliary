@@ -41,8 +41,8 @@ import xyz.nextalone.util.getIdentifier
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.throwOrTrue
 
-@FunctionHookEntry
-@UiItemAgentEntry
+//@FunctionHookEntry
+//@UiItemAgentEntry
 object QWalletNoAD : PluginDelayableHook("ketal_qwallet_noad") {
     override val preference = uiSwitchPreference {
         title = "隐藏QQ钱包超值精选"

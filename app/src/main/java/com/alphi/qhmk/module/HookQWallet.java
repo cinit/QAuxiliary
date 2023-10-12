@@ -6,7 +6,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HookUtils;
 import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodReplacement;
 import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -32,12 +31,15 @@ public class HookQWallet extends CommonSwitchFunctionHook {
         // NT
         Class<?> kQWalletHomeFragment = Initiator.load("com/tencent/mobileqq/qwallet/home/QWalletHomeFragment");
         if (kQWalletHomeFragment != null) {
-            Class<?> kQWalletHomePreviewController = Initiator.loadClass("com/tencent/mobileqq/qwallet/home/QWalletHomePreviewController");
-            // public final QWalletHomePreviewController.?(QWallBaseFragment|QWalletBaseFragment)Z
-            Method method1 = ArraysKt.single(kQWalletHomePreviewController.getDeclaredMethods(),
-                    it -> it.getReturnType() == boolean.class && it.getParameterTypes().length == 1 &&
-                            it.getParameterTypes()[0].getSimpleName().endsWith("BaseFragment"));
-            HookUtils.hookBeforeIfEnabled(this, method1, param -> param.setResult(true));
+            Class<?> kQWalletHomePreviewController = Initiator.load("com/tencent/mobileqq/qwallet/home/QWalletHomePreviewController");
+            if (kQWalletHomePreviewController != null) {
+                // 预防广告视图显示导致的黑屏
+                // public final QWalletHomePreviewController.?(QWallBaseFragment|QWalletBaseFragment)Z
+                Method methodIsShowAdView = ArraysKt.single(kQWalletHomePreviewController.getDeclaredMethods(),
+                        it -> it.getReturnType() == boolean.class && it.getParameterTypes().length == 1 &&
+                                it.getParameterTypes()[0].getSimpleName().endsWith("BaseFragment"));
+                HookUtils.hookBeforeIfEnabled(this, methodIsShowAdView, param -> param.setResult(true));
+            }
             Method onViewCreated = kQWalletHomeFragment.getDeclaredMethod("onViewCreated", View.class, Bundle.class);
             HookUtils.hookBeforeIfEnabled(this, onViewCreated, param -> {
                 // 加载广告及视图初始化
@@ -48,9 +50,13 @@ public class HookQWallet extends CommonSwitchFunctionHook {
         Class<?> aClass = Initiator.load("Lcom/tencent/mobileqq/qwallet/config/impl/QWalletConfigServiceImpl;");
         if (aClass != null) {
             for (Method method : aClass.getDeclaredMethods()) {
-                XposedBridge.hookMethod(method, new XC_MethodReplacement() {
+                HookUtils.hookBeforeIfEnabled(this, method, new HookUtils.BeforeHookedMethod() {
                     @Override
-                    protected Object replaceHookedMethod(XC_MethodHook.MethodHookParam param) {
+                    public void beforeHookedMethod(XC_MethodHook.MethodHookParam param) {
+                        param.setResult(resultObj());
+                    }
+
+                    private Object resultObj() {
                         if (method.getReturnType() == boolean.class) {
                             return false;
                         }
@@ -76,13 +82,13 @@ public class HookQWallet extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "去除QQ钱包广告";
+        return "隐藏QQ钱包超值精选";
     }
 
     @Nullable
     @Override
     public CharSequence getDescription() {
-        return "省流量方案需重启 致敬QHMK";
+        return "致敬 QHMK";
     }
 
     @Override
@@ -93,7 +99,7 @@ public class HookQWallet extends CommonSwitchFunctionHook {
     @NonNull
     @Override
     public String[] getUiItemLocation() {
-        return FunctionEntryRouter.Locations.Simplify.UI_MISC;
+        return FunctionEntryRouter.Locations.Simplify.SLIDING_UI;
     }
 
 }
