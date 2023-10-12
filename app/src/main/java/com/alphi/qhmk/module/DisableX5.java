@@ -42,6 +42,7 @@ public class DisableX5 extends CommonSwitchFunctionHook {
             for (Field field : tbsClass.getDeclaredFields()) {
                 Class<?> type = field.getType();
                 Package tPackage = type.getPackage();
+                // 因为 8.9 存在有个类 util.*.* 不然会 hook 错地方
                 if (tPackage != null && tPackage.getName().equals("com.tencent.smtt.utils")) {
                     tbsClassConfig = type;
                 }
