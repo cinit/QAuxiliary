@@ -12,7 +12,7 @@
 
 #include "utils/Log.h"
 #include "zip_helper.h"
-#include "md5.cpp"
+#include "md5.h"
 
 #ifndef MODULE_SIGNATURE
 #define MODULE_SIGNATURE 294E0ABF933AAA14C6EB986A005E5CCB
@@ -59,7 +59,7 @@ int dumpMemory(int fd, const void *address, size_t size) {
 
 }
 
-namespace {
+namespace teble::v2sign {
     const char magic[16]{
             0x32, 0x34, 0x20, 0x6b, 0x63, 0x6f, 0x6c, 0x42,
             0x20, 0x67, 0x69, 0x53, 0x20, 0x4b, 0x50, 0x41,

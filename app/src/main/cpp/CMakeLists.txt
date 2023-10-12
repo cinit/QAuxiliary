@@ -53,6 +53,8 @@ target_compile_definitions(fmt-header-only INTERFACE FMT_STATIC_THOUSANDS_SEPARA
 
 add_library(qauxv SHARED
         misc/version.c
+        misc/v2sign.cc
+        misc/md5.cpp
 
         ../../../../libs/dexkit/DexKit/dexkit/src/main/cpp/native-bridge.cpp
 

@@ -16,7 +16,7 @@
 
 #include "Natives.h"
 #include "utils/shared_memory.h"
-#include "misc/v2sign.h"
+#include "misc/vxsign.h"
 
 static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
     if (obj == nullptr) {
@@ -419,7 +419,7 @@ EXPORT extern "C" jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         env->ExceptionClear();
     }
 #if defined(NDEBUG) || defined(TEST_SIGNATURE)
-    if (!checkSignature(env, appInterface != nullptr)) {
+    if (!::teble::v2sign::checkSignature(env, appInterface != nullptr)) {
         return -1;
     }
 #endif
