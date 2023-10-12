@@ -811,3 +811,9 @@ data object NT_SysAndEmojiResInfo : DexKitTarget.UsingStringVector() {
     override val declaringClass = ""
     override val filter = DexKitFilter.allowAll
 }
+
+data object X5_Properties_conf: DexKitTarget.UsingStr() {
+    override val traitString: Array<String> = arrayOf("setting_forceUseSystemWebview", "result_systemWebviewForceUsed", "debug.conf")
+    override val declaringClass: String = "com.tencent.smtt.utils.LoadPropertiesUtils"
+    override val filter = DexKitFilter.allowAll
+}

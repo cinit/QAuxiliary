@@ -58,7 +58,7 @@ public class HookUpgrade  extends CommonSwitchFunctionHook {
             }
         }
 
-        return false;
+        return true;
     }
 
     @NonNull

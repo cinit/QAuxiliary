@@ -10,8 +10,12 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.X5_Properties_conf;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.List;
 import kotlin.collections.ArraysKt;
 
 @UiItemAgentEntry
@@ -21,7 +25,7 @@ public class DisableX5 extends CommonSwitchFunctionHook {
     public static final DisableX5 INSTANCE = new DisableX5();
 
     private DisableX5() {
-        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_TOOL);
+        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_TOOL, new DexKitTarget[]{X5_Properties_conf.INSTANCE});
     }
 
     @Override
@@ -30,48 +34,28 @@ public class DisableX5 extends CommonSwitchFunctionHook {
         Class<?> kQbSdk = Initiator.load("com/tencent/smtt/sdk/QbSdk");
         if (kQbSdk != null) {
             Method method = kQbSdk.getDeclaredMethod("getIsSysWebViewForcedByOuter");
-            HookUtils.hookBeforeIfEnabled(this, method, param -> {
-                param.setResult(true);
-            });
+            HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(true));
             return true;
         }
         // older
-        Class<?> tbsClass = Initiator.load("com.tencent.smtt.sdk.WebView");
-        Class<?> tbsClassConfig = null;
-        if (tbsClass != null) {
-            for (Field field : tbsClass.getDeclaredFields()) {
-                Class<?> type = field.getType();
-                Package tPackage = type.getPackage();
-                // 因为 8.9 存在有个类 util.*.* 不然会 hook 错地方
-                if (tPackage != null && tPackage.getName().equals("com.tencent.smtt.utils")) {
-                    tbsClassConfig = type;
-                }
-            }
+        Class<?> tbsClassConfig = DexKit.requireClassFromCache(X5_Properties_conf.INSTANCE);
+        List<Method> methods = ArraysKt.filter(tbsClassConfig.getDeclaredMethods(), m -> m.getReturnType() == void.class);
+        if (methods.isEmpty()) {
+            throw new RuntimeException("DisableX5: no method found in " + tbsClassConfig);
         }
-        if (tbsClassConfig != null) {
-            Method method = ArraysKt.single(tbsClassConfig.getDeclaredMethods(), m -> m.getReturnType() == void.class);
+        for (Method method : methods) {
             HookUtils.hookAfterIfEnabled(this, method, param -> {
-                boolean result = false;
                 Log.d("hook：" + param.thisObject.getClass());
                 for (Field field : param.thisObject.getClass().getFields()) {
                     if (field.getType() == boolean.class) {
                         try {
                             field.set(param.thisObject, true);
-                            result = true;
                         } catch (IllegalAccessException e) {
                             traceError(e);
                         }
                     }
                 }
-                if (result) {
-                    Log.d("old:ForceUseSystemWebView success!");
-                } else {
-                    Log.e("old:ForceUseSystemWebView fail!!!");
-                }
             });
-        }
-        if (tbsClassConfig == null && kQbSdk == null) {
-            throw new IllegalStateException("X5Settings init fail!!!  cause by not found class...");
         }
         return true;
     }
