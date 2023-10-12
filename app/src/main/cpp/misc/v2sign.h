@@ -2,8 +2,8 @@
 // Created by sulfate on 2023-10-12.
 //
 
-#ifndef QAUXV_VXSIGN_H
-#define QAUXV_VXSIGN_H
+#ifndef QAUXV_V2SIGN_H
+#define QAUXV_V2SIGN_H
 
 #include <cstdint>
 #include <string>
@@ -15,4 +15,4 @@ bool checkSignature(JNIEnv* env, bool isInHostAsModule);
 
 }
 
-#endif //QAUXV_VXSIGN_H
+#endif //QAUXV_V2SIGN_H

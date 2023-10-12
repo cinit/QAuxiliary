@@ -16,7 +16,7 @@
 
 #include "Natives.h"
 #include "utils/shared_memory.h"
-#include "misc/vxsign.h"
+#include "misc/v2sign.h"
 
 static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
     if (obj == nullptr) {
