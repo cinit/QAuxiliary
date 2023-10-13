@@ -154,7 +154,11 @@ public class MainHook {
                 });
             } else {
                 Log.w("LoadData not found, running third stage hooks in background");
-                InjectDelayableHooks.step(null);
+                if (safeMode) {
+                    SettingEntryHook.INSTANCE.initialize();
+                } else {
+                    InjectDelayableHooks.step(null);
+                }
             }
         } else {
             if (!safeMode && LicenseStatus.hasUserAcceptEula()) {
