@@ -32,6 +32,7 @@ import android.graphics.Bitmap;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputType;
+import android.text.TextUtils;
 import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -73,10 +74,12 @@ import io.github.qauxv.util.UiThread;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
+import kotlin.collections.CollectionsKt;
 import xyz.nextalone.util.SystemServiceUtils;
 
 public class ExfriendListFragment extends BaseRootLayoutFragment {
@@ -357,6 +360,9 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
         if (id == R.id.menu_item_add_record) {
             showManualAddRecordDialog();
             return true;
+        } else if (id == R.id.menu_item_edit_exclusion_list) {
+            showEditExclusionListDialog();
+            return true;
         } else if (id == R.id.menu_item_clear_all_record) {
             Context ctx = requireContext();
             new AlertDialog.Builder(ctx)
@@ -465,6 +471,65 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
             reload();
             adapter.notifyDataSetChanged();
             Toasts.success(ctx, "添加成功");
+            dialog.dismiss();
+        });
+    }
+
+    @UiThread
+    public void showEditExclusionListDialog() {
+        Context ctx = requireContext();
+        String currentUinList = TextUtils.join("\n", exm.getDeletionDetectionExclusionList());
+        // title, description, input(uin list), save, cancel
+        TextView desc = new TextView(ctx);
+        desc.setText("您可以编辑被删好友检测排除列表，QAuxiliary 在检测到您被处于列表中的好友删除时，将不会向您发送通知，也不会记录历史记录。\n"
+                + "您可以在此处添加或删除排除列表中的好友，每行一个 QQ 号。\n"
+                + "请注意，此列表会被保存到本地，不会被同步到其他设备。");
+        desc.setPadding(0, 0, 0, 16);
+        desc.setTextColor(ResourcesCompat.getColor(ctx.getResources(), R.color.firstTextColor, ctx.getTheme()));
+        desc.setTextSize(13);
+        EditText input = new EditText(ctx);
+        input.setHint("QQ 号列表");
+        input.setSingleLine(false);
+        input.setMinLines(2);
+        input.setGravity(Gravity.TOP);
+        input.setTextSize(16);
+        input.setText(currentUinList);
+        LinearLayout layout = new LinearLayout(ctx);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(16, 16, 16, 16);
+        layout.setGravity(Gravity.CENTER_HORIZONTAL);
+        layout.addView(desc);
+        layout.addView(input);
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setTitle("编辑排除列表");
+        builder.setView(layout);
+        builder.setPositiveButton("保存", null); // set later
+        builder.setNegativeButton(R.string.dialog_btn_cancel, null);
+        AlertDialog dialog = builder.show();
+        dialog.getButton(DialogInterface.BUTTON_POSITIVE).setOnClickListener(v -> {
+            String uinListStr = input.getText().toString();
+            String[] uinList = uinListStr.split("[ \n\r,，;；]");
+            HashSet<Long> uinListLong = new HashSet<>();
+            for (String uinStr : uinList) {
+                uinStr = uinStr.trim();
+                if (uinStr.isEmpty()) {
+                    continue;
+                }
+                long uin;
+                try {
+                    uin = Long.parseLong(uinStr);
+                } catch (NumberFormatException e) {
+                    Toasts.error(ctx, "QQ 号格式错误");
+                    return;
+                }
+                if (uin < 10000) {
+                    Toasts.error(ctx, "QQ 号格式错误");
+                    return;
+                }
+                uinListLong.add(uin);
+            }
+            exm.setDeletionDetectionExclusionList(CollectionsKt.map(uinListLong, Object::toString).toArray(new String[0]));
+            Toasts.success(ctx, "保存成功");
             dialog.dismiss();
         });
     }

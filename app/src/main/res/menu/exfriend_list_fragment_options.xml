@@ -9,4 +9,8 @@
         android:id="@+id/menu_item_clear_all_record"
         android:title="清空记录"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_item_edit_exclusion_list"
+        android:title="配置排除列表"
+        app:showAsAction="never" />
 </menu>

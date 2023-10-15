@@ -34,6 +34,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.Icon;
+import android.text.TextUtils;
 import android.view.View;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
@@ -96,6 +97,8 @@ public class ExfriendManager {
             2854196306L, // 小冰
             2854204259L, // 赞噢机器人
             2854196925L, // 小店助手
+            2854211892L,
+            2854202683L
     };
 
     private ExfriendManager(long uin) {
@@ -703,7 +706,7 @@ public class ExfriendManager {
                 Map.Entry<Long, FriendRecord> ent = it.next();
                 fr = ent.getValue();
                 if (fr.friendStatus == FriendRecord.STATUS_FRIEND_MUTUAL) {
-                    if (ArraysKt.contains(ROBOT_ENTERPRISE_UIN_ARRAY, fr.uin)) {
+                    if (shouldIgnoreDeletionEvent(fr.uin)) {
                         // for enterprise robots we don't report because they are not real friends
                         fr.friendStatus = FriendRecord.STATUS_EXFRIEND;
                         continue;
@@ -836,5 +839,35 @@ public class ExfriendManager {
         if (t - lastUpdateTimeSec > FL_UPDATE_INT_MIN) {
             tp.execute(this::doRequestFlRefresh);
         }
+    }
+
+    private static final String KEY_DELETION_DETECTION_EXCLUSION_LIST = "exfl_del_exclusion_list";
+
+    public String[] getDeletionDetectionExclusionList() {
+        String uinList = mConfig.getString(KEY_DELETION_DETECTION_EXCLUSION_LIST, "");
+        if (uinList.isEmpty()) {
+            return new String[0];
+        }
+        return uinList.split(",");
+    }
+
+    public void setDeletionDetectionExclusionList(String[] uinList) {
+        if (uinList == null || uinList.length == 0) {
+            mConfig.remove(KEY_DELETION_DETECTION_EXCLUSION_LIST);
+        } else {
+            mConfig.putString(KEY_DELETION_DETECTION_EXCLUSION_LIST, TextUtils.join(",", uinList));
+        }
+        // no need to call saveConfigure() because it's MMKV
+    }
+
+    private boolean shouldIgnoreDeletionEvent(long uin) {
+        if (ArraysKt.contains(ROBOT_ENTERPRISE_UIN_ARRAY, uin)) {
+            return true;
+        }
+        String[] exclusionList = getDeletionDetectionExclusionList();
+        if (exclusionList == null || exclusionList.length == 0) {
+            return false;
+        }
+        return ArraysKt.contains(exclusionList, String.valueOf(uin));
     }
 }
