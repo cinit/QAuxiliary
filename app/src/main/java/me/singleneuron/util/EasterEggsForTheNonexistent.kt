@@ -45,7 +45,8 @@ fun processSearchEasterEgg(text: String, context: Context) {
 private val easterEggsMap by lazy {
     hashMapOf(
         arrayOf("\u26A7\uFE0F", "\uD83C\uDF65", "mtf", "mtx", "ftm", "ftx", "transgender") to forSuBanXia,
-        arrayOf("喵") to ("喵喵" to "喵喵喵")
+        arrayOf("喵") to ("喵喵" to "喵喵喵"),
+        arrayOf("lgbt", "lgbtq", "lgbtqia", "lgbtqia+", "lesbian", "gay", "bisexual", "queer") to forPride,
     )
 }
 
@@ -55,3 +56,13 @@ val forSuBanXia: Pair<String, String> = (String(Base64.decode("Rm9yIHVzIA==", Ba
         Base64.CRLF
     )
 ))
+
+val forPride: Pair<String, String> = (
+    String(Base64.decode("Rm9yIFByaWRlIA==", Base64.DEFAULT)) + "\uF3F3\uFE0F\u200D\uF308" to
+        String(
+            Base64.decode(
+                "TG92ZSBpcyBsb3ZlLiBGcm9tIGxvdmVseSBOZXh0QWxvbmUsIHdpdGggbG92ZS4=",
+                Base64.CRLF,
+            ),
+        )
+)
