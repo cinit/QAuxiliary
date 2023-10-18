@@ -1,6 +1,8 @@
 [submodule "libs/mmkv/MMKV"]
 	path = libs/mmkv/MMKV
 	url = https://github.com/Tencent/MMKV
+	shallow = true
+	fetchRecurseSubmodules = false
 [submodule "libs/stub/qq-stub"]
 	path = libs/stub/qq-stub
 	url = https://github.com/LuckyPray/qq-stub
@@ -10,21 +12,28 @@
 [submodule "libs/linux-syscall-support"]
 	path = libs/linux-syscall-support
 	url = https://chromium.googlesource.com/linux-syscall-support
+	shallow = true
 [submodule "libs/Dobby"]
 	path = libs/Dobby
 	url = https://github.com/LSPosed/Dobby
+	shallow = true
 [submodule "libs/libunwindstack"]
 	path = libs/libunwindstack
 	url = https://github.com/cinit/libunwindstack
+	shallow = true
 [submodule "libs/xView/EasyAdapter"]
 	path = libs/xView/EasyAdapter
 	url = https://github.com/Hicores/EasyAdapter
+	shallow = true
 [submodule "libs/xView/XPopup"]
 	path = libs/xView/XPopup
 	url = https://github.com/Hicores/XPopup
+	shallow = true
 [submodule "libs/fmt"]
 	path = libs/fmt
 	url = https://github.com/fmtlib/fmt
+	shallow = true
 [submodule "libs/LSPlant"]
 	path = libs/LSPlant
 	url = https://github.com/LSPosed/LSPlant
+	shallow = true
