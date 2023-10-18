@@ -58,10 +58,10 @@ val forSuBanXia: Pair<String, String> = (String(Base64.decode("Rm9yIHVzIA==", Ba
 ))
 
 val forPride: Pair<String, String> = (
-    String(Base64.decode("Rm9yIFByaWRlIA==", Base64.DEFAULT)) + "\uF3F3\uFE0F\u200D\uF308" to
+    String(Base64.decode("Rm9yIFByaWRlIA==", Base64.DEFAULT)) + "\uD83C\uDFF3\uFE0F\u200D\uD83C\uDF08" to
         String(
             Base64.decode(
-                "TG92ZSBpcyBsb3ZlLiBGcm9tIGxvdmVseSBOZXh0QWxvbmUsIHdpdGggbG92ZS4=",
+                "TG92ZSBpcyBsb3ZlLiAKCkZyb20gbG92ZWx5IE5leHRBbG9uZSwgd2l0aCBsb3ZlLg==",
                 Base64.CRLF,
             ),
         )
