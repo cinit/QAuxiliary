@@ -47,6 +47,7 @@ private val easterEggsMap by lazy {
         arrayOf("\u26A7\uFE0F", "\uD83C\uDF65", "mtf", "mtx", "ftm", "ftx", "transgender") to forSuBanXia,
         arrayOf("喵") to ("喵喵" to "喵喵喵"),
         arrayOf("lgbt", "lgbtq", "lgbtqia", "lgbtqia+", "lesbian", "gay", "bisexual", "queer") to forPride
+    )
 }
 
 val forSuBanXia: Pair<String, String> = (String(Base64.decode("Rm9yIHVzIA==", Base64.DEFAULT)) + "\uD83C\uDFF3\uFE0F\u200D\u26A7\uFE0F" to String(
