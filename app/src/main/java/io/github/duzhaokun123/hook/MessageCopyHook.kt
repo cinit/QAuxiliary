@@ -27,8 +27,13 @@ import android.app.AlertDialog
 import android.content.Context
 import android.view.View
 import android.widget.TextView
+import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
+import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.invokeMethodAutoAs
+import com.github.kyuubiran.ezxhelper.utils.paramCount
+import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.R
@@ -39,6 +44,9 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -47,12 +55,36 @@ object MessageCopyHook : CommonSwitchFunctionHook() {
         get() = "文本消息自由复制"
 
     override fun initOnce(): Boolean {
-        val cl_ArkAppItemBuilder = Initiator._TextItemBuilder()
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) { // TODO: support ark message
+            val class_AIOMsgItem = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+            val class_BaseContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent")
+            val method_getMsg = class_BaseContentComponent.method { it.returnType == class_AIOMsgItem && it.paramCount == 0 }!!
+            method_getMsg.isAccessible = true
+            val class_AIOTextContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
+            val method_list = class_AIOTextContentComponent.method { it.returnType == List::class.java && it.paramCount == 0 }!!
+            method_list.isAccessible = true
+            hookAfterIfEnabled(method_list) { param ->
+                val msg = method_getMsg.invoke(param.thisObject)
+                val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
+                    Log.d(msg.javaClass.name)
+//                    val method_getElement = msg.javaClass.method { it.returnType == TextElement::class.java }!!
+                    AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()))
+                        .setMessage(msg.invokeMethodAutoAs("y1"))
+                        .show()
+                        .findViewById<TextView>(android.R.id.message)
+                        .setTextIsSelectable(true)
+                }
+                param.result = (param.result as List<*>) + item
+            }
+            return true
+        }
+
+        val class_ArkAppItemBuilder = Initiator._TextItemBuilder()
         XposedHelpers.findAndHookMethod(
-            cl_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
+            class_ArkAppItemBuilder, "a", Int::class.javaPrimitiveType, Context::class.java,
             Initiator.load("com/tencent/mobileqq/data/ChatMessage"), menuItemClickCallback
         )
-        for (m in cl_ArkAppItemBuilder!!.declaredMethods) {
+        for (m in class_ArkAppItemBuilder!!.declaredMethods) {
             if (!m.returnType.isArray) {
                 continue
             }
