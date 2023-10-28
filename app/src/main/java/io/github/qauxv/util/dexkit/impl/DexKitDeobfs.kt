@@ -82,7 +82,7 @@ class DexKitDeobfs private constructor(
             }
 
             val resultMap = helper.batchFindMethodUsingStrings {
-                matchers(deobfsMap, StringMatchType.SimilarRegex)
+                groups(deobfsMap, StringMatchType.SimilarRegex)
             }
             val resultMap2 = mutableMapOf<String, Set<MethodData>>()
             resultMap.forEach {
@@ -129,7 +129,7 @@ class DexKitDeobfs private constructor(
             }
             val resultMap = helper.batchFindMethodUsingStrings {
                 val map = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
-                matchers(map, StringMatchType.SimilarRegex)
+                groups(map, StringMatchType.SimilarRegex)
             }
             if(resultMap.isEmpty()){
                 Log.e("no result found for ${target.name}")

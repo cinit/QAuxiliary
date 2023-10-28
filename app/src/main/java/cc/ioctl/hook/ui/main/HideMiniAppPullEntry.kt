@@ -186,7 +186,7 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
             }
             val res = dexKitDeobfs.getDexKitBridge()
                 .batchFindMethodUsingStrings {
-                    matchers(map)
+                    groups(map)
                 }
             for (methods in res.values) {
                 for (methodData in methods) {
