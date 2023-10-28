@@ -96,6 +96,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     // X2J_APT <- ???Binding <- AIOSenderBubbleTemplate
     private val NAME_TAIL_LAYOUT = when {
+        requireMinQQVersion(QQVersion.QQ_8_9_88_12880) -> "slv"
         requireMinQQVersion(QQVersion.qq_8_9_85) -> "sih"
         requireMinQQVersion(QQVersion.QQ_8_9_83) -> "shv"
         requireMinQQVersion(QQVersion.QQ_8_9_80) -> "sg6"
