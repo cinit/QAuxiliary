@@ -99,7 +99,9 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         "厘米秀", // d_cmshow
         "超级QQ秀", // d_zplan
         "下拉形象展示",
-        "等级"
+        "等级",
+        "亲密空间",
+        "财富小金库",
     )
 
     var items2Hide: MutableMap<String, String> = mutableMapOf(
@@ -117,7 +119,9 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         Pair("腾讯文档", "d_tencent_document"),     //腾讯文档 [0,1,0,0,0,1,4,0,13] || [0,1,0,0,0,1,4,0,1,13,1] || d_tencent_document
         Pair("王卡免流量特权", "d_vip_card"),   //开通王卡 [0,1,0,0,0,1,4,0,15] || [0,1,0,0,0,1,4,0,1,15,1] || d_vip_card
         Pair("厘米秀", "d_cmshow"),  // d_cmshow
-        Pair("超级QQ秀", "d_zplan")// d_zplan
+        Pair("超级QQ秀", "d_zplan"), // d_zplan
+        Pair("亲密空间", "d_intimate_space"),
+        Pair("财富小金库", "d_financial"),
     )
 
     private val keyWords: SortedMap<String, String> = sortedMapOf(
@@ -146,6 +150,8 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         "流量" to "王卡免流量特权",
         "送12个月" to "王卡免流量特权",
         "厘米" to "厘米秀",
+        "亲密空间" to "亲密空间",
+        "财富" to "财富小金库",
     )
 
     @Throws(Exception::class)
@@ -163,7 +169,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                 param.thisObject.get(midContentName, View::class.java) as LinearLayout
             }
             //底端部分 设置 夜间模式 达人 等
-            val vg = param.args[param.args.size - 1]
+            val vg = param.args.last()
             val id = "${hostInfo.packageName}.R\$id".clazz?.getStaticObjectOrNull("drawer_bottom_container")
             val underSettingsLayout = if (id is Int && vg is ViewGroup) {
                 vg.findViewById(id)
