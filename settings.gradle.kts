@@ -14,26 +14,26 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        mavenCentral()
         google() {
-            mavenContent {
+            content {
+                includeGroupByRegex("com\\.android.*")
+                includeGroupByRegex("com\\.google.*")
                 includeGroupByRegex("androidx.*")
-                includeGroupByRegex("com.google.*")
-                includeGroupByRegex("com.android.*")
             }
         }
         maven("https://jitpack.io") {
-            mavenContent {
+            content {
                 includeGroup("com.github.livefront.sealed-enum")
                 includeGroup("com.github.MatteoBattilana")
                 includeGroup("com.github.plattysoft")
             }
         }
         maven("https://api.xposed.info/") {
-            mavenContent {
+            content {
                 includeGroup("de.robv.android.xposed")
             }
         }
+        mavenCentral()
     }
 }
 
