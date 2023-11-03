@@ -37,6 +37,7 @@ import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
@@ -382,8 +383,12 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             MsgAttributeInfo info = Nt_kernel_bridge.getDefaultAttributeInfo();
             if (info != null) {
                 attrMap.put(0, info);
-                service.forwardMsg(l, contact, c, attrMap, (i, str, hashMap) -> {
-
+                service.getMsgsByMsgId(contact, l, (i, str, list) ->{
+                    if (list.size() > 0 && list.get(0).getElements().get(0).getPttElement() != null){
+                        service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
+                    }else {
+                        service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> { });
+                    }
                 });
             }
 
