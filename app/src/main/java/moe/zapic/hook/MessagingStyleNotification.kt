@@ -244,6 +244,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 .setKey(mainUin.toString())
                 .build())
             messageStyle.conversationTitle = mainName
+            messageStyle.isGroupConversation = groupUin != null
             historyMessage["$mainUin"] = messageStyle
         }
         var senderPerson: Person? = null
