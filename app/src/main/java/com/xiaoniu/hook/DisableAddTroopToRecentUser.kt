@@ -29,13 +29,12 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.dexkit.TroopGuildChatPie_flingRToL
 import io.github.qauxv.util.requireMinQQVersion
 
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisableAddTroopToRecentUser : CommonSwitchFunctionHook(arrayOf(TroopGuildChatPie_flingRToL)) {
+object DisableAddTroopToRecentUser : CommonSwitchFunctionHook() {
 
     override val name = "禁止群助手中的群有新帖时显示在主页"
 
