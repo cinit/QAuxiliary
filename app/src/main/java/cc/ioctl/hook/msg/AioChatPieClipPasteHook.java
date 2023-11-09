@@ -220,7 +220,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 }
                 data = baos.toByteArray();
                 cpTimeout.set(false);
-            } catch (IOException e) {
+            } catch (Exception e) {
                 FaultyDialog.show(ctx, e);
             }
             cpTimeout.set(false);
