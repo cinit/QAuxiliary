@@ -12,7 +12,7 @@ object Version {
     const val targetSdk = 34
     const val versionName = "1.4.6"
 
-    private const val defaultNdkVersion = "25.1.8937393"
+    private const val defaultNdkVersion = "25.2.9519653"
     private const val defaultCMakeVersion = "3.22.1"
 
     fun getNdkVersion(project: Project): String {
