@@ -66,29 +66,31 @@ public class OneTapTwentyLikes extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
+        Class<?> CardProfile = Initiator.loadClass("com.tencent.mobileqq.data.CardProfile");
         Method onClickVote = Reflex.findSingleMethod(Initiator._VoteHelper(), null, false,
-                Initiator.loadClass("com.tencent.mobileqq.data.CardProfile"), ImageView.class);
+                CardProfile, ImageView.class);
         for (Method m : Initiator.loadClass("com.tencent.mobileqq.activity.VisitorsActivity").getDeclaredMethods()) {
             if (m.getName().equals("onClick")) {
                 HookUtils.hookBeforeIfEnabled(this, m, param -> {
                     View view = (View) param.args[0];
                     Object profile = view.getTag();
+                    if (profile == null || !CardProfile.isInstance(profile)) return;
                     Object voteHelper = getFirstByType(param.thisObject, Initiator._VoteHelper());
                     for (int i = 0; i < 20; i++) {
-                        onClickVote.invoke(voteHelper, profile, (ImageView) view);
+                        onClickVote.invoke(voteHelper, profile, view);
                     }
                 });
             }
         }
 
-        Method onClickOnProfileCard = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.profilecard.base.component.AbsProfileHeaderComponent"), "handleVoteBtnClickForGuestProfile",
+        Method onClickOnProfileCard = Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.profilecard.base.component.AbsProfileHeaderComponent"),
+                "handleVoteBtnClickForGuestProfile",
                 Initiator.loadClass("com.tencent.mobileqq.data.Card"));
-        HookUtils.hookBeforeIfEnabled(this,onClickOnProfileCard,param -> {
+        HookUtils.hookBeforeIfEnabled(this, onClickOnProfileCard, param -> {
             for (int i = 0; i < 19; i++) {
-                XposedBridge.invokeOriginalMethod(param.method,param.thisObject,param.args);
+                XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args);
             }
         });
-
 
         return true;
     }
