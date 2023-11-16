@@ -157,9 +157,11 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
     @Throws(Exception::class)
     override fun initOnce() = throwOrTrue {
 
-        val kQQSettingMeView = if (requireMinQQVersion(QQVersion.QQ_8_9_25))
-            Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMeView")
-        else Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMe")
+        val kQQSettingMeView = Initiator.loadClass(
+            if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeView"
+            else if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView"
+            else "com.tencent.mobileqq.activity.QQSettingMe"
+        )
         XposedBridge.hookAllConstructors(kQQSettingMeView, HookUtils.afterIfEnabled(this) { param ->
             //中间部分(QQ会员 我的钱包等)
             val midContentName = ConfigTable.getConfig<String>(MidContentName)
@@ -167,6 +169,26 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                 param.thisObject.get(midContentName, LinearLayout::class.java)
             } else {
                 param.thisObject.get(midContentName, View::class.java) as LinearLayout
+            }
+            val midRemovedList: MutableList<Int> = mutableListOf()
+            midContentListLayout?.forEach {
+                val child = it as LinearLayout
+                val tv = if (child.size == 1) {
+                    (child[0] as LinearLayout)[1]
+                } else {
+                    child[1]
+                } as TextView
+                val text = tv.text.toString()
+                if (stringHit(text)) {
+                    midRemovedList.add(midContentListLayout.indexOfChild(child))
+                }
+            }
+            midRemovedList.sorted().forEachIndexed { index, i ->
+                if (requireMinQQVersion(QQ_8_8_11)) {
+                    midContentListLayout?.removeViewAt(i - index)
+                } else {
+                    midContentListLayout?.getChildAt(i)?.hide()
+                }
             }
             //底端部分 设置 夜间模式 达人 等
             val vg = param.args.last()
@@ -195,27 +217,8 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                     v.setViewZeroSize()
                 }
             }
-            val midRemovedList: MutableList<Int> = mutableListOf()
-            midContentListLayout?.forEach {
-                val child = it as LinearLayout
-                val tv = if (child.size == 1) {
-                    (child[0] as LinearLayout)[1]
-                } else {
-                    child[1]
-                } as TextView
-                val text = tv.text.toString()
-                if (stringHit(text)) {
-                    midRemovedList.add(midContentListLayout.indexOfChild(child))
-                }
-            }
-            midRemovedList.sorted().forEachIndexed { index, i ->
-                if (requireMinQQVersion(QQ_8_8_11)) {
-                    midContentListLayout?.removeViewAt(i - index)
-                } else {
-                    midContentListLayout?.getChildAt(i)?.hide()
-                }
-            }
         })
+        
         XposedBridge.hookAllMethods(ViewTreeObserver::class.java, "dispatchOnGlobalLayout", object : XC_MethodReplacement() {
             override fun replaceHookedMethod(param: MethodHookParam) {
                 try {
@@ -231,7 +234,10 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
         })
 
         // for NT QQ 8.9.68.11450
-        val clazz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMeViewV9")
+        val clazz = Initiator.load(
+            if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeViewV9"
+            else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
+        )
         clazz?.findAllMethods { paramCount == 1 && parameterTypes[0].name.contains("com.tencent.mobileqq.activity.qqsettingme") }?.hookAfter {
             val cz = clazz.superclass.superclass
             val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
@@ -248,7 +254,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
 
         // 关闭下拉形象展示abtest开关
         if (activeItems.contains("下拉形象展示")) {
-            Initiator.load("com.tencent.mobileqq.activity.qqsettingme.utils.a")?.getDeclaredMethod("f")!!
+            Initiator.load("com.tencent.mobileqq.activity.qqsettingme.utils.a")?.getDeclaredMethod(if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "g" else "f")!!
                 .hookBefore { it.result = false }
         }
     }

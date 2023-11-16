@@ -68,8 +68,9 @@ object HideTab : CommonSwitchFunctionHook() {
                 }
             }
         }
-        (if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView" else
-            "com.tencent.mobileqq.activity.QQSettingMe").clazz?.hookAfterAllConstructors {
+        (if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeView"
+        else if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView"
+        else "com.tencent.mobileqq.activity.QQSettingMe").clazz?.hookAfterAllConstructors {
             if (!isEnabled) return@hookAfterAllConstructors
             val midContentName = ConfigTable.getConfig<String>(SimplifyQQSettingMe.MidContentName)
             val linearLayout = if (requireMinQQVersion(QQVersion.QQ_8_6_5)) {
