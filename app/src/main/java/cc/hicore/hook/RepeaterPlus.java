@@ -51,6 +51,7 @@ import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -61,6 +62,7 @@ import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.ntapi.MsgConstants;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.BaseFunctionHook;
@@ -68,6 +70,7 @@ import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
@@ -201,7 +204,12 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                                         click_time = System.currentTimeMillis();
                                     }
                                 }
-                                repeatByForwardNt(param.args[1]);
+                                Object msgObj = param.args[1];
+                                if (isMessageRepeatable(msgObj)) {
+                                    repeatByForwardNt(msgObj);
+                                } else {
+                                    Toasts.error(v.getContext(), "该消息不支持复读");
+                                }
                             });
                             imageView.setVisibility(0);
                         }
@@ -262,7 +270,11 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                         }
                         Object msg = finalGetMsg.invoke(param.thisObject);
                         Object item = CustomMenu.createItemNt(msg, "+1", R.id.item_repeat, () -> {
-                            repeatByForwardNt(msg);
+                            if (isMessageRepeatable(msg)) {
+                                repeatByForwardNt(msg);
+                            } else {
+                                Toasts.error(ContextUtils.getCurrentActivity(), "该消息不支持复读");
+                            }
                             return Unit.INSTANCE;
                         });
                         List list = (List) param.getResult();
@@ -398,4 +410,32 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
         }
 
     }
+
+    private static Method sMethod_AIOMsgItem_getMsgRecord;
+
+    private boolean isMessageRepeatable(Object msg) {
+        if (msg == null) {
+            return false;
+        }
+        try {
+            if (sMethod_AIOMsgItem_getMsgRecord == null) {
+                sMethod_AIOMsgItem_getMsgRecord = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                        .getMethod("getMsgRecord");
+            }
+            MsgRecord msgRecord = (MsgRecord) sMethod_AIOMsgItem_getMsgRecord.invoke(msg);
+            int msgType = msgRecord.getMsgType();
+            int msgSubType = msgRecord.getSubMsgType();
+            if (msgType == MsgConstants.MSG_TYPE_WALLET) {
+                // red packet should not be repeated
+                // receiver will see unsupported msg type or empty msg
+                return false;
+            }
+            // add more msg type here
+            return true;
+        } catch (Exception | LinkageError e) {
+            traceError(e);
+            return false;
+        }
+    }
+
 }
