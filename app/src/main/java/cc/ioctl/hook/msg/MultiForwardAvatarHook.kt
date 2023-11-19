@@ -95,7 +95,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
                 matcher {
                     declaredClass = "com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent"
                     returnType = "void"
-                    paramTypes()
+                    paramTypes(*arrayOf<Class<*>>())
                     addInvoke {
                         name = "setOnClickListener"
                     }

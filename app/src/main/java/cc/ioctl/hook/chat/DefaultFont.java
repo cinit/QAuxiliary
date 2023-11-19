@@ -51,11 +51,11 @@ import java.util.Set;
 import java.util.stream.Collectors;
 import org.luckypray.dexkit.DexKitBridge;
 import org.luckypray.dexkit.query.FindMethod;
-import org.luckypray.dexkit.query.MethodDataList;
 import org.luckypray.dexkit.query.enums.UsingType;
 import org.luckypray.dexkit.query.matchers.FieldMatcher;
 import org.luckypray.dexkit.query.matchers.MethodMatcher;
 import org.luckypray.dexkit.result.MethodData;
+import org.luckypray.dexkit.result.MethodDataList;
 
 //强制使用默认字体
 @FunctionHookEntry
@@ -157,7 +157,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                             .declaredClass(Initiator._TextItemBuilder().getName())
                             .returnType("void")
                             .paramTypes(null, Initiator._ChatMessage().getName())
-                            .addUsingField(FieldMatcher.create().type("android/widget/TextView"), UsingType.Get)
+                            .addUsingField(FieldMatcher.create().type("android/widget/TextView"), UsingType.Read)
                     )
             );
             List<MethodData> methods = resultMethods.stream()
