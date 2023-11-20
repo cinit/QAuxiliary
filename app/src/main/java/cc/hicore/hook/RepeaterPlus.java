@@ -402,10 +402,12 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
 
             service.getMsgsByMsgId(contact, l, (i, str, list) ->{
-                if (list.size() > 0 && list.get(0).getElements().get(0).getPttElement() != null){
-                    service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
-                }else {
+                if (list.size() > 0 && list.get(0).getElements().get(0).getPicElement() != null
+                || list.get(0).getElements().get(0).getStructMsgElement() != null
+                || list.get(0).getElements().get(0).getArkElement() != null){
                     service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> { });
+                }else {
+                    service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
                 }
             });
 
