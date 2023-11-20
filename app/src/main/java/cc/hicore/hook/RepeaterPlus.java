@@ -72,7 +72,9 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
+import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.dexkit.VasAttrBuilder;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -85,6 +87,7 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
+import org.luckypray.dexkit.DexKitBridge;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -93,7 +96,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     public static final RepeaterPlus INSTANCE = new RepeaterPlus();
 
     private RepeaterPlus() {
-        super(null, false, new DexKitTarget[]{AbstractQQCustomMenuItem.INSTANCE});
+        super(null, false, new DexKitTarget[]{AbstractQQCustomMenuItem.INSTANCE, VasAttrBuilder.INSTANCE});
     }
 
     private IUiItemAgent mUiAgent = null;
@@ -392,17 +395,19 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
             IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
             HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
-            MsgAttributeInfo info = Nt_kernel_bridge.getDefaultAttributeInfo();
-            if (info != null) {
-                attrMap.put(0, info);
-                service.getMsgsByMsgId(contact, l, (i, str, list) ->{
-                    if (list.size() > 0 && list.get(0).getElements().get(0).getPttElement() != null){
-                        service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
-                    }else {
-                        service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> { });
-                    }
-                });
+            Method builder = DexKit.loadMethodFromCache(VasAttrBuilder.INSTANCE);
+            if (builder != null){
+                Object builderInstance = builder.getDeclaringClass().newInstance();
+                builder.invoke(builderInstance,attrMap,contact,4);
             }
+
+            service.getMsgsByMsgId(contact, l, (i, str, list) ->{
+                if (list.size() > 0 && list.get(0).getElements().get(0).getPttElement() != null){
+                    service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
+                }else {
+                    service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> { });
+                }
+            });
 
 
         } catch (Exception e) {
