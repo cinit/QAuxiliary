@@ -20,6 +20,11 @@
         android:gravity="center_horizontal"
         android:layout_height="wrap_content">
         <Button
+            android:id="@+id/btn_pick"
+            android:text="浏览..."
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content" />
+        <Button
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_gravity="center_horizontal"

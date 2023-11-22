@@ -4,6 +4,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.graphics.BitmapFactory;
+import android.os.Environment;
 import android.text.TextUtils;
 import android.view.View;
 import android.view.ViewGroup;
@@ -15,11 +16,13 @@ import cc.hicore.Utils.RandomUtils;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.LocalDataHelper;
 import com.lxj.xpopup.XPopup;
+import io.github.duzhaokun123.util.FilePicker;
 import io.github.qauxv.R;
 import io.github.qauxv.util.SyncUtils;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
+import kotlin.Unit;
 import org.jetbrains.annotations.Async;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -51,6 +54,13 @@ public class InputFromLocalImpl implements ICreator.IMainPanelItem {
 
             }
 
+        });
+        Button btnPick = vgInput.findViewById(R.id.btn_pick);
+        btnPick.setOnClickListener(v -> {
+            FilePicker.INSTANCE.pickDir(mContext, "选择表情包路径", Environment.getExternalStorageDirectory().getAbsolutePath(), path -> {
+                edPath.setText(path);
+                return Unit.INSTANCE;
+            });
         });
         return vgInput;
     }

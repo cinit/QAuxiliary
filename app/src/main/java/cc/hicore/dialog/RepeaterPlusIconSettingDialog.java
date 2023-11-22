@@ -26,6 +26,7 @@ import android.content.DialogInterface;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.drawable.BitmapDrawable;
+import android.os.Environment;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.LayoutInflater;
@@ -47,6 +48,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.ui.FaultyDialog;
 import cc.ioctl.util.ui.drawable.DebugDrawable;
+import io.github.duzhaokun123.util.FilePicker;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.ui.CustomDialog;
@@ -61,6 +63,7 @@ import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.Locale;
+import kotlin.Unit;
 
 public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         DialogInterface.OnClickListener, TextWatcher,
@@ -79,6 +82,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
     private final AlertDialog dialog;
     private final Button loadBtn;
     private final Button browseBtn;
+    private final Button browseBtn2;
     private final Button restoreDefBtn;
     private final EditText pathInput;
     private final ImageView prevImgView;
@@ -114,6 +118,8 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         loadBtn.setOnClickListener(this);
         browseBtn = v.findViewById(R.id.selectRepeaterIcon_buttonBrowseImg);
         browseBtn.setOnClickListener(this);
+        browseBtn2 = v.findViewById(R.id.selectRepeaterIcon_buttonBrowseImg2);
+        browseBtn2.setOnClickListener(this);
         restoreDefBtn = v.findViewById(R.id.selectRepeaterIcon_buttonRestoreDefaultIcon);
         restoreDefBtn.setOnClickListener(this);
         prevImgView = v.findViewById(R.id.selectRepeaterIcon_imageViewPreview);
@@ -324,6 +330,11 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
                         }
                     }
             ).commit();
+        } else if (v == browseBtn2) {
+            FilePicker.INSTANCE.pickFile(ctx, "选择 +1 图标", Environment.getExternalStorageDirectory().getPath(), path -> {
+                pathInput.setText(path);
+                return Unit.INSTANCE;
+            });
         }
     }
 

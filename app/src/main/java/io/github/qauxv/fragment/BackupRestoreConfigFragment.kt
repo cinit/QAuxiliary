@@ -33,6 +33,7 @@ import androidx.annotation.AnyThread
 import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import io.github.duzhaokun123.util.FilePicker
 import io.github.qauxv.R
 import io.github.qauxv.config.BackupConfigSession
 import io.github.qauxv.config.RestoreConfigSession
@@ -89,6 +90,8 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
             }
             backupRestoreConfigButtonNextStep.setOnClickListener(this@BackupRestoreConfigFragment)
             backupRestoreConfigButtonBrowseFile.setOnClickListener(this@BackupRestoreConfigFragment)
+            backupRestoreConfigButtonBrowseFile2.setOnClickListener(this@BackupRestoreConfigFragment)
+            backupRestoreConfigButtonBrowseFile3.setOnClickListener(this@BackupRestoreConfigFragment)
         }
         rootLayoutView = binding!!.root
         return binding!!.root
@@ -377,6 +380,15 @@ class BackupRestoreConfigFragment : BaseRootLayoutFragment(), View.OnClickListen
                         }
                     }
                 }.commit()
+        } else if (v.id == R.id.backupRestoreConfig_buttonBrowseFile2) {
+            FilePicker.pickFile(requireContext(), "选择备份文件", Environment.getExternalStorageDirectory().absolutePath) { path ->
+                editTextRestoreLocation!!.setText(path)
+                startRestoreProcedure(path)
+            }
+        } else if (v.id == R.id.backupRestoreConfig_buttonBrowseFile3) {
+            FilePicker.createFile(requireContext(), "选择备份文件保存目录", generateDefaultBackupLocation()) { path ->
+                editTextBackupLocation!!.setText(path)
+            }
         }
     }
 

@@ -39,6 +39,7 @@ import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.Log
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import de.robv.android.xposed.XposedHelpers
+import io.github.duzhaokun123.util.FilePicker
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -99,7 +100,7 @@ object FileRecvRedirect : CommonConfigFunctionHook(SyncUtils.PROC_ANY and (SyncU
                 ll_path.visibility = if (isChecked) View.VISIBLE else View.GONE
             }
             btn_select.setOnClickListener {
-                doSelectPath(activity, et_path.text.toString()) { path ->
+                FilePicker.pickDir(activity, "选择下载文件重定向目录", et_path.text.toString()) { path ->
                     et_path.setText(path)
                 }
             }
@@ -228,28 +229,5 @@ object FileRecvRedirect : CommonConfigFunctionHook(SyncUtils.PROC_ANY and (SyncU
     private fun checkPathAvailable(path: String): Boolean {
         val file = File(path)
         return file.exists() && file.isDirectory && file.canWrite()
-    }
-
-    private fun doSelectPath(context: Context, path: String, onSelect: (String) -> Unit) {
-        val file = File(path)
-        val dirs = file.listFiles()?.filter { it.isDirectory }
-        val items = (listOf("..") + (dirs?.map { it.name } ?: listOf("<can't list files>"))).toTypedArray()
-        MaterialAlertDialogBuilder(context)
-            .setCustomTitle(TextView(context).apply {
-                text = path
-                setPadding(40)
-            })
-            .setItems(items) { _, index ->
-                if (index == 0 ) {
-                    doSelectPath(context, file.parent ?: "/", onSelect)
-                } else if (dirs != null) {
-                    doSelectPath(context, dirs[index - 1].absolutePath, onSelect)
-                } else {
-                    doSelectPath(context, path, onSelect)
-                }
-            }.setPositiveButton(android.R.string.ok) {_, _ ->
-                onSelect(path)
-            }.setNegativeButton(android.R.string.cancel, null)
-            .show()
     }
 }
