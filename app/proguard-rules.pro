@@ -17,7 +17,7 @@
 -keep class cc.microblock.** { *; }
 -keep class com.tencent.mmkv.** { *; }
 -keep class com.alphi.qhmk.** { *; }
-
+-keep class top.linl.** { *; }
 -keepclasseswithmembernames class * {
     native <methods>;
 }
