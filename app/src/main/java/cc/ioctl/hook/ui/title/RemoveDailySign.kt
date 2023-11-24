@@ -56,6 +56,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
         val callback = HookUtils.afterIfEnabled(this) { param ->
             // em_drawer_sign_up
             val dailySignName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_70) -> "e0"
                 requireMinQQVersion(QQVersion.QQ_8_9_68) -> "h0"
                 requireMinQQVersion(QQVersion.QQ_8_9_28) -> "i0"
                 requireMinQQVersion(QQVersion.QQ_8_9_25) -> "h0"
@@ -69,13 +70,23 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
             }
             param.thisObject.getObjectAs<LinearLayout>(dailySignName, LinearLayout::class.java).setViewZeroSize()
         }
-        if (requireMinQQVersion(QQVersion.QQ_8_9_25)) {
-            XposedBridge.hookAllConstructors(loadClass("com.tencent.mobileqq.activity.QQSettingMeView"), callback)
-        } else {
-            XposedBridge.hookAllConstructors(loadClass("com.tencent.mobileqq.activity.QQSettingMe"), callback)
-        }
+        XposedBridge.hookAllConstructors(
+            loadClass(
+                if (requireMinQQVersion(QQVersion.QQ_8_9_90)) {
+                    "com.tencent.mobileqq.QQSettingMeView"
+                } else if (requireMinQQVersion(QQVersion.QQ_8_9_25)) {
+                    "com.tencent.mobileqq.activity.QQSettingMeView"
+                } else {
+                    "com.tencent.mobileqq.activity.QQSettingMe"
+                }
+            ), callback
+        )
         // for NT QQ 8.9.68.11450
-        val clazz = Initiator.load("com.tencent.mobileqq.activity.QQSettingMeViewV9")
+        val clazz = Initiator.load(
+            if (requireMinQQVersion(QQVersion.QQ_8_9_90))
+                "com.tencent.mobileqq.QQSettingMeViewV9"
+            else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
+        )
         if (clazz != null) {
             clazz.findField {
                 val cz = type
