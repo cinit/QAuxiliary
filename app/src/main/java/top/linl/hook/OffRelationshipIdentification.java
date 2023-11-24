@@ -52,12 +52,18 @@ public class OffRelationshipIdentification extends CommonSwitchFunctionHook {
     }
 
 
+    /**
+     * @return item 位置
+     */
     @NonNull
     @Override
     public String[] getUiItemLocation() {
         return FunctionEntryRouter.Locations.Simplify.UI_PROFILE;
     }
 
+    /**
+     * @return item name
+     */
     @NonNull
     @Override
     public String getName() {
