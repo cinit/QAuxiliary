@@ -54,6 +54,7 @@ public class TurnOffFriendInteractionLogoView extends CommonSwitchFunctionHook {
         HookUtils.hookBeforeIfEnabled(this, initViewMethod, param -> {
             Field mViewContainerField = FieIdUtils.findUnknownTypeField(param.thisObject.getClass(), "mViewContainer");
             mViewContainerField.set(param.thisObject, 1);
+            param.setResult(null);
         });
         return true;
     }
