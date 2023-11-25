@@ -99,5 +99,6 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 ## 赞助
 
 - 由于项目的特殊性，我们不接受任何形式的捐赠，但是我们希望有更多的人能够参与本项目的开发
+- 如果您有兴趣参与本项目的开发，您可以参考[贡献指南](.github/CONTRIBUTING.md)
 
 ## [通用许可协议](https://github.com/qwq233/License/blob/master/v2/LICENSE.md)
