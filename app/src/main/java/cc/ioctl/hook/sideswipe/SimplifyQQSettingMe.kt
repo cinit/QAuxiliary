@@ -158,7 +158,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
     override fun initOnce() = throwOrTrue {
 
         val kQQSettingMeView = Initiator.loadClass(
-            if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeView"
+            if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeView"
             else if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView"
             else "com.tencent.mobileqq.activity.QQSettingMe"
         )
@@ -218,7 +218,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
                 }
             }
         })
-        
+
         XposedBridge.hookAllMethods(ViewTreeObserver::class.java, "dispatchOnGlobalLayout", object : XC_MethodReplacement() {
             override fun replaceHookedMethod(param: MethodHookParam) {
                 try {
@@ -235,7 +235,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
 
         // for NT QQ 8.9.68.11450
         val clazz = Initiator.load(
-            if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeViewV9"
+            if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeViewV9"
             else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
         )
         clazz?.findAllMethods { paramCount == 1 && parameterTypes[0].name.contains("com.tencent.mobileqq.activity.qqsettingme") }?.hookAfter {
