@@ -158,7 +158,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
     override fun initOnce() = throwOrTrue {
 
         val kQQSettingMeView = Initiator.loadClass(
-            if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeView"
+            if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "com.tencent.mobileqq.QQSettingMeView"
             else if (requireMinQQVersion(QQVersion.QQ_8_9_25)) "com.tencent.mobileqq.activity.QQSettingMeView"
             else "com.tencent.mobileqq.activity.QQSettingMe"
         )

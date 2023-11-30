@@ -56,6 +56,8 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
         val callback = HookUtils.afterIfEnabled(this) { param ->
             // em_drawer_sign_up
             val dailySignName = when {
+                requireMinQQVersion(QQVersion.QQ_8_9_90) -> "e0"
+                requireMinQQVersion(QQVersion.QQ_8_9_88) -> "h0"
                 requireMinQQVersion(QQVersion.QQ_8_9_70) -> "e0"
                 requireMinQQVersion(QQVersion.QQ_8_9_68) -> "h0"
                 requireMinQQVersion(QQVersion.QQ_8_9_28) -> "i0"
@@ -93,7 +95,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
                 // private final com.tencent.mobileqq.bizParts.a F;
                 if (cz.name.contains(
                         when {
-                            requireMinQQVersion(QQVersion.QQ_8_9_88) -> "com.tencent.mobileqq.bizParts"
+                            requireMinQQVersion(QQVersion.QQ_8_9_90) -> "com.tencent.mobileqq.bizParts"
                             else -> "com.tencent.mobileqq.activity.qqsettingme.bizParts"
                         }
                     )
