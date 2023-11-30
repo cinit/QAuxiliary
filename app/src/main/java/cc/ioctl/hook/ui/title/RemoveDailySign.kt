@@ -90,8 +90,16 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
         if (clazz != null) {
             clazz.findField {
                 val cz = type
-                if (cz.name.contains("com.tencent.mobileqq.activity.qqsettingme.bizParts")) {
+                // private final com.tencent.mobileqq.bizParts.a F;
+                if (cz.name.contains(
+                        when {
+                            requireMinQQVersion(QQVersion.QQ_8_9_88) -> "com.tencent.mobileqq.bizParts"
+                            else -> "com.tencent.mobileqq.activity.qqsettingme.bizParts"
+                        }
+                    )
+                ) {
                     var i = 0
+                    // 目标类里面的 LinearLayout 类型的参数一定大于2
                     for (f in cz.declaredFields) {
                         if (f.type == LinearLayout::class.java) {
                             i++
@@ -110,6 +118,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
                             fields.add(f)
                         }
                     }
+                    // private LinearLayout g;
                     it.thisObject.getObjectAs<LinearLayout>(fields[1].name, LinearLayout::class.java).setViewZeroSize()
                 }
         }
