@@ -271,6 +271,21 @@ object MsgRecordUtil {
         }
     }
 
+    val NICK_BLOCKS = object : HashBiMap<String, String>() {
+        init {
+            put("VIP图标", "AIOVipIconProcessor")
+            put("额外VIP图标", "AIOVipIconExProcessor")
+            put("游戏图标", "AIOGameIconProcessor")
+            put("昵称", "MainNickNameBlock")
+            put("机器人图标", "NickNameRobotBlock")
+            put("群等级图标", "AIOTroopMemberLevelBlock")
+            put("群数字等级图标", "AIOTroopMemberGradeLevelBlock")
+            put("群荣耀图标", "AIOTroopHonorNickBlock")
+            put("群匿名图标", "AIOTroopAnonymousNickBlock")
+            put("群QQ圈图标", "QCircleTroopIconProcessor")
+        }
+    }
+
     val MSG_WITH_DESC = object : HashBiMap<String, Int>() {
         init {
             MSG.forEach {
@@ -340,5 +355,15 @@ object MsgRecordUtil {
         return if (map.containsKey(cache)) {
             map[cache]!!
         } else cache
+    }
+
+    fun parseNickBlocks(activeItems: List<String>): List<String> {
+        val items: MutableList<String> = ArrayList()
+        for (item in activeItems) {
+            if (NICK_BLOCKS.containsKey(item)) {
+                items.add(NICK_BLOCKS[item]!!)
+            }
+        }
+        return items
     }
 }
