@@ -94,11 +94,12 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     private const val ID_ADD_LAYOUT = 0x114515
     private const val ID_ADD_TEXTVIEW = 0x114516
 
-    // X2J_APT <- ???Binding <- AIOSenderBubbleTemplate
+    // X2J_APT <- ???Binding(com/tx/x2j/AioSenderBubbleTemplateBinding) <- AIOSenderBubbleTemplate
     private val NAME_TAIL_LAYOUT = when {
+        requireMinQQVersion(QQVersion.QQ_8_9_93_BETA_13315) -> "so5"
         requireMinQQVersion(QQVersion.QQ_8_9_90) -> "smi"
         requireMinQQVersion(QQVersion.QQ_8_9_88) -> "slx"
-        requireMinQQVersion(QQVersion.qq_8_9_85) -> "sih"
+        requireMinQQVersion(QQVersion.QQ_8_9_85) -> "sih"
         requireMinQQVersion(QQVersion.QQ_8_9_83) -> "shv"
         requireMinQQVersion(QQVersion.QQ_8_9_80) -> "sg6"
         requireMinQQVersion(QQVersion.QQ_8_9_78) -> "s_8"
@@ -334,12 +335,30 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
         if (!isEnabled && !isFlashPicTagNeedShow) return
 
+//        Log.d("rootView: $rootView")
         val tailLayout = try {
-            rootView.findHostView(NAME_TAIL_LAYOUT) ?: return
+            val v = rootView.findHostView<FrameLayout>(NAME_TAIL_LAYOUT)
+            if (v == null) {
+//                Log.e("ChatItemShowQQUin tailLayout is null")
+                // dump root children
+//                rootView.children.forEach {
+//                    Log.e("[ERR]--> rootView child: $it")
+//                }
+                return
+            } else {
+//                rootView.children.forEach {
+//                    Log.e("[+++]--> rootView child: $it")
+//                }
+            }
+            v
         } catch (_: Exception) {
             val stub = rootView.findHostView<ViewStub>(NAME_TAIL_LAYOUT)!!
             stub.inflate() as FrameLayout
         }
+        // TODO: 2023-11-25 8.9.93 work around 使用和 "群文件" 同一个 FrameLayout
+        // 因为先前用的 view 在 8.9.93 只在自己发的消息存在，不是自己发的消息上连 view 都没有
+        tailLayout.visibility = View.VISIBLE
+        // Log.d("ChatItemShowQQUin tailLayout: $tailLayout, msg: $chatMessage")
         if (!tailLayout.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
             val layout = LinearLayout(rootView.context).apply {
                 layoutParams = LinearLayout.LayoutParams(
