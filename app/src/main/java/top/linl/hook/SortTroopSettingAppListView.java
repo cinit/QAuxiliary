@@ -72,8 +72,6 @@ public class SortTroopSettingAppListView extends CommonSwitchFunctionHook {
                 LinearLayout rootView = FieIdUtils.getFirstField(param.thisObject, LinearLayout.class);
                 int troopInfoTextIndex = 0;
                 View troopAppListView = null;
-//                View[] views = FieIdUtils.getFirstField(param.thisObject, View[].class);//过于复杂 不如不用
-
                 for (int i = 0; i < rootView.getChildCount(); i++) {
                     View child = rootView.getChildAt(i);
                     if (child instanceof TextView) {
