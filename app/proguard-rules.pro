@@ -38,7 +38,6 @@
 -dontwarn org.apache.bsf.*
 
 -keepattributes LineNumberTable,SourceFile
--renamesourcefileattribute SourceFile
 
 # Keep `Companion` object fields of serializable classes.
 # This avoids serializer lookup through `getDeclaredClasses` as done for named companion objects.

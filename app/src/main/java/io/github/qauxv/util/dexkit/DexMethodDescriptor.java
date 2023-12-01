@@ -66,6 +66,9 @@ public class DexMethodDescriptor implements Serializable {
         }
         int a = desc.indexOf("->");
         int b = desc.indexOf('(', a);
+        if (a < 0 || b < 0) {
+            throw new IllegalArgumentException(desc);
+        }
         declaringClass = desc.substring(0, a);
         name = desc.substring(a + 2, b);
         signature = desc.substring(b);

@@ -68,6 +68,10 @@ sealed class DexKitTarget {
     var descCache: String?
         get() = descCacheKey.value
         set(value) {
+            if (!value.isNullOrEmpty()) {
+                // check if the value is valid
+                DexMethodDescriptor(value)
+            }
             descCacheKey.value = value
         }
 
