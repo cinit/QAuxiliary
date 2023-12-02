@@ -1,5 +1,6 @@
 package io.github.qauxv.util;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
@@ -8,6 +9,8 @@ import android.system.Os;
 import android.system.OsConstants;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.annotation.UiThread;
+import cc.ioctl.util.ui.FaultyDialog;
 import io.github.qauxv.activity.ShadowSafTransientActivity;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -76,17 +79,33 @@ public class SafUtils {
             if (mineType == null) {
                 mineType = "application/octet-stream";
             }
+            ShadowSafTransientActivity.RequestResultCallback callback = new ShadowSafTransientActivity.RequestResultCallback() {
+                @Override
+                public void onResult(@Nullable Uri uri) {
+                    if (uri != null) {
+                        resultCallback.onResult(uri);
+                    } else {
+                        if (cancelCallback != null) {
+                            cancelCallback.run();
+                        }
+                    }
+                }
+
+                @Override
+                public void onException(@NonNull Throwable e) {
+                    if (e instanceof ActivityNotFoundException) {
+                        complainAboutNoSafActivity(context, e);
+                    } else {
+                        FaultyDialog.show(context, "错误", e);
+                    }
+                    if (cancelCallback != null) {
+                        cancelCallback.run();
+                    }
+                }
+            };
             ShadowSafTransientActivity.startActivityForRequest(context,
                     ShadowSafTransientActivity.TARGET_ACTION_CREATE_AND_WRITE,
-                    mineType, defaultFileName, uri -> {
-                        if (uri != null) {
-                            resultCallback.onResult(uri);
-                        } else {
-                            if (cancelCallback != null) {
-                                cancelCallback.run();
-                            }
-                        }
-                    });
+                    mineType, defaultFileName, callback);
         }
     }
 
@@ -130,19 +149,42 @@ public class SafUtils {
         public void commit() {
             Objects.requireNonNull(context);
             Objects.requireNonNull(resultCallback);
+            ShadowSafTransientActivity.RequestResultCallback callback = new ShadowSafTransientActivity.RequestResultCallback() {
+                @Override
+                public void onResult(@Nullable Uri uri) {
+                    if (uri != null) {
+                        resultCallback.onResult(uri);
+                    } else {
+                        if (cancelCallback != null) {
+                            cancelCallback.run();
+                        }
+                    }
+                }
+
+                @Override
+                public void onException(@NonNull Throwable e) {
+                    if (e instanceof ActivityNotFoundException) {
+                        complainAboutNoSafActivity(context, e);
+                    } else {
+                        FaultyDialog.show(context, "错误", e);
+                    }
+                    if (cancelCallback != null) {
+                        cancelCallback.run();
+                    }
+                }
+            };
             ShadowSafTransientActivity.startActivityForRequest(context,
                     ShadowSafTransientActivity.TARGET_ACTION_READ,
-                    mimeType, null, uri -> {
-                        if (uri != null) {
-                            resultCallback.onResult(uri);
-                        } else {
-                            if (cancelCallback != null) {
-                                cancelCallback.run();
-                            }
-                        }
-                    });
+                    mimeType, null, callback);
         }
 
+    }
+
+    @UiThread
+    private static void complainAboutNoSafActivity(@NonNull Context context, @NonNull Throwable e) {
+        FaultyDialog.show(context, "ActivityNotFoundException",
+                "找不到 Intent.ACTION_OPEN_DOCUMENT 或 Intent.ACTION_CREATE_DOCUMENT 的 Activity，可能是系统问题。\n" +
+                        "Android 规范要求必须有应用能够处理这两个 Intent，但是有些系统没有实现这个规范。\n" + e);
     }
 
     private static final HashMap<String, ParcelFileDescriptor> sCachedFileDescriptors = new HashMap<>();

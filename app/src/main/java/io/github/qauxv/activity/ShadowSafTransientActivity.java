@@ -1,6 +1,7 @@
 package io.github.qauxv.activity;
 
 import android.app.Activity;
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -89,7 +90,16 @@ public class ShadowSafTransientActivity extends Activity {
             throw new AssertionError("Unknown sequence: " + mSequence + ", are we in the same process?");
         }
         // query SAF here
-        startActivityForResult(intent, mOriginRequest);
+        try {
+            startActivityForResult(intent, mOriginRequest);
+        } catch (ActivityNotFoundException e) {
+            Request request = sRequestMap.get(mSequence);
+            if (request != null) {
+                request.callback.onException(e);
+            }
+            sRequestMap.remove(mSequence);
+            finish();
+        }
     }
 
     @Override
@@ -100,6 +110,7 @@ public class ShadowSafTransientActivity extends Activity {
             if (request != null) {
                 request.callback.onResult(resultUri);
             }
+            sRequestMap.remove(mSequence);
             finish();
         }
     }
@@ -146,5 +157,13 @@ public class ShadowSafTransientActivity extends Activity {
          */
         @UiThread
         void onResult(@Nullable Uri uri);
+
+        /**
+         * Called when an exception is thrown.
+         *
+         * @param e the exception, typically an {@link ActivityNotFoundException}.
+         */
+        @UiThread
+        void onException(@NonNull Throwable e);
     }
 }
