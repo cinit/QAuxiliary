@@ -30,8 +30,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import top.linl.util.reflect.FieIdUtils;
-import top.linl.util.reflect.MethodTool;
+import top.linl.util.FieIdUtils;
+import top.linl.util.MethodTool;
 
 @FunctionHookEntry
 @UiItemAgentEntry

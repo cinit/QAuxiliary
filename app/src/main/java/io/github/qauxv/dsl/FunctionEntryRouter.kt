@@ -124,7 +124,6 @@ object FunctionEntryRouter {
                     category("auxiliary-friend", "好友")
                     category("auxiliary-profile", "资料卡")
                 }
-                fragment("auxiliary-group", "群聊")
                 fragment("auxiliary-notification", "通知设置")
                 fragment("auxiliary-experimental", "实验性功能")
                 fragment("entertainment-function", "娱乐功能")
@@ -257,9 +256,6 @@ object FunctionEntryRouter {
 
             @JvmField
             val FRIEND_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-friend")
-
-            @JvmField
-            val GROUP_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-group")
 
             @JvmField
             val PROFILE_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "auxiliary-profile")
