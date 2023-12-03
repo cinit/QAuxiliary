@@ -181,8 +181,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        boolean isSuccess = true;
         if (QAppUtils.isQQnt()) {
-            nativeInitNtKernelRecallMsgHook();
+            isSuccess = nativeInitNtKernelRecallMsgHook();
         }
         // The method is still there, even on NT.
         // I decided to hook them as long as they are there.
@@ -213,7 +214,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             }
             list.clear();
         });
-        return true;
+        return isSuccess;
     }
 
     private native boolean nativeInitNtKernelRecallMsgHook();
@@ -412,6 +413,10 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             Log.e("onRecallSysMsgForNT fatal: chatType is not c2c or troop");
             return;
         }
+        // for debug log
+//        Log.d("onRecallSysMsgForNT: chatType=" + chatType + ", peerUid=" + peerUid + ", recallOpUid=" + recallOpUid
+//                + ", msgAuthorUid=" + msgAuthorUid + ", toUid=" + toUid + ", random64=" + random64 + ", timeSeconds=" + timeSeconds
+//                + ", msgUid=" + msgUid + ", msgSeq=" + msgSeq + ", msgClientSeq=" + msgClientSeq);
         // operatorUin may be empty, in the case when in a group chat, someone recalled a message by an admin or owner,
         // but your NT kernel are not so familiar with the admin or owner, and it doesn't know the uin of the admin or owner.
         String selfUin = AppRuntimeHelper.getAccount();

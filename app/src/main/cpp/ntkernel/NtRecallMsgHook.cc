@@ -53,6 +53,7 @@ jmethodID handleRecallSysMsgFromNtKernel = nullptr;
 
 uintptr_t gOffsetGetDecoderSp = 0;
 
+uintptr_t gOffsetForTmpRev5048 = 0;
 
 uint64_t ThunkGetInt64Property(const void* thiz, int property) {
     // vtable
@@ -98,9 +99,9 @@ ReturnType vcall(void* thiz, ArgTypes... args) {
     }
 }
 
-template<uintptr_t vtableOffset, uintptr_t thizOffset, typename... ArgTypes>
+template<typename... ArgTypes>
 requires(((std::is_integral_v<ArgTypes> || std::is_pointer_v<ArgTypes>) && ...))
-void vcall_x8(void* thiz, void* x8, ArgTypes... args) {
+void vcall_x8_v2(void* thiz, uintptr_t vtableOffset, uintptr_t thizOffset, void* x8, ArgTypes... args) {
     // vtable
     // [[this+thizOff]+offsetVT]
     void* thisp8 = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(thiz) + thizOffset);
@@ -124,9 +125,9 @@ static inline ReturnType vcall(uintptr_t thiz, ArgTypes... args) {
     }
 }
 
-template<uintptr_t vtableOffset, uintptr_t thizOffset, typename... ArgTypes> requires((std::is_integral_v<ArgTypes> || std::is_pointer_v<ArgTypes>) && ...)
-static inline void vcall_x8(uintptr_t thiz, void* x8, ArgTypes... args) {
-    vcall_x8<vtableOffset, thizOffset, ArgTypes...>(reinterpret_cast<void*>(thiz), x8, args...);
+template<typename... ArgTypes> requires((std::is_integral_v<ArgTypes> || std::is_pointer_v<ArgTypes>) && ...)
+static inline void vcall_x8_v2(uintptr_t thiz, uintptr_t vtableOffset, uintptr_t thizOffset, void* x8, ArgTypes... args) {
+    vcall_x8_v2<ArgTypes...>(reinterpret_cast<void*>(thiz), vtableOffset, thizOffset, x8, args...);
 }
 
 //void ThunkCallAPI(void* x0, uintptr_t api_caller_id, int x2, int x3, int& x4, std::string& x5) {
@@ -216,7 +217,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
     STACK_GUARD;
     std::array<uint8_t, 0x100> objVar1 = {}; // actual size unknown, maybe 0x90
     STACK_GUARD;
-    vcall_x8<0xe8, 0, int>(pVar2, &objVar1, 3);
+    vcall_x8_v2<int>(pVar2, gOffsetForTmpRev5048, 0, &objVar1, 3);
     auto pVar3 = *(void**) (objVar1.data());
     if (pVar3 == nullptr) {
         LOGE("msg_recall: HandleRecallSysMsg: on recall group sys msg! msg_common::Msg::kBody = null");
@@ -229,7 +230,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
     STACK_GUARD;
     std::vector<uint8_t> msgContentBytes;
     STACK_GUARD;
-    vcall_x8<0x78, 8, int>(pVar3, &msgContentBytes, 2);
+    vcall_x8_v2<int>(pVar3, 0x78, 8, &msgContentBytes, 2);
     if (msgContentBytes.size() < 8) {
         LOGE("msg_recall: HandleRecallSysMsg: on recall group sys msg! im_msg_body::MsgBody::kBytesMsgContent is error");
         return;
@@ -261,7 +262,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
     STACK_GUARD;
     std::array<void*, 2> optMsgRecall = {}; // actual size 0x10, maybe shared_ptr, but we don't have dtor
     STACK_GUARD;
-    vcall_x8<0xe8, 0, int>(notifyMsgBody, &optMsgRecall, 0xb);
+    vcall_x8_v2<int>(notifyMsgBody, gOffsetForTmpRev5048, 0, &optMsgRecall, 0xb);
     if (optMsgRecall[0] == nullptr) {
         LOGE("HandleGroupRecallSysMsgCallback: on recall group sys msg! NotifyMsgBody::opt_msg_recall == null");
         return;
@@ -271,7 +272,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
         return;
     }
     std::array<void*, 3> vectorResultStub = {nullptr, nullptr, nullptr};
-    vcall_x8<0xf0, 8, int>(optMsgRecall[0], &vectorResultStub, 3);
+    vcall_x8_v2<int>(optMsgRecall[0], 0xf0, 8, &vectorResultStub, 3);
     std::string recallOpUid = ThunkGetStringProperty(optMsgRecall[0], 1);
     const auto& msgInfoList = *reinterpret_cast<const std::vector<RevokeMsgInfoAccess::UnknownObjectStub16>*>(&vectorResultStub);
     if (msgInfoList.empty()) {
@@ -400,6 +401,28 @@ bool InitInitNtKernelRecallMsgHook() {
             return false;
         }
 
+        if (auto pkg = HostInfo::GetPackageName(); pkg != "com.tencent.mobileqq") {
+            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, unexpected package name: {}", pkg);
+            return false;
+        }
+
+        // TODO: 2023-12-03 replace hard-coded versionCode with a more flexible way, eg, AOB scan
+
+        uint32_t versionCode = HostInfo::GetVersionCode32();
+        if (versionCode >= 4160 && versionCode < 5048) {
+            // first seen: first NT, QQ 8.9.63.11305 (4160)
+            // last seen: QQ 8.9.93 (5028)
+            gOffsetForTmpRev5048 = 0xe8;
+        } else if (versionCode >= 5048) {
+            // first seen: QQ 8.9.96.13525 5048
+            // last seen: (wait for update)
+            gOffsetForTmpRev5048 = 0xf0;
+        } else {
+            // error
+            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, versionCode not supported: {}", versionCode);
+            return false;
+        }
+
         uint64_t offsetC2c = targetRecallC2cSysMsg.GetResultOffset();
         uint64_t offsetGroup = targetRecallGroupSysMsg.GetResultOffset();
         uint64_t offsetGetDecoder = targetGetDecoder.GetResultOffset();
@@ -444,7 +467,7 @@ bool InitInitNtKernelRecallMsgHook() {
         // hook now
         return fnHookProc(libkernel->baseAddress);
     } else {
-        RegisterLoadLibraryCallback([fnHookProc](const char* name, void* handle) {
+        int rc = RegisterLoadLibraryCallback([fnHookProc](const char* name, void* handle) {
             if (name == nullptr) {
                 return;
             }
@@ -482,6 +505,11 @@ bool InitInitNtKernelRecallMsgHook() {
                 }
             }
         });
+        if (rc < 0) {
+            // it's better to report this error somehow
+            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, RegisterLoadLibraryCallback failed: {}", rc);
+            return false;
+        }
         // LOGD("libkernel.so is not loaded, register callback");
         return true;
     }
