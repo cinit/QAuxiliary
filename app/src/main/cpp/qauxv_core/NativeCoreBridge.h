@@ -37,7 +37,7 @@ namespace qauxv {
 
 using LoadLibraryCallback = std::function<void(const char* name, void* handle)>;
 
-void RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
+int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 
 // void UnregisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 

@@ -79,9 +79,13 @@ void HandleLoadLibrary(const char* name, void* handle) {
     }
 }
 
-void RegisterLoadLibraryCallback(const LoadLibraryCallback& callback) {
+int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback) {
+    if (!sHandleLoadLibraryCallbackInitialized) {
+        return -1;
+    }
     std::scoped_lock lock(sCallbacksMutex);
     sCallbacks.push_back(callback);
+    return 0;
 }
 
 static volatile bool sIsNativeInitialized = false;
@@ -102,34 +106,58 @@ int DestroyInlineHook(void* func) {
     return sNativeHookHandle.unhookFunction(func);
 }
 
-void* (* backup_do_dlopen)(const char* name, int flags, const void* extinfo, const void* caller) = nullptr;
+void* backup_do_dlopen = nullptr;
 
-void* fake_do_dlopen(const char* name, int flags, const void* extinfo, const void* caller) {
-    auto handle = backup_do_dlopen(name, flags, extinfo, caller);
+void* fake_do_dlopen_24(const char* name, int flags, const void* extinfo, const void* caller) {
+    auto* backup = (void* (*)(const char* name, int flags, const void* extinfo, const void* caller)) backup_do_dlopen;
+    auto handle = backup(name, flags, extinfo, caller);
     HandleLoadLibrary(name, handle);
     return handle;
 }
 
+void* fake_do_dlopen_23(const char* name, int flags, const void* extinfo) {
+    // below Android 7.0, the caller address is not passed to do_dlopen,
+    // because there is no linker namespace concept before Android 7.0
+    auto* backup = (void* (*)(const char* name, int flags, const void* extinfo)) backup_do_dlopen;
+    auto handle = backup(name, flags, extinfo);
+    HandleLoadLibrary(name, handle);
+    return handle;
+}
 
 void HookLoadLibrary() {
     using namespace utils;
-    LOGD("HookLoadLibrary: native load library callback is not initialized, hook ourselves");
+    LOGD("HookLoadLibrary: attempting to hook ld-android.so!__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
     const char* soname;
     if constexpr (sizeof(void*) == 8) {
         soname = "linker64";
     } else {
         soname = "linker";
     }
-    // __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv
+    bool isBelow24 = false;
+    // __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv, Android 8.0+
     void* symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
     if (symbol == nullptr) {
+        // __dl__Z9do_dlopenPKciPK17android_dlextinfoPv, Android 7.x
+        symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfoPv");
+    }
+    if (symbol == nullptr) {
+        // __dl__Z9do_dlopenPKciPK17android_dlextinfo, Android 6.x
+        symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfo");
+        if (symbol != nullptr) {
+            isBelow24 = true;
+        }
+    }
+    if (symbol == nullptr) {
+        // give up
         LOGE("HookLoadLibrary: failed to find __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
         return;
     }
-    if (DobbyHook(symbol, (dobby_dummy_func_t) qauxv::fake_do_dlopen, (dobby_dummy_func_t*) &qauxv::backup_do_dlopen) != RS_SUCCESS) {
+    auto hookHandler = isBelow24 ? (dobby_dummy_func_t) fake_do_dlopen_23 : (dobby_dummy_func_t) fake_do_dlopen_24;
+    if (DobbyHook(symbol, hookHandler, (dobby_dummy_func_t*) &qauxv::backup_do_dlopen) != RS_SUCCESS) {
         LOGE("HookLoadLibrary: failed to hook __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
         return;
     }
+    sHandleLoadLibraryCallbackInitialized = true;
     LOGD("HookLoadLibrary: hooked __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
 }
 
@@ -268,7 +296,7 @@ void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg) {
 }
 
 // called by Xposed framework
-EXPORT extern "C" NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
+EXPORT extern "C" [[maybe_unused]] NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
     sNativeHookHandle.hookFunction = entries->hookFunc;
     sNativeHookHandle.unhookFunction = entries->unhookFunc;
     qauxv::sHandleLoadLibraryCallbackInitialized = true;
