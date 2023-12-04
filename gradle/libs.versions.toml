@@ -20,7 +20,7 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.7.0.202309050840-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "4.3" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.15.2" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.15.3" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.2" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
