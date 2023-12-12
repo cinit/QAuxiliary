@@ -429,7 +429,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             Log.e("onRecallSysMsgForNT fatal: msgAuthorUid is empty");
             return;
         }
-        if ((chatType == 1 && !Objects.equals(selfUid, toUid)) || (chatType == 2 && !Objects.equals(peerUid, toUid))) {
+        if (chatType == 2 && !Objects.equals(peerUid, toUid)) {
             Log.w("!!! onRecallSysMsgForNT potential bug: chatType=" + chatType + ", peerUid=" + peerUid + ", toUid=" + toUid + ", selfUid=" + selfUid);
         }
         Contact contact = new Contact(chatType, peerUid, "");
@@ -461,8 +461,11 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                         }
                         summary = revokerPron + "尝试撤回一条消息";
                     } else if (msgObject != null && (msgObject.getMsgType() == 5 && msgObject.getSubMsgType() == 4)) {
+                        // Case 1:
                         // C2C only: msg not actually received, system message: "对方撤回了一条消息"
                         // We don't need to do anything here, otherwise we will have duplicated gray tip.
+                        // Case 2:
+                        // The current user itself have revoked a msg. No extra action is required.
                         return;
                     } else {
                         builder.appendText(revokerPron + "撤回了一条消息(没收到) [msgId=" + msgUid + ", seq=" + msgSeq + ", cseq=" + msgClientSeq + "]");
