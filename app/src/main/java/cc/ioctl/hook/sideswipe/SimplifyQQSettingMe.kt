@@ -31,6 +31,7 @@ import androidx.core.view.forEachIndexed
 import androidx.core.view.get
 import androidx.core.view.size
 import cc.ioctl.util.HookUtils
+import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.getStaticObjectOrNull
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
@@ -237,13 +238,29 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
             if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeViewV9"
             else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
         )
-        if (clazz != null) {
-            val cz = clazz.superclass.superclass
-            val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
-            m.hookAfter {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+            if (clazz != null) {
+                val cz = clazz.superclass.superclass
+                val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
+                m.hookAfter {
+                    for (activeItem in activeItems) {
+                        if (items2Hide[activeItem] == it.args[0]) {
+                            (it.result as View).setViewZeroSize()
+                        }
+                    }
+                }
+            }
+        } else {
+            clazz?.findAllMethods { paramCount == 1 && parameterTypes[0].name.contains("com.tencent.mobileqq.activity.qqsettingme") }?.hookAfter {
+                val cz = clazz.superclass.superclass
+                val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
                 for (activeItem in activeItems) {
-                    if (items2Hide[activeItem] == it.args[0]) {
-                        (it.result as View).setViewZeroSize()
+                    if (items2Hide.contains(activeItem)) {
+                        val viewObj = m.invoke(null, items2Hide[activeItem])
+                        if (viewObj != null) {
+                            val view = viewObj as View
+                            view.setViewZeroSize()
+                        }
                     }
                 }
             }
