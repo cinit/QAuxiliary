@@ -835,3 +835,11 @@ data object EmotionDownloadEnableSwitch: DexKitTarget.UsingStringVector() {
     override val declaringClass: String = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/emotionintegrate/")
 }
+
+
+data object QQ_SETTING_ME_CONFIG_CLASS: DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = false;
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("超级QQ秀","我的视频","我的文件","我的收藏","我的相册","我的小游戏","免流量","我的个性装扮","财富小金库","我的QQ钱包","开通会员","我的小世界","直播"))
+    override val declaringClass: String = ""
+    override val filter = DexKitFilter.allowAll
+}

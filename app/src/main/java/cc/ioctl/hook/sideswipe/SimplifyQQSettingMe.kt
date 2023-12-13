@@ -52,19 +52,24 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.QQ_SETTING_ME_CONFIG_CLASS
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
+import xyz.nextalone.util.*
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hide
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.Array
+import java.lang.reflect.Modifier
 import java.util.SortedMap
 
 //侧滑栏精简
 @FunctionHookEntry
 @UiItemAgentEntry
-object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
+object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",targets = arrayOf(QQ_SETTING_ME_CONFIG_CLASS)) {
 
     const val MidContentName = "SimplifyQQSettingMe::MidContentName"
 
@@ -238,6 +243,34 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe") {
             if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeViewV9"
             else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
         )
+
+        // 转化为View之前删除数据
+        if (requireMinQQVersion(QQVersion.QQ_8_9_90)) {
+            val m = DexKit.requireClassFromCache(QQ_SETTING_ME_CONFIG_CLASS).declaredMethods.first { it.isPublic && it.returnType.name.contains("QQSettingMeBizBean") }
+            m.hookAfter { param ->
+                val qqSettingMeBizBeanArray = param.result
+                val cSettingMeBizBean = qqSettingMeBizBeanArray::class.java.componentType!!
+                // 先初始化一个可变列表
+                val purifiedList = mutableListOf<Any>()
+                // 遍历这个数组
+                for (i in 0 until Array.getLength(param.result) - 1) {
+                    // 获取单个QQSettingMeBizBean
+                    val item = Array.get(qqSettingMeBizBeanArray,i)!!
+                    val itemId = item.get(String::class.java) as String
+                    // 获取需要被删掉的列表  ( 超级QQ秀直接删除有bug[空指针(QQ你怎么不校验一下，哭)]，应该在View里面隐藏
+                    val del = items2Hide.filter { activeItems.contains(it.key) }.values.toMutableList().apply { remove("d_zplan") }
+                    // 如果不为需要删除的，就添加到返回列表
+                    if (!del.contains(itemId)){ purifiedList.add(item) }
+                }
+                val returnArray = Array.newInstance(cSettingMeBizBean,purifiedList.size)
+                for (i in purifiedList.indices){
+                    Array.set(returnArray,i,purifiedList[i])
+                }
+                param.result = returnArray
+            }
+        }
+
+        // View层隐藏超级QQ秀  （到这里应该只需要处理 超级QQ秀 了
         if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
             if (clazz != null) {
                 val cz = clazz.superclass.superclass

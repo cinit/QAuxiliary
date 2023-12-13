@@ -37,12 +37,13 @@ import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKitTarget
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import me.ketal.data.ConfigData
 
-abstract class MultiItemDelayableHook(keyName: String) :
-    CommonConfigFunctionHook(keyName) {
+abstract class MultiItemDelayableHook(keyName: String,targets: Array<DexKitTarget>? = null) :
+    CommonConfigFunctionHook(keyName,targets) {
     abstract val preferenceTitle: String
     open val preferenceSummary = ""
 

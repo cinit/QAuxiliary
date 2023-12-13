@@ -44,7 +44,7 @@ abstract class CommonConfigFunctionHook(
     constructor() : this(null, false)
     constructor(defaultEnabled: Boolean) : this(null, defaultEnabled)
     constructor(key: String) : this(key, false)
-    constructor(key: String, targets: Array<DexKitTarget>) : this(key, false, targets)
+    constructor(key: String, targets: Array<DexKitTarget>?) : this(key, false, targets)
     constructor(targets: Array<DexKitTarget>) : this(null, false, targets)
     constructor(key: String, targetProc: Int) : this(hookKey = key, targetProc = targetProc)
     constructor(targetProc: Int) : this(null, targetProc = targetProc)
