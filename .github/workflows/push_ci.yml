@@ -120,7 +120,7 @@ jobs:
       - telegram-bot-api
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Download Telegram Bot API Binary
@@ -160,7 +160,7 @@ jobs:
       - build
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts
       - name: Release
