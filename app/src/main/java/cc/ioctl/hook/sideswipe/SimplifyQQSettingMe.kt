@@ -278,7 +278,10 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",target
                 m.hookAfter {
                     for (activeItem in activeItems) {
                         if (items2Hide[activeItem] == it.args[0]) {
-                            (it.result as View).setViewZeroSize()
+                            if (it.result != null){
+                                val view = it.result as View
+                                view.setViewZeroSize()
+                            }
                         }
                     }
                 }
