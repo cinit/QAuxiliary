@@ -71,7 +71,10 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
-            "com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout".clazz!!
+            listOf(
+                "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout",
+                "com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout"
+            ).firstNotNullOf { it.clazz }
                 .method("setMenu")!!
                 .hookBefore {
                     val list = it.args[0].javaClass.getFieldByType(List::class.java).get(it.args[0]) as MutableList<*>
