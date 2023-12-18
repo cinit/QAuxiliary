@@ -25,6 +25,7 @@ package xyz.nextalone.hook
 import android.content.Context
 import android.widget.ImageView
 import android.widget.RelativeLayout
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.ui.FaultyDialog
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.checkbox.checkBoxPrompt
@@ -32,6 +33,7 @@ import com.afollestad.materialdialogs.list.listItems
 import com.github.kyuubiran.ezxhelper.utils.isProtected
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager.getDefaultConfig
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
@@ -40,7 +42,7 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NConversation_onCreate
 import io.github.qauxv.util.dexkit.NFriendsStatusUtil_isChatAtTop
 import me.ketal.util.ignoreResult
-import io.github.qauxv.config.ConfigManager.getDefaultConfig
+import top.linl.hook.FixCleanRecentChat
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -66,40 +68,48 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
     private var includeTopped = getDefaultConfig().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
     override fun initOnce(): Boolean = throwOrTrue {
-        DexKit.requireMethodFromCache(NConversation_onCreate)
-            .hookAfter(this) {
-                val recentAdapter = it.thisObject.get(RecentAdapter.clazz)
-                val app = it.thisObject.get("mqq.app.AppRuntime".clazz)
-                val relativeLayout = it.thisObject.get(RelativeLayout::class.java)
-                val plusView = relativeLayout?.findHostView<ImageView>("ba3")
-                    ?: relativeLayout?.parent?.findHostView<ImageView>("ba3")
-                plusView?.setOnLongClickListener { view ->
-                    val contextWrapper = CommonContextWrapper.createMaterialDesignContext(view.context)
-                    val list = listOf("清理群消息", "清理其他消息", "清理所有消息")
-                    MaterialDialog(contextWrapper).show {
-                        title(text = "消息清理")
-                        checkBoxPrompt(text = "包含置顶消息", isCheckedDefault = includeTopped) { checked ->
-                            includeTopped = checked
-                            putDefault(INCLUDE_TOPPED, includeTopped)
-                        }
-                        listItems(items = list) { dialog, _, text ->
-                            Toasts.showToast(dialog.context, Toasts.TYPE_INFO, text, Toasts.LENGTH_SHORT)
-                            when (text) {
-                                "清理群消息" -> {
-                                    handler(recentAdapter, app, all = false, other = false, includeTopped, contextWrapper)
-                                }
-                                "清理其他消息" -> {
-                                    handler(recentAdapter, app, all = false, other = true, includeTopped, contextWrapper)
-                                }
-                                "清理所有消息" -> {
-                                    handler(recentAdapter, app, all = true, other = true, includeTopped, contextWrapper)
-                                }
+        if (QAppUtils.isQQnt()) {
+            val fix = FixCleanRecentChat(this)
+            fix.loadHook()
+        } else {
+            DexKit.requireMethodFromCache(NConversation_onCreate)
+                .hookAfter(this) {
+                    val recentAdapter = it.thisObject.get(RecentAdapter.clazz)
+                    val app = it.thisObject.get("mqq.app.AppRuntime".clazz)
+                    val relativeLayout = it.thisObject.get(RelativeLayout::class.java)
+                    val plusView = relativeLayout?.findHostView<ImageView>("ba3")
+                        ?: relativeLayout?.parent?.findHostView<ImageView>("ba3")
+                    plusView?.setOnLongClickListener { view ->
+                        val contextWrapper = CommonContextWrapper.createMaterialDesignContext(view.context)
+                        val list = listOf("清理群消息", "清理其他消息", "清理所有消息")
+                        MaterialDialog(contextWrapper).show {
+                            title(text = "消息清理")
+                            checkBoxPrompt(text = "包含置顶消息", isCheckedDefault = includeTopped) { checked ->
+                                includeTopped = checked
+                                putDefault(INCLUDE_TOPPED, includeTopped)
                             }
-                        }.ignoreResult()
+                            listItems(items = list) { dialog, _, text ->
+                                Toasts.showToast(dialog.context, Toasts.TYPE_INFO, text, Toasts.LENGTH_SHORT)
+                                when (text) {
+                                    "清理群消息" -> {
+                                        handler(recentAdapter, app, all = false, other = false, includeTopped, contextWrapper)
+                                    }
+
+                                    "清理其他消息" -> {
+                                        handler(recentAdapter, app, all = false, other = true, includeTopped, contextWrapper)
+                                    }
+
+                                    "清理所有消息" -> {
+                                        handler(recentAdapter, app, all = true, other = true, includeTopped, contextWrapper)
+                                    }
+                                }
+                            }.ignoreResult()
+                        }
+                        true
                     }
-                    true
                 }
-            }
+        }
+
     }
 
     private fun ntVersion() {

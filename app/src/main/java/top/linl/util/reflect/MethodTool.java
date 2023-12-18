@@ -123,6 +123,9 @@ public class MethodTool {
                         Class<?>[] methodParams = method.getParameterTypes();
                         if (methodParams.length == target.methodParams.length) {
                             for (int i = 0; i < methodParams.length; i++) {
+                                if (target.methodParams[i] == Object.class) {
+                                    continue;
+                                }
                                 if (!Objects.equals(methodParams[i], target.methodParams[i])) {
                                     continue MethodFor;
                                 }
