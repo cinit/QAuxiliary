@@ -22,6 +22,7 @@
 
 package xyz.nextalone.hook
 
+import android.annotation.SuppressLint
 import android.content.Context
 import android.widget.ImageView
 import android.widget.RelativeLayout
@@ -67,10 +68,32 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
     private const val INCLUDE_TOPPED = "CleanRecentChat_include_topped"
     private var includeTopped = getDefaultConfig().getBooleanOrDefault(INCLUDE_TOPPED, false)
 
+    @SuppressLint("StaticFieldLeak")
+    private var fixCleanRecentChat: FixCleanRecentChat? = null
+    fun showDialog(context: Context) {
+        val contextWrapper = CommonContextWrapper.createMaterialDesignContext(context)
+        val list = listOf("清理群消息", "清理其他消息", "清理所有消息")
+        MaterialDialog(contextWrapper).show {
+            var containsTops = false
+            title(text = "消息清理")
+
+            checkBoxPrompt(text = "包含置顶消息", isCheckedDefault = includeTopped) { checked ->
+                containsTops = checked
+            }
+            listItems(items = list) { dialog, _, text ->
+                Toasts.showToast(dialog.context, Toasts.TYPE_INFO, text, Toasts.LENGTH_SHORT)
+                val deleteAllItemTask = FixCleanRecentChat.DeleteAllItemTask(text as String?)
+                deleteAllItemTask.isDeleteTopMsg = containsTops
+                Thread(deleteAllItemTask).start()
+
+            }.ignoreResult()
+        }
+    }
+
     override fun initOnce(): Boolean = throwOrTrue {
         if (QAppUtils.isQQnt()) {
-            val fix = FixCleanRecentChat(this)
-            fix.loadHook()
+            fixCleanRecentChat = FixCleanRecentChat(this)
+            fixCleanRecentChat!!.loadHook()
         } else {
             DexKit.requireMethodFromCache(NConversation_onCreate)
                 .hookAfter(this) {
@@ -118,6 +141,8 @@ object CleanRecentChat : CommonSwitchFunctionHook(arrayOf(NFriendsStatusUtil_isC
             == 1 联系人
             == 103 公众号
             == 2 群聊
+            == 7 群助手
+            == 134 我的电脑
             == 131 我的关联QQ账号 uid=9992
             class: com.tencent.qqnt.chats.core.adapter.holder.deleteMsg extend View.OnClickListener
          */

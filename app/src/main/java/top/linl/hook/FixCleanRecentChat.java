@@ -22,6 +22,7 @@
 
 package top.linl.hook;
 
+import android.app.Activity;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -29,13 +30,12 @@ import cc.ioctl.util.HookUtils;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.util.HashMap;
 import java.util.Iterator;
-import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
@@ -50,13 +50,16 @@ import xyz.nextalone.hook.CleanRecentChat;
  */
 public class FixCleanRecentChat {
 
-    private static final HashMap<Object, Integer> viewHolderList = new LinkedHashMap<>();
+    private static final ConcurrentHashMap<Object, Integer> viewHolderList = new ConcurrentHashMap<>();
     private static int deleteTextViewId;
     private final CleanRecentChat cleanRecentChat;
+
+    private Activity activity;
 
     public FixCleanRecentChat(CleanRecentChat cleanRecentChat) {
         this.cleanRecentChat = cleanRecentChat;
     }
+
 
     private void hookGetDeleteViewId() {
         Class<?> superClass = ClassUtils.getClass("com.tencent.qqnt.chats.biz.guild.GuildDiscoveryItemBuilder").getSuperclass();
@@ -100,10 +103,11 @@ public class FixCleanRecentChat {
         Method onCreateMethod = MethodTool.find("com.tencent.mobileqq.activity.home.Conversation").name("onResume").params(boolean.class).get();
         HookUtils.hookAfterIfEnabled(cleanRecentChat, onCreateMethod, param -> {
             ImageView imageView = FieIdUtils.getFirstField(param.thisObject, ImageView.class);
+            activity = (Activity) imageView.getContext();
             imageView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
                 public boolean onLongClick(View v) {
-                    new Thread(new DeleteAllItemTask()).start();
+                    cleanRecentChat.showDialog(activity);
                     return true;
                 }
             });
@@ -134,13 +138,27 @@ public class FixCleanRecentChat {
             viewHolderList.put(param.thisObject, adapterIndex);
         });
 
+        Method onCreate = MethodTool.find("com.tencent.qqnt.chats.core.adapter.ChatsListAdapter")
+                .name("onCreateViewHolder")
+                .params(android.view.ViewGroup.class, int.class)
+                .get();
+        HookUtils.hookAfterIfEnabled(cleanRecentChat, onCreate, param -> {
+            viewHolderList.put(param.getResult(), (int) param.args[1]);
+        });
     }
 
-    private static class DeleteAllItemTask implements Runnable {
+    public static class DeleteAllItemTask implements Runnable {
 
         private static final AtomicReference<Method> deleteMethod = new AtomicReference<>();
         private static Class<?> utilType;
         private static Field itemField;
+
+        public boolean isDeleteTopMsg = false;
+        public String deleteMode;
+
+        public DeleteAllItemTask(String deleteMode) {
+            this.deleteMode = deleteMode;
+        }
 
         private Object findItemField(Object viewHolder) throws IllegalAccessException {
             if (itemField != null) {
@@ -185,6 +203,9 @@ public class FixCleanRecentChat {
                     throw new RuntimeException(e);
                 }
             }
+            if (utilType == null) {
+                throw new RuntimeException("not find Class , viewHolder ClassName is " + viewHolder.getClass().getName());
+            }
             return utilType;
         }
 
@@ -226,6 +247,11 @@ public class FixCleanRecentChat {
                 if (size == 0) {
                     try {
                         //停一下等待ItemHolder重新bind到屏幕上 然后继续删除
+                        /*
+                         * 假设一次能清理屏幕中的 8 个item
+                         * 2000 / 100 * 8 = 400 (个item)
+                         * 清掉所有聊天项应该戳戳有余 有问题调高延迟和时长应该可以解决
+                         */
                         TimeUnit.MILLISECONDS.sleep(100);
                         continue;
                     } catch (InterruptedException e) {
@@ -237,21 +263,51 @@ public class FixCleanRecentChat {
                     Map.Entry<Object, Integer> viewHolderEntry = iterator.next();
                     try {
                         Object recentContactItemHolder = viewHolderEntry.getKey();
+                        if (recentContactItemHolder == null) {
+                            continue;
+                        }
                         //delete util
                         Object util = FieIdUtils.getFirstField(recentContactItemHolder, findUtilClassType(recentContactItemHolder));//util run time obj
                         int adapterIndex = viewHolderEntry.getValue();//call param 1
+                        /*
+                         * { uid=0000,
+                         * title=name,
+                         * contactType=2,
+                         * unreadCount=UnreadInfo(type=2, count=437).count ,
+                         * showTime=晚上8:03,
+                         * summary=八 ,
+                         * isTop=true,
+                         * isDraft=false}
+                         * */
                         Object itemInfo = findItemField(recentContactItemHolder);//call param 2
+                        String itemToString = String.valueOf(itemInfo);
+                        //面向字符串编程
+                        if (deleteMode.equals("清理群消息")) {
+                            if (!itemToString.contains("contactType=2")) {
+                                continue;
+                            }
+                        } else if (deleteMode.equals("清理其他消息")) {
+                            if (itemToString.contains("contactType=2") || itemToString.contains("contactType=1")) {
+                                continue;
+                            }
+                        }
+                        if (!isDeleteTopMsg) {
+                            if (itemToString.contains("isTop=true")) {
+                                continue;
+                            }
+                        }
                         Object itemBinder = FieIdUtils.getFirstField(recentContactItemHolder,
                                 ClassUtils.getClass("com.tencent.qqnt.chats.core.adapter.holder.RecentContactItemBinding"));//call param 3
                         int viewId = deleteTextViewId;//call param 4
                         getDeleteMethod(recentContactItemHolder).invoke(util, adapterIndex, itemInfo, itemBinder, viewId);
                         deleteQuantity++;
                     } catch (Exception e) {
-                        throw new RuntimeException(e);
+
                     }
                     iterator.remove();
                 }
             }
+            System.gc();//调用gc 防止viewHolder还没被回收
             Toasts.show("已清理结束 数量" + deleteQuantity + "个");
         }
     }
