@@ -301,7 +301,10 @@ public class StartupHook {
         Class<?> kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.d");
         // check cast so that we can sure that we have found the right class
         if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
-            throw new AssertionError(kITaskFactory + " is not assignable from " + kTaskFactory);
+            kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.b");
+            if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
+                throw new AssertionError(kITaskFactory + " is not assignable from " + kTaskFactory);
+            }
         }
         Field taskClassMapField = null;
         for (Field field : kTaskFactory.getDeclaredFields()) {
