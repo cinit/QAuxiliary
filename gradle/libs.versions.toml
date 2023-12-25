@@ -1,8 +1,8 @@
 [versions]
 agp = "8.2.0"
 appCenter = "5.0.4"
-kotlin = "1.9.21"
-ksp = "1.9.21-1.0.16"
+kotlin = "1.9.22"
+ksp = "1.9.22-1.0.16"
 lifecycle = "2.6.2"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
@@ -39,7 +39,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.10" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.11" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "11.0.0_r3" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
