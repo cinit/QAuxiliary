@@ -103,9 +103,14 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
             Method getItemProcessList = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
             Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
+            // 8.9.70 ~ 9.0.0
             Class<?> kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.g");
             if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
-                throw new IllegalStateException("kSImpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
+                // 9.0.8+
+                kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.h");
+                if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
+                    throw new IllegalStateException("kSImpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
+                }
             }
             Method setOnClickListener;
             {
