@@ -163,7 +163,7 @@ fun pangu_spacing(text: String): String {
 @UiItemAgentEntry
 object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
     override val name = "发送消息自动 Pangu.kt"
-    override val description = "自动在中英文间加上空格，以美化排版\n若消息以空格开头，则不会被 Pangu 化"
+    override val description = "自动在中英文间加上空格，以美化排版"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
     override val isAvailable = QAppUtils.isQQnt();
@@ -171,10 +171,10 @@ object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElemen
         DexKit.requireMethodFromCache(AIOTextElementCtor)
             .hookBefore {
                 val content = it.args[0].get("a") as String;
-                if(!content.startsWith(" "))
+//                if(!content.startsWith(" "))
                     it.args[0].set("a", SendPangu.processPangu(content))
-                else
-                    it.args[0].set("a", content.substring(1))
+//                else
+//                    it.args[0].set("a", content.substring(1))
             }
 
         return true;
