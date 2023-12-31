@@ -408,7 +408,7 @@ public class Parasitics {
                                 fAcrIntent.set(acr, realIntent);
                             }
                         } catch (NoSuchMethodException e) {
-                            if (Build.VERSION.SDK_INT == 33) {
+                            if (Build.VERSION.SDK_INT >= 33) {
                                 // expected behavior...?!
                             } else {
                                 throw e;

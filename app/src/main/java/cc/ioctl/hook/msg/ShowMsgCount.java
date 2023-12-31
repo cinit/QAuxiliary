@@ -21,10 +21,13 @@
  */
 package cc.ioctl.hook.msg;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+
 import android.view.ViewGroup;
 import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
+import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import de.robv.android.xposed.XC_MethodHook;
@@ -33,13 +36,16 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import kotlin.collections.ArraysKt;
 
 /**
  * 显示具体消息数量
@@ -72,10 +78,21 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() throws NoSuchMethodException {
+    public boolean initOnce() throws NoSuchMethodException, ClassNotFoundException {
         Method updateCustomNoteTxt = null;
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge");
+            Method m = ArraysKt.single(clz.getDeclaredMethods(), method -> method.getParameterTypes().length == 1
+                    && method.getParameterTypes()[0] == int.class
+                    && !method.getName().startsWith("set"));
+            Field f = ArraysKt.last(clz.getDeclaredFields(), field -> field.getType() == String.class);
+            f.setAccessible(true);
+            HookUtils.hookAfterIfEnabled(this, m, param ->
+                    f.set(param.thisObject, String.valueOf((int) param.args[0])));
+            return true;
+        }
         if (QAppUtils.isQQnt()) {
-            Class clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
+            Class<?> clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
             for (Method method : clz.getDeclaredMethods()) {
                 if (method.getParameterTypes().length == 6) {
                     updateCustomNoteTxt = method;
@@ -106,7 +123,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
                         if (Type == 4 || Type == 7 || Type == 9 || Type == 3) {
                             TextView t = (TextView) param.args[0];
                             int Count = (int) param.args[2];
-                            String str = "" + Count;
+                            String str = String.valueOf(Count);
                             ViewGroup.LayoutParams params = t.getLayoutParams();
                             params.width = LayoutHelper.dip2px(t.getContext(), 9 + 7 * str.length());
                             t.setLayoutParams(params);
