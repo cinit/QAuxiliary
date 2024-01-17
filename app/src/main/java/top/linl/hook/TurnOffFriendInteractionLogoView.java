@@ -30,7 +30,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import top.linl.util.reflect.FieIdUtils;
+import top.linl.util.reflect.FieldUtils;
 import top.linl.util.reflect.MethodTool;
 
 @FunctionHookEntry
@@ -52,7 +52,7 @@ public class TurnOffFriendInteractionLogoView extends CommonSwitchFunctionHook {
                 .returnType(void.class)
                 .get();
         HookUtils.hookBeforeIfEnabled(this, initViewMethod, param -> {
-            Field mViewContainerField = FieIdUtils.findUnknownTypeField(param.thisObject.getClass(), "mViewContainer");
+            Field mViewContainerField = FieldUtils.findUnknownTypeField(param.thisObject.getClass(), "mViewContainer");
             mViewContainerField.set(param.thisObject, 1);
             param.setResult(null);
         });

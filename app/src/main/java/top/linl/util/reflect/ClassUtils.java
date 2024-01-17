@@ -9,6 +9,7 @@ import java.net.URL;
 import java.util.Enumeration;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Stream;
 
 public class ClassUtils {
 
@@ -19,18 +20,52 @@ public class ClassUtils {
 
     static {
         setHostClassLoader(Initiator.getHostClassLoader());
+        setModuleLoader(Initiator.getPluginClassLoader());
     }
 
     /**
      * 获取基本类型
      */
     private static Class<?> getBaseTypeClass(String baseTypeName) {
+
+        if (baseTypeName.length() == 1) {
+            return findSimpleType(baseTypeName.charAt(0));
+        }
         for (Object[] baseType : baseTypes) {
             if (baseTypeName.equals(baseType[0])) {
                 return (Class<?>) baseType[1];
             }
         }
         throw new ReflectException(baseTypeName + " <-不是基本的数据类型");
+    }
+
+    /**
+     * conversion base type
+     *
+     * @param simpleType Smali Base Type V,Z,B,I...
+     */
+    public static Class<?> findSimpleType(char simpleType) {
+        switch (simpleType) {
+            case 'V':
+                return void.class;
+            case 'Z':
+                return boolean.class;
+            case 'B':
+                return byte.class;
+            case 'S':
+                return short.class;
+            case 'C':
+                return char.class;
+            case 'I':
+                return int.class;
+            case 'J':
+                return long.class;
+            case 'F':
+                return float.class;
+            case 'D':
+                return double.class;
+        }
+        throw new RuntimeException("Not an underlying type");
     }
 
     /**
@@ -83,7 +118,6 @@ public class ClassUtils {
             this.oldClassLoader = classLoader;
         }
 
-
         @Override
         public Class<?> loadClass(String name) throws ClassNotFoundException {
             Class<?> clazz = CLASS_CACHE.get(name);
@@ -100,6 +134,7 @@ public class ClassUtils {
                     } catch (Exception e) {
                         clazz = oldClassLoader.loadClass(name.substring(index + 1));
                     }
+                    //转换数组类型
                     for (int i = 0; i < name.length(); i++) {
                         char ch = name.charAt(i);
                         if (ch == '[') {
@@ -134,7 +169,6 @@ public class ClassUtils {
         public Enumeration<URL> getResources(String name) throws IOException {
             return oldClassLoader.getResources(name);
         }
-
 
         @Override
         public InputStream getResourceAsStream(String name) {

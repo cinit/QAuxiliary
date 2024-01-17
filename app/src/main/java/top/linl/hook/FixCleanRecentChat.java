@@ -40,7 +40,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 import top.linl.util.reflect.ClassUtils;
-import top.linl.util.reflect.FieIdUtils;
+import top.linl.util.reflect.FieldUtils;
 import top.linl.util.reflect.MethodTool;
 import xyz.nextalone.hook.CleanRecentChat;
 
@@ -102,7 +102,7 @@ public class FixCleanRecentChat {
         //不hook onCreate方法了 那样需要重启才能生效 hook onResume可在界面重新渲染到屏幕时会调用生效
         Method onCreateMethod = MethodTool.find("com.tencent.mobileqq.activity.home.Conversation").name("onResume").params(boolean.class).get();
         HookUtils.hookAfterIfEnabled(cleanRecentChat, onCreateMethod, param -> {
-            ImageView imageView = FieIdUtils.getFirstField(param.thisObject, ImageView.class);
+            ImageView imageView = FieldUtils.getFirstField(param.thisObject, ImageView.class);
             activity = (Activity) imageView.getContext();
             imageView.setOnLongClickListener(new View.OnLongClickListener() {
                 @Override
@@ -267,7 +267,7 @@ public class FixCleanRecentChat {
                             continue;
                         }
                         //delete util
-                        Object util = FieIdUtils.getFirstField(recentContactItemHolder, findUtilClassType(recentContactItemHolder));//util run time obj
+                        Object util = FieldUtils.getFirstField(recentContactItemHolder, findUtilClassType(recentContactItemHolder));//util run time obj
                         int adapterIndex = viewHolderEntry.getValue();//call param 1
                         /*
                          * { uid=0000,
@@ -296,7 +296,7 @@ public class FixCleanRecentChat {
                                 continue;
                             }
                         }
-                        Object itemBinder = FieIdUtils.getFirstField(recentContactItemHolder,
+                        Object itemBinder = FieldUtils.getFirstField(recentContactItemHolder,
                                 ClassUtils.getClass("com.tencent.qqnt.chats.core.adapter.holder.RecentContactItemBinding"));//call param 3
                         int viewId = deleteTextViewId;//call param 4
                         getDeleteMethod(recentContactItemHolder).invoke(util, adapterIndex, itemInfo, itemBinder, viewId);

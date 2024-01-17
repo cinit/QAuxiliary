@@ -11,7 +11,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
-import top.linl.util.reflect.FieIdUtils;
+import top.linl.util.reflect.FieldUtils;
 import top.linl.util.reflect.MethodTool;
 
 
@@ -29,7 +29,7 @@ public class OffRelationshipIdentification extends CommonSwitchFunctionHook {
                 "onDataUpdate",
                 Initiator.loadClass("com.tencent.mobileqq.profilecard.data.ProfileCardInfo"));
         HookUtils.hookAfterIfEnabled(this, method, param -> {
-                    Object recyclerView = FieIdUtils.getFirstField(param.thisObject,
+                    Object recyclerView = FieldUtils.getFirstField(param.thisObject,
                             Initiator.loadClass("com.tencent.biz.richframework.widget.listview.card.RFWCardListView"));
                     if (recyclerView == null) {
                         return;

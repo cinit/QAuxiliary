@@ -37,8 +37,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import java.lang.reflect.Method;
+import java.util.List;
+import java.util.ListIterator;
 import top.linl.util.ScreenParamUtils;
-import top.linl.util.reflect.FieIdUtils;
+import top.linl.util.reflect.ClassUtils;
+import top.linl.util.reflect.FieldUtils;
 import top.linl.util.reflect.MethodTool;
 
 @FunctionHookEntry
@@ -61,6 +64,44 @@ public class SortTroopSettingAppListView extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        try {
+            //由于我记得是qq是在8996重构了群设置页面 但是网上并无此版本安装包记录 所以决定采用异常捕获的方法来适配已经重构了群设置页的QQ
+            Class<?> troopSettingFragmentV2 = ClassUtils.getClass("com.tencent.mobileqq.troop.troopsetting.activity.TroopSettingFragmentV2");
+            Method onViewCreatedAfterPartInitMethod = MethodTool.find(troopSettingFragmentV2)
+                    .name("onViewCreatedAfterPartInit")
+                    .params(android.view.View.class, android.os.Bundle.class)
+                    .returnType(void.class)
+                    .get();
+            HookUtils.hookBeforeIfEnabled(this,onViewCreatedAfterPartInitMethod,param -> {
+                List<Object> partList = FieldUtils.getFirstField(param.thisObject, List.class);
+                Class<?> troopAppClass = ClassUtils.getClass("com.tencent.mobileqq.troop.troopsetting.part.TroopSettingAppPart");
+                Class<?> memberInfoPartClass = ClassUtils.getClass("com.tencent.mobileqq.troop.troopsetting.part.TroopSettingMemberInfoPart");
+                Object troopAppPart = null;
+                ListIterator<Object> iterator = partList.listIterator();
+                int memberInfoPartIndex = 0;
+                boolean isStopSelfIncrementing = false;
+                while (iterator.hasNext()) {
+                    if (!isStopSelfIncrementing) memberInfoPartIndex++;
+                    Object nextPart = iterator.next();
+                    //定位群成员卡片(part)的位置索引
+                    if (nextPart.getClass() == memberInfoPartClass) {
+                        isStopSelfIncrementing = true;
+                    }
+                    //获取群应用的part
+                    if (nextPart.getClass() == troopAppClass) {
+                        troopAppPart = nextPart;
+                        iterator.remove();
+                        break;
+                    }
+                }
+                if (troopAppPart == null) throw new RuntimeException("troop app list is null");
+                partList.add(memberInfoPartIndex, troopAppPart);
+            });
+            return true;
+        } catch (Exception e) {
+            //此处可能会在9.0.0前捕获到异常ReflectException : 没有找到类: com.tencent.mobileqq.troop.troopsetting.activity.TroopSettingFragmentV2
+        }
+        //如果抛出异常则会进行下面的代码 以保持对旧版本NT的适配
         Method doOnCreateMethod = MethodTool.find("com.tencent.mobileqq.troop.troopsetting.activity.TroopSettingActivity")
                 .returnType(boolean.class)
                 .params(Bundle.class)
@@ -69,7 +110,7 @@ public class SortTroopSettingAppListView extends CommonSwitchFunctionHook {
         HookUtils.hookAfterIfEnabled(this, doOnCreateMethod, new HookUtils.AfterHookedMethod() {
             @Override
             public void afterHookedMethod(XC_MethodHook.MethodHookParam param) throws Throwable {
-                LinearLayout rootView = FieIdUtils.getFirstField(param.thisObject, LinearLayout.class);
+                LinearLayout rootView = FieldUtils.getFirstField(param.thisObject, LinearLayout.class);
                 int troopInfoTextIndex = 0;
                 View troopAppListView = null;
 //                View[] views = FieIdUtils.getFirstField(param.thisObject, View[].class);//过于复杂 不如不用
