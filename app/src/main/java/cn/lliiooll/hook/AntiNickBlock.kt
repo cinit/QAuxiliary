@@ -81,7 +81,7 @@ object AntiNickBlock : MultiItemDelayableHook("ll_anti_nickblock") {
     }
 
     override var isEnabled: Boolean
-        get() = true
+        get() = activeItems.isNotEmpty()
         set(value) {}
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_80)
