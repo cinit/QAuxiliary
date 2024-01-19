@@ -2,7 +2,7 @@
 agp = "8.2.1"
 appCenter = "5.0.4"
 kotlin = "1.9.22"
-ksp = "1.9.22-1.0.16"
+ksp = "1.9.22-1.0.17"
 lifecycle = "2.7.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
@@ -20,7 +20,7 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.6.1
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.8.0.202311291450-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "4.3" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.15.3" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.16.0" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.2" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
