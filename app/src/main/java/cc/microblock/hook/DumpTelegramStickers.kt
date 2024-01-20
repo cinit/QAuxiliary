@@ -110,7 +110,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
 @UiItemAgentEntry
 object DumpTelegramStickers : CommonSwitchFunctionHook() {
     override val name = "使用 Telegram Stickers 表情包集"
-    override val description = "【还没做完】需使用 MicroBlock 的 Telegram 表情包同步插件\n\n可能需要重启 QQ";
+    override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用\n你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/ 下创建包含表情包图片文件的文件夹";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY;
 
@@ -248,14 +248,11 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
 
             it.result = list;
         }
-        Log.i("Fuck yes")
         // 面板数据
         HookUtils.hookBeforeIfEnabled(this, EmotionPanelViewPagerAdapter.method("getEmotionPanelData")!!) {
-            Log.i("getEmotionPanelData: ${it.args[2].get("emotionPkg")}");
             val pkg = it.args[2].get("emotionPkg") ?: return@hookBeforeIfEnabled;
             val epid = pkg.get("epId")?: return@hookBeforeIfEnabled;
             val id = parseQAEpId(epid as String);
-            Log.i("getEmotionPanelData: ${id}");
             if(id != null) {
                 val provider = providers.find { it.uniqueId() == id.providerId };
                 if(provider != null) {
@@ -272,7 +269,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
             }
         }
 
-        return false;
+        return true;
     }
 
     override val isAvailable = QAppUtils.isQQnt();
