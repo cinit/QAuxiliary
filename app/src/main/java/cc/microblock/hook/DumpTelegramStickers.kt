@@ -52,6 +52,8 @@ fun listDir (dir: String): List<String> {
     return list
 }
 
+val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
+
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
     class Panel(path: String) : ExtraEmoticonPanel() {
         var emoticons: List<ExtraEmoticon>;
@@ -66,6 +68,8 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
                     iconPath = file;
                     continue;
                 }
+
+                if(!allowedExtensions.contains(filename.substring(filename.lastIndexOf(".")))) continue;
 
                 emoticons.add(object : ExtraEmoticon() {
                     override fun QQEmoticonObject(): Any {
@@ -96,6 +100,8 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
         val files = listDir("/storage/emulated/0/Documents/TGStickersExported/v1/");
         val panels = mutableListOf<ExtraEmoticonPanel>()
         for (file in files) {
+            if(file.endsWith(".nomedia")) continue;
+            if(!File(file).isDirectory) continue;
             val panel = Panel(file);
             panels.add(panel);
         }
@@ -214,7 +220,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                     pack.set("ipDetail", "QA");
                     pack.set("valid", true);
                     pack.set("status", 2);
-                    pack.set("latestVersion", 114514_1919810);
+                    pack.set("latestVersion", 1488377358);
                     pack.set("aio", true);
 
                     val info = EmoticonPanelInfo.newInstance(
