@@ -23,6 +23,7 @@ import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
 import java.io.File
+import java.util.concurrent.Executors
 
 abstract class ExtraEmoticon {
 //    abstract fun emoticonId(): String
@@ -52,13 +53,15 @@ fun listDir (dir: String): List<String> {
     return list
 }
 
+val executor = Executors.newFixedThreadPool(5)
 val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
 
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
     class Panel(path: String) : ExtraEmoticonPanel() {
-        private var emoticons: List<ExtraEmoticon>;
+        private var emoticons: List<ExtraEmoticon> = listOf();
         private var iconPath: String? = null;
-        init {
+        private val path = path;
+        fun updateEmoticons() {
             val files = listDir(path);
             val emoticons = mutableListOf<ExtraEmoticon>();
             val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo");
@@ -86,7 +89,19 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
                 iconPath = files[0];
             }
         }
+        init {
+            executor.execute {
+                updateEmoticons();
+            }
+        }
+        var lastEmoticonUpdateTime = 0L;
         override fun emoticons(): List<ExtraEmoticon> {
+            if(System.currentTimeMillis() - lastEmoticonUpdateTime > 1000 * 5) {
+                lastEmoticonUpdateTime = System.currentTimeMillis();
+                executor.execute {
+                    updateEmoticons();
+                }
+            }
             return emoticons;
         }
 
