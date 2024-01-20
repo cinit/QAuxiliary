@@ -124,6 +124,10 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
 
         var providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider());
 
+        if (!File("/storage/emulated/0/Documents/TGStickersExported/.nomedia").exists()) {
+            File("/storage/emulated/0/Documents/TGStickersExported/").mkdirs();
+            File("/storage/emulated/0/Documents/TGStickersExported/.nomedia").createNewFile();
+        }
 
         class QAEpId {
             public var providerId: String = "";
