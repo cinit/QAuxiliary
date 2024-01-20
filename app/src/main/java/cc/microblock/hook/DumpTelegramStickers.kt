@@ -5,17 +5,22 @@ import android.widget.RelativeLayout
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.ArgTypes
+import com.github.kyuubiran.ezxhelper.utils.Args
 import com.github.kyuubiran.ezxhelper.utils.getObjectAs
 import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.github.kyuubiran.ezxhelper.utils.hookReplace
+import com.github.kyuubiran.ezxhelper.utils.newInstance
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import xyz.nextalone.util.get
 import xyz.nextalone.util.invoke
+import xyz.nextalone.util.method
 import xyz.nextalone.util.set
 
 abstract class ExtraEmoticon {
@@ -36,17 +41,12 @@ abstract class ExtraEmoticonProvider {
 }
 
 fun listDir (dir: String): List<String> {
-    val file = java.io.File(dir)
-    val files = file.listFiles()
-    val list = mutableListOf<String>()
-    if (files != null) {
-        for (f in files) {
-            if (f.isDirectory) {
-                list.addAll(listDir(f.absolutePath))
-            } else {
-                list.add(f.absolutePath)
-            }
-        }
+    val list = mutableListOf<String>();
+    val file = java.io.File(dir);
+    if(!file.exists()) return list;
+    if(!file.isDirectory) return list;
+    for(f in file.listFiles()) {
+        list.add(f.absolutePath);
     }
     return list
 }
@@ -75,8 +75,8 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
                 })
             }
             this.emoticons = emoticons
-            if (iconPath == null) {
-                iconPath = emoticons[0].QQEmoticonObject().get<String>("path")!!;
+            if (iconPath == null && files.size > 0) {
+                iconPath = files[0];
             }
         }
         override fun emoticons(): List<ExtraEmoticon> {
@@ -146,7 +146,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
 
         // handleIPSite 只接受数字 epId，防崩
         HookUtils.hookBeforeIfEnabled(this,
-        EmotionPanelViewPagerAdapter.getMethod("handleIPSite")) {
+        EmotionPanelViewPagerAdapter.method("handleIPSite")!!) {
             val pack = it.args[0];
             if(pack != null && parseQAEpId(pack.get<String>("epId")!!) != null) {
                 it.args[0] = null;
@@ -154,7 +154,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         }
 
         // 显示图标
-        HookUtils.hookBeforeIfEnabled(this, EmoticonTabAdapter.getMethod("generateTabUrl")) {
+        HookUtils.hookBeforeIfEnabled(this, EmoticonTabAdapter.method("generateTabUrl")!!) {
             val id = parseQAEpId(it.args[0] as String);
 
             if(id != null) {
@@ -163,16 +163,16 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                     val panel = provider.extraEmoticonList().find { it.uniqueId() == id.panelId };
                     if(panel != null) {
                         val url = panel.emoticonPanelIconURL();
-                        it.result = url;
+                        it.result = java.net.URL(url);
                     }
                 }
             }
         }
 
         var lastPanelDataSize = -1;
-
+        var template: Any? = null;
         // 生成 Tab 面板
-        HookUtils.hookAfterIfEnabled(this, EmoticonPanelController.getMethod("getPanelDataList")) {
+        HookUtils.hookAfterIfEnabled(this, EmoticonPanelController.method("getPanelDataList")!!) {
             // 移除自带面板
             // TODO: 做成可选
             // 鸽子：当然不是我来做（
@@ -180,15 +180,21 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
             val list = it.result as MutableList<Any>;
             val iterator = list.iterator();
 
+            if(template == null) {
+                if(list.size < 8) return@hookAfterIfEnabled;
+                template = list[7];
+            }
+
+
             while(iterator.hasNext()) {
                 val element = iterator.next();
-                val epId = element.get<String>("epId")!!;
 
                 val typeWhiteList = listOf(
 //                    13, // 表情商城,
 //                    18, // 搜索表情,
                     7, // Emoji 表情,
                     4, // 收藏表情,
+//                    6
 //                    12, // GIF
 //                    17, // QQ什么玩意专属表情
                 );
@@ -198,18 +204,40 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                 }
             }
 
+            var i = 3;
             // 添加自定义面板
             for(provider in providers) {
                 for(panel in provider.extraEmoticonList()) {
-                    val info = EmoticonPanelInfo.newInstance();
-
+                    i++;
                     val pack = EmoticonPackage.newInstance();
                     pack.set("epId", "qa:${provider.uniqueId()}:${panel.uniqueId()}");
                     pack.set("name", "QAExtraSticker");
+                    pack.set("type", 3);
+                    pack.set("ipJumpUrl", "https://github.com/cinit/QAuxiliary/");
+                    pack.set("ipDetail", "QA");
+                    pack.set("valid", true);
+                    pack.set("status", 2);
+                    pack.set("latestVersion", 1488377358);
+                    pack.set("aio", true);
 
-                    info.set("emotionPkg", pack);
-                    info.set("type", 6);
-                    list.add(info);
+                    val info = EmoticonPanelInfo.newInstance(
+                        Args(
+                            arrayOf(
+                                6, // type,
+                                6, // columnNum,
+                                pack
+                            )
+                        ),
+                        ArgTypes(
+                            arrayOf(
+                                Int::class.javaPrimitiveType!!,
+                                Int::class.javaPrimitiveType!!,
+                                EmoticonPackage
+                            )
+                        )
+                    );
+
+                    list.add(info!!);
                 }
             }
 
@@ -217,14 +245,17 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                 lastPanelDataSize = list.size;
                 emoticonPanelViewAdapterInstance?.invoke("notifyDataSetChanged");
             }
-        }
 
+            it.result = list;
+        }
+        Log.i("Fuck yes")
         // 面板数据
-        HookUtils.hookBeforeIfEnabled(this, EmotionPanelViewPagerAdapter.getMethod("getEmotionPanelData")) {
-            val pkg = it.args[0].get("emotionPkg") ?: return@hookBeforeIfEnabled;
+        HookUtils.hookBeforeIfEnabled(this, EmotionPanelViewPagerAdapter.method("getEmotionPanelData")!!) {
+            Log.i("getEmotionPanelData: ${it.args[2].get("emotionPkg")}");
+            val pkg = it.args[2].get("emotionPkg") ?: return@hookBeforeIfEnabled;
             val epid = pkg.get("epId")?: return@hookBeforeIfEnabled;
             val id = parseQAEpId(epid as String);
-
+            Log.i("getEmotionPanelData: ${id}");
             if(id != null) {
                 val provider = providers.find { it.uniqueId() == id.providerId };
                 if(provider != null) {
