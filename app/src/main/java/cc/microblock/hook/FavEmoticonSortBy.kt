@@ -108,6 +108,7 @@ object FavEmoticonSortBy : CommonConfigFunctionHook("FavEmoticonSortBy",arrayOf(
         }
 
         DexKit.requireClassFromCache(AIOPicElementType).hookAllConstructorAfter {
+            if (!this.isEnabled) return@hookAllConstructorAfter;
             if(it.thisObject.get("d") /*picSubType, 1 for emoticons*/ == 1){
                 val db = ConfigManager.getLastUseEmoticonStore();
                 val path = it.thisObject.get("a") /*origPath*/ as String;

@@ -61,7 +61,6 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
 
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOSendMsg).hookBefore {
-            Log.e("AA");
             for(element in (it.args[0] as List<Any>)){
                 if(element.get("d") != null){
                     val picElement = element.get("d");

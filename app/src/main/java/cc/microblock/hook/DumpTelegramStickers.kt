@@ -110,7 +110,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
 @UiItemAgentEntry
 object DumpTelegramStickers : CommonSwitchFunctionHook() {
     override val name = "使用 Telegram Stickers 表情包集"
-    override val description = "【还没做完】需使用 MicroBlock 的 Telegram 表情包同步插件";
+    override val description = "【还没做完】需使用 MicroBlock 的 Telegram 表情包同步插件\n\n可能需要重启 QQ";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY;
 
