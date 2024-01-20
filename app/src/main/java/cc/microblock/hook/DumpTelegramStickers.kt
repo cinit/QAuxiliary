@@ -170,21 +170,12 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         }
 
         var lastPanelDataSize = -1;
-        var template: Any? = null;
         // 生成 Tab 面板
         HookUtils.hookAfterIfEnabled(this, EmoticonPanelController.method("getPanelDataList")!!) {
             // 移除自带面板
             // TODO: 做成可选
-            // 鸽子：当然不是我来做（
-
             val list = it.result as MutableList<Any>;
             val iterator = list.iterator();
-
-            if(template == null) {
-                if(list.size < 8) return@hookAfterIfEnabled;
-                template = list[7];
-            }
-
 
             while(iterator.hasNext()) {
                 val element = iterator.next();
@@ -194,7 +185,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
 //                    18, // 搜索表情,
                     7, // Emoji 表情,
                     4, // 收藏表情,
-//                    6
+//                    6, // 商店表情
 //                    12, // GIF
 //                    17, // QQ什么玩意专属表情
                 );
