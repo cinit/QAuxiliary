@@ -22,6 +22,7 @@ import xyz.nextalone.util.get
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
+import java.io.File
 
 abstract class ExtraEmoticon {
 //    abstract fun emoticonId(): String
@@ -84,15 +85,15 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
         }
 
         override fun emoticonPanelIconURL(): String {
-            return "file://$iconPath";
+            return if(iconPath != null)  "file://$iconPath" else "";
         }
 
         override fun uniqueId(): String {
-            return iconPath!!;
+            return iconPath ?: "none";
         }
     }
     override fun extraEmoticonList(): List<ExtraEmoticonPanel> {
-        val files = listDir("/storage/emulated/0/Documents/TGStickersExported");
+        val files = listDir("/storage/emulated/0/Documents/TGStickersExported/v1/");
         val panels = mutableListOf<ExtraEmoticonPanel>()
         for (file in files) {
             val panel = Panel(file);
@@ -110,7 +111,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
 @UiItemAgentEntry
 object DumpTelegramStickers : CommonSwitchFunctionHook() {
     override val name = "使用 Telegram Stickers 表情包集"
-    override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用\n你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/ 下创建包含表情包图片文件的文件夹";
+    override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用\n你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY;
 
@@ -122,6 +123,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         val EmoticonPackage = Initiator.loadClass("com.tencent.mobileqq.data.EmoticonPackage");
 
         var providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider());
+
 
         class QAEpId {
             public var providerId: String = "";
@@ -182,7 +184,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
 
                 val typeWhiteList = listOf(
 //                    13, // 表情商城,
-//                    18, // 搜索表情,
+                    18, // 搜索表情,
                     7, // Emoji 表情,
                     4, // 收藏表情,
 //                    6, // 商店表情
@@ -208,7 +210,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                     pack.set("ipDetail", "QA");
                     pack.set("valid", true);
                     pack.set("status", 2);
-                    pack.set("latestVersion", 1488377358);
+                    pack.set("latestVersion", 114514_1919810);
                     pack.set("aio", true);
 
                     val info = EmoticonPanelInfo.newInstance(
