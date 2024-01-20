@@ -102,7 +102,7 @@ object FxxkQQBrowser : BaseSwitchFunctionDecorator(), IStartActivityHookDecorato
             url.substring(url.indexOf("://") + 3)
         } else {
             url
-        }
+        }.dropWhile { it == '/' } // https:///ti.qq.com 前面有多个/不影响跳转，给腾讯擦屁股
         val host = if (body.contains("/")) {
             body.substring(0, body.indexOf("/"))
         } else {
