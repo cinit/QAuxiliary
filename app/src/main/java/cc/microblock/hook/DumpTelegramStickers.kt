@@ -18,6 +18,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
@@ -283,7 +285,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
             it.result = list;
         }
         // 面板数据
-        HookUtils.hookBeforeIfEnabled(this, EmotionPanelViewPagerAdapter.method("getEmotionPanelData")!!) {
+        HookUtils.hookBeforeIfEnabled(this, EmotionPanelViewPagerAdapter.method("getEmotionPanelData")?:EmotionPanelViewPagerAdapter.method("queryEmoticonsByPackageIdFromDB")!!) {
             val pkg = it.args[2].get("emotionPkg") ?: return@hookBeforeIfEnabled;
             val epid = pkg.get("epId")?: return@hookBeforeIfEnabled;
             val id = parseQAEpId(epid as String);
@@ -306,5 +308,5 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         return true;
     }
 
-    override val isAvailable = QAppUtils.isQQnt();
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_9_0_8)
 }
