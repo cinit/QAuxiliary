@@ -401,20 +401,29 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
 //                    17, // QQ什么玩意专属表情
             );
 
-            if(!removeQQEmoticons) {
-                typeWhiteList += 6;
-            }
             if(!removeQQMisc) {
                 typeWhiteList += 13;
                 typeWhiteList += 12;
                 typeWhiteList += 17;
             }
 
+            val existingIds = mutableSetOf<String>();
+
             while(iterator.hasNext()) {
                 val element = iterator.next();
 
                 if(!typeWhiteList.contains(element.get<Int>("type")!!)) {
-                    iterator.remove();
+                    if (element.get<Int>("type")!! == 6) {
+                        val id = element.get("emotionPkg")!!.get("epId") as String;
+                        if(!id.startsWith("qa:") && removeQQEmoticons) iterator.remove();
+                        existingIds.add(id);
+                    } else {
+                        iterator.remove();
+                    }
+                }
+                else {
+                    if (element.get<Int>("type")!! == 6)
+                        existingIds.add(element.get("emotionPkg")!!.get("epId") as String);
                 }
             }
 
@@ -423,8 +432,10 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             for(provider in providers) {
                 for(panel in provider.extraEmoticonList()) {
                     i++;
+                    val epid = "qa:${provider.uniqueId()}:${panel.uniqueId()}";
+                    if(existingIds.contains(epid)) continue;
                     val pack = EmoticonPackage.newInstance();
-                    pack.set("epId", "qa:${provider.uniqueId()}:${panel.uniqueId()}");
+                    pack.set("epId", epid);
                     pack.set("name", "QAExtraSticker");
                     pack.set("type", 3);
                     pack.set("ipJumpUrl", "https://github.com/cinit/QAuxiliary/");
@@ -439,7 +450,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
                             arrayOf(
                                 6, // type,
                                 panelColumns, // columnNum,
-                                pack
+                                pack // emotionPkg
                             )
                         ),
                         ArgTypes(
