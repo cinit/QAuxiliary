@@ -81,7 +81,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
                     if(line.length == 0) continue;
                     var name =
                         if (File(path + "/" + line + "_high.webp").exists()) line + "_high.webp"
-                        else if (File(path + "/" + line + "_high.webp").exists()) line + "_low.webp"
+                        else if (File(path + "/" + line + "_low.webp").exists()) line + "_low.webp"
                         else if (File(path + "/" + line).exists()) line
                         else continue;
                     if (!list.any { it.name == name })
