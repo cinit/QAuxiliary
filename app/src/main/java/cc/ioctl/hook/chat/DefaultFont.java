@@ -29,6 +29,8 @@ import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgFont;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
@@ -45,7 +47,6 @@ import io.github.qauxv.util.dexkit.NTextItemBuilder_setETText;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import java.lang.reflect.Method;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
@@ -122,13 +123,21 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
-        if (QAppUtils.isQQnt()){
+        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+            XposedBridge.hookAllConstructors(VASMsgFont.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    VASMsgFont v = (VASMsgFont) param.thisObject;
+                    v.fontId = 0;
+                    v.magicFontType = 0;
+                }
+            });
+        } else if (QAppUtils.isQQnt()){
             Method getFontID = VASMsgFont.class.getDeclaredMethod("getFontId");
             HookUtils.hookBeforeIfEnabled(this, getFontID, param -> param.setResult(0));
             Method getMagicFontType = VASMsgFont.class.getDeclaredMethod("getMagicFontType");
             HookUtils.hookBeforeIfEnabled(this, getMagicFontType, param -> param.setResult(0));
-            return true;
-        }else {
+        } else {
             Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
             Objects.requireNonNull(method, "NTextItemBuilder_setETText.INSTANCE");
             HookUtils.hookBeforeIfEnabled(this, method, param -> param.setResult(null));
@@ -136,9 +145,8 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
             Method enlargeTextMsg = Initiator.loadClass("com.tencent.mobileqq.vas.font.api.impl.FontManagerServiceImpl")
                     .getDeclaredMethod("enlargeTextMsg", TextView.class);
             HookUtils.hookBeforeIfEnabled(this, enlargeTextMsg, param -> param.setResult(null));
-            return true;
         }
-
+        return true;
     }
 
     @Override

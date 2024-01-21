@@ -21,6 +21,8 @@
  */
 package cc.ioctl.hook.chat;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
@@ -28,11 +30,14 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.VASMsgBubble;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import java.io.File;
 import java.lang.reflect.Method;
 
@@ -54,7 +59,16 @@ public class DefaultBubbleHook extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        if (QAppUtils.isQQnt()) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+            XposedBridge.hookAllConstructors(VASMsgBubble.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(@NonNull MethodHookParam param) {
+                    VASMsgBubble v = (VASMsgBubble) param.thisObject;
+                    v.bubbleId = 0;
+                    v.subBubbleId = 0;
+                }
+            });
+        } else if (QAppUtils.isQQnt()) {
             HookUtils.hookBeforeIfEnabled(this,VASMsgBubble.class.getDeclaredMethod("getBubbleId"),param -> param.setResult(0));
             HookUtils.hookBeforeIfEnabled(this,VASMsgBubble.class.getDeclaredMethod("getSubBubbleId"),param -> param.setResult(0));
         } else {
