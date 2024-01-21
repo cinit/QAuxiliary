@@ -1,31 +1,45 @@
 package cc.microblock.hook
 
+import android.app.Activity
+import android.content.DialogInterface
+import android.content.Intent
+import android.net.Uri
+import android.text.InputType
 import android.view.View
-import android.widget.RelativeLayout
-import cc.hicore.QApp.QAppUtils
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
+import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatButton
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.AppCompatTextView
 import cc.ioctl.util.HookUtils
-import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.ArgTypes
 import com.github.kyuubiran.ezxhelper.utils.Args
-import com.github.kyuubiran.ezxhelper.utils.getObjectAs
 import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import com.github.kyuubiran.ezxhelper.utils.hookReplace
 import com.github.kyuubiran.ezxhelper.utils.newInstance
+import io.github.qauxv.R
+import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import xyz.nextalone.util.get
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
+import java.io.BufferedReader
 import java.io.File
+import java.io.InputStreamReader
 import java.util.concurrent.Executors
+
 
 abstract class ExtraEmoticon {
 //    abstract fun emoticonId(): String
@@ -44,42 +58,59 @@ abstract class ExtraEmoticonProvider {
     abstract fun uniqueId(): String;
 }
 
-fun listDir (dir: String): List<String> {
-    val list = mutableListOf<String>();
-    val file = java.io.File(dir);
-    if(!file.exists()) return list;
-    if(!file.isDirectory) return list;
-    for(f in file.listFiles()) {
-        list.add(f.absolutePath);
-    }
-    return list
+data class FileInfo(val name: String, val fullPath: String)
+
+fun listDir(directoryPath: String): List<FileInfo> {
+    return File(directoryPath).listFiles()?.map { FileInfo(it.name, it.absolutePath) } ?: listOf()
 }
 
 val executor = Executors.newFixedThreadPool(5)
 val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
 
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
-    class Panel(path: String) : ExtraEmoticonPanel() {
+    class Panel(val path: String, val id: String) : ExtraEmoticonPanel() {
         private var emoticons: List<ExtraEmoticon> = listOf();
         private var iconPath: String? = null;
-        private val path = path;
         fun updateEmoticons() {
-            val files = listDir(path);
+            var files = listDir(path);
+            if(File(path + "/idList.txt.jpg").exists() && files.size == 0) {
+                val reader = BufferedReader(InputStreamReader(File(path + "/idList.txt.jpg").inputStream()));
+                val list = mutableListOf<FileInfo>();
+                while(true) {
+                    val line = reader.readLine() ?: break;
+                    if(line.length == 0) continue;
+                    var name =
+                        if (File(path + "/" + line + "_high.webp").exists()) line + "_high.webp"
+                        else if (File(path + "/" + line + "_high.webp").exists()) line + "_low.webp"
+                        else if (File(path + "/" + line).exists()) line
+                        else continue;
+                    if (!list.any { it.name == name })
+                        list.add(FileInfo(line, path + "/" + name));
+                }
+                files = list;
+            }
+
             val emoticons = mutableListOf<ExtraEmoticon>();
             val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo");
             for (file in files) {
-                val filename = file.substring(file.lastIndexOf("/") + 1);
+                val filename = file.name;
                 if(filename.startsWith("__cover__.")) {
-                    iconPath = file;
+                    iconPath = file.fullPath;
                     continue;
                 }
+
+                if(filename.endsWith(".nomedia")) continue;
+                if(filename.endsWith(".txt.jpg")) continue;
 
                 if(!allowedExtensions.contains(filename.substring(filename.lastIndexOf(".")))) continue;
 
                 emoticons.add(object : ExtraEmoticon() {
                     val info = FavoriteEmoticonInfo.newInstance();
                     init {
-                        info.set("path", file);
+                        info.set("path", file.fullPath);
+
+                        // for recent use sorting
+                        info.set("actionData", "${uniqueId()}:${file.fullPath}");
                     }
                     override fun QQEmoticonObject(): Any {
                         return info;
@@ -88,7 +119,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
             }
             this.emoticons = emoticons
             if (iconPath == null && files.size > 0) {
-                iconPath = files[0];
+                iconPath = files[0].fullPath;
             }
         }
         init {
@@ -112,14 +143,15 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
         }
 
         override fun uniqueId(): String {
-            return iconPath ?: "none";
+            return id;
         }
     }
     val panelsMap = mutableMapOf<String, Panel>();
     override fun extraEmoticonList(): List<ExtraEmoticonPanel> {
         val files = listDir("/storage/emulated/0/Documents/TGStickersExported/v1/");
         val panels = mutableListOf<ExtraEmoticonPanel>()
-        for (file in files) {
+        for (fileInfo in files) {
+            val file = fileInfo.fullPath;
             if (panelsMap.containsKey(file)) {
                 panels.add(panelsMap[file]!!);
                 continue;
@@ -128,12 +160,17 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
             if(!File(file).isDirectory) continue;
 
             if (!panelsMap.containsKey(file)) {
-                val panel = Panel(file);
+                val panel = Panel(file, fileInfo.name);
                 panelsMap[file] = panel;
             }
 
             panels.add(panelsMap[file]!!);
         }
+
+        // restore last use sorting
+        val db = ConfigManager.getDumpTG_LastUseEmoticonPackStore();
+        panels.sortByDescending { db.getLongOrDefault(it.uniqueId(), 0) };
+
         return panels;
     }
     override fun uniqueId(): String {
@@ -144,10 +181,132 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DumpTelegramStickers : CommonSwitchFunctionHook() {
+object DumpTelegramStickers : CommonConfigFunctionHook() {
     override val name = "使用 Telegram Stickers 表情包集"
-    override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用\n你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹";
+    override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用";
+    override val valueState: MutableStateFlow<String?> by lazy {
+        MutableStateFlow(if (isEnabled) "已开启" else "已禁用")
+    }
 
+    var panelColumns: Number
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            val summary = cfg.getString("dumpTGStickers.panelColumns")
+            if(summary == null) return 4
+            else return summary.toInt()
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putString("dumpTGStickers.panelColumns", value.toString())
+        }
+
+    var removeQQEmoticons: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getString("dumpTGStickers.removeQQEmoticons") != "false"
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putString("dumpTGStickers.removeQQEmoticons", if (value) "true" else "false")
+        }
+
+    var removeQQMisc: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getString("dumpTGStickers.removeQQMisc") != "false"
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putString("dumpTGStickers.removeQQMisc", if (value) "true" else "false")
+        }
+
+    override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, ctx, _ ->
+        val builder = AlertDialog.Builder(ctx)
+        val wrapper = LinearLayout(ctx)
+        val layoutParams = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT
+        )
+
+        layoutParams.setMargins(30, 20, 30, 0)
+        val root = LinearLayout(ctx)
+        root.orientation = LinearLayout.VERTICAL
+
+        wrapper.addView(root, layoutParams)
+
+        val enable = CheckBox(ctx)
+        enable.text = "启用"
+        enable.isChecked = isEnabled
+
+        val enable_removeQQEmoticons = CheckBox(ctx).apply {
+            text = "移除 QQ 表情包"
+            isChecked = removeQQEmoticons
+        }
+
+        val enable_removeQQMisc = CheckBox(ctx).apply {
+            text = "移除 QQ 杂项"
+            isChecked = removeQQMisc
+        }
+
+        val panelColumnsTextLabel = AppCompatTextView(ctx).apply {
+            setText("表情包列数")
+        }
+
+        val panelColumnsTextEdit: EditText = AppCompatEditText(ctx).apply {
+            setText(panelColumns.toString())
+            inputType = InputType.TYPE_CLASS_NUMBER
+            textSize = 16f
+            setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
+            hint = "表情包列数"
+        }
+
+        // TODO: complete this
+        val rangeTextLabel = AppCompatTextView(ctx).apply {
+            setText("生效联系人列表（,分割）")
+        }
+
+        val rangeTextEdit: EditText = EditText(ctx).apply {
+            setText("")
+            textSize = 16f
+            setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
+            hint = "114514, 1919810"
+        }
+
+        root.apply {
+            addView(enable)
+            addView(
+                AppCompatTextView(ctx).apply {
+                    setText("关于插件：需配合 MicroBlock 的 Telegram 表情包同步插件使用\n" +
+                        "你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹，然后在文件夹下idList.txt.jpg中写入表情包文件名（含拓展名，支持 png,jpg,webp,gif）列表，每行一个。")
+                }
+            )
+            addView(
+                AppCompatButton(ctx).apply {
+                    setText("获取 Telegram 表情包同步插件")
+                    setOnClickListener {
+                        val intent = Intent(Intent.ACTION_VIEW, Uri.parse("https://t.me/microblock_pub/159"));
+                        ctx.startActivity(intent);
+                    }
+                }
+            )
+            addView(enable_removeQQEmoticons)
+            addView(enable_removeQQMisc)
+            addView(panelColumnsTextLabel)
+            addView(panelColumnsTextEdit)
+        }
+
+        builder.setView(wrapper)
+            .setTitle("Telegram Stickers 外部表情包设置")
+            .setPositiveButton("确定") { dialog: DialogInterface?, which: Int ->
+                this.isEnabled = enable.isChecked
+                this.panelColumns = panelColumnsTextEdit.text.toString().toInt()
+                this.removeQQEmoticons = enable_removeQQEmoticons.isChecked
+                this.removeQQMisc = enable_removeQQMisc.isChecked
+
+                valueState.update { if (isEnabled) "已开启" else "禁用" }
+            }
+            .setNegativeButton("取消", null)
+            .show()
+    }
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY;
 
     override fun initOnce(): Boolean {
@@ -156,27 +315,38 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         val EmoticonTabAdapter = Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonTabAdapter");
         val EmoticonPanelInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmotionPanelInfo");
         val EmoticonPackage = Initiator.loadClass("com.tencent.mobileqq.data.EmoticonPackage");
+        val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo");
+
+        // hook FavoriteEmoticonInfo.send for recent use sorting(local)
+        HookUtils.hookBeforeIfEnabled(this, FavoriteEmoticonInfo.method("send")!!) {
+            val actionData = it.thisObject.get<String>("actionData")!!;
+            val panelId = actionData.substring(0, actionData.indexOf(":"));
+            val fileId = actionData.substring(actionData.indexOf(":") + 1);
+            Log.i("send $panelId $fileId")
+            val panel = LocalDocumentEmoticonProvider().extraEmoticonList().find { it.uniqueId() == panelId };
+            if(panel != null) {
+                val db = ConfigManager.getDumpTG_LastUseEmoticonStore();
+                db.set(fileId, System.currentTimeMillis());
+
+                val db2 = ConfigManager.getDumpTG_LastUseEmoticonPackStore();
+                db2.set(panelId, System.currentTimeMillis());
+            }
+        }
 
         var providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider());
 
-        if (!File("/storage/emulated/0/Documents/TGStickersExported/.nomedia").exists()) {
-            File("/storage/emulated/0/Documents/TGStickersExported/").mkdirs();
-            File("/storage/emulated/0/Documents/TGStickersExported/.nomedia").createNewFile();
+        if (!File("/storage/emulated/0/Download/QQ/TGStickersExported/.nomedia").exists()) {
+            File("/storage/emulated/0/Download/QQ/TGStickersExported/").mkdirs();
+            File("/storage/emulated/0/Download/QQ/TGStickersExported/.nomedia").createNewFile();
         }
 
-        class QAEpId {
-            public var providerId: String = "";
-            public var panelId: String = "";
-        }
+        data class QAEpId (var providerId: String = "",var panelId: String);
         fun parseQAEpId(epId: String): QAEpId? {
             if (!epId.startsWith("qa:")) return null;
             val data = epId.substring(3);
             val providerId = data.substring(0, data.indexOf(":"));
             val panelId = data.substring(data.indexOf(":") + 1);
-            return QAEpId().apply {
-                this.providerId = providerId;
-                this.panelId = panelId;
-            }
+            return QAEpId(providerId, panelId)
         }
 
         var emoticonPanelViewAdapterInstance: Any? = null;
@@ -217,23 +387,31 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
         // 生成 Tab 面板
         HookUtils.hookAfterIfEnabled(this, EmoticonPanelController.method("getPanelDataList")!!) {
             // 移除自带面板
-            // TODO: 做成可选
             if(it.result == null) return@hookAfterIfEnabled;
             val list = it.result as MutableList<Any>;
             val iterator = list.iterator();
 
-            while(iterator.hasNext()) {
-                val element = iterator.next();
-
-                val typeWhiteList = listOf(
+            var typeWhiteList = setOf(
 //                    13, // 表情商城,
-                    18, // 搜索表情,
-                    7, // Emoji 表情,
-                    4, // 收藏表情,
+                18, // 搜索表情,
+                7, // Emoji 表情,
+                4, // 收藏表情,
 //                    6, // 商店表情
 //                    12, // GIF
 //                    17, // QQ什么玩意专属表情
-                );
+            );
+
+            if(!removeQQEmoticons) {
+                typeWhiteList += 6;
+            }
+            if(!removeQQMisc) {
+                typeWhiteList += 13;
+                typeWhiteList += 12;
+                typeWhiteList += 17;
+            }
+
+            while(iterator.hasNext()) {
+                val element = iterator.next();
 
                 if(!typeWhiteList.contains(element.get<Int>("type")!!)) {
                     iterator.remove();
@@ -260,7 +438,7 @@ object DumpTelegramStickers : CommonSwitchFunctionHook() {
                         Args(
                             arrayOf(
                                 6, // type,
-                                6, // columnNum,
+                                panelColumns, // columnNum,
                                 pack
                             )
                         ),

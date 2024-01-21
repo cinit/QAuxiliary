@@ -133,11 +133,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
                 this.isEnabled = enable.isChecked
                 this.summaryText = summaryTextEdit.text.toString()
 
-                ImageCustomSummary.valueState.update { if (isEnabled) "已开启" else "禁用" }
-
-                if (isEnabled && !isInitialized) {
-                    HookInstaller.initializeHookForeground(ctx, ContactListSortHook.INSTANCE)
-                }
+                valueState.update { if (isEnabled) "已开启" else "禁用" }
             }
             .setNegativeButton("取消", null)
             .show()

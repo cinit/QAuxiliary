@@ -47,6 +47,23 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
         }
         return sLastUseEmoticonStore;
     }
+    private static ConfigManager sDumpTG_LastUseEmoticonPackStore;
+    @NonNull
+    public static synchronized ConfigManager getDumpTG_LastUseEmoticonPackStore() {
+        if (sDumpTG_LastUseEmoticonPackStore == null) {
+            sDumpTG_LastUseEmoticonPackStore = new MmkvConfigManagerImpl("sDumpTG_LastUseEmoticonPackStore");
+        }
+        return sDumpTG_LastUseEmoticonPackStore;
+    }
+
+    private static ConfigManager sDumpTG_LastUseEmoticonStore;
+    @NonNull
+    public static synchronized ConfigManager getDumpTG_LastUseEmoticonStore() {
+        if (sDumpTG_LastUseEmoticonStore == null) {
+            sDumpTG_LastUseEmoticonStore = new MmkvConfigManagerImpl("sDumpTG_LastUseEmoticonStore");
+        }
+        return sDumpTG_LastUseEmoticonStore;
+    }
 
     @NonNull
     public static synchronized ConfigManager getDefaultConfig() {
