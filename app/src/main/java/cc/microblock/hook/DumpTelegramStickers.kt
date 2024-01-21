@@ -64,7 +64,7 @@ fun listDir(directoryPath: String): List<FileInfo> {
     return File(directoryPath).listFiles()?.map { FileInfo(it.name, it.absolutePath) } ?: listOf()
 }
 
-val executor = Executors.newFixedThreadPool(5)
+val executor = Executors.newFixedThreadPool(2)
 val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
 
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
@@ -146,20 +146,30 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
             return id;
         }
     }
-    val panelsMap = mutableMapOf<String, Panel>();
+    val panelsMap = mutableMapOf<String, Panel?>();
+
     override fun extraEmoticonList(): List<ExtraEmoticonPanel> {
         val files = listDir("/storage/emulated/0/Documents/TGStickersExported/v1/");
         val panels = mutableListOf<ExtraEmoticonPanel>()
         for (fileInfo in files) {
             val file = fileInfo.fullPath;
             if (panelsMap.containsKey(file)) {
-                panels.add(panelsMap[file]!!);
+                if (panelsMap[file] != null)
+                    panels.add(panelsMap[file]!!);
                 continue;
             }
-            if(file.endsWith(".nomedia")) continue;
-            if(!File(file).isDirectory) continue;
-            if(!File("$file/idList.txt.jpg").exists() && listDir(file).isEmpty()) continue;
-
+            if(file.endsWith(".nomedia")) {
+                panelsMap[file] = null;
+                continue;
+            }
+            if(!File(file).isDirectory) {
+                panelsMap[file] = null;
+                continue;
+            }
+            if(!File("$file/idList.txt.jpg").exists() && listDir(file).isEmpty()) {
+                panelsMap[file] = null;
+                continue;
+            }
             if (!panelsMap.containsKey(file)) {
                 val panel = Panel(file, fileInfo.name);
                 panelsMap[file] = panel;
@@ -169,9 +179,8 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
         }
 
         // restore last use sorting
-        val db = ConfigManager.getDumpTG_LastUseEmoticonPackStore();
-        panels.sortByDescending { db.getLongOrDefault(it.uniqueId(), 0) };
-
+//        val db = ConfigManager.getDumpTG_LastUseEmoticonPackStore();
+//        panels.sortByDescending { db.getLongOrDefault(it.uniqueId(), 0) };
         return panels;
     }
     override fun uniqueId(): String {
