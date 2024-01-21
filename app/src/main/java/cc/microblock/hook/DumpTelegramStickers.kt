@@ -158,6 +158,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
             }
             if(file.endsWith(".nomedia")) continue;
             if(!File(file).isDirectory) continue;
+            if(!File("$file/idList.txt.jpg").exists() && listDir(file).isEmpty()) continue;
 
             if (!panelsMap.containsKey(file)) {
                 val panel = Panel(file, fileInfo.name);
