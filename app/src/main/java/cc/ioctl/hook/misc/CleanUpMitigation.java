@@ -48,7 +48,7 @@ public class CleanUpMitigation extends BasePersistBackgroundHook {
     private HashSet<String> mPathPrefixList;
     private static final HashSet<String> FILES_TO_HIDE = SetsKt.hashSetOf(
             "qa_mmkv", "qa_misc", "qa_dyn_lib", "qa_target_dpi", ".tool",
-            "xa_mmkv", "xa_conf", "xa_lib", "xa_log", "xa_daemon"
+            "xa_mmkv", "xa_conf", "xa_lib", "xa_log", "xa_daemon", "TGStickersExported"
     );
 
     @SuppressLint("SdCardPath")
