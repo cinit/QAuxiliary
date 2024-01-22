@@ -67,28 +67,13 @@ fun listDir(directoryPath: String): List<FileInfo> {
 val executor = Executors.newFixedThreadPool(2)
 val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
 
+var baseDir = "/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/";
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
     class Panel(val path: String, val id: String) : ExtraEmoticonPanel() {
         private var emoticons: List<ExtraEmoticon> = listOf();
         private var iconPath: String? = null;
         fun updateEmoticons() {
             var files = listDir(path);
-            if(File(path + "/idList.txt.jpg").exists() && files.size == 0) {
-                val reader = BufferedReader(InputStreamReader(File(path + "/idList.txt.jpg").inputStream()));
-                val list = mutableListOf<FileInfo>();
-                while(true) {
-                    val line = reader.readLine() ?: break;
-                    if(line.length == 0) continue;
-                    var name =
-                        if (File(path + "/" + line + "_high.webp").exists()) line + "_high.webp"
-                        else if (File(path + "/" + line + "_low.webp").exists()) line + "_low.webp"
-                        else if (File(path + "/" + line).exists()) line
-                        else continue;
-                    if (!list.any { it.name == name })
-                        list.add(FileInfo(line, path + "/" + name));
-                }
-                files = list;
-            }
 
             val emoticons = mutableListOf<ExtraEmoticon>();
             val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo");
@@ -149,7 +134,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
     val panelsMap = mutableMapOf<String, Panel?>();
 
     override fun extraEmoticonList(): List<ExtraEmoticonPanel> {
-        val files = listDir("/storage/emulated/0/Documents/TGStickersExported/v1/");
+        val files = listDir("${baseDir}v1/");
         val panels = mutableListOf<ExtraEmoticonPanel>()
         for (fileInfo in files) {
             val file = fileInfo.fullPath;
@@ -166,7 +151,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
                 panelsMap[file] = null;
                 continue;
             }
-            if(!File("$file/idList.txt.jpg").exists() && listDir(file).isEmpty()) {
+            if(listDir(file).isEmpty()) {
                 panelsMap[file] = null;
                 continue;
             }
@@ -230,6 +215,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             cfg.putString("dumpTGStickers.removeQQMisc", if (value) "true" else "false")
         }
 
+
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, ctx, _ ->
         val builder = AlertDialog.Builder(ctx)
         val wrapper = LinearLayout(ctx)
@@ -286,7 +272,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             addView(
                 AppCompatTextView(ctx).apply {
                     setText("关于插件：需配合 MicroBlock 的 Telegram 表情包同步插件使用\n" +
-                        "你也可以自行在 /storage/emulated/0/Documents/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹，然后在文件夹下idList.txt.jpg中写入表情包文件名（含拓展名，支持 png,jpg,webp,gif）列表，每行一个。")
+                        "你也可以自行在 /storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹（支持 png,jpg,webp,gif）。")
                 }
             )
             addView(
@@ -345,9 +331,9 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
 
         var providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider());
 
-        if (!File("/storage/emulated/0/Download/QQ/TGStickersExported/.nomedia").exists()) {
-            File("/storage/emulated/0/Download/QQ/TGStickersExported/").mkdirs();
-            File("/storage/emulated/0/Download/QQ/TGStickersExported/.nomedia").createNewFile();
+        if (!File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").exists()) {
+            File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/").mkdirs();
+            File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").createNewFile();
         }
 
         data class QAEpId (var providerId: String = "",var panelId: String);
