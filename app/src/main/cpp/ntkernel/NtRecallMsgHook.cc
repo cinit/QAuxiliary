@@ -418,17 +418,18 @@ bool InitInitNtKernelRecallMsgHook() {
             // first seen: first NT, QQ 8.9.63.11305 (4160)
             // last seen: QQ 8.9.93 (5028)
             gOffsetForTmpRev5048 = 0xe8;
-        } else if (versionCode >= 5048 && versionCode < 5588) {
+        } else if (versionCode >= 5048/* && versionCode < 5588*/) {
             // first seen: QQ 8.9.96.13525 5048
             // last seen: QQ 9.0.15.1482? 5???
             // last seen 忘记了，反正也是个 9.0.15 内测版
             gOffsetForTmpRev5048 = 0xf0;
-        } else if (versionCode >= 5588) {
+        } else /*if (versionCode >= 5588) {
             // first seen: QQ 9.0.15.14875 5588
             // 不记得了，但 QQ 9.0.15.14875 5588 应该是第一个 offset 为 0x100 的版本
+            // 更新：正式版 9.0.15 还是 0xf0，内测版 9.0.15.14875 5588 是 0x100
             // last seen: (wait for update)
             gOffsetForTmpRev5048 = 0x100;
-        } else {
+        } else*/ {
             // error
             TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, versionCode not supported: {}", versionCode);
             return false;
