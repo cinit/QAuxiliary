@@ -55,6 +55,7 @@ uintptr_t gOffsetGetDecoderSp = 0;
 
 uintptr_t gOffsetForTmpRev5048 = 0;
 
+NOINLINE
 uint64_t ThunkGetInt64Property(const void* thiz, int property) {
     // vtable
     // 4160. [[this+8]+0x58]
@@ -64,6 +65,7 @@ uint64_t ThunkGetInt64Property(const void* thiz, int property) {
     return reinterpret_cast<decltype(ThunkGetInt64Property)*>(func)(thisp8, property);
 }
 
+NOINLINE
 uint32_t ThunkGetInt32Property(const void* thiz, int property) {
     // vtable
     // 4160. [[this+8]+0x38]
@@ -73,6 +75,7 @@ uint32_t ThunkGetInt32Property(const void* thiz, int property) {
     return reinterpret_cast<decltype(ThunkGetInt32Property)*>(func)(thisp8, property);
 }
 
+NOINLINE
 std::string ThunkGetStringProperty(void* thiz, int property) {
     // vtable
     // 4160. [[this+8]+0x70]
@@ -85,6 +88,7 @@ std::string ThunkGetStringProperty(void* thiz, int property) {
 template<typename ReturnType, uintptr_t vtableOffset, uintptr_t thizOffset, typename... ArgTypes>
 requires((std::is_same_v<ReturnType, void> || std::is_integral_v<ReturnType> || std::is_pointer_v<ReturnType>)
         && ((std::is_integral_v<ArgTypes> || std::is_pointer_v<ArgTypes>) && ...))
+NOINLINE
 ReturnType vcall(void* thiz, ArgTypes... args) {
     // vtable
     // [[this+thizOff]+offsetVT]
@@ -101,6 +105,7 @@ ReturnType vcall(void* thiz, ArgTypes... args) {
 
 template<typename... ArgTypes>
 requires(((std::is_integral_v<ArgTypes> || std::is_pointer_v<ArgTypes>) && ...))
+NOINLINE
 void vcall_x8_v2(void* thiz, uintptr_t vtableOffset, uintptr_t thizOffset, void* x8, ArgTypes... args) {
     // vtable
     // [[this+thizOff]+offsetVT]
@@ -413,10 +418,16 @@ bool InitInitNtKernelRecallMsgHook() {
             // first seen: first NT, QQ 8.9.63.11305 (4160)
             // last seen: QQ 8.9.93 (5028)
             gOffsetForTmpRev5048 = 0xe8;
-        } else if (versionCode >= 5048) {
+        } else if (versionCode >= 5048 && versionCode < 5588) {
             // first seen: QQ 8.9.96.13525 5048
-            // last seen: (wait for update)
+            // last seen: QQ 9.0.15.1482? 5???
+            // last seen 忘记了，反正也是个 9.0.15 内测版
             gOffsetForTmpRev5048 = 0xf0;
+        } else if (versionCode >= 5588) {
+            // first seen: QQ 9.0.15.14875 5588
+            // 不记得了，但 QQ 9.0.15.14875 5588 应该是第一个 offset 为 0x100 的版本
+            // last seen: (wait for update)
+            gOffsetForTmpRev5048 = 0x100;
         } else {
             // error
             TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, versionCode not supported: {}", versionCode);

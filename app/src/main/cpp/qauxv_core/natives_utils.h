@@ -5,7 +5,9 @@
 #include <stdint.h>
 
 #define EXPORT __attribute__((visibility("default")))
-//#define null nullptr
+
+#define NOINLINE __attribute__((noinline))
+
 typedef unsigned char uchar;
 
 //Android is little endian, use pointer
