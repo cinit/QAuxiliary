@@ -19,7 +19,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package github.moonleeeaf.hook;
+package io.github.moonleeeaf.hook;
 
 import cc.ioctl.util.hookBeforeIfEnabled;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
