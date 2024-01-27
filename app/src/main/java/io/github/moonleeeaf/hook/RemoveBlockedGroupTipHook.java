@@ -20,7 +20,7 @@
  */
 
 package io.github.moonleeeaf.hook;
-;
+
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
