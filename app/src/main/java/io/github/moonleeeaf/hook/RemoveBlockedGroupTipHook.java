@@ -20,15 +20,14 @@
  */
 
 package io.github.moonleeeaf.hook;
-
-import cc.ioctl.util.hookBeforeIfEnabled;
+;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
-import io.github.qauxv.util.requireMinQQVersion;
+import cc.ioctl.util.HookUtils;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -53,9 +52,9 @@ public final class RemoveBlockedGroupTipHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        Class<?> klass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie$8$1");
-        Method someMethod = klass.getDeclaredMethod("run");
-        HookUtils.hookBeforeIfEnabled(this, someMethod, param -> {});
+        Class<?> c = Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie$8$1");
+        Method run = c.getDeclaredMethod("run");
+        HookUtils.hookBeforeIfEnabled(this, run, param -> {});
         return true;
     }
 }
