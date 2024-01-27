@@ -18,6 +18,7 @@
  * <https://github.com/qwq233/license>
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
+
 package io.github.moonleeeaf.hook;
 
 import cc.ioctl.util.hookBeforeIfEnabled;
