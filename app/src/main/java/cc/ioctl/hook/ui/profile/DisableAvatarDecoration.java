@@ -73,6 +73,7 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
                     v.pendantDiyInfoId = 0;
                 }
             });
+            return true;
         } else if (QAppUtils.isQQnt()){
             HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantId"),param -> param.setResult(0L));
             HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantDiyInfoId"),param -> param.setResult(0));
