@@ -172,12 +172,14 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
     private fun setAtSpanBySearch(textView: TextView, atElements: List<TextElement>, troopUin: Long) {
         val text = textView.text
         val ssb = SpannableString(text)
+        var searchIndexStart = 0
         for (at in atElements) {
             if (at.content.length >= 2) {
                 val uid = at.atNtUid
-                val start = text.indexOf(at.content)
+                val start = text.indexOf(at.content, searchIndexStart)
                 if (start == -1) continue
                 val end = start + at.content.length
+                searchIndexStart = end
                 ssb.setSpan(createClickSpanForUid(uid, troopUin), start, end, Spannable.SPAN_EXCLUSIVE_EXCLUSIVE)
             }
         }
