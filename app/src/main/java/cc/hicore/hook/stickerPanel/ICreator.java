@@ -135,7 +135,7 @@ public class ICreator extends BottomPopupView{
 
         IMainPanelItem setItem = new PanelSetImpl(getContext());
         AtomicReference<ViewGroup> sticker_panel_set_view = new AtomicReference<>();
-        ViewGroup setView = (ViewGroup) createPicImage(R.drawable.sticker_panen_set_button_icon, "设置", v -> switchToItem(sticker_panel_set_view.get()));
+        ViewGroup setView = (ViewGroup) createPicImage(R.drawable.sticker_panel_set_button_icon, "设置", v -> switchToItem(sticker_panel_set_view.get()));
         sticker_panel_set_view.set(setView);
         setView.setTag(setItem);
         topSelectBar.addView(setView);
