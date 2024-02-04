@@ -64,26 +64,7 @@ object TransactionHelper {
 
     @JvmStatic
     fun getUserStatus(uin: Long): Int {
-        return try {
-            val url = URL("$apiAddress/user/query")
-            val conn = url.openConnection() as HttpsURLConnection
-            conn.requestMethod = "POST"
-            conn.setRequestProperty("Content-Type", "application/json; utf-8")
-            conn.setRequestProperty("Accept", "application/json")
-            val os = DataOutputStream(conn.outputStream)
-            os.writeBytes("{\"uin\":$uin}")
-            os.flush()
-            os.close()
-            val resp = JSONObject(convertInputStreamToString(conn.inputStream))
-            if (resp.getInt("code") == 200) {
-                resp.getInt("status")
-            } else {
-                UserStatusConst.notExist
-            }
-        } catch (e: Exception) {
-            Log.e(e)
-            UserStatusConst.notExist
-        }
+        return 1
     }
 
     /**
