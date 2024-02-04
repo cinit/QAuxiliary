@@ -45,7 +45,6 @@ import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import kotlin.collections.ArraysKt;
 
 /**
  * 显示具体消息数量
@@ -78,19 +77,38 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
     }
 
     @Override
-    public boolean initOnce() throws NoSuchMethodException, ClassNotFoundException {
-        Method updateCustomNoteTxt = null;
-        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+    public boolean initOnce() throws NoSuchMethodException, ClassNotFoundException, NoSuchFieldException {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
             Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge");
-            Method m = ArraysKt.single(clz.getDeclaredMethods(), method -> method.getParameterTypes().length == 1
-                    && method.getParameterTypes()[0] == int.class
-                    && !method.getName().startsWith("set"));
-            Field f = ArraysKt.last(clz.getDeclaredFields(), field -> field.getType() == String.class);
-            f.setAccessible(true);
-            HookUtils.hookAfterIfEnabled(this, m, param ->
-                    f.set(param.thisObject, String.valueOf((int) param.args[0])));
+            Method updateNum = clz.getDeclaredMethod("updateNum", int.class);
+            Field mNum = clz.getDeclaredField("mNum");
+            Field mText = clz.getDeclaredField("mText");
+            mNum.setAccessible(true);
+            mText.setAccessible(true);
+            HookUtils.hookBeforeIfEnabled(this, updateNum, param -> {
+                int value = (int) param.args[0];
+                mNum.set(param.thisObject, value);
+                mText.set(param.thisObject, String.valueOf(value));
+                param.setResult(null);
+            });
+            return true;
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            // 该类仅9.0.8版本存在混淆，遂固定之
+            Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge");
+            Method updateNum = clz.getDeclaredMethod("w", int.class);
+            Field mNum = clz.getDeclaredField("j");
+            Field mText = clz.getDeclaredField("n");
+            mNum.setAccessible(true);
+            mText.setAccessible(true);
+            HookUtils.hookBeforeIfEnabled(this, updateNum, param -> {
+                int value = (int) param.args[0];
+                mNum.set(param.thisObject, value);
+                mText.set(param.thisObject, String.valueOf(value));
+                param.setResult(null);
+            });
             return true;
         }
+        Method updateCustomNoteTxt = null;
         if (QAppUtils.isQQnt()) {
             Class<?> clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
             for (Method method : clz.getDeclaredMethods()) {
