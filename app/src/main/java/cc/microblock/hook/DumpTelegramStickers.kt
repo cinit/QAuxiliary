@@ -67,7 +67,7 @@ fun listDir(directoryPath: String): List<FileInfo> {
 val executor = Executors.newFixedThreadPool(2)
 val allowedExtensions = listOf(".png", ".jpg", ".jpeg", ".gif", ".webp");
 
-var baseDir = "/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/";
+var baseDir = "/storage/self/primary/Android/media/com.tencent.mobileqq/TGStickersExported/";
 class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
     class Panel(val path: String, val id: String) : ExtraEmoticonPanel() {
         private var emoticons: List<ExtraEmoticon> = listOf();
@@ -272,7 +272,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             addView(
                 AppCompatTextView(ctx).apply {
                     setText("关于插件：需配合 MicroBlock 的 Telegram 表情包同步插件使用\n" +
-                        "你也可以自行在 /storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹（支持 png,jpg,webp,gif）。")
+                        "你也可以自行在 /storage/self/primary/Android/media/com.tencent.mobileqq/TGStickersExported/v1/ 下创建包含表情包图片文件的文件夹（支持 png,jpg,webp,gif）。")
                 }
             )
             addView(
@@ -331,9 +331,9 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
 
         var providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider());
 
-        if (!File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").exists()) {
-            File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/").mkdirs();
-            File("/storage/emulated/0/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").createNewFile();
+        if (!File("/storage/self/primary/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").exists()) {
+            File("/storage/self/primary/Android/media/com.tencent.mobileqq/TGStickersExported/").mkdirs();
+            File("/storage/self/primary/Android/media/com.tencent.mobileqq/TGStickersExported/.nomedia").createNewFile();
         }
 
         data class QAEpId (var providerId: String = "",var panelId: String);
