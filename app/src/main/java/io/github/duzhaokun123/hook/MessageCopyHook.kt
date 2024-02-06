@@ -44,7 +44,6 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import xyz.nextalone.util.method
 
@@ -66,13 +65,13 @@ object MessageCopyHook : CommonSwitchFunctionHook() {
             hookAfterIfEnabled(method_list) { param ->
                 val msg = method_getMsg.invoke(param.thisObject)
                 val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
-                    Log.d(msg.javaClass.name)
-//                    val method_getElement = msg.javaClass.method { it.returnType == TextElement::class.java }!!
-                    AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()))
-                        .setMessage(msg.invokeMethodAutoAs("y1"))
-                        .show()
-                        .findViewById<TextView>(android.R.id.message)
-                        .setTextIsSelectable(true)
+//                    Log.d(msg.javaClass.name)
+                    val text = runCatching {
+                        msg.invokeMethodAutoAs<CharSequence>("y1")
+                    }.getOrNull() ?: runCatching {
+                        msg.invokeMethodAutoAs<CharSequence>("Q1")
+                    }.getOrNull() ?: "获取消息失败"
+                    showDialog(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), text)
                 }
                 param.result = (param.result as List<*>) + item
             }
@@ -120,15 +119,20 @@ object MessageCopyHook : CommonSwitchFunctionHook() {
         val wc = CommonContextWrapper.createAppCompatContext(ctx)
         when (id) {
             R.id.item_free_copy -> {
-                AlertDialog.Builder(wc)
-                    .setMessage(Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "")
-                    .show()
-                    .findViewById<TextView>(android.R.id.message)
-                    .setTextIsSelectable(true)
+                showDialog(wc, Reflex.getInstanceObjectOrNull(chatMessage, "msg")?.toString() ?: "获取消息失败")
             }
         }
     }
 
     override val uiItemLocation: Array<String>
         get() = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+
+    fun showDialog(context: Context, text: CharSequence) {
+        AlertDialog.Builder(context)
+            .setMessage(text)
+            .setNegativeButton(android.R.string.cancel, null)
+            .show()
+            .findViewById<TextView>(android.R.id.message)
+            .setTextIsSelectable(true)
+    }
 }
