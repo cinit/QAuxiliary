@@ -136,7 +136,7 @@ jobs:
       - name: Release
         env:
           COMMIT_MESSAGE: |+
-            New push to github\!
+            New push to GitHub\!
             ```
             ${{ github.event.head_commit.message }}
             ```by `${{ github.event.head_commit.author.name }}`
