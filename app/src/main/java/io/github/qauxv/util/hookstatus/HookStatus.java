@@ -161,6 +161,8 @@ public class HookStatus {
                     hookProvider = "LSPosed";
                 } else if (bridgeTag.startsWith("EdXposed")) {
                     hookProvider = "EdXposed";
+                } else if (bridgeTag.startsWith("PineXposed")) {
+                    hookProvider = "Dreamland";
                 }
             }
         }
