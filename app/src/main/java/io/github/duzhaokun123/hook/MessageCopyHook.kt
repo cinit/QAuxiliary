@@ -25,6 +25,7 @@ package io.github.duzhaokun123.hook
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import cc.ioctl.util.HostInfo
@@ -41,15 +42,22 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexDeobfsProvider
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.TextMsgItem_getText
 import xyz.nextalone.util.method
+import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageCopyHook : CommonSwitchFunctionHook() {
+object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder {
+    const val TAG = "MessageCopyHook"
     override val name: String
         get() = "文本消息自由复制"
 
@@ -66,11 +74,13 @@ object MessageCopyHook : CommonSwitchFunctionHook() {
                 val msg = method_getMsg.invoke(param.thisObject)
                 val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
 //                    Log.d(msg.javaClass.name)
-                    val text = runCatching {
-                        msg.invokeMethodAutoAs<CharSequence>("y1")
-                    }.getOrNull() ?: runCatching {
-                        msg.invokeMethodAutoAs<CharSequence>("Q1")
-                    }.getOrNull() ?: "获取消息失败"
+                    val text = try {
+                        DexKit.requireMethodFromCache(TextMsgItem_getText).also {
+                            it.isAccessible = true
+                        }.invoke(msg) as CharSequence
+                    } catch (e: Exception) {
+                        "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
+                    }
                     showDialog(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), text)
                 }
                 param.result = (param.result as List<*>) + item
@@ -134,5 +144,51 @@ object MessageCopyHook : CommonSwitchFunctionHook() {
             .show()
             .findViewById<TextView>(android.R.id.message)
             .setTextIsSelectable(true)
+    }
+
+    override fun makePreparationSteps(): Array<Step> {
+        return arrayOf(object : Step {
+            override fun step(): Boolean {
+                return doFind()
+            }
+
+            override fun isDone(): Boolean {
+                return !isNeedFind
+            }
+
+            override fun getPriority(): Int {
+                return 0
+            }
+
+            override fun getDescription(): String {
+                return "文本消息自由复制相关类查找中"
+            }
+        })
+    }
+
+    override val isNeedFind: Boolean
+        get() = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63) && TextMsgItem_getText.descCache == null
+
+    override fun doFind(): Boolean {
+        DexDeobfsProvider.getCurrentBackend().use { backend ->
+            val dexKit = backend.getDexKitBridge()
+            Log.d(TAG, "doFind: doFind")
+            val getText = dexKit.findMethod {
+                searchPackages("com.tencent.mobileqq.aio.msg")
+                matcher {
+                    modifiers = Modifier.PRIVATE
+                    returnType = "java.lang.CharSequence"
+                    paramCount = 0
+                    usingNumbers(24)
+                    usingStrings("biz_src_jc_aio")
+//                    addCall {
+//                        name = "getQQText"
+//                    }
+                }
+            }.firstOrNull() ?: return false
+            Log.d(TAG, "doFind: $getText")
+            TextMsgItem_getText.descCache = getText.descriptor
+        }
+        return true
     }
 }

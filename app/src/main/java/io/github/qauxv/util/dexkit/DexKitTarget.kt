@@ -843,3 +843,9 @@ data object QQ_SETTING_ME_CONFIG_CLASS: DexKitTarget.UsingStringVector() {
     override val declaringClass: String = ""
     override val filter = DexKitFilter.allowAll
 }
+
+data object TextMsgItem_getText: DexKitTarget.UsingDexkit() {
+    override val findMethod: Boolean = true
+    override val declaringClass: String = "com.tencent.mobileqq.aio.msg.TextMsgItem"
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
