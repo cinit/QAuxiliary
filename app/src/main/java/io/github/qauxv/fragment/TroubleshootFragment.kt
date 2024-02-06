@@ -146,12 +146,12 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         override val isCheckable = true
         override var isChecked: Boolean
             get() {
-                return SafeModeManager.getManager().isEnabled
+                return SafeModeManager.getManager().isEnabledForNextTime
             }
             set(value) {
-                val oldValue = SafeModeManager.getManager().isEnabled
+                val oldValue = SafeModeManager.getManager().isEnabledForNextTime
                 if (value != oldValue) {
-                    val isSuccess = SafeModeManager.getManager().setEnabled(value)
+                    val isSuccess = SafeModeManager.getManager().setEnabledForNextTime(value)
                     context?.let {
                         if (isSuccess) {
                             if (isResumed) Toasts.info(it, "重启应用后生效")

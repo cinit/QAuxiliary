@@ -51,6 +51,7 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.SyncUtils.async
 import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.UiThread
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isInHostProcess
 import kotlinx.coroutines.flow.StateFlow
 import me.singleneuron.util.forSuBanXia
@@ -197,11 +198,14 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         if (!mTargetUiAgentNavId.isNullOrEmpty() && !mTargetUiAgentNavigated) {
             navigateToTargetUiAgentItem()
         }
-        val safeMode = SafeModeManager.getManager().isEnabled
-        subtitle = if (safeMode) {
-            "安全模式（停用所有功能）"
-        } else {
-            null
+        val hostName = hostInfo.hostName
+        val safeModeNow = SafeModeManager.getManager().isEnabledForThisTime
+        val safeModeNextTime = SafeModeManager.getManager().isEnabledForNextTime
+        subtitle = when {
+            safeModeNow && safeModeNextTime -> "安全模式（停用所有功能）"
+            !safeModeNow && safeModeNextTime -> "安全模式需要重启 $hostName 生效"
+            safeModeNow && !safeModeNextTime -> "重新启动 $hostName 后将退出安全模式"
+            else -> null
         }
     }
 

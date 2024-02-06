@@ -36,6 +36,8 @@ public class SafeModeManager {
 
     private File mSafeModeEnableFile;
 
+    private boolean sIsSafeModeForThisTime = false;
+
     public static SafeModeManager getManager() {
         if (INSTANCE == null) {
             INSTANCE = new SafeModeManager();
@@ -55,11 +57,19 @@ public class SafeModeManager {
         return true;
     }
 
-    public boolean isEnabled() {
+    public boolean isEnabledForThisTime() {
+        return sIsSafeModeForThisTime;
+    }
+
+    public void setSafeModeForThisTime(boolean isSafeMode) {
+        sIsSafeModeForThisTime = isSafeMode;
+    }
+
+    public boolean isEnabledForNextTime() {
         return isAvailable() && mSafeModeEnableFile.exists();
     }
 
-    public boolean setEnabled(boolean isEnable) {
+    public boolean setEnabledForNextTime(boolean isEnable) {
         if (!isAvailable()) {
             return false;
         }
@@ -78,7 +88,7 @@ public class SafeModeManager {
                 Log.e("Safe mode enable failed", e);
             }
         } else {
-            if (isEnabled()) {
+            if (isEnabledForNextTime()) {
                 try {
                     boolean isDeleted = mSafeModeEnableFile.delete();
                     if (!isDeleted) {

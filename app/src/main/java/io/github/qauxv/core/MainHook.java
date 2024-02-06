@@ -103,7 +103,8 @@ public class MainHook {
             Log.w("WSA detected, aggressive resource injection is required to prevent ResourceNotFound crash.");
             // TODO: 2023-1-20 implement aggressive resource injection
         }
-        boolean safeMode = SafeModeManager.getManager().isEnabled();
+        boolean safeMode = SafeModeManager.getManager().isEnabledForNextTime();
+        SafeModeManager.getManager().setSafeModeForThisTime(safeMode);
         if (safeMode) {
             LicenseStatus.sDisableCommonHooks = true;
             Log.i("Safe mode enabled, disable hooks");
