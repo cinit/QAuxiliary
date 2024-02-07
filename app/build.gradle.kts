@@ -89,6 +89,8 @@ android {
                 targets += "qauxv"
             }
         }
+
+        ndk.debugSymbolLevel = "FULL"
     }
     externalNativeBuild {
         cmake {
