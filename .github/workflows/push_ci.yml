@@ -69,12 +69,13 @@ jobs:
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
-          ./gradlew :app:synthesizeDistReleaseApksCI
+          ./gradlew :app:synthesizeDistReleaseApksCI :app:extractReleaseNativeDebugMetadata
           ccache -s
           echo "APK_FILE_ARM32=$(find app/build/outputs/ci -name '*arm32.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARM64=$(find app/build/outputs/ci -name '*arm64.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARMALL=$(find app/build/outputs/ci -name '*armAll.apk')" >> $GITHUB_ENV
           echo "APK_FILE_UNIVERSAL=$(find app/build/outputs/ci -name '*universal.apk')" >> $GITHUB_ENV
+          echo "SYMBOL_FILE=app/build/intermediates/native_debug_metadata/release/out" >> $GITHUB_ENV
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
@@ -115,6 +116,11 @@ jobs:
         with:
           path: ${{ env.APK_FILE_UNIVERSAL }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-universal
+      - name: Upload Artifacts(symbol)
+        uses: actions/upload-artifact@v4
+        with:
+          path: ${{ env.SYMBOL_FILE }}
+          name: QAuxiliary-release-${{ github.event.head_commit.id }}-symbol
 
   upload-telegram:
     name: Upload Release
@@ -148,13 +154,16 @@ jobs:
           export arm64=$(find artifacts -name "*arm64.apk")
           export armAll=$(find artifacts -name "*armAll.apk")
           export universal=$(find artifacts -name "*universal.apk")
+          export SYMBOL_ZIP_NAME=$(echo $universal | sed 's/universal.apk/symbol.zip/')
+          find artifacts -name "*.so.dbg" -print | zip "$SYMBOL_ZIP_NAME" -@
           chmod +x telegram-bot-api-binary
           ./telegram-bot-api-binary --api-id=21724 --api-hash=3e0cb5efcd52300aec5994fdfc5bdc16 --local 2>&1 > /dev/null &
           curl -v "http://127.0.0.1:8081/bot${{ secrets.TELEGRAM_TOKEN  }}/sendMediaGroup?chat_id=-1001732413298&media=%5B%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Farm64%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Farm32%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2FarmAll%22%7D%2C%7B%22type%22%3A%22document%22%2C%20%22media%22%3A%22attach%3A%2F%2Funiversal%22%2C%22parse_mode%22%3A%22MarkdownV2%22%2C%22caption%22:${ESCAPED}%7D%5D" \
            -F arm32="@$arm32" \
            -F arm64="@$arm64" \
            -F armAll="@$armAll" \
-           -F universal="@$universal"
+           -F universal="@$universal" \
+           -F symbol="@$SYMBOL_ZIP_NAME"
           pkill telegram-bot
 
   upload-taichi:
