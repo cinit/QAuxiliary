@@ -395,9 +395,44 @@ bool InitInitNtKernelRecallMsgHook() {
                 .WithOffsetsForResult({-0x78})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
+        //@formatter:off
+        //OffsetForTmpRev5048
+        //61 01 80 52     mov        w1,#0xb
+        //e0 03 ?? aa     mov        x0,x?
+        //?? 10 00 94     bl         FUN_?
+        //00 ?? 00 36     tbz        w0,#0x0,LAB_?
+        //?? 02 40 f9     ldr        x8,[x??]
+        //61 01 80 52     mov        w1,#0xb
+        //e0 03 ?? aa     mov        x0,x??
+        //09 !! 40 f9     ldr        x9,[x8, #0x!!] <-- we need to find this
+        //e8 ?? ?? 91     add        x8,sp,#0x??
+        //20 01 3f d6     blr        x9
+        auto targetInstructionOffsetForTmpRev5048 = AobScanTarget()
+                .WithName("InstructionOffsetForTmpRev5048")
+                        //     0x61  0x01  0x80  0x52  0xe0  0x03  0x??  0xaa
+                        //     0x??  0x10  0x00  0x94  0x00  0x??  0x00  0x36
+                        //     0x??  0x02  0x40  0xf9  0x61  0x01  0x80  0x52
+                        //     0xe0  0x03  0x??  0xaa  0x09  0x??  0x40  0xf9
+                        //     0xe8  0x??  0x??  0x91  0x20  0x01  0x3f  0xd6
+                .WithSequence({0x61, 0x01, 0x80, 0x52, 0xe0, 0x03, 0x00, 0xaa,
+                               0x00, 0x10, 0x00, 0x94, 0x00, 0x00, 0x00, 0x36,
+                               0x00, 0x02, 0x40, 0xf9, 0x61, 0x01, 0x80, 0x52,
+                               0xe0, 0x03, 0x00, 0xaa, 0x09, 0x00, 0x40, 0xf9,
+                               0xe8, 0x00, 0x00, 0x91, 0x20, 0x01, 0x3f, 0xd6})
+                .WithMask({    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff,
+                               0x00, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff,
+                               0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
+                               0xff, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0xff,
+                               0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff})
+                .WithStep(4)
+                .WithExecMemOnly(true)
+                .WithOffsetsForResult({7 * 4});
+        //@formatter:on
+
         std::vector<std::string> errorMsgList;
         // auto start = std::chrono::steady_clock::now();
-        if (!SearchForAllAobScanTargets({&targetRecallC2cSysMsg, &targetRecallGroupSysMsg, &targetGetDecoder},
+        if (!SearchForAllAobScanTargets({&targetRecallC2cSysMsg, &targetRecallGroupSysMsg, &targetGetDecoder,
+                                         &targetInstructionOffsetForTmpRev5048},
                                         gLibkernelBaseAddress, true, errorMsgList)) {
             LOGE("InitInitNtKernelRecallMsgHook SearchForAllAobScanTargets failed");
             // sth went wrong
@@ -415,35 +450,23 @@ bool InitInitNtKernelRecallMsgHook() {
             return false;
         }
 
-        // TODO: 2023-12-03 replace hard-coded versionCode with a more flexible way, eg, AOB scan
-
-        uint32_t versionCode = HostInfo::GetVersionCode32();
-        if (versionCode >= 4160 && versionCode < 5048) {
-            // first seen: first NT, QQ 8.9.63.11305 (4160)
-            // last seen: QQ 8.9.93 (5028)
-            gOffsetForTmpRev5048 = 0xe8;
-        } else if (versionCode >= 5048/* && versionCode < 5588*/) {
-            // first seen: QQ 8.9.96.13525 5048
-            // last seen: QQ 9.0.15.1482? 5???
-            // last seen 忘记了，反正也是个 9.0.15 内测版
-            gOffsetForTmpRev5048 = 0xf0;
-        } else /*if (versionCode >= 5588) {
-            // first seen: QQ 9.0.15.14875 5588
-            // 不记得了，但 QQ 9.0.15.14875 5588 应该是第一个 offset 为 0x100 的版本
-            // 更新：正式版 9.0.15 还是 0xf0，内测版 9.0.15.14875 5588 是 0x100
-            // last seen: (wait for update)
-            gOffsetForTmpRev5048 = 0x100;
-        } else*/ {
-            // error
-            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, versionCode not supported: {}", versionCode);
-            return false;
-        }
-
         uint64_t offsetC2c = targetRecallC2cSysMsg.GetResultOffset();
         uint64_t offsetGroup = targetRecallGroupSysMsg.GetResultOffset();
         uint64_t offsetGetDecoder = targetGetDecoder.GetResultOffset();
+        uint64_t offsetInstForTmpRev5048 = targetInstructionOffsetForTmpRev5048.GetResultOffset();
 
-        LOGD("offsetC2c={:x}, offsetGroup={:x}, offsetGetDecoder={:x}", offsetC2c, offsetGroup, offsetGetDecoder);
+        uint32_t instructionForTmpRev5048 = *reinterpret_cast<uint32_t*>(
+                reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetInstForTmpRev5048);
+        {
+            // LOGD("instructionForTmpRev5048={:08x}", instructionForTmpRev5048);
+            // 09 !! 40 f9     ldr  x9,[x8, #0x!!]
+            uint32_t imm12 = ((instructionForTmpRev5048 >> 10u) & 0xfffu) << 3u;
+            // LOGD("imm12={:x}", imm12);
+            gOffsetForTmpRev5048 = imm12;
+        }
+
+        LOGD("offsetC2c={:x}, offsetGroup={:x}, offsetGetDecoder={:x}, offsetInstForTmpRev5048={:x}, gOffsetForTmpRev5048={:x}",
+             offsetC2c, offsetGroup, offsetGetDecoder, offsetInstForTmpRev5048, gOffsetForTmpRev5048);
 
         gOffsetGetDecoderSp = offsetGetDecoder;
         if (offsetC2c != 0) {
