@@ -55,6 +55,8 @@ if (ccacheExecutablePath != null) {
     println("No ccache found.")
 }
 
+val fullNativeDebugMode = false
+
 android {
     namespace = "io.github.qauxv"
     ndkVersion = "25.1.8937393"
@@ -126,8 +128,14 @@ android {
             }
         }
         getByName("debug") {
-            @Suppress("ChromeOsAbiSupport")
-            ndk.abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
+            ndk {
+                if (fullNativeDebugMode) {
+                    isJniDebuggable = true
+                } else {
+                    @Suppress("ChromeOsAbiSupport")
+                    abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
+                }
+            }
             isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
             val debugFlags = arrayOf<String>(
@@ -181,6 +189,14 @@ android {
         val variantCapped = name.capitalizeUS()
         tasks.findByName("lintVitalAnalyze${variantCapped}")?.dependsOn(mergeAssetsProvider)
         mergeAssetsProvider.dependsOn(generateEulaAndPrivacy)
+    }
+
+    if (fullNativeDebugMode) {
+        packagingOptions.jniLibs {
+            // be aware that some SIGSEGVs and SIGBUSes are only reproducible with "useLegacyPackaging = false"
+            useLegacyPackaging = true
+            keepDebugSymbols += "**/*.so"
+        }
     }
 }
 

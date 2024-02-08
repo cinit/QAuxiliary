@@ -28,6 +28,7 @@
 #include <string>
 #include <mutex>
 #include <vector>
+#include <array>
 #include <algorithm>
 #include <optional>
 #include <unistd.h>
@@ -126,39 +127,87 @@ void* fake_do_dlopen_23(const char* name, int flags, const void* extinfo) {
 
 void HookLoadLibrary() {
     using namespace utils;
-    LOGD("HookLoadLibrary: attempting to hook ld-android.so!__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
+    LOGD("HookLoadLibrary: attempting to hook ld-android.so!__dl__Z9do_dlopenPKciPK17android_dlextinfo(PK?v)?");
     const char* soname;
+    // it's actually ld-android.so, not linker(64)
     if constexpr (sizeof(void*) == 8) {
         soname = "linker64";
     } else {
         soname = "linker";
     }
-    bool isBelow24 = false;
-    // __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv, Android 8.0+
-    void* symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
-    if (symbol == nullptr) {
-        // __dl__Z9do_dlopenPKciPK17android_dlextinfoPv, Android 7.x
-        symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfoPv");
+    utils::ProcessView processView;
+    int rc;
+    if ((rc = processView.readProcess(getpid())) != 0) {
+        LOGE("HookLoadLibrary: failed to read process, rc = {}", rc);
+        return;
     }
-    if (symbol == nullptr) {
-        // __dl__Z9do_dlopenPKciPK17android_dlextinfo, Android 6.x
-        symbol = DobbySymbolResolver(soname, "__dl__Z9do_dlopenPKciPK17android_dlextinfo");
+    const void* linkerBaseAddress = nullptr;
+    std::string linkerPath;
+    for (const auto& m: processView.getModules()) {
+        if (m.name == soname || m.name == "ld-android.so") {
+            linkerBaseAddress = reinterpret_cast<void*>(m.baseAddress);
+            linkerPath = m.path;
+            break;
+        }
+    }
+    if (linkerBaseAddress == nullptr || linkerPath.empty()) {
+        LOGE("HookLoadLibrary: failed to find linker module");
+        return;
+    }
+    FileMemMap linkerFileMap;
+    if ((rc = linkerFileMap.mapFilePath(linkerPath.c_str())) != 0) {
+        LOGE("HookLoadLibrary: failed to map linker file, rc = {}", rc);
+        return;
+    }
+    ElfView linkerElfView;
+    linkerElfView.AttachFileMemMapping(linkerFileMap.getAddress(), linkerFileMap.getLength());
+    if (!linkerElfView.IsValid()) {
+        LOGE("HookLoadLibrary: failed to attach linker file");
+        return;
+    }
+    auto linkerSymbolResolver = [&](const char* symbol) -> void* {
+        auto offset = linkerElfView.GetSymbolOffset(symbol);
+        if (offset == 0) {
+            return nullptr;
+        }
+        return reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(linkerBaseAddress) + static_cast<uintptr_t>(offset));
+    };
+    bool isBelow24;
+    std::string symbolName;
+    struct SymbolInfo {
+        const char* symbolName;
+        bool isBelow24;
+    };
+    constexpr std::array symbolInfos = {
+            // Android 8.0+
+            SymbolInfo{"__dl__Z9do_dlopenPKciPK17android_dlextinfoPKv", false},
+            // Android 7.x
+            SymbolInfo{"__dl__Z9do_dlopenPKciPK17android_dlextinfoPv", false},
+            // Android 6.x
+            SymbolInfo{"__dl__Z9do_dlopenPKciPK17android_dlextinfo", true},
+    };
+    void* symbol = nullptr;
+    for (const auto& info: symbolInfos) {
+        symbol = linkerSymbolResolver(info.symbolName);
         if (symbol != nullptr) {
-            isBelow24 = true;
+            symbolName = info.symbolName;
+            isBelow24 = info.isBelow24;
+            break;
         }
     }
     if (symbol == nullptr) {
         // give up
-        LOGE("HookLoadLibrary: failed to find __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
+        LOGE("HookLoadLibrary: failed to find __dl__Z9do_dlopenPKciPK17android_dlextinfo(PK?v)?");
         return;
     }
+    // LOGD("linker base {}, do_dlopen {}, path {}", linkerBaseAddress, symbol, linkerPath);
     auto hookHandler = isBelow24 ? (dobby_dummy_func_t) fake_do_dlopen_23 : (dobby_dummy_func_t) fake_do_dlopen_24;
     if (DobbyHook(symbol, hookHandler, (dobby_dummy_func_t*) &qauxv::backup_do_dlopen) != RS_SUCCESS) {
-        LOGE("HookLoadLibrary: failed to hook __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
+        LOGE("HookLoadLibrary: failed to hook {} at {}", symbolName, symbol);
         return;
     }
     sHandleLoadLibraryCallbackInitialized = true;
-    LOGD("HookLoadLibrary: hooked __dl__Z9do_dlopenPKciPK17android_dlextinfoPKv");
+    LOGD("HookLoadLibrary: hooked {}", symbolName);
 }
 
 void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg) {
