@@ -63,11 +63,13 @@ qauxv::ConfigManager& qauxv::ConfigManager::GetCache() {
 
 qauxv::ConfigManager& qauxv::ConfigManager::ForAccount(int64_t uin) {
     static std::mutex sMutex;
-    std::lock_guard<std::mutex> lock(sMutex);
     static std::map<int64_t, ConfigManager*> sConfigManagerMap;
-    auto it = sConfigManagerMap.find(uin);
-    if (it != sConfigManagerMap.end()) {
-        return *it->second;
+    {
+        std::lock_guard<std::mutex> lock(sMutex);
+        auto it = sConfigManagerMap.find(uin);
+        if (it != sConfigManagerMap.end()) {
+            return *it->second;
+        }
     }
     auto id = fmt::format("u_{}", uin);
     auto mmkv = MMKV::mmkvWithID(std::string(id), mmkv::DEFAULT_MMAP_SIZE, MMKV_MULTI_PROCESS);
@@ -75,7 +77,10 @@ qauxv::ConfigManager& qauxv::ConfigManager::ForAccount(int64_t uin) {
         AbortWithMsg(fmt::format("Failed to create MMKV with id '{}'", id).c_str());
     }
     auto configManager = new ConfigManager(mmkv, id);
-    sConfigManagerMap[uin] = configManager;
+    {
+        std::lock_guard<std::mutex> lock(sMutex);
+        sConfigManagerMap[uin] = configManager;
+    }
     return *configManager;
 }
 
@@ -198,6 +203,25 @@ int64_t qauxv::ConfigManager::GetInt64(const std::string& key, int64_t defaultVa
 }
 
 void qauxv::ConfigManager::PutInt64(const std::string& key, int64_t value) {
+    mMmkv->set(value, key);
+    mMmkv->set(TYPE_LONG, key + TYPE_SUFFIX);
+}
+
+std::optional<uint64_t> qauxv::ConfigManager::GetUInt64(const std::string& key) {
+    bool hasValue = false;
+    auto result = mMmkv->getUInt64(key, 0, &hasValue);
+    if (hasValue) {
+        return result;
+    } else {
+        return std::nullopt;
+    }
+}
+
+uint64_t qauxv::ConfigManager::GetUInt64(const std::string& key, uint64_t defaultValue) {
+    return mMmkv->getUInt64(key, defaultValue);
+}
+
+void qauxv::ConfigManager::PutUInt64(const std::string& key, uint64_t value) {
     mMmkv->set(value, key);
     mMmkv->set(TYPE_LONG, key + TYPE_SUFFIX);
 }

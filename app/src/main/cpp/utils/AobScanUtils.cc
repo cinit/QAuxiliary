@@ -7,39 +7,56 @@
 #include <fmt/format.h>
 
 #include "ElfScan.h"
+#include "TextUtils.h"
+#include "ConfigManager.h"
+#include "qauxv_core/HostInfo.h"
+
+#include "string_operators.h"
 
 namespace utils {
 
 using Validator = AobScanTarget::Validator;
 
-static std::string bytes2hex(std::span<const uint8_t> bytes) {
-    std::string result;
-    result.reserve(bytes.size() * 2);
-    for (uint8_t byte: bytes) {
-        result += fmt::format("{:02x}", byte);
-    }
-    return result;
-}
-
 bool SearchForAllAobScanTargets(std::vector<AobScanTarget*> targets,
                                 const void* imageBase, bool isLoadedImage,
                                 std::vector<std::string>& errors) {
     bool hasFailed = false;
+    const uint64_t currentVersion = qauxv::HostInfo::GetLongVersionCode();
     for (auto* target: targets) {
         std::string_view name = target->name;
         std::span<const uint8_t> sequence = target->sequence;
+        std::span<const uint8_t> mask = target->mask;
         int step = target->step;
         bool execMemOnly = target->execMemOnly;
+        const auto cacheValueKey = name + ".value";
+        const auto cacheVersionKey = name + ".version";
         auto offsetsForResult = target->offsetsForResult;
         auto validator = target->resultValidator;
-        auto rawResultSet = FindByteSequenceImpl(imageBase, isLoadedImage, sequence, execMemOnly, step);
+        if (mask.size() != sequence.size() && !mask.empty()) {
+            errors.emplace_back(fmt::format("AobScanUtils: sequence and mask size mismatch for target '{}', sequence: '{}', mask: '{}'",
+                                            name, bytes2hex(sequence), bytes2hex(mask)));
+            hasFailed = true;
+            continue;
+        }
+        std::optional<uint64_t> lastResult;
+        {
+            auto& cache = qauxv::ConfigManager::GetCache();
+            auto lastValue = cache.GetUInt64(cacheValueKey);
+            auto lastVersion = cache.GetUInt64(cacheVersionKey);
+            if (lastValue.has_value() && lastVersion.has_value() && lastVersion.value() == currentVersion) {
+                lastResult = lastValue.value();
+            }
+        }
+        auto rawResultSet = FindByteSequenceImpl(imageBase, isLoadedImage, sequence, mask, execMemOnly, step, lastResult);
         if (rawResultSet.empty()) {
-            errors.emplace_back(fmt::format("AobScanUtils: failed to find target '{}' with sequence {}", name, bytes2hex(sequence)));
+            errors.emplace_back(fmt::format("AobScanUtils: failed to find target '{}' with sequence '{}' mask '{}'",
+                                            name, bytes2hex(sequence), bytes2hex(mask)));
             hasFailed = true;
             continue;
         }
         if (rawResultSet.size() > 1) {
-            std::string msg = fmt::format("AobScanUtils: found {} targets '{}' with sequence {}", rawResultSet.size(), name, bytes2hex(sequence));
+            std::string msg = fmt::format("AobScanUtils: found {} targets '{}' with sequence '{}' mask '{}'",
+                                          rawResultSet.size(), name, bytes2hex(sequence), bytes2hex(mask));
             for (auto result: rawResultSet) {
                 msg += fmt::format("offset: 0x{:x}, ", result);
             }
@@ -65,13 +82,15 @@ bool SearchForAllAobScanTargets(std::vector<AobScanTarget*> targets,
             results = std::move(resultCandidates);
         }
         if (results.empty()) {
-            errors.emplace_back(fmt::format("AobScanUtils: validator failed for all targets '{}' with sequence {} for result 0x{:x}+offset",
-                                            name, bytes2hex(sequence), rawResultSet[0]));
+            errors.emplace_back(fmt::format(
+                    "AobScanUtils: validator failed for all targets '{}' with sequence '{}' mask '{}' for result 0x{:x}+offset",
+                    name, bytes2hex(sequence), bytes2hex(mask), rawResultSet[0]));
             hasFailed = true;
             continue;
         } else if (results.size() > 1) {
-            std::string msg = fmt::format("AobScanUtils: validator passed too many for {} targets '{}' with sequence {} for results 0x{:x}+offset, result: ",
-                                          results.size(), name, bytes2hex(sequence), rawResultSet[0]);
+            std::string msg = fmt::format(
+                    "AobScanUtils: validator passed too many for {} targets '{}' with sequence '{}' mask '{}' for results 0x{:x}+offset, result: ",
+                    results.size(), name, bytes2hex(sequence), bytes2hex(mask), rawResultSet[0]);
             for (auto result: results) {
                 msg += fmt::format("0x{:x}, ", result);
             }
@@ -80,6 +99,13 @@ bool SearchForAllAobScanTargets(std::vector<AobScanTarget*> targets,
             continue;
         } else {
             target->results.emplace_back(results[0]);
+            // save to cache
+            auto& cache = qauxv::ConfigManager::GetCache();
+            // head up: we use rawResultSet[0] as cache value, not results[0]
+            // because the offsetForResult is not applied to the cache value
+            // nor does the FindByteSequenceImpl know about it
+            cache.PutUInt64(cacheValueKey, rawResultSet[0]);
+            cache.PutUInt64(cacheVersionKey, currentVersion);
         }
     }
     return !hasFailed;

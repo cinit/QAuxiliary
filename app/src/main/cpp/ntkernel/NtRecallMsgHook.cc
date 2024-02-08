@@ -17,6 +17,7 @@
 #include <sys/mman.h>
 #include <ucontext.h>
 #include <type_traits>
+//#include <chrono>
 #include <unordered_map>
 #include <memory>
 #include <unordered_set>
@@ -395,6 +396,7 @@ bool InitInitNtKernelRecallMsgHook() {
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
         std::vector<std::string> errorMsgList;
+        // auto start = std::chrono::steady_clock::now();
         if (!SearchForAllAobScanTargets({&targetRecallC2cSysMsg, &targetRecallGroupSysMsg, &targetGetDecoder},
                                         gLibkernelBaseAddress, true, errorMsgList)) {
             LOGE("InitInitNtKernelRecallMsgHook SearchForAllAobScanTargets failed");
@@ -405,6 +407,8 @@ bool InitInitNtKernelRecallMsgHook() {
             }
             return false;
         }
+        // auto end = std::chrono::steady_clock::now();
+        // LOGD("InitInitNtKernelRecallMsgHook AobScan elapsed: {}us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
 
         if (auto pkg = HostInfo::GetPackageName(); pkg != "com.tencent.mobileqq") {
             TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, unexpected package name: {}", pkg);

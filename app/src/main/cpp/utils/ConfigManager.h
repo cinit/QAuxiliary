@@ -61,6 +61,11 @@ public:
     [[nodiscard]] int64_t GetInt64(const std::string& key, int64_t defaultValue);
     void PutInt64(const std::string& key, int64_t value);
 
+    // uint64
+    [[nodiscard]] std::optional<uint64_t> GetUInt64(const std::string& key);
+    [[nodiscard]] uint64_t GetUInt64(const std::string& key, uint64_t defaultValue);
+    void PutUInt64(const std::string& key, uint64_t value);
+
     // float
     [[nodiscard]] std::optional<float> GetFloat(const std::string& key);
     [[nodiscard]] float GetFloat(const std::string& key, float defaultValue);

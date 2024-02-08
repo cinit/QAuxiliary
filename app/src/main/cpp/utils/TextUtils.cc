@@ -24,6 +24,8 @@
 
 #include "TextUtils.h"
 
+#include <fmt/format.h>
+
 namespace utils {
 
 std::vector<std::string> SplitString(std::string_view str, std::string_view delimiter) {
@@ -44,6 +46,18 @@ inline bool IsPrintableAscii(char c) noexcept {
 std::string LastPartOf(std::string_view str, std::string_view delimiter) {
     auto parts = SplitString(str, delimiter);
     return parts[parts.size() - 1];
+}
+
+std::string bytes2hex(std::span<const uint8_t> bytes) {
+    if (bytes.empty()) {
+        return {};
+    }
+    std::string result;
+    result.reserve(bytes.size() * 2);
+    for (uint8_t byte: bytes) {
+        result += fmt::format("{:02x}", byte);
+    }
+    return result;
 }
 
 }

@@ -29,6 +29,7 @@
 #include <string_view>
 #include <string>
 #include <cstdint>
+#include <span>
 
 namespace utils {
 
@@ -37,6 +38,8 @@ std::vector<std::string> SplitString(std::string_view str, std::string_view deli
 bool IsPrintableAscii(char c) noexcept;
 
 std::string LastPartOf(std::string_view str, std::string_view delimiter);
+
+std::string bytes2hex(std::span<const uint8_t> bytes);
 
 }
 

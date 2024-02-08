@@ -29,6 +29,7 @@ public:
 
     std::string name; // for debugging purpose only
     std::vector<uint8_t> sequence;
+    std::vector<uint8_t> mask; // optional, if not provided, the mask is all 0xFF
     int step = 0;
     bool execMemOnly = false;
     std::vector<int64_t> offsetsForResult;
@@ -38,9 +39,9 @@ public:
 
     AobScanTarget() = default;
 
-    AobScanTarget(std::string name, std::vector<uint8_t> sequence, int step, bool execMemOnly, int64_t offsetsForResult,
-                  std::optional<Validator> resultValidator)
-            : name(std::move(name)), sequence(std::move(sequence)), step(step), execMemOnly(execMemOnly),
+    AobScanTarget(std::string name, std::vector<uint8_t> sequence, std::vector<uint8_t> mask, int step, bool execMemOnly,
+                  int64_t offsetsForResult, std::optional<Validator> resultValidator)
+            : name(std::move(name)), sequence(std::move(sequence)), mask(std::move(mask)), step(step), execMemOnly(execMemOnly),
               offsetsForResult(std::move(offsetsForResult)), resultValidator(std::move(resultValidator)) {}
 
     inline AobScanTarget& WithName(std::string newName) {
@@ -50,6 +51,11 @@ public:
 
     inline AobScanTarget& WithSequence(std::vector<uint8_t> newSequence) {
         this->sequence = std::move(newSequence);
+        return *this;
+    }
+
+    inline AobScanTarget& WithMask(std::vector<uint8_t> newMask) {
+        this->mask = std::move(newMask);
         return *this;
     }
 
