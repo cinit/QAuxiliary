@@ -96,5 +96,5 @@ target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
 target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
 
 target_link_libraries(qauxv dobby mmkv dexkit_static unwindstack base silk
-        c dl fmt-header-only z lsplant_static absl::flat_hash_map
+        c dl fmt-header-only z lsplant_static
         ${ANDROID_LIBS})
