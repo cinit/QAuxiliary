@@ -99,6 +99,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             Notification::class.java,
             Int::class.javaPrimitiveType
         )
+
         lateinit var buildNotification: Method
         lateinit var recentInfoBuilder: Method
         cNotificationFacade.declaredMethods.forEach {
@@ -175,17 +176,14 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 param.args[0] = notification
             }
         }
-
-        XposedHelpers.findAndHookMethod(
-            "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz,
-            "cancelAll",
-            object : XC_MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    if (!isEnabled || LicenseStatus.sDisableCommonHooks) return
-                    historyMessage.clear()
-                }
-            }
-        )
+        hookBeforeIfEnabled(
+            Reflex.findMethod(
+                "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz!!,
+                "cancelAll"
+            )
+        ) {
+            historyMessage.clear()
+        }
         return true
     }
 
@@ -245,7 +243,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 .build())
             messageStyle.conversationTitle = mainName
             messageStyle.isGroupConversation = groupUin != null
-            historyMessage["$mainUin"] = messageStyle
+            historyMessage["$channelId+$mainUin"] = messageStyle
         }
         var senderPerson: Person? = null
         if (groupUin != null) {
