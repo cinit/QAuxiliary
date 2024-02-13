@@ -109,7 +109,7 @@ object FileRecvRedirect : CommonConfigFunctionHook(SyncUtils.PROC_ANY and (SyncU
                 .setTitle("下载文件重定向")
                 .setPositiveButton("保存") { _, _ ->
                     val path = et_path.text.toString()
-                    if (checkPathAvailable(path).not()) {
+                    if (cb_enable.isChecked && checkPathAvailable(path).not()) {
                         Toasts.show(activity, "目录无效")
                         return@setPositiveButton
                     }
