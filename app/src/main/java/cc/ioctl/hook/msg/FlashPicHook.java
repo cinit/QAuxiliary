@@ -21,6 +21,7 @@
  */
 package cc.ioctl.hook.msg;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
 import static io.github.qauxv.util.Initiator._MessageRecord;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
@@ -32,11 +33,14 @@ import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
+import de.robv.android.xposed.XC_MethodHook;
+import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.CBasePicDlProcessor;
 import io.github.qauxv.util.dexkit.CFlashPicHelper;
 import io.github.qauxv.util.dexkit.CItemBuilderFactory;
@@ -45,6 +49,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import top.linl.util.reflect.FieldUtils;
 
 /**
  * Peak frequency: ~40 invocations per second
@@ -86,11 +91,31 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         if (QAppUtils.isQQnt()){
-            HookUtils.hookAfterIfEnabled(this, MsgRecord.class.getDeclaredMethod("getSubMsgType"),param -> {
-                int result = (int) param.getResult();
-                if (result == 8194)param.setResult(2);
-                else if (result == 12288)param.setResult(4096);
-            });
+            if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+                XposedBridge.hookAllConstructors(MsgRecord.class, new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(@NonNull MethodHookParam param) {
+                        try {
+                            if (isEnabled()){
+                                MsgRecord msgRecord = (MsgRecord) param.thisObject;
+                                int subMsgType = msgRecord.getSubMsgType();
+                                if ((subMsgType & 8192) != 0){
+                                    FieldUtils.setField(msgRecord, "subMsgType", subMsgType & ~8192);
+                                }
+                            }
+                        } catch (Exception e) {
+                            INSTANCE.traceError(e);
+                        }
+                    }
+                });
+            }else {
+                HookUtils.hookAfterIfEnabled(this, MsgRecord.class.getDeclaredMethod("getSubMsgType"),param -> {
+                    int result = (int) param.getResult();
+                    if (result == 8194)param.setResult(2);
+                    else if (result == 12288)param.setResult(4096);
+                });
+            }
+
             return true;
         }
         Class<?> clz = DexKit.loadClassFromCache(CFlashPicHelper.INSTANCE);
