@@ -22,11 +22,11 @@
 
 package awoo.linwenxuan04.hook
 
-import com.github.kyuubiran.ezxhelper.utils.loadClass
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
@@ -39,7 +39,7 @@ import xyz.nextalone.util.replace
 object ChannelProxyHook : CommonSwitchFunctionHook() {
 
     override val name = "环境检测包(trpc.o3.*)拦截"
-    override val description = "拦截trpc.o3*包体以防止QQ上报环境检测(其中包含root/magisk/xposed安装情况)，防止新号封号，不建议打开。"
+    override val description = "拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率，未经测试，如无特殊情况不建议打开。"
     override val targetProcesses: Int = SyncUtils.PROC_MSF
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83)
@@ -48,8 +48,8 @@ object ChannelProxyHook : CommonSwitchFunctionHook() {
     override val isApplicationRestartRequired = true
 
     override fun initOnce(): Boolean {
-        val clazz = loadClass("com.tencent.mobileqq.channel.ChannelProxy")
-        clazz.method("sendMessage", Void::class.java, String::class.java, ByteArray::class.java, Long::class.java)!!
+        val clazz = Initiator.loadClass("com.tencent.mobileqq.channel.ChannelProxyExt")
+        clazz.method("sendMessage", Void.TYPE, String::class.java, ByteArray::class.java, Long::class.java)!!
             .replace(this) {
                 Log.i("已拦截包: ${it.args[0]}，包ID: ${it.args[2]}")
             }
