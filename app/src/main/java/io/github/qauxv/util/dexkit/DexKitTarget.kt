@@ -849,3 +849,17 @@ data object TextMsgItem_getText: DexKitTarget.UsingDexkit() {
     override val declaringClass: String = "com.tencent.mobileqq.aio.msg.TextMsgItem"
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
+
+data object ChatSettingForTroop_InitUI_TIM : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("initUI: time = ")
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.strInClsName("ChatSettingForTroop")
+}
+
+data object FormItem_TIM : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = false
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("RobotMemberFormItem", "setRobotRedDot"))
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
