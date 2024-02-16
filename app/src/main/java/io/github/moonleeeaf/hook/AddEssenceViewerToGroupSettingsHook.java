@@ -43,7 +43,7 @@ public class AddEssenceViewerToGroupSettingsHook extends CommonSwitchFunctionHoo
 
 	@Override
 	public String getDescription() {
-		return "本功能仅在 TIM 3.5.1 测试通过";
+		return "未经测试，出现问题请报告 Issue";
 	}
 
 	@Override
