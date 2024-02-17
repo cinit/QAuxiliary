@@ -58,7 +58,13 @@ public class AddEssenceViewerToGroupSettingsHook extends CommonSwitchFunctionHoo
     @NonNull
     @Override
     public String getName() {
-        return "在群设置页添加精华消息入口 (TIM)";
+        return "在群设置页添加精华消息入口";
+    }
+  
+    @NonNull
+    @Override
+    public String getDescription() {
+        return "本功能仅针对 TIM 用户\n如果打开后的列表为空，可能是由于 p_skey 不在内置浏览器的 Cookie 内，可以尝试打开群机器人页面，随意点击一个资料卡以解决（即使网页提示错误）\n不保证永久可用";
     }
 
     @NonNull
@@ -68,6 +74,7 @@ public class AddEssenceViewerToGroupSettingsHook extends CommonSwitchFunctionHoo
     }
 
     // 根据 Lcom/tencent/mobileqq/activity/ChatSettingForTroop; 进行编写
+    // 感谢 klxiaoniu 大佬对本功能进行的修复和改善 :)
     @Override
     public boolean initOnce() throws Exception {
         // 第一次写这么复杂的功能
