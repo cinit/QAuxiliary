@@ -45,15 +45,12 @@ import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
-import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
-import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
@@ -233,7 +230,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             channelId = NotifyChannel.FRIEND
         }
 
-        var messageStyle = historyMessage["$mainUin"]
+        var messageStyle = historyMessage["$channelId+$mainUin"]
 
         if (messageStyle == null) {
             messageStyle = MessagingStyle(Person.Builder()
