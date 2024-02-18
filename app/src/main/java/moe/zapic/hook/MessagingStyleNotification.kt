@@ -45,12 +45,12 @@ import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
-import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.ResUtils
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
@@ -139,6 +139,9 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 var groupName: String? = null
                 var groupUin: Long? = null
                 var groupIcon: IconCompat? = null
+                val isSpecial = info.specialCareFlag == 1.toByte() || info.listOfSpecificEventTypeInfosInMsgBox.toString().contains("eventTypeInMsgBox=1006")
+                // 特别关心判定改自9.0.17版本方法：
+                // Lcom/tencent/mobileqq/app/notification/processor/basemessage/NTC2CFriendNotificationProcessor;->s(Lcom/tencent/qqnt/kernel/nativeinterface/RecentContactInfo;)Z
 
                 // 好友消息
                 when (info.chatType) {
@@ -168,7 +171,8 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     groupUin,
                     groupIcon,
                     shortcut,
-                    oldNotification
+                    oldNotification,
+                    isSpecial
                 )
                 param.args[0] = notification
             }
@@ -211,7 +215,8 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         groupUin: Long?,
         groupIcon: IconCompat?,
         shortcut: ShortcutInfoCompat,
-        oldNotification: Notification
+        oldNotification: Notification,
+        isSpecial: Boolean
     ): Notification {
         val mainUin: Long
         val mainName: String?
@@ -227,7 +232,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             mainUin = senderUin
             mainName = senderName
             mainIcon = senderIcon
-            channelId = NotifyChannel.FRIEND
+            channelId = if (isSpecial) NotifyChannel.FRIEND_SPECIAL else NotifyChannel.FRIEND
         }
 
         var messageStyle = historyMessage["$channelId+$mainUin"]
@@ -272,7 +277,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         if (notificationChannels.any { notificationChannel ->
                 notificationManager.getNotificationChannel(notificationChannel.id) == null
             }) {
-            XposedBridge.log("QNotifyEvolutionXp: Creating channels...")
+            Log.i("QNotifyEvolutionXp: Creating channels...")
             notificationManager.createNotificationChannelGroup(notificationChannelGroup)
             notificationManager.createNotificationChannels(notificationChannels)
         }
