@@ -59,8 +59,8 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey =
         if (disablePluginDelayableHook) {
             error("disablePluginDelayableHook")
         }
+        Log.i("startHook: $pluginID")
         try {
-            Log.i("startHook: $pluginID")
             if ("Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->getProxy()Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;".method.apply {
                     isAccessible = true
                 }.invoke(null) == null) {
@@ -74,6 +74,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey =
                         "Lcooperation/plugin/PluginAdapterImpl;",   //8.8.50
                         "Lbghq;",   //8.2.11 Play
                         "Lbfdk;",   //8.2.6
+                        "Lavgk;",   //TIM 3.5.6
                         "Lavel;",   //TIM 3.5.2
                     ).firstNotNullOf { Initiator.load(it) }.newInstance()
                     // implements Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;
@@ -81,6 +82,10 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey =
                 )
                 Log.i("setProxy success")
             }
+        } catch (e: Exception) {
+            traceError(e)
+        }
+        try {
             val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
             startHook(classLoader)
         } catch (e: InvocationTargetException) {
