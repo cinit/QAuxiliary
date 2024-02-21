@@ -21,8 +21,8 @@ eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.8.0.
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "4.3" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.16.0" }
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.7.3" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.2" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.6.3" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
@@ -39,7 +39,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.11" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.12" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
