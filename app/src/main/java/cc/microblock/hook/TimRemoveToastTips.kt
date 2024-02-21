@@ -36,8 +36,8 @@ import xyz.nextalone.util.set
 @FunctionHookEntry
 @UiItemAgentEntry
 object TimRemoveToastTips : CommonSwitchFunctionHook() {
-    override val name = "移除屏蔽消息群的“修改消息设置”提示（仅 TIM）"
-    override val description = "https://github.com/cinit/QAuxiliary/issues/667";
+    override val name = "移除群聊“修改/设置消息设置”提示"
+    override val description = "本功能仅在 TIM 3.5.1 测试通过，功能可能对其他版本或其他客户端无效\n\n功能基于 Issue #781 和 #667 移植实现";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
@@ -45,6 +45,14 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
         HookUtils.hookBeforeIfEnabled(
             this, Reflex.findMethod(
                 Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$8\$1"),
+                "run")
+        ) {
+            it.result = null;
+        }
+        // 漏了一个“你可以在这里xxxxx”，实在吐了，这玩意不定时的
+        HookUtils.hookBeforeIfEnabled(
+            this, Reflex.findMethod(
+                Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$38"),
                 "run")
         ) {
             it.result = null;
