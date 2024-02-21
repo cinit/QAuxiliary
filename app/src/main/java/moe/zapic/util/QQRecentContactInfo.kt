@@ -21,7 +21,9 @@
 
 package moe.zapic.util
 
+import io.github.qauxv.util.Log
 import xyz.nextalone.util.get
+
 
 class QQRecentContactInfo(obj: Any) {
     var abstractContent: ArrayList<Any>? = null
@@ -39,6 +41,7 @@ class QQRecentContactInfo(obj: Any) {
     var isMsgDisturb: Boolean? = null
     var isOnlineMsg: Boolean? = null
     var keepHiddenFlag: Int? = null
+    var listOfSpecificEventTypeInfosInMsgBox: ArrayList<Any>? = null
     var msgId: Long? = null
     var msgSeq: Long? = null
     var msgTime: Long? = null
@@ -70,7 +73,7 @@ class QQRecentContactInfo(obj: Any) {
             try {
                 it.set(this, obj.get(it.name))
             } catch (e: Throwable) {
-                return@forEach
+                Log.e(e)
             }
         }
     }
