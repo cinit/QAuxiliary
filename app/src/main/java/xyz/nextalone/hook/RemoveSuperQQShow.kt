@@ -26,6 +26,8 @@ import android.view.View
 import cc.ioctl.util.msg.MessageManager
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -34,6 +36,8 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -43,7 +47,12 @@ object RemoveSuperQQShow : CommonSwitchFunctionHook() {
     override val name: String = "屏蔽主界面超级QQ秀图标"
 
     override fun initOnce() = throwOrTrue {
-        if (hostInfo.versionCode >= QQVersion.QQ_8_9_10) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_20)) {
+            // ConversationTitleBtnConfig 中判断配置是否有效的方法
+            "Lcom/tencent/mobileqq/util/conversationtitlebutton/a;".clazz!!.method {
+                it.paramCount == 0 && it.returnType == Boolean::class.java
+            }!!.hookReturnConstant(false)
+        } else if (hostInfo.versionCode >= QQVersion.QQ_8_9_10) {
             findMethod(Initiator._ZPlanBadgeManagerImpl()) {
                 name == "onCreateView" && returnType == Void.TYPE && parameterTypes.contentEquals(arrayOf(View::class.java, MessageManager.booleanType))
             }.hookBefore {
