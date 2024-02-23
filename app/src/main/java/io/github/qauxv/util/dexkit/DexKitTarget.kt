@@ -823,28 +823,44 @@ data object NT_SysAndEmojiResInfo : DexKitTarget.UsingStringVector() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object X5_Properties_conf: DexKitTarget.UsingStr() {
+data object X5_Properties_conf : DexKitTarget.UsingStr() {
     override val traitString: Array<String> = arrayOf("setting_forceUseSystemWebview", "result_systemWebviewForceUsed", "debug.conf")
     override val declaringClass: String = "com.tencent.smtt.utils.LoadPropertiesUtils"
     override val filter = DexKitFilter.allowAll
 }
 
-data object EmotionDownloadEnableSwitch: DexKitTarget.UsingStringVector() {
+data object EmotionDownloadEnableSwitch : DexKitTarget.UsingStringVector() {
     override val findMethod = true
-    override val traitStringVectors = arrayOf(arrayOf("emotion_download_disable_8980_887036489","QRoute.api(IUnitedConfig…le_8980_887036489"))
+    override val traitStringVectors = arrayOf(arrayOf("emotion_download_disable_8980_887036489", "QRoute.api(IUnitedConfig…le_8980_887036489"))
     override val declaringClass: String = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/emotionintegrate/")
 }
 
 
-data object QQ_SETTING_ME_CONFIG_CLASS: DexKitTarget.UsingStringVector() {
-    override val findMethod: Boolean = false;
-    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("超级QQ秀","我的视频","我的文件","我的收藏","我的相册","我的小游戏","免流量","我的个性装扮","财富小金库","我的QQ钱包","开通会员","我的小世界","直播"))
+data object QQ_SETTING_ME_CONFIG_CLASS : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = false
+    override val traitStringVectors: Array<Array<String>> = arrayOf(
+        arrayOf(
+            "超级QQ秀",
+            "我的视频",
+            "我的文件",
+            "我的收藏",
+            "我的相册",
+            "我的小游戏",
+            "免流量",
+            "我的个性装扮",
+            "财富小金库",
+            "我的QQ钱包",
+            "开通会员",
+            "我的小世界",
+            "直播"
+        )
+    )
     override val declaringClass: String = ""
     override val filter = DexKitFilter.allowAll
 }
 
-data object TextMsgItem_getText: DexKitTarget.UsingDexkit() {
+data object TextMsgItem_getText : DexKitTarget.UsingDexkit() {
     override val findMethod: Boolean = true
     override val declaringClass: String = "com.tencent.mobileqq.aio.msg.TextMsgItem"
     override val filter: dexkitFilter = DexKitFilter.allowAll
@@ -860,6 +876,20 @@ data object ChatSettingForTroop_InitUI_TIM : DexKitTarget.UsingStr() {
 data object FormItem_TIM : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = false
     override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("RobotMemberFormItem", "setRobotRedDot"))
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
+data object QQSettingMeABTestHelper_isZPlanExpGroup : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = true
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("isZPlanExpGroup: ", "QQSettingMeABTestHelper"))
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
+data object QQSettingMeABTestHelper_isV9ExpGroup : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = true
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("isV9ExpGroup: ", "QQSettingMeABTestHelper"))
     override val declaringClass: String = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }

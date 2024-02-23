@@ -65,7 +65,8 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_6_0)
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val builderClzName = if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "h"
+        val builderClzName = if (requireMinQQVersion(QQVersion.QQ_9_0_20)) "i"
+        else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "h"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_0)) "g"
         else "TroopFileItemBuilder"
         val builder = ("com.tencent.mobileqq.troop.widget.$builderClzName").findClass(classLoader)
@@ -94,7 +95,8 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             }
         }
 
-        val clazzName = if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "d"
+        val clazzName = if (requireMinQQVersion(QQVersion.QQ_9_0_20)) "e"
+        else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "d"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_0)) "c"
         else "TrooFileTextViewMenuBuilder"
         val updateRightMenuItem =
