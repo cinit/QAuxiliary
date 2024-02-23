@@ -24,6 +24,7 @@ package xyz.nextalone.hook
 import cc.hicore.QApp.QAppUtils
 import com.github.kyuubiran.ezxhelper.utils.getFieldByType
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -43,6 +44,7 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
         "转发",
         "收藏",
         "回复",
+        "引用",
         "多选",
         "撤回",
         "删除",
@@ -80,7 +82,7 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
                     val list = it.args[0].javaClass.getFieldByType(List::class.java).get(it.args[0]) as MutableList<*>
                     if (list.isEmpty()) return@hookBefore
                     val getName = list[0]?.javaClass!!.superclass!!.method { m ->
-                        m.returnType == String::class.java && m.name != "toString"
+                        m.returnType == String::class.java && m.isAbstract
                     }!!
                     list.forEach { item ->
                         val str = getName.invoke(item)!! as String
