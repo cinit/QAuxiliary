@@ -28,7 +28,7 @@ jobs:
           submodules: 'recursive'
           fetch-depth: 0
       - name: set up JDK 17
-        uses: actions/setup-java@v4.0.0
+        uses: actions/setup-java@v4.1.0
         with:
           java-version: '17'
           distribution: 'adopt'
@@ -50,7 +50,7 @@ jobs:
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
           ccache -zp
       - name: Cache Native Build
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4.0.1
         with:
           path: |
             ~/.cache/ccache
@@ -198,7 +198,7 @@ jobs:
           git status telegram-bot-api >> telegram-bot-api-status
       - name: Cache Bot API Binary
         id: cache-bot-api
-        uses: actions/cache@v4.0.0
+        uses: actions/cache@v4.0.1
         with:
           path: telegram-bot-api-binary
           key: CI-telegram-bot-api-${{ hashFiles('telegram-bot-api-status') }}
