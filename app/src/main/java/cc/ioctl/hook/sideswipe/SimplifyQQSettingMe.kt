@@ -35,7 +35,7 @@ import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.getStaticObjectOrNull
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XC_MethodReplacement
@@ -53,23 +53,20 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup
 import io.github.qauxv.util.dexkit.QQ_SETTING_ME_CONFIG_CLASS
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.*
-import xyz.nextalone.util.clazz
-import xyz.nextalone.util.get
-import xyz.nextalone.util.hide
-import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
-import java.lang.reflect.Modifier
 import java.util.SortedMap
 
 //侧滑栏精简
 @FunctionHookEntry
 @UiItemAgentEntry
-object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",targets = arrayOf(QQ_SETTING_ME_CONFIG_CLASS)) {
+object SimplifyQQSettingMe :
+    MultiItemDelayableHook("SimplifyQQSettingMe", targets = arrayOf(QQ_SETTING_ME_CONFIG_CLASS, QQSettingMeABTestHelper_isZPlanExpGroup)) {
 
     const val MidContentName = "SimplifyQQSettingMe::MidContentName"
 
@@ -246,7 +243,8 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",target
 
         // 转化为View之前删除数据
         if (requireMinQQVersion(QQVersion.QQ_8_9_90)) {
-            val m = DexKit.requireClassFromCache(QQ_SETTING_ME_CONFIG_CLASS).declaredMethods.first { it.isPublic && it.returnType.name.contains("QQSettingMeBizBean") }
+            val m =
+                DexKit.requireClassFromCache(QQ_SETTING_ME_CONFIG_CLASS).declaredMethods.first { it.isPublic && it.returnType.name.contains("QQSettingMeBizBean") }
             m.hookAfter { param ->
                 val qqSettingMeBizBeanArray = param.result
                 val cSettingMeBizBean = qqSettingMeBizBeanArray::class.java.componentType!!
@@ -255,30 +253,35 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",target
                 // 遍历这个数组
                 for (i in 0 until Array.getLength(param.result) - 1) {
                     // 获取单个QQSettingMeBizBean
-                    val item = Array.get(qqSettingMeBizBeanArray,i)!!
+                    val item = Array.get(qqSettingMeBizBeanArray, i)!!
                     val itemId = item.get(String::class.java) as String
                     // 获取需要被删掉的列表  ( 超级QQ秀直接删除有bug[空指针(QQ你怎么不校验一下，哭)]，应该在View里面隐藏
-                    val del = items2Hide.filter { activeItems.contains(it.key) }.values.toMutableList().apply { remove("d_zplan") }
+                    // 更新：9.0.20可以直接移除
+                    val del = items2Hide.filter { activeItems.contains(it.key) }.values.toMutableList()
+                        .apply { if (!requireMinQQVersion(QQVersion.QQ_9_0_20)) remove("d_zplan") }
                     // 如果不为需要删除的，就添加到返回列表
-                    if (!del.contains(itemId)){ purifiedList.add(item) }
+                    if (!del.contains(itemId)) {
+                        purifiedList.add(item)
+                    }
                 }
-                val returnArray = Array.newInstance(cSettingMeBizBean,purifiedList.size)
-                for (i in purifiedList.indices){
-                    Array.set(returnArray,i,purifiedList[i])
+                val returnArray = Array.newInstance(cSettingMeBizBean, purifiedList.size)
+                for (i in purifiedList.indices) {
+                    Array.set(returnArray, i, purifiedList[i])
                 }
                 param.result = returnArray
             }
         }
 
-        // View层隐藏超级QQ秀  （到这里应该只需要处理 超级QQ秀 了
         if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
-            if (clazz != null) {
+            // View层隐藏超级QQ秀  （到这里应该只需要处理 超级QQ秀 了
+            // 9.0.20起此段代码无效果，且该版本起超级QQ秀可以在上面移除，所以不再执行
+            if (clazz != null && !requireMinQQVersion(QQVersion.QQ_9_0_20)) {
                 val cz = clazz.superclass.superclass
                 val m = cz.findMethod { returnType == View::class.java && paramCount == 1 && parameterTypes[0] == String::class.java }
                 m.hookAfter {
                     for (activeItem in activeItems) {
                         if (items2Hide[activeItem] == it.args[0]) {
-                            if (it.result != null){
+                            if (it.result != null) {
                                 val view = it.result as View
                                 view.setViewZeroSize()
                             }
@@ -304,8 +307,7 @@ object SimplifyQQSettingMe : MultiItemDelayableHook("SimplifyQQSettingMe",target
 
         // 关闭下拉形象展示abtest开关
         if (activeItems.contains("下拉形象展示")) {
-            Initiator.load("com.tencent.mobileqq.activity.qqsettingme.utils.a")?.getDeclaredMethod(if (requireMinQQVersion(QQVersion.QQ_8_9_90)) "g" else "f")!!
-                .hookBefore { it.result = false }
+            DexKit.requireMethodFromCache(QQSettingMeABTestHelper_isZPlanExpGroup).hookReturnConstant(false)
         }
     }
 

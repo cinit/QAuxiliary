@@ -27,16 +27,21 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.method
+import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_multi") {
 
-    override val preferenceTitle = "精简主页对话框"
+    override val preferenceTitle = "精简主页加号菜单"
+    override val extraSearchKeywords: Array<String> = arrayOf("+号菜单")
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
 
-    override val allItems = setOf("创建群聊", "加好友/群", "匹配聊天", "一起派对", "扫一扫", "面对面快传", "收付款")
+    override val allItems = setOf("创建群聊", "创建频道", "加好友/群", "匹配聊天", "一起派对", "扫一扫", "面对面快传", "收付款")
     override val defaultItems = setOf<String>()
 
     override fun initOnce() = throwOrTrue {
