@@ -75,7 +75,7 @@ jobs:
           echo "APK_FILE_ARM64=$(find app/build/outputs/ci -name '*arm64.apk')" >> $GITHUB_ENV
           echo "APK_FILE_ARMALL=$(find app/build/outputs/ci -name '*armAll.apk')" >> $GITHUB_ENV
           echo "APK_FILE_UNIVERSAL=$(find app/build/outputs/ci -name '*universal.apk')" >> $GITHUB_ENV
-          echo "SYMBOL_FILE=app/build/intermediates/native_debug_metadata/release/out" >> $GITHUB_ENV
+          echo "SYMBOL_FILE=app/build/intermediates/native_debug_metadata/release/extractReleaseNativeDebugMetadata/out" >> $GITHUB_ENV
         env:
           KEYSTORE_PATH: "../keystore.jks"
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
