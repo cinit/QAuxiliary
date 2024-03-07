@@ -22,8 +22,8 @@
 
 package cc.ioctl.hook.chat
 
-import cc.ioctl.util.hookBeforeIfEnabled
-import com.github.kyuubiran.ezxhelper.utils.emptyParam
+import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -37,20 +37,16 @@ import io.github.qauxv.util.requireMinQQVersion
 object DisableLightInteraction : CommonSwitchFunctionHook() {
 
     override val name = "禁用轻互动"
-    override val description = "[QQ 8.9.78+] 隐藏聊天列表有时出现的表情 (早上好, 戳一戳, 晚安) 点一下发一条消息然后消失"
+    override val description = "隐藏聊天列表有时出现的表情 (早上好, 戳一戳, 晚安) 点一下发一条消息然后消失"
     override val extraSearchKeywords: Array<String> = arrayOf("开始全新的一天，早上好啊", "戳一戳，看看他在干嘛", "夜深了，和他道一声晚安吧")
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MSG_LIST
-    override val isApplicationRestartRequired = true
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_78)
 
     override fun initOnce(): Boolean {
         val kLIAConfigManager = Initiator.loadClass("com.tencent.qqnt.biz.lightbusiness.lightinteraction.LIAConfigManager")
-        val initConfigSync = kLIAConfigManager.declaredMethods.single {
-            it.emptyParam && it.returnType == java.util.Map::class.java
-        }
-        hookBeforeIfEnabled(initConfigSync) {
-            it.result = emptyMap<Int, Any>()
-        }
+        kLIAConfigManager.declaredMethods.single {
+            it.paramCount == 1 && it.returnType == List::class.java
+        }.hookReturnConstant(null)
         return true
     }
 
