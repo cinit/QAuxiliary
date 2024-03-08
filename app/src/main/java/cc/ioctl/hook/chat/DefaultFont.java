@@ -50,6 +50,8 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Set;
 import java.util.stream.Collectors;
+import kotlin.Lazy;
+import kotlin.LazyKt;
 import org.luckypray.dexkit.DexKitBridge;
 import org.luckypray.dexkit.query.FindMethod;
 import org.luckypray.dexkit.query.enums.UsingType;
@@ -64,6 +66,8 @@ import org.luckypray.dexkit.result.MethodDataList;
 public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinder {
 
     public static final DefaultFont INSTANCE = new DefaultFont();
+
+    private final Lazy<Class<VASMsgFont>> lazyVsfCls = LazyKt.lazy(() -> VASMsgFont.class);
 
     protected DefaultFont() {
         super("rq_default_font");
@@ -124,7 +128,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
         if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
-            XposedBridge.hookAllConstructors(VASMsgFont.class, new XC_MethodHook() {
+            XposedBridge.hookAllConstructors(lazyVsfCls.getValue(), new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(MethodHookParam param) {
                     VASMsgFont v = (VASMsgFont) param.thisObject;
@@ -132,10 +136,10 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                     v.magicFontType = 0;
                 }
             });
-        } else if (QAppUtils.isQQnt()){
-            Method getFontID = VASMsgFont.class.getDeclaredMethod("getFontId");
+        } else if (QAppUtils.isQQnt()) {
+            Method getFontID = lazyVsfCls.getValue().getDeclaredMethod("getFontId");
             HookUtils.hookBeforeIfEnabled(this, getFontID, param -> param.setResult(0));
-            Method getMagicFontType = VASMsgFont.class.getDeclaredMethod("getMagicFontType");
+            Method getMagicFontType = lazyVsfCls.getValue().getDeclaredMethod("getMagicFontType");
             HookUtils.hookBeforeIfEnabled(this, getMagicFontType, param -> param.setResult(0));
         } else {
             Method method = DexKit.loadMethodFromCache(NTextItemBuilder_setETText.INSTANCE);
