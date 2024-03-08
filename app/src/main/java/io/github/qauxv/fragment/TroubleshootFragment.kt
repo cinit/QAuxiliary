@@ -121,8 +121,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             },
             CategoryItem("清除与重置（不可逆）") {
                 textItem("重置模块设置", "不影响历史好友信息", onClick = clickToResetDefaultConfig)
-                textItem("清除[已恢复]的历史记录", "删除当前帐号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
-                textItem("清除所有的历史记录", "删除当前帐号下所有的历史好友记录", onClick = clickToClearAllFriends)
+                textItem("清除[已恢复]的历史记录", "删除当前账号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
+                textItem("清除所有的历史记录", "删除当前账号下所有的历史好友记录", onClick = clickToClearAllFriends)
                 textItem("清除所有的ShortCuts", "清除MessagingStyle通知等功能产生的ShortCuts", onClick = clickToClearShortCuts)
             },
             CategoryItem("测试") {
@@ -204,7 +204,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val clickToClearRecoveredFriends = confirmBeforeAction(
         """
-            此操作将删除当前帐号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
+            此操作将删除当前账号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
             如果因 BUG 大量好友被标记为已删除, 请先刷新好友列表, 然后再点击此按钮.
             此操作不可恢复
             """.trimIndent()
@@ -224,7 +224,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToClearAllFriends = confirmBeforeAction(
-        "此操作将删除当前帐号(" + getLongAccountUin()
+        "此操作将删除当前账号(" + getLongAccountUin()
             + ")下的 全部 的历史好友记录, 通常您不需要进行此操作. \n" +
             "如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友. \n" +
             "此操作不可恢复"
