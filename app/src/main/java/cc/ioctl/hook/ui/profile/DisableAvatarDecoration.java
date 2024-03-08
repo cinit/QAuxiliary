@@ -38,6 +38,8 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Method;
 import java.util.Objects;
+import kotlin.Lazy;
+import kotlin.LazyKt;
 
 //屏蔽头像挂件
 @FunctionHookEntry
@@ -45,6 +47,8 @@ import java.util.Objects;
 public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
 
     public static final DisableAvatarDecoration INSTANCE = new DisableAvatarDecoration();
+
+    private final Lazy<Class<VASMsgAvatarPendant>> lazyVapCls = LazyKt.lazy(() -> VASMsgAvatarPendant.class);
 
     protected DisableAvatarDecoration() {
         super("rq_disable_avatar_decoration");
@@ -65,7 +69,7 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws NoSuchMethodException {
         if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
-            XposedBridge.hookAllConstructors(VASMsgAvatarPendant.class, new XC_MethodHook() {
+            XposedBridge.hookAllConstructors(lazyVapCls.getValue(), new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(@NonNull MethodHookParam param) {
                     VASMsgAvatarPendant v = (VASMsgAvatarPendant) param.thisObject;
@@ -74,9 +78,9 @@ public class DisableAvatarDecoration extends CommonSwitchFunctionHook {
                 }
             });
             return true;
-        } else if (QAppUtils.isQQnt()){
-            HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantId"),param -> param.setResult(0L));
-            HookUtils.hookBeforeIfEnabled(this, VASMsgAvatarPendant.class.getDeclaredMethod("getPendantDiyInfoId"),param -> param.setResult(0));
+        } else if (QAppUtils.isQQnt()) {
+            HookUtils.hookBeforeIfEnabled(this, lazyVapCls.getValue().getDeclaredMethod("getPendantId"), param -> param.setResult(0L));
+            HookUtils.hookBeforeIfEnabled(this, lazyVapCls.getValue().getDeclaredMethod("getPendantDiyInfoId"), param -> param.setResult(0));
             return true;
         }
         for (Method m : Initiator.load("com.tencent.mobileqq.vas.PendantInfo").getDeclaredMethods()) {
