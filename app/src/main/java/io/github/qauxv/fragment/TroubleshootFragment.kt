@@ -40,6 +40,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
@@ -122,6 +123,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("重置模块设置", "不影响历史好友信息", onClick = clickToResetDefaultConfig)
                 textItem("清除[已恢复]的历史记录", "删除当前帐号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
                 textItem("清除所有的历史记录", "删除当前帐号下所有的历史好友记录", onClick = clickToClearAllFriends)
+                textItem("清除所有的ShortCuts", "清除MessagingStyle通知等功能产生的ShortCuts", onClick = clickToClearShortCuts)
             },
             CategoryItem("测试") {
                 textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
@@ -237,6 +239,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         }
         Thread.sleep(50)
         exitProcess(0)
+    }
+
+    private val clickToClearShortCuts = confirmBeforeAction("确定清除所有ShortCuts吗？") {
+        ShortcutManagerCompat.removeAllDynamicShortcuts(
+            HostInfo.getApplication().applicationContext
+        )
+        Toasts.success(requireContext(), "操作成功")
     }
 
     private fun confirmBeforeAction(confirmMessage: String, action: () -> Unit) = View.OnClickListener {
@@ -377,6 +386,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     DexKit.NO_SUCH_METHOD.toString() -> {
                         sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
+
                     else -> sb.append(text)
                 }
             }.onFailure { t ->
@@ -405,6 +415,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     DexKit.NO_SUCH_METHOD.toString() -> {
                         sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
+
                     else -> sb.append(text)
                 }
             }.onFailure { t ->
