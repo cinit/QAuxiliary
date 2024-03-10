@@ -28,6 +28,7 @@ import android.content.Intent
 import android.content.IntentFilter
 import android.os.Handler
 import android.os.HandlerThread
+import androidx.core.content.ContextCompat
 import com.github.kyuubiran.ezxhelper.utils.tryOrFalse
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XC_MethodReplacement
@@ -73,7 +74,6 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                 @Throws(Throwable::class)
                 override fun afterHookedMethod(param: MethodHookParam) {
                     tryOrFalse {
-                        super.afterHookedMethod(param)
                         if (toClose?.get() == true) {
                             XposedHelpers.callMethod(param.thisObject, "close")
                             return
@@ -88,7 +88,6 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                 @Throws(Throwable::class)
                 override fun afterHookedMethod(param: MethodHookParam) {
                     tryOrFalse {
-                        super.afterHookedMethod(param)
                         if (toClose?.get() == true) {
                             XposedHelpers.callMethod(param.thisObject, "close")
                             return
@@ -113,14 +112,14 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                     val intentFilter = IntentFilter()
                     intentFilter.addAction("mqq.intent.action.QQ_BACKGROUND")
                     intentFilter.addAction("mqq.intent.action.QQ_FOREGROUND")
-                    hostInfo.application.registerReceiver(object : BroadcastReceiver() {
+                    ContextCompat.registerReceiver(hostInfo.application, object : BroadcastReceiver() {
                         override fun onReceive(context: Context, intent: Intent) {
                             when (intent.action) {
                                 "mqq.intent.action.QQ_BACKGROUND" -> context.sendBroadcast(Intent(BRD_CLOSE_SOCKET))
                                 "mqq.intent.action.QQ_FOREGROUND" -> context.sendBroadcast(Intent(BRD_RELEASE_SOCKET))
                             }
                         }
-                    }, intentFilter)
+                    }, intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
                 }
             })
         }
@@ -141,7 +140,7 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                     val intentFilter = IntentFilter()
                     intentFilter.addAction(BRD_CLOSE_SOCKET)
                     intentFilter.addAction(BRD_RELEASE_SOCKET)
-                    hostInfo.application.registerReceiver(object : BroadcastReceiver() {
+                    ContextCompat.registerReceiver(hostInfo.application, object : BroadcastReceiver() {
                         override fun onReceive(context: Context, intent: Intent) {
                             when (intent.action) {
                                 BRD_CLOSE_SOCKET -> {
@@ -155,7 +154,7 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                                 BRD_RELEASE_SOCKET -> toClose!!.set(false)
                             }
                         }
-                    }, intentFilter)
+                    }, intentFilter, ContextCompat.RECEIVER_NOT_EXPORTED)
                 }
                 return XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
             }

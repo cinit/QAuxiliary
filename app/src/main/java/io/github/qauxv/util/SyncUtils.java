@@ -27,10 +27,12 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.ContextCompat;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
@@ -145,7 +147,7 @@ public class SyncUtils {
         filter.addAction(ENUM_PROC_REQ);
         filter.addAction(ENUM_PROC_RESP);
         filter.addAction(GENERIC_WRAPPER);
-        ctx.registerReceiver(recv, filter);
+        ContextCompat.registerReceiver(ctx, recv, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
         inited = true;
     }
 
