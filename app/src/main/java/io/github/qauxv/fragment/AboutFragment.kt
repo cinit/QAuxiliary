@@ -96,6 +96,11 @@ class AboutFragment : BaseRootLayoutFragment() {
                     textItem(hostInfo.hostName, value = hostVersionName) {
                         copyText(hostVersionName)
                     }
+                }
+                textItem("Build UUID", summary = BuildConfig.BUILD_UUID) {
+                    copyText(BuildConfig.BUILD_UUID)
+                }
+                if (isInHostProcess) {
                     textItem("模块热更新设置") {
                         SettingsUiFragmentHostActivity.startFragmentWithContext(
                             requireContext(),

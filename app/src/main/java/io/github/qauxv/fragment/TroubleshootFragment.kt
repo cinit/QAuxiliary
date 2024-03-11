@@ -64,6 +64,7 @@ import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
+import io.github.qauxv.startup.HookEntry
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
@@ -132,13 +133,14 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
             CategoryItem("调试信息") {
-                description(
-                    "PID: " + android.os.Process.myPid() +
-                        ", UID: " + android.os.Process.myUid() +
-                        ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
-                        "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
-                        HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
-                )
+                val statusInfo = "PID: " + android.os.Process.myPid() +
+                    ", UID: " + android.os.Process.myUid() +
+                    ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+                    "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
+                    HybridClassLoader.getXposedBridgeClassName() + "\n" +
+                    "module: " + HookEntry.getModulePath() + "\n" +
+                    "ctx.dataDir: " + hostInfo.application.dataDir
+                description(statusInfo, isTextSelectable = true)
                 description(generateDebugInfo(), isTextSelectable = true)
             }
         )
