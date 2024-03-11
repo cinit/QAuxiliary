@@ -32,7 +32,6 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.core.content.ContextCompat;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
@@ -136,6 +135,7 @@ public class SyncUtils {
         throw new AssertionError("No instance for you!");
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     public static void initBroadcast(Context ctx) {
         if (inited) {
             return;
@@ -147,7 +147,13 @@ public class SyncUtils {
         filter.addAction(ENUM_PROC_REQ);
         filter.addAction(ENUM_PROC_RESP);
         filter.addAction(GENERIC_WRAPPER);
-        ContextCompat.registerReceiver(ctx, recv, filter, ContextCompat.RECEIVER_NOT_EXPORTED);
+        // Must not use ContextImpl.registerReceiver here.
+        // QQ do not have $packageName.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ctx.registerReceiver(recv, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            ctx.registerReceiver(recv, filter);
+        }
         inited = true;
     }
 
