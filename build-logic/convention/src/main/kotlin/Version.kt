@@ -10,7 +10,7 @@ object Version {
     val buildToolsVersion = findBuildToolsVersion()
     const val minSdk = 24
     const val targetSdk = 34
-    const val versionName = "1.4.8"
+    const val versionName = "1.4.9"
 
     private const val defaultNdkVersion = "25.2.9519653"
     private const val defaultCMakeVersion = "3.22.1"
