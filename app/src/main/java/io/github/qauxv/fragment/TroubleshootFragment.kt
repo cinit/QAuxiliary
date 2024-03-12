@@ -30,6 +30,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Looper
+import android.os.MessageQueue
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.ForegroundColorSpan
@@ -69,6 +71,7 @@ import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Natives
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
@@ -131,6 +134,36 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开内置浏览器", "使用内置浏览器打开指定页面", onClick = clickToOpenBrowser)
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
+            },
+            CategoryItem("异常与崩溃测试") {
+                textItem("退出 Looper", "Looper.getMainLooper().quit() 没事别按", onClick = clickToTestCrashAction {
+                    val looper = Looper.getMainLooper()
+                    val queue = Reflex.getInstanceObject(looper, "mQueue", MessageQueue::class.java)
+                    Reflex.setInstanceObject(queue, "mQuitAllowed", true)
+                    looper.quit()
+                })
+                textItem("abort()", "没事别按", onClick = clickToTestCrashAction {
+                    val libc = Natives.dlopen("libc.so", Natives.RTLD_NOLOAD)
+                    if (libc == 0L) {
+                        error("dlopen libc.so failed")
+                    }
+                    val abort = Natives.dlsym(libc, "abort")
+                    if (abort == 0L) {
+                        val msg = Natives.dlerror()
+                        if (msg != null) {
+                            error(msg)
+                        } else {
+                            error("dlsym 'abort' failed")
+                        }
+                    }
+                    Natives.call(abort)
+                })
+                textItem("((void(*)())0)();", "空指针测试, 没事别按", onClick = clickToTestCrashAction {
+                    Natives.call(0)
+                })
+                textItem("*((int*)0)=0;", "空指针测试, 没事别按", onClick = clickToTestCrashAction {
+                    Natives.memset(0, 0, 1);
+                })
             },
             CategoryItem("调试信息") {
                 val statusInfo = "PID: " + android.os.Process.myPid() +
@@ -271,6 +304,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private fun actionOrShowError(action: () -> Unit) = View.OnClickListener {
+        runOrShowError(action)
+    }
+
+    private fun runOrShowError(action: () -> Unit) {
         try {
             action()
         } catch (e: Throwable) {
@@ -353,6 +390,31 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val nm = app.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val n = ExfriendManager.getCurrent().createNotiComp(nm, "Ticker", "Title", "Content", longArrayOf(100, 200, 200, 100), pi)
         nm.notify(ExfriendManager.ID_EX_NOTIFY, n)
+    }
+
+    private var mCrashActionWarned = false
+
+    private fun clickToTestCrashAction(action: () -> Unit): View.OnClickListener {
+        return actionOrShowError {
+            val ctx = requireContext()
+            if (!mCrashActionWarned) {
+                AlertDialog.Builder(ctx).apply {
+                    setTitle("警告")
+                    setMessage("此操作将会导致应用崩溃, 仅用于测试崩溃处理功能。\nPS: 经常崩溃容易造成聊天记录数据库损坏")
+                    setCancelable(true)
+                    setPositiveButton(android.R.string.ok, null)
+                    setNegativeButton(android.R.string.cancel, null)
+                }.show().apply {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        mCrashActionWarned = true
+                        dismiss()
+                        runOrShowError(action)
+                    }
+                }
+            } else {
+                action()
+            }
+        }
     }
 
     private val clickToStartHostDebugActivity = actionOrShowError {
