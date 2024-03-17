@@ -46,6 +46,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.util.IoUtils
 import io.github.qauxv.util.Toasts
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
@@ -64,9 +65,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
 
     override val description = "在首页加号菜单中添加群聊分组功能"
 
-    private val context by lazy {
-        CommonContextWrapper.createMaterialDesignContext(ContextUtils.getCurrentActivity())
-    }
+    private fun context() = CommonContextWrapper.createMaterialDesignContext(ContextUtils.getCurrentActivity())
 
     private lateinit var adapter: GroupAdapter
 
@@ -90,11 +89,11 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                 layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.WRAP_CONTENT, LinearLayout.LayoutParams.WRAP_CONTENT)
                 textSize = 16f
             }
-            val btnAdd = Button(context).apply {
+            val btnAdd = Button(context()).apply {
                 visibility = View.GONE
                 text = "+"
             }
-            val btnDelete = Button(context).apply {
+            val btnDelete = Button(context()).apply {
                 visibility = View.GONE
                 text = "×"
             }
@@ -108,18 +107,18 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                 }
                 btnAdd.setOnClickListener {
                     //todo 使用QQ自己的选择页面进行选择
-                    val etName = EditText(context).apply {
+                    val etName = EditText(context()).apply {
                         hint = "群聊名称"
                     }
-                    val etUin = EditText(context).apply {
+                    val etUin = EditText(context()).apply {
                         hint = "群号"
                     }
-                    val l = LinearLayout(context).apply {
+                    val l = LinearLayout(context()).apply {
                         orientation = LinearLayout.VERTICAL
                         addView(etName)
                         addView(etUin)
                     }
-                    AlertDialog.Builder(context)
+                    AlertDialog.Builder(context())
                         .setTitle("添加群至分组“${items[bindingAdapterPosition].name}”")
                         .setView(l)
                         .setNegativeButton("取消", null)
@@ -130,7 +129,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                         .show()
                 }
                 btnDelete.setOnClickListener {
-                    AlertDialog.Builder(context)
+                    AlertDialog.Builder(context())
                         .setTitle("删除分组")
                         .setMessage("确定删除分组“${items[bindingAdapterPosition].name}”吗？")
                         .setCancelable(false)
@@ -166,8 +165,8 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
 
     }
 
-    private val mainDialog by lazy {
-        val recyclerView = RecyclerView(context).apply {
+    private val mainDialog = {
+        val recyclerView = RecyclerView(context()).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             layoutManager = LinearLayoutManager(context)
             this@TroopGroupHook.adapter = GroupAdapter().apply {
@@ -175,10 +174,10 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
             }
             adapter = this@TroopGroupHook.adapter
         }
-        val layoutManageBtns = LinearLayout(context).apply {
+        val layoutManageBtns = LinearLayout(context()).apply {
             visibility = View.GONE
         }
-        val btnGroupManage = Button(context).apply {
+        val btnGroupManage = Button(context()).apply {
             text = "分组管理"
             setOnClickListener {
                 adapter.setEditMode(true)
@@ -186,7 +185,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                 layoutManageBtns.visibility = View.VISIBLE
             }
         }
-        val btnAddGroup = Button(context).apply {
+        val btnAddGroup = Button(context()).apply {
             text = "添加分组"
             setOnClickListener {
                 val et = EditText(context)
@@ -203,7 +202,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                     .show()
             }
         }
-        val btnExitManage = Button(context).apply {
+        val btnExitManage = Button(context()).apply {
             text = "退出管理"
             setOnClickListener {
                 adapter.setEditMode(false)
@@ -214,13 +213,13 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
         layoutManageBtns.addView(btnExitManage)
         layoutManageBtns.addView(btnAddGroup)
 
-        val mainView = LinearLayout(context).apply {
+        val mainView = LinearLayout(context()).apply {
             orientation = LinearLayout.VERTICAL
             addView(btnGroupManage)
             addView(layoutManageBtns)
             addView(recyclerView)
         }
-        AlertDialog.Builder(context).apply {
+        AlertDialog.Builder(context()).apply {
             setTitle("群聊分组")
             setView(mainView)
             setPositiveButton("确定", null)
@@ -228,7 +227,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
     }
 
     private fun showDetailDialog(group: GroupItemData) {
-        val recyclerView = RecyclerView(context).apply {
+        val recyclerView = RecyclerView(context()).apply {
             layoutParams = LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT)
             layoutManager = LinearLayoutManager(context)
             adapter = object : RecyclerView.Adapter<RecyclerView.ViewHolder>() {
@@ -273,7 +272,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                 }
             }
         }
-        AlertDialog.Builder(context).apply {
+        AlertDialog.Builder(context()).apply {
             setTitle(group.name)
             setView(recyclerView)
             setPositiveButton("确定", null)
@@ -294,7 +293,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
                     Json.decodeFromString(it)
                 } catch (e: Exception) {
                     traceError(e)
-                    Toasts.error(context, "读取群聊分组失败")
+                    Toasts.error(context(), "读取群聊分组失败")
                     emptyList()
                 }
             }
@@ -305,7 +304,8 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
 
     private fun writeGroupItems(list: List<GroupItemData>) {
         val json = Json.encodeToString(list)
-        File(HostInfo.getApplication().filesDir, "qa_misc" + File.separator + "group.json").writeText(json)
+        File(IoUtils.mkdirsOrThrow(File(HostInfo.getApplication().filesDir, "qa_misc")), "group.json")
+            .writeText(json)
     }
 
     private fun addGroupItem(name: String) {
@@ -345,7 +345,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
         }
         "Lcom/tencent/mobileqq/activity/recent/n\$a;->onClickAction(Lcom/tencent/widget/PopupMenuDialog\$MenuItem;)V".method.hookBefore {
             if (it.args[0].get("id") == 415411) {
-                mainDialog.show()
+                mainDialog.invoke().show()
                 it.result = null
             }
         }
