@@ -59,6 +59,7 @@ val ANS_OPERATOR_CJK = Pattern.compile("([A-Za-z0-9])([\\+\\-\\*\\/=&\\|<>])([$C
 
 val FIX_SLASH_AS = Pattern.compile("([/]) ([a-z\\-\\_\\./]+)")
 val FIX_SLASH_AS_SLASH = Pattern.compile("([/\\.])([A-Za-z\\-\\_\\./]+) ([/])")
+val FIX_SLASH_HEADER = Regex("""^/\s(?=[$CJK])""")
 
 val CJK_LEFT_BRACKET = Pattern.compile("([$CJK])([\\(\\[\\{<>\\u201c])")
 val RIGHT_BRACKET_CJK = Pattern.compile("([\\)\\]\\}>\\u201d])([$CJK])")
@@ -155,6 +156,8 @@ fun pangu_spacing(text: String): String {
 
     newText = MIDDLE_DOT.matcher(newText).replaceAll("・")
 
+    newText = FIX_SLASH_HEADER.replace(newText, "/")
+
     return newText
 }
 
@@ -162,7 +165,7 @@ fun pangu_spacing(text: String): String {
 @FunctionHookEntry
 @UiItemAgentEntry
 object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
-    override val name = "发送消息自动 Pangu.kt"
+    override val name = "发送消息自动 Pangu.java" // 这个文件不配被称为 Kotlin，see https://github.com/cinit/QAuxiliary/pull/585
     override val description = "自动在中英文间加上空格，以美化排版\n若消息以,,或，，开头，则不会进行处理"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
