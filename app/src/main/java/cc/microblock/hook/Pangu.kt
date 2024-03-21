@@ -97,6 +97,7 @@ fun pangu_spacing(text: String): String {
     }
 
     var newText = text
+    val fixSlash = !text.startsWith("/ ")
 
 /*
 
@@ -155,6 +156,10 @@ fun pangu_spacing(text: String): String {
 
     newText = MIDDLE_DOT.matcher(newText).replaceAll("・")
 
+    if (fixSlash && newText.startsWith("/ ")) {
+        newText = "/" + newText.substring(2)
+    }
+
     return newText
 }
 
@@ -162,7 +167,7 @@ fun pangu_spacing(text: String): String {
 @FunctionHookEntry
 @UiItemAgentEntry
 object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
-    override val name = "发送消息自动 Pangu.kt"
+    override val name = "发送消息自动 Pangu"
     override val description = "自动在中英文间加上空格，以美化排版\n若消息以,,或，，开头，则不会进行处理"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
