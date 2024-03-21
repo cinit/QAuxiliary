@@ -22,7 +22,6 @@
 package cc.microblock.hook
 
 import cc.hicore.QApp.QAppUtils
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -30,6 +29,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.AIOTextElementCtor
 import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
 import java.util.regex.Pattern
 
@@ -174,7 +174,7 @@ object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElemen
     override val isAvailable = QAppUtils.isQQnt();
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOTextElementCtor)
-            .hookBefore {
+            .hookBefore(this) {
                 val content = it.args[0].get("a") as String;
                 if(!content.startsWith("，，") && !content.startsWith(",,"))
                     it.args[0].set("a", SendPangu.processPangu(content))
