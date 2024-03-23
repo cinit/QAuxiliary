@@ -23,6 +23,7 @@ package me.ketal.hook
 
 import android.app.Activity
 import android.content.Context
+import android.view.Gravity
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
@@ -51,7 +52,12 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.dexkit.*
+import io.github.qauxv.util.dexkit.CMessageCache
+import io.github.qauxv.util.dexkit.CMessageRecordFactory
+import io.github.qauxv.util.dexkit.CMultiMsgManager
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.MultiSelectToBottomIntent
+import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
@@ -108,13 +114,30 @@ object MultiActionHook : CommonSwitchFunctionHook(
                 val rootView = findViewNt(it.method.declaringClass, it.thisObject) ?: return@hookAfter
                 val context = rootView.context as BaseActivity
                 val count = rootView.childCount
-                val enableTalkBack = rootView.getChildAt(0).contentDescription != null
                 val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
-                if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) rootView.addView(
-                    create(context, iconResId, enableTalkBack, it.thisObject),
-                    count - 1
-                )
-                setMargin(rootView)
+                if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) {
+                    if (count >= 11) {
+                        // Since QQ 9.0.30, using view to separate
+                        val enableTalkBack = rootView.getChildAt(1).contentDescription != null
+                        val separator = View(context).apply {
+                            layoutParams = rootView.getChildAt(0).layoutParams
+                        }
+                        rootView.addView(
+                            create(context, iconResId, enableTalkBack, it.thisObject).apply {
+                                layoutParams = rootView.getChildAt(1).layoutParams
+                            },
+                            count - 2
+                        )
+                        rootView.addView(separator, count - 1)
+                    } else {
+                        val enableTalkBack = rootView.getChildAt(0).contentDescription != null
+                        rootView.addView(
+                            create(context, iconResId, enableTalkBack, it.thisObject),
+                            count - 1
+                        )
+                        setMargin(rootView)
+                    }
+                }
             }
         val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent);
         val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
@@ -202,7 +225,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val view = rootView.getChildAt(i)
             val layoutParams = LinearLayout.LayoutParams(w, w)
             layoutParams.marginStart = leftMargin
-            layoutParams.gravity = 16
+            layoutParams.gravity = Gravity.CENTER_VERTICAL
             view.layoutParams = layoutParams
         }
     }
