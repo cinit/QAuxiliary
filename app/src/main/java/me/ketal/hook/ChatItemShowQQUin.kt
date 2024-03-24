@@ -43,6 +43,7 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
@@ -349,20 +350,11 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
                 val layout = LinearLayout(rootView.context).apply {
                     layoutParams = ConstraintLayout.LayoutParams(
-                        ConstraintLayout.LayoutParams.MATCH_PARENT,
+                        0 /* MATCH_CONSTRAINT */,
                         ConstraintLayout.LayoutParams.WRAP_CONTENT
                     )
                     id = ID_ADD_LAYOUT
                 }
-                rootView.addView(layout)
-                val constraintSet = constraintSetClz.newInstance(args())!!
-                constraintSet.invokeMethod("clone", args(rootView), argTypes(constraintLayoutClz))
-                constraintSet.invokeMethod(
-                    "connect",
-                    args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.BOTTOM, rootView.id, ConstraintLayout.LayoutParams.BOTTOM, 0),
-                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java, Int::class.java)
-                )
-                constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
 
                 val textView = TextView(rootView.context).apply {
                     id = ID_ADD_TEXTVIEW
@@ -370,9 +362,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     layoutParams = LinearLayout.LayoutParams(
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
-                    ).apply {
-                        marginStart = XPopupUtils.dp2px(rootView.context, 50f)
-                    }
+                    )
                     setOnClickListener {
                         if (!mEnableDetailInfo) return@setOnClickListener
                         val msgRecord = it.tag as MsgRecord
@@ -380,6 +370,26 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     }
                 }
                 layout.addView(textView)
+                rootView.addView(layout)
+                val constraintSet = constraintSetClz.newInstance(args())!!
+                constraintSet.invokeMethod("clone", args(rootView), argTypes(constraintLayoutClz))
+                val id_msg = rootView.children.find { it is LinearLayout && it.id != View.NO_ID }!!.id
+                constraintSet.invokeMethod(
+                    "connect",
+                    args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.TOP, id_msg, ConstraintLayout.LayoutParams.BOTTOM, 0),
+                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                )
+                constraintSet.invokeMethod(
+                    "connect",
+                    args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_msg, ConstraintSet.LEFT),
+                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                )
+                constraintSet.invokeMethod(
+                    "connect",
+                    args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_msg, ConstraintSet.RIGHT),
+                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                )
+                constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
             }
 
             rootView.findViewById<TextView>(ID_ADD_TEXTVIEW).let {
@@ -475,8 +485,12 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         AlertDialog.Builder(ctx)
             .setTitle(title)
             .setView(text)
+//            .setMessage(msg)
             .setCancelable(true)
             .setPositiveButton(android.R.string.ok, null)
             .show()
+//            .apply {
+//                findViewById<TextView>(android.R.id.message)?.setTextIsSelectable(true)
+//            }
     }
 }
