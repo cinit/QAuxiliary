@@ -60,6 +60,7 @@ import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AIOUtilsImpl
+import io.github.qauxv.bridge.AppRuntimeHelper
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -379,16 +380,19 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.TOP, id_msg, ConstraintLayout.LayoutParams.BOTTOM, 0),
                     argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java, Int::class.java)
                 )
-                constraintSet.invokeMethod(
-                    "connect",
-                    args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_msg, ConstraintSet.LEFT),
-                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
-                )
-                constraintSet.invokeMethod(
-                    "connect",
-                    args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_msg, ConstraintSet.RIGHT),
-                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
-                )
+                if (chatMessage.senderUin != AppRuntimeHelper.getLongAccountUin()) {
+                    constraintSet.invokeMethod(
+                        "connect",
+                        args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_msg, ConstraintSet.LEFT),
+                        argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                    )
+                } else {
+                    constraintSet.invokeMethod(
+                        "connect",
+                        args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_msg, ConstraintSet.RIGHT),
+                        argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                    )
+                }
                 constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
             }
 
