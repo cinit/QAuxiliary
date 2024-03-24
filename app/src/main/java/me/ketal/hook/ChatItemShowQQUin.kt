@@ -42,11 +42,16 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.constraintlayout.widget.ConstraintLayout
 import androidx.core.view.children
 import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.github.kyuubiran.ezxhelper.utils.argTypes
+import com.github.kyuubiran.ezxhelper.utils.args
+import com.github.kyuubiran.ezxhelper.utils.invokeMethod
+import com.github.kyuubiran.ezxhelper.utils.newInstance
 import com.lxj.xpopup.util.XPopupUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
@@ -66,6 +71,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.method
 import java.lang.reflect.Method
@@ -110,6 +116,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         requireMinQQVersion(QQVersion.QQ_8_9_68) -> "s3o"
         else -> "rzs"
     }
+
+    private val constraintSetClz by lazy { "androidx.constraintlayout.widget.ConstraintSet".clazz!! }
+    private val constraintLayoutClz by lazy { "androidx.constraintlayout.widget.ConstraintLayout".clazz!! }
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
@@ -335,6 +344,51 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         // 因为tailMessage是自己添加的，所以闪照文字也放这里处理
         val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
         if (!isEnabled && !isFlashPicTagNeedShow) return
+
+        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+            if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
+                val layout = LinearLayout(rootView.context).apply {
+                    layoutParams = ConstraintLayout.LayoutParams(
+                        ConstraintLayout.LayoutParams.MATCH_PARENT,
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    id = ID_ADD_LAYOUT
+                }
+                rootView.addView(layout)
+                val constraintSet = constraintSetClz.newInstance(args())!!
+                constraintSet.invokeMethod("clone", args(rootView), argTypes(constraintLayoutClz))
+                constraintSet.invokeMethod(
+                    "connect",
+                    args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.BOTTOM, rootView.id, ConstraintLayout.LayoutParams.BOTTOM, 0),
+                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                )
+                constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
+
+                val textView = TextView(rootView.context).apply {
+                    id = ID_ADD_TEXTVIEW
+                    textSize = 12f
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    ).apply {
+                        marginStart = XPopupUtils.dp2px(rootView.context, 50f)
+                    }
+                    setOnClickListener {
+                        if (!mEnableDetailInfo) return@setOnClickListener
+                        val msgRecord = it.tag as MsgRecord
+                        showDetailInfoDialog(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
+                    }
+                }
+                layout.addView(textView)
+            }
+
+            rootView.findViewById<TextView>(ID_ADD_TEXTVIEW).let {
+                it.tag = chatMessage
+                it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
+            }
+
+            return
+        }
 
 //        Log.d("rootView: $rootView")
         val tailLayout = try {
