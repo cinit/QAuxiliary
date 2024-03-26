@@ -61,6 +61,8 @@ import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AIOUtilsImpl
 import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.ntapi.ChatTypeConstants
+import io.github.qauxv.bridge.ntapi.MsgConstants
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -341,6 +343,14 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             .replace("\${simpleName}", chatMessage.javaClass.simpleName)
     }
 
+    private fun shouldShowTailMsgForMsgRecord(chatMessage: MsgRecord): Boolean {
+        // do not show tail message for grey tips
+        if (chatMessage.msgType == MsgConstants.MSG_TYPE_GRAY_TIPS) {
+            return false
+        }
+        return true
+    }
+
     @SuppressLint("ResourceType", "SetTextI18n")
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
         // 因为tailMessage是自己添加的，所以闪照文字也放这里处理
@@ -396,9 +406,16 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
             }
 
-            rootView.findViewById<TextView>(ID_ADD_TEXTVIEW).let {
-                it.tag = chatMessage
-                it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
+            val textView = rootView.findViewById<TextView>(ID_ADD_TEXTVIEW)
+
+            if (isFlashPicTagNeedShow || shouldShowTailMsgForMsgRecord(chatMessage)) {
+                textView.visibility = View.VISIBLE
+                textView.let {
+                    it.tag = chatMessage
+                    it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
+                }
+            } else {
+                textView.visibility = View.GONE
             }
 
             return
