@@ -43,6 +43,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, 
 
     override val name = "强制平板模式"
     override val description = "支持 QQ 8.9.15及以上，未经测试，谨慎使用"
+    override val extraSearchKeywords: Array<String> = arrayOf("pad")
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isApplicationRestartRequired = true
 
@@ -51,10 +52,16 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, 
 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
-        HookUtils.hookAfterIfEnabled(this,DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
+        HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
             val type = Initiator._DeviceType().getStaticObject("TABLET")
             Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", type)
         }
+//        val k = Initiator.loadClass("com.tencent.mobileqq.injector.a");
+//        val getAppId = k.getDeclaredMethod("getAppId")
+//        HookUtils.hookAfterAlways(this, getAppId) {
+//            val result = it.result as Int
+//            Log.i("ForcePadMode getAppId: $result")
+//        }
     }
 
 }
