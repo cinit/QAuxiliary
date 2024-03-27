@@ -143,10 +143,13 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
 
     /**
      * Get whether the savedInstanceState should be ignored. This is useful for activities that saved instance are transient and should not be saved. If this
-     * method returns true, the savedInstanceState passed to {@link Activity#onCreate(Bundle)}, {@link Activity#onPostCreate(Bundle)} and {@link
-     * Activity#onRestoreInstanceState(Bundle)} will be null, but {@link BaseActivity#doOnCreate(Bundle)} and {@link BaseActivity#doOnPostCreate(Bundle)} will
-     * still receive the original savedInstanceState. A trivial activity that does not handle savedInstanceState specially can return true. Note: This method is
-     * called before {@link #doOnCreate(Bundle)} and should be constexpr.
+     * method returns true, the savedInstanceState passed to {@link Activity#onCreate(Bundle)}, {@link Activity#onPostCreate(Bundle)} and
+     * {@link Activity#onRestoreInstanceState(Bundle)} will be null, but {@link BaseActivity#doOnCreate(Bundle)} and {@link BaseActivity#doOnPostCreate(Bundle)}
+     * will still receive the original savedInstanceState.
+     * <p>
+     * A trivial activity that does not handle savedInstanceState specially can return true.
+     * <p>
+     * Note: This method is called before {@link #doOnCreate(Bundle)} and should be constexpr.
      *
      * @return true if the savedInstanceState should be ignored.
      */
@@ -408,6 +411,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     /**
      * @deprecated use {@link #doOnBackPressed()} instead.
      */
+    @SuppressLint("MissingSuperCall")
     @Override
     @Deprecated
     public void onBackPressed() {
