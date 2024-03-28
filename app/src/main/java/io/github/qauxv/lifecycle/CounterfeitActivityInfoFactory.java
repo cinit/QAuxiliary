@@ -70,6 +70,8 @@ public class CounterfeitActivityInfoFactory {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             ai.splitName = null;
         }
+        // add ui mode, see io.github.qauxv.omnifix.hw.HwResThemeMgrFix for more details
+        ai.configChanges |= ActivityInfo.CONFIG_UI_MODE;
         return ai;
     }
 }
