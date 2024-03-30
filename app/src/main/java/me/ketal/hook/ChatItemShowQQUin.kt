@@ -61,13 +61,13 @@ import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AIOUtilsImpl
 import io.github.qauxv.bridge.AppRuntimeHelper
-import io.github.qauxv.bridge.ntapi.ChatTypeConstants
 import io.github.qauxv.bridge.ntapi.MsgConstants
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinQQVersion
@@ -494,24 +494,14 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     private fun showDetailInfoDialog(context: Context, title: String, msg: String) {
         val ctx = CommonContextWrapper.createAppCompatContext(context)
-        val text = AppCompatTextView(ctx).apply {
-            text = msg
-            textSize = 16f
-            setTextIsSelectable(true)
-            isVerticalScrollBarEnabled = true
-            setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
-            val dp24 = LayoutHelper.dip2px(ctx, 24f)
-            setPadding(dp24, 0, dp24, 0)
-        }
-        AlertDialog.Builder(ctx)
+        CustomDialog.createFailsafe(ctx)
             .setTitle(title)
-            .setView(text)
-//            .setMessage(msg)
+            .setMessage(msg)
             .setCancelable(true)
-            .setPositiveButton(android.R.string.ok, null)
+            .setPositiveButton("确定", null)
             .show()
-//            .apply {
-//                findViewById<TextView>(android.R.id.message)?.setTextIsSelectable(true)
-//            }
+            .apply {
+                findViewById<TextView>(android.R.id.message).setTextIsSelectable(true)
+            }
     }
 }

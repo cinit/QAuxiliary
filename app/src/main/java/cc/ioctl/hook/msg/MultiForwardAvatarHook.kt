@@ -24,15 +24,16 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.content.DialogInterface
 import android.text.Spanned
-import android.text.method.LinkMovementMethod
 import android.text.style.ClickableSpan
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
+import android.widget.TextView
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.text.buildSpannedString
+import androidx.core.text.method.LinkMovementMethodCompat
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.profile.OpenProfileCard
 import cc.ioctl.util.HostInfo
@@ -69,7 +70,6 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
-import org.luckypray.dexkit.query.matchers.MethodMatcher
 import xyz.nextalone.util.invoke
 import java.lang.reflect.Field
 import java.lang.reflect.Modifier
@@ -323,7 +323,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
         }
         val disclaimerTextView = AppCompatTextView(ctx).apply {
             // required for ClickableSpan
-            movementMethod = LinkMovementMethod.getInstance()
+            movementMethod = LinkMovementMethodCompat.getInstance()
         }
         val runnable = {
             val disclaimer = """
@@ -358,9 +358,15 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             Log.e("createAndShowDialogForDetail/E msg == null")
             return
         }
-        CustomDialog.createFailsafe(ctx).setTitle(Reflex.getShortClassName(msg))
+        CustomDialog.createFailsafe(ctx)
+            .setTitle(Reflex.getShortClassName(msg))
             .setMessage(msg.toString())
-            .setCancelable(true).setPositiveButton("确定", null).show()
+            .setCancelable(true)
+            .setPositiveButton("确定", null)
+            .show()
+            .apply {
+                findViewById<TextView>(android.R.id.message).setTextIsSelectable(true)
+            }
     }
 
     private val isLeftCheckBoxVisible: Boolean
