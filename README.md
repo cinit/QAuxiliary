@@ -80,6 +80,12 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 3. [![GitHub release](https://img.shields.io/github/release/cinit/QAuxiliary.svg)](https://github.com/cinit/QAuxiliary/releases/latest) 将只发布 `推荐的CI` 版更新。
 
 4. [![](https://img.shields.io/badge/LSPosed-ClickMe-blue?link=https://github.com/Xposed-Modules-Repo/io.github.qauxv/releases/)](https://github.com/Xposed-Modules-Repo/io.github.qauxv/releases/) 将只发布 `推荐的CI` 版更新。
+
+5. 为什么没有上架 Google Play?  
+   因为 Google Play 不允许 app 具有运行时动态加载外部代码的行为。
+   而本模块为了能够在运行期动态继承宿主的类（类名被混淆，运行时才能确定），使用了 [byte-buddy](https://github.com/raphw/byte-buddy)
+   库用于在运行时动态生成代码并使用 InMemoryDexClassLoader 实现 dex 不落地加载，这是 Google Play 不允许的行为。
+
 </details>
 
 ## 不会支持的功能
@@ -90,9 +96,13 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 ## 编译
 
-1. 安装 git, ccache(可选), cmake, SDK 和 NDK, 版本参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);
+1. 安装 git, ccache(可选), cmake, SDK 和 NDK, 版本参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);  
+   注意: 编译脚本会自动寻找 ccache 并使用，而 Windows 平台下 msys2 的 ccache 存在问题会卡在 sync 阶段，
+   建议 Windows 用户使用从 ccache 官网下载的 ccache 而不是 msys2 的 ccache;  
+   另外你也可以选择不使用 ccache (如果你已经安装了 ccache 但不想使用，可以修改 [build.gradle.kts](app/build.gradle.kts)
+   中的 `ccacheExecutablePath` 为 `null`)
 2. 将本仓库 clone 至本地：`git clone --recursive https://github.com/cinit/QAuxiliary`;
-3. 使用 Gradle 编译安装包。
+3. 使用 Gradle 编译安装包: `./gradlew :app:assembleDebug` 或者 `./gradlew :app:synthesizeDistReleaseApksCI`;
 
 ---
 
