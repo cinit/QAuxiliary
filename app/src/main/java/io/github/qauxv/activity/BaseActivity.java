@@ -54,7 +54,8 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     private static final String FRAGMENTS_TAG = "android:support:fragments";
     private boolean mIsFinishingInOnCreate = false;
     private boolean mIsResultWaiting;
-    private boolean mIsResume = false;
+    private boolean mIsResumed = false;
+    private boolean mIsStarted = false;
     private boolean mIsInitializing = false;
     private boolean mIsStartSkipped = false;
     private Intent mNewIntent;
@@ -220,7 +221,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
                         doOnNewIntent(this.mNewIntent);
                         this.mNewIntent = null;
                     }
-                    if (isResume()) {
+                    if (isResumed2()) {
                         doOnResume();
                         doOnPostResume();
                     }
@@ -303,6 +304,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     @Override
     @Deprecated
     protected void onStart() {
+        mIsStarted = true;
         super.onStart();
         if (!this.mIsInitializing) {
             doOnStart();
@@ -333,6 +335,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     @Override
     @Deprecated
     protected void onStop() {
+        mIsStarted = false;
         if (!this.mIsInitializing) {
             doOnStop();
         } else {
@@ -349,6 +352,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     @SuppressWarnings("JavaReflectionMemberAccess")
     @SuppressLint("DiscouragedPrivateApi")
     protected void onResume() {
+        this.mIsResumed = true;
         try {
             super.onResume();
         } catch (IllegalArgumentException e) {
@@ -363,7 +367,6 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
         } catch (NullPointerException ignored) {
             // i don't know
         }
-        this.mIsResume = true;
         if (!this.mIsInitializing) {
             doOnResume();
         }
@@ -450,10 +453,10 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     @Override
     @Deprecated
     protected void onPause() {
+        this.mIsResumed = false;
         if (!this.mIsInitializing) {
             doOnPause();
         }
-        this.mIsResume = false;
         super.onPause();
     }
 
@@ -550,8 +553,17 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
         dispatchActivityDestroyed(this);
     }
 
-    protected final boolean isResume() {
-        return this.mIsResume;
+    /**
+     * If the activity is resumed. The isResumed() method is final and hidden in Activity class.
+     * <p>
+     * java.lang.LinkageError: Method boolean io.github.qauxv.activity.BaseActivity.isResumed() overrides final method in class Landroid/app/Activity;
+     */
+    protected final boolean isResumed2() {
+        return this.mIsResumed;
+    }
+
+    protected final boolean isStarted() {
+        return this.mIsStarted;
     }
 
     protected boolean isWrapContent() {

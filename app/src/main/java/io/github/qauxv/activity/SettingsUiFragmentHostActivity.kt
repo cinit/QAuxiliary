@@ -34,7 +34,6 @@ import android.view.WindowManager
 import androidx.annotation.CallSuper
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
-import androidx.lifecycle.Lifecycle
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.fling.SimpleFlingInterceptLayout
 import com.google.android.material.appbar.AppBarLayout
@@ -347,7 +346,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
 
     protected fun runOnStart(action: Runnable) {
         SyncUtils.runOnUiThread {
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.STARTED)) {
+            if (isStarted) {
                 action.run()
             } else {
                 synchronized(mPendingActionsLock) {
@@ -359,7 +358,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
 
     protected fun runOnResume(action: Runnable) {
         SyncUtils.runOnUiThread {
-            if (lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+            if (isResumed2) {
                 action.run()
             } else {
                 synchronized(mPendingActionsLock) {
