@@ -319,20 +319,20 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
         val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo")
 
         // hook FavoriteEmoticonInfo.send for recent use sorting(local)
-        HookUtils.hookBeforeIfEnabled(this, FavoriteEmoticonInfo.method("send")!!) {
-            val actionData = it.thisObject.get<String>("actionData")!!
-            val panelId = actionData.substring(0, actionData.indexOf(":"))
-            val fileId = actionData.substring(actionData.indexOf(":") + 1)
-            Log.i("send $panelId $fileId")
-            val panel = LocalDocumentEmoticonProvider().extraEmoticonList().find { it.uniqueId() == panelId }
-            if(panel != null) {
-                val db = ConfigManager.getDumpTG_LastUseEmoticonStore()
-                db.set(fileId, System.currentTimeMillis())
-
-                val db2 = ConfigManager.getDumpTG_LastUseEmoticonPackStore()
-                db2.set(panelId, System.currentTimeMillis())
-            }
-        }
+//        HookUtils.hookBeforeIfEnabled(this, FavoriteEmoticonInfo.method("send")!!) {
+//            val actionData = it.thisObject.get<String>("actionData")!!
+//            val panelId = actionData.substring(0, actionData.indexOf(":"))
+//            val fileId = actionData.substring(actionData.indexOf(":") + 1)
+//            Log.i("send $panelId $fileId")
+//            val panel = LocalDocumentEmoticonProvider().extraEmoticonList().find { it.uniqueId() == panelId }
+//            if(panel != null) {
+//                val db = ConfigManager.getDumpTG_LastUseEmoticonStore()
+//                db.set(fileId, System.currentTimeMillis())
+//
+//                val db2 = ConfigManager.getDumpTG_LastUseEmoticonPackStore()
+//                db2.set(panelId, System.currentTimeMillis())
+//            }
+//        }
 
         val providers: List<ExtraEmoticonProvider> = listOf(LocalDocumentEmoticonProvider())
 
