@@ -18,6 +18,7 @@ import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.ArgTypes
 import com.github.kyuubiran.ezxhelper.utils.Args
 import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
+import com.github.kyuubiran.ezxhelper.utils.method
 import com.github.kyuubiran.ezxhelper.utils.newInstance
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -213,6 +214,16 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             cfg.putString("dumpTGStickers.removeQQMisc", if (value) "true" else "false")
         }
 
+    private var previewQuality: Number
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            val columns = cfg.getString("dumpTGStickers.previewQuality")
+            return columns?.toInt() ?: 300
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putString("dumpTGStickers.previewQuality", value.toString())
+        }
 
     @SuppressLint("SetTextI18n")
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, ctx, _ ->
@@ -254,16 +265,16 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             hint = "表情包列数"
         }
 
-        // TODO: complete this
-        val rangeTextLabel = AppCompatTextView(ctx).apply {
-            text = "生效联系人列表（,分割）"
+        val previewQualityTextLabel = AppCompatTextView(ctx).apply {
+            text = "预览质量"
         }
 
-        val rangeTextEdit: EditText = EditText(ctx).apply {
-            setText("")
+        val previewQualityTextEdit: EditText = AppCompatEditText(ctx).apply {
+            setText(previewQuality.toString())
+            inputType = InputType.TYPE_CLASS_NUMBER
             textSize = 16f
             setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
-            hint = "114514, 1919810"
+            hint = "预览质量"
         }
 
         root.apply {
@@ -293,6 +304,8 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             addView(enableRemoveQQMisc)
             addView(panelColumnsTextLabel)
             addView(panelColumnsTextEdit)
+            addView(previewQualityTextLabel)
+            addView(previewQualityTextEdit)
         }
 
         builder.setView(wrapper)
@@ -302,6 +315,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
                 this.panelColumns = panelColumnsTextEdit.text.toString().toInt()
                 this.removeQQEmoticons = enableRemoveQQEmoticons.isChecked
                 this.removeQQMisc = enableRemoveQQMisc.isChecked
+                this.previewQuality = previewQualityTextEdit.text.toString().toInt()
 
                 valueState.update { if (isEnabled) "已开启" else "禁用" }
             }
@@ -317,6 +331,14 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
         val EmoticonPanelInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmotionPanelInfo")
         val EmoticonPackage = Initiator.loadClass("com.tencent.mobileqq.data.EmoticonPackage")
         val FavoriteEmoticonInfo = Initiator.loadClass("com.tencent.mobileqq.emoticonview.FavoriteEmoticonInfo")
+
+        HookUtils.hookBeforeIfEnabled(this, FavoriteEmoticonInfo.method("getDrawable")!!) {
+            it.result = FavoriteEmoticonInfo.method("getZoomDrawable")!!
+                .invoke(it.thisObject,
+                        it.args[0], it.args[1],
+                        previewQuality.toInt(), previewQuality.toInt()
+                    )
+        }
 
         // hook FavoriteEmoticonInfo.send for recent use sorting(local)
 //        HookUtils.hookBeforeIfEnabled(this, FavoriteEmoticonInfo.method("send")!!) {
