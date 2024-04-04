@@ -18,7 +18,6 @@ import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.ArgTypes
 import com.github.kyuubiran.ezxhelper.utils.Args
 import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
-import com.github.kyuubiran.ezxhelper.utils.method
 import com.github.kyuubiran.ezxhelper.utils.newInstance
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -28,7 +27,6 @@ import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -412,6 +410,7 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
             // 移除自带面板
             if(it.result == null) return@hookAfterIfEnabled
             val list = it.result as MutableList<Any>
+            if (list.size == 1 && list[0].get<Int>("type") == 16 /* AIOEmoReply */ ) return@hookAfterIfEnabled
             val iterator = list.iterator()
 
             val typeWhiteList = mutableSetOf(
