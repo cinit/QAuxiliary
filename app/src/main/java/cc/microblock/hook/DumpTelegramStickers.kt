@@ -407,6 +407,12 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
         var lastPanelDataSize = -1
         // 生成 Tab 面板
         HookUtils.hookAfterIfEnabled(this, EmoticonPanelController.method("getPanelDataList")!!) {
+            // 绕过 QQ Reaction 面板
+            val stackTrace = Thread.currentThread().stackTrace
+            if(stackTrace.any { it.className == "com.tencent.mobileqq.emoticonview.EmoticonReportDtHelper" && it.methodName == "addDTReport" }) {
+                return@hookAfterIfEnabled
+            }
+
             // 移除自带面板
             if(it.result == null) return@hookAfterIfEnabled
             val list = it.result as MutableList<Any>
