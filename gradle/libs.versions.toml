@@ -2,7 +2,7 @@
 agp = "8.3.1"
 appCenter = "5.0.4"
 kotlin = "1.9.23"
-ksp = "1.9.23-1.0.19"
+ksp = "1.9.23-1.0.20"
 lifecycle = "2.7.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
