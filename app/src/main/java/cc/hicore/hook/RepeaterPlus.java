@@ -22,6 +22,7 @@
 package cc.hicore.hook;
 
 
+import static cc.ioctl.util.HostInfo.requireMinQQVersion;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator.load;
@@ -38,11 +39,9 @@ import android.widget.RelativeLayout;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
-import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionHooker;
 import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.util.HookUtils;
@@ -87,7 +86,6 @@ import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
-import org.luckypray.dexkit.DexKitBridge;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -178,7 +176,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
                 XC_MethodHook callback = new XC_MethodHook() {
                     private ImageView img;
@@ -302,7 +300,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
             Objects.requireNonNull(kChatAdapter1, "ChatAdapter1.class is null");
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
-                HookUtils.hookAfterIfEnabled(this, XMethod.clz(kChatAdapter1).name( "getView").ret( View.class).param(
+                HookUtils.hookAfterIfEnabled(this, XMethod.clz(kChatAdapter1).name("getView").ret(View.class).param(
                         int.class,
                         View.class,
                         ViewGroup.class
@@ -373,7 +371,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
     @Override
     public boolean isAvailable() {
-        return HostInfo.isQQ() && HostInfo.requireMinQQVersion(QQVersion.QQ_8_6_0);
+        return HostInfo.isQQ() && requireMinQQVersion(QQVersion.QQ_8_6_0);
     }
 
     private static Object AIOParam;
@@ -396,18 +394,26 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
             HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
             Method builder = DexKit.loadMethodFromCache(VasAttrBuilder.INSTANCE);
-            if (builder != null){
+            if (builder != null) {
                 Object builderInstance = builder.getDeclaringClass().newInstance();
-                builder.invoke(builderInstance,attrMap,contact,4);
+                builder.invoke(builderInstance, attrMap, contact, 4);
             }
 
-            service.getMsgsByMsgId(contact, l, (i, str, list) ->{
-                if (list.size() > 0 && list.get(0).getElements().get(0).getPicElement() != null
-                || list.get(0).getElements().get(0).getStructMsgElement() != null
-                || list.get(0).getElements().get(0).getArkElement() != null){
-                    service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> { });
-                }else {
-                    service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()),contact,list.get(0).getElements(),attrMap,(i1, str1) -> { });
+            service.getMsgsByMsgId(contact, l, (i, str, list) -> {
+                if (!list.isEmpty() && list.get(0).getElements().get(0).getPicElement() != null
+                        || list.get(0).getElements().get(0).getStructMsgElement() != null
+                        || list.get(0).getElements().get(0).getArkElement() != null) {
+                    service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> {
+                    });
+                } else {
+                    long msgUniqueId;
+                    if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                        msgUniqueId = service.generateMsgUniqueId(contact.getChatType(), QAppUtils.getServiceTime());
+                    } else {
+                        msgUniqueId = service.getMsgUniqueId(QAppUtils.getServiceTime());
+                    }
+                    service.sendMsg(msgUniqueId, contact, list.get(0).getElements(), attrMap, (i1, str1) -> {
+                    });
                 }
             });
 

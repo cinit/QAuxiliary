@@ -98,7 +98,8 @@ public class ExfriendManager {
             2854204259L, // 赞噢机器人
             2854196925L, // 小店助手
             2854211892L,
-            2854202683L
+            2854202683L,
+            2854203763L, // 小YOYO
     };
 
     private ExfriendManager(long uin) {

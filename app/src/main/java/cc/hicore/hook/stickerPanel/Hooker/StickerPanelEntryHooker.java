@@ -187,7 +187,22 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                                                 PicElement picElement = element.getPicElement();
                                                 //md5必须大写才能加载
                                                 md5s.add(picElement.getMd5HexStr().toUpperCase());
-                                                urls.add("https://gchat.qpic.cn/gchatpic_new/0/0-0-" + picElement.getMd5HexStr().toUpperCase() + "/0");
+                                                String originUrl = picElement.getOriginImageUrl();
+                                                if (TextUtils.isEmpty(originUrl)){
+                                                    urls.add("https://gchat.qpic.cn/gchatpic_new/0/0-0-" + picElement.getMd5HexStr().toUpperCase() + "/0");
+                                                }else {
+                                                    if (originUrl.startsWith("/download")){
+                                                        if (originUrl.contains("appid=1406")){
+                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKDOc_jvbthUjAatuFPQIo-x9wwcDhDGd8SOEu5FyJWNxNMabJTTRpO8");
+                                                        }else {
+                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKAB6JWENi5LMk0kc62l8Pm3Jn1dsLZHyRLAnNmHGoZ3y_gDZPqZt-64");
+                                                        }
+                                                    }else {
+                                                        urls.add("https://gchat.qpic.cn"+picElement.getOriginImageUrl());
+                                                    }
+                                                }
+
+
                                             }
                                         }
                                         if (!md5s.isEmpty()){

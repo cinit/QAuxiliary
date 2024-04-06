@@ -22,7 +22,6 @@
 package cc.microblock.hook
 
 import cc.hicore.QApp.QAppUtils
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -30,6 +29,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.dexkit.AIOTextElementCtor
 import io.github.qauxv.util.dexkit.DexKit
 import xyz.nextalone.util.get
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
 import java.util.regex.Pattern
 
@@ -97,6 +97,7 @@ fun pangu_spacing(text: String): String {
     }
 
     var newText = text
+    val fixSlash = !text.startsWith("/ ")
 
 /*
 
@@ -155,6 +156,10 @@ fun pangu_spacing(text: String): String {
 
     newText = MIDDLE_DOT.matcher(newText).replaceAll("・")
 
+    if (fixSlash && newText.startsWith("/ ")) {
+        newText = "/" + newText.substring(2)
+    }
+
     return newText
 }
 
@@ -162,14 +167,14 @@ fun pangu_spacing(text: String): String {
 @FunctionHookEntry
 @UiItemAgentEntry
 object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
-    override val name = "发送消息自动 Pangu.kt"
+    override val name = "发送消息自动 Pangu"
     override val description = "自动在中英文间加上空格，以美化排版\n若消息以,,或，，开头，则不会进行处理"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
     override val isAvailable = QAppUtils.isQQnt();
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOTextElementCtor)
-            .hookBefore {
+            .hookBefore(this) {
                 val content = it.args[0].get("a") as String;
                 if(!content.startsWith("，，") && !content.startsWith(",,"))
                     it.args[0].set("a", SendPangu.processPangu(content))

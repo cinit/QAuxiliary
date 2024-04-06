@@ -96,7 +96,7 @@
                 android:layout_marginTop="10dp"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:text="警告: 使用自定义机型功能可能导致 MiPush 无法生效，也可能导致桌面(启动器)内QQ(TIM)的角标(右上角带数字的小红点)无法正常显示清除，请谨慎使用此功能！"
+                android:text="警告: 使用自定义机型功能可能导致 MiPush 无法生效，也可能导致桌面(启动器)内QQ(TIM)的角标(右上角带数字的小红点)无法正常显示清除，请谨慎使用此功能！附加: 修改重启后请进入在线状态的自定义设备名界面刷新设备名并保存。"
                 android:textAppearance="@android:style/TextAppearance.Holo.Medium"/>
 
     </LinearLayout>

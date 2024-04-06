@@ -1,5 +1,6 @@
 package com.alphi.qhmk.module;
 
+import android.content.res.Resources;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -22,21 +23,8 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        Class<?> qsmClass = Initiator.loadClass("Lcom/tencent/mobileqq/widget/QVipMedalView;");
-        Method onLayout = qsmClass.getDeclaredMethod("onLayout", boolean.class, int.class, int.class, int.class, int.class);
-        Method onMeasure = qsmClass.getDeclaredMethod("onMeasure", int.class, int.class);
-        Method setMeasuredDimension = View.class.getDeclaredMethod("setMeasuredDimension", int.class, int.class);
-        setMeasuredDimension.setAccessible(true);
-        HookUtils.hookBeforeIfEnabled(this, onMeasure, param -> {
-            View v = (View) param.thisObject;
-            setMeasuredDimension.invoke(v, 0, 0);
-            param.setResult(null);
-        });
-        HookUtils.hookBeforeIfEnabled(this, onLayout, param -> {
-            View obj = (View) param.thisObject;
-            obj.setClickable(false);
-            param.setResult(null);
-        });
+        hiddenVipMetal();
+        optimizeQLevel();
         return true;
     }
 
@@ -58,4 +46,36 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
         return FunctionEntryRouter.Locations.Simplify.SLIDING_UI;
     }
 
+    private void hiddenVipMetal() throws ClassNotFoundException, NoSuchMethodException  {
+        Class<?> qsmClass = Initiator.loadClass("Lcom/tencent/mobileqq/widget/QVipMedalView;");
+        Method onLayout = qsmClass.getDeclaredMethod("onLayout", boolean.class, int.class, int.class, int.class, int.class);
+        Method onMeasure = qsmClass.getDeclaredMethod("onMeasure", int.class, int.class);
+        Method setMeasuredDimension = View.class.getDeclaredMethod("setMeasuredDimension", int.class, int.class);
+        setMeasuredDimension.setAccessible(true);
+        HookUtils.hookBeforeIfEnabled(this, onMeasure, param -> {
+            View v = (View) param.thisObject;
+            setMeasuredDimension.invoke(v, 0, 0);
+            param.setResult(null);
+        });
+        HookUtils.hookBeforeIfEnabled(this, onLayout, param -> {
+            View obj = (View) param.thisObject;
+            obj.setClickable(false);
+            param.setResult(null);
+        });
+    }
+
+    /**
+     *  这是针对较新版本的QQ等级显示不完整用大黄省略号代替，本方法实现的是让QQ策划面板的等级显示完整~
+    **/
+    private void optimizeQLevel() {
+        try {
+            Class<?> qsmClass = Initiator.loadClass("com.tencent.mobileqq.activity.qqsettingme.api.impl.QQSettingMeApiImpl");
+            Method m_parseQQLevel = qsmClass.getDeclaredMethod("parseQQLevel", Resources.class, int.class, int.class, int.class);
+            HookUtils.hookBeforeIfEnabled(this, m_parseQQLevel, param -> {
+                param.args[3] = 100;    // 显示图标数量，新版QQ默认为3
+            });
+        } catch (Exception e) {
+            // 如果抛错也不要紧，这仅仅只是优化QQ等级显示而已，目前错误的原因是因为旧版本吧。。。已测试QQ9.0
+        }
+    }
 }

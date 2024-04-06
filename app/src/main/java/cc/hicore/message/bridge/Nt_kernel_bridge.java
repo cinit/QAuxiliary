@@ -21,6 +21,8 @@
 
 package cc.hicore.message.bridge;
 
+import static cc.ioctl.util.HostInfo.requireMinQQVersion;
+
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.Utils.XLog;
 import com.tencent.qqnt.kernel.nativeinterface.Contact;
@@ -36,6 +38,8 @@ import com.tencent.qqnt.kernel.nativeinterface.VASMsgNamePlate;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Constructor;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -51,8 +55,13 @@ public class Nt_kernel_bridge {
 
             try {
                 IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
-                service.sendMsg(service.getMsgUniqueId(QAppUtils.getServiceTime()), contact, elements, attrMap, (i2, str) -> {
-
+                long msgUniqueId;
+                if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                    msgUniqueId = service.generateMsgUniqueId(contact.getChatType(), QAppUtils.getServiceTime());
+                } else {
+                    msgUniqueId = service.getMsgUniqueId(QAppUtils.getServiceTime());
+                }
+                service.sendMsg(msgUniqueId, contact, elements, attrMap, (i2, str) -> {
                 });
             } catch (Exception e) {
                 XLog.e("Nt_kernel_bridge.send_msg", e);
@@ -84,7 +93,7 @@ public class Nt_kernel_bridge {
                 }
             }
         } catch (Throwable e) {
-            e.printStackTrace();
+            Log.e(e);
         }
         return null;
     }

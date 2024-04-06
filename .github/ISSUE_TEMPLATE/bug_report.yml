@@ -33,7 +33,12 @@ body:
 
   - type: input
     attributes:
-      label: XPosed Framework you used/你使用的XP框架
+      label: Xposed Framework you used/你使用的Xposed框架
+    validations:
+      required: true
+  - type: input
+    attributes:
+      label: Your Android version/你使用的安卓系统版本
     validations:
       required: true
   - type: input

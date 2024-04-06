@@ -31,6 +31,7 @@ import android.os.Parcelable
 import android.view.View
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.annotation.CallSuper
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
 import cc.ioctl.util.ui.ThemeAttrUtils
@@ -58,7 +59,11 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
     private lateinit var mAppBarLayout: AppBarLayout
     private lateinit var mAppToolBar: androidx.appcompat.widget.Toolbar
     private var mAppBarLayoutHeight: Int = 0
+    private val mPendingOnStartActions = ArrayList<Runnable>(4)
+    private val mPendingOnResumeActions = ArrayList<Runnable>(4)
+    private val mPendingActionsLock = Any()
 
+    @CallSuper
     override fun doOnEarlyCreate(savedInstanceState: Bundle?, isInitializing: Boolean) {
         super.doOnEarlyCreate(savedInstanceState, isInitializing)
         setTheme(ModuleThemeManager.getCurrentStyleId())
@@ -95,7 +100,11 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
             }
         }
         mAppBarLayout.doOnLayout {
-            SyncUtils.postDelayed(0) { initFragments(savedInstanceState) }
+            SyncUtils.postDelayed(0) {
+                runOnStart {
+                    initFragments(savedInstanceState)
+                }
+            }
         }
         if (isInHostProcess) {
             val isThemeLightMode = resources.getBoolean(R.bool.is_not_night_mode)
@@ -319,6 +328,10 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
     override fun doOnDestroy() {
         super.doOnDestroy()
         HolidayHelper.onDestroy()
+        synchronized(mPendingActionsLock) {
+            mPendingOnStartActions.clear()
+            mPendingOnResumeActions.clear()
+        }
     }
 
     override fun isWrapContent(): Boolean {
@@ -329,6 +342,59 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
 
     override fun onFlingLeftToRight() {
         doOnBackPressed()
+    }
+
+    protected fun runOnStart(action: Runnable) {
+        SyncUtils.runOnUiThread {
+            if (isStarted) {
+                action.run()
+            } else {
+                synchronized(mPendingActionsLock) {
+                    mPendingOnStartActions.add(action)
+                }
+            }
+        }
+    }
+
+    protected fun runOnResume(action: Runnable) {
+        SyncUtils.runOnUiThread {
+            if (isResumed2) {
+                action.run()
+            } else {
+                synchronized(mPendingActionsLock) {
+                    mPendingOnResumeActions.add(action)
+                }
+            }
+        }
+    }
+
+    @CallSuper
+    override fun doOnResume() {
+        super.doOnResume()
+        synchronized(mPendingActionsLock) {
+            // on start actions
+            for (action in mPendingOnStartActions) {
+                action.run()
+            }
+            mPendingOnStartActions.clear()
+            // on resume actions
+            for (action in mPendingOnResumeActions) {
+                action.run()
+            }
+            mPendingOnResumeActions.clear()
+        }
+    }
+
+    @CallSuper
+    override fun doOnStart() {
+        super.doOnStart()
+        // on start actions
+        synchronized(mPendingActionsLock) {
+            for (action in mPendingOnStartActions) {
+                action.run()
+            }
+            mPendingOnStartActions.clear()
+        }
     }
 
     companion object {

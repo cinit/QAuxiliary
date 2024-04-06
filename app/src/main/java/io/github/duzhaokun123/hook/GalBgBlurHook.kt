@@ -27,6 +27,7 @@ import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.view.Window
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
@@ -43,6 +44,7 @@ import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.SyncUtils
 import xyz.nextalone.util.hookAfter
+import kotlin.properties.Delegates
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -54,6 +56,15 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
         get() = "需要 Android 12+ 并启用 允许窗口级模糊处理 (ro.surface_flinger.supports_background_blur=1)"
     override val valueState = null
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.S
+
+    var brValue by Delegates.observable(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10)) { _, _, newValue ->
+        ConfigManager.getDefaultConfig().putInt(brCfg, newValue)
+    }
+    var bdValue by Delegates.observable(ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F)) { _, _, newValue ->
+        ConfigManager.getDefaultConfig().putFloat(bdCfg, newValue)
+    }
+    var window: Window? = null
+
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
         get() = { _, activity, _ ->
             val ctx = CommonContextWrapper.createMaterialDesignContext(activity)
@@ -68,15 +79,18 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
                     text = "聊天界面查看图片背景模糊"
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 addView(TextView(ctx).apply {
+                    text = "当前界面看不到模糊说明系统不支持"
+                })
+                addView(TextView(ctx).apply {
                     setTextColor(ctx.getColor(R.color.firstTextColor))
                     text = "模糊半径"
                 })
                 addView(com.google.android.material.textfield.TextInputEditText(ctx).apply {
-                    setText(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10).toString())
+                    setText(brValue.toString())
                     hint = "默认 10"
                     doAfterTextChanged { t ->
                         t ?: return@doAfterTextChanged
-                        ConfigManager.getDefaultConfig().putInt(brCfg, t.toString().toIntOrNull() ?: 0)
+                        brValue = t.toString().toIntOrNull() ?: 0
                     }
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
                 addView(TextView(ctx).apply {
@@ -84,17 +98,20 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
                     text = "暗淡系数"
                 })
                 addView(com.google.android.material.textfield.TextInputEditText(ctx).apply {
-                    setText(ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F).toString())
+                    setText(bdValue.toString())
                     hint = "默认 0.1"
                     doAfterTextChanged { t ->
                         t ?: return@doAfterTextChanged
-                        ConfigManager.getDefaultConfig().putFloat(bdCfg, t.toString().toFloatOrNull() ?: 0F)
+                        bdValue = t.toString().toFloatOrNull() ?: 0F
                     }
                 }, ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT)
             }
             AlertDialog.Builder(ctx)
                 .setView(ll)
                 .show()
+                .also {
+                    it.window?.blurBackground(brValue, bdValue)
+                }
         }
 
     override fun initOnce(): Boolean {

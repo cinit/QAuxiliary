@@ -27,6 +27,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.os.Build;
 import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
@@ -134,6 +135,7 @@ public class SyncUtils {
         throw new AssertionError("No instance for you!");
     }
 
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
     public static void initBroadcast(Context ctx) {
         if (inited) {
             return;
@@ -145,7 +147,13 @@ public class SyncUtils {
         filter.addAction(ENUM_PROC_REQ);
         filter.addAction(ENUM_PROC_RESP);
         filter.addAction(GENERIC_WRAPPER);
-        ctx.registerReceiver(recv, filter);
+        // Must not use ContextImpl.registerReceiver here.
+        // QQ do not have $packageName.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            ctx.registerReceiver(recv, filter, Context.RECEIVER_NOT_EXPORTED);
+        } else {
+            ctx.registerReceiver(recv, filter);
+        }
         inited = true;
     }
 

@@ -30,6 +30,8 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.os.Looper
+import android.os.MessageQueue
 import android.text.SpannableStringBuilder
 import android.text.Spanned.SPAN_EXCLUSIVE_EXCLUSIVE
 import android.text.style.ForegroundColorSpan
@@ -40,6 +42,7 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.FrameLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
@@ -63,10 +66,12 @@ import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
+import io.github.qauxv.startup.HookEntry
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Natives
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
@@ -120,8 +125,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             },
             CategoryItem("清除与重置（不可逆）") {
                 textItem("重置模块设置", "不影响历史好友信息", onClick = clickToResetDefaultConfig)
-                textItem("清除[已恢复]的历史记录", "删除当前帐号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
-                textItem("清除所有的历史记录", "删除当前帐号下所有的历史好友记录", onClick = clickToClearAllFriends)
+                textItem("清除[已恢复]的历史记录", "删除当前账号下所有状态为[已恢复]的历史好友记录", onClick = clickToClearRecoveredFriends)
+                textItem("清除所有的历史记录", "删除当前账号下所有的历史好友记录", onClick = clickToClearAllFriends)
+                textItem("清除所有的ShortCuts", "清除MessagingStyle通知等功能产生的ShortCuts", onClick = clickToClearShortCuts)
             },
             CategoryItem("测试") {
                 textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
@@ -129,14 +135,45 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
+            CategoryItem("异常与崩溃测试") {
+                textItem("退出 Looper", "Looper.getMainLooper().quit() 没事别按", onClick = clickToTestCrashAction {
+                    val looper = Looper.getMainLooper()
+                    val queue = Reflex.getInstanceObject(looper, "mQueue", MessageQueue::class.java)
+                    Reflex.setInstanceObject(queue, "mQuitAllowed", true)
+                    looper.quit()
+                })
+                textItem("abort()", "没事别按", onClick = clickToTestCrashAction {
+                    val libc = Natives.dlopen("libc.so", Natives.RTLD_NOLOAD)
+                    if (libc == 0L) {
+                        error("dlopen libc.so failed")
+                    }
+                    val abort = Natives.dlsym(libc, "abort")
+                    if (abort == 0L) {
+                        val msg = Natives.dlerror()
+                        if (msg != null) {
+                            error(msg)
+                        } else {
+                            error("dlsym 'abort' failed")
+                        }
+                    }
+                    Natives.call(abort)
+                })
+                textItem("((void(*)())0)();", "空指针测试, 没事别按", onClick = clickToTestCrashAction {
+                    Natives.call(0)
+                })
+                textItem("*((int*)0)=0;", "空指针测试, 没事别按", onClick = clickToTestCrashAction {
+                    Natives.memset(0, 0, 1);
+                })
+            },
             CategoryItem("调试信息") {
-                description(
-                    "PID: " + android.os.Process.myPid() +
-                        ", UID: " + android.os.Process.myUid() +
-                        ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
-                        "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
-                        HybridClassLoader.getXposedBridgeClassName(), isTextSelectable = true
-                )
+                val statusInfo = "PID: " + android.os.Process.myPid() +
+                    ", UID: " + android.os.Process.myUid() +
+                    ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+                    "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
+                    HybridClassLoader.getXposedBridgeClassName() + "\n" +
+                    "module: " + HookEntry.getModulePath() + "\n" +
+                    "ctx.dataDir: " + hostInfo.application.dataDir
+                description(statusInfo, isTextSelectable = true)
                 description(generateDebugInfo(), isTextSelectable = true)
             }
         )
@@ -202,7 +239,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val clickToClearRecoveredFriends = confirmBeforeAction(
         """
-            此操作将删除当前帐号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
+            此操作将删除当前账号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
             如果因 BUG 大量好友被标记为已删除, 请先刷新好友列表, 然后再点击此按钮.
             此操作不可恢复
             """.trimIndent()
@@ -222,7 +259,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private val clickToClearAllFriends = confirmBeforeAction(
-        "此操作将删除当前帐号(" + getLongAccountUin()
+        "此操作将删除当前账号(" + getLongAccountUin()
             + ")下的 全部 的历史好友记录, 通常您不需要进行此操作. \n" +
             "如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友. \n" +
             "此操作不可恢复"
@@ -237,6 +274,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         }
         Thread.sleep(50)
         exitProcess(0)
+    }
+
+    private val clickToClearShortCuts = confirmBeforeAction("确定清除所有ShortCuts吗？") {
+        ShortcutManagerCompat.removeAllDynamicShortcuts(
+            HostInfo.getApplication().applicationContext
+        )
+        Toasts.success(requireContext(), "操作成功")
     }
 
     private fun confirmBeforeAction(confirmMessage: String, action: () -> Unit) = View.OnClickListener {
@@ -260,6 +304,10 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private fun actionOrShowError(action: () -> Unit) = View.OnClickListener {
+        runOrShowError(action)
+    }
+
+    private fun runOrShowError(action: () -> Unit) {
         try {
             action()
         } catch (e: Throwable) {
@@ -344,6 +392,31 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         nm.notify(ExfriendManager.ID_EX_NOTIFY, n)
     }
 
+    private var mCrashActionWarned = false
+
+    private fun clickToTestCrashAction(action: () -> Unit): View.OnClickListener {
+        return actionOrShowError {
+            val ctx = requireContext()
+            if (!mCrashActionWarned) {
+                AlertDialog.Builder(ctx).apply {
+                    setTitle("警告")
+                    setMessage("此操作将会导致应用崩溃, 仅用于测试崩溃处理功能。\nPS: 经常崩溃容易造成聊天记录数据库损坏")
+                    setCancelable(true)
+                    setPositiveButton(android.R.string.ok, null)
+                    setNegativeButton(android.R.string.cancel, null)
+                }.show().apply {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        mCrashActionWarned = true
+                        dismiss()
+                        runOrShowError(action)
+                    }
+                }
+            } else {
+                action()
+            }
+        }
+    }
+
     private val clickToStartHostDebugActivity = actionOrShowError {
         val browser = Initiator.loadClass("com.tencent.mobileqq.debug.DebugActivity")
         val intent = Intent(requireContext(), browser)
@@ -377,6 +450,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     DexKit.NO_SUCH_METHOD.toString() -> {
                         sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
+
                     else -> sb.append(text)
                 }
             }.onFailure { t ->
@@ -405,6 +479,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     DexKit.NO_SUCH_METHOD.toString() -> {
                         sb.append(text, ForegroundColorSpan(colorError), SPAN_EXCLUSIVE_EXCLUSIVE)
                     }
+
                     else -> sb.append(text)
                 }
             }.onFailure { t ->

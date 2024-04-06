@@ -59,8 +59,10 @@ public class DefaultBubbleHook extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        final String bubbleClsName = "com.tencent.qqnt.kernel.nativeinterface.VASMsgBubble";
+
         if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
-            XposedBridge.hookAllConstructors(VASMsgBubble.class, new XC_MethodHook() {
+            XposedBridge.hookAllConstructors(Class.forName(bubbleClsName), new XC_MethodHook() {
                 @Override
                 protected void afterHookedMethod(@NonNull MethodHookParam param) {
                     VASMsgBubble v = (VASMsgBubble) param.thisObject;
@@ -69,8 +71,9 @@ public class DefaultBubbleHook extends CommonSwitchFunctionHook {
                 }
             });
         } else if (QAppUtils.isQQnt()) {
-            HookUtils.hookBeforeIfEnabled(this,VASMsgBubble.class.getDeclaredMethod("getBubbleId"),param -> param.setResult(0));
-            HookUtils.hookBeforeIfEnabled(this,VASMsgBubble.class.getDeclaredMethod("getSubBubbleId"),param -> param.setResult(0));
+            Class<?> bubbleCls = Class.forName(bubbleClsName);
+            HookUtils.hookBeforeIfEnabled(this, bubbleCls.getDeclaredMethod("getBubbleId"), param -> param.setResult(0));
+            HookUtils.hookBeforeIfEnabled(this, bubbleCls.getDeclaredMethod("getSubBubbleId"), param -> param.setResult(0));
         } else {
             updateChmod(true);
             Class<?> kAIOMsgItem = Initiator.load("com.tencent.mobileqq.aio.msg.AIOMsgItem");

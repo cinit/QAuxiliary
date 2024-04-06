@@ -42,11 +42,17 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
+import androidx.constraintlayout.widget.ConstraintLayout
+import androidx.constraintlayout.widget.ConstraintSet
 import androidx.core.view.children
 import cc.ioctl.hook.msg.FlashPicHook
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.ui.FaultyDialog
+import com.github.kyuubiran.ezxhelper.utils.argTypes
+import com.github.kyuubiran.ezxhelper.utils.args
+import com.github.kyuubiran.ezxhelper.utils.invokeMethod
+import com.github.kyuubiran.ezxhelper.utils.newInstance
 import com.lxj.xpopup.util.XPopupUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import de.robv.android.xposed.XC_MethodHook
@@ -54,11 +60,14 @@ import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AIOUtilsImpl
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.ntapi.MsgConstants
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
+import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinQQVersion
@@ -66,6 +75,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.method
 import java.lang.reflect.Method
@@ -96,6 +106,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     // X2J_APT <- ???Binding(com/tx/x2j/AioSenderBubbleTemplateBinding) <- AIOSenderBubbleTemplate
     private val NAME_TAIL_LAYOUT = when {
+        requireMinQQVersion(QQVersion.QQ_9_0_8) -> "srn"
         requireMinQQVersion(QQVersion.QQ_8_9_93_BETA_13315) -> "so5"
         requireMinQQVersion(QQVersion.QQ_8_9_90) -> "smi"
         requireMinQQVersion(QQVersion.QQ_8_9_88) -> "slx"
@@ -109,6 +120,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         requireMinQQVersion(QQVersion.QQ_8_9_68) -> "s3o"
         else -> "rzs"
     }
+
+    private val constraintSetClz by lazy { "androidx.constraintlayout.widget.ConstraintSet".clazz!! }
+    private val constraintLayoutClz by lazy { "androidx.constraintlayout.widget.ConstraintLayout".clazz!! }
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
@@ -329,11 +343,83 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
             .replace("\${simpleName}", chatMessage.javaClass.simpleName)
     }
 
+    private fun shouldShowTailMsgForMsgRecord(chatMessage: MsgRecord): Boolean {
+        // do not show tail message for grey tips
+        if (chatMessage.msgType == MsgConstants.MSG_TYPE_GRAY_TIPS) {
+            return false
+        }
+        return true
+    }
+
     @SuppressLint("ResourceType", "SetTextI18n")
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
         // 因为tailMessage是自己添加的，所以闪照文字也放这里处理
         val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
         if (!isEnabled && !isFlashPicTagNeedShow) return
+
+        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+            if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
+                val layout = LinearLayout(rootView.context).apply {
+                    layoutParams = ConstraintLayout.LayoutParams(
+                        0 /* MATCH_CONSTRAINT */,
+                        ConstraintLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    id = ID_ADD_LAYOUT
+                }
+
+                val textView = TextView(rootView.context).apply {
+                    id = ID_ADD_TEXTVIEW
+                    textSize = 12f
+                    layoutParams = LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.WRAP_CONTENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                    setOnClickListener {
+                        if (!mEnableDetailInfo) return@setOnClickListener
+                        val msgRecord = it.tag as MsgRecord
+                        showDetailInfoDialog(rootView.context, Reflex.getShortClassName(msgRecord), msgRecord.toString())
+                    }
+                }
+                layout.addView(textView)
+                rootView.addView(layout)
+                val constraintSet = constraintSetClz.newInstance(args())!!
+                constraintSet.invokeMethod("clone", args(rootView), argTypes(constraintLayoutClz))
+                val id_msg = rootView.children.find { it is LinearLayout && it.id != View.NO_ID }!!.id
+                constraintSet.invokeMethod(
+                    "connect",
+                    args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.TOP, id_msg, ConstraintLayout.LayoutParams.BOTTOM, 0),
+                    argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                )
+                if (chatMessage.senderUin != AppRuntimeHelper.getLongAccountUin()) {
+                    constraintSet.invokeMethod(
+                        "connect",
+                        args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_msg, ConstraintSet.LEFT),
+                        argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                    )
+                } else {
+                    constraintSet.invokeMethod(
+                        "connect",
+                        args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_msg, ConstraintSet.RIGHT),
+                        argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
+                    )
+                }
+                constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
+            }
+
+            val textView = rootView.findViewById<TextView>(ID_ADD_TEXTVIEW)
+
+            if (isFlashPicTagNeedShow || shouldShowTailMsgForMsgRecord(chatMessage)) {
+                textView.visibility = View.VISIBLE
+                textView.let {
+                    it.tag = chatMessage
+                    it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
+                }
+            } else {
+                textView.visibility = View.GONE
+            }
+
+            return
+        }
 
 //        Log.d("rootView: $rootView")
         val tailLayout = try {
@@ -408,20 +494,14 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
 
     private fun showDetailInfoDialog(context: Context, title: String, msg: String) {
         val ctx = CommonContextWrapper.createAppCompatContext(context)
-        val text = AppCompatTextView(ctx).apply {
-            text = msg
-            textSize = 16f
-            setTextIsSelectable(true)
-            isVerticalScrollBarEnabled = true
-            setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
-            val dp24 = LayoutHelper.dip2px(ctx, 24f)
-            setPadding(dp24, 0, dp24, 0)
-        }
-        AlertDialog.Builder(ctx)
+        CustomDialog.createFailsafe(ctx)
             .setTitle(title)
-            .setView(text)
+            .setMessage(msg)
             .setCancelable(true)
-            .setPositiveButton(android.R.string.ok, null)
+            .setPositiveButton("确定", null)
             .show()
+            .apply {
+                findViewById<TextView>(android.R.id.message).setTextIsSelectable(true)
+            }
     }
 }

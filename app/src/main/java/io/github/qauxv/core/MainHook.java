@@ -25,6 +25,7 @@ import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Resources;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
@@ -51,6 +52,7 @@ import io.github.qauxv.lifecycle.ActProxyMgr;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
 import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.lifecycle.ShadowFileProvider;
+import io.github.qauxv.omnifix.hw.HwResThemeMgrFix;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
@@ -79,7 +81,10 @@ public class MainHook {
 
     private static void injectLifecycleForProcess(Context ctx) {
         if (SyncUtils.isMainProcess()) {
-            Parasitics.injectModuleResources(ctx.getApplicationContext().getResources());
+            Resources res = ctx.getApplicationContext().getResources();
+            HwResThemeMgrFix.initHook(ctx);
+            HwResThemeMgrFix.fix(ctx, res);
+            Parasitics.injectModuleResources(res);
         }
         if (SyncUtils.isTargetProcess(SyncUtils.PROC_MAIN | SyncUtils.PROC_PEAK | SyncUtils.PROC_TOOL)) {
             Parasitics.initForStubActivity(ctx);

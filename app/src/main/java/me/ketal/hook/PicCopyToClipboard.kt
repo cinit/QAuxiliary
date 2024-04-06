@@ -146,7 +146,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
 
     private fun onClick(context: Context, file: File) {
         if (!file.exists()) {
-            FaultyDialog.show(context, "图片不存在", "尝试打开一次图片")
+            Toasts.info(context, "请查看原图后复制")
             return
         }
         try {
