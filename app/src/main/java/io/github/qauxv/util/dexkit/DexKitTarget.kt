@@ -893,3 +893,19 @@ data object QQSettingMeABTestHelper_isV9ExpGroup : DexKitTarget.UsingStringVecto
     override val declaringClass: String = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
+
+data object CopyPromptHelper_handlePrompt : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("handlePrompt content : ")
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+    // There may be at most 4 strings, but they should be in the same method
+}
+
+data object PushNotificationManager_judgeAndAddGrayTips : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("getmTodayHadShowCount > showCount")
+    override val declaringClass: String = "com/tencent/mobileqq/managers/PushNotificationManager"
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+    // only one result expected
+}
