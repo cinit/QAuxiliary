@@ -360,7 +360,7 @@ class SearchOverlaySubFragment {
         allItemsContainer.forEach {
             it.score = 0
             keywords.forEach { keyword ->
-                it.score += calculatePartialScoreBySingleKeyword(keyword, it.agent.uiItemAgent)
+                it.score += calculatePartialScoreBySingleKeyword(keyword, it.agent)
             }
         }
         // find score > 0
@@ -383,12 +383,13 @@ class SearchOverlaySubFragment {
         SyncUtils.runOnUiThread { updateSearchResultForView() }
     }
 
-    private fun calculatePartialScoreBySingleKeyword(keyword: String, item: IUiItemAgent): Int {
+    private fun calculatePartialScoreBySingleKeyword(keyword: String, item: IUiItemAgentProvider): Int {
+        val agent = item.uiItemAgent
         var score = 0
         val context = requireContext()
-        val title: String = item.titleProvider.invoke(item).replace(" ", "")
-        val summary: String? = item.summaryProvider?.invoke(item, context)?.toString()?.replace(" ", "")?.replace("\n", "")
-        val extraKeywords: Array<String>? = item.extraSearchKeywordProvider?.invoke(item, context)
+        val title: String = agent.titleProvider.invoke(agent).replace(" ", "")
+        val summary: String? = agent.summaryProvider?.invoke(agent, context)?.toString()?.replace(" ", "")?.replace("\n", "")
+        val extraKeywords: Array<String>? = agent.extraSearchKeywordProvider?.invoke(agent, context)
         if (title == keyword) {
             score += 80
         } else if (title.contains(keyword, true)) {
@@ -408,6 +409,15 @@ class SearchOverlaySubFragment {
                 } else if (it.contains(keyword, true)) {
                     score += 5
                 }
+            }
+        }
+        val uniqueName = item.itemAgentProviderUniqueIdentifier
+        if (uniqueName.isNotEmpty()) {
+            if (keyword == uniqueName) {
+                score += 100
+            } else if (uniqueName.contains(keyword, true)) {
+                // just make it visible
+                score += 1
             }
         }
         return score
