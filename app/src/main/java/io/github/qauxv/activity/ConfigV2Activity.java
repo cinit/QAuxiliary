@@ -43,6 +43,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.core.content.res.ResourcesCompat;
+import cc.ioctl.fragment.DebugTestFragment;
 import cc.ioctl.fragment.JunkCodeFragment;
 import cc.ioctl.fragment.Pcm2SilkTestFragment;
 import cc.ioctl.util.HostInfo;
@@ -115,6 +116,10 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
             } else {
                 SettingsUiFragmentHostActivity.startActivityForFragment(this, JunkCodeFragment.class, null);
             }
+            return true;
+        });
+        mainV2Binding.mainV2Troubleshoot.setOnLongClickListener(v -> {
+            SettingsUiFragmentHostActivity.startActivityForFragment(this, DebugTestFragment.class, null);
             return true;
         });
     }
