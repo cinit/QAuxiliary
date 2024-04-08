@@ -48,6 +48,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.IoUtils
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.RecentPopup_onClickAction
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.encodeToString
 import kotlinx.serialization.json.Json
@@ -60,7 +62,7 @@ import java.io.File
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object TroopGroupHook : CommonSwitchFunctionHook() {
+object TroopGroupHook : CommonSwitchFunctionHook(arrayOf(RecentPopup_onClickAction)) {
     override val name = "群聊分组"
 
     override val description = "在首页加号菜单中添加群聊分组功能"
@@ -343,7 +345,7 @@ object TroopGroupHook : CommonSwitchFunctionHook() {
             val list = it.args[1] as MutableList<Any>
             list.add(0, entryItem)
         }
-        "Lcom/tencent/mobileqq/activity/recent/n\$a;->onClickAction(Lcom/tencent/widget/PopupMenuDialog\$MenuItem;)V".method.hookBefore {
+        DexKit.requireMethodFromCache(RecentPopup_onClickAction).hookBefore {
             if (it.args[0].get("id") == 415411) {
                 mainDialog.invoke().show()
                 it.result = null

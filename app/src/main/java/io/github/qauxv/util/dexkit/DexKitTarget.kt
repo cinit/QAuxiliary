@@ -250,6 +250,7 @@ data object CScreenShotHelper : DexKitTarget.UsingStr() {
 
 data object CTimeFormatterUtils : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.utils.TimeFormatterUtils"
+
     // old: arrayOf("TimeFormatterUtils")
     override val traitString = arrayOf("^EEEE$")
     override val filter = DexKitFilter.allStaticFields
@@ -908,4 +909,18 @@ data object PushNotificationManager_judgeAndAddGrayTips : DexKitTarget.UsingStr(
     override val declaringClass: String = "com/tencent/mobileqq/managers/PushNotificationManager"
     override val filter: dexkitFilter = DexKitFilter.allowAll
     // only one result expected
+}
+
+data object RecentPopup_onClickAction : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("jiahao.fukuan.click")
+    override val declaringClass = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
+data object TroopInfoCardPageABConfig : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("exp_qq_grp_idcard_switch_v2")
+    override val declaringClass = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
 }
