@@ -25,6 +25,7 @@ import static io.github.qauxv.util.Initiator.load;
 
 import android.app.Activity;
 import android.content.Context;
+import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -120,7 +121,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
                         }
                         PicElement element = (PicElement) getElement.invoke(msg);
                         String md5 = element.getMd5HexStr().toUpperCase();
-                        showMd5Dialog(ContextUtils.getCurrentActivity(), md5);
+                        showMd5Dialog(ContextUtils.getCurrentActivity(), md5, element);
                     } catch (Throwable e) {
                         traceError(e);
                     }
@@ -212,11 +213,11 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
                     final String md5;
                     if (chatMessage == null
                             || (md5 = (String) Reflex.getInstanceObjectOrNull(chatMessage, "md5")) == null
-                            || md5.length() == 0) {
+                            || md5.isEmpty()) {
                         Toasts.error(ctx, "获取图片MD5失败");
                         return;
                     }
-                    showMd5Dialog(ctx, md5);
+                    showMd5Dialog(ctx, md5, null);
                 } catch (Throwable e) {
                     INSTANCE.traceError(e);
                     Toasts.error(ctx, e.toString().replace("java.lang.", ""));
@@ -225,16 +226,36 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
         }
     }
 
-    private static void showMd5Dialog(Context ctx, String md5) {
+    private static void showMd5Dialog(Context ctx, String md5, PicElement element) {
         CustomDialog.createFailsafe(ctx).setTitle("MD5").setCancelable(true)
                 .setMessage(md5).setPositiveButton("复制",
                         (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, md5))
                 .setNeutralButton("复制图片链接",
-                        (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, getPicturePath(md5)))
+                        (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, getPicturePath(md5, element)))
                 .setNegativeButton("关闭", null).show();
     }
 
-    private static String getPicturePath(@NonNull String md5) {
-        return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + md5 + "/0";
+    private static String getPicturePath(@NonNull String md5, PicElement element) {
+        if (element == null) {
+            // legacy
+            return "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + md5 + "/0";
+        }
+        // java/cc/hicore/hook/stickerPanel/Hooker/StickerPanelEntryHooker.java #190
+        String url;
+        String originUrl = element.getOriginImageUrl();
+        if (TextUtils.isEmpty(originUrl)) {
+            url = "https://gchat.qpic.cn/gchatpic_new/0/0-0-" + md5 + "/0";
+        } else {
+            if (originUrl.startsWith("/download")) {
+                if (originUrl.contains("appid=1406")) {
+                    url = "https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKDOc_jvbthUjAatuFPQIo-x9wwcDhDGd8SOEu5FyJWNxNMabJTTRpO8";
+                } else {
+                    url = "https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKAB6JWENi5LMk0kc62l8Pm3Jn1dsLZHyRLAnNmHGoZ3y_gDZPqZt-64";
+                }
+            } else {
+                url = "https://gchat.qpic.cn" + element.getOriginImageUrl();
+            }
+        }
+        return url;
     }
 }
