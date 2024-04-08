@@ -8,6 +8,7 @@ import cc.ioctl.util.HookUtils;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
+import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
@@ -24,7 +25,7 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
     @Override
     protected boolean initOnce() throws Exception {
         hiddenVipMetal();
-        optimizeQLevel();
+        optimizeQLevel(12, this);
         return true;
     }
 
@@ -66,13 +67,13 @@ public class HiddenVipIconForSe extends CommonSwitchFunctionHook {
 
     /**
      *  这是针对较新版本的QQ等级显示不完整用大黄省略号代替，本方法实现的是让QQ策划面板的等级显示完整~
-    **/
-    private void optimizeQLevel() {
+     **/
+    public void optimizeQLevel(int num, BaseFunctionHook this0) {
         try {
             Class<?> qsmClass = Initiator.loadClass("com.tencent.mobileqq.activity.qqsettingme.api.impl.QQSettingMeApiImpl");
             Method m_parseQQLevel = qsmClass.getDeclaredMethod("parseQQLevel", Resources.class, int.class, int.class, int.class);
-            HookUtils.hookBeforeIfEnabled(this, m_parseQQLevel, param -> {
-                param.args[3] = 100;    // 显示图标数量，新版QQ默认为3
+            HookUtils.hookBeforeIfEnabled(this0, m_parseQQLevel, param -> {
+                param.args[3] = num;    // 显示图标数量，新版QQ默认为3
             });
         } catch (Exception e) {
             // 如果抛错也不要紧，这仅仅只是优化QQ等级显示而已，目前错误的原因是因为旧版本吧。。。已测试QQ9.0
