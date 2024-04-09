@@ -25,9 +25,11 @@ import android.content.Context
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
+import cc.ioctl.util.HookUtils.hookBeforeIfEnabled
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -48,14 +50,19 @@ object HideQZMTitleBarEntrance : CommonSwitchFunctionHook(
     targets = arrayOf(NQZMoment_EntranceEnabled)
 ) {
 
-    override val name = "隐藏QQ空间此刻按钮"
+    override val name = "隐藏QQ空间动态的\"此刻\""
 
-    override val description = "隐藏QQ空间动态顶端的\"此刻\"按钮, 未经测试"
+    override val description = "隐藏QQ空间动态的\"此刻\"按钮或横幅"
 
     // currently experimental
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_9_25)
+
+    private val qZoneFeedxTopEntranceMethodName = when {
+        requireMinQQVersion(QQVersion.QQ_9_0_30) -> "c0"
+        else -> "e0"
+    }
 
     override fun initOnce(): Boolean {
         try {
@@ -78,6 +85,16 @@ object HideQZMTitleBarEntrance : CommonSwitchFunctionHook(
             }
         } catch (_: Exception) {
             DexKit.requireMethodFromCache(NQZMoment_EntranceEnabled).hookBefore { it.result = false }
+
+            val qZoneFeedxTopEntranceClass = Initiator.loadClass("com.qzone.reborn.feedx.widget.entrance.QZoneFeedxTopEntranceManagerView;")
+            val qZoneFeedxTopEntranceMethod = qZoneFeedxTopEntranceClass.getDeclaredMethod(qZoneFeedxTopEntranceMethodName)
+
+            hookBeforeIfEnabled(this, qZoneFeedxTopEntranceMethod) { param: MethodHookParam ->
+                val obj = param.thisObject as View
+                obj.isClickable = false
+                param.setResult(null)
+            }
+
         }
         return true
     }
