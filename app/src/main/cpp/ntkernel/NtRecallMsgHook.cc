@@ -472,7 +472,9 @@ bool InitInitNtKernelRecallMsgHook() {
         if (offsetC2c != 0) {
             void* c2c = (void*) (baseAddress + offsetC2c);
             if (CreateInlineHook(c2c, (void*) &HandleC2cRecallSysMsgCallback, (void**) &sOriginHandleC2cRecallSysMsgCallback) != 0) {
-                TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed");
+                TraceErrorF(nullptr, gInstanceRevokeMsgHook,
+                            "InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed, c2c={:p}({:x}+{:x})",
+                            c2c, baseAddress, offsetC2c);
                 return false;
             }
         } else {
@@ -481,7 +483,9 @@ bool InitInitNtKernelRecallMsgHook() {
         if (offsetGroup != 0) {
             void* group = (void*) (baseAddress + offsetGroup);
             if (CreateInlineHook(group, (void*) &HandleGroupRecallSysMsgCallback, (void**) &sOriginHandleGroupRecallSysMsgCallback) != 0) {
-                TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, DobbyHook group failed");
+                TraceErrorF(nullptr, gInstanceRevokeMsgHook,
+                            "InitInitNtKernelRecallMsgHook failed, DobbyHook group failed, group={:p}({:x}+{:x})",
+                            group, baseAddress, offsetGroup);
                 return false;
             }
         } else {
