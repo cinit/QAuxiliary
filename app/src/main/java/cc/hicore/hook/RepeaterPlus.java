@@ -400,7 +400,11 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             }
 
             service.getMsgsByMsgId(contact, l, (i, str, list) -> {
-                if (!list.isEmpty() && list.get(0).getElements().get(0).getPicElement() != null
+                if (list.isEmpty()) {
+                    Toasts.error(ContextUtils.getCurrentActivity(), "消息获取失败，请重试");
+                    return;
+                }
+                if (list.get(0).getElements().get(0).getPicElement() != null
                         || list.get(0).getElements().get(0).getStructMsgElement() != null
                         || list.get(0).getElements().get(0).getArkElement() != null) {
                     service.forwardMsg(l, contact, c, attrMap, (i2, str2, hashMap) -> {
