@@ -93,6 +93,17 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
             XposedHelpers.callMethod(it.args[0], "finishRefresh")
         }
 
+        val zMiniOldStyleHeaderNew = Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew")
+        zMiniOldStyleHeaderNew?.hookAllConstructorAfter {
+            // Lcom/scwang/smart/refresh/header/TwoLevelHeader;
+            it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first {
+                it.name == "D"  //mEnableTwoLevel
+            }.apply { isAccessible = true }.set(it.thisObject, false)
+        }
+        zMiniOldStyleHeaderNew?.findMethod { name == "a" && paramCount == 3 }?.hookAfter {
+            XposedHelpers.callMethod(it.args[0], "finishRefresh")
+        }
+
 
         XposedHelpers.findAndHookMethod(
             Initiator._Conversation(), methodName,
