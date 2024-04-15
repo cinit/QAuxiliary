@@ -19,6 +19,7 @@
 -keep class com.alphi.qhmk.** { *; }
 -keep class top.linl.** { *; }
 -keep class io.github.moonleeeaf.** { *; }
+-keep class io.github.fusumayuki.** { *; }
 -keep class awoo.linwenxuan04.** { *; }
 
 -keepclasseswithmembernames class * {
