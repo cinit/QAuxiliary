@@ -24,6 +24,7 @@ package io.github.fusumayuki.hook
 
 import android.view.View
 import cc.ioctl.util.HookUtils.hookBeforeIfEnabled
+import cc.ioctl.util.hookBeforeIfEnabled
 import com.alphi.qhmk.module.HiddenVipIconForSe
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -32,11 +33,15 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.QQValueMethod
 import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HideQQValue : CommonSwitchFunctionHook() {
+object HideQQValue : CommonSwitchFunctionHook(
+    arrayOf(QQValueMethod)
+) {
 
     override val name = "隐藏QQ能量值"
 
@@ -44,25 +49,32 @@ object HideQQValue : CommonSwitchFunctionHook() {
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
 
-    private val qqValueMethodName = when {
-        requireMinQQVersion(QQVersion.QQ_9_0_30) -> "z"
-        requireMinQQVersion(QQVersion.QQ_9_0_0) -> "y"
-        else -> "x"
-    }
+//    private val qqValueMethodName = when {
+//        requireMinQQVersion(QQVersion.QQ_9_0_30) -> "z"
+//        requireMinQQVersion(QQVersion.QQ_9_0_25) -> "y"
+//        requireMinQQVersion(QQVersion.QQ_9_0_20) -> "z"
+//        requireMinQQVersion(QQVersion.QQ_9_0_0) -> "y"
+//        else -> "x"
+//    }
 
     override fun initOnce(): Boolean {
-        val qqValueClass = Initiator.loadClass("com.tencent.mobileqq.vas.qqvaluecard.view.QQValuePagView;")
-        val qqValueMethod = qqValueClass.getDeclaredMethod(
-            qqValueMethodName,
-            String::class.java,
-            String::class.java,
-            Boolean::class.javaPrimitiveType
-        )
+//        val qqValueClass = Initiator.loadClass("com.tencent.mobileqq.vas.qqvaluecard.view.QQValuePagView;")
+//        val qqValueMethod = qqValueClass.getDeclaredMethod(
+//            qqValueMethodName,
+//            String::class.java,
+//            String::class.java,
+//            Boolean::class.javaPrimitiveType
+//        )
+//
+//        hookBeforeIfEnabled(this, qqValueMethod) { param: MethodHookParam ->
+//            val obj = param.thisObject as View
+//            obj.isClickable = false
+//            param.setResult(null)
+//        }
 
-        hookBeforeIfEnabled(this, qqValueMethod) { param: MethodHookParam ->
-            val obj = param.thisObject as View
-            obj.isClickable = false
-            param.setResult(null)
+        hookBeforeIfEnabled(DexKit.requireMethodFromCache(QQValueMethod)) {
+            (it.thisObject as View).isClickable = false
+            it.result = null
         }
 
         if (!HiddenVipIconForSe.INSTANCE.isEnabled)
