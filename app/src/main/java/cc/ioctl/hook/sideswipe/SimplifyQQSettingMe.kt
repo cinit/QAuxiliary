@@ -52,6 +52,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_0
 import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
+import io.github.qauxv.util.QQVersion.QQ_9_0_20
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup
 import io.github.qauxv.util.dexkit.QQ_SETTING_ME_CONFIG_CLASS
@@ -175,11 +176,13 @@ object SimplifyQQSettingMe :
             val midRemovedList: MutableList<Int> = mutableListOf()
             midContentListLayout?.forEach {
                 val child = it as LinearLayout
-                val tv = if (child.size == 1) {
+                val tv = (if (child.size == 1) {
                     (child[0] as LinearLayout)[1]
+                } else if (requireMinQQVersion(QQ_9_0_20) && child.size > 2) {
+                    child[2]
                 } else {
                     child[1]
-                } as TextView
+                }) as TextView
                 val text = tv.text.toString()
                 if (stringHit(text)) {
                     midRemovedList.add(midContentListLayout.indexOfChild(child))
@@ -237,7 +240,8 @@ object SimplifyQQSettingMe :
 
         // for NT QQ 8.9.68.11450
         val clazz = Initiator.load(
-            if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeViewV9"
+            if (requireMinQQVersion(QQ_9_0_20)) "com.tencent.mobileqq.ab"
+            else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "com.tencent.mobileqq.QQSettingMeViewV9"
             else "com.tencent.mobileqq.activity.QQSettingMeViewV9"
         )
 
