@@ -902,6 +902,13 @@ data object QQValueMethod : DexKitTarget.UsingStr() {
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
 
+data object QZoneFeedxTopEntranceMethod : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString: Array<String> = arrayOf("findViewById(R.id.qzone_feedx_top_entrance_view)")
+    override val declaringClass: String = "com/qzone/reborn/feedx/widget/entrance/QZoneFeedxTopEntranceManagerView"
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
 data object CopyPromptHelper_handlePrompt : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString: Array<String> = arrayOf("handlePrompt content : ")
