@@ -89,8 +89,14 @@ public class CustomMsgTimeFormat extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws NoSuchMethodException {
-        Method method = Reflex.findSingleMethod(DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE),
-                CharSequence.class, false, Context.class, int.class, long.class);
+        Method method;
+        try {
+            method = Reflex.findSingleMethod(DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE),
+                    CharSequence.class, false, Context.class, int.class, long.class, boolean.class, boolean.class);
+        } catch (NoSuchMethodException ignored) {
+            method = Reflex.findSingleMethod(DexKit.requireClassFromCache(CTimeFormatterUtils.INSTANCE),
+                    CharSequence.class, false, Context.class, int.class, long.class);
+        }
         HookUtils.hookBeforeIfEnabled(this, method, param -> {
             String result = formatTime((long) param.args[2]);
             if (result != null) {
