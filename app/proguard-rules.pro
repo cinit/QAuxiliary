@@ -80,3 +80,5 @@
 -keep class net.bytebuddy.** {
     *;
 }
+
+-dontoptimize
