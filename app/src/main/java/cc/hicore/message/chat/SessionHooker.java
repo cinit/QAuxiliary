@@ -23,7 +23,6 @@ package cc.hicore.message.chat;
 
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MField;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.hook.RepeaterPlus;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
@@ -35,16 +34,21 @@ import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.dexkit.AIO_Create_QQNT;
+import io.github.qauxv.util.dexkit.AIO_Destroy_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import java.util.Stack;
 import me.ketal.hook.MultiActionHook;
 
 @FunctionHookEntry
 public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpdate> {
+
     public static final SessionHooker INSTANCE = new SessionHooker();
+
     private SessionHooker() {
         super(new DexKitTarget[]{
-                AIO_Create_QQNT.INSTANCE
+                AIO_Create_QQNT.INSTANCE,
+                AIO_Destroy_QQNT.INSTANCE
         });
     }
 
@@ -61,6 +65,8 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
         return DECORATORS;
     }
 
+    private static final Stack<Object> aioParams = new Stack<>();
+
     @Override
     protected boolean initOnce() throws Exception {
         XposedBridge.hookMethod(DexKit.loadMethodFromCache(AIO_Create_QQNT.INSTANCE), new XC_MethodHook() {
@@ -68,8 +74,20 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
             protected void afterHookedMethod(MethodHookParam param) throws Throwable {
                 Object pie = param.thisObject;
                 Object AIOParam = XField.obj(pie).type(Initiator.loadClass("com.tencent.aio.data.AIOParam")).get();
+                aioParams.push(AIOParam);
                 for (SessionHooker.IAIOParamUpdate decorator : getDecorators()) {
                     decorator.onAIOParamUpdate(AIOParam);
+                }
+            }
+        });
+        XposedBridge.hookMethod(DexKit.loadMethodFromCache(AIO_Destroy_QQNT.INSTANCE), new XC_MethodHook() {
+            @Override
+            protected void afterHookedMethod(MethodHookParam param) {
+                aioParams.pop();
+                if (!aioParams.empty()) {
+                    for (SessionHooker.IAIOParamUpdate decorator : getDecorators()) {
+                        decorator.onAIOParamUpdate(aioParams.peek());
+                    }
                 }
             }
         });
@@ -87,6 +105,7 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
     }
 
     public interface IAIOParamUpdate extends IDynamicHook {
+
         void onAIOParamUpdate(Object AIOParam);
     }
 }
