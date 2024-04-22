@@ -382,7 +382,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 rootView.addView(layout)
                 val constraintSet = constraintSetClz.newInstance(args())!!
                 constraintSet.invokeMethod("clone", args(rootView), argTypes(constraintLayoutClz))
-                val id_msg = rootView.children.find { it is LinearLayout && it.id != View.NO_ID }!!.id
+                val i_msg = rootView.children.indexOfFirst { it is LinearLayout && it.id != View.NO_ID }
+                val id_msg = rootView.getChildAt(i_msg).id
+                val id_name = rootView.getChildAt(i_msg - 1).id
                 constraintSet.invokeMethod(
                     "connect",
                     args(ID_ADD_LAYOUT, ConstraintLayout.LayoutParams.TOP, id_msg, ConstraintLayout.LayoutParams.BOTTOM, 0),
@@ -391,13 +393,13 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 if (chatMessage.senderUin != AppRuntimeHelper.getLongAccountUin()) {
                     constraintSet.invokeMethod(
                         "connect",
-                        args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_msg, ConstraintSet.LEFT),
+                        args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_name, ConstraintSet.LEFT),
                         argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
                     )
                 } else {
                     constraintSet.invokeMethod(
                         "connect",
-                        args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_msg, ConstraintSet.RIGHT),
+                        args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_name, ConstraintSet.RIGHT),
                         argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
                     )
                 }
