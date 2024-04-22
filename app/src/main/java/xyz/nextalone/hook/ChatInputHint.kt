@@ -73,14 +73,18 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                 }
             }
             // 群设置hint为空后
-            (if (requireMinQQVersion(QQVersion.QQ_8_9_73)) "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
-            else "Lcom/tencent/mobileqq/aio/input/b/c;->l()V").method.hookAfter(this) { param ->
-                val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
-                val b = f.javaClass.declaredFields.single {
-                    it.isAccessible = true
-                    it.get(f) is EditText
-                }.get(f) as EditText
-                b.hint = getValue()
+                when {
+                    requireMinQQVersion(QQVersion.QQ_9_0_30) -> "Lcom/tencent/mobileqq/aio/input/c/c;->l()V"
+                    requireMinQQVersion(QQVersion.QQ_8_9_73) -> "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
+                    else -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
+                }
+                    .method.hookAfter(this) { param ->
+                        val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
+                        val b = f.javaClass.declaredFields.single {
+                            it.isAccessible = true
+                            it.get(f) is EditText
+                        }.get(f) as EditText
+                        b.hint = getValue()
             }
         } else {
             DexKit.requireMethodFromCache(NBaseChatPie_init).hookAfter(this) {
