@@ -73,7 +73,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                 }
             }
             // 群设置hint为空后
-                when {
+                when { // Lcom/tencent/mobileqq/aio/input/anonymous/AnonymousModeInputVBDelegate;->setNotAnonymousHint()V
                     requireMinQQVersion(QQVersion.QQ_9_0_30) -> "Lcom/tencent/mobileqq/aio/input/c/c;->l()V"
                     requireMinQQVersion(QQVersion.QQ_8_9_73) -> "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
                     else -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
