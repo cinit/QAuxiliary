@@ -28,6 +28,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -36,9 +38,12 @@ object ViewGroupChatMsg : CommonSwitchFunctionHook() {
 
     override val description = "查看因涉嫌违规被停用群聊的消息"
 
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
+
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
+        // QQ8.9.88 Lcom/tencent/qqnt/aio/helper/TroopBlockHelper;->j(Ljava/lang/String;Z)V
         val troopBlockClass = Initiator.loadClass("com.tencent.qqnt.aio.helper.TroopBlockHelper")
         val jMethod = troopBlockClass.getDeclaredMethod("j", String::class.java, Boolean::class.java)
         hookBeforeIfEnabled(jMethod) { param ->
