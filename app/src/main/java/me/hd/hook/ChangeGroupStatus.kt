@@ -37,7 +37,7 @@ import io.github.qauxv.util.requireMinQQVersion
 object ChangeGroupStatus : CommonSwitchFunctionHook() {
 
     override val name = "更改群聊状态"
-    override val description = "查看因涉嫌违规被停用群聊的消息"
+    override val description = "查看消息列表中因涉嫌违规被停用群聊的消息"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
