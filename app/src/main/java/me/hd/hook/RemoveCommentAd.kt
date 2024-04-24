@@ -22,27 +22,42 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookAfterIfEnabled
+import cc.ioctl.util.hookBeforeIfEnabled
+import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object RemoveCommentAd : CommonSwitchFunctionHook() {
+
     override val name = "移除评论广告"
-
     override val description = "移除短视频评论列表中的二楼广告"
-
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val gdtAdClass = Initiator.loadClass("com.tencent.gdtad.aditem.GdtAd")
-        val isValidMethod = gdtAdClass.getDeclaredMethod("isValid")
-        hookAfterIfEnabled(isValidMethod) { param ->
-            param.result = false
+        val commentBlockClass = Initiator.loadClass("com.tencent.biz.qqcircle.adapter.QFSCommentBlock")
+        val viewHolderClass = Initiator.loadClass("androidx.recyclerview.widget.RecyclerView\$ViewHolder")
+        val onBindViewHolderMethod = commentBlockClass.getDeclaredMethod("onBindViewHolder", viewHolderClass, Int::class.java)
+        hookBeforeIfEnabled(onBindViewHolderMethod) { param ->
+            val adDataList = HashSet<Any>()
+            val mDataList = XposedHelpers.getObjectField(param.thisObject, "mDataList") as ArrayList<*>
+            for (mDataItem in mDataList) {
+                val comment = XposedHelpers.getObjectField(mDataItem, "comment")
+                val cmtBlockType = XposedHelpers.getObjectField(comment, "cmt_block_type")
+                val value = XposedHelpers.getObjectField(cmtBlockType, "value")
+                if (value == 1) {
+                    adDataList.add(mDataItem)
+                }
+            }
+            mDataList.removeAll(adDataList)
+            XposedHelpers.setObjectField(param.thisObject, "mDataList", mDataList)
         }
         return true
     }
