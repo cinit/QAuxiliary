@@ -29,8 +29,10 @@ import android.widget.ImageView;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MRes;
+import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.Utils.FunConf;
+import cc.hicore.Utils.FunProtoData;
 import cc.hicore.Utils.XLog;
 import cc.hicore.hook.stickerPanel.ICreator;
 import cc.hicore.hook.stickerPanel.PanelUtils;
@@ -38,6 +40,8 @@ import cc.hicore.message.chat.SessionHooker;
 import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
+import com.tencent.qphone.base.remote.FromServiceMsg;
+import com.tencent.qphone.base.remote.ToServiceMsg;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
@@ -63,8 +67,10 @@ import io.github.qauxv.util.dexkit.Guild_Emo_Btn_Create_QQNT;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import kotlin.Unit;
+import org.json.JSONObject;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -78,6 +84,8 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                 Guild_Emo_Btn_Create_QQNT.INSTANCE
         });
     }
+    public static String rkey_group;
+    public static String rkey_private;
 
     @NonNull
     @Override
@@ -193,9 +201,9 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                                                 }else {
                                                     if (originUrl.startsWith("/download")){
                                                         if (originUrl.contains("appid=1406")){
-                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKDOc_jvbthUjAatuFPQIo-x9wwcDhDGd8SOEu5FyJWNxNMabJTTRpO8");
+                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_group);
                                                         }else {
-                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKAB6JWENi5LMk0kc62l8Pm3Jn1dsLZHyRLAnNmHGoZ3y_gDZPqZt-64");
+                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_private);
                                                         }
                                                     }else {
                                                         urls.add("https://gchat.qpic.cn"+picElement.getOriginImageUrl());
@@ -261,7 +269,45 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                 }
         );
 
+
+        //Hook for rkey
+
+        HookUtils.hookBeforeIfEnabled(this, XMethod.clz("mqq.app.msghandle.MsgRespHandler").name("dispatchRespMsg").ignoreParam().get(), param -> {
+            ToServiceMsg serviceMsg = XField.obj(param.args[1]).name("toServiceMsg").get();
+            FromServiceMsg fromServiceMsg = XField.obj(param.args[1]).name("fromServiceMsg").get();
+
+            if ("OidbSvcTrpcTcp.0x9067_202".equals(fromServiceMsg.getServiceCmd())){
+                FunProtoData data = new FunProtoData();
+                data.fromBytes(getUnpPackage(fromServiceMsg.getWupBuffer()));
+
+                JSONObject obj = data.toJSON();
+                rkey_group = obj.getJSONObject("4")
+                        .getJSONObject("4")
+                        .getJSONArray("1")
+                        .getJSONObject(0).getString("1");
+
+                rkey_private = obj.getJSONObject("4")
+                        .getJSONObject("4")
+                        .getJSONArray("1")
+                        .getJSONObject(1).getString("1");
+            }
+        });
+
         return true;
+    }
+
+    private static byte[] getUnpPackage(byte[] b){
+        if (b == null){
+            return null;
+        }
+        if (b.length < 4){
+            return b;
+        }
+        if (b[0] == 0){
+            return Arrays.copyOfRange(b, 4, b.length);
+        }else {
+            return b;
+        }
     }
 
     @NonNull

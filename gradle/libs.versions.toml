@@ -43,6 +43,7 @@ byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.14" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
+google-protobuf = { module = "com.google.protobuf:protobuf-java", version = "4.26.1" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }

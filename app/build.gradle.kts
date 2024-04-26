@@ -238,6 +238,7 @@ dependencies {
     implementation(libs.byte.buddy)
     implementation(libs.dalvik.dx)
     ksp(libs.sealedEnum.ksp)
+    implementation(libs.google.protobuf)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
