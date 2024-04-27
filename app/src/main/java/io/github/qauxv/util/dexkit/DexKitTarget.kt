@@ -945,3 +945,10 @@ data object TroopInfoCardPageABConfig : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
+
+data object HdMethodFakePhone : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("target_desc")
+    override val declaringClass = "com/tencent/mobileqq/app/"
+    override val filter = filter@{ it: DexMethodDescriptor -> it.name == "onUpdate" }
+}
