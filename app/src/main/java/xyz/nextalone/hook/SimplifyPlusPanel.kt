@@ -85,7 +85,8 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
         "收钱",
         "打卡",
 
-        "元梦组队"
+        "元梦组队",
+        "短视频"
     )
     override val defaultItems = setOf<String>()
 
