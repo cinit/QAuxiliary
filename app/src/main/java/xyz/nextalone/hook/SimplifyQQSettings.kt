@@ -22,14 +22,17 @@
 package xyz.nextalone.hook
 
 import android.app.Activity
+import android.content.Context
 import android.view.View
 import android.widget.LinearLayout
 import android.widget.RelativeLayout
 import cc.hicore.ReflectUtil.MField
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.getFieldByType
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
+import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -118,7 +121,22 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
         // 免流量 单独处理
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
-            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+//                Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider").method("d")?.hookAfter {
+//                    it.result = (it.result as List<*>).filterIndexed { index, i -> index != 5 }
+//                } ?: throw NoSuchMethodException("com.tencent.mobileqq.setting.main.MainSettingConfigProvider.d")
+                XposedHelpers.findAndHookMethod("com.tencent.mobileqq.setting.main.MainSettingConfigProvider", Initiator.getHostClassLoader(), "d",
+                    Context::class.java, object : XC_MethodHook() {
+                        override fun afterHookedMethod(param: MethodHookParam) {
+                            param.result = (param.result as List<*>).filter { obj ->
+                                (((obj ?: return@filter true)::class.java.getFieldByType(List::class.java).get(obj)
+                                    ?: return@filter true) as List<*>).firstOrNull {
+                                    (it ?: return@firstOrNull false)::class.java.simpleName == "CUOpenCardItemProcessor"
+                                } == null
+                            }
+                        }
+                    })
+            } else if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
                 //Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng;->b(I)Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng$a;
                 Initiator.loadClass("com/tencent/mobileqq/managers/CUOpenCardGuideMng").let { clz ->
                     val m = clz.declaredMethods.single {
