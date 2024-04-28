@@ -43,7 +43,7 @@ object FxxkPasteHereForTIM : CommonSwitchFunctionHook(
 ) {
 
     override val name = "移除聊天输入框“点击粘贴”"
-    override val description = "仅在 TIM 3.5.1 理论推得，未经测试，参考 Issue #890";
+    override val description = "仅在 TIM 3.5.1 测试通过";
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce(): Boolean {

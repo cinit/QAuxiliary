@@ -37,7 +37,7 @@ object FxxkGroupChangeNotificationTipsForTIM : CommonSwitchFunctionHook(
     arrayOf(PushNotificationManager_judgeAndAddGrayTips)
 ) {
     override val name = "移除群聊灰字“打开消息推送设置”"
-    override val description = "参考 Issue #889，仅适用于 TIM 3.5.1，未经测试";
+    override val description = "仅适用于 TIM 3.5.1";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
 
