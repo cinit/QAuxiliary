@@ -49,7 +49,7 @@ object RemoveTIMOpenContactTip : CommonSwitchFunctionHook() {
         // 最终找到 aejy 方法名 migrateOldOrDefaultContent
         // 目前该字符串搜出的方法最终调用都在这
 
-        HookUtils.hookBeforeIfEnabled(this, Reflex.findMethod(Initiator.loadClass('aejy'), 'migrateOldOrDefaultContent')) {
+        HookUtils.hookBeforeIfEnabled(this, Reflex.findMethod(Initiator.loadClass("aejy"), "migrateOldOrDefaultContent")) {
             it.result = null;
         }
         return true;
