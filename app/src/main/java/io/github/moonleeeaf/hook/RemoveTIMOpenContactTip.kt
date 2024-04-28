@@ -50,6 +50,7 @@ object RemoveTIMOpenContactTip : CommonSwitchFunctionHook() {
         // 目前该字符串搜出的方法最终调用都在这
 
         HookUtils.hookBeforeIfEnabled(
+            this,
             Reflex.findMethod(
                 Initiator.loadClass('aejy'), 
                 'migrateOldOrDefaultContent'
