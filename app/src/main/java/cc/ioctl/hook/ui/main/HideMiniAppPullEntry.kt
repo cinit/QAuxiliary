@@ -179,7 +179,7 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
     override fun makePreparationSteps() = arrayOf(mStep)
 
     override val isNeedFind: Boolean
-        get() = initMiniAppObfsName == null || miniOldStyleHeaderNewMethod == null
+        get() = initMiniAppObfsName == null || (Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew") != null && miniOldStyleHeaderNewMethod == null)
 
     override fun doFind(): Boolean {
         (getCurrentBackend() as DexKitDeobfs).use { dexKitDeobfs ->
