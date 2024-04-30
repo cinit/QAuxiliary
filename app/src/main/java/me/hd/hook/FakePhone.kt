@@ -23,35 +23,27 @@
 package me.hd.hook
 
 import android.os.Bundle
-import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
-import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.HdMethodFakePhone
 import io.github.qauxv.util.requireMinQQVersion
-import java.util.Objects
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakePhone : CommonSwitchFunctionHook(
-    arrayOf(HdMethodFakePhone)
-) {
+object FakePhone : CommonSwitchFunctionHook() {
 
-    override val name = "自定义手机号码"
-    override val description = "自定义设置页手机号码显示内容(待完善)"
+    override val name = "伪装手机号码"
+    override val description = "伪装设置页手机号码显示内容"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
         val onUpdateClass = Initiator.loadClass("com.tencent.mobileqq.app.cd")
         val onUpdateMethod = onUpdateClass.getDeclaredMethod("onUpdate", Int::class.java, Boolean::class.java, Object::class.java)
-        //val onUpdateMethodCache = DexKit.requireMethodFromCache(HdMethodFakePhone)
         hookBeforeIfEnabled(onUpdateMethod) { param ->
             if (param.args[0] == 5) {
                 val bundle = param.args[2] as Bundle
