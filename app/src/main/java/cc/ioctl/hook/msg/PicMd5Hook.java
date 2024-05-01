@@ -29,9 +29,14 @@ import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.ReflectUtil.XField;
+import cc.hicore.ReflectUtil.XMethod;
+import cc.hicore.Utils.FunProtoData;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
+import com.tencent.qphone.base.remote.FromServiceMsg;
+import com.tencent.qphone.base.remote.ToServiceMsg;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
 import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
@@ -52,8 +57,10 @@ import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.List;
 import kotlin.Unit;
+import org.json.JSONObject;
 import xyz.nextalone.util.SystemServiceUtils;
 
 @FunctionHookEntry
@@ -65,6 +72,10 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
     private PicMd5Hook() {
         super(new DexKitTarget[]{AbstractQQCustomMenuItem.INSTANCE});
     }
+
+    public static String rkey_group;
+
+    public static String rkey_private;
 
     @NonNull
     @Override
@@ -86,6 +97,27 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+
+        HookUtils.hookBeforeIfEnabled(this, XMethod.clz("mqq.app.msghandle.MsgRespHandler").name("dispatchRespMsg").ignoreParam().get(), param -> {
+            FromServiceMsg fromServiceMsg = XField.obj(param.args[1]).name("fromServiceMsg").get();
+
+            if ("OidbSvcTrpcTcp.0x9067_202".equals(fromServiceMsg.getServiceCmd())){
+                FunProtoData data = new FunProtoData();
+                data.fromBytes(getUnpPackage(fromServiceMsg.getWupBuffer()));
+
+                JSONObject obj = data.toJSON();
+                rkey_group = obj.getJSONObject("4")
+                        .getJSONObject("4")
+                        .getJSONArray("1")
+                        .getJSONObject(0).getString("1");
+
+                rkey_private = obj.getJSONObject("4")
+                        .getJSONObject("4")
+                        .getJSONArray("1")
+                        .getJSONObject(1).getString("1");
+            }
+        });
+
         if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
             Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
             Method getMsg = null;
@@ -163,6 +195,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
                 break;
             }
         }
+
         return true;
     }
 
@@ -248,14 +281,29 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
         } else {
             if (originUrl.startsWith("/download")) {
                 if (originUrl.contains("appid=1406")) {
-                    url = "https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKDOc_jvbthUjAatuFPQIo-x9wwcDhDGd8SOEu5FyJWNxNMabJTTRpO8";
+                    url = "https://multimedia.nt.qq.com.cn" + originUrl + rkey_group;
                 } else {
-                    url = "https://multimedia.nt.qq.com.cn" + originUrl + "&rkey=CAQSKAB6JWENi5LMk0kc62l8Pm3Jn1dsLZHyRLAnNmHGoZ3y_gDZPqZt-64";
+                    url = "https://multimedia.nt.qq.com.cn" + originUrl + rkey_private;
                 }
             } else {
                 url = "https://gchat.qpic.cn" + element.getOriginImageUrl();
             }
         }
         return url;
+    }
+
+
+    private static byte[] getUnpPackage(byte[] b) {
+        if (b == null) {
+            return null;
+        }
+        if (b.length < 4) {
+            return b;
+        }
+        if (b[0] == 0) {
+            return Arrays.copyOfRange(b, 4, b.length);
+        } else {
+            return b;
+        }
     }
 }
