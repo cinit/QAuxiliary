@@ -42,7 +42,20 @@ object FakePhone : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val onUpdateClass = Initiator.loadClass("com.tencent.mobileqq.app.cd")
+        /**
+         * class: com.tencent.mobileqq.app.??;
+         *
+         * method: onUpdate(IZLjava/lang/Object;)V
+         *
+         * keyword: target_desc target_name
+         **/
+        val onUpdateClass = Initiator.loadClass(
+            when {
+                requireMinQQVersion(QQVersion.QQ_9_0_25) -> "com.tencent.mobileqq.app.ci"
+                requireMinQQVersion(QQVersion.QQ_8_9_88) -> "com.tencent.mobileqq.app.cd"
+                else -> return false
+            }
+        )
         val onUpdateMethod = onUpdateClass.getDeclaredMethod("onUpdate", Int::class.java, Boolean::class.java, Object::class.java)
         hookBeforeIfEnabled(onUpdateMethod) { param ->
             if (param.args[0] == 5) {
