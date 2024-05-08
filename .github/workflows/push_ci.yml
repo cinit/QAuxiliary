@@ -166,26 +166,6 @@ jobs:
            -F symbol="@$SYMBOL_ZIP_NAME"
           pkill telegram-bot
 
-  upload-taichi:
-    name: Upload TaiChi
-    if: ${{ success() && github.ref == 'refs/heads/main' }}
-    runs-on: ubuntu-latest
-    needs:
-      - build
-    steps:
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          path: artifacts
-      - name: Release
-        run: |
-          curl "https://gist.githubusercontent.com/qwq233/2a903f28a38d48d57731a1e4d6358948/raw/80e515d659a6f3c4737a1674f50fae5087e1f83c/taichi.py" -o taichi.py
-          sudo apt install -y python3-pip
-          pip3 install requests
-          echo ${{ secrets.TC_UPLOAD_USER_TOKEN }} | base64 -d > taichi.json
-          export release=$(find $OUTPUT -name "*armAll.apk")
-          python3 taichi.py $release
-
   telegram-bot-api:
     name: Telegram Bot API
     runs-on: ubuntu-latest
