@@ -43,12 +43,14 @@ object FakePhone : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         /**
-         * class: com.tencent.mobileqq.app.??;
+         * version 8.9.88(4852)
          *
-         * method: onUpdate(IZLjava/lang/Object;)V
+         * class [ com/tencent/mobileqq/app/?? ]
          *
-         * keyword: target_desc target_name
-         **/
+         * method [ public onUpdate(IZLjava/lang/Object;)V ]
+         *
+         * keyword [ target_desc ] [ target_name ]
+         */
         val onUpdateClass = Initiator.loadClass(
             when {
                 requireMinQQVersion(QQVersion.QQ_9_0_25) -> "com.tencent.mobileqq.app.ci"
