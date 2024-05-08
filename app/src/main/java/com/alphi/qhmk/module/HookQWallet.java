@@ -36,7 +36,8 @@ public class HookQWallet extends CommonSwitchFunctionHook {
                 // 预防广告视图显示导致的黑屏
                 // public final QWalletHomePreviewController.?(QWallBaseFragment|QWalletBaseFragment)Z
                 Method methodIsShowAdView = ArraysKt.single(kQWalletHomePreviewController.getDeclaredMethods(),
-                        it -> it.getReturnType() == boolean.class && it.getParameterTypes().length == 1 &&
+                        it -> it.getReturnType() == boolean.class &&
+                                it.getParameterTypes().length == 1 &&
                                 it.getParameterTypes()[0].getSimpleName().endsWith("BaseFragment"));
                 HookUtils.hookBeforeIfEnabled(this, methodIsShowAdView, param -> param.setResult(true));
             }
@@ -45,6 +46,7 @@ public class HookQWallet extends CommonSwitchFunctionHook {
                 // 加载广告及视图初始化
                 param.setResult(null);
             });
+            return true;
         }
         // 高版本 已测试 8.8.50
         Class<?> aClass = Initiator.load("Lcom/tencent/mobileqq/qwallet/config/impl/QWalletConfigServiceImpl;");
