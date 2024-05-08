@@ -44,9 +44,15 @@ object HideClockInTip : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
+        /**
+         * version 8.9.88(4852)
+         *
+         * class [ com/tencent/mobileqq/aio/msglist/holder/component/graptips/common/CommonGrayTipsComponent ]
+         *
+         * method [ private final t1()Lcom/tencent/mobileqq/aio/msglist/holder/component/graptips/GrayTipsTextView; ]
+         */
         val tipsClass = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.graptips.common.CommonGrayTipsComponent")
         val tipsTextViewClass = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.graptips.GrayTipsTextView")
-        // 8.9.88(4852) .method private final t1()Lcom/tencent/mobileqq/aio/msglist/holder/component/graptips/GrayTipsTextView;
         val getTextViewMethod = tipsClass.declaredMethods.single { method ->
             method.isPrivate && method.returnType == tipsTextViewClass
         }
