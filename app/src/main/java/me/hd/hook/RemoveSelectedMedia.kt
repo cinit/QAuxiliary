@@ -30,37 +30,33 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.isPrivate
+import xyz.nextalone.util.isPublic
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisableSwipeRight : CommonSwitchFunctionHook() {
+object RemoveSelectedMedia : CommonSwitchFunctionHook() {
 
-    override val name = "屏蔽聊天右滑"
-    override val description = "屏蔽聊天右滑显示界面[群聊|群应用][好友|亲密关系]"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
+    override val name = "移除选择媒体限制"
+    override val description = "移除最多只能选择20张图片/视频限制"
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
         /**
          * version 8.9.88(4852)
          *
-         * class [ com/tencent/aio/frame/drawer/DrawerFrameViewGroup ]
+         * class [ com.tencent.qqnt.qbasealbum.select.viewmodel.SelectedMediaViewModel ]
          *
-         * method [ private final v(I)V ]
+         * method [ public final L0()Z ]
          *
-         * keyword [ scrollFrame scrollPercent ]
+         * keyword_java [ this.?.size() + this.? < this.? ]
          */
-        val drawerFrameClass = Initiator.loadClass("com.tencent.aio.frame.drawer.DrawerFrameViewGroup")
-        val scrollMethod = drawerFrameClass.declaredMethods.single { method ->
-            val params = method.parameterTypes
-            method.isPrivate && params.size == 1 && params[0] == Int::class.java
+        val selectedMediaVMClass = Initiator.loadClass("com.tencent.qqnt.qbasealbum.select.viewmodel.SelectedMediaViewModel")
+        val ifNumMethod = selectedMediaVMClass.declaredMethods.single { method ->
+            method.isPublic && method.parameterTypes.isEmpty() && method.returnType == Boolean::class.java
         }
-        hookBeforeIfEnabled(scrollMethod) { param ->
-            val scrollX = param.args[0] as Int
-            if (scrollX > 0) {
-                param.args[0] = 0
-            }
+        hookBeforeIfEnabled(ifNumMethod) { param ->
+            param.result = true
         }
         return true
     }
