@@ -28,7 +28,7 @@ import cc.ioctl.util.Reflex;
 public class ContactDescriptor {
 
     public String uin;
-    public int uinType;
+    public Integer uinType;
     @Nullable
     public String nick;
 
@@ -46,7 +46,15 @@ public class ContactDescriptor {
         ContactDescriptor cd = new ContactDescriptor();
         cd.uin = Reflex.getInstanceObjectOrNull(a, "a", String.class);
         cd.nick = Reflex.getInstanceObjectOrNull(a, "b", String.class);
-        cd.uinType = Reflex.getInstanceObjectOrNull(a, "b", int.class);
+        cd.uinType = Reflex.getInstanceObjectOrNull(a, "b", Integer.class);
+        return cd;
+    }
+
+    public static ContactDescriptor parseResultRec_QQ_8_9_88(Object a) {
+        ContactDescriptor cd = new ContactDescriptor();
+        cd.uin = Reflex.getInstanceObjectOrNull(a, "uin", String.class);
+        cd.nick = Reflex.getInstanceObjectOrNull(a, "nick", String.class);
+        cd.uinType = Reflex.getInstanceObjectOrNull(a, "uinType", int.class);
         return cd;
     }
 }

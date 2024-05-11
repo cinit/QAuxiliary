@@ -276,12 +276,22 @@ public class PttForwardHook extends CommonSwitchFunctionHook {
                     if (targets.size() > 1) {
                         multi = true;
                         for (Object rr : targets) {
-                            ContactDescriptor c = ContactDescriptor.parseResultRec(rr);
+                            ContactDescriptor c;
+                            if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_88)) {
+                                c = ContactDescriptor.parseResultRec_QQ_8_9_88(rr);
+                            } else {
+                                c = ContactDescriptor.parseResultRec(rr);
+                            }
                             mTargets.add(c);
                         }
                     } else {
                         multi = false;
-                        ContactDescriptor c = ContactDescriptor.parseResultRec(targets.get(0));
+                        ContactDescriptor c;
+                        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_88)) {
+                            c = ContactDescriptor.parseResultRec_QQ_8_9_88(targets.get(0));
+                        } else {
+                            c = ContactDescriptor.parseResultRec(targets.get(0));
+                        }
                         mTargets.add(c);
                     }
                 } else {
