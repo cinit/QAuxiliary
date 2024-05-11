@@ -24,6 +24,8 @@ package io.github.qauxv.util.data;
 
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.QQVersion;
 
 public class ContactDescriptor {
 
@@ -44,9 +46,15 @@ public class ContactDescriptor {
 
     public static ContactDescriptor parseResultRec(Object a) {
         ContactDescriptor cd = new ContactDescriptor();
-        cd.uin = Reflex.getInstanceObjectOrNull(a, "a", String.class);
-        cd.nick = Reflex.getInstanceObjectOrNull(a, "b", String.class);
-        cd.uinType = Reflex.getInstanceObjectOrNull(a, "b", int.class);
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_88)) {
+            cd.uin = Reflex.getInstanceObjectOrNull(a, "uin", String.class);
+            cd.nick = Reflex.getInstanceObjectOrNull(a, "nick", String.class);
+            cd.uinType = Reflex.getInstanceObjectOrNull(a, "uinType", int.class);
+        } else {
+            cd.uin = Reflex.getInstanceObjectOrNull(a, "a", String.class);
+            cd.nick = Reflex.getInstanceObjectOrNull(a, "b", String.class);
+            cd.uinType = Reflex.getInstanceObjectOrNull(a, "b", int.class);
+        }
         return cd;
     }
 }
