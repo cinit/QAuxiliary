@@ -110,7 +110,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                 }
                 Object item = f.get(param.thisObject);
                 Field fileName = item.getClass().getSuperclass().getDeclaredField("FileName");
-                if (Objects.equals(fileName.get(item), "base.apk")) {
+                if (isBaseApk((String) fileName.get(item))) {
                     String localFile = (String) item.getClass().getSuperclass().getDeclaredField("LocalFile").get(item);
                     File file = new File(localFile);
                     if (!file.exists()) {
@@ -131,7 +131,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                             // not a file path to upload, maybe someone has sent MessageForFile
                             return;
                         }
-                        if (fileName.equals("base.apk")) {
+                        if (isBaseApk(fileName)) {
                             File file = new File(localFile);
                             if (!file.exists()) {
                                 throw new FileNotFoundException("file not found: path='" + localFile + "', name='" + fileName + "'");
@@ -156,7 +156,7 @@ public class BaseApk extends CommonConfigFunctionHook {
                             Object item = param.args[1];
                             Field localFile = XposedHelpers.findField(_ItemManagerClz, "LocalFile");
                             Field fileName = XposedHelpers.findField(_ItemManagerClz, "FileName");
-                            if (fileName.get(item).equals("base.apk")) {
+                            if (isBaseApk((String) fileName.get(item))) {
                                 fileName.set(item, getFormattedFileNameByPath((String) localFile.get(item)));
                             }
                         });
@@ -165,6 +165,17 @@ public class BaseApk extends CommonConfigFunctionHook {
             }
         }
         return true;
+    }
+
+    private static boolean isBaseApk(String name) {
+        if (name == null) {
+            return false;
+        }
+        if ("base.apk".equals(name)) {
+            return true;
+        }
+        // base\([0-9]+\)\.apk
+        return name.matches("base\\([0-9]+\\)\\.apk");
     }
 
     @Override
