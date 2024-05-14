@@ -50,8 +50,17 @@ object HideTroopToDo : CommonSwitchFunctionHook() {
          *
          * method [ public constructor <init>(Landroid/content/Context;Lcom/tencent/aio/api/f/a;Lcom/tencent/mobileqq/activity/aio/troop/trooptodo/nt/TroopToDoReporter;)V ]
          */
-        val tipsBarNewClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoTipsBarNew")
-        val reporterClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoReporter")
+        val tipsBarNewClass: Class<*>
+        val reporterClass: Class<*>
+        if (requireMinQQVersion(QQVersion.QQ_9_0_25)) {
+            tipsBarNewClass = Initiator.loadClass("com.tencent.mobileqq.troop.trooptodo.TroopToDoTipsBarNew")
+            reporterClass = Initiator.loadClass("com.tencent.mobileqq.troop.trooptodo.TroopToDoReporter")
+        } else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) {
+            tipsBarNewClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoTipsBarNew")
+            reporterClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoReporter")
+        } else {
+            return false
+        }
         val method = tipsBarNewClass.constructors.single { method ->
             val params = method.parameterTypes
             params.size == 3 && params[0] == Context::class.java && params[2] == reporterClass
