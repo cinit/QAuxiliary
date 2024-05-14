@@ -29,6 +29,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.PlusPanel_PanelAdapter
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
@@ -40,7 +42,7 @@ import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi") {
+object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi", arrayOf(PlusPanel_PanelAdapter)) {
 
     override val preferenceTitle = "精简加号菜单"
     override val extraSearchKeywords: Array<String> = arrayOf("+号菜单")
@@ -134,7 +136,13 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
             targetMethods[1]!!.hookBefore(this, callback)
         } else {
             // assert QQ.version <= QQVersion.QQ_8_4_8
-            if (QAppUtils.isQQnt()) {
+            if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {
+                DexKit.requireClassFromCache(PlusPanel_PanelAdapter).declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == ArrayList::class.java }
+                    .hookBefore(
+                        this,
+                        callback
+                    )
+            } else if (QAppUtils.isQQnt()) {
                 "Lcom/tencent/qqnt/pluspanel/adapter/PanelAdapter;".clazz!!.declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == ArrayList::class.java }
                     .hookBefore(
                         this,

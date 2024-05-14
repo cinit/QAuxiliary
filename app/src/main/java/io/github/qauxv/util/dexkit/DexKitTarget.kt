@@ -945,3 +945,10 @@ data object TroopInfoCardPageABConfig : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
+
+data object PlusPanel_PanelAdapter : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = false
+    override val traitString: Array<String> = arrayOf("appDataLists.subList(startIndex, endIndex)")
+    override val declaringClass = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
