@@ -155,7 +155,7 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
 
     @Override
     public boolean isNeedFind() {
-        return DexKit.getMethodDescFromCacheImpl(NTextItemBuilder_setETText.INSTANCE) == null;
+        return !QAppUtils.isQQnt() && DexKit.getMethodDescFromCacheImpl(NTextItemBuilder_setETText.INSTANCE) == null;
     }
 
     @Override
