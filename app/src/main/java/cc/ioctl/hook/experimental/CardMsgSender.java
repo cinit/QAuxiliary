@@ -21,12 +21,20 @@
  */
 package cc.ioctl.hook.experimental;
 
+import static cc.hicore.message.bridge.Nt_kernel_bridge.send_msg;
+import static io.github.qauxv.router.dispacher.InputButtonHookDispatcher.AIOParam;
+
 import android.content.Context;
 import android.os.Parcelable;
 import android.view.View;
 import android.widget.EditText;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
+import cc.hicore.message.chat.SessionUtils;
+import com.tencent.qqnt.kernel.nativeinterface.ArkElement;
+import com.tencent.qqnt.kernel.nativeinterface.Contact;
+import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -44,7 +52,12 @@ import io.github.qauxv.util.dexkit.CTestStructMsg;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import me.singleneuron.data.CardMsgCheckResult;
+import me.singleneuron.util.KotlinUtilsKt;
 import mqq.app.AppRuntime;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -90,11 +103,11 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
 
     @Override
     public boolean onFunBtnLongClick(@NonNull String text,
-                                     @NonNull Parcelable session,
-                                     @NonNull EditText input,
-                                     @NonNull View sendBtn,
-                                     @NonNull Context ctx1,
-                                     @NonNull AppRuntime qqApp) throws Exception {
+            @NonNull Parcelable session,
+            @NonNull EditText input,
+            @NonNull View sendBtn,
+            @NonNull Context ctx1,
+            @NonNull AppRuntime qqApp) throws Exception {
         if (!isEnabled()) {
             return false;
         }
@@ -131,16 +144,11 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                             Toasts.error(ctx1, errorMsg);
                             return;
                         }
+
+                        sendCard(text, sendBtn, input, ctx1, qqApp, session);
                         // Object arkMsg = load("com.tencent.mobileqq.data.ArkAppMessage").newInstance();
-                        if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
-                            SyncUtils.runOnUiThread(() -> input.setText(""));
-                        } else {
-                            Toasts.error(ctx1, "JSON语法错误(代码有误)");
-                        }
+
                     } catch (Throwable e) {
-                        if (e instanceof InvocationTargetException) {
-                            e = e.getCause();
-                        }
                         traceError(e);
                         Toasts.error(ctx1, e.toString().replace("java.lang.", ""));
                     }
@@ -150,6 +158,54 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
         }
         return false;
     }
+
+    @NonNull
+    private static MsgElement getArkMsgElement(@NonNull String text) {
+        MsgElement msgElement = new MsgElement();
+        ArkElement arkElement = new ArkElement(text,null,null);
+        msgElement.setArkElement(arkElement);
+        msgElement.setElementType(10);
+        return msgElement;
+    }
+
+    private void sendCard(String text, View sendBtn, EditText input, Context ctx1, AppRuntime qqApp, Parcelable session) throws Exception {
+        if (QAppUtils.isQQnt()){
+            try {
+                new JSONObject(text);
+                CardMsgCheckResult check = KotlinUtilsKt.checkCardMsg(text);
+                if (check.getAccept()) {
+                    ArrayList<MsgElement> elem = new ArrayList<>();
+                    MsgElement msgElement = getArkMsgElement(text);
+                    elem.add(msgElement);
+                    Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
+                    send_msg(contact, elem);
+                    SyncUtils.runOnUiThread(() -> {
+                        input.setText("");
+                        sendBtn.setClickable(false);
+                    });
+                } else {
+                    Toasts.error(ctx1, check.getReason());
+                }
+
+            } catch (JSONException e) {
+                Toasts.error(ctx1, "JSON语法错误(代码有误)");
+            }
+
+            return;
+        }
+
+        if (CardMsgSender.ntSendCardMsg(qqApp, session, text)) {
+            SyncUtils.runOnUiThread(() -> {
+                input.setText("");
+                sendBtn.setClickable(false);
+            });
+        } else {
+            Toasts.error(ctx1, "JSON语法错误(代码有误)");
+        }
+
+    }
+
+
 
     @SuppressWarnings("JavaJniMissingFunction")
     static native boolean ntSendCardMsg(AppRuntime rt, Parcelable session, String msg) throws Exception;
