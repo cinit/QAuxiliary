@@ -24,7 +24,7 @@ package me.hd.hook
 
 import android.content.Context
 import android.view.View
-import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -65,7 +65,7 @@ object HideTroopToDo : CommonSwitchFunctionHook() {
             val params = method.parameterTypes
             params.size == 3 && params[0] == Context::class.java && params[2] == reporterClass
         }
-        hookAfterIfEnabled(method) { param ->
+        method.hookAfter { param ->
             val field = tipsBarNewClass.declaredFields.single { field -> field.type == View::class.java }
             field.apply {
                 isAccessible = true

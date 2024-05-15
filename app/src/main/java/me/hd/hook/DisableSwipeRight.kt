@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -56,7 +56,7 @@ object DisableSwipeRight : CommonSwitchFunctionHook() {
             val params = method.parameterTypes
             method.isPrivate && params.size == 1 && params[0] == Int::class.java
         }
-        hookBeforeIfEnabled(scrollMethod) { param ->
+        scrollMethod.hookBefore { param ->
             val scrollX = param.args[0] as Int
             if (scrollX > 0) {
                 param.args[0] = 0

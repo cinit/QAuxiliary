@@ -24,7 +24,7 @@ package me.hd.hook
 
 import android.view.View
 import android.widget.TextView
-import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -56,7 +56,7 @@ object HideClockInTip : CommonSwitchFunctionHook() {
         val getTextViewMethod = tipsClass.declaredMethods.single { method ->
             method.isPrivate && method.returnType == tipsTextViewClass
         }
-        hookAfterIfEnabled(getTextViewMethod) { param ->
+        getTextViewMethod.hookAfter { param ->
             val textView = param.result as TextView
             val text = textView.text.toString()
             if (text.endsWith("我也要打卡")) {

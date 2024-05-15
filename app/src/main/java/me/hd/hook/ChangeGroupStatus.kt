@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -49,7 +49,7 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
 
         val groupSimpleInfoClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.GroupSimpleInfo")
         val getGroupStatusMethod = groupSimpleInfoClass.getDeclaredMethod("getGroupStatus")
-        hookAfterIfEnabled(getGroupStatusMethod) { param ->
+        getGroupStatusMethod.hookAfter { param ->
             val groupStatus = param.result
             if (groupStatus == KDISABLE) {
                 param.result = KENABLE

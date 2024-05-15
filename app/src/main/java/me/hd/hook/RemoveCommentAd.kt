@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -45,7 +45,7 @@ object RemoveCommentAd : CommonSwitchFunctionHook() {
         val commentBlockClass = Initiator.loadClass("com.tencent.biz.qqcircle.adapter.QFSCommentBlock")
         val viewHolderClass = Initiator.loadClass("androidx.recyclerview.widget.RecyclerView\$ViewHolder")
         val onBindViewHolderMethod = commentBlockClass.getDeclaredMethod("onBindViewHolder", viewHolderClass, Int::class.java)
-        hookBeforeIfEnabled(onBindViewHolderMethod) { param ->
+        onBindViewHolderMethod.hookBefore { param ->
             val adDataList = HashSet<Any>()
             val mDataList = XposedHelpers.getObjectField(param.thisObject, "mDataList") as ArrayList<*>
             for (mDataItem in mDataList) {

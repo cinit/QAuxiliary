@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -55,7 +55,7 @@ object RemoveSelectedMedia : CommonSwitchFunctionHook() {
         val ifNumMethod = selectedMediaVMClass.declaredMethods.single { method ->
             method.isPublic && method.parameterTypes.isEmpty() && method.returnType == Boolean::class.java
         }
-        hookBeforeIfEnabled(ifNumMethod) { param ->
+        ifNumMethod.hookBefore { param ->
             param.result = true
         }
         return true
