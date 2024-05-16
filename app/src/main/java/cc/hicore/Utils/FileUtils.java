@@ -45,14 +45,12 @@ public class FileUtils {
         if (file == null) {
             return;
         }
-        File[] files = file.listFiles();
-        if (files == null) return;
-        //遍历该目录下的文件对象
-        for (File f : files) {
-            if (f.isDirectory()) {
-                deleteFile(f);
-            } else {
-                f.delete();
+        if (file.isDirectory()){
+            File[] files = file.listFiles();
+            if (files != null) {
+                for (File f : files) {
+                    deleteFile(f);
+                }
             }
         }
         file.delete();
