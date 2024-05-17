@@ -50,7 +50,7 @@ body:
   - type: input
     attributes:
       label: Module Version/模块版本
-      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed./不要填用“最新版”。给出详细版本号，不然 issue 会被关闭。
+      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed. Get the latest CI version from https://t.me/QAuxiliary_CI ./不要使用“最新版”。给出详细版本号，否则 issue 将被关闭。在 https://t.me/QAuxiliary_CI 获取最新 CI 版本。
     validations:
       required: true
   - type: checkboxes
