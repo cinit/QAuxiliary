@@ -43,13 +43,6 @@ object HideTroopToDo : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        /**
-         * version 8.9.88(4852)
-         *
-         * class [ com/tencent/mobileqq//aio/troop/trooptodo/nt/TroopToDoTipsBarNew ]
-         *
-         * method [ public constructor <init>(Landroid/content/Context;Lcom/tencent/aio/api/f/a;Lcom/tencent/mobileqq/activity/aio/troop/trooptodo/nt/TroopToDoReporter;)V ]
-         */
         val tipsBarNewClass: Class<*>
         val reporterClass: Class<*>
         if (requireMinQQVersion(QQVersion.QQ_9_0_25)) {

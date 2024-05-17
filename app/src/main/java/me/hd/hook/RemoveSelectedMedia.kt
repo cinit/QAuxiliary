@@ -42,15 +42,6 @@ object RemoveSelectedMedia : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        /**
-         * version 8.9.88(4852)
-         *
-         * class [ com.tencent.qqnt.qbasealbum.select.viewmodel.SelectedMediaViewModel ]
-         *
-         * method [ public final L0()Z ]
-         *
-         * keyword_java [ this.?.size() + this.? < this.? ]
-         */
         val selectedMediaVMClass = Initiator.loadClass("com.tencent.qqnt.qbasealbum.select.viewmodel.SelectedMediaViewModel")
         val ifNumMethod = selectedMediaVMClass.declaredMethods.single { method ->
             method.isPublic && method.parameterTypes.isEmpty() && method.returnType == Boolean::class.java
