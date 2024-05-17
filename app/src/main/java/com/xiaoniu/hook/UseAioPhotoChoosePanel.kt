@@ -46,12 +46,12 @@ object UseAioPhotoChoosePanel : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_35)
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {
-            // 改成1002再改回去
+            // 改成其他数字再改回去
             "Lcom/tencent/mobileqq/aio/shortcurtbar/AIOShortcutBarVM\$c;".clazz!!.hookBeforeAllConstructors {
-                it.args[0] = 1002
+                if (it.args[0] == 1003) it.args[0] = 114514
             }
             "Lcom/tencent/input/base/panelcontainer/h\$l;".clazz!!.hookBeforeAllConstructors {
-                if (it.args[0] == "AIOShortcutBarVM") it.args[1] = 1003
+                if (it.args[0] == "AIOShortcutBarVM" && it.args[1] == 114514) it.args[1] = 1003
             }
         } else {
             "Lcom/tencent/mobileqq/aio/api/impl/QQTabApiImpl\$b;->isExperiment(Ljava/lang/String;)Z".method.hookBefore {
