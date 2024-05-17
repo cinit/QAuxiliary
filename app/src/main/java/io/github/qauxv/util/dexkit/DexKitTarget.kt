@@ -952,3 +952,10 @@ data object PlusPanel_PanelAdapter : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
+
+data object Hd_FakePhone_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("status", "wording", "target_desc", "target_name"))
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/app/")
+}

@@ -37,8 +37,9 @@ import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
 import io.github.qauxv.hook.BaseFunctionHook
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.Hd_FakePhone_Method
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.data.ConfigData
 import me.ketal.ui.view.ConfigView
@@ -46,7 +47,10 @@ import me.ketal.util.ignoreResult
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakePhone : BaseFunctionHook("hd_FakePhone") {
+object FakePhone : BaseFunctionHook(
+    hookKey = "hd_FakePhone",
+    targets = arrayOf(Hd_FakePhone_Method)
+) {
 
     private val phoneKey = ConfigData<String>("hd_FakePhone_phone")
     private var phone: String
@@ -93,25 +97,7 @@ object FakePhone : BaseFunctionHook("hd_FakePhone") {
     }
 
     override fun initOnce(): Boolean {
-        /**
-         * version 8.9.88(4852)
-         *
-         * class [ com/tencent/mobileqq/app/?? ]
-         *
-         * method [ public onUpdate(IZLjava/lang/Object;)V ]
-         *
-         * keyword [ target_desc ] [ target_name ]
-         */
-        val onUpdateClass = Initiator.loadClass(
-            when {
-                requireMinQQVersion(QQVersion.QQ_9_0_25) -> "com.tencent.mobileqq.app.ci"
-                requireMinQQVersion(QQVersion.QQ_8_9_88) -> "com.tencent.mobileqq.app.cd"
-                else -> return false
-            }
-        )
-        val onUpdateMethod = onUpdateClass.getDeclaredMethod(
-            "onUpdate", Int::class.java, Boolean::class.java, Object::class.java
-        )
+        val onUpdateMethod = DexKit.requireMethodFromCache(Hd_FakePhone_Method)
         hookBeforeIfEnabled(onUpdateMethod) { param ->
             if (param.args[0] == 5) {
                 val bundle = param.args[2] as Bundle
