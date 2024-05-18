@@ -29,6 +29,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.hookBeforeAllConstructors
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
@@ -43,8 +45,18 @@ object UseAioPhotoChoosePanel : CommonSwitchFunctionHook() {
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_35)
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/aio/api/impl/QQTabApiImpl\$b;->isExperiment(Ljava/lang/String;)Z".method.hookBefore {
-            if (it.args[0] == "exp_QQ_aio_photo_choose_B") it.result = false
+        if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {
+            // 改成其他数字再改回去
+            "Lcom/tencent/mobileqq/aio/shortcurtbar/AIOShortcutBarVM\$c;".clazz!!.hookBeforeAllConstructors {
+                if (it.args[0] == 1003) it.args[0] = 114514
+            }
+            "Lcom/tencent/input/base/panelcontainer/h\$l;".clazz!!.hookBeforeAllConstructors {
+                if (it.args[0] == "AIOShortcutBarVM" && it.args[1] == 114514) it.args[1] = 1003
+            }
+        } else {
+            "Lcom/tencent/mobileqq/aio/api/impl/QQTabApiImpl\$b;->isExperiment(Ljava/lang/String;)Z".method.hookBefore {
+                if (it.args[0] == "exp_QQ_aio_photo_choose_B") it.result = false
+            }
         }
     }
 
