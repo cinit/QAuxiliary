@@ -427,13 +427,14 @@ object DumpTelegramStickers : CommonConfigFunctionHook() {
 //                    6, // 商店表情
 //                    12, // GIF
 //                    17, // QQ什么玩意专属表情
-                19, // 超级表情
+//                    19, // 超级表情
             )
 
             if(!removeQQMisc) {
                 typeWhiteList += 13
                 typeWhiteList += 12
                 typeWhiteList += 17
+                typeWhiteList += 19
             }
 
             val existingIds = mutableSetOf<String>()
