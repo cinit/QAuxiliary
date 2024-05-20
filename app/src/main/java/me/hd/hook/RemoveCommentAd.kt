@@ -38,7 +38,7 @@ object RemoveCommentAd : CommonSwitchFunctionHook() {
 
     override val name = "移除评论广告"
     override val description = "移除短视频评论列表中的二楼广告"
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {

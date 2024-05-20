@@ -38,7 +38,7 @@ object RemoveSelectedMedia : CommonSwitchFunctionHook() {
 
     override val name = "移除选择媒体限制"
     override val description = "移除最多只能选择20张图片/视频限制"
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
