@@ -959,3 +959,10 @@ data object Hd_FakePhone_Method : DexKitTarget.UsingStringVector() {
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/app/")
 }
+
+data object Hd_RemoveRedPackSkin_Class : DexKitTarget.UsingStr() {
+    override val findMethod = false
+    override val traitString = arrayOf("红包封皮")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/qwallet/hb/panel/")
+}
