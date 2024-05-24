@@ -40,8 +40,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.AIOSendMsg
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.requireMinVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import xyz.nextalone.util.get
@@ -61,8 +63,10 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             for (element in (it.args[0] as List<*>)) {
                 if (element.get("d") != null) {
                     val picElement = element.get("d")
-                    picElement?.set("e", summaryText)
-                    picElement?.set("d", 0) // subType
+                    val fieldNameSubType = if (requireMinVersion(QQVersion.QQ_9_0_56)) "h" else "d"
+                    val fieldNameSummary = if (requireMinVersion(QQVersion.QQ_9_0_56)) "i" else "e"
+                    picElement?.set(fieldNameSubType, 0)
+                    picElement?.set(fieldNameSummary, summaryText)
                 }
             }
         }
