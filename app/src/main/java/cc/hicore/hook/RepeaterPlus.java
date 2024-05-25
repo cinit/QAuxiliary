@@ -75,6 +75,7 @@ import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.VasAttrBuilder;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -245,26 +246,21 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                         "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent"
                 };
                 Method getMsg = null;
+                String absListMethod = null;
                 Method[] methods = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").getDeclaredMethods();
                 for (Method method : methods) {
-                    if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
+                    if (getMsg == null && method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
                         getMsg = method;
                         getMsg.setAccessible(true);
-                        break;
+                    } else if (absListMethod == null && Modifier.isAbstract(method.getModifiers()) && method.getReturnType() == List.class
+                            && method.getParameterTypes().length == 0) {
+                        absListMethod = method.getName();
                     }
                 }
+                Method finalGetMsg = getMsg;
                 for (String s : component) {
                     Class componentClazz = Initiator.loadClass(s);
-                    Method listMethod = null;
-                    methods = componentClazz.getDeclaredMethods();
-                    for (Method method : methods) {
-                        if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
-                            listMethod = method;
-                            listMethod.setAccessible(true);
-                            break;
-                        }
-                    }
-                    Method finalGetMsg = getMsg;
+                    Method listMethod = componentClazz.getMethod(absListMethod);
                     HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
                         if (ContextUtils.getCurrentActivity().getClass().getName().contains("MultiForwardActivity")) {
                             return;
