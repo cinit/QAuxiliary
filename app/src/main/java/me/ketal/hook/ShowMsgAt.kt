@@ -50,6 +50,7 @@ import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexFlow
@@ -58,6 +59,7 @@ import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.HostMainDexHelper
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.isTim
+import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
@@ -254,16 +256,20 @@ object ShowMsgAt : CommonSwitchFunctionHook(), OnBubbleBuilder, DexKitFinder {
         val result = DexDeobfsProvider.getCurrentBackend().use {
             it.getDexKitBridge().findClass {
                 matcher {
-                    addAnnotation {
-                        type = "kotlin.Metadata"
-                        addElement {
-                            name = "d2"
-                            value {
-                                arrayValue {
-                                    addString(
-                                        "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;",
-                                        StringMatchType.Equals
-                                    )
+                    if (requireMinQQVersion(QQVersion.QQ_9_0_60)) {
+                        usingStrings("TextContentViewUtil")
+                    } else {
+                        addAnnotation {
+                            type = "kotlin.Metadata"
+                            addElement {
+                                name = "d2"
+                                value {
+                                    arrayValue {
+                                        addString(
+                                            "Lcom/tencent/mobileqq/aio/msglist/holder/component/text/util/TextContentViewUtil;",
+                                            StringMatchType.Equals
+                                        )
+                                    }
                                 }
                             }
                         }
