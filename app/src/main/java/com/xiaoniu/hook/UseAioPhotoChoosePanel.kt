@@ -48,7 +48,11 @@ object UseAioPhotoChoosePanel : CommonSwitchFunctionHook() {
         if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {
             // 改成其他数字再改回去
             "Lcom/tencent/mobileqq/aio/shortcurtbar/AIOShortcutBarVM\$c;".clazz!!.hookBeforeAllConstructors {
-                if (it.args[0] == 1003) it.args[0] = 114514
+                if (it.args[0] is Int) {
+                    if (it.args[0] == 1003) it.args[0] = 114514
+                } else {
+                    if (it.args[1] == 1003) it.args[1] = 114514
+                }
             }
             "Lcom/tencent/input/base/panelcontainer/h\$l;".clazz!!.hookBeforeAllConstructors {
                 if (it.args[0] == "AIOShortcutBarVM" && it.args[1] == 114514) it.args[1] = 1003
