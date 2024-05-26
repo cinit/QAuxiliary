@@ -22,6 +22,7 @@
 
 package cc.ioctl.hook.chat
 
+import com.github.kyuubiran.ezxhelper.utils.emptyParam
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -44,9 +45,16 @@ object DisableLightInteraction : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         val kLIAConfigManager = Initiator.loadClass("com.tencent.qqnt.biz.lightbusiness.lightinteraction.LIAConfigManager")
-        kLIAConfigManager.declaredMethods.single {
-            it.paramCount == 1 && it.returnType == List::class.java
-        }.hookReturnConstant(null)
+        val method = if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            kLIAConfigManager.declaredMethods.single {
+                it.paramCount == 1 && it.returnType == java.util.List::class.java
+            }
+        } else {
+            kLIAConfigManager.declaredMethods.single {
+                it.emptyParam && it.returnType == java.util.Map::class.java
+            }
+        }
+        method.hookReturnConstant(null)
         return true
     }
 
