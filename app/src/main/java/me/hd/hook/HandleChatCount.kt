@@ -111,6 +111,20 @@ object HandleChatCount : CommonConfigFunctionHook(
     private const val DEFAULT_TEXT = 0
     private const val CFG_KEY_PIC = "ChatCountEntry.CFG_KEY_PIC"
     private const val DEFAULT_PIC = 0
+    private const val CFG_KEY_VIDEO = "ChatCountEntry.CFG_KEY_VIDEO"
+    private const val DEFAULT_VIDEO = 0
+    private const val CFG_KEY_PTT = "ChatCountEntry.CFG_KEY_PTT"
+    private const val DEFAULT_PTT = 0
+    private const val CFG_KEY_FACE = "ChatCountEntry.CFG_KEY_FACE"
+    private const val DEFAULT_FACE = 0
+    private const val CFG_KEY_WALLET = "ChatCountEntry.CFG_KEY_WALLET"
+    private const val DEFAULT_WALLET = 0
+    private const val CFG_KEY_FILE = "ChatCountEntry.CFG_KEY_FILE"
+    private const val DEFAULT_FILE = 0
+    private const val CFG_KEY_ARK = "ChatCountEntry.CFG_KEY_ARK"
+    private const val DEFAULT_ARK = 0
+    private const val CFG_KEY_REPLY = "ChatCountEntry.CFG_KEY_REPLY"
+    private const val DEFAULT_REPLY = 0
 
     private var mShowFormat: String
         get() = getExFriendCfg()?.getStringOrDefault(CFG_KEY_SHOW_FORMAT, DEFAULT_SHOW_FORMAT) ?: DEFAULT_SHOW_FORMAT
@@ -137,13 +151,56 @@ object HandleChatCount : CommonConfigFunctionHook(
         set(value) {
             putExFriend(CFG_KEY_PIC, value)
         }
+    private var mVideo: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_VIDEO, DEFAULT_VIDEO) ?: DEFAULT_VIDEO
+        set(value) {
+            putExFriend(CFG_KEY_VIDEO, value)
+        }
+    private var mPtt: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_PTT, DEFAULT_PTT) ?: DEFAULT_PTT
+        set(value) {
+            putExFriend(CFG_KEY_PTT, value)
+        }
+    private var mFace: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_FACE, DEFAULT_FACE) ?: DEFAULT_FACE
+        set(value) {
+            putExFriend(CFG_KEY_FACE, value)
+        }
+    private var mWallet: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_WALLET, DEFAULT_WALLET) ?: DEFAULT_WALLET
+        set(value) {
+            putExFriend(CFG_KEY_WALLET, value)
+        }
+    private var mFile: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_FILE, DEFAULT_FILE) ?: DEFAULT_FILE
+        set(value) {
+            putExFriend(CFG_KEY_FILE, value)
+        }
+    private var mArk: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_ARK, DEFAULT_ARK) ?: DEFAULT_ARK
+        set(value) {
+            putExFriend(CFG_KEY_ARK, value)
+        }
+    private var mReply: Int
+        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_REPLY, DEFAULT_REPLY) ?: DEFAULT_REPLY
+        set(value) {
+            putExFriend(CFG_KEY_REPLY, value)
+        }
 
     private fun showConfigDialog(ctx: Context) {
         val showFormat = mShowFormat
         val colorValue = mColorValue
         val currEnabled = isEnabled
         val availablePlaceholders: Array<String> = arrayOf(
-            "\${text}", "\${pic}"
+            "\${text}",
+            "\${pic}",
+            "\${video}",
+            "\${face}",
+            "\${ptt}",
+            "\${file}",
+            "\${wallet}",
+            "\${ark}",
+            "\${reply}",
         )
         val funcSwitch = SwitchCompat(ctx).apply {
             isChecked = currEnabled
@@ -220,6 +277,7 @@ object HandleChatCount : CommonConfigFunctionHook(
                     valueState.value = if (newEnabled) "已开启" else "禁用"
                 }
                 mShowFormat = tvShowFmt.text.toString()
+                mColorValue = tvColor.text.toString()
                 if (!isInitialized && isEnabled) {
                     HookInstaller.initializeHookForeground(ctx, this@HandleChatCount)
                 }
@@ -251,7 +309,7 @@ object HandleChatCount : CommonConfigFunctionHook(
                 }
                 addView(TextView(viewGroup.context).apply {
                     id = R.id.chat_words_count
-                    textSize = 12.0f
+                    textSize = 14.0f
                     setTextColor(Color.parseColor(mColorValue))
                 })
             }
@@ -286,25 +344,28 @@ object HandleChatCount : CommonConfigFunctionHook(
                 override fun beforeHookedMethod(param: MethodHookParam) {
                     val msgElements = param.args[2] as ArrayList<*>
                     val msgElement = msgElements[0] as MsgElement
-                    if (msgElement.textElement != null) {
-                        val isToday = Date().today == mDay
-                        if (isToday) {
-                            mText += 1
-                        } else {
-                            mDay = Date().today
-                            mText = 0
-                            mPic = 0
-                        }
-                    }
-                    if (msgElement.picElement != null) {
-                        val isToday = Date().today == mDay
-                        if (isToday) {
-                            mPic += 1
-                        } else {
-                            mDay = Date().today
-                            mText = 0
-                            mPic = 0
-                        }
+                    val isToday = Date().today == mDay
+                    if (isToday) {
+                        if (msgElement.textElement != null) mText += 1
+                        if (msgElement.picElement != null) mPic += 1
+                        if (msgElement.videoElement != null) mVideo += 1
+                        if (msgElement.pttElement != null) mPtt += 1
+                        if (msgElement.faceElement != null) mFace += 1
+                        if (msgElement.walletElement != null) mWallet += 1
+                        if (msgElement.fileElement != null) mFile += 1
+                        if (msgElement.arkElement != null) mArk += 1
+                        if (msgElement.replyElement != null) mReply += 1
+                    } else {
+                        mDay = Date().today
+                        mText = 0
+                        mPic = 0
+                        mVideo = 0
+                        mPtt = 0
+                        mFace = 0
+                        mWallet = 0
+                        mFile = 0
+                        mArk = 0
+                        mReply = 0
                     }
                 }
             }
