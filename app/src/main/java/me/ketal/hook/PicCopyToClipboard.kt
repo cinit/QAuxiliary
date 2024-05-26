@@ -33,6 +33,8 @@ import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
+import com.xiaoniu.dispatcher.OnMenuBuilder
+import de.robv.android.xposed.XC_MethodHook
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -62,7 +64,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
     arrayOf(
         AbstractQQCustomMenuItem
     )
-) {
+), OnMenuBuilder {
     override val name: String = "复制图片到剪贴板"
 
     override val description: String = "复制图片到剪贴板，可以在聊天窗口中粘贴使用"
@@ -73,7 +75,6 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
 
     override fun initOnce() = tryOrLogFalse {
         if (QAppUtils.isQQnt()) {
-            hookNt()
             return@tryOrLogFalse
         }
         val clsPicItemBuilder = _PicItemBuilder()
@@ -116,31 +117,6 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
                     plus(itemCopy)
                 }
             }
-        }
-    }
-
-    private fun hookNt() {
-        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-        val picContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent")
-        val listMethod = picContentComponent.findMethod {
-            returnType == List::class.java && parameterTypes.isEmpty()
-        }
-        val getMsg = picContentComponent.findMethod(findSuper = true) {
-            parameterTypes.isEmpty() && returnType == msgClass
-        }
-        listMethod.hookAfter(this) {
-            val list = it.result as MutableList<Any>
-            val msg = getMsg.invoke(it.thisObject)!!
-            val context = it.thisObject.invoke("getMContext")!!
-            val item = CustomMenu.createItemNt(msg, "复制图片", R.id.item_copyToClipboard) {
-                runCatching {
-                    val file = File(getFilePathNt(msg))
-                    onClick(context as Context, file)
-                }.onFailure { t ->
-                    Log.e(t)
-                }
-            }
-            list.add(item)
         }
     }
 
@@ -223,5 +199,22 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
             File(path).exists()
         }
         return path
+    }
+
+    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent")
+
+    override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
+        if (!isEnabled) return
+        val list = param.result as MutableList<Any>
+        val context = param.thisObject.invoke("getMContext")!!
+        val item = CustomMenu.createItemNt(msg, "复制图片", R.id.item_copyToClipboard) {
+            runCatching {
+                val file = File(getFilePathNt(msg))
+                onClick(context as Context, file)
+            }.onFailure { t ->
+                Log.e(t)
+            }
+        }
+        list.add(item)
     }
 }

@@ -24,11 +24,12 @@ package cc.ioctl.hook.msg
 import android.app.Activity
 import android.content.Context
 import android.view.View
-import cc.ioctl.util.HookUtils
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import cc.ioctl.util.beforeHookIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
+import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XC_MethodHook.MethodHookParam
 import de.robv.android.xposed.XposedBridge
@@ -41,48 +42,24 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.CustomMenu.createItemNt
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
-import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayOf(CArkAppItemBubbleBuilder, AbstractQQCustomMenuItem)) {
+object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayOf(CArkAppItemBubbleBuilder, AbstractQQCustomMenuItem)), OnMenuBuilder {
 
     override val name = "复制卡片消息"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-            val getMsg: Method = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").declaredMethods.first {
-                it.returnType == msgClass && it.parameterTypes.isEmpty()
-            }.apply { isAccessible = true }
-            val componentClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent")
-            val listMethod: Method = componentClazz.declaredMethods.first {
-                it.returnType == MutableList::class.java && it.parameterTypes.isEmpty()
-            }.apply { isAccessible = true }
-            HookUtils.hookAfterIfEnabled(this, listMethod) { param: MethodHookParam ->
-                val ctx = ContextUtils.getCurrentActivity()
-                val msg = getMsg.invoke(param.thisObject)
-                val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
-                    val element = (msg.javaClass.declaredMethods.first {
-                        it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
-                    }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement
-                    copyToClipboard(ctx, element.bytesData)
-                    Toasts.info(ctx, "复制成功")
-                }
-                val list = param.result as MutableList<Any>
-                list.add(item)
-            }
+        if (QAppUtils.isQQnt()) {
             return@throwOrTrue
         }
 
@@ -174,5 +151,20 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
                 Toasts.info(ctx, "复制成功")
             }
         }
+    }
+    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent")
+
+    override fun onGetMenuNt(msg: Any, componentType: String, param: MethodHookParam) {
+        if (!isEnabled) return
+        val ctx = ContextUtils.getCurrentActivity()
+        val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
+            val element = (msg.javaClass.declaredMethods.first {
+                it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
+            }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement
+            copyToClipboard(ctx, element.bytesData)
+            Toasts.info(ctx, "复制成功")
+        }
+        val list = param.result as MutableList<Any>
+        list.add(item)
     }
 }

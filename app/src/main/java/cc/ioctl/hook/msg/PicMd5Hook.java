@@ -29,15 +29,15 @@ import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.Utils.FunProtoData;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.tencent.qphone.base.remote.FromServiceMsg;
-import com.tencent.qphone.base.remote.ToServiceMsg;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
+import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
@@ -51,7 +51,6 @@ import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.DexKitTarget;
@@ -65,7 +64,7 @@ import xyz.nextalone.util.SystemServiceUtils;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class PicMd5Hook extends CommonSwitchFunctionHook {
+public class PicMd5Hook extends CommonSwitchFunctionHook implements OnMenuBuilder {
 
     public static final PicMd5Hook INSTANCE = new PicMd5Hook();
 
@@ -101,7 +100,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
         HookUtils.hookBeforeIfEnabled(this, XMethod.clz("mqq.app.msghandle.MsgRespHandler").name("dispatchRespMsg").ignoreParam().get(), param -> {
             FromServiceMsg fromServiceMsg = XField.obj(param.args[1]).name("fromServiceMsg").get();
 
-            if ("OidbSvcTrpcTcp.0x9067_202".equals(fromServiceMsg.getServiceCmd())){
+            if ("OidbSvcTrpcTcp.0x9067_202".equals(fromServiceMsg.getServiceCmd())) {
                 FunProtoData data = new FunProtoData();
                 data.fromBytes(getUnpPackage(fromServiceMsg.getWupBuffer()));
 
@@ -118,51 +117,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
             }
         });
 
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
-            Method getMsg = null;
-            Method[] methods = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").getDeclaredMethods();
-            for (Method method : methods) {
-                if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
-                    getMsg = method;
-                    getMsg.setAccessible(true);
-                    break;
-                }
-            }
-            Class componentClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent");
-            Method listMethod = null;
-            methods = componentClazz.getDeclaredMethods();
-            for (Method method : methods) {
-                if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
-                    listMethod = method;
-                    listMethod.setAccessible(true);
-                    break;
-                }
-            }
-            Method finalGetMsg = getMsg;
-            HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
-                Object msg = finalGetMsg.invoke(param.thisObject);
-                Object item = CustomMenu.createItemNt(msg, "MD5", R.id.item_showPicMd5, () -> {
-                    try {
-                        Method getElement = null;
-                        for (Method m : msg.getClass().getDeclaredMethods()) {
-                            if (m.getReturnType() == PicElement.class) {
-                                getElement = m;
-                                break;
-                            }
-                        }
-                        PicElement element = (PicElement) getElement.invoke(msg);
-                        String md5 = element.getMd5HexStr().toUpperCase();
-                        showMd5Dialog(ContextUtils.getCurrentActivity(), md5, element);
-                    } catch (Throwable e) {
-                        traceError(e);
-                    }
-                    return Unit.INSTANCE;
-                });
-                List list = (List) param.getResult();
-                list.add(item);
-            });
-
+        if (QAppUtils.isQQnt()) {
             return true;
         }
         Class<?> cl_PicItemBuilder = Initiator._PicItemBuilder();
@@ -197,6 +152,38 @@ public class PicMd5Hook extends CommonSwitchFunctionHook {
         }
 
         return true;
+    }
+
+    @NonNull
+    @Override
+    public String[] getTargetComponentTypes() {
+        return new String[]{
+                "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent"
+        };
+    }
+
+    @Override
+    public void onGetMenuNt(@NonNull Object msg, @NonNull String componentType, @NonNull XC_MethodHook.MethodHookParam param) throws Exception {
+        if (!isEnabled()) return;
+        Object item = CustomMenu.createItemNt(msg, "MD5", R.id.item_showPicMd5, () -> {
+            try {
+                Method getElement = null;
+                for (Method m : msg.getClass().getDeclaredMethods()) {
+                    if (m.getReturnType() == PicElement.class) {
+                        getElement = m;
+                        break;
+                    }
+                }
+                PicElement element = (PicElement) getElement.invoke(msg);
+                String md5 = element.getMd5HexStr().toUpperCase();
+                showMd5Dialog(ContextUtils.getCurrentActivity(), md5, element);
+            } catch (Throwable e) {
+                traceError(e);
+            }
+            return Unit.INSTANCE;
+        });
+        List list = (List) param.getResult();
+        list.add(item);
     }
 
     public static class GetMenuItemCallBack extends XC_MethodHook {

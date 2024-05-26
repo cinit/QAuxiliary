@@ -46,7 +46,9 @@ import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
+import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
+import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -56,9 +58,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.CustomMenu;
-import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.ChatPanel_InitPanel_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
@@ -74,7 +74,7 @@ import org.json.JSONObject;
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements SessionHooker.IAIOParamUpdate {
+public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements SessionHooker.IAIOParamUpdate, OnMenuBuilder {
     public static final StickerPanelEntryHooker INSTANCE = new StickerPanelEntryHooker();
     public static Object AIOParam;
     private StickerPanelEntryHooker() {
@@ -145,100 +145,6 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                     }
                 }
         );
-
-        //Hook for longClick msgItem
-        {
-            Class msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
-            String[] component = new String[]{
-                    "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
-                    "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
-            };
-
-
-            Method getMsg = null;
-            Method[] methods = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent").getDeclaredMethods();
-            for (Method method : methods) {
-                if (method.getReturnType() == msgClass && method.getParameterTypes().length == 0) {
-                    getMsg = method;
-                    getMsg.setAccessible(true);
-                    break;
-                }
-            }
-            for (String s : component) {
-                Class componentClazz = Initiator.loadClass(s);
-                Method listMethod = null;
-                methods = componentClazz.getDeclaredMethods();
-                for (Method method : methods) {
-                    if (method.getReturnType() == List.class && method.getParameterTypes().length == 0) {
-                        listMethod = method;
-                        listMethod.setAccessible(true);
-                        break;
-                    }
-                }
-                Method finalGetMsg = getMsg;
-                HookUtils.hookAfterIfEnabled(this, listMethod, param -> {
-                    Object msg = finalGetMsg.invoke(param.thisObject);
-                    Object item = CustomMenu.createItemNt(msg, "保存到面板", R.id.item_save_to_panel, () -> {
-                        try {
-                            long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
-                            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
-                            ArrayList<Long> msgIDs = new ArrayList<>();
-                            msgIDs.add(msgID);
-                            service.getMsgsByMsgId(SessionUtils.AIOParam2Contact(AIOParam), msgIDs, (result, errMsg, msgList) -> {
-                                SyncUtils.runOnUiThread(()->{
-                                    for (MsgRecord msgRecord : msgList) {
-                                        ArrayList<String> md5s = new ArrayList<>();
-                                        ArrayList<String> urls = new ArrayList<>();
-
-                                        for (MsgElement element : msgRecord.getElements()){
-                                            if (element.getPicElement() != null){
-                                                PicElement picElement = element.getPicElement();
-                                                //md5必须大写才能加载
-                                                md5s.add(picElement.getMd5HexStr().toUpperCase());
-                                                String originUrl = picElement.getOriginImageUrl();
-                                                if (TextUtils.isEmpty(originUrl)){
-                                                    urls.add("https://gchat.qpic.cn/gchatpic_new/0/0-0-" + picElement.getMd5HexStr().toUpperCase() + "/0");
-                                                }else {
-                                                    if (originUrl.startsWith("/download")){
-                                                        if (originUrl.contains("appid=1406")){
-                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_group);
-                                                        }else {
-                                                            urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_private);
-                                                        }
-                                                    }else {
-                                                        urls.add("https://gchat.qpic.cn"+picElement.getOriginImageUrl());
-                                                    }
-                                                }
-
-
-                                            }
-                                        }
-                                        if (!md5s.isEmpty()){
-                                            if (md5s.size() > 1){
-                                                PanelUtils.PreSaveMultiPicList(urls,md5s, CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
-                                            }else {
-                                                PanelUtils.PreSavePicToList(urls.get(0),md5s.get(0), CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
-                                            }
-                                        }
-                                    }
-                                });
-                            });
-
-                        } catch (Exception e) {
-                            XLog.e("StickerPanelEntryHooker.msgLongClickSaveToLocal", e);
-                        }
-                        return Unit.INSTANCE;
-                    });
-                    List list = (List) param.getResult();
-                    List result = new ArrayList<>();
-                    result.add(0,item);
-                    result.addAll(list);
-                    param.setResult(result);
-                });
-            }
-
-
-        }
 
         //Hook for change title
 
@@ -329,5 +235,76 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
     @Override
     public void onAIOParamUpdate(Object AIOParam) {
         StickerPanelEntryHooker.AIOParam = AIOParam;
+    }
+
+    @NonNull
+    @Override
+    public String[] getTargetComponentTypes() {
+        return new String[]{
+                "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
+                "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
+        };
+    }
+
+    @Override
+    public void onGetMenuNt(@NonNull Object msg, @NonNull String componentType, @NonNull XC_MethodHook.MethodHookParam param) throws Exception {
+        if (!isEnabled()) return;
+        //Hook for longClick msgItem
+        Object item = CustomMenu.createItemNt(msg, "保存到面板", R.id.item_save_to_panel, () -> {
+            try {
+                long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
+                IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+                ArrayList<Long> msgIDs = new ArrayList<>();
+                msgIDs.add(msgID);
+                service.getMsgsByMsgId(SessionUtils.AIOParam2Contact(AIOParam), msgIDs, (result, errMsg, msgList) -> {
+                    SyncUtils.runOnUiThread(()->{
+                        for (MsgRecord msgRecord : msgList) {
+                            ArrayList<String> md5s = new ArrayList<>();
+                            ArrayList<String> urls = new ArrayList<>();
+
+                            for (MsgElement element : msgRecord.getElements()){
+                                if (element.getPicElement() != null){
+                                    PicElement picElement = element.getPicElement();
+                                    //md5必须大写才能加载
+                                    md5s.add(picElement.getMd5HexStr().toUpperCase());
+                                    String originUrl = picElement.getOriginImageUrl();
+                                    if (TextUtils.isEmpty(originUrl)){
+                                        urls.add("https://gchat.qpic.cn/gchatpic_new/0/0-0-" + picElement.getMd5HexStr().toUpperCase() + "/0");
+                                    }else {
+                                        if (originUrl.startsWith("/download")){
+                                            if (originUrl.contains("appid=1406")){
+                                                urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_group);
+                                            }else {
+                                                urls.add("https://multimedia.nt.qq.com.cn" + originUrl + rkey_private);
+                                            }
+                                        }else {
+                                            urls.add("https://gchat.qpic.cn"+picElement.getOriginImageUrl());
+                                        }
+                                    }
+
+
+                                }
+                            }
+                            if (!md5s.isEmpty()){
+                                if (md5s.size() > 1){
+                                    PanelUtils.PreSaveMultiPicList(urls,md5s, CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
+                                }else {
+                                    PanelUtils.PreSavePicToList(urls.get(0),md5s.get(0), CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()));
+                                }
+                            }
+                        }
+                    });
+                });
+
+            } catch (Exception e) {
+                XLog.e("StickerPanelEntryHooker.msgLongClickSaveToLocal", e);
+            }
+            return Unit.INSTANCE;
+        });
+        List list = (List) param.getResult();
+        List result = new ArrayList<>();
+        result.add(0,item);
+        result.addAll(list);
+        param.setResult(result);
     }
 }

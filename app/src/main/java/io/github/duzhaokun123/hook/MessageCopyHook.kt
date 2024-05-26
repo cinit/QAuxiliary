@@ -28,13 +28,13 @@ import android.content.Context
 import android.util.Log
 import android.view.View
 import android.widget.TextView
+import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
-import cc.ioctl.util.hookAfterIfEnabled
-import com.github.kyuubiran.ezxhelper.utils.invokeMethodAutoAs
-import com.github.kyuubiran.ezxhelper.utils.paramCount
+import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
+import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.R
@@ -51,40 +51,17 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.TextMsgItem_getText
-import xyz.nextalone.util.method
 import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder {
+object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder {
     const val TAG = "MessageCopyHook"
     override val name: String
         get() = "文本消息自由复制"
 
     override fun initOnce(): Boolean {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) { // TODO: support ark message
-            val class_AIOMsgItem = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-            val class_BaseContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent")
-            val method_getMsg = class_BaseContentComponent.method { it.returnType == class_AIOMsgItem && it.paramCount == 0 }!!
-            method_getMsg.isAccessible = true
-            val class_AIOTextContentComponent = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
-            val method_list = class_AIOTextContentComponent.method { it.returnType == List::class.java && it.paramCount == 0 }!!
-            method_list.isAccessible = true
-            hookAfterIfEnabled(method_list) { param ->
-                val msg = method_getMsg.invoke(param.thisObject)
-                val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
-//                    Log.d(msg.javaClass.name)
-                    val text = try {
-                        DexKit.requireMethodFromCache(TextMsgItem_getText).also {
-                            it.isAccessible = true
-                        }.invoke(msg) as CharSequence
-                    } catch (e: Exception) {
-                        "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
-                    }
-                    showDialog(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), text)
-                }
-                param.result = (param.result as List<*>) + item
-            }
+        if (QAppUtils.isQQnt()) {
             return true
         }
 
@@ -190,5 +167,23 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder {
             TextMsgItem_getText.descCache = getText.descriptor
         }
         return true
+    }
+
+    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
+
+    override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
+        if (!isEnabled) return
+        // TODO: support ark message
+        val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
+            val text = try {
+                DexKit.requireMethodFromCache(TextMsgItem_getText).also {
+                    it.isAccessible = true
+                }.invoke(msg) as CharSequence
+            } catch (e: Exception) {
+                "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
+            }
+            showDialog(CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity()), text)
+        }
+        param.result = (param.result as List<*>) + item
     }
 }
