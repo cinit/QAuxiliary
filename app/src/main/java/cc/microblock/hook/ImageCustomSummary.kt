@@ -65,7 +65,8 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
                     val picElement = element.get("d")
                     val fieldNameSubType = if (requireMinVersion(QQVersion.QQ_9_0_56)) "h" else "d"
                     val fieldNameSummary = if (requireMinVersion(QQVersion.QQ_9_0_56)) "i" else "e"
-                    picElement?.set(fieldNameSubType, 0)
+                    // 图片[0](导致表情变大) 动画表情[1](外显不生效) 推荐表情[7]
+                    picElement?.set(fieldNameSubType, 7)
                     picElement?.set(fieldNameSummary, summaryText)
                 }
             }
