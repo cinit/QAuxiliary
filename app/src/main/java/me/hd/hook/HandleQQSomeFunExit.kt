@@ -72,7 +72,8 @@ object HandleQQSomeFunExit : CommonSwitchFunctionHook(
                 else -> "Unknown"
             }
             val textGiftElement = XposedHelpers.callMethod(param.args[0], getGiftMethodName) as TextGiftElement
-            if (textGiftElement.paddingTop.isBlank()) {
+            val paddingTop = textGiftElement.paddingTop
+            if (paddingTop.matches("\\d+".toRegex()).not()) {
                 XposedHelpers.setObjectField(textGiftElement, "paddingTop", "0")
                 Toasts.show("拦截群礼物消息闪退")
             }
