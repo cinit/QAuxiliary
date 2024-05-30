@@ -61,6 +61,8 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
+import me.hd.util.getExCfg
+import me.hd.util.putExCfg
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBeforeAllConstructors
@@ -86,7 +88,7 @@ object HandleChatCount : CommonConfigFunctionHook(
         showConfigDialog(activity)
     }
 
-    private val LAYOUT_NAME = when {
+    private val LAYOUT_ID_NAME = when {
         requireMinQQVersion(QQVersion.QQ_9_0_56) -> "oby"
         requireMinQQVersion(QQVersion.QQ_9_0_50) -> "obo"
         requireMinQQVersion(QQVersion.QQ_9_0_35) -> "obd"
@@ -100,91 +102,77 @@ object HandleChatCount : CommonConfigFunctionHook(
         else -> "Unknown"
     }
 
-    private const val ERROR_MESSAGE = "未登录或无法获取当前账号信息"
-    private const val CFG_KEY_SHOW_FORMAT = "ChatCountEntry.CFG_KEY_SHOW_FORMAT"
-    private const val DEFAULT_SHOW_FORMAT = "Today Send: Text(\${text}) Pic(\${pic})"
-    private const val CFG_KEY_COLOR_VALUE = "ChatCountEntry.CFG_KEY_COLOR_VALUE"
-    private const val DEFAULT_COLOR_VALUE = "#FFFF0000"
-    private const val CFG_KEY_DAY = "ChatCountEntry.CFG_KEY_DAY"
-    private const val DEFAULT_DAY = ""
-    private const val CFG_KEY_TEXT = "ChatCountEntry.CFG_KEY_TEXT"
-    private const val DEFAULT_TEXT = 0
-    private const val CFG_KEY_PIC = "ChatCountEntry.CFG_KEY_PIC"
-    private const val DEFAULT_PIC = 0
-    private const val CFG_KEY_VIDEO = "ChatCountEntry.CFG_KEY_VIDEO"
-    private const val DEFAULT_VIDEO = 0
-    private const val CFG_KEY_PTT = "ChatCountEntry.CFG_KEY_PTT"
-    private const val DEFAULT_PTT = 0
-    private const val CFG_KEY_FACE = "ChatCountEntry.CFG_KEY_FACE"
-    private const val DEFAULT_FACE = 0
-    private const val CFG_KEY_WALLET = "ChatCountEntry.CFG_KEY_WALLET"
-    private const val DEFAULT_WALLET = 0
-    private const val CFG_KEY_FILE = "ChatCountEntry.CFG_KEY_FILE"
-    private const val DEFAULT_FILE = 0
-    private const val CFG_KEY_ARK = "ChatCountEntry.CFG_KEY_ARK"
-    private const val DEFAULT_ARK = 0
-    private const val CFG_KEY_REPLY = "ChatCountEntry.CFG_KEY_REPLY"
-    private const val DEFAULT_REPLY = 0
+    const val ERROR_MESSAGE = "未登录或无法获取当前账号信息"
+    const val CFG_KEY_SHOW_FORMAT = "ChatCountEntry.CFG_KEY_SHOW_FORMAT"
+    const val DEFAULT_SHOW_FORMAT = "Today Send: Text(\${text}) TextWord(\${textWord}) Pic(\${pic})"
+    const val CFG_KEY_COLOR = "ChatCountEntry.CFG_KEY_COLOR"
+    const val DEFAULT_COLOR_RED = "#FFFF0000"
+    const val CFG_KEY_DAY = "ChatCount.CFG_KEY_DAY"
+    const val DEFAULT_STR_EMPTY = ""
+    const val DEFAULT_INT_ZERO = 0
+    const val CFG_KEY_TEXT = "ChatCount.CFG_KEY_TEXT"
+    const val CFG_KEY_TEXT_WORD = "ChatCount.CFG_KEY_TEXT_WORD"
+    const val CFG_KEY_PIC = "ChatCount.CFG_KEY_PIC"
+    const val CFG_KEY_VIDEO = "ChatCount.CFG_KEY_VIDEO"
+    const val CFG_KEY_PTT = "ChatCount.CFG_KEY_PTT"
+    const val CFG_KEY_FACE = "ChatCount.CFG_KEY_FACE"
+    const val CFG_KEY_WALLET = "ChatCount.CFG_KEY_WALLET"
+    const val CFG_KEY_FILE = "ChatCount.CFG_KEY_FILE"
 
     private var mShowFormat: String
-        get() = getExFriendCfg()?.getStringOrDefault(CFG_KEY_SHOW_FORMAT, DEFAULT_SHOW_FORMAT) ?: DEFAULT_SHOW_FORMAT
+        get() = getExCfg(CFG_KEY_SHOW_FORMAT, DEFAULT_SHOW_FORMAT) as String
         set(value) {
             putExFriend(CFG_KEY_SHOW_FORMAT, value)
         }
     private var mColorValue: String
-        get() = getExFriendCfg()?.getStringOrDefault(CFG_KEY_COLOR_VALUE, DEFAULT_COLOR_VALUE) ?: DEFAULT_COLOR_VALUE
+        get() = getExCfg(CFG_KEY_COLOR, DEFAULT_COLOR_RED) as String
         set(value) {
-            putExFriend(CFG_KEY_COLOR_VALUE, value)
+            putExCfg(CFG_KEY_COLOR, value)
         }
     private var mDay: String
-        get() = getExFriendCfg()?.getStringOrDefault(CFG_KEY_DAY, DEFAULT_DAY) ?: DEFAULT_DAY
+        get() = getExCfg(CFG_KEY_DAY, DEFAULT_STR_EMPTY) as String
         set(value) {
-            putExFriend(CFG_KEY_DAY, value)
+            putExCfg(CFG_KEY_DAY, value)
         }
     private var mText: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_TEXT, DEFAULT_TEXT) ?: DEFAULT_TEXT
+        get() = getExCfg(CFG_KEY_TEXT, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_TEXT, value)
+            putExCfg(CFG_KEY_TEXT, value)
         }
-    private var mPic: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_PIC, DEFAULT_PIC) ?: DEFAULT_PIC
+    private var mTextWord: Int
+        get() = getExCfg(CFG_KEY_TEXT_WORD, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_PIC, value)
-        }
-    private var mVideo: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_VIDEO, DEFAULT_VIDEO) ?: DEFAULT_VIDEO
-        set(value) {
-            putExFriend(CFG_KEY_VIDEO, value)
+            putExCfg(CFG_KEY_TEXT_WORD, value)
         }
     private var mPtt: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_PTT, DEFAULT_PTT) ?: DEFAULT_PTT
+        get() = getExCfg(CFG_KEY_PTT, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_PTT, value)
+            putExCfg(CFG_KEY_PTT, value)
+        }
+    private var mPic: Int
+        get() = getExCfg(CFG_KEY_PIC, DEFAULT_INT_ZERO) as Int
+        set(value) {
+            putExCfg(CFG_KEY_PIC, value)
         }
     private var mFace: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_FACE, DEFAULT_FACE) ?: DEFAULT_FACE
+        get() = getExCfg(CFG_KEY_FACE, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_FACE, value)
+            putExCfg(CFG_KEY_FACE, value)
+        }
+    private var mVideo: Int
+        get() = getExCfg(CFG_KEY_VIDEO, DEFAULT_INT_ZERO) as Int
+        set(value) {
+            putExCfg(CFG_KEY_VIDEO, value)
         }
     private var mWallet: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_WALLET, DEFAULT_WALLET) ?: DEFAULT_WALLET
+        get() = getExCfg(CFG_KEY_WALLET, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_WALLET, value)
+            putExCfg(CFG_KEY_WALLET, value)
         }
     private var mFile: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_FILE, DEFAULT_FILE) ?: DEFAULT_FILE
+        get() = getExCfg(CFG_KEY_FILE, DEFAULT_INT_ZERO) as Int
         set(value) {
-            putExFriend(CFG_KEY_FILE, value)
-        }
-    private var mArk: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_ARK, DEFAULT_ARK) ?: DEFAULT_ARK
-        set(value) {
-            putExFriend(CFG_KEY_ARK, value)
-        }
-    private var mReply: Int
-        get() = getExFriendCfg()?.getIntOrDefault(CFG_KEY_REPLY, DEFAULT_REPLY) ?: DEFAULT_REPLY
-        set(value) {
-            putExFriend(CFG_KEY_REPLY, value)
+            putExCfg(CFG_KEY_FILE, value)
         }
 
     private fun showConfigDialog(ctx: Context) {
@@ -192,15 +180,12 @@ object HandleChatCount : CommonConfigFunctionHook(
         val colorValue = mColorValue
         val currEnabled = isEnabled
         val availablePlaceholders: Array<String> = arrayOf(
-            "\${text}",
-            "\${pic}",
-            "\${video}",
-            "\${face}",
+            "\${text}", "\${textWord}",
             "\${ptt}",
-            "\${file}",
+            "\${pic}", "\${face}",
+            "\${video}",
             "\${wallet}",
-            "\${ark}",
-            "\${reply}",
+            "\${file}",
         )
         val funcSwitch = SwitchCompat(ctx).apply {
             isChecked = currEnabled
@@ -291,16 +276,20 @@ object HandleChatCount : CommonConfigFunctionHook(
     private fun getChatWords(): String {
         return getExFriendCfg()?.let {
             val isToday = Date().today == mDay
-            val text = if (isToday) mText else 0
-            val pic = if (isToday) mPic else 0
             mShowFormat
-                .replace("\${text}", text.toString())
-                .replace("\${pic}", pic.toString())
+                .replace("\${text}", (if (isToday) mText else DEFAULT_INT_ZERO).toString())
+                .replace("\${textWord}", (if (isToday) mTextWord else DEFAULT_INT_ZERO).toString())
+                .replace("\${ptt}", (if (isToday) mPtt else DEFAULT_INT_ZERO).toString())
+                .replace("\${pic}", (if (isToday) mPic else DEFAULT_INT_ZERO).toString())
+                .replace("\${face}", (if (isToday) mFace else DEFAULT_INT_ZERO).toString())
+                .replace("\${video}", (if (isToday) mVideo else DEFAULT_INT_ZERO).toString())
+                .replace("\${wallet}", (if (isToday) mWallet else DEFAULT_INT_ZERO).toString())
+                .replace("\${file}", (if (isToday) mFile else DEFAULT_INT_ZERO).toString())
         } ?: ERROR_MESSAGE
     }
 
     private fun updateView(viewGroup: ViewGroup) {
-        val relativeLayout = viewGroup.findHostView<RelativeLayout>(LAYOUT_NAME)!!
+        val relativeLayout = viewGroup.findHostView<RelativeLayout>(LAYOUT_ID_NAME)!!
         var textView: TextView? = relativeLayout.findViewById(R.id.chat_words_count)
         if (textView == null) {
             relativeLayout.apply {
@@ -346,26 +335,26 @@ object HandleChatCount : CommonConfigFunctionHook(
                     val msgElement = msgElements[0] as MsgElement
                     val isToday = Date().today == mDay
                     if (isToday) {
-                        if (msgElement.textElement != null) mText += 1
-                        if (msgElement.picElement != null) mPic += 1
-                        if (msgElement.videoElement != null) mVideo += 1
+                        if (msgElement.textElement != null) {
+                            mText += 1
+                            mTextWord += msgElement.textElement.content.length
+                        }
                         if (msgElement.pttElement != null) mPtt += 1
+                        if (msgElement.picElement != null) mPic += 1
                         if (msgElement.faceElement != null) mFace += 1
+                        if (msgElement.videoElement != null) mVideo += 1
                         if (msgElement.walletElement != null) mWallet += 1
                         if (msgElement.fileElement != null) mFile += 1
-                        if (msgElement.arkElement != null) mArk += 1
-                        if (msgElement.replyElement != null) mReply += 1
                     } else {
                         mDay = Date().today
                         mText = 0
-                        mPic = 0
-                        mVideo = 0
+                        mTextWord = 0
                         mPtt = 0
+                        mPic = 0
                         mFace = 0
+                        mVideo = 0
                         mWallet = 0
                         mFile = 0
-                        mArk = 0
-                        mReply = 0
                     }
                 }
             }
