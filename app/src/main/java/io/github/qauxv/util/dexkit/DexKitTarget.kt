@@ -940,8 +940,8 @@ data object RecentPopup_onClickAction : DexKitTarget.UsingStr() {
 }
 
 data object TroopInfoCardPageABConfig : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = true
-    override val traitString: Array<String> = arrayOf("exp_qq_grp_idcard_switch_v2")
+    override val findMethod: Boolean = false
+    override val traitString: Array<String> = arrayOf("enableNewPageFromTroopSettingSwitch=")
     override val declaringClass = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }

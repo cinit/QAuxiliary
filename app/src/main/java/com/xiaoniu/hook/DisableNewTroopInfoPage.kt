@@ -22,7 +22,9 @@
 
 package com.xiaoniu.hook
 
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -43,7 +45,9 @@ object DisableNewTroopInfoPage : CommonSwitchFunctionHook(arrayOf(TroopInfoCardP
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_78)
 
     override fun initOnce() = throwOrTrue {
-        DexKit.requireMethodFromCache(TroopInfoCardPageABConfig).hookReturnConstant(false)
+        DexKit.requireClassFromCache(TroopInfoCardPageABConfig).findMethod {
+            returnType == Boolean::class.java && paramCount == 0
+        }.hookReturnConstant(false)
     }
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
