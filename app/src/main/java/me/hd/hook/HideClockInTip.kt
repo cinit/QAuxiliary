@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import cc.ioctl.util.hookAfterIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -39,7 +39,7 @@ import xyz.nextalone.util.isPrivate
 object HideClockInTip : CommonSwitchFunctionHook() {
 
     override val name = "隐藏打卡消息"
-    override val description = "对提示消息中的打卡消息进行简单隐藏"
+    override val description = "对群聊中每日打卡消息进行简单隐藏"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -53,7 +53,8 @@ object HideClockInTip : CommonSwitchFunctionHook() {
             val textView = param.result as TextView
             val text = textView.text.toString()
             if (text.endsWith("我也要打卡")) {
-                textView.visibility = View.GONE
+                val parent = textView.parent.parent as ViewGroup
+                parent.layoutParams = ViewGroup.LayoutParams(0, 0)
             }
         }
         return true
