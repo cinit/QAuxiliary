@@ -59,6 +59,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.hd.util.getExCfg
@@ -88,17 +89,19 @@ object HandleChatCount : CommonConfigFunctionHook(
         showConfigDialog(activity)
     }
 
-    private val LAYOUT_ID_NAME = when {
-        requireMinQQVersion(QQVersion.QQ_9_0_56) -> "oby"
-        requireMinQQVersion(QQVersion.QQ_9_0_50) -> "obo"
-        requireMinQQVersion(QQVersion.QQ_9_0_35) -> "obd"
-        requireMinQQVersion(QQVersion.QQ_9_0_30) -> "oa3"
-        requireMinQQVersion(QQVersion.QQ_9_0_25) -> "o_x"
-        requireMinQQVersion(QQVersion.QQ_9_0_17) -> "o_5"
-        requireMinQQVersion(QQVersion.QQ_9_0_15) -> "o_5"
-        requireMinQQVersion(QQVersion.QQ_9_0_8) -> "o9g"
-        requireMinQQVersion(QQVersion.QQ_9_0_0) -> "o95"
-        requireMinQQVersion(QQVersion.QQ_8_9_88) -> "o7l"
+    private val LAYOUT_ID_NAME = when (hostInfo.versionCode) {
+        //d_signature
+        QQVersion.QQ_9_0_56 -> "oby"
+        QQVersion.QQ_9_0_55 -> "oby"
+        QQVersion.QQ_9_0_50 -> "obo"
+        QQVersion.QQ_9_0_35 -> "obd"
+        QQVersion.QQ_9_0_30 -> "oa3"
+        QQVersion.QQ_9_0_25 -> "o_x"
+        QQVersion.QQ_9_0_17 -> "o_5"
+        QQVersion.QQ_9_0_15 -> "o_5"
+        QQVersion.QQ_9_0_8 -> "o9g"
+        QQVersion.QQ_9_0_0 -> "o95"
+        QQVersion.QQ_8_9_88 -> "o7l"
         else -> "Unknown"
     }
 
@@ -289,6 +292,7 @@ object HandleChatCount : CommonConfigFunctionHook(
     }
 
     private fun updateView(viewGroup: ViewGroup) {
+        if (LAYOUT_ID_NAME == "Unknown") throw Exception("Unknown layout id name")
         val relativeLayout = viewGroup.findHostView<RelativeLayout>(LAYOUT_ID_NAME)!!
         var textView: TextView? = relativeLayout.findViewById(R.id.chat_words_count)
         if (textView == null) {
@@ -308,7 +312,7 @@ object HandleChatCount : CommonConfigFunctionHook(
     }
 
     override fun initOnce(): Boolean {
-        lateinit var viewGroup: ViewGroup
+        var viewGroup: ViewGroup? = null
         val settingClass = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
             Initiator.loadClass("com.tencent.mobileqq.QQSettingMeView")
         } else {
@@ -316,10 +320,14 @@ object HandleChatCount : CommonConfigFunctionHook(
         }
         settingClass.hookBeforeAllConstructors {
             viewGroup = it.args[1] as ViewGroup
-            updateView(viewGroup)
+            viewGroup?.post {
+                updateView(viewGroup!!)
+            }
         }
         DexKit.loadMethodFromCache(NQQSettingMe_onResume)?.hookAfter(this) {
-            updateView(viewGroup)
+            viewGroup?.post {
+                updateView(viewGroup!!)
+            }
         }
         XposedHelpers.findAndHookMethod(
             Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.MsgService"),
