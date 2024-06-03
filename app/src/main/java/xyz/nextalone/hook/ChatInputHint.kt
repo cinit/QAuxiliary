@@ -64,7 +64,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
 
     override fun initOnce(): Boolean = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            // 初始化后
+            // 群聊
             DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT).hookAfter(this) {
                 it.thisObject.javaClass.declaredFields.single { it.type == EditText::class.java }.apply {
                     isAccessible = true
@@ -72,20 +72,19 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                     et.hint = getValue()
                 }
             }
-            // 群设置hint为空后
-                when { // Lcom/tencent/mobileqq/aio/input/anonymous/AnonymousModeInputVBDelegate;->setNotAnonymousHint()V
-                    requireMinQQVersion(QQVersion.QQ_9_0_30) -> "Lcom/tencent/mobileqq/aio/input/c/c;->l()V"
-                    requireMinQQVersion(QQVersion.QQ_9_0_25) -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
-                    requireMinQQVersion(QQVersion.QQ_8_9_73) -> "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
-                    else -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
-                }
-                    .method.hookAfter(this) { param ->
-                        val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
-                        val b = f.javaClass.declaredFields.single {
-                            it.isAccessible = true
-                            it.get(f) is EditText
-                        }.get(f) as EditText
-                        b.hint = getValue()
+            // 私聊
+            when { // Lcom/tencent/mobileqq/aio/input/anonymous/AnonymousModeInputVBDelegate;->setNotAnonymousHint()V
+                requireMinQQVersion(QQVersion.QQ_9_0_30) -> "Lcom/tencent/mobileqq/aio/input/c/c;->l()V"
+                requireMinQQVersion(QQVersion.QQ_9_0_25) -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
+                requireMinQQVersion(QQVersion.QQ_8_9_73) -> "Lcom/tencent/mobileqq/aio/input/b/c;->m()V"
+                else -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
+            }.method.hookAfter(this) { param ->
+                val f = param.thisObject.javaClass.getDeclaredField("f").apply { isAccessible = true }.get(param.thisObject)
+                val b = f.javaClass.declaredFields.single {
+                    it.isAccessible = true
+                    it.get(f) is EditText
+                }.get(f) as EditText
+                b.hint = getValue()
             }
         } else {
             DexKit.requireMethodFromCache(NBaseChatPie_init).hookAfter(this) {
