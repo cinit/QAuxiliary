@@ -888,9 +888,16 @@ data object FormItem_TIM : DexKitTarget.UsingStringVector() {
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }
 
-data object QQSettingMeABTestHelper_isZPlanExpGroup : DexKitTarget.UsingStringVector() {
+data object QQSettingMeABTestHelper_isZPlanExpGroup_New : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = true
     override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("isZPlanExpGroup: ", "QQSettingMeABTestHelper"))
+    override val declaringClass: String = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
+data object QQSettingMeABTestHelper_isZplanExpGroup_Old : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = true
+    override val traitStringVectors: Array<Array<String>> = arrayOf(arrayOf("isZplanExpGroup: ", "QQSettingMeABTestHelper"))
     override val declaringClass: String = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
 }

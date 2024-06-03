@@ -54,7 +54,8 @@ import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import io.github.qauxv.util.QQVersion.QQ_9_0_20
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup
+import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup_New
+import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZplanExpGroup_Old
 import io.github.qauxv.util.dexkit.QQ_SETTING_ME_CONFIG_CLASS
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
@@ -67,7 +68,14 @@ import java.util.SortedMap
 @FunctionHookEntry
 @UiItemAgentEntry
 object SimplifyQQSettingMe :
-    MultiItemDelayableHook("SimplifyQQSettingMe", targets = arrayOf(QQ_SETTING_ME_CONFIG_CLASS, QQSettingMeABTestHelper_isZPlanExpGroup)) {
+    MultiItemDelayableHook(
+        "SimplifyQQSettingMe",
+        targets = arrayOf(
+            QQ_SETTING_ME_CONFIG_CLASS,
+            QQSettingMeABTestHelper_isZPlanExpGroup_New,
+            QQSettingMeABTestHelper_isZplanExpGroup_Old,
+        )
+    ) {
 
     const val MidContentName = "SimplifyQQSettingMe::MidContentName"
 
@@ -311,7 +319,11 @@ object SimplifyQQSettingMe :
 
         // 关闭下拉形象展示abtest开关
         if (activeItems.contains("下拉形象展示")) {
-            DexKit.requireMethodFromCache(QQSettingMeABTestHelper_isZPlanExpGroup).hookReturnConstant(false)
+            if (requireMinQQVersion(QQ_9_0_20)) {
+                DexKit.requireMethodFromCache(QQSettingMeABTestHelper_isZPlanExpGroup_New).hookReturnConstant(false)
+            } else {
+                DexKit.requireMethodFromCache(QQSettingMeABTestHelper_isZplanExpGroup_Old).hookReturnConstant(false)
+            }
         }
     }
 
