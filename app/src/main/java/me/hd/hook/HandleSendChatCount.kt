@@ -35,7 +35,6 @@ import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.EditText
 import android.widget.LinearLayout
-import android.widget.RelativeLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
@@ -43,6 +42,7 @@ import androidx.appcompat.widget.AppCompatTextView
 import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.hookAfterIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
@@ -59,26 +59,24 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NQQSettingMe_onResume
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.hd.util.getExCfg
 import me.hd.util.putExCfg
-import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.hookAfter
-import xyz.nextalone.util.hookBeforeAllConstructors
+import xyz.nextalone.util.isStatic
 import xyz.nextalone.util.putExFriend
 import xyz.nextalone.util.today
 import java.util.Date
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HandleChatCount : CommonConfigFunctionHook(
+object HandleSendChatCount : CommonConfigFunctionHook(
     targets = arrayOf(NQQSettingMe_onResume)
 ) {
 
-    override val name = "统计聊天数量"
-    override val description = "替换侧滑栏个性签名, 用于统计今日发送消息数量"
+    override val name = "统计聊天发送消息数量"
+    override val description = "替换旧样式侧滑栏个性签名, 支持 8.9.88 及以上"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -89,38 +87,22 @@ object HandleChatCount : CommonConfigFunctionHook(
         showConfigDialog(activity)
     }
 
-    private val LAYOUT_ID_NAME = when (hostInfo.versionCode) {
-        //d_signature
-        QQVersion.QQ_9_0_56 -> "oby"
-        QQVersion.QQ_9_0_55 -> "oby"
-        QQVersion.QQ_9_0_50 -> "obo"
-        QQVersion.QQ_9_0_35 -> "obd"
-        QQVersion.QQ_9_0_30 -> "oa3"
-        QQVersion.QQ_9_0_25 -> "o_x"
-        QQVersion.QQ_9_0_17 -> "o_5"
-        QQVersion.QQ_9_0_15 -> "o_5"
-        QQVersion.QQ_9_0_8 -> "o9g"
-        QQVersion.QQ_9_0_0 -> "o95"
-        QQVersion.QQ_8_9_88 -> "o7l"
-        else -> "Unknown"
-    }
-
-    const val ERROR_MESSAGE = "未登录或无法获取当前账号信息"
-    const val CFG_KEY_SHOW_FORMAT = "ChatCountEntry.CFG_KEY_SHOW_FORMAT"
-    const val DEFAULT_SHOW_FORMAT = "Today Send: Text(\${text}) TextWord(\${textWord}) Pic(\${pic})"
-    const val CFG_KEY_COLOR = "ChatCountEntry.CFG_KEY_COLOR"
-    const val DEFAULT_COLOR_RED = "#FFFF0000"
-    const val CFG_KEY_DAY = "ChatCount.CFG_KEY_DAY"
-    const val DEFAULT_STR_EMPTY = ""
-    const val DEFAULT_INT_ZERO = 0
-    const val CFG_KEY_TEXT = "ChatCount.CFG_KEY_TEXT"
-    const val CFG_KEY_TEXT_WORD = "ChatCount.CFG_KEY_TEXT_WORD"
-    const val CFG_KEY_PIC = "ChatCount.CFG_KEY_PIC"
-    const val CFG_KEY_VIDEO = "ChatCount.CFG_KEY_VIDEO"
-    const val CFG_KEY_PTT = "ChatCount.CFG_KEY_PTT"
-    const val CFG_KEY_FACE = "ChatCount.CFG_KEY_FACE"
-    const val CFG_KEY_WALLET = "ChatCount.CFG_KEY_WALLET"
-    const val CFG_KEY_FILE = "ChatCount.CFG_KEY_FILE"
+    private const val ERROR_MESSAGE = "未登录或无法获取当前账号信息"
+    private const val CFG_KEY_SHOW_FORMAT = "ChatCountEntry.CFG_KEY_SHOW_FORMAT"
+    private const val DEFAULT_SHOW_FORMAT = "Today Send: Text(\${text}) TextWord(\${textWord}) Pic(\${pic})"
+    private const val CFG_KEY_COLOR = "ChatCountEntry.CFG_KEY_COLOR"
+    private const val DEFAULT_COLOR_RED = "#FFFF0000"
+    private const val CFG_KEY_DAY = "ChatCount.CFG_KEY_DAY"
+    private const val DEFAULT_STR_EMPTY = ""
+    private const val DEFAULT_INT_ZERO = 0
+    private const val CFG_KEY_TEXT = "ChatCount.CFG_KEY_TEXT"
+    private const val CFG_KEY_TEXT_WORD = "ChatCount.CFG_KEY_TEXT_WORD"
+    private const val CFG_KEY_PIC = "ChatCount.CFG_KEY_PIC"
+    private const val CFG_KEY_VIDEO = "ChatCount.CFG_KEY_VIDEO"
+    private const val CFG_KEY_PTT = "ChatCount.CFG_KEY_PTT"
+    private const val CFG_KEY_FACE = "ChatCount.CFG_KEY_FACE"
+    private const val CFG_KEY_WALLET = "ChatCount.CFG_KEY_WALLET"
+    private const val CFG_KEY_FILE = "ChatCount.CFG_KEY_FILE"
 
     private var mShowFormat: String
         get() = getExCfg(CFG_KEY_SHOW_FORMAT, DEFAULT_SHOW_FORMAT) as String
@@ -267,7 +249,7 @@ object HandleChatCount : CommonConfigFunctionHook(
                 mShowFormat = tvShowFmt.text.toString()
                 mColorValue = tvColor.text.toString()
                 if (!isInitialized && isEnabled) {
-                    HookInstaller.initializeHookForeground(ctx, this@HandleChatCount)
+                    HookInstaller.initializeHookForeground(ctx, this@HandleSendChatCount)
                 }
                 Toasts.success(ctx, "已保存")
             }
@@ -292,42 +274,46 @@ object HandleChatCount : CommonConfigFunctionHook(
     }
 
     private fun updateView(viewGroup: ViewGroup) {
-        if (LAYOUT_ID_NAME == "Unknown") throw Exception("Unknown layout id name")
-        val relativeLayout = viewGroup.findHostView<RelativeLayout>(LAYOUT_ID_NAME)!!
-        var textView: TextView? = relativeLayout.findViewById(R.id.chat_words_count)
+        var textView: TextView? = viewGroup.findViewById(R.id.chat_words_count)
         if (textView == null) {
-            relativeLayout.apply {
-                children.forEach { childView ->
-                    childView.alpha = 0.0f
-                }
-                addView(TextView(viewGroup.context).apply {
-                    id = R.id.chat_words_count
-                    textSize = 14.0f
-                    setTextColor(Color.parseColor(mColorValue))
-                })
+            viewGroup.apply {
+                children.forEach { childView -> childView.alpha = 0.0f }
+                addView(
+                    TextView(viewGroup.context).apply {
+                        id = R.id.chat_words_count
+                        textSize = 14.0f
+                        setTextColor(Color.parseColor(mColorValue))
+                    }
+                )
             }
-            textView = relativeLayout.findViewById(R.id.chat_words_count)
+            textView = viewGroup.findViewById(R.id.chat_words_count)
         }
         textView!!.text = getChatWords()
     }
 
     override fun initOnce(): Boolean {
-        var viewGroup: ViewGroup? = null
-        val settingClass = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+        val settingOldStyleClass = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
             Initiator.loadClass("com.tencent.mobileqq.QQSettingMeView")
         } else {
             Initiator.loadClass("com.tencent.mobileqq.activity.QQSettingMeView")
         }
-        settingClass.hookBeforeAllConstructors {
-            viewGroup = it.args[1] as ViewGroup
-            viewGroup?.post {
-                updateView(viewGroup!!)
-            }
+        /*
+        val settingNewStyleClass = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+            Initiator.loadClass("com.tencent.mobileqq.bizParts.QQSettingMeProfileCardPart")
+        } else {
+            Initiator.loadClass("com.tencent.mobileqq.activity.qqsettingme.bizParts.QQSettingMeProfileCardPart")
+        }
+        */
+        val getOldStyleViewMethod = settingOldStyleClass.declaredMethods.single { method ->
+            val params = method.parameterTypes
+            method.isStatic && method.returnType == View::class.java && params.size == 1 && params[0] == settingOldStyleClass
+        }
+        var viewGroup: ViewGroup? = null
+        hookAfterIfEnabled(getOldStyleViewMethod) { param ->
+            viewGroup = param.result as ViewGroup
         }
         DexKit.loadMethodFromCache(NQQSettingMe_onResume)?.hookAfter(this) {
-            viewGroup?.post {
-                updateView(viewGroup!!)
-            }
+            viewGroup?.post { updateView(viewGroup!!) }
         }
         XposedHelpers.findAndHookMethod(
             Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.MsgService"),
