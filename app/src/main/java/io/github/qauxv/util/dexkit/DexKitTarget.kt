@@ -618,7 +618,7 @@ data object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.mobileqq.troopAddFrd.Scene"
     override val traitString = arrayOf("checkDataRecmdRemarkList cacheInvalid_ts_type_troopUin=%b_%d_%d_%s")
-    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/troopAddFrd") or DexKitFilter.defpackage
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/") or DexKitFilter.defpackage
 }
 
 data object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
