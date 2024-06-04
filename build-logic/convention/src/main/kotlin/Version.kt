@@ -33,7 +33,7 @@ object Version {
         return prop ?: env ?: defaultCMakeVersion
     }
 
-    private fun getLocalProperty(project: Project, propertyName: String): String? {
+    fun getLocalProperty(project: Project, propertyName: String): String? {
         val rootProject = project.rootProject
         val localProp = File(rootProject.projectDir, "local.properties")
         if (!localProp.exists()) {

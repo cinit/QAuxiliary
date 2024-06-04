@@ -21,6 +21,7 @@
  */
 
 import android.databinding.tool.ext.capitalizeUS
+import com.android.build.gradle.internal.dsl.SigningConfig
 import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
@@ -32,7 +33,9 @@ import com.android.tools.build.apkzlib.zip.ZFileOptions
 import org.jetbrains.changelog.markdownToHTML
 import java.io.FileInputStream
 import java.security.KeyStore
+import java.security.MessageDigest
 import java.security.cert.X509Certificate
+import java.util.Locale
 import java.util.UUID
 
 @Suppress("DSL_SCOPE_VIOLATION")
@@ -56,6 +59,35 @@ if (ccacheExecutablePath != null) {
 }
 
 val fullNativeDebugMode = false
+
+fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
+    var key1: String? = if (signConfig != null && signConfig.storeFile != null) {
+        // extract public key digest
+        val key = signConfig.storeFile
+        val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
+        FileInputStream(key!!).use {
+            keyStore.load(it, signConfig.storePassword!!.toCharArray())
+        }
+        val cert = keyStore.getCertificate(signConfig.keyAlias!!)
+        val md = MessageDigest.getInstance("MD5")
+        val digest = md.digest(cert.publicKey.encoded)
+        digest.joinToString("") { "%02X".format(it) }
+    } else null
+    val key2: String? = Version.getLocalProperty(project, "qauxv.signature.md5digest")
+        ?.uppercase(Locale.ROOT)?.ifEmpty { null }
+    // check if key1 and key2 are the same
+    if (key1 != null && key2 != null && key1 != key2) {
+        error(
+            "The signature key digest in the signing config and local.properties are different, " +
+                "got $key1 and $key2, please make sure they are the same."
+        )
+    }
+    return (key1 ?: key2)?.also {
+        check(it.matches(Regex("[0-9A-F]{32}"))) {
+            "Invalid signature key digest: $it"
+        }
+    }
+}
 
 android {
     namespace = "io.github.qauxv"
@@ -101,6 +133,12 @@ android {
         }
     }
     buildTypes {
+        val signatureDigest: String? = getSignatureKeyDigest(signingConfigs.findByName("release"))
+        if (signatureDigest != null) {
+            println("Signature Digest: $signatureDigest")
+        } else {
+            println("No Signature Digest Configured")
+        }
         getByName("release") {
             isShrinkResources = true
             isMinifyEnabled = true
@@ -111,7 +149,7 @@ android {
                 "-Wl,--thinlto-cache-policy,cache_size_bytes=300m",
                 "-Wl,--thinlto-cache-dir=${buildDir.absolutePath}/.lto-cache",
             )
-            val releaseFlags = arrayOf(
+            var releaseFlags = arrayOf(
                 "-ffunction-sections",
                 "-fdata-sections",
                 "-Wl,--gc-sections",
@@ -119,6 +157,9 @@ android {
                 "-Wl,--exclude-libs,ALL",
                 "-DNDEBUG",
             )
+            if (signatureDigest != null) {
+                releaseFlags += "-DMODULE_SIGNATURE=$signatureDigest"
+            }
             externalNativeBuild.cmake {
                 arguments += "-DQAUXV_VERSION=${defaultConfig.versionName}"
                 cFlags += releaseFlags
@@ -138,10 +179,12 @@ android {
             }
             isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
-            val debugFlags = arrayOf<String>(
-//                "-DMODULE_SIGNATURE=E7A8AEB0A1431D12EB04BF1B7FC31960",
+            var debugFlags = arrayOf<String>(
 //                "-DTEST_SIGNATURE",
             )
+            if (signatureDigest != null) {
+                debugFlags += "-DMODULE_SIGNATURE=$signatureDigest"
+            }
             externalNativeBuild.cmake {
                 arguments.addAll(
                     arrayOf(
