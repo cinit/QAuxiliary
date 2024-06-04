@@ -62,7 +62,7 @@ val fullNativeDebugMode = false
 
 fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
     var key1: String? = if (signConfig != null && signConfig.storeFile != null) {
-        // extract public key digest
+        // extract certificate digest
         val key = signConfig.storeFile
         val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
         FileInputStream(key!!).use {
@@ -70,7 +70,7 @@ fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
         }
         val cert = keyStore.getCertificate(signConfig.keyAlias!!)
         val md = MessageDigest.getInstance("MD5")
-        val digest = md.digest(cert.publicKey.encoded)
+        val digest = md.digest(cert.encoded)
         digest.joinToString("") { "%02X".format(it) }
     } else null
     val key2: String? = Version.getLocalProperty(project, "qauxv.signature.md5digest")
