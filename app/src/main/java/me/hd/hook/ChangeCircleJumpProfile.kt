@@ -36,7 +36,7 @@ import io.github.qauxv.util.requireMinQQVersion
 object ChangeCircleJumpProfile : CommonSwitchFunctionHook() {
 
     override val name = "更改小世界跳转资料"
-    override val description = "忽略作者设置了QQ资料卡不可见,强制跳转"
+    override val description = "忽略作者设置了QQ资料卡不可见,点击头像强制跳转"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -45,6 +45,10 @@ object ChangeCircleJumpProfile : CommonSwitchFunctionHook() {
         val canJumpMethod = circleClass.getDeclaredMethod("canJumpToQQProfile", List::class.java)
         hookBeforeIfEnabled(canJumpMethod) { param ->
             param.result = true
+        }
+        val isBeatedMethod = circleClass.getDeclaredMethod("isJumpToQQProfileBeated", List::class.java)
+        hookBeforeIfEnabled(isBeatedMethod) { param ->
+            param.result = false
         }
         return true
     }
