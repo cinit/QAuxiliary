@@ -83,7 +83,9 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
         XposedBridge.hookMethod(DexKit.loadMethodFromCache(AIO_Destroy_QQNT.INSTANCE), new XC_MethodHook() {
             @Override
             protected void afterHookedMethod(MethodHookParam param) {
-                aioParams.pop();
+                if (!aioParams.empty()) {
+                    aioParams.pop();
+                }
                 if (!aioParams.empty()) {
                     for (SessionHooker.IAIOParamUpdate decorator : getDecorators()) {
                         decorator.onAIOParamUpdate(aioParams.peek());
