@@ -27,6 +27,8 @@ import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
 import cc.ioctl.util.HookUtils;
+import io.github.qauxv.util.HostInfo;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.Toasts;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -100,17 +102,23 @@ public class FixCleanRecentChat {
         hookOnHolder();
 
         //不hook onCreate方法了 那样需要重启才能生效 hook onResume可在界面重新渲染到屏幕时会调用生效
-        Method onCreateMethod = MethodTool.find("com.tencent.mobileqq.activity.home.Conversation").name("onResume").params(boolean.class).get();
+        Method onCreateMethod = MethodTool.find("com.tencent.mobileqq.activity.home.Conversation")
+                .name(HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_55) ? "notifyResume" : "onResume")
+                .params(boolean.class)
+                .get();
         HookUtils.hookAfterIfEnabled(cleanRecentChat, onCreateMethod, param -> {
-            ImageView imageView = FieldUtils.getFirstField(param.thisObject, ImageView.class);
-            activity = (Activity) imageView.getContext();
-            imageView.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    cleanRecentChat.showDialog(activity);
-                    return true;
+            for (Field field : param.thisObject.getClass().getDeclaredFields()) {
+                if (field.getType() == ImageView.class) {
+                    field.setAccessible(true);
+                    ImageView img = (ImageView) field.get(param.thisObject);
+                    if (img != null && "快捷入口".equals(img.getContentDescription().toString())) {
+                        img.setOnLongClickListener(v -> {
+                            cleanRecentChat.showDialog(img.getContext());
+                            return true;
+                        });
+                    }
                 }
-            });
+            }
         });
 
     }
