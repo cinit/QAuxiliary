@@ -25,6 +25,7 @@ import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
 import static io.github.qauxv.util.Initiator._MessageRecord;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
+import static io.github.qauxv.util.Initiator.loadClass;
 
 import android.text.TextUtils;
 import android.view.View;
@@ -33,8 +34,6 @@ import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -90,32 +89,25 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        if (QAppUtils.isQQnt()){
+        // 闪照SubMsgType(8194 -> 2, 12288 -> 4096)
+        if (QAppUtils.isQQnt()) {
             if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
-                XposedBridge.hookAllConstructors(MsgRecord.class, new XC_MethodHook() {
-                    @Override
-                    protected void afterHookedMethod(@NonNull MethodHookParam param) {
-                        try {
-                            if (isEnabled()){
-                                MsgRecord msgRecord = (MsgRecord) param.thisObject;
-                                int subMsgType = msgRecord.getSubMsgType();
-                                if ((subMsgType & 8192) != 0){
-                                    FieldUtils.setField(msgRecord, "subMsgType", subMsgType & ~8192);
-                                }
-                            }
-                        } catch (Exception e) {
-                            INSTANCE.traceError(e);
-                        }
+                Class<?> AIOMsgItem = loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
+                HookUtils.hookAfterIfEnabled(this, AIOMsgItem.getDeclaredMethod("getMsgRecord"), param -> {
+                    MsgRecord msgRecord = (MsgRecord) param.getResult();
+                    int subMsgType = msgRecord.getSubMsgType();
+                    if ((subMsgType & 8192) != 0) {
+                        FieldUtils.setField(msgRecord, "subMsgType", subMsgType & ~8192);
                     }
                 });
-            }else {
-                HookUtils.hookAfterIfEnabled(this, MsgRecord.class.getDeclaredMethod("getSubMsgType"),param -> {
-                    int result = (int) param.getResult();
-                    if (result == 8194)param.setResult(2);
-                    else if (result == 12288)param.setResult(4096);
+            } else {
+                HookUtils.hookAfterIfEnabled(this, MsgRecord.class.getDeclaredMethod("getSubMsgType"), param -> {
+                    int subMsgType = (int) param.getResult();
+                    if ((subMsgType & 8192) != 0) {
+                        param.setResult(subMsgType & ~8192);
+                    }
                 });
             }
-
             return true;
         }
         Class<?> clz = DexKit.loadClassFromCache(CFlashPicHelper.INSTANCE);
