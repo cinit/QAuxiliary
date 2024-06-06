@@ -45,16 +45,15 @@ object DisableLightInteraction : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         val kLIAConfigManager = Initiator.loadClass("com.tencent.qqnt.biz.lightbusiness.lightinteraction.LIAConfigManager")
-        val method = if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
             kLIAConfigManager.declaredMethods.single {
                 it.paramCount == 1 && it.returnType == java.util.List::class.java
-            }
+            }.hookReturnConstant(emptyList<Any>())
         } else {
             kLIAConfigManager.declaredMethods.single {
                 it.emptyParam && it.returnType == java.util.Map::class.java
-            }
+            }.hookReturnConstant(emptyMap<Any, Any>())
         }
-        method.hookReturnConstant(null)
         return true
     }
 
