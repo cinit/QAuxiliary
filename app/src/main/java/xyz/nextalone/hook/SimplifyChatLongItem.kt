@@ -33,6 +33,7 @@ import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -72,6 +73,8 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
 
+    private var getName: Method? = null
+
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
             listOf(
@@ -82,11 +85,13 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
                 .hookBefore {
                     val list = it.args[0].javaClass.getFieldByType(List::class.java).get(it.args[0]) as MutableList<*>
                     if (list.isEmpty()) return@hookBefore
-                    val getName = list[0]?.javaClass!!.superclass!!.method { m ->
-                        m.returnType == String::class.java && m.isAbstract
-                    }!!
+                    if (getName == null) {
+                        getName = list[0]?.javaClass!!.superclass!!.declaredMethods.last { m ->
+                            m.returnType == String::class.java && m.isAbstract
+                        }!!
+                    }
                     list.forEach { item ->
-                        val str = getName.invoke(item)!! as String
+                        val str = getName!!.invoke(item)!! as String
                         if (activeItems.contains(str))
                             list.remove(item)
                     }
