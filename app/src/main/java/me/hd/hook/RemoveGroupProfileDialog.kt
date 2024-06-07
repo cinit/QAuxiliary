@@ -22,6 +22,7 @@
 
 package me.hd.hook
 
+import android.os.Bundle
 import cc.ioctl.util.hookBeforeIfEnabled
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -36,7 +37,7 @@ import io.github.qauxv.util.requireMinQQVersion
 @UiItemAgentEntry
 object RemoveGroupProfileDialog : CommonSwitchFunctionHook() {
 
-    override val name = "移除群成员资料卡弹窗"
+    override val name = "移除群成员资料卡异常弹窗"
     override val description = "忽略账号异常状态, 使其可以正常查看"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.PROFILE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
@@ -45,7 +46,14 @@ object RemoveGroupProfileDialog : CommonSwitchFunctionHook() {
         val profileSecureClass = Initiator.loadClass("com.tencent.mobileqq.profilecard.processor.ProfileSecureProcessor")
         val respHeadClass = Initiator.loadClass("SummaryCard.RespHead")
         val respSummaryCardClass = Initiator.loadClass("SummaryCard.RespSummaryCard")
-        val profileCardMethod = profileSecureClass.getDeclaredMethod("processProfileCard", respHeadClass, respSummaryCardClass)
+        val profileCardMethod = profileSecureClass.declaredMethods.single { method ->
+            val params = method.parameterTypes
+            method.name == "processProfileCard" && (if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
+                params.size == 3 && params[0] == Bundle::class.java && params[1] == respHeadClass && params[2] == respSummaryCardClass
+            } else {
+                params.size == 2 && params[0] == respHeadClass && params[1] == respSummaryCardClass
+            })
+        }
         hookBeforeIfEnabled(profileCardMethod) { param ->
             val respHead = param.args[0]
             val iResult = XposedHelpers.getObjectField(respHead, "iResult")
