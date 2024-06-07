@@ -26,8 +26,10 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.AIOTextElementCtor
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.set
@@ -99,25 +101,25 @@ fun pangu_spacing(text: String): String {
     var newText = text
     val fixSlash = !text.startsWith("/ ")
 
-/*
+    /*
 
-// Corresponding lines: https://github.com/vinta/pangu.js/blob/6107055384b99e6f30a49f5d1b85aa0b78251dc2/src/shared/core.js#L118-L126
+    // Corresponding lines: https://github.com/vinta/pangu.js/blob/6107055384b99e6f30a49f5d1b85aa0b78251dc2/src/shared/core.js#L118-L126
 
-     newText = CONVERT_TO_FULLWIDTH_CJK_SYMBOLS_CJK.matcher(newText).replaceAll { matchResult ->
-        val leftCjk = matchResult.group(1)
-        val symbols = matchResult.group(2)
-        val rightCjk = matchResult.group(3)
-        val fullwidthSymbols = convertToFullwidth(symbols)
-        "$leftCjk$fullwidthSymbols$rightCjk"
-    }
+         newText = CONVERT_TO_FULLWIDTH_CJK_SYMBOLS_CJK.matcher(newText).replaceAll { matchResult ->
+            val leftCjk = matchResult.group(1)
+            val symbols = matchResult.group(2)
+            val rightCjk = matchResult.group(3)
+            val fullwidthSymbols = convertToFullwidth(symbols)
+            "$leftCjk$fullwidthSymbols$rightCjk"
+        }
 
-    newText = CONVERT_TO_FULLWIDTH_CJK_SYMBOLS.matcher(newText).replaceAll { matchResult ->
-        val cjk = matchResult.group(1)
-        val symbols = matchResult.group(2)
-        val fullwidthSymbols = convertToFullwidth(symbols)
-        "$cjk$fullwidthSymbols"
-    }
-*/
+        newText = CONVERT_TO_FULLWIDTH_CJK_SYMBOLS.matcher(newText).replaceAll { matchResult ->
+            val cjk = matchResult.group(1)
+            val symbols = matchResult.group(2)
+            val fullwidthSymbols = convertToFullwidth(symbols)
+            "$cjk$fullwidthSymbols"
+        }
+    */
 
     newText = DOTS_CJK.matcher(newText).replaceAll("$1 $2")
     newText = FIX_CJK_COLON_ANS.matcher(newText).replaceAll("$1：$2")
@@ -166,26 +168,25 @@ fun pangu_spacing(text: String): String {
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object SendPangu : CommonSwitchFunctionHook("sendMsgPangu",arrayOf(AIOTextElementCtor)) {
+object SendPangu : CommonSwitchFunctionHook("sendMsgPangu", arrayOf(AIOTextElementCtor)) {
     override val name = "发送消息自动 Pangu"
     override val description = "自动在中英文间加上空格，以美化排版\n若消息以,,或，，开头，则不会进行处理"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
-    override val isAvailable = QAppUtils.isQQnt();
+    override val isAvailable = QAppUtils.isQQnt()
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOTextElementCtor)
             .hookBefore(this) {
-                val content = it.args[0].get("a") as String;
-                if(!content.startsWith("，，") && !content.startsWith(",,"))
-                    it.args[0].set("a", SendPangu.processPangu(content))
+                val content = it.args[0].get(if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "e" else "a") as String
+                if (!content.startsWith("，，") && !content.startsWith(",,"))
+                    it.args[0].set("a", processPangu(content))
                 else
                     it.args[0].set("a", content.substring(2))
             }
-
-        return true;
+        return true
     }
 
     private fun processPangu(message: String): String {
-        return pangu_spacing(message);
+        return pangu_spacing(message)
     }
 }
