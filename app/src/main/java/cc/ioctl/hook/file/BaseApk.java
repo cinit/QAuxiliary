@@ -56,7 +56,7 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
 
-//重命名base.apk
+//重命名 APK
 @FunctionHookEntry
 @UiItemAgentEntry
 public class BaseApk extends CommonConfigFunctionHook {
@@ -70,7 +70,7 @@ public class BaseApk extends CommonConfigFunctionHook {
     @NonNull
     @Override
     public String getName() {
-        return "重命名 base.apk";
+        return "重命名 APK";
     }
 
     @NonNull
@@ -171,11 +171,7 @@ public class BaseApk extends CommonConfigFunctionHook {
         if (name == null) {
             return false;
         }
-        if ("base.apk".equals(name)) {
-            return true;
-        }
-        // base\([0-9]+\)\.apk
-        return name.matches("base\\([0-9]+\\)\\.apk");
+        return name.matches(RikkaBaseApkFormatDialog.getCurrentBaseApkRegex());
     }
 
     @Override
