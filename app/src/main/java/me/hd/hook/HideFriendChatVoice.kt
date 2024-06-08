@@ -24,6 +24,7 @@ package me.hd.hook
 
 import android.view.View
 import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -43,16 +44,18 @@ object HideFriendChatVoice : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val titleVoiceClass = Initiator.loadClass("com.tencent.mobileqq.aio.title.c.d")
-        val bindMethod = titleVoiceClass.getDeclaredMethod("bindViewAndData")
+        val setOnClickClass = if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
+            Initiator.loadClass("com.tencent.mobileqq.aio.title.c.c")
+        } else {
+            Initiator.loadClass("com.tencent.mobileqq.aio.title.c.d")
+        }
+        val bindMethod = setOnClickClass.getDeclaredMethod("bindViewAndData")
         hookAfterIfEnabled(bindMethod) { param ->
-            val redDotImageView = XposedHelpers.getObjectField(param.thisObject, "e") as View
-            redDotImageView.apply {
-                layoutParams = layoutParams.apply {
-                    width = 0
-                    height = 0
-                }
-            }
+            val redDotImageView = XposedHelpers.getObjectField(
+                param.thisObject,
+                if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "f" else "e"
+            ) as View
+            redDotImageView.setViewZeroSize()
         }
         return true
     }
