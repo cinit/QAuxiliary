@@ -980,3 +980,10 @@ data object Hd_HandleQQSomeFunExit_fixFileView_Method : DexKitTarget.UsingStr() 
     override val declaringClass = "Lcom/tencent/mobileqq/aio/msglist/holder/component/file/AIOFileViewer"
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_AutoSendOriginalPhoto_guildPicker_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("isRaw")
+    override val declaringClass = "Lcom/tencent/qqnt/qbasealbum/album/view/PickerBottomBarPart"
+    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/qbasealbum/album/view/")
+}
