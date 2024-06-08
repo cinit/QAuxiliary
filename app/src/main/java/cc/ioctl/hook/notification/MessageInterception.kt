@@ -70,6 +70,7 @@ object MessageInterception : BasePersistBackgroundHook() {
             // updateMsgTab
             Initiator._C2CMessageManager().methodWithSuper(
                 when {
+                    requireMinQQVersion(QQVersion.QQ_9_0_65) -> "x0"
                     requireMinQQVersion(QQVersion.QQ_8_9_63) -> "y0"
                     requireMinQQVersion(QQVersion.QQ_8_9_3) -> "E0"
                     requireMinQQVersion(QQVersion.QQ_8_8_93) -> "A0"
