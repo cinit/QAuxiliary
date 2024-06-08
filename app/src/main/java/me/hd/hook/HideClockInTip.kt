@@ -39,7 +39,7 @@ import xyz.nextalone.util.isPrivate
 object HideClockInTip : CommonSwitchFunctionHook() {
 
     override val name = "隐藏打卡消息"
-    override val description = "对群聊中每日打卡消息进行简单隐藏"
+    override val description = "隐藏群聊打卡消息, 可能导致聊天界面滑动掉帧"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
