@@ -46,7 +46,7 @@ object MessageInterception : BasePersistBackgroundHook() {
             MessageManager.call(msgRecordData)
         }
         if (hostInfo.versionCode >= QQVersion.QQ_8_8_80) {
-            // i don't know why hook 3 methods, but it works
+            // I don't know why hook 3 methods, but it works
             // I don't know why they should be null-tolerant, but the previous version was
             Reflex.findSingleMethod(
                 Initiator._C2CMessageManager(),
@@ -70,7 +70,7 @@ object MessageInterception : BasePersistBackgroundHook() {
             // updateMsgTab
             Initiator._C2CMessageManager().methodWithSuper(
                 when {
-                    requireMinQQVersion(QQVersion.QQ_9_0_65) -> "x0"
+                    requireMinQQVersion(QQVersion.QQ_9_0_56) -> "x0"
                     requireMinQQVersion(QQVersion.QQ_8_9_63) -> "y0"
                     requireMinQQVersion(QQVersion.QQ_8_9_3) -> "E0"
                     requireMinQQVersion(QQVersion.QQ_8_8_93) -> "A0"
