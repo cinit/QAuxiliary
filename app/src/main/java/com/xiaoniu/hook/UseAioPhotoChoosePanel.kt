@@ -37,23 +37,21 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object UseAioPhotoChoosePanel : CommonSwitchFunctionHook() {
+
     override val name = "还原图片选择面板"
-
-    override val description = "从QQ9.0.35开始，普通模式半屏的图片选择面板可能被移除"
-
+    override val description = "从QQ9.0.20开始，普通模式半屏的图片选择面板可能被移除"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_20)
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_35)
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {
-            // 改成其他数字再改回去
+            // 1003改其他, 触发半屏加号面板
             "Lcom/tencent/mobileqq/aio/shortcurtbar/AIOShortcutBarVM\$c;".clazz!!.hookBeforeAllConstructors {
-                if (it.args[0] is Int) {
-                    if (it.args[0] == 1003) it.args[0] = 114514
-                } else {
-                    if (it.args[1] == 1003) it.args[1] = 114514
+                it.args.forEachIndexed { index, arg ->
+                    if ((arg is Int) && (arg == 1003)) it.args[index] = 114514
                 }
             }
+            // 还原1003，加号面板显示半屏选图面板
             "Lcom/tencent/input/base/panelcontainer/h\$l;".clazz!!.hookBeforeAllConstructors {
                 if (it.args[0] == "AIOShortcutBarVM" && it.args[1] == 114514) it.args[1] = 1003
             }
