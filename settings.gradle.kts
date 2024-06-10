@@ -14,7 +14,7 @@ pluginManagement {
 dependencyResolutionManagement {
     repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
     repositories {
-        google() {
+        google {
             content {
                 includeGroupByRegex("com\\.android.*")
                 includeGroupByRegex("com\\.google.*")
@@ -40,16 +40,20 @@ dependencyResolutionManagement {
 includeBuild("build-logic")
 
 plugins {
-    `gradle-enterprise`
+    id("com.gradle.develocity") version "3.17.4"
     id("org.gradle.toolchains.foojay-resolver-convention") version("0.8.0")
 }
 
-gradleEnterprise {
+develocity {
     buildScan {
-        termsOfServiceUrl = "https://gradle.com/terms-of-service"
-        termsOfServiceAgree = "yes"
-        publishAlwaysIf(System.getenv("GITHUB_ACTIONS") == "true")
-        publishOnFailure()
+        termsOfUseUrl = "https://gradle.com/terms-of-service"
+        termsOfUseAgree = "yes"
+        val isOffline = providers.provider { gradle.startParameter.isOffline }.getOrElse(false)
+        val ci = System.getenv("GITHUB_ACTIONS") == "true"
+        publishing {
+            onlyIf { System.getenv("GITHUB_ACTIONS") == "true" }
+            onlyIf { !isOffline && (it.buildResult.failures.isNotEmpty() || ci) }
+        }
     }
 }
 
