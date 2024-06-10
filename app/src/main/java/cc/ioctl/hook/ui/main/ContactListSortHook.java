@@ -25,6 +25,7 @@ package cc.ioctl.hook.ui.main;
 import android.app.Activity;
 import android.content.Context;
 import android.view.View;
+import android.widget.BaseExpandableListAdapter;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
@@ -43,9 +44,11 @@ import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import kotlin.Unit;
@@ -88,7 +91,9 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
         if (kBuddyListItem == null) {
             kBuddyListItem = Initiator.loadClass("com.tencent.mobileqq.adapter.contacts.BuddyListItem");
         }
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_10)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_20)) {
+            kBuddyListItem = Initiator.load("com.tencent.mobileqq.activity.contacts.base.f");
+        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_10)) {
             kBuddyListItem = Initiator.load("com.tencent.mobileqq.activity.contacts.base.e");
         }
         fBuddyListItem_entry = Reflex.findFirstDeclaredInstanceFieldByType(kBuddyListItem, Initiator.loadClass("com.tencent.mobileqq.persistence.Entity"));
@@ -104,6 +109,29 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
             sortContactList(list);
             param.setResult(null);
         });
+
+        var kGroupFragment = Initiator.load("com.tencent.mobileqq.friend.group.GroupFragment");
+        if (kGroupFragment == null) return true;
+        var fields = kGroupFragment.getDeclaredFields();
+        Class<?> kAdapter = null;
+        for (Field f : fields) {
+            f.setAccessible(true);
+            if (BaseExpandableListAdapter.class.isAssignableFrom(f.getType())) {
+                kAdapter = f.getType();
+                break;
+            }
+        }
+        if (kAdapter == null) return true;
+        var mSetData = Reflex.findSingleMethod(kAdapter, void.class, false, ArrayList.class);
+        HookUtils.hookBeforeIfEnabled(this, mSetData, 51, param -> {
+            List<Object> list = (List<Object>) param.args[0];
+            if (list == null || list.isEmpty()) {
+                return;
+            }
+            var newList = new ArrayList<>(list);
+            newList.forEach(this::sortNtContactList);
+            param.args[0] = newList;
+        });
         // for ancient version?
         // Class<?> kContactListAdapter = Initiator.loadClass("com.tencent.mobileqq.troop.createNewTroop.ContactListAdapter");
         // Method onSortContactList = Reflex.findSingleMethod(kContactListAdapter, void.class, false, List.class);
@@ -118,11 +146,17 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
         return true;
     }
 
-    private void sortContactList(List<Object> list) throws ReflectiveOperationException {
-        if (false) {
-            throw new ReflectiveOperationException();
-        }
+    private void sortContactList(List<Object> list) {
         list.sort(mFriendHolderComparator);
+    }
+
+    private void sortNtContactList(Object categoryInfo) {
+        try {
+            var list = Reflex.getFirstByType(categoryInfo, ArrayList.class);
+            list.sort(mNtFriendHolderComparator);
+        } catch (ReflectiveOperationException e) {
+            Log.e(e);
+        }
     }
 
     // private void sortContactListLegacy(List<Object> list) throws ReflectiveOperationException {
@@ -149,6 +183,19 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
             return 0;
         }
     };
+
+    private final Comparator<Object> mNtFriendHolderComparator = (o1, o2) -> {
+        String nick1 = getNickFromNTSimpleInfo(o1);
+        String nick2 = getNickFromNTSimpleInfo(o2);
+        return nick1.compareTo(nick2);
+    };
+
+    private String getNickFromNTSimpleInfo(Object nTSimpleInfo) {
+        var str = nTSimpleInfo.toString();
+        var start = str.indexOf("remark:");
+        var end = str.indexOf(", sign:");
+        return str.substring(start, end);
+    }
 
     private static int compareFriendImpl(@NonNull String nick1, boolean online1, @NonNull String nick2, boolean online2) {
         // TODO: 2022-06-05 Support online status and sort nick by 拼音
