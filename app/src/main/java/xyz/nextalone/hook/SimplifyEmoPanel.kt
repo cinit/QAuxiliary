@@ -67,15 +67,10 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
                 } else {
                     it.thisObject.get("panelDataList") as MutableList<*>
                 }
-            val list = mutableList.listIterator()
-            while (list.hasNext()) {
-                val item = list.next()
-                if (item != null) {
-                    val i = item.javaClass.getDeclaredField("type").get(item) as Int
-                    if (allItemsDict[i] in activeItems || i !in allItemsDict.keys && "表情包" in activeItems) {
-                        list.remove()
-                    }
-                }
+            mutableList.removeAll { item ->
+                if (item == null) return@removeAll false
+                val i = item.javaClass.getDeclaredField("type").get(item) as Int
+                allItemsDict[i] in activeItems || i !in allItemsDict.keys && "表情包" in activeItems
             }
             // fixme unable to locate the slide method
 //                "Lcom/tencent/mobileqq/emoticonview/EmoticonTabAdapter;->getView(ILandroid/view/View;Landroid/view/ViewGroup;)Landroid/view/View;".method.hookAfter(
