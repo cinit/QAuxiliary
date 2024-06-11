@@ -28,8 +28,10 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.CFrameControllerInjectImpl
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
@@ -49,15 +51,26 @@ object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook(arrayOf(CFrameContr
         "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
             ?.replace(this, null)
         DexKit.requireClassFromCache(CFrameControllerInjectImpl).let {
-            Reflex.findSingleMethod(
-                it, Void.TYPE, false,
-                TextView::class.java,
-                Int::class.java,
-                String::class.java,
-                Int::class.java,
-                Int::class.java,
-                Int::class.java
-            ).replace(this, null)
+            if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+                Reflex.findSingleMethod(
+                    it, Void.TYPE, false,
+                    "com.tencent.mobileqq.quibadge.QUIBadge".clazz,
+                    Int::class.java,
+                    String::class.java,
+                    Int::class.java,
+                    Int::class.java,
+                ).replace(this, null)
+            } else {
+                Reflex.findSingleMethod(
+                    it, Void.TYPE, false,
+                    TextView::class.java,
+                    Int::class.java,
+                    String::class.java,
+                    Int::class.java,
+                    Int::class.java,
+                    Int::class.java
+                ).replace(this, null)
+            }
         }
         return true
     }
