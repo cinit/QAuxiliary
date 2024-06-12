@@ -355,7 +355,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
         val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
         if (!isEnabled && !isFlashPicTagNeedShow) return
 
-        if (requireMinQQVersion(QQVersion.QQ_8_9_93_BETA_13315)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
             if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
                 val layout = LinearLayout(rootView.context).apply {
                     layoutParams = ConstraintLayout.LayoutParams(
