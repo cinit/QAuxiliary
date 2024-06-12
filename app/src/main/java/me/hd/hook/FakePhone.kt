@@ -100,9 +100,11 @@ object FakePhone : BaseFunctionHook(
         val onUpdateMethod = DexKit.requireMethodFromCache(Hd_FakePhone_Method)
         hookBeforeIfEnabled(onUpdateMethod) { param ->
             if (param.args[0] == 5) {
-                val bundle = param.args[2] as Bundle
-                bundle.putString("phone", phone)
-                param.args[2] = bundle
+                (param.args[2])?.let { obj ->
+                    val bundle = obj as Bundle
+                    bundle.putString("phone", phone)
+                    param.args[2] = bundle
+                }
             }
         }
         return true
