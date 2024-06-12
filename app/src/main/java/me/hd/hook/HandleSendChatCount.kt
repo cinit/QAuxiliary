@@ -319,7 +319,11 @@ object HandleSendChatCount : CommonConfigFunctionHook(
             Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.MsgService"),
             "sendMsg",
             Long::class.java,
-            Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact"),
+            if (requireMinQQVersion(QQVersion.QQ_9_0_68)) {
+                Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact")
+            } else {
+                Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact")
+            },
             ArrayList::class.java,
             HashMap::class.java,
             Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback"),
