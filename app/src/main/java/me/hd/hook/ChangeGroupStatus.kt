@@ -22,37 +22,40 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object ChangeGroupStatus : CommonSwitchFunctionHook() {
 
     override val name = "更改群聊状态"
-    override val description = "查看消息列表中因涉嫌违规被停用群聊的消息"
+    override val description = """
+        查看消息列表中, 因涉嫌违规被停用群聊的消息
+        在群聊列表长按置顶, 即可显示群聊在消息列表
+    """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val groupStatusClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.GroupStatus")
-        val KENABLE = XposedHelpers.getStaticObjectField(groupStatusClass, "KENABLE")
-        val KDELETE = XposedHelpers.getStaticObjectField(groupStatusClass, "KDELETE")
-        val KDISABLE = XposedHelpers.getStaticObjectField(groupStatusClass, "KDISABLE")
-
-        val groupSimpleInfoClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.GroupSimpleInfo")
-        val getGroupStatusMethod = groupSimpleInfoClass.getDeclaredMethod("getGroupStatus")
-        hookAfterIfEnabled(getGroupStatusMethod) { param ->
-            val groupStatus = param.result
-            if (groupStatus == KDISABLE) {
-                param.result = KENABLE
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            "Lcom/tencent/qqnt/aio/helper/TroopBlockHelper\$groupListener\$1;->a(Ljava/util/List;)V".method.hookBefore {
+                val list = it.args[0] as List<*>
+                list.forEach { troopInfo -> XposedHelpers.setBooleanField(troopInfo, "isTroopBlocked", false) }
+            }
+        } else {
+            "Lcom/tencent/qqnt/aio/helper/TroopBlockHelper\$groupListener\$1;->onGroupListUpdate(Lcom/tencent/qqnt/kernel/nativeinterface/GroupListUpdateType;Ljava/util/ArrayList;)V".method.hookBefore {
+                val arrayList = it.args[1] as ArrayList<*>
+                val fieldEnable = XposedHelpers.getStaticObjectField("Lcom/tencent/qqnt/kernel/nativeinterface/GroupStatus;".clazz, "KENABLE")
+                arrayList.forEach { groupSimpleInfo -> XposedHelpers.callMethod(groupSimpleInfo, "setGroupStatus", fieldEnable) }
             }
         }
         return true
