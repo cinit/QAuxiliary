@@ -253,7 +253,7 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
             return;
         }
         //Hook for longClick msgItem
-        Object item = CustomMenu.createItemIconNt(msg, "保存到面板", R.drawable.ic_item_save_72dp, R.id.item_save_to_panel, () -> {
+        Object item = CustomMenu.createItemIconNt(msg, "保存面板", R.drawable.ic_item_save_72dp, R.id.item_save_to_panel, () -> {
             try {
                 long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
                 IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
