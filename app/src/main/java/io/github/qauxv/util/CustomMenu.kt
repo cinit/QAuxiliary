@@ -21,8 +21,8 @@
  */
 package io.github.qauxv.util
 
-import android.content.Context
 import cc.ioctl.util.Reflex
+import com.github.kyuubiran.ezxhelper.utils.findAllMethods
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.DexKit
@@ -112,6 +112,32 @@ object CustomMenu {
             .loaded
         return menuItemClass.getDeclaredConstructor(msgClass)
             .newInstance(msg)
+    }
+
+    /**
+     * Starting from QQ version 9.0.0, support for menu icons was added.
+     */
+    @JvmStatic
+    fun createItemIconNt(msg: Any, text: String, icon: Int, id: Int, click: () -> Unit): Any {
+        if (!requireMinQQVersion(QQVersion.QQ_9_0_0)) return createItemNt(msg, text, id, click)
+        val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+        val absMenuItem = DexKit.requireClassFromCache(AbstractQQCustomMenuItem)
+        val (iconName, idName) = absMenuItem.findAllMethods { returnType == Int::class.java && parameterTypes.isEmpty() }.map { it.name }
+        val clickName = absMenuItem.findMethod { returnType == Void.TYPE && parameterTypes.isEmpty() }.name
+        val menuItemClass = ByteBuddy()
+            .subclass(absMenuItem)
+            .method(ElementMatchers.returns(String::class.java))
+            .intercept(FixedValue.value(text))
+            .method(ElementMatchers.named(iconName))
+            .intercept(FixedValue.value(icon))
+            .method(ElementMatchers.named(idName))
+            .intercept(FixedValue.value(id))
+            .method(ElementMatchers.named(clickName))
+            .intercept(MethodCall.call { click() })
+            .make()
+            .load(absMenuItem.classLoader, strategy)
+            .loaded
+        return menuItemClass.getDeclaredConstructor(msgClass).newInstance(msg)
     }
 
     fun checkArrayElementNonNull(array: Array<Any?>?) {
