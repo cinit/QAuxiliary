@@ -987,3 +987,13 @@ data object Hd_AutoSendOriginalPhoto_guildPicker_Method : DexKitTarget.UsingStr(
     override val declaringClass = "Lcom/tencent/qqnt/qbasealbum/album/view/PickerBottomBarPart"
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/qbasealbum/album/view/")
 }
+
+data object Hd_DisableGrowHalfLayer_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("grow_half_layer_info", "grow_half_layer_tech_info"))
+    override val declaringClass = "cooperation.vip.ad.GrowHalfLayerHelper"
+    override val filter = DexKitFilter.strInClsName("cooperation/vip/ad/") and filter@{ it: DexMethodDescriptor ->
+        val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+        m.returnType == Void.TYPE && m.paramCount == 3
+    }
+}
