@@ -41,6 +41,7 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
     override val description = """
         查看消息列表中, 因涉嫌违规被停用群聊的消息
         在群聊列表长按置顶, 即可显示群聊在消息列表
+        可能导致QQ性能卡顿, 未必要请保持关闭状态
     """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
