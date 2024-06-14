@@ -27,7 +27,6 @@ import android.graphics.Color
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
-import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findFieldObjectAs
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
 import com.github.kyuubiran.ezxhelper.utils.invokeMethodAs
@@ -54,6 +53,7 @@ import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import java.lang.reflect.Modifier
 
 @[FunctionHookEntry UiItemAgentEntry]
 object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnClickListener {
@@ -121,7 +121,12 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val ctx = CommonContextWrapper.createMaterialDesignContext(v.context)
             val qQAppInterface = item.getObjectByTypeAs<QQAppInterface>(QQAppInterface::class.java)
             val gid = item.getObjectByTypeAs<Long>(Long::class.java)
-            val tv = item.getObjectByTypeAs<TextView>("com.tencent.mobileqq.troop.widget.EllipsizingTextView".clazz!!)
+            val tv = if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
+                item.javaClass.declaredFields.first { it.type == TextView::class.java && Modifier.isProtected(it.modifiers) }
+                    .apply { isAccessible = true }.get(item) as TextView
+            } else {
+                item.getObjectByTypeAs("com.tencent.mobileqq.troop.widget.EllipsizingTextView".clazz!!)
+            }
             TroopFileProtocol.getFileInfo(qQAppInterface, gid, info.path, object : TroopFileGetOneFileInfoObserver() {
                 override fun onResult(result: Boolean, code: Int, fileInfo: group_file_common.FileInfo?) {
                     if (!result || fileInfo == null) {
@@ -131,7 +136,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
                     showInput(ctx, qQAppInterface, gid, fileInfo, tv)
                 }
             })
-        }.onFailure { Log.d(it) }
+        }.onFailure { traceError(it) }
     }
 
     private fun showInput(
