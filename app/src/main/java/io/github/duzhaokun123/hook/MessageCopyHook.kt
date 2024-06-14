@@ -174,7 +174,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
         // TODO: support ark message
-        val item = CustomMenu.createItemNt(msg, "自由复制", R.id.item_free_copy) {
+        val item = CustomMenu.createItemIconNt(msg, "自由复制", R.drawable.ic_item_copy_72dp, R.id.item_free_copy) {
             val text = try {
                 DexKit.requireMethodFromCache(TextMsgItem_getText).also {
                     it.isAccessible = true

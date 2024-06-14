@@ -164,8 +164,10 @@ public class PicMd5Hook extends CommonSwitchFunctionHook implements OnMenuBuilde
 
     @Override
     public void onGetMenuNt(@NonNull Object msg, @NonNull String componentType, @NonNull XC_MethodHook.MethodHookParam param) throws Exception {
-        if (!isEnabled()) return;
-        Object item = CustomMenu.createItemNt(msg, "MD5", R.id.item_showPicMd5, () -> {
+        if (!isEnabled()) {
+            return;
+        }
+        Object item = CustomMenu.createItemIconNt(msg, "MD5", R.drawable.ic_item_md5_72dp, R.id.item_showPicMd5, () -> {
             try {
                 Method getElement = null;
                 for (Method m : msg.getClass().getDeclaredMethods()) {

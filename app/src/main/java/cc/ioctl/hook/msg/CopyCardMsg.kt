@@ -40,7 +40,7 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
-import io.github.qauxv.util.CustomMenu.createItemNt
+import io.github.qauxv.util.CustomMenu.createItemIconNt
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
@@ -157,7 +157,7 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
     override fun onGetMenuNt(msg: Any, componentType: String, param: MethodHookParam) {
         if (!isEnabled) return
         val ctx = ContextUtils.getCurrentActivity()
-        val item = createItemNt(msg, "复制代码", R.id.item_copy_code) {
+        val item = createItemIconNt(msg, "复制代码", R.drawable.ic_item_copy_72dp, R.id.item_copy_code) {
             val element = (msg.javaClass.declaredMethods.first {
                 it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
             }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement

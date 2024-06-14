@@ -491,7 +491,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
             return;
         }
         Activity context = ContextUtils.getCurrentActivity();
-        Object item = CustomMenu.createItemNt(msg, "转发", R.id.item_ptt_forward, () -> {
+        Object item = CustomMenu.createItemIconNt(msg, "转发", R.drawable.ic_item_share_72dp, R.id.item_ptt_forward, () -> {
             File file = getPttFileByMsgNt(msg);
             if (!file.exists()) {
                 Toasts.error(context, "未找到语音文件");
@@ -500,7 +500,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
             }
             return Unit.INSTANCE;
         });
-        Object item2 = CustomMenu.createItemNt(msg, "保存", R.id.item_ptt_save, () -> {
+        Object item2 = CustomMenu.createItemIconNt(msg, "保存", R.drawable.ic_item_save_72dp, R.id.item_ptt_save, () -> {
             File file = getPttFileByMsgNt(msg);
             if (!file.exists()) {
                 Toasts.error(context, "未找到语音文件");

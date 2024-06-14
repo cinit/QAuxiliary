@@ -207,7 +207,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
         if (!isEnabled) return
         val list = param.result as MutableList<Any>
         val context = param.thisObject.invoke("getMContext")!!
-        val item = CustomMenu.createItemNt(msg, "复制图片", R.id.item_copyToClipboard) {
+        val item = CustomMenu.createItemIconNt(msg, "复制图片", R.drawable.ic_item_copy_72dp, R.id.item_copyToClipboard) {
             runCatching {
                 val file = File(getFilePathNt(msg))
                 onClick(context as Context, file)
