@@ -48,7 +48,7 @@ object RemoveGroupProfileDialog : CommonSwitchFunctionHook() {
         val respSummaryCardClass = Initiator.loadClass("SummaryCard.RespSummaryCard")
         val profileCardMethod = profileSecureClass.declaredMethods.single { method ->
             val params = method.parameterTypes
-            method.name == "processProfileCard" && (if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
+            method.name == "processProfileCard" && (if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
                 params.size == 3 && params[0] == Bundle::class.java && params[1] == respHeadClass && params[2] == respSummaryCardClass
             } else {
                 params.size == 2 && params[0] == respHeadClass && params[1] == respSummaryCardClass
