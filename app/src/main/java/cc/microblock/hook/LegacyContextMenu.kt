@@ -24,15 +24,11 @@ package cc.microblock.hook
 
 import android.widget.LinearLayout
 import cc.hicore.QApp.QAppUtils
-import cc.ioctl.util.HookUtils
-import cc.ioctl.util.Reflex
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
-import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
@@ -42,23 +38,24 @@ import xyz.nextalone.util.set
 @UiItemAgentEntry
 object LegacyContextMenu : CommonSwitchFunctionHook() {
     override val name = "老式消息菜单"
-    override val description = "去除消息菜单的图标";
+    override val description = "去除消息菜单的图标"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+    override val isAvailable = QAppUtils.isQQnt()
 
     override fun initOnce(): Boolean {
-        val getButtonLayout = Initiator.loadClass("com.tencent.qqnt.aio.menu.ui.QQCustomMenuExpandableLayout")
-            .method("o")!!;
-        getButtonLayout.hookBefore(this) {
-            it.thisObject.set("n", 120); // Layout height
+        val dip2pxMethod = "Lcom/tencent/mobileqq/utils/ViewUtils;->dip2px(F)I".method
+        val menuClass = Initiator.loadClass("com.tencent.qqnt.aio.menu.ui.QQCustomMenuExpandableLayout")
+        val getBtnLayoutMethod = menuClass.method("o")!!
+        getBtnLayoutMethod.hookBefore(this) {
+            val defaultHeight = 71f
+            val scale = 1.5f
+            val height = dip2pxMethod.invoke(null, defaultHeight / scale)!!
+            it.thisObject.set("n", height)
         }
-
-        getButtonLayout.hookAfter(this) {
+        getBtnLayoutMethod.hookAfter(this) {
             (it.result as LinearLayout).removeViewAt(0)
         }
-
-        return true;
+        return true
     }
-
-    override val isAvailable = QAppUtils.isQQnt();
 }
