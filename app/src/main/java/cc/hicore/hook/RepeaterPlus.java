@@ -425,7 +425,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
         if (ContextUtils.getCurrentActivity().getClass().getName().contains("MultiForwardActivity")) {
             return;
         }
-        Object item = CustomMenu.createItemIconNt(msg, "+1", R.drawable.ic_item_add_72dp, R.id.item_repeat, () -> {
+        Object item = CustomMenu.createItemIconNt(msg, "+1", R.drawable.ic_item_repeat_72dp, R.id.item_repeat, () -> {
             if (isMessageRepeatable(msg)) {
                 repeatByForwardNt(msg);
             } else {
