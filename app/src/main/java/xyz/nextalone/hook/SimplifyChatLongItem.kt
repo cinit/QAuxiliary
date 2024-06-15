@@ -29,6 +29,8 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
@@ -77,10 +79,9 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
-            listOf(
-                "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout",
-                "com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout"
-            ).firstNotNullOf { it.clazz }
+            mutableListOf("com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout").apply {
+                if (requireMinQQVersion(QQVersion.QQ_9_0_0)) add(0, "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout")
+            }.firstNotNullOf { it.clazz }
                 .method("setMenu")!!
                 .hookBefore {
                     val list = it.args[0].javaClass.getFieldByType(List::class.java).get(it.args[0]) as MutableList<*>
