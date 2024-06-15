@@ -42,15 +42,6 @@ object DisableSwipeRight : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        /**
-         * version 8.9.88(4852)
-         *
-         * class [ com/tencent/aio/frame/drawer/DrawerFrameViewGroup ]
-         *
-         * method [ private final v(I)V ]
-         *
-         * keyword [ scrollFrame scrollPercent ]
-         */
         val drawerFrameClass = Initiator.loadClass("com.tencent.aio.frame.drawer.DrawerFrameViewGroup")
         val scrollMethod = drawerFrameClass.declaredMethods.single { method ->
             val params = method.parameterTypes

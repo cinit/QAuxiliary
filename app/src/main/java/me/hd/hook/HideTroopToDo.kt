@@ -48,11 +48,9 @@ object HideTroopToDo : CommonSwitchFunctionHook() {
         if (requireMinQQVersion(QQVersion.QQ_9_0_25)) {
             tipsBarNewClass = Initiator.loadClass("com.tencent.mobileqq.troop.trooptodo.TroopToDoTipsBarNew")
             reporterClass = Initiator.loadClass("com.tencent.mobileqq.troop.trooptodo.TroopToDoReporter")
-        } else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) {
+        } else {
             tipsBarNewClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoTipsBarNew")
             reporterClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.troop.trooptodo.nt.TroopToDoReporter")
-        } else {
-            return false
         }
         val method = tipsBarNewClass.constructors.single { method ->
             val params = method.parameterTypes
