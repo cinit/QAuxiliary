@@ -15,6 +15,7 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import cc.hicore.Env;
 import cc.hicore.Utils.Async;
+import cc.hicore.Utils.FunConf;
 import cc.hicore.hook.stickerPanel.MainItemImpl.InputFromLocalImpl;
 import cc.hicore.hook.stickerPanel.MainItemImpl.LocalStickerImpl;
 import cc.hicore.hook.stickerPanel.MainItemImpl.PanelSetImpl;
@@ -41,6 +42,7 @@ public class ICreator extends BottomPopupView{
 
     ArrayList<ViewGroup> mItems = new ArrayList<>();
 
+    private boolean open_last_select;
     private static long savedSelectID;
     private static long lastSelectTime;
     private static int savedScrollTo;
@@ -256,9 +258,9 @@ public class ICreator extends BottomPopupView{
 
             initDefItemsLast();
 
-            if (System.currentTimeMillis() - lastSelectTime > 60 * 1000){
-                switchToItem(recentUse);
-            }else if (savedSelectID != 0){
+            open_last_select = FunConf.getBoolean("global", "sticker_panel_set_open_last_select", false);
+            if (open_last_select) savedSelectID = Long.parseLong(FunConf.getString("global", "sticker_panel_set_last_select", String.valueOf(savedSelectID)));
+            if (savedSelectID != 0){
                 for (ViewGroup item : mItems){
                     IMainPanelItem iMainPanelItem = (IMainPanelItem) item.getTag();
                     if (iMainPanelItem.getID() == savedSelectID){
@@ -293,6 +295,7 @@ public class ICreator extends BottomPopupView{
         if (currentTab != null){
             savedScrollTo = itemContainer.getScrollY();
             savedSelectID = currentTab.getID();
+            if (open_last_select) FunConf.setString("global", "sticker_panel_set_last_select",String.valueOf(savedSelectID));
             lastSelectTime = System.currentTimeMillis();
         }
         super.beforeDismiss();

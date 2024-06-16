@@ -38,6 +38,14 @@
         android:id="@+id/sticker_panel_set_dont_close_panel"
         android:text="发送图片后不关闭面板"/>
 
+    <CheckBox
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
+        android:layout_marginTop="10dp"
+        android:id="@+id/sticker_panel_set_open_last_select"
+        android:text="关闭面板后保存上次导航栏选择位置"/>
+
     <TextView
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

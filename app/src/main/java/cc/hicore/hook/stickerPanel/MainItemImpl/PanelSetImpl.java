@@ -69,6 +69,14 @@ public class PanelSetImpl implements ICreator.IMainPanelItem {
         });
         dont_auto_close.setChecked(FunConf.getBoolean("global", "sticker_panel_set_dont_close_panel", false));
 
+        CheckBox open_last_select = cacheView.findViewById(R.id.sticker_panel_set_open_last_select);
+        open_last_select.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            if (buttonView.isPressed()){
+                FunConf.setBoolean("global", "sticker_panel_set_open_last_select", isChecked);
+            }
+        });
+        open_last_select.setChecked(FunConf.getBoolean("global", "sticker_panel_set_open_last_select", false));
+
         RadioButton show_anim_always = cacheView.findViewById(R.id.sticker_panel_set_rb_show_anim_always);
         show_anim_always.setOnCheckedChangeListener((buttonView, isChecked) -> {
             if (buttonView.isPressed()){
