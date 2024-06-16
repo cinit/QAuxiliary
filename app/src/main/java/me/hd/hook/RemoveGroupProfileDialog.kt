@@ -55,7 +55,7 @@ object RemoveGroupProfileDialog : CommonSwitchFunctionHook() {
             })
         }
         hookBeforeIfEnabled(profileCardMethod) { param ->
-            val respHead = param.args[0]
+            val respHead = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) param.args[1] else param.args[0]
             val iResult = XposedHelpers.getObjectField(respHead, "iResult")
             if (iResult == 201 || iResult == 202) {
                 XposedHelpers.setObjectField(respHead, "iResult", 0)
