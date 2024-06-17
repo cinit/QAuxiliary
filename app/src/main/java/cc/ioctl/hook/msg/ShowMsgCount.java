@@ -109,7 +109,7 @@ public class ShowMsgCount extends CommonSwitchFunctionHook {
             return true;
         }
         Method updateCustomNoteTxt = null;
-        if (QAppUtils.isQQnt()) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
             Class<?> clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
             for (Method method : clz.getDeclaredMethods()) {
                 if (method.getParameterTypes().length == 6) {
