@@ -36,6 +36,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
 import me.ketal.hook.PicCopyToClipboard
+import top.xunflash.hook.MiniAppDirectJump
 import java.lang.reflect.Method
 
 @FunctionHookEntry
@@ -48,7 +49,8 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
         PttForwardHook.INSTANCE,
         CopyCardMsg,
         MessageCopyHook,
-        PicCopyToClipboard
+        PicCopyToClipboard,
+        MiniAppDirectJump
     )
 
     override fun initOnce(): Boolean {
