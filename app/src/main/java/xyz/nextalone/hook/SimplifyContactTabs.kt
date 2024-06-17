@@ -34,7 +34,7 @@ import xyz.nextalone.util.*
 object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_multi") {
 
     override val preferenceTitle = "精简联系人页面"
-    override val allItems = setOf("好友", "分组", "群聊", "设备", "通讯录", "订阅号", "频道", "机器人")
+    override val allItems = setOf("好友", "分组", "群聊", "设备", "通讯录", "订阅号", "推荐", "频道", "机器人")
     override val defaultItems = setOf<String>()
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_CONTACT
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_5)
