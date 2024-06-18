@@ -49,6 +49,9 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.future.future
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
 import java.net.HttpURLConnection
@@ -113,28 +116,17 @@ object MiniAppDirectJump : CommonSwitchFunctionHook("MiniAppDirectJump::BaseChat
         }
     }
 
-    // 借用 cc/hicore/Utils/HttpUtils.java
-    private fun expandShortUrl(shortUrl: String): String? {
-        if (Thread.currentThread().name == "main") {
-            val builder = StringBuilder()
-            val thread = Thread { builder.append(expandShortUrl(shortUrl)) }
-            thread.start()
-            thread.join()
-            return builder.toString()
+    private fun expandShortUrl(shortUrl: String): String? = CoroutineScope(Dispatchers.IO).future {
+        val connection = (URL(shortUrl).openConnection() as HttpURLConnection).apply {
+            instanceFollowRedirects = false
+            connectTimeout = 10000
+            readTimeout = 10000
+            connect()
         }
-        // 获取短链接的响应头信息
-        val connection = URL(shortUrl).openConnection() as HttpURLConnection
-        connection.instanceFollowRedirects = false // 不自动跟随重定向
-        connection.connectTimeout = 10000
-        connection.readTimeout = 10000
-        connection.connect()
-
-        // 获取重定向地址
-        val expandedUrl = connection.getHeaderField("Location")
+        val result = connection.getHeaderField("Location")
         connection.disconnect()
-        return expandedUrl
-
-    }
+        result
+    }.get()
 
     private fun toBiliApp(ctx: Activity, text: String) {
 
