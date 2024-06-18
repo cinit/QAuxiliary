@@ -24,7 +24,6 @@ package io.github.qauxv.util.dexkit
 
 import android.os.Bundle
 import android.view.View
-import android.widget.TextView
 import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import com.github.kyuubiran.ezxhelper.utils.isFinal
@@ -623,17 +622,9 @@ data object NScene_checkDataRecmdRemarkList : DexKitTarget.UsingStr() {
 
 data object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
     // guess
-    override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
     override val traitString = arrayOf("^NEW$")
-    override val filter = DexKitFilter.strInClsName("com/tencent/widget") or
-        DexKitFilter.defpackage and
-        DexKitFilter.notHasSuper and
-        filter@{ it: DexMethodDescriptor ->
-            val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
-            m.isStatic && m.returnType == Void.TYPE
-                && m.parameterTypes[0] == TextView::class.java && m.paramCount == 6
-        }
+    override val filter = DexKitFilter.strInClsName("com/tencent/widget") or DexKitFilter.defpackage and DexKitFilter.notHasSuper
 }
 
 data object CCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {

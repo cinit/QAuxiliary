@@ -1,50 +1,45 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2024 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
- * This software is non-free but opensource software: you can redistribute it
- * and/or modify it under the terms of the GNU Affero General Public License
+ * This software is an opensource software: you can redistribute it
+ * and/or modify it under the terms of the General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or any later version and our eula as published
+ * version 3 of the License, or any later version as published
  * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
- * and eula along with this software.  If not, see
- * <https://www.gnu.org/licenses/>
+ * You should have received a copy of the General Public License
+ * along with this software.
+ * If not, see
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook.msg;
 
-import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+package cc.ioctl.hook.msg
 
-import android.view.ViewGroup;
-import android.widget.TextView;
-import androidx.annotation.NonNull;
-import cc.hicore.QApp.QAppUtils;
-import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
-import cc.ioctl.util.LayoutHelper;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.base.annotation.FunctionHookEntry;
-import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
-import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.QQVersion;
-import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT;
-import io.github.qauxv.util.dexkit.DexKit;
-import io.github.qauxv.util.dexkit.DexKitTarget;
-import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
+import android.view.ViewGroup
+import android.widget.TextView
+import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod
+import cc.ioctl.util.HookUtils.hookBeforeAndAfterIfEnabled
+import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.hookBeforeIfEnabled
+import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt
+import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.throwOrTrue
 
 /**
  * 显示具体消息数量
@@ -53,115 +48,102 @@ import java.lang.reflect.Method;
  */
 @FunctionHookEntry
 @UiItemAgentEntry
-public class ShowMsgCount extends CommonSwitchFunctionHook {
+object ShowMsgCount : CommonSwitchFunctionHook(
+    targets = arrayOf(
+        NCustomWidgetUtil_updateCustomNoteTxt,
+        CCustomWidgetUtil_updateCustomNoteTxt_NT,
+    )
+) {
 
-    public static final ShowMsgCount INSTANCE = new ShowMsgCount();
+    override val name = "显示具体消息数量"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
-    private ShowMsgCount() {
-        super(new DexKitTarget[]{
-                NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE,
-                CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE
-        });
-    }
+    override fun initOnce() = throwOrTrue {
 
-    @NonNull
-    @Override
-    public String getName() {
-        return "显示具体消息数量";
-    }
-
-    @NonNull
-    @Override
-    public String[] getUiItemLocation() {
-        return Auxiliary.MESSAGE_CATEGORY;
-    }
-
-    @Override
-    public boolean initOnce() throws NoSuchMethodException, ClassNotFoundException, NoSuchFieldException {
-        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
-            Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge");
-            Method updateNum = clz.getDeclaredMethod("updateNum", int.class);
-            Field mNum = clz.getDeclaredField("mNum");
-            Field mText = clz.getDeclaredField("mText");
-            mNum.setAccessible(true);
-            mText.setAccessible(true);
-            HookUtils.hookBeforeIfEnabled(this, updateNum, param -> {
-                int value = (int) param.args[0];
-                mNum.set(param.thisObject, value);
-                mText.set(param.thisObject, String.valueOf(value));
-                param.setResult(null);
-            });
-            return true;
-        } else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
-            // 该类仅9.0.8版本存在混淆，遂固定之
-            Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge");
-            Method updateNum = clz.getDeclaredMethod("w", int.class);
-            Field mNum = clz.getDeclaredField("j");
-            Field mText = clz.getDeclaredField("n");
-            mNum.setAccessible(true);
-            mText.setAccessible(true);
-            HookUtils.hookBeforeIfEnabled(this, updateNum, param -> {
-                int value = (int) param.args[0];
-                mNum.set(param.thisObject, value);
-                mText.set(param.thisObject, String.valueOf(value));
-                param.setResult(null);
-            });
-            return true;
-        }
-        Method updateCustomNoteTxt = null;
-        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
-            Class<?> clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT.INSTANCE);
-            for (Method method : clz.getDeclaredMethods()) {
-                if (method.getParameterTypes().length == 6) {
-                    updateCustomNoteTxt = method;
-                    break;
-                }
+        // 群消息数量
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            val clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
+            val (updateNumName, mNumName, mTextName) = if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+                Triple("updateNum", "mNum", "mText")
+            } else {
+                Triple("w", "j", "n")
+            }
+            val updateNum = clz.getDeclaredMethod(updateNumName, Int::class.java)
+            val mNum = clz.getDeclaredField(mNumName).apply { isAccessible = true }
+            val mText = clz.getDeclaredField(mTextName).apply { isAccessible = true }
+            hookBeforeIfEnabled(updateNum) { param ->
+                val value = param.args[0] as Int
+                mNum.set(param.thisObject, value)
+                mText.set(param.thisObject, value.toString())
+                param.result = null
             }
         } else {
-            updateCustomNoteTxt = DexKit.requireMethodFromCache(NCustomWidgetUtil_updateCustomNoteTxt.INSTANCE);
+            val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
+            val updateNum = clz.declaredMethods.single { method ->
+                val params = method.parameterTypes
+                params.size == 6 && params[0] == TextView::class.java
+                    && params[1] == Int::class.java && params[2] == Int::class.java
+                    && params[3] == Int::class.java && params[4] == Int::class.java
+                    && params[5] == String::class.java
+            }
+            hookBeforeAndAfterIfEnabled(this, updateNum, 50, object : BeforeAndAfterHookedMethod {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    param.args[4] = Int.MAX_VALUE
+                }
+
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val tv = param.args[0] as TextView
+                    val count = param.args[2] as Int
+                    val str = count.toString()
+                    val lp = tv.layoutParams
+                    lp.width = LayoutHelper.dip2px(tv.context, (9 + 7 * str.length).toFloat())
+                    tv.layoutParams = lp
+                }
+            })
         }
-        XposedBridge.hookMethod(updateCustomNoteTxt, new XC_MethodHook() {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) {
-                if (LicenseStatus.sDisableCommonHooks || !isEnabled()) {
-                    return;
-                }
-                param.args[4] = Integer.MAX_VALUE;
+
+        // 总消息数量
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            val clz = DexKit.requireClassFromCache(NCustomWidgetUtil_updateCustomNoteTxt)
+            val method = clz.declaredMethods.single { method ->
+                val params = method.parameterTypes
+                params.size == 5 && params[0] == Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
+                    && params[1] == Int::class.java && params[2] == Int::class.java && params[3] == Int::class.java
+                    && params[4] == String::class.java
             }
-
-            @Override
-            protected void afterHookedMethod(MethodHookParam param) {
-                if (LicenseStatus.sDisableCommonHooks || !isEnabled()) {
-                    return;
-                }
-                try {
-                    if (QAppUtils.isQQnt()) {
-                        int Type = (int) param.args[1];
-                        // 8.9.68 该方法代码有所变化，但似乎影响不大
-                        if (Type == 4 || Type == 7 || Type == 9 || Type == 3) {
-                            TextView t = (TextView) param.args[0];
-                            int Count = (int) param.args[2];
-                            String str = String.valueOf(Count);
-                            ViewGroup.LayoutParams params = t.getLayoutParams();
-                            params.width = LayoutHelper.dip2px(t.getContext(), 9 + 7 * str.length());
-                            t.setLayoutParams(params);
-                        }
-                    } else {
-                        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_11)) {
-                            TextView tv = (TextView) param.args[0];
-                            tv.setMaxWidth(Integer.MAX_VALUE);
-                            ViewGroup.LayoutParams lp = tv.getLayoutParams();
-                            lp.width = ViewGroup.LayoutParams.WRAP_CONTENT;
-                            tv.setLayoutParams(lp);
-                        }
-                    }
-
-                } catch (Throwable e) {
-                    traceError(e);
-                    throw e;
+            hookBeforeIfEnabled(method) { param ->
+                param.args[3] = Int.MAX_VALUE
+            }
+        } else {
+            val clz = DexKit.requireClassFromCache(NCustomWidgetUtil_updateCustomNoteTxt)
+            val method = clz.declaredMethods.single { method ->
+                val params = method.parameterTypes
+                if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+                    params.size == 7 && params[0] == TextView::class.java
+                        && params[1] == Int::class.java && params[2] == Int::class.java
+                        && params[3] == Int::class.java && params[4] == Int::class.java
+                        && params[5] == String::class.java && params[6] == Boolean::class.java
+                } else {
+                    params.size == 6 && params[0] == TextView::class.java
+                        && params[1] == Int::class.java && params[2] == Int::class.java
+                        && params[3] == Int::class.java && params[4] == Int::class.java
+                        && params[5] == String::class.java
                 }
             }
-        });
-        return true;
+            hookBeforeAndAfterIfEnabled(this, method, 50, object : BeforeAndAfterHookedMethod {
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    param.args[4] = Int.MAX_VALUE
+                }
+
+                override fun afterHookedMethod(param: MethodHookParam) {
+                    val tv = param.args[0] as TextView
+                    tv.maxWidth = Int.MAX_VALUE
+                    val lp = tv.layoutParams
+                    lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                    tv.layoutParams = lp
+                }
+            })
+        }
+
     }
 }
