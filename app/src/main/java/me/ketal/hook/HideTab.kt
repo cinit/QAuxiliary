@@ -41,7 +41,13 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.util.findViewByType
-import xyz.nextalone.util.*
+import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
+import xyz.nextalone.util.hookAfterAllConstructors
+import xyz.nextalone.util.hookBefore
+import xyz.nextalone.util.hostDrawable
+import xyz.nextalone.util.hostLayout
+import xyz.nextalone.util.throwOrTrue
 
 @SuppressLint("StaticFieldLeak")
 @FunctionHookEntry
@@ -62,7 +68,13 @@ object HideTab : CommonSwitchFunctionHook() {
             if (m.name == "setOnTabSelectionListener") {
                 m.hookBefore(this) {
                     tab = it.thisObject as TabHost
-                    val blur = tab.findViewByType("com.tencent.mobileqq.widget.QQBlurView".clazz!!) as View
+                    val blur = tab.findViewByType(
+                        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+                            "com.tencent.qui.quiblurview.QQBlurView"
+                        } else {
+                            "com.tencent.mobileqq.widget.QQBlurView"
+                        }.clazz!!
+                    ) as View
                     tab.tabWidget.setViewZeroSize()
                     blur.setViewZeroSize()
                 }
@@ -78,13 +90,13 @@ object HideTab : CommonSwitchFunctionHook() {
             } else {
                 it.thisObject.get(midContentName, View::class.java) as LinearLayout
             } ?: return@hookAfterAllConstructors
-            addSettingItem(linearLayout, "skin_tab_icon_conversation_normal", "消息") {
+            addSettingItem(linearLayout, "skin_tab_icon_conversation_normal_simple", "消息") {
                 tab.currentTab = 0
             }
-            addSettingItem(linearLayout, "skin_tab_icon_contact_normal", "联系人") {
+            addSettingItem(linearLayout, "skin_tab_icon_contact_normal_simple", "联系人") {
                 tab.currentTab = tab.tabWidget.tabCount - 2
             }
-            addSettingItem(linearLayout, "skin_tab_icon_plugin_normal", "动态") {
+            addSettingItem(linearLayout, "skin_tab_icon_plugin_normal_simple", "动态") {
                 tab.currentTab = tab.tabWidget.tabCount - 1
             }
         }
@@ -92,12 +104,18 @@ object HideTab : CommonSwitchFunctionHook() {
 
     private fun addSettingItem(linearLayout: LinearLayout, resName: String, label: String, clickListener: View.OnClickListener) {
         val ctx = linearLayout.context
-        val view = View.inflate(ctx, ctx.hostLayout("b2g")!!, null) as LinearLayout
-        val imgView = view[0] as ImageView
-        val textView = view[1] as TextView
-        imgView.setImageResource(ctx.hostDrawable(resName)!!)
-        textView.text = label
-        view.setOnClickListener(clickListener)
-        linearLayout += view
+        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+            val view = View.inflate(ctx, ctx.hostLayout("qq_setting_me_item")!!, null) as LinearLayout
+            (view[0] as ImageView).setImageResource(ctx.hostDrawable(resName)!!)
+            ((view[1] as LinearLayout)[0] as TextView).text = label
+            view.setOnClickListener(clickListener)
+            linearLayout += view
+        } else {
+            val view = View.inflate(ctx, ctx.hostLayout("b2g")!!, null) as LinearLayout
+            (view[0] as ImageView).setImageResource(ctx.hostDrawable(resName)!!)
+            (view[1] as TextView).text = label
+            view.setOnClickListener(clickListener)
+            linearLayout += view
+        }
     }
 }
