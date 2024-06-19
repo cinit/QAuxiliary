@@ -7,6 +7,7 @@
     <item type="id" name="item_free_copy" />
     <item type="id" name="item_copy_code" />
     <item type="id" name="item_translate" />
+    <item type="id" name="item_jump_to_app" />
     <item type="id" name="item_ptt_save" />
     <item type="id" name="item_ptt_forward" />
     <item type="id" name="item_repeat" />

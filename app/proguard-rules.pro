@@ -18,6 +18,7 @@
 -keep class com.tencent.mmkv.** { *; }
 -keep class com.alphi.qhmk.** { *; }
 -keep class top.linl.** { *; }
+-keep class top.xunflash.** { *; }
 -keep class io.github.moonleeeaf.** { *; }
 -keep class io.github.fusumayuki.** { *; }
 -keep class awoo.linwenxuan04.** { *; }
