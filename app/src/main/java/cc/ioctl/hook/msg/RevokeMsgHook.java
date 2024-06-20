@@ -618,8 +618,39 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         List<?> list = null;
         try {
             // message is query by shmsgseq, not by time ---> queryMessagesByShmsgseqFromDB
-            if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_65)) {
-                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "i2",
+            // 定位方法名 ---> queryMsgItemByShmsgseq
+            if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_60)) { // 9.0.60~9.0.68
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "t0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_50)) { // 9.0.50
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "u2",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_25)) { // 9.0.25~9.0.35
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "u0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_0)) { // 9.0.0~9.0.20
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "v0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_88)) { // 8.9.88~8.9.93
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "w0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_85)) { // 8.9.85
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "x0",
+                        uin, istroop, shmsgseq, msgUid,
+                        String.class, int.class, long.class, long.class,
+                        List.class);
+            } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_70)) { // 8.9.70~8.9.76
+                list = (List<?>) Reflex.invokeVirtual(mQQMsgFacade, "y0",
                         uin, istroop, shmsgseq, msgUid,
                         String.class, int.class, long.class, long.class,
                         List.class);
