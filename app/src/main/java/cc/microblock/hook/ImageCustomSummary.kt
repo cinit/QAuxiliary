@@ -33,6 +33,7 @@ import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.tencent.qqnt.kernel.nativeinterface.Contact
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -59,6 +60,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
     override fun initOnce(): Boolean {
         val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
         hookBeforeIfEnabled(sendMsgMethod) { param ->
+            val contact = param.args[1] as Contact
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
@@ -67,14 +69,22 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
 
                     /**
                      *     picSubType:
-                     *     [0]图文混排(表情变大)
-                     *     [1]动画表情(外显无效)
-                     *     [2]表情搜索(外显无效)
-                     *     [4]表情消息(外显无效)
-                     *     [7]表情推荐(正常显示)
+                     *     [0]图文混排(导致表情变大)
+                     *     [1]动画表情(群聊外显无效)
+                     *     [2]表情搜索(群聊外显无效)
+                     *     [4]表情消息(群聊外显无效)
+                     *     [7]表情推荐(群聊正常显示, 频道发送失败)
                      */
                     val picSubType = picElement.picSubType
-                    picElement.picSubType = if (picSubType == 0) 0 else 7
+
+                    /**
+                     *     chatType:
+                     *     [1]好友
+                     *     [2]群组
+                     *     [4]频道
+                     */
+                    val chatType = contact.chatType
+                    if (chatType != 4) picElement.picSubType = if (picSubType == 0) 0 else 7
                     picElement.summary = summaryText
                 }
             }
