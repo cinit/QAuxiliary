@@ -32,7 +32,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import cc.hicore.QApp.QAppUtils
-import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import cc.ioctl.util.hookBeforeIfEnabled
+import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -40,42 +41,41 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.dexkit.AIOSendMsg
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.requireMinVersion
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
-import xyz.nextalone.util.get
-import xyz.nextalone.util.set
+import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", arrayOf(AIOSendMsg)) {
-    override val name = "图片/表情包附加自定义概要"
+    override val name = "[图片/表情包]自定义外显内容"
 
-    override val description = "就是改那个在消息概要里显示的"
+    override val description = "消息列表中[图片][动画表情]改自定义内容"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce(): Boolean {
-        DexKit.requireMethodFromCache(AIOSendMsg).hookBefore {
-            for (element in (it.args[0] as List<*>)) {
-                if (element.get("d") != null) {
-                    val picElement = element.get("d")
-                    val fieldNameSubType = if (requireMinVersion(QQVersion.QQ_9_0_56)) "h" else "d"
-                    val fieldNameSummary = if (requireMinVersion(QQVersion.QQ_9_0_56)) "i" else "e"
-                    /*
-                        SubType:
-                        [0]图文混排(表情变大)
-                        [1]动画表情(外显无效)
-                        [2]表情搜索(外显无效)
-                        [4]表情消息(外显无效)
-                        [7]表情推荐
+        val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
+        hookBeforeIfEnabled(sendMsgMethod) { param ->
+            val elements = param.args[2] as ArrayList<*>
+            for (element in elements) {
+                val msgElement = (element as MsgElement)
+                if (msgElement.picElement != null) {
+                    val picElement = element.picElement
+
+                    /**
+                     *     picSubType:
+                     *     [0]图文混排(表情变大)
+                     *     [1]动画表情(外显无效)
+                     *     [2]表情搜索(外显无效)
+                     *     [4]表情消息(外显无效)
+                     *     [7]表情推荐(正常显示)
                      */
-                    val subType = picElement.get(fieldNameSubType)
-                    picElement?.set(fieldNameSubType, if (subType == 0) 0 else 7)
-                    picElement?.set(fieldNameSummary, summaryText)
+                    val picSubType = picElement.picSubType
+                    picElement.picSubType = if (picSubType == 0) 0 else 7
+                    picElement.summary = summaryText
                 }
             }
         }
@@ -143,7 +143,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
         }
 
         builder.setView(root)
-            .setTitle("自定义图片概要设置")
+            .setTitle("自定义[图片/表情包]概要设置")
             .setPositiveButton("确定") { _: DialogInterface?, _: Int ->
                 this.isEnabled = enable.isChecked
                 this.summaryText = summaryTextEdit.text.toString()
