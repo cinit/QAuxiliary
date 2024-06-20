@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package me.hd.hook.msg
+package me.hd.hook
 
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
@@ -35,10 +35,10 @@ import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakeVideo : CommonSwitchFunctionHook() {
+object ChangePicVideoSize : CommonSwitchFunctionHook() {
 
-    override val name = "篡改视频比例"
-    override val description = "使发送的视频在群聊中显示的非常小"
+    override val name = "篡改[图片/视频]比例"
+    override val description = "使发送的[图片/视频]在群聊中显示的非常小"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -48,10 +48,17 @@ object FakeVideo : CommonSwitchFunctionHook() {
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
+                if (msgElement.picElement != null) {
+                    element.picElement.apply {
+                        picWidth = -1
+                        picHeight = -1
+                    }
+                }
                 if (msgElement.videoElement != null) {
-                    val videoElement = element.videoElement
-                    videoElement.thumbWidth = -1
-                    videoElement.thumbHeight = -1
+                    element.videoElement.apply {
+                        thumbWidth = -1
+                        thumbHeight = -1
+                    }
                 }
             }
         }
