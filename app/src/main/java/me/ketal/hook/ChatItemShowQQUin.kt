@@ -380,9 +380,9 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                     if (mEnableGrayBg) {
                         val drawable = GradientDrawable()
                         drawable.shape = GradientDrawable.RECTANGLE
-                        drawable.setColor(Color.GRAY)
+                        drawable.setColor(Color.BLACK)
                         drawable.cornerRadius = 10f
-                        drawable.alpha = 0x4A
+                        drawable.alpha = 0x22
                         background = drawable
 
                         val _4 = XPopupUtils.dp2px(rootView.context, 4f)
