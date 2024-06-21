@@ -23,6 +23,7 @@
 package top.xunflash.hook
 
 import android.app.Activity
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.content.pm.PackageManager
@@ -49,9 +50,11 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
-import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.future.future
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.withTimeout
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
 import java.net.HttpURLConnection
@@ -116,85 +119,44 @@ object MiniAppDirectJump : CommonSwitchFunctionHook("MiniAppDirectJump::BaseChat
         }
     }
 
-    private fun expandShortUrl(shortUrl: String): String? = CoroutineScope(Dispatchers.IO).future {
-        val connection = (URL(shortUrl).openConnection() as HttpURLConnection).apply {
-            instanceFollowRedirects = false
-            connectTimeout = 10000
-            readTimeout = 10000
-            connect()
-        }
-        val result = connection.getHeaderField("Location")
-        connection.disconnect()
-        result
-    }.get()
-
-    private fun toBiliApp(ctx: Activity, text: String) {
-
-        val bilibiliPackageName = "tv.danmaku.bili"
-        val bilibiliHdPackageName = "tv.danmaku.bilibilihd"
-
-        // 检查应用是否安装
-        fun isPackageInstalled(packageName: String): Boolean {
-            return try {
-                ctx.packageManager.getPackageInfo(packageName, PackageManager.GET_ACTIVITIES)
-                true
-            } catch (e: PackageManager.NameNotFoundException) {
-                false
+    private suspend fun resolveShortUrl(shortUrl: String): String = runCatching {
+        withTimeout(3000) {
+            val connection = (URL(shortUrl).openConnection() as HttpURLConnection).apply {
+                instanceFollowRedirects = false
+                connect()
             }
+            if (connection.responseCode == HttpURLConnection.HTTP_MOVED_TEMP) {
+                connection.getHeaderField("Location")
+            } else shortUrl
+        }
+    }.getOrNull() ?: shortUrl
+
+    private fun toBiliApp(ctx: Activity, text: String) = MainScope().launch {
+        fun isPackageInstalled(packageName: String) = try {
+            ctx.packageManager.getApplicationInfo(packageName, 0).enabled
+        } catch (e: PackageManager.NameNotFoundException) {
+            false
         }
 
-        val isBilibiliInstalled = isPackageInstalled(bilibiliPackageName)
-        val isBilibiliHdInstalled = isPackageInstalled(bilibiliHdPackageName)
+        val bilibiliPackages = arrayOf("tv.danmaku.bili", "com.bilibili.app.in", "tv.danmaku.bilibilihd", "com.bilibili.app.blue")
+        val firstValidPackage = bilibiliPackages.firstOrNull { isPackageInstalled(it) }
+            ?: run { Toasts.info(ctx, "未找到可打开应用");return@launch }
 
-        // 提取哔哩链接
-        val regexEscaped = """https:\\/\\/b23\.tv\\/(\w+)\?[^"]*""".toRegex()
-        val regexNormal = """https://b23\.tv/(\w+)\?[^"]*""".toRegex()
+        val bilibiliLinkRegex = """https?:\\?/\\?/((b23\.tv)|([\w.]*bilibili\.com))[^"]*""".toRegex()
+        val (url, isShortLink) = bilibiliLinkRegex.find(text)?.let {
+            it.value.replace("\\/", "/") to it.groupValues[2].isNotEmpty()
+        } ?: run { Toasts.info(ctx, "链接解析失败");return@launch }
+        val resolvedUrl = if (isShortLink) withContext(Dispatchers.IO) { resolveShortUrl(url) } else url
 
-        // 查找匹配
-        val resultEscaped = regexEscaped.find(text)?.groupValues?.get(1)
-        val resultNormal = regexNormal.find(text)?.groupValues?.get(1)
-
-        // 根据匹配结果生成正常链接
-        val matchResult = when {
-            resultEscaped != null -> "https://b23.tv/$resultEscaped"
-            resultNormal != null -> "https://b23.tv/$resultNormal"
-            else -> null
-        }
-        matchResult?.let { b23url ->
-            try {
-                // 还原短链
-                val expandedUrl = expandShortUrl(b23url)
-                if (expandedUrl == null) {
-                    Toasts.info(ctx, "无法还原短链接")
-                    return
-                }
-
-                // 查找匹配
-                val regex = """https://www\.bilibili\.com/video/(BV\w+)\?""".toRegex()
-                val bvNumber = regex.find(expandedUrl)?.groupValues?.get(1)
-                if (bvNumber == null) {
-                    Toasts.info(ctx, "未找到BV号")
-                    return
-                }
-
-                if (!isBilibiliInstalled && !isBilibiliHdInstalled) {
-                    Toasts.info(ctx, "未安装应用")
-                    return
-                }
-
-                // 构建Intent
-                val uri = Uri.parse("bilibili://video/$bvNumber")
-                val intent = Intent(Intent.ACTION_VIEW, uri).apply {
-                    setPackage(if (isBilibiliHdInstalled) bilibiliHdPackageName else bilibiliPackageName)
-                }
-                ctx.startActivity(intent)
-
-            } catch (e: Exception) {
-                Toasts.info(ctx, "还原请求出错")
+        try {
+            val uri = Uri.parse(resolvedUrl)
+            val intent = Intent(Intent.ACTION_VIEW, uri).apply {
+                setPackage(firstValidPackage)
             }
-        } ?: Toasts.info(ctx, "未找到打开链接")
-
-
+            ctx.startActivity(intent)
+        } catch (e: ActivityNotFoundException) {
+            Toasts.info(ctx, "应用打开失败")
+        }
     }
 
     override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent")
