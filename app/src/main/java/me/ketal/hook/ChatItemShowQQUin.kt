@@ -26,7 +26,6 @@ import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
-import android.graphics.Typeface
 import android.graphics.drawable.GradientDrawable
 import android.text.SpannableStringBuilder
 import android.text.Spanned
@@ -382,8 +381,8 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                         val drawable = GradientDrawable()
                         drawable.shape = GradientDrawable.RECTANGLE
                         drawable.setColor(Color.GRAY)
-                        drawable.cornerRadius = 20f
-                        drawable.alpha = 0x33
+                        drawable.cornerRadius = 10f
+                        drawable.alpha = 0x4A
                         background = drawable
 
                         val _4 = XPopupUtils.dp2px(rootView.context, 4f)
@@ -399,10 +398,7 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                         LinearLayout.LayoutParams.WRAP_CONTENT,
                         LinearLayout.LayoutParams.WRAP_CONTENT
                     )
-                    if (mEnableGrayBg) {
-                        setTextColor(Color.WHITE)
-                        setTypeface(typeface, Typeface.BOLD)
-                    }
+                    if (mEnableGrayBg) setTextColor(Color.WHITE)
                     setOnClickListener {
                         if (!mEnableDetailInfo) return@setOnClickListener
                         val msgRecord = it.tag as MsgRecord
@@ -428,10 +424,18 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                         args(ID_ADD_LAYOUT, ConstraintSet.LEFT, id_name, ConstraintSet.LEFT),
                         argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
                     )
-                    if (chatMessage.chatType == 1) {// 私聊边距有问题
+                    if (chatMessage.chatType == 1) {
+                        // 调整私聊显示边距
                         constraintSet.invokeMethod(
                             "setMargin",
                             args(ID_ADD_LAYOUT, ConstraintSet.START, XPopupUtils.dp2px(rootView.context, 10f)),
+                            argTypes(Int::class.java, Int::class.java, Int::class.java)
+                        )
+                    } else if (chatMessage.chatType == 2 && chatMessage.msgType == MsgConstants.MSG_TYPE_FILE) {
+                        // 调整群聊文件边距
+                        constraintSet.invokeMethod(
+                            "setMargin",
+                            args(ID_ADD_LAYOUT, ConstraintSet.START, XPopupUtils.dp2px(rootView.context, 55f)),
                             argTypes(Int::class.java, Int::class.java, Int::class.java)
                         )
                     }
@@ -441,7 +445,8 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                         args(ID_ADD_LAYOUT, ConstraintSet.RIGHT, id_name, ConstraintSet.RIGHT),
                         argTypes(Int::class.java, Int::class.java, Int::class.java, Int::class.java)
                     )
-                    if (chatMessage.chatType == 1) {// 私聊边距有问题
+                    if (chatMessage.chatType == 1) {
+                        // 调整私聊显示边距
                         constraintSet.invokeMethod(
                             "setMargin",
                             args(ID_ADD_LAYOUT, ConstraintSet.END, XPopupUtils.dp2px(rootView.context, 10f)),
@@ -452,15 +457,18 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
                 constraintSet.invokeMethod("applyTo", args(rootView), argTypes(constraintLayoutClz))
             }
 
+            val layout = rootView.findViewById<LinearLayout>(ID_ADD_LAYOUT)
             val textView = rootView.findViewById<TextView>(ID_ADD_TEXTVIEW)
 
             if (isFlashPicTagNeedShow || shouldShowTailMsgForMsgRecord(chatMessage)) {
+                layout.visibility = View.VISIBLE
                 textView.visibility = View.VISIBLE
                 textView.let {
                     it.tag = chatMessage
                     it.text = (if (isFlashPicTagNeedShow) "闪照 " else "") + (if (isEnabled) formatTailMessageNt(chatMessage) else "")
                 }
             } else {
+                layout.visibility = View.GONE
                 textView.visibility = View.GONE
             }
 
