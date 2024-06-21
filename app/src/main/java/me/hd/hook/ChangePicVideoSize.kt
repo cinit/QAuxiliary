@@ -48,17 +48,13 @@ object ChangePicVideoSize : CommonSwitchFunctionHook() {
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
-                if (msgElement.picElement != null) {
-                    element.picElement.apply {
-                        picWidth = -1
-                        picHeight = -1
-                    }
+                msgElement.picElement?.apply {
+                    picWidth = -1
+                    picHeight = -1
                 }
-                if (msgElement.videoElement != null) {
-                    element.videoElement.apply {
-                        thumbWidth = -1
-                        thumbHeight = -1
-                    }
+                msgElement.videoElement?.apply {
+                    thumbWidth = -1
+                    thumbHeight = -1
                 }
             }
         }
