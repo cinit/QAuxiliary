@@ -22,10 +22,11 @@
 
 package me.hd.hook
 
-import com.tencent.qqnt.kernel.nativeinterface.MarkdownElement
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XC_MethodHook
+import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -57,11 +58,10 @@ object CopyMarkdown : CommonSwitchFunctionHook(
         if (!isEnabled) return
         val item = CustomMenu.createItemIconNt(msg, "复制内容", R.drawable.ic_item_copy_72dp, R.id.item_copy_code) {
             val ctx = ContextUtils.getCurrentActivity()
-            val element = msg.javaClass.declaredMethods.first {
-                it.returnType == MarkdownElement::class.java && it.parameterTypes.isEmpty()
-            }.apply { isAccessible = true }.invoke(msg) as MarkdownElement
-            copyToClipboard(ctx, element.content)
-            Toasts.info(ctx, "复制内容成功")
+            val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
+            val content = msgRecord.elements[0].markdownElement.content
+            copyToClipboard(ctx, content)
+            Toasts.success(ctx, "复制内容成功")
         }
         param.result = listOf(item) + param.result as List<*>
     }
