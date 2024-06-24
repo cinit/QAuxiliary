@@ -44,7 +44,9 @@ object HideFriendChatVoice : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val setOnClickClass = if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
+        val setOnClickClass = if (requireMinQQVersion(QQVersion.QQ_9_0_70)) {
+            Initiator.loadClass("com.tencent.mobileqq.aio.title.right2.b")
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
             Initiator.loadClass("com.tencent.mobileqq.aio.title.c.c")
         } else {
             Initiator.loadClass("com.tencent.mobileqq.aio.title.c.d")
