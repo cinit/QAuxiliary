@@ -374,7 +374,7 @@ bool InitInitNtKernelRecallMsgHook() {
                 .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
                 .WithStep(4)
                 .WithExecMemOnly(true)
-                .WithOffsetsForResult({-4 * 8, -0x24, -0x28})
+                .WithOffsetsForResult({-0x20, -0x24, -0x28})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
         // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9
@@ -383,7 +383,7 @@ bool InitInitNtKernelRecallMsgHook() {
                 .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
                 .WithStep(4)
                 .WithExecMemOnly(true)
-                .WithOffsetsForResult({-4 * 6, -0x24})
+                .WithOffsetsForResult({-0x18, -0x24, -0x28})
                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
         // GetDecoder 3f 8d 01 f8 f4 03 00 aa 1f 10 00 f9
