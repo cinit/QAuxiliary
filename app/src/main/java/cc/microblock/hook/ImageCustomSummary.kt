@@ -23,15 +23,19 @@ package cc.microblock.hook
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.DialogInterface
+import android.content.Context
 import android.view.View
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
+import androidx.appcompat.widget.SwitchCompat
 import cc.hicore.QApp.QAppUtils
+import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.Contact
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
@@ -47,53 +51,22 @@ import io.github.qauxv.util.dexkit.AIOSendMsg
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import xyz.nextalone.util.method
+import xyz.nextalone.util.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", arrayOf(AIOSendMsg)) {
-    override val name = "[图片/表情包]自定义外显内容"
 
-    override val description = "消息列表中[图片][动画表情]改自定义内容"
-
+    override val name = "自定义外显内容"
+    override val description = "自定义消息列表中[图片][动画表情]等内容"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
-
-    override fun initOnce(): Boolean {
-        val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
-        hookBeforeIfEnabled(sendMsgMethod) { param ->
-            val contact = param.args[1] as Contact
-            val elements = param.args[2] as ArrayList<*>
-            for (element in elements) {
-                val msgElement = (element as MsgElement)
-                if (msgElement.picElement != null) {
-                    val picElement = element.picElement
-
-                    /**
-                     *     picSubType:
-                     *     [0]图文混排(导致表情变大)
-                     *     [1]动画表情(群聊外显无效)
-                     *     [2]表情搜索(群聊外显无效)
-                     *     [4]表情消息(群聊外显无效)
-                     *     [7]表情推荐(群聊正常显示, 频道发送失败)
-                     */
-                    val picSubType = picElement.picSubType
-
-                    /**
-                     *     chatType:
-                     *     [1]好友
-                     *     [2]群组
-                     *     [4]频道
-                     */
-                    val chatType = contact.chatType
-                    if (chatType != 4) picElement.picSubType = if (picSubType == 0) 0 else 7
-                    picElement.summary = summaryText
-                }
-            }
-        }
-        return true
-    }
+    override val isAvailable = QAppUtils.isQQnt()
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "禁用")
+    }
+    override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
+        showConfigDialog(activity)
     }
 
     private var summaryText: String
@@ -105,34 +78,74 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             val cfg = ConfigManager.getDefaultConfig()
             cfg.putString("customSummary.summaryText", value)
         }
-
-    @SuppressLint("SetTextI18n")
-    override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, ctx, _ ->
-        val builder = AlertDialog.Builder(ctx)
-        val root = LinearLayout(ctx)
-        root.orientation = LinearLayout.VERTICAL
-
-        val enable = CheckBox(ctx)
-        enable.text = "启用自定义概要"
-        enable.isChecked = isEnabled
-
-
-        val summaryTextLabel = AppCompatTextView(ctx).apply {
-            text = "文本内容"
+    private var typePic0: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getBooleanOrDefault("customSummary.typePic0", true)
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putBoolean("customSummary.typePic0", value)
+        }
+    private var typePic1247: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getBooleanOrDefault("customSummary.typePic1247", true)
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putBoolean("customSummary.typePic1247", value)
+        }
+    private var typeMarketFace: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getBooleanOrDefault("customSummary.typeMarketFace", true)
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putBoolean("customSummary.typeMarketFace", value)
         }
 
+    @SuppressLint("SetTextI18n")
+    private fun showConfigDialog(ctx: Context) {
+        val switchEnable = SwitchCompat(ctx).apply {
+            isChecked = isEnabled
+            textSize = 16f
+            text = "功能总开关"
+        }
+
+        val checkBoxTypePic0 = CheckBox(ctx).apply {
+            isChecked = typePic0
+            textSize = 16f
+            text = "纯图片0/图文混排0"
+        }
+        val checkBoxTypePic1247 = CheckBox(ctx).apply {
+            isChecked = typePic1247
+            textSize = 16f
+            text = "动画表情1/表情搜索2/表情消息4/表情推荐7"
+        }
+        val checkBoxTypeMarketFace = CheckBox(ctx).apply {
+            isChecked = typeMarketFace
+            textSize = 16f
+            text = "表情商城"
+        }
+
+        val summaryTextLabel = AppCompatTextView(ctx).apply {
+            text = "外显内容"
+            textSize = 12f
+            setTextColor(ctx.resources.getColor(R.color.secondTextColor, ctx.theme))
+        }
         val summaryTextEdit: EditText = AppCompatEditText(ctx).apply {
             setText(summaryText)
             textSize = 16f
             setTextColor(ctx.resources.getColor(R.color.firstTextColor, ctx.theme))
-            hint = "文本内容"
+            hint = "外显内容"
         }
 
         // TODO: complete this
         val rangeTextLabel = AppCompatTextView(ctx).apply {
             text = "生效联系人列表（,分割）"
         }
-
         val rangeTextEdit: EditText = EditText(ctx).apply {
             setText("")
             textSize = 16f
@@ -140,29 +153,66 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             hint = "114514, 1919810"
         }
 
-        root.apply {
-            addView(enable)
+        val rootLayout = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            val lp = LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT).apply {
+                val dp8 = LayoutHelper.dip2px(ctx, 8f)
+                setMargins(dp8, 0, dp8, 0)
+            }
+            addView(switchEnable, lp)
+            addView(checkBoxTypePic0, lp)
+            addView(checkBoxTypePic1247, lp)
+            addView(checkBoxTypeMarketFace, lp)
             if (!isAvailable) addView(
                 AppCompatTextView(ctx).apply {
                     text = "版本不支持：该功能需要 QQNT 版本"
                     setTextColor(0xFFFF0000.toInt())
                 }
             )
-            addView(summaryTextLabel)
-            addView(summaryTextEdit)
+            addView(summaryTextLabel, lp)
+            addView(summaryTextEdit, lp)
         }
 
-        builder.setView(root)
-            .setTitle("自定义[图片/表情包]概要设置")
-            .setPositiveButton("确定") { _: DialogInterface?, _: Int ->
-                this.isEnabled = enable.isChecked
-                this.summaryText = summaryTextEdit.text.toString()
-
+        AlertDialog.Builder(ctx).apply {
+            setTitle("自定义外显内容")
+            setView(rootLayout)
+            setPositiveButton("确定") { _, _ ->
+                isEnabled = switchEnable.isChecked
+                summaryText = summaryTextEdit.text.toString()
                 valueState.update { if (isEnabled) "已开启" else "禁用" }
             }
-            .setNegativeButton("取消", null)
-            .show()
+            setNegativeButton("取消") { _, _ -> }
+            show()
+        }
     }
 
-    override val isAvailable = QAppUtils.isQQnt()
+    override fun initOnce(): Boolean {
+        val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
+        hookBeforeIfEnabled(sendMsgMethod) { param ->
+            val contact = param.args[1] as Contact
+            val chatType = contact.chatType
+            val elements = param.args[2] as ArrayList<*>
+            for (element in elements) {
+                val msgElement = (element as MsgElement)
+                msgElement.picElement?.let { picElement ->
+                    val picSubType = picElement.picSubType
+                    if (typePic0 && picSubType == 0) {
+                        picElement.summary = summaryText
+                    }
+                    if (typePic1247 && picSubType != 0) {
+                        picElement.summary = summaryText
+                        if (chatType != 4) { // 不是频道才修改类型, 不然会发送不出去
+                            picElement.picSubType = 7
+                        }
+                    }
+                }
+                msgElement.marketFaceElement?.let { marketFaceElement ->
+                    if (typeMarketFace) {
+                        marketFaceElement.set("faceName", summaryText)
+                    }
+                }
+            }
+        }
+        return true
+    }
 }
