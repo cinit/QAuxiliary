@@ -22,18 +22,14 @@
 
 package io.github.moonleeeaf.hook
 
-import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.HookUtils
+import cc.ioctl.util.HostInfo.isTim
 import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.dexkit.CopyPromptHelper_handlePrompt
-import io.github.qauxv.util.dexkit.DexKit
-import xyz.nextalone.util.get
-import xyz.nextalone.util.set
 
 // 模板: TimRemoveToastTips.kt
 @FunctionHookEntry
@@ -41,8 +37,9 @@ import xyz.nextalone.util.set
 object RemoveTIMOpenContactTip : CommonSwitchFunctionHook() {
 
     override val name = "禁止提示打开通讯录"
-    override val description = "未经测试，根据 TIM 3.5.1 代码编写";
+    override val description = "未经测试，根据 TIM 3.5.1 代码编写"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_CONTACT
+    override val isAvailable = isTim()
 
     override fun initOnce(): Boolean {
         // 字符串ID 7f0f4c88
@@ -50,9 +47,9 @@ object RemoveTIMOpenContactTip : CommonSwitchFunctionHook() {
         // 目前该字符串搜出的方法最终调用都在这
 
         HookUtils.hookBeforeIfEnabled(this, Reflex.findMethod(Initiator.loadClass("aejy"), "migrateOldOrDefaultContent")) {
-            it.result = null;
+            it.result = null
         }
-        return true;
+        return true
     }
 
 }

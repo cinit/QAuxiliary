@@ -31,6 +31,7 @@ import android.widget.LinearLayout;
 import android.widget.Toast;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
@@ -60,7 +61,7 @@ public class AddEssenceViewerToGroupSettingsHook extends CommonSwitchFunctionHoo
     public String getName() {
         return "群设置页添加精华消息入口";
     }
-  
+
     @NonNull
     @Override
     public String getDescription() {
@@ -71,6 +72,11 @@ public class AddEssenceViewerToGroupSettingsHook extends CommonSwitchFunctionHoo
     @Override
     public String[] getUiItemLocation() {
         return FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY;
+    }
+
+    @Override
+    public boolean isAvailable() {
+        return HostInfo.isTim();
     }
 
     // 根据 Lcom/tencent/mobileqq/activity/ChatSettingForTroop; 进行编写
