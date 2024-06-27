@@ -43,8 +43,8 @@ object ChangePicVideoSize : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
-        hookBeforeIfEnabled(sendMsgMethod) { param ->
+        val msgServiceClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy")
+        hookBeforeIfEnabled(msgServiceClass.method("sendMsg")!!) { param ->
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
