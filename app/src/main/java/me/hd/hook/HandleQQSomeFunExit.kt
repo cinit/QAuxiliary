@@ -23,8 +23,6 @@
 package me.hd.hook
 
 import cc.ioctl.util.hookBeforeIfEnabled
-import com.tencent.qqnt.kernel.nativeinterface.FileElement
-import com.tencent.qqnt.kernel.nativeinterface.TextGiftElement
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -37,6 +35,8 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_HandleQQSomeFunExit_fixFileView_Method
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
+import xyz.nextalone.util.get
+import xyz.nextalone.util.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -71,10 +71,10 @@ object HandleQQSomeFunExit : CommonSwitchFunctionHook(
                 requireMinVersion(QQVersion.QQ_8_9_88) -> "x1"
                 else -> "Unknown"
             }
-            val textGiftElement = XposedHelpers.callMethod(param.args[0], getGiftMethodName) as TextGiftElement
-            val paddingTop = textGiftElement.paddingTop
+            val textGiftElement = XposedHelpers.callMethod(param.args[0], getGiftMethodName)
+            val paddingTop = textGiftElement.get("paddingTop") as String
             if (paddingTop.matches("\\d+".toRegex()).not()) {
-                XposedHelpers.setObjectField(textGiftElement, "paddingTop", "0")
+                textGiftElement.set("paddingTop", "0")
                 Toasts.show("拦截群礼物消息闪退")
             }
         }
@@ -83,9 +83,10 @@ object HandleQQSomeFunExit : CommonSwitchFunctionHook(
     private fun fixFileView() {
         val method = DexKit.requireMethodFromCache(Hd_HandleQQSomeFunExit_fixFileView_Method)
         hookBeforeIfEnabled(method) { param ->
-            val file = param.args[0] as FileElement
-            if (file.fileSize >= 1073741824 * 99999L) {
-                file.fileSize = 1073741824 * 99999L
+            val fileElement = param.args[0]
+            val fileSize = fileElement.get("fileSize") as Long
+            if (fileSize >= 1073741824 * 99999L) {
+                fileElement.set("fileSize", 1073741824 * 99999L)
                 Toasts.show("拦截群文件消息闪退")
             }
         }
