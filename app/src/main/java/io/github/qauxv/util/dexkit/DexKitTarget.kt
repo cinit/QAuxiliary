@@ -979,6 +979,13 @@ data object Hd_AutoSendOriginalPhoto_guildPicker_Method : DexKitTarget.UsingStr(
     override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/qbasealbum/album/view/")
 }
 
+data object Hd_AutoSendOriginalPhoto_photoListPanel_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("resetStatus selectSize:")
+    override val declaringClass = "Lcom/tencent/mobileqq/activity/aio/photo/PhotoListPanel"
+    override val filter = DexKitFilter.allowAll
+}
+
 data object Hd_DisableGrowHalfLayer_Method : DexKitTarget.UsingStringVector() {
     override val findMethod = true
     override val traitStringVectors = arrayOf(arrayOf("grow_half_layer_info", "grow_half_layer_tech_info"))

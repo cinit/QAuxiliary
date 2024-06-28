@@ -30,7 +30,6 @@ import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import com.github.kyuubiran.ezxhelper.utils.paramCount
-import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -39,9 +38,11 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_AutoSendOriginalPhoto_guildPicker_Method
+import io.github.qauxv.util.dexkit.Hd_AutoSendOriginalPhoto_photoListPanel_Method
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
+import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
@@ -50,7 +51,10 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
     targetProc = SyncUtils.PROC_MAIN or SyncUtils.PROC_PEAK,
-    targets = arrayOf(Hd_AutoSendOriginalPhoto_guildPicker_Method)
+    targets = arrayOf(
+        Hd_AutoSendOriginalPhoto_guildPicker_Method,
+        Hd_AutoSendOriginalPhoto_photoListPanel_Method
+    )
 ) {
 
     override val name = "聊天自动发送原图"
@@ -64,12 +68,6 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
             clz.declaredMethods.single { it.name == "handleUIState" }.hookAfter { param ->
                 clz.declaredMethods.last { it.paramCount == 1 && it.parameterTypes[0] == Boolean::class.java }.invoke(param.thisObject, true)
             }
-            //频道半屏
-            "com.tencent.guild.aio.panel.photo.GuildPhotoPanelVB".clazz!!.method("e")!!.hookAfter {
-                val xVar = XposedHelpers.getObjectField(it.thisObject, "a")
-                val checkBox = XposedHelpers.getObjectField(xVar, "d") as CheckBox
-                checkBox.isChecked = true
-            }
             if (requireMinQQVersion(QQVersion.QQ_8_9_78)) {
                 //启动参数类-isQualityRaw
                 "Lcom/tencent/qqnt/qbasealbum/model/Config;->s()Z".method.hookReturnConstant(true)
@@ -80,7 +78,14 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
                     ctx.intent.putExtra("key_is_quality_raw", true)
                 }
             }
-            //频道全屏
+
+            //频道半屏
+            "com.tencent.guild.aio.panel.photo.GuildPhotoPanelVB".clazz!!.method("e")!!.hookAfter {
+                val xVar = it.thisObject.get("a")
+                val checkBox = xVar.get("d") as CheckBox
+                checkBox.isChecked = true
+            }
+            //频道全屏和群聊部分情况全屏
             DexKit.requireMethodFromCache(Hd_AutoSendOriginalPhoto_guildPicker_Method).hookBefore {
                 it.args.forEachIndexed { index, arg ->
                     if (arg is Boolean) {
@@ -91,23 +96,15 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
         }
 
         //截至2023.6.21，仍有一些项目在使用旧版组件（如频道），故保留其他hook
-        val method = when {
-            requireMinQQVersion(QQVersion.QQ_8_9_33) -> "d0"
-            requireMinQQVersion(QQVersion.QQ_8_9_18) -> "c0"
-            requireMinQQVersion(QQVersion.QQ_8_9_13) -> "d0"
-            requireMinQQVersion(QQVersion.QQ_8_9_2) -> "e0"
-            requireMinQQVersion(QQVersion.QQ_8_8_93) -> "Z"
-            else -> "a"
-        }
-        "com.tencent.mobileqq.activity.aio.photo.PhotoListPanel".clazz?.method(method, Void.TYPE, Boolean::class.java)?.hookAfter(this) {
+        DexKit.requireMethodFromCache(Hd_AutoSendOriginalPhoto_photoListPanel_Method).hookAfter {
             val ctx = it.thisObject as View
             val sendOriginPhotoCheckbox = ctx.findHostView<CheckBox>("h1y")
             sendOriginPhotoCheckbox?.isChecked = true
         }
         if (requireMinQQVersion(QQVersion.QQ_8_2_0)) {
             val newPhotoClass = "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity".clazz
-            val newPhotoOnCreate = newPhotoClass?.method("doOnCreate", Boolean::class.java, Bundle::class.java)
-                ?: newPhotoClass?.method("onCreate", Void.TYPE, Bundle::class.java)
+            val newPhotoOnCreate =
+                newPhotoClass?.method("doOnCreate", Boolean::class.java, Bundle::class.java) ?: newPhotoClass?.method("onCreate", Void.TYPE, Bundle::class.java)
             newPhotoOnCreate?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
                 val checkBox = ctx.findHostView<CheckBox>("h1y")
