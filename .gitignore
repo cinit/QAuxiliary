@@ -10,6 +10,9 @@ debug/
 # Files for the ART/Dalvik VM
 *.dex
 
+# Kotlin sessions
+.kotlin/
+
 # Java class files
 *.class
 
