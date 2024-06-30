@@ -340,7 +340,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
             Method builder = DexKit.loadMethodFromCache(VasAttrBuilder.INSTANCE);
             if (builder != null) {
                 Object builderInstance = builder.getDeclaringClass().newInstance();
-                builder.invoke(builderInstance, attrMap, contact, 4);
+                builder.invoke(builderInstance, attrMap, contact.toKernelObject(), 4);
             }
 
             service.getMsgsByMsgId(contact, l, (i, str, list) -> {
