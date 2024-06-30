@@ -37,12 +37,12 @@ import androidx.appcompat.widget.SwitchCompat
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookBeforeIfEnabled
-import com.tencent.qqnt.kernel.nativeinterface.Contact
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.kernelcompat.ContactCompat
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
@@ -52,6 +52,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
+import java.io.Serializable
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -189,7 +190,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
     override fun initOnce(): Boolean {
         val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
         hookBeforeIfEnabled(sendMsgMethod) { param ->
-            val contact = param.args[1] as Contact
+            val contact = ContactCompat.fromKernelObject(param.args[1] as Serializable)
             val chatType = contact.chatType
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
