@@ -25,12 +25,12 @@ import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.hicore.message.bridge.Nt_kernel_bridge;
 import cc.hicore.message.chat.SessionUtils;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
 import java.util.ArrayList;
 
 public class MsgSender {
-    public static void send_pic_by_contact(Contact contact,String picPath){
+    public static void send_pic_by_contact(ContactCompat contact,String picPath){
         if (QAppUtils.isQQnt()){
             ArrayList<MsgElement> newMsgArr = new ArrayList<>();
             if (contact.getChatType() == 4){

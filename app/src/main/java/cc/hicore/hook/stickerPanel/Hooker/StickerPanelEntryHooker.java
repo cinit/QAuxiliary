@@ -53,6 +53,7 @@ import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.kernelcompat.KernelMsgServiceCompat;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
@@ -256,7 +257,7 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
         Object item = CustomMenu.createItemIconNt(msg, "保存面板", R.drawable.ic_item_save_72dp, R.id.item_save_to_panel, () -> {
             try {
                 long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
-                IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+                KernelMsgServiceCompat service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
                 ArrayList<Long> msgIDs = new ArrayList<>();
                 msgIDs.add(msgID);
                 service.getMsgsByMsgId(SessionUtils.AIOParam2Contact(AIOParam), msgIDs, (result, errMsg, msgList) -> {

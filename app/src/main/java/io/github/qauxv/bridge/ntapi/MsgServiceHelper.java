@@ -25,6 +25,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
+import io.github.qauxv.bridge.kernelcompat.KernelMsgServiceCompat;
 import io.github.qauxv.util.Initiator;
 import java.lang.reflect.Method;
 import mqq.app.AppRuntime;
@@ -45,7 +46,7 @@ public class MsgServiceHelper {
     }
 
     @Nullable
-    public static IKernelMsgService getKernelMsgService(@NonNull AppRuntime app) throws ReflectiveOperationException, LinkageError {
+    public static IKernelMsgService getKernelMsgServiceRaw(@NonNull AppRuntime app) throws ReflectiveOperationException, LinkageError {
         Object msgService = getMsgService(app);
         IKernelMsgService service;
         try {
@@ -56,6 +57,16 @@ public class MsgServiceHelper {
             service = (IKernelMsgService) getKMsgSvc.invoke(msgService);
         }
         return service;
+    }
+
+    @Nullable
+    public static KernelMsgServiceCompat getKernelMsgService(@NonNull AppRuntime app) throws ReflectiveOperationException, LinkageError {
+        IKernelMsgService service = getKernelMsgServiceRaw(app);
+        if (service != null) {
+            return new KernelMsgServiceCompat(service);
+        } else {
+            return null;
+        }
     }
 
 }

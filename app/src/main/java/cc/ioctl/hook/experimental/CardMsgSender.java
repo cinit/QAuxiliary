@@ -33,12 +33,12 @@ import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.chat.SessionUtils;
 import com.tencent.qqnt.kernel.nativeinterface.ArkElement;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator;
@@ -177,7 +177,7 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
                     ArrayList<MsgElement> elem = new ArrayList<>();
                     MsgElement msgElement = getArkMsgElement(text);
                     elem.add(msgElement);
-                    Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
+                    ContactCompat contact = SessionUtils.AIOParam2Contact(AIOParam);
                     send_msg(contact, elem);
                     SyncUtils.runOnUiThread(() -> {
                         input.setText("");

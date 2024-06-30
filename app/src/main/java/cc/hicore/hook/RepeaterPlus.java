@@ -47,8 +47,6 @@ import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
-import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
@@ -62,6 +60,8 @@ import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
+import io.github.qauxv.bridge.kernelcompat.KernelMsgServiceCompat;
 import io.github.qauxv.bridge.ntapi.MsgConstants;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
@@ -327,15 +327,15 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
     private void repeatByForwardNt(Object msg) {
         try {
-            Contact contact = SessionUtils.AIOParam2Contact(AIOParam);
+            ContactCompat contact = SessionUtils.AIOParam2Contact(AIOParam);
             long msgID = (long) Reflex.invokeVirtual(msg, "getMsgId");
-            ArrayList<Contact> c = new ArrayList<>();
+            ArrayList<ContactCompat> c = new ArrayList<>();
             c.add(contact);
 
             ArrayList<Long> l = new ArrayList<>();
             l.add(msgID);
 
-            IKernelMsgService service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
+            KernelMsgServiceCompat service = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime());
             HashMap<Integer, MsgAttributeInfo> attrMap = new HashMap<>();
             Method builder = DexKit.loadMethodFromCache(VasAttrBuilder.INSTANCE);
             if (builder != null) {

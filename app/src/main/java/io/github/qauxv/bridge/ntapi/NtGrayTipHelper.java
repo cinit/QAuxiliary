@@ -23,10 +23,11 @@ package io.github.qauxv.bridge.ntapi;
 
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.tencent.qqnt.kernel.nativeinterface.IAddJsonGrayTipMsgCallback;
 import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
-import com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
+import io.github.qauxv.bridge.kernelcompat.KernelMsgServiceCompat;
+import io.github.qauxv.bridge.kernelcompat.KernelObjectHelper;
 import java.util.ArrayList;
 import java.util.Objects;
 import mqq.app.AppRuntime;
@@ -44,17 +45,28 @@ public class NtGrayTipHelper {
     public static final int AIO_AV_C2C_NOTICE = 2021;
     public static final int AIO_AV_GROUP_NOTICE = 2022;
 
-    public static void addLocalJsonGrayTipMsg(@NotNull AppRuntime app, @NotNull Contact contact, @NotNull JsonGrayElement jsonGrayElement, boolean needStore,
+    public static void addLocalJsonGrayTipMsg(@NotNull AppRuntime app, @NotNull ContactCompat contact, @NotNull Object jsonGrayElement, boolean needStore,
             boolean needRecentContact, @Nullable IAddJsonGrayTipMsgCallback callback) throws ReflectiveOperationException, LinkageError, IllegalStateException {
-        IKernelMsgService kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
+        KernelMsgServiceCompat kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
         if (kmsgSvc == null) {
             throw new IllegalStateException("IKernelMsgService is null");
         }
         kmsgSvc.addLocalJsonGrayTipMsg(contact, jsonGrayElement, needStore, needRecentContact, callback);
     }
 
-    public static JsonGrayElement createLocalJsonElement(long busiId, @NonNull String jsonStr, @NonNull String recentAbstract) {
-        return new JsonGrayElement(busiId, jsonStr, recentAbstract, false, null);
+    public static Object createLocalJsonElement(long busiId, @NonNull String jsonStr, @NonNull String recentAbstract) {
+        try {
+            Class.forName("com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement");
+            return new com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement(busiId, jsonStr, recentAbstract, false, null);
+        } catch (ClassNotFoundException ignored) {
+        }
+        try {
+            Class.forName("com.tencent.qqnt.kernelpublic.nativeinterface.JsonGrayElement");
+            return new com.tencent.qqnt.kernelpublic.nativeinterface.JsonGrayElement(busiId, jsonStr, recentAbstract, false, null);
+        } catch (ClassNotFoundException ignored) {
+        }
+        KernelObjectHelper.throwKernelObjectNotSupported("JsonGrayElement");
+        return null;
     }
 
     public static class NtGrayTipJsonBuilder {

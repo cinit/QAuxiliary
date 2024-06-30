@@ -38,9 +38,6 @@ import cc.ioctl.fragment.RevokeMsgConfigFragment;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
-import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
-import com.tencent.qqnt.kernel.nativeinterface.JsonGrayElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
@@ -50,6 +47,8 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ContactUtils;
 import io.github.qauxv.bridge.QQMessageFacade;
 import io.github.qauxv.bridge.RevokeMsgInfoImpl;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
+import io.github.qauxv.bridge.kernelcompat.KernelMsgServiceCompat;
 import io.github.qauxv.bridge.ntapi.ChatTypeConstants;
 import io.github.qauxv.bridge.ntapi.MsgServiceHelper;
 import io.github.qauxv.bridge.ntapi.NtGrayTipHelper;
@@ -432,9 +431,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         if (chatType == 2 && !Objects.equals(peerUid, toUid)) {
             Log.w("!!! onRecallSysMsgForNT potential bug: chatType=" + chatType + ", peerUid=" + peerUid + ", toUid=" + toUid + ", selfUid=" + selfUid);
         }
-        Contact contact = new Contact(chatType, peerUid, "");
+        ContactCompat contact = new ContactCompat(chatType, peerUid, "");
         AppRuntime app = AppRuntimeHelper.getAppRuntime();
-        IKernelMsgService kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
+        KernelMsgServiceCompat kmsgSvc = MsgServiceHelper.getKernelMsgService(app);
         // I don't know why, but...
         // IKernelMsgService.getMsgsByMsgId callback: result=0, errMsg=null, msgList=[](empty list)
         // IKernelMsgService.getMsgsBySeqList does not invoke callback at all, and no log
@@ -529,7 +528,7 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                 }
                 String jsonStr = builder.build().toString();
                 int busiId = (chatType == ChatTypeConstants.C2C) ? NtGrayTipHelper.AIO_AV_C2C_NOTICE : NtGrayTipHelper.AIO_AV_GROUP_NOTICE;
-                JsonGrayElement jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(busiId, jsonStr, summary);
+                Object jsonGrayElement = NtGrayTipHelper.createLocalJsonElement(busiId, jsonStr, summary);
                 NtGrayTipHelper.addLocalJsonGrayTipMsg(AppRuntimeHelper.getAppRuntime(), contact, jsonGrayElement, true, true, (result, uin) -> {
                     if (result != 0) {
                         Log.e("onRecallSysMsgForNT error: addLocalJsonGrayTipMsg failed, result=" + result);

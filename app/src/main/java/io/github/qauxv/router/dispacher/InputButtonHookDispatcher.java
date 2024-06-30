@@ -40,13 +40,13 @@ import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.hook.experimental.CardMsgSender;
 import cc.ioctl.hook.msg.AioChatPieClipPasteHook;
 import cc.ioctl.util.HookUtils;
-import com.tencent.qqnt.kernel.nativeinterface.Contact;
 import com.xiaoniu.hook.CtrlEnterToSend;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.SessionInfoImpl;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.router.decorator.IBaseChatPieDecorator;
@@ -285,7 +285,7 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
      * QQNT: Get session info from AIOParam
      */
     public Parcelable getSessionByAIOParam() {
-        Contact c = SessionUtils.AIOParam2Contact(AIOParam);
+        ContactCompat c = SessionUtils.AIOParam2Contact(AIOParam);
         int type = c.getChatType() - 1; // chatType: 1 for friend, 2 for group
         String uin = c.getPeerUid();
         if (uin.startsWith("u_")) {
