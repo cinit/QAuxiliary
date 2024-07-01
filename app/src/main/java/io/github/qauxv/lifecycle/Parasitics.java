@@ -152,7 +152,19 @@ public class Parasitics {
             }
         }
         SyncUtils.runOnUiThread(() -> {
-            res.addLoaders(ResourcesLoaderHolderApi30.sResourcesLoader);
+            try {
+                res.addLoaders(ResourcesLoaderHolderApi30.sResourcesLoader);
+                // TODO: 2024-07-01 invest why Resources.addLoaders() will throw IllegalArgumentException
+            } catch (IllegalArgumentException e) {
+                String expected1 = "Cannot modify resource loaders of ResourcesImpl not registered with ResourcesManager";
+                if (expected1.equals(e.getMessage())) {
+                    Log.e(e);
+                    // fallback to below API 30
+                    injectResourcesBelowApi30(res, path);
+                } else {
+                    throw e;
+                }
+            }
             try {
                 res.getString(R.string.res_inject_success);
                 if (sResInjectEndTime == 0) {
