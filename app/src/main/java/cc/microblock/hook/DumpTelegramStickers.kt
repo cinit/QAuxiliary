@@ -177,6 +177,7 @@ class LocalDocumentEmoticonProvider : ExtraEmoticonProvider() {
 object DumpTelegramStickers : CommonConfigFunctionHook() {
     override val name = "使用 Telegram Stickers 表情包集"
     override val description = "需配合 MicroBlock 的 Telegram 表情包同步插件使用"
+    override val extraSearchKeywords = arrayOf("tg", "tgsticker")
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(if (isEnabled) "已开启" else "已禁用")
     }
