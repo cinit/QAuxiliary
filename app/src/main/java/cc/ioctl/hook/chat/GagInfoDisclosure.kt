@@ -98,12 +98,12 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
             when (victimUin) {
                 "0" -> {
                     if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, "$opName")
-                    builder.appendText(if (victimTime == 0L) " 关闭了全员禁言 " else " 开启了全员禁言 ")
+                    builder.appendText(if (victimTime == 0L) "关闭了全员禁言" else "开启了全员禁言")
                 }
 
                 selfUin -> {
                     builder.appendUserItem(selfUin, "你")
-                    builder.appendText(" 被 ")
+                    builder.appendText("被")
                     builder.appendUserItem(opUin, "$opName")
                     builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
                 }
