@@ -1,190 +1,256 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2024 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
- * This software is non-free but opensource software: you can redistribute it
- * and/or modify it under the terms of the GNU Affero General Public License
+ * This software is an opensource software: you can redistribute it
+ * and/or modify it under the terms of the General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or any later version and our eula as published
+ * version 3 of the License, or any later version as published
  * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
- * and eula along with this software.  If not, see
- * <https://www.gnu.org/licenses/>
+ * You should have received a copy of the General Public License
+ * along with this software.
+ * If not, see
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook.chat;
 
-import static cc.ioctl.util.Reflex.findMethodByTypes_1;
-import static io.github.qauxv.bridge.GreyTipBuilder.MSG_TYPE_TROOP_GAP_GRAY_TIPS;
+package cc.ioctl.hook.chat
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import cc.ioctl.util.HookUtils;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
-import io.github.qauxv.base.annotation.FunctionHookEntry;
-import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.bridge.AppRuntimeHelper;
-import io.github.qauxv.bridge.ContactUtils;
-import io.github.qauxv.bridge.GreyTipBuilder;
-import io.github.qauxv.bridge.QQMessageFacade;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
-import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.LicenseStatus;
-import io.github.qauxv.util.SyncUtils;
-import io.github.qauxv.util.dexkit.CMessageRecordFactory;
-import io.github.qauxv.util.dexkit.DexKitTarget;
-import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
-import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.List;
+import cc.hicore.QApp.QAppUtils
+import cc.ioctl.util.hookBeforeIfEnabled
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.ContactUtils
+import io.github.qauxv.bridge.GreyTipBuilder
+import io.github.qauxv.bridge.QQMessageFacade
+import io.github.qauxv.bridge.kernelcompat.ContactCompat
+import io.github.qauxv.bridge.ntapi.ChatTypeConstants
+import io.github.qauxv.bridge.ntapi.NtGrayTipHelper
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.CMessageRecordFactory
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName
+import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName
+import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class GagInfoDisclosure extends CommonSwitchFunctionHook {
+object GagInfoDisclosure : CommonSwitchFunctionHook(
+    // TODO: 2020/6/12 Figure out whether MSF is really needed
+    targetProc = SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF,
+    targets = arrayOf(
+        CMessageRecordFactory,
+        NContactUtils_getDiscussionMemberShowName,
+        NContactUtils_getBuddyName,
+    )
+) {
 
-    public static final GagInfoDisclosure INSTANCE = new GagInfoDisclosure();
+    override val name = "显示设置禁言的管理"
+    override val description = "总是显示哪个管理员设置了禁言"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
-    private GagInfoDisclosure() {
-        // TODO: 2020/6/12 Figure out whether MSF is really needed
-        super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, new DexKitTarget[]{
-                CMessageRecordFactory.INSTANCE,
-                NContactUtils_getDiscussionMemberShowName.INSTANCE,
-                NContactUtils_getBuddyName.INSTANCE,
-        });
+    private fun getSecStr(sec: Long): String {
+        val (min, hour, day) = Triple("分", "时", "天")
+        val d = sec / 86400
+        val h = (sec % 86400) / 3600
+        val m = ((sec % 86400) % 3600) / 60
+        val ret = StringBuilder()
+        if (d > 0) ret.append(d).append(day)
+        if (h > 0) ret.append(h).append(hour)
+        if (m > 0) ret.append(m).append(min)
+        return ret.toString()
     }
 
-    public static String getGagTimeString(long sec) {
-        String _min = "分钟";
-        String _hour = "小时";
-        String _day = "天";
-        if (sec < 60) {
-            return 1 + _min;
-        }
-        long fsec = 59 + sec;
-        long d = fsec / 86400;
-        long h = (fsec - (86400 * d)) / 3600;
-        long m = ((fsec - (86400 * d)) - (3600 * h)) / 60;
-        String ret = "";
-        if (d > 0) {
-            ret = ret + d + _day;
-        }
-        if (h > 0) {
-            ret = ret + h + _hour;
-        }
-        if (m > 0) {
-            return ret + m + _min;
-        }
-        return ret;
-    }
-
-    @Override
-    public boolean initOnce() throws Exception {
-        Class<?> clzGagMgr = Initiator._TroopGagMgr();
-        Method m1 = findMethodByTypes_1(clzGagMgr, void.class, String.class, long.class,
-                long.class, int.class, String.class, String.class, boolean.class);
-        XposedBridge.hookMethod(m1, new XC_MethodHook(48) {
-            @Override
-            protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
-                if (LicenseStatus.sDisableCommonHooks) {
-                    return;
-                }
-                if (!isEnabled()) {
-                    return;
-                }
-                String selfUin = AppRuntimeHelper.getAccount() + "";
-                String troopUin = (String) param.args[0];
-                long time = (long) param.args[1];
-                long interval = (long) param.args[2];
-                int msgseq = (int) param.args[3];
-                String opUin = (String) param.args[4];
-                String victimUin = (String) param.args[5];
-                String opName = ContactUtils.getTroopMemberNick(troopUin, opUin);
-                String victimName = ContactUtils.getTroopMemberNick(troopUin, victimUin);
-                GreyTipBuilder builder = GreyTipBuilder.create(MSG_TYPE_TROOP_GAP_GRAY_TIPS);
-                if (selfUin.endsWith(victimUin)) {
-                    builder.append("你");
-                } else {
-                    builder.append(' ').appendTroopMember(victimUin, victimName).append(' ');
-                }
-                builder.append("被");
-                if (selfUin.endsWith(opUin)) {
-                    builder.append("你");
-                } else {
-                    builder.append(' ').appendTroopMember(opUin, opName).append(' ');
-                }
-                if (interval == 0) {
-                    builder.append("解除禁言");
-                } else {
-                    builder.append("禁言").append(getGagTimeString(interval));
-                }
-                Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
-                List<Object> list = new ArrayList<>();
-                list.add(msg);
-                QQMessageFacade.commitMessageRecordList(list);
-                param.setResult(null);
+    private fun addTroopGrayTipMsg(troopUin: String, jsonStr: String) {
+        NtGrayTipHelper.addLocalJsonGrayTipMsg(
+            AppRuntimeHelper.getAppRuntime()!!,
+            ContactCompat(ChatTypeConstants.GROUP, troopUin, ""),
+            NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_GROUP_NOTICE.toLong(), jsonStr, ""),
+            true,
+            true
+        ) { result, uin ->
+            if (result != 0) {
+                Log.e("GagInfoDisclosure error: addLocalJsonGrayTipMsg failed, result=$result, uin=$uin")
             }
-        });
-        Method m2 = findMethodByTypes_1(clzGagMgr, void.class, String.class, String.class,
-                long.class, long.class, int.class, boolean.class, boolean.class);
-        HookUtils.hookBeforeIfEnabled(this, m2, 47, param -> {
-            String selfUin = AppRuntimeHelper.getAccount() + "";
-            String troopUin = (String) param.args[0];
-            String opUin = (String) param.args[1];
-            long time = (long) param.args[2];
-            long interval = (long) param.args[3];
-            int msgseq = (int) param.args[4];
-            boolean gagTroop = (boolean) param.args[5];
-            String opName = ContactUtils.getTroopMemberNick(troopUin, opUin);
-            GreyTipBuilder builder = GreyTipBuilder.create(MSG_TYPE_TROOP_GAP_GRAY_TIPS);
-            if (gagTroop) {
-                if (selfUin.endsWith(opUin)) {
-                    builder.append("你");
-                } else {
-                    builder.append(' ').appendTroopMember(opUin, opName).append(' ');
-                }
-                builder.append(interval == 0 ? "关闭了全员禁言" : "开启了全员禁言");
-            } else {
-                builder.append("你被 ").appendTroopMember(opUin, opName);
-                if (interval == 0) {
-                    builder.append(" 解除禁言");
-                } else {
-                    builder.append(" 禁言").append(getGagTimeString(interval));
-                }
+        }
+    }
+
+    override fun initOnce(): Boolean {
+        val clzGagMgr = Initiator._TroopGagMgr()
+        if (requireMinQQVersion(QQVersion.QQ_9_0_25)) {
+            val method = clzGagMgr.declaredMethods.single { method ->
+                val params = method.parameterTypes; params.size == 5
+                && params[0] == Int::class.java
+                && params[1] == Long::class.java
+                && params[2] == Long::class.java
+                && params[3] == Long::class.java
+                && params[4] == ArrayList::class.java
+                && method.returnType == Void.TYPE
             }
-            Object msg = builder.build(troopUin, 1, opUin, time, msgseq);
-            List<Object> list = new ArrayList<>();
-            list.add(msg);
-            QQMessageFacade.commitMessageRecordList(list);
-            param.setResult(null);
-        });
-        return true;
-    }
-
-    @NonNull
-    @Override
-    public String getName() {
-        return "显示设置禁言的管理";
-    }
-
-    @Nullable
-    @Override
-    public String getDescription() {
-        return "总是显示哪个管理员设置了禁言";
-    }
-
-    @NonNull
-    @Override
-    public String[] getUiItemLocation() {
-        return Auxiliary.CHAT_CATEGORY;
+            hookBeforeIfEnabled(method) { param ->
+                val selfUin = AppRuntimeHelper.getAccount()
+                val troopUin = param.args[1] as Long
+                val opUin = param.args[2] as Long
+                val opName = ContactUtils.getDiscussionMemberShowName(AppRuntimeHelper.getAppRuntime()!!, troopUin.toString(), opUin.toString())
+                val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
+                builder.appendText("操作者: ")
+                if (opUin.toString() == selfUin) {
+                    builder.appendText("你")
+                } else {
+                    builder.appendText("$opName[$opUin]")
+                }
+                addTroopGrayTipMsg(troopUin.toString(), builder.build().toString())
+            }
+        } else {
+            val method1 = clzGagMgr.declaredMethods.single { method ->
+                val params = method.parameterTypes; params.size == 7
+                && params[0] == String::class.java
+                && params[1] == Long::class.java
+                && params[2] == Long::class.java
+                && params[3] == Int::class.java
+                && params[4] == String::class.java
+                && params[4] == String::class.java
+                && params[4] == Boolean::class.java
+                && method.returnType == Void.TYPE
+            }
+            hookBeforeIfEnabled(method1) { param ->
+                val selfUin = AppRuntimeHelper.getAccount()
+                val troopUin = param.args[0] as String
+                val time = param.args[1] as Long
+                val interval = param.args[2] as Long
+                val msgSeq = param.args[3] as Int
+                val opUin = param.args[4] as String
+                val victimUin = param.args[5] as String
+                val victimName = ContactUtils.getTroopMemberNick(troopUin, victimUin)
+                val opName = ContactUtils.getTroopMemberNick(troopUin, opUin)
+                if (!QAppUtils.isQQnt()) {
+                    val builder = GreyTipBuilder.create(GreyTipBuilder.MSG_TYPE_TROOP_GAP_GRAY_TIPS)
+                    if (victimUin == selfUin) {
+                        builder.append("你")
+                    } else {
+                        builder.appendTroopMember(victimUin, victimName)
+                    }
+                    builder.append(" 被 ")
+                    if (opUin == selfUin) {
+                        builder.append("你")
+                    } else {
+                        builder.appendTroopMember(opUin, opName)
+                    }
+                    if (interval == 0L) {
+                        builder.append(" 解除禁言 ")
+                    } else {
+                        builder.append(" 禁言${getSecStr(interval)} ")
+                    }
+                    val msg = builder.build(troopUin, 1, opUin, time, msgSeq.toLong())
+                    val list = ArrayList<Any>() + msg
+                    QQMessageFacade.commitMessageRecordList(list)
+                } else {
+                    val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
+                    if (victimUin == selfUin) {
+                        builder.appendText("你")
+                    } else {
+                        builder.appendText("$victimName[$victimUin]")
+                    }
+                    builder.appendText(" 被 ")
+                    if (opUin == selfUin) {
+                        builder.appendText("你")
+                    } else {
+                        builder.appendText("$opName[$opUin]")
+                    }
+                    if (interval == 0L) {
+                        builder.appendText(" 解除禁言 ")
+                    } else {
+                        builder.appendText(" 禁言${getSecStr(interval)} ")
+                    }
+                    addTroopGrayTipMsg(troopUin, builder.build().toString())
+                }
+                param.setResult(null)
+            }
+            val method2 = clzGagMgr.declaredMethods.single { method ->
+                val params = method.parameterTypes; params.size == 7
+                && params[0] == String::class.java
+                && params[1] == String::class.java
+                && params[2] == Long::class.java
+                && params[3] == Long::class.java
+                && params[4] == Int::class.java
+                && params[4] == Boolean::class.java
+                && params[4] == Boolean::class.java
+                && method.returnType == Void.TYPE
+            }
+            hookBeforeIfEnabled(method2) { param ->
+                val selfUin = AppRuntimeHelper.getAccount()
+                val troopUin = param.args[0] as String
+                val opUin = param.args[1] as String
+                val time = param.args[2] as Long
+                val interval = param.args[3] as Long
+                val msgSeq = param.args[4] as Int
+                val gagTroop = param.args[5] as Boolean
+                val opName = ContactUtils.getTroopMemberNick(troopUin, opUin)
+                if (!QAppUtils.isQQnt()) {
+                    val builder = GreyTipBuilder.create(GreyTipBuilder.MSG_TYPE_TROOP_GAP_GRAY_TIPS)
+                    if (gagTroop) {
+                        if (opUin == selfUin) {
+                            builder.append("你")
+                        } else {
+                            builder.appendTroopMember(opUin, opName)
+                        }
+                        if (interval == 0L) {
+                            builder.append(" 关闭了全员禁言 ")
+                        } else {
+                            builder.append(" 开启了全员禁言 ")
+                        }
+                    } else {
+                        builder.append("你")
+                        builder.append(" 被 ")
+                        builder.appendTroopMember(opUin, opName)
+                        if (interval == 0L) {
+                            builder.append(" 解除禁言 ")
+                        } else {
+                            builder.append(" 禁言${getSecStr(interval)} ")
+                        }
+                    }
+                    val msg = builder.build(troopUin, 1, opUin, time, msgSeq.toLong())
+                    val list = ArrayList<Any>() + msg
+                    QQMessageFacade.commitMessageRecordList(list)
+                } else {
+                    val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
+                    if (gagTroop) {
+                        if (opUin == selfUin) {
+                            builder.appendText("你")
+                        } else {
+                            builder.appendText("$opName[$opUin]")
+                        }
+                        if (interval == 0L) {
+                            builder.appendText(" 关闭了全员禁言 ")
+                        } else {
+                            builder.appendText(" 开启了全员禁言 ")
+                        }
+                    } else {
+                        builder.appendText("你")
+                        builder.appendText(" 被 ")
+                        builder.appendText("$opName[$opUin]")
+                        if (interval == 0L) {
+                            builder.appendText(" 解除禁言 ")
+                        } else {
+                            builder.appendText(" 禁言${getSecStr(interval)} ")
+                        }
+                    }
+                    addTroopGrayTipMsg(troopUin, builder.build().toString())
+                }
+                param.setResult(null)
+            }
+        }
+        return true
     }
 }
