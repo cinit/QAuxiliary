@@ -49,7 +49,7 @@ import me.ketal.util.ignoreResult
 @UiItemAgentEntry
 object FakeLocation : BaseFunctionHook("hd_FakeLocation") {
 
-    private val locationKey = ConfigData<String>("hd_FakeLocation_phone")
+    private val locationKey = ConfigData<String>("hd_FakeLocation_location")
     private var location: String
         get() = locationKey.getOrDefault("116.39773,39.90307")//(经度,纬度)
         set(value) {
