@@ -22,39 +22,86 @@
 
 package me.hd.hook
 
+import android.content.Context
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.afollestad.materialdialogs.MaterialDialog
+import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.dsl.uiClickableItem
+import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import me.ketal.data.ConfigData
+import me.ketal.util.ignoreResult
 import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ChangePicVideoSize : CommonSwitchFunctionHook() {
+object FakePicSize : BaseFunctionHook("hd_FakePicSize") {
 
-    override val name = "篡改[图片/视频]比例"
-    override val description = "使发送的[图片/视频]在群聊中显示的非常小"
+    private val sizeMap = mapOf(
+        "默认" to 0,
+        "最小" to 1,
+        "略小" to 64,
+        "略大" to 256,
+        "最大" to 512
+    )
+    private val sizeIndexKey = ConfigData<Int>("hd_FakePicSize_sizeIndex")
+    private var sizeIndex: Int
+        get() = sizeIndexKey.getOrDefault(0)
+        set(value) {
+            sizeIndexKey.value = value
+        }
+
+    override val uiItemAgent by lazy {
+        uiClickableItem {
+            title = "篡改图片比例"
+            summary = "篡改发送的图片显示大小"
+            onClickListener = { _, activity, _ ->
+                showDialog(activity)
+            }
+        }
+    }
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
+
+    private fun showDialog(activity: Context) {
+        MaterialDialog(activity).show {
+            title(text = "篡改图片比例")
+            listItemsSingleChoice(
+                items = sizeMap.keys.toList(),
+                initialSelection = sizeIndex,
+                waitForPositiveButton = true,
+                selection = { _, index, _ ->
+                    sizeIndex = index
+                }
+            ).ignoreResult()
+            positiveButton(text = "保存") {
+                if (sizeIndex != 0) {
+                    isEnabled = true
+                    if (!isInitialized) HookInstaller.initializeHookForeground(context, this@FakePicSize)
+                }
+            }
+            negativeButton(text = "取消")
+        }
+    }
 
     override fun initOnce(): Boolean {
         val msgServiceClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy")
         hookBeforeIfEnabled(msgServiceClass.method("sendMsg")!!) { param ->
+            val size = sizeMap.values.toList()[sizeIndex]
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
                 msgElement.picElement?.apply {
-                    picWidth = -1
-                    picHeight = -1
-                }
-                msgElement.videoElement?.apply {
-                    thumbWidth = -1
-                    thumbHeight = -1
+                    picSubType = 0
+                    picWidth = size
+                    picHeight = size
                 }
             }
         }
