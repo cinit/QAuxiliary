@@ -23,7 +23,7 @@
 package me.hd.hook
 
 import android.content.Context
-import android.view.View.OnClickListener
+import android.view.View
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -49,7 +49,7 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook() {
             Context::class.java,
             Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"),
             Object::class.java,
-            OnClickListener::class.java
+            View.OnClickListener::class.java
         )
         hookBeforeIfEnabled(getEmoReplyMenuViewMethod) { param ->
             param.result = null
