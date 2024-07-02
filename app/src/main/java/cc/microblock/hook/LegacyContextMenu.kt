@@ -40,7 +40,7 @@ object LegacyContextMenu : CommonSwitchFunctionHook() {
     override val name = "老式消息菜单"
     override val description = "去除消息菜单的图标"
 
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
     override val isAvailable = QAppUtils.isQQnt()
 
     override fun initOnce(): Boolean {
