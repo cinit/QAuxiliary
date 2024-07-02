@@ -47,7 +47,9 @@ import me.ketal.util.ignoreResult
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakeVoiceTime : BaseFunctionHook("hd_FakeVoiceTime") {
+object FakeVoiceTime : BaseFunctionHook(
+    hookKey = "hd_FakeVoiceTime"
+) {
 
     private val timeKey = ConfigData<String>("hd_FakeVoiceTime_time")
     private var time: String

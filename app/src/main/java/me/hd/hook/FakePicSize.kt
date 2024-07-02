@@ -42,7 +42,9 @@ import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakePicSize : BaseFunctionHook("hd_FakePicSize") {
+object FakePicSize : BaseFunctionHook(
+    hookKey = "hd_FakePicSize"
+) {
 
     private val sizeMap = mapOf(
         "默认" to 0,

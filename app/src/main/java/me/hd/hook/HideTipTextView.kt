@@ -38,7 +38,9 @@ import xyz.nextalone.util.isPublic
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HideTipTextView : MultiItemDelayableHook("hd_HideTipTextView") {
+object HideTipTextView : MultiItemDelayableHook(
+    keyName = "hd_HideTipTextView"
+) {
 
     override val preferenceTitle = "隐藏提示文本消息"
     override val description = "当提示文本消息过多, 可能导致聊天界面滑动掉帧"

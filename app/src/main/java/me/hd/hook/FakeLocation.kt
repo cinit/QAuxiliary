@@ -47,7 +47,9 @@ import me.ketal.util.ignoreResult
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object FakeLocation : BaseFunctionHook("hd_FakeLocation") {
+object FakeLocation : BaseFunctionHook(
+    hookKey = "hd_FakeLocation"
+) {
 
     private val locationKey = ConfigData<String>("hd_FakeLocation_location")
     private var location: String
