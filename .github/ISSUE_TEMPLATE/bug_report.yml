@@ -1,6 +1,6 @@
 name: Bug report/反馈 Bug
 description: Report errors or unexpected behavior./反馈错误或异常行为。
-labels: ["Bug"]
+labels: [ "Bug" ]
 title: "[Bug] "
 body:
   - type: markdown
@@ -44,13 +44,13 @@ body:
   - type: input
     attributes:
       label: QQ(TIM)版本/QQ(TIM) Version
-      description:  QQ(TIM)版本/QQ(TIM) Version
+      description: QQ(TIM)版本/QQ(TIM) Version
     validations:
       required: true
   - type: input
     attributes:
       label: Module Version/模块版本
-      description:  Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed. Get the latest CI version from https://t.me/QAuxiliary_CI ./不要使用“最新版”。给出详细版本号，否则 issue 将被关闭。在 https://t.me/QAuxiliary_CI 获取最新 CI 版本。
+      description: Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed. Get the latest CI version from https://t.me/QAuxiliary_CI ./不要使用“最新版”。给出详细版本号，否则 issue 将被关闭。在 https://t.me/QAuxiliary_CI 获取最新 CI 版本。
     validations:
       required: true
   - type: checkboxes
@@ -59,11 +59,16 @@ body:
       label: Version and Other Requirements/版本和其他要求
       options:
         - label: I am using latest debug CI version of QAuxiliary and enable verbose log/我正在使用最新 CI 调试版本且启用详细日志
-          required: true
-        - label: I have checked recent Issues (including Open and Closed) and have not found this Issue/我已经查看近期 Issues（包含 Open 和 Closed），未发现已存在此 Issue
-          required: true
+          required: false
         - label: The QQ I am using is an official release version, not a modified or beta version/我使用的 QQ 是官方发布的正式版本，而非修改版或测试版
+          required: false
+        - label: 我已经在 [Issue Tracker](https://github.com/cinit/QAuxiliary/issues) 中找过我要提出的问题，没有找到相同问题。重复问题会被关闭。
           required: true
+        - label: 我已知晓并同意，此处仅用于汇报主程序中存在的问题。若这个 Issue 是关于其他非程序本身问题，则我的 Issue 可能会被无条件自动关闭或/并锁定。
+          required: true
+        - label: 我已知晓并同意，如果我不按照模板提供的指示进行填写，则我的 Issue 可能会被无条件删除。
+          required: true
+
   - type: textarea
     attributes:
       label: Logs/日志
@@ -71,3 +76,8 @@ body:
       placeholder: Paste logs here or upload logs by clicking the bar on the bottom. /将日志粘贴到此处或者点击文本框底栏上传日志文件。
     validations:
       required: true
+
+  - type: textarea
+    id: extra-desc
+    attributes:
+      label: 补充说明（可选）
