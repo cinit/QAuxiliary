@@ -29,8 +29,10 @@ import com.tencent.common.app.AppInterface;
 import de.robv.android.xposed.XposedHelpers;
 import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
 import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
@@ -59,23 +61,25 @@ public class ContactUtils {
         Objects.requireNonNull(memberUin);
         AppRuntime app = AppRuntimeHelper.getQQAppInterface();
         assert app != null;
-        try {
-            Object mTroopManager = ManagerHelper.getTroopManager();
-            Object troopMemberInfo = Reflex.invokeVirtualDeclaredOrdinal(mTroopManager, 0, 3, false,
-                    troopUin, memberUin,
-                    String.class, String.class,
-                    Initiator._TroopMemberInfo());
-            if (troopMemberInfo != null) {
-                String troopnick = (String) XposedHelpers.getObjectField(troopMemberInfo, "troopnick");
-                if (troopnick != null) {
-                    String ret = troopnick.replace(UNICODE_RLO, "");
-                    if (ret.trim().length() > 0) {
-                        return ret;
+        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_25)) {
+            try {
+                Object mTroopManager = ManagerHelper.getTroopManager();
+                Object troopMemberInfo = Reflex.invokeVirtualDeclaredOrdinal(mTroopManager, 0, 3, false,
+                        troopUin, memberUin,
+                        String.class, String.class,
+                        Initiator._TroopMemberInfo());
+                if (troopMemberInfo != null) {
+                    String troopnick = (String) XposedHelpers.getObjectField(troopMemberInfo, "troopnick");
+                    if (troopnick != null) {
+                        String ret = troopnick.replace(UNICODE_RLO, "");
+                        if (ret.trim().length() > 0) {
+                            return ret;
+                        }
                     }
                 }
+            } catch (Exception | LinkageError e) {
+                Log.e(e);
             }
-        } catch (Exception | LinkageError e) {
-            Log.e(e);
         }
         try {
             String ret = getDiscussionMemberShowName(app, troopUin, memberUin);
