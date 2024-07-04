@@ -32,6 +32,7 @@ import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import de.robv.android.xposed.XC_MethodHook
 import io.github.duzhaokun123.hook.MessageCopyHook
+import io.github.duzhaokun123.hook.MessageTTSHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
@@ -52,7 +53,8 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
         MessageCopyHook,
         PicCopyToClipboard,
         MiniAppDirectJump,
-        CopyMarkdown
+        CopyMarkdown,
+        MessageTTSHook,
     )
 
     override fun initOnce(): Boolean {

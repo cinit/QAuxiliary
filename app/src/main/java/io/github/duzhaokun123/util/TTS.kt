@@ -136,6 +136,7 @@ object TTS {
     }
 
     fun showConfigDialog(wc: Context, text: String = "") {
+        if (!checkInit(wc)) return
         val binding = Tts2DialogBinding.inflate(LayoutInflater.from(wc))
         binding.etMsg.setText(text)
         binding.tvVoice.text = instance.voice?.toString() ?: "null"
