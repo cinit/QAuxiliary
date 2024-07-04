@@ -38,6 +38,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.CMessageRecordFactory
+import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName
 import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName
 import xyz.nextalone.util.get
 
@@ -49,6 +50,7 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
     targets = arrayOf(
         CMessageRecordFactory,
         NContactUtils_getDiscussionMemberShowName,
+        NContactUtils_getBuddyName,
     )
 ) {
 
@@ -89,29 +91,29 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
             val selfUin = AppRuntimeHelper.getAccount()
             val troopUin = param.args[1].toString()
             val opUin = param.args[2].toString()
-            val opName = ContactUtils.getDiscussionMemberShowName(AppRuntimeHelper.getAppRuntime()!!, troopUin, opUin)
+            val opName = ContactUtils.getTroopMemberNick(troopUin, opUin)
             val pushParams = param.args[4] as ArrayList<*>
             val victimUin = pushParams[0].get("uin") as String
-            val victimName = ContactUtils.getDiscussionMemberShowName(AppRuntimeHelper.getAppRuntime()!!, troopUin, victimUin)
+            val victimName = ContactUtils.getTroopMemberNick(troopUin, victimUin)
             val victimTime = pushParams[0].get("gagLength") as Long
             val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
             when (victimUin) {
                 "0" -> {
-                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, "$opName")
+                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
                     builder.appendText(if (victimTime == 0L) "关闭了全员禁言" else "开启了全员禁言")
                 }
 
                 selfUin -> {
                     builder.appendUserItem(selfUin, "你")
                     builder.appendText("被")
-                    builder.appendUserItem(opUin, "$opName")
+                    builder.appendUserItem(opUin, opName)
                     builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
                 }
 
                 else -> {
-                    builder.appendUserItem(victimUin, "$victimName")
+                    builder.appendUserItem(victimUin, victimName)
                     builder.appendText("被")
-                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, "$opName")
+                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
                     builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
                 }
             }
