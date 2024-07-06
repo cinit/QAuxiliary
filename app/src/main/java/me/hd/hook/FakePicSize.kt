@@ -97,6 +97,7 @@ object FakePicSize : BaseFunctionHook(
         val msgServiceClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy")
         hookBeforeIfEnabled(msgServiceClass.method("sendMsg")!!) { param ->
             val size = sizeMap.values.toList()[sizeIndex]
+            if (size == 0) return@hookBeforeIfEnabled
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
