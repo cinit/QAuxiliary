@@ -64,7 +64,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
 
     override fun initOnce(): Boolean = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            // 私聊 && QQ_9_0_50版本后的群聊
+            // 私聊 && QQ9.0.35版本后的群聊
             DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT).hookAfter(this) {
                 it.thisObject.javaClass.declaredFields.single { it.type == EditText::class.java }.apply {
                     isAccessible = true
@@ -72,8 +72,8 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
                     et.hint = getValue()
                 }
             }
-            // QQ_9_0_50版本前的群聊
-            if (!requireMinQQVersion(QQVersion.QQ_9_0_50)) {
+            // QQ9.0.35版本前的群聊
+            if (!requireMinQQVersion(QQVersion.QQ_9_0_35)) {
                 when { // Lcom/tencent/mobileqq/aio/input/anonymous/AnonymousModeInputVBDelegate;->setNotAnonymousHint()V
                     requireMinQQVersion(QQVersion.QQ_9_0_30) -> "Lcom/tencent/mobileqq/aio/input/c/c;->l()V"
                     requireMinQQVersion(QQVersion.QQ_9_0_20) -> "Lcom/tencent/mobileqq/aio/input/b/c;->l()V"
