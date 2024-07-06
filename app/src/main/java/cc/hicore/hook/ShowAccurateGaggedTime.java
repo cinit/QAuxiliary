@@ -21,6 +21,8 @@
 
 package cc.hicore.hook;
 
+import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+
 import android.content.Context;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
@@ -31,6 +33,7 @@ import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -55,6 +58,20 @@ public class ShowAccurateGaggedTime extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_75)) {
+            HookUtils.hookBeforeIfEnabled(this,
+                    Reflex.findMethod(Initiator.loadClass("com.tencent.qqnt.troop.impl.TroopGagUtils"), String.class,
+                            "remainingTimeToStringCountDown", long.class), param -> {
+                        long time = (long) param.args[0];
+                        if (time <= 0) {
+                            param.setResult("[0秒]");
+                            return;
+                        }
+                        param.setResult(secondToTime(time));
+                    });
+            return true;
+        }
+
         HookUtils.hookBeforeIfEnabled(this,
                 Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.troop.troopgag.api.impl.TroopGagServiceImpl"), String.class,
                         "gagTimeToStringCountDown", Context.class, long.class), param -> {

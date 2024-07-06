@@ -45,6 +45,7 @@ import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -100,11 +101,11 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         lateinit var buildNotification: Method
         lateinit var recentInfoBuilder: Method
         cNotificationFacade.declaredMethods.forEach {
-            if (it.parameterTypes.size != 3) return@forEach
-            if (it.parameterTypes[0] != cAppRuntime) return@forEach
-            if (it.parameterTypes[2] == cCommonInfo) {
+            if (it.paramCount < 3 || it.parameterTypes[0] != cAppRuntime) return@forEach
+            if (it.paramCount == 3 && it.parameterTypes[2] == cCommonInfo) {
                 buildNotification = it
-            } else if (it.parameterTypes[1] == cRecentInfo) {
+            } else if (it.paramCount >= 3 && it.parameterTypes[1] == cRecentInfo && it.parameterTypes[2] == Boolean::class.java) {
+                // paramCount=4 since 9.0.75
                 recentInfoBuilder = it
             }
         }
@@ -131,7 +132,8 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             val info = QQRecentContactInfo(pair.first)
             notificationInfoMap.remove(oldNotification.contentIntent)
             if (info.chatType == 1 || info.chatType == 2) {
-                val content = info.abstractContent?.joinToString(separator = "") { it.get("content", String::class.java) ?: "[未解析消息]" } ?: return@hookBeforeIfEnabled
+                val content =
+                    info.abstractContent?.joinToString(separator = "") { it.get("content", String::class.java) ?: "[未解析消息]" } ?: return@hookBeforeIfEnabled
                 val senderName = info.getUserName() ?: return@hookBeforeIfEnabled
                 val senderUin = info.senderUin ?: return@hookBeforeIfEnabled
                 val senderIcon: IconCompat
@@ -146,17 +148,23 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 // 好友消息
                 when (info.chatType) {
                     1 -> {
-                        senderIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
+                        senderIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon())
+                            ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
                         shortcut = getShortcut("private_$senderUin", senderName, senderIcon, pair.second)
                     }
+
                     2 -> {
                         groupName = info.peerName ?: return@hookBeforeIfEnabled
                         groupUin = info.peerUin ?: return@hookBeforeIfEnabled
 
-                        senderIcon = avatarHelper.getAvatar(senderUin.toString()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
-                        groupIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon()) ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
+                        senderIcon = avatarHelper.getAvatar(senderUin.toString()) ?: IconCompat.createWithBitmap(
+                            ResUtils.loadDrawableFromAsset("face.png", context).toBitmap()
+                        )
+                        groupIcon = IconCompat.createFromIcon(hostInfo.application, oldNotification.getLargeIcon())
+                            ?: IconCompat.createWithBitmap(ResUtils.loadDrawableFromAsset("face.png", context).toBitmap())
                         shortcut = getShortcut("group_$groupUin", groupName, groupIcon, pair.second)
                     }
+
                     else -> {
                         // Impossible
                         throw Error("what the hell?")
@@ -238,11 +246,13 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         var messageStyle = historyMessage["$channelId+$mainUin"]
 
         if (messageStyle == null) {
-            messageStyle = MessagingStyle(Person.Builder()
-                .setName(mainName)
-                .setIcon(mainIcon)
-                .setKey(mainUin.toString())
-                .build())
+            messageStyle = MessagingStyle(
+                Person.Builder()
+                    .setName(mainName)
+                    .setIcon(mainIcon)
+                    .setKey(mainUin.toString())
+                    .build()
+            )
             messageStyle.conversationTitle = mainName
             messageStyle.isGroupConversation = groupUin != null
             historyMessage["$channelId+$mainUin"] = messageStyle

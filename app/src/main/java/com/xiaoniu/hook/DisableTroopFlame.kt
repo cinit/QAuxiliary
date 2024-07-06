@@ -22,6 +22,7 @@
 
 package com.xiaoniu.hook
 
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -29,7 +30,9 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
+import xyz.nextalone.util.set
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -38,9 +41,18 @@ object DisableTroopFlame : CommonSwitchFunctionHook() {
     override val name = "屏蔽群火苗"
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/troop/flame/api/impl/TroopFlameApiImpl;->getGroupExtFlameData(Lcom/tencent/mobileqq/data/troop/TroopInfoExt;)Ltencent/trpcprotocol/IqunFlameManageSvrPB\$GroupExtFlameData;"
-            .method
-            .hookReturnConstant(null)
+        if (requireMinQQVersion(QQVersion.QQ_9_0_75)) {
+            // Waiting for a better solution...
+            "com.tencent.mobileqq.troop.flame.api.impl.TroopFlameApiImpl".clazz!!
+                .method("getFlameViewDataFromPB")!!
+                .hookBefore {
+                    it.args[0].set("switchState", 0)
+                    it.args[0].set("state", 0)
+                }
+        } else
+            "Lcom/tencent/mobileqq/troop/flame/api/impl/TroopFlameApiImpl;->getGroupExtFlameData(Lcom/tencent/mobileqq/data/troop/TroopInfoExt;)Ltencent/trpcprotocol/IqunFlameManageSvrPB\$GroupExtFlameData;"
+                .method
+                .hookReturnConstant(null)
     }
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
