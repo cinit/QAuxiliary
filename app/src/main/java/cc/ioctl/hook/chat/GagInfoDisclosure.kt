@@ -36,10 +36,13 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.CMessageRecordFactory
 import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName
 import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName
+import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
 
 @FunctionHookEntry
@@ -77,55 +80,61 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
     }
 
     override fun initOnce(): Boolean {
-        val clzGagMgr = Initiator._TroopGagMgr()
-        val method = clzGagMgr.declaredMethods.single { method ->
-            val params = method.parameterTypes; params.size == 5
-            && params[0] == Int::class.java
-            && params[1] == Long::class.java
-            && params[2] == Long::class.java
-            && params[3] == Long::class.java
-            && params[4] == ArrayList::class.java
-            && method.returnType == Void.TYPE
-        }
-        hookBeforeIfEnabled(method) { param ->
-            val selfUin = AppRuntimeHelper.getAccount()
-            val troopUin = param.args[1].toString()
-            val opUin = param.args[2].toString()
-            val opName = ContactUtils.getTroopMemberNick(troopUin, opUin)
-            val pushParams = param.args[4] as ArrayList<*>
-            val victimUin = pushParams[0].get("uin") as String
-            val victimName = ContactUtils.getTroopMemberNick(troopUin, victimUin)
-            val victimTime = pushParams[0].get("gagLength") as Long
-            val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
-            when (victimUin) {
-                "0" -> {
-                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
-                    builder.appendText(if (victimTime == 0L) "关闭了全员禁言" else "开启了全员禁言")
-                }
-
-                selfUin -> {
-                    builder.appendUserItem(selfUin, "你")
-                    builder.appendText("被")
-                    builder.appendUserItem(opUin, opName)
-                    builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
-                }
-
-                else -> {
-                    builder.appendUserItem(victimUin, victimName)
-                    builder.appendText("被")
-                    if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
-                    builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
-                }
+        if (requireMinQQVersion(QQVersion.QQ_9_0_73)) {
+            throw RuntimeException("Unsupported Version: ${hostInfo.versionName}")
+            // TODO 待适配QQ9.0.73~9.0.75
+            // val troopGagClass = Initiator.loadClass("com.tencent.qqnt.troop.impl.TroopGagUtils")
+        } else {
+            val troopGagClass = Initiator.loadClass("com.tencent.mobileqq.troop.utils.TroopGagMgr")
+            val method = troopGagClass.declaredMethods.single { method ->
+                val params = method.parameterTypes; params.size == 5
+                && params[0] == Int::class.java
+                && params[1] == Long::class.java
+                && params[2] == Long::class.java
+                && params[3] == Long::class.java
+                && params[4] == ArrayList::class.java
+                && method.returnType == Void.TYPE
             }
-            NtGrayTipHelper.addLocalJsonGrayTipMsg(
-                AppRuntimeHelper.getAppRuntime()!!,
-                ContactCompat(ChatTypeConstants.GROUP, troopUin, ""),
-                NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_GROUP_NOTICE.toLong(), builder.build().toString(), ""),
-                true,
-                true
-            ) { result, uin ->
-                if (result != 0) {
-                    Log.e("GagInfoDisclosure error: addLocalJsonGrayTipMsg failed, result=$result, uin=$uin")
+            hookBeforeIfEnabled(method) { param ->
+                val selfUin = AppRuntimeHelper.getAccount()
+                val troopUin = param.args[1].toString()
+                val opUin = param.args[2].toString()
+                val opName = ContactUtils.getTroopMemberNick(troopUin, opUin)
+                val pushParams = param.args[4] as ArrayList<*>
+                val victimUin = pushParams[0].get("uin") as String
+                val victimName = ContactUtils.getTroopMemberNick(troopUin, victimUin)
+                val victimTime = pushParams[0].get("gagLength") as Long
+                val builder = NtGrayTipHelper.NtGrayTipJsonBuilder()
+                when (victimUin) {
+                    "0" -> {
+                        if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
+                        builder.appendText(if (victimTime == 0L) "关闭了全员禁言" else "开启了全员禁言")
+                    }
+
+                    selfUin -> {
+                        builder.appendUserItem(selfUin, "你")
+                        builder.appendText("被")
+                        builder.appendUserItem(opUin, opName)
+                        builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
+                    }
+
+                    else -> {
+                        builder.appendUserItem(victimUin, victimName)
+                        builder.appendText("被")
+                        if (opUin == selfUin) builder.appendUserItem(selfUin, "你") else builder.appendUserItem(opUin, opName)
+                        builder.appendText(if (victimTime == 0L) "解除禁言" else "禁言${getSecStr(victimTime)}")
+                    }
+                }
+                NtGrayTipHelper.addLocalJsonGrayTipMsg(
+                    AppRuntimeHelper.getAppRuntime()!!,
+                    ContactCompat(ChatTypeConstants.GROUP, troopUin, ""),
+                    NtGrayTipHelper.createLocalJsonElement(NtGrayTipHelper.AIO_AV_GROUP_NOTICE.toLong(), builder.build().toString(), ""),
+                    true,
+                    true
+                ) { result, uin ->
+                    if (result != 0) {
+                        Log.e("GagInfoDisclosure error: addLocalJsonGrayTipMsg failed, result=$result, uin=$uin")
+                    }
                 }
             }
         }
