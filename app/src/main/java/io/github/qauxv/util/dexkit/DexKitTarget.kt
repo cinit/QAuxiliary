@@ -995,3 +995,10 @@ data object Hd_DisableGrowHalfLayer_Method : DexKitTarget.UsingStringVector() {
         m.returnType == Void.TYPE && m.paramCount == 3
     }
 }
+
+data object Hd_GagInfoDisclosure_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("<---0x2dc push  groupCode:")
+    override val declaringClass = "com.tencent.imcore.message"
+    override val filter = DexKitFilter.strInClsName("com/tencent/imcore/message/")
+}
