@@ -20,11 +20,14 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package me.hd.hook
+package me.hd.hook.menu
 
+import android.annotation.SuppressLint
+import android.widget.EditText
+import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.findField
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
-import com.xiaoniu.util.ContextUtils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.R
@@ -35,35 +38,61 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.dexkit.AIO_InputRootInit_QQNT
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 
+@SuppressLint("StaticFieldLeak")
 @FunctionHookEntry
 @UiItemAgentEntry
-object CopyMarkdown : CommonSwitchFunctionHook(
-    targets = arrayOf(AbstractQQCustomMenuItem)
+object EditTextContent : CommonSwitchFunctionHook(
+    targets = arrayOf(
+        AbstractQQCustomMenuItem,
+        AIO_InputRootInit_QQNT,
+    )
 ), OnMenuBuilder {
 
-    override val name = "复制Markdown消息"
+    override val name = "重新编辑消息"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
+    private var editText: EditText? = null
+
     override fun initOnce(): Boolean {
+        hookAfterIfEnabled(DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT)) { param ->
+            param.thisObject.javaClass.findField {
+                type == EditText::class.java
+            }.let {
+                editText = it.get(param.thisObject) as EditText
+            }
+        }
         return true
     }
 
-    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent")
+    private const val TEXT_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent"
+    private const val MIX_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent"
+    override val targetComponentTypes = arrayOf(TEXT_CONTEXT, MIX_CONTEXT)
+
+    @SuppressLint("SetTextI18n")
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        val item = CustomMenu.createItemIconNt(msg, "复制内容", R.drawable.ic_item_copy_72dp, R.id.item_copy_code) {
-            val ctx = ContextUtils.getCurrentActivity()
+        val item = CustomMenu.createItemIconNt(msg, "编辑重发", R.drawable.ic_item_edit_72dp, R.id.item_edit_to_send) {
             val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
-            msgRecord.elements.forEach { element ->
-                element.markdownElement?.let { markdownElement ->
-                    val content = markdownElement.content
-                    copyToClipboard(ctx, content)
-                    Toasts.success(ctx, "复制成功")
+            when (componentType) {
+                TEXT_CONTEXT -> {
+                    val stringBuilder = StringBuilder()
+                    msgRecord.elements.forEach { element ->
+                        element.textElement?.let { textElement ->
+                            stringBuilder.append(textElement.content)
+                        }
+                    }
+                    editText?.setText(stringBuilder.toString())
+                }
+
+                MIX_CONTEXT -> {
+                    // TODO: 待开发
+                    Toasts.show("快了快了, 已经新建文件夹了!")
                 }
             }
         }
