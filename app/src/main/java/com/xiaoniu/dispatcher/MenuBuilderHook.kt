@@ -39,6 +39,7 @@ import io.github.qauxv.util.Initiator
 import me.hd.hook.menu.CopyMarkdown
 import me.hd.hook.menu.EditTextContent
 import me.ketal.hook.PicCopyToClipboard
+import me.qcuncle.hook.TranslateTextMsg
 import top.xunflash.hook.MiniAppDirectJump
 import java.lang.reflect.Method
 
@@ -57,6 +58,7 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
         CopyMarkdown,
         MessageTTSHook,
         EditTextContent,
+        TranslateTextMsg,
     )
 
     override fun initOnce(): Boolean {
