@@ -16,6 +16,7 @@
 #include <optional>
 #include <sys/mman.h>
 #include <ucontext.h>
+#include <dlfcn.h>
 #include <type_traits>
 //#include <chrono>
 #include <unordered_map>
@@ -32,7 +33,9 @@
 #include "utils/AobScanUtils.h"
 #include "utils/MemoryUtils.h"
 #include "utils/arch_utils.h"
+#include "utils/endian.h"
 #include "qauxv_core/natives_utils.h"
+#include "qauxv_core/linker_utils.h"
 
 #ifndef STACK_GUARD
 // for debug purpose only
@@ -52,7 +55,7 @@ jclass klassRevokeMsgHook = nullptr;
 jobject gInstanceRevokeMsgHook = nullptr;
 jmethodID handleRecallSysMsgFromNtKernel = nullptr;
 
-uintptr_t gOffsetGetDecoderSp = 0;
+uintptr_t gfnCreatePBMessage = 0;
 
 uintptr_t gOffsetForTmpRev5048 = 0;
 
@@ -245,7 +248,7 @@ void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[mayb
     STACK_GUARD;
     std::array<void*, 2> objVar3 = {}; // actual size 0x10, maybe shared_ptr, but we don't have dtor
     STACK_GUARD;
-    call_func_with_x8((void*) (base + gOffsetGetDecoderSp), &objVar3, 0, 0, 0, 0);
+    call_func_with_x8((void*) gfnCreatePBMessage, &objVar3, 0, 0, 0, 0);
     void* notifyMsgBody = objVar3[0];
     if ((vcall<int, 0x100, 8, std::vector<uint8_t>*>(notifyMsgBody, &content) & 1) == 0) {
         LOGE("on recall group sys msg! decode kBytesMsgContent fail");
@@ -355,6 +358,213 @@ void HandleC2cRecallSysMsgCallback([[maybe_unused]] void* p1, [[maybe_unused]] v
 }
 
 // Nobody uses PaiYiPai, right?
+bool PerformNtRecallMsgHook(uint64_t baseAddress) {
+    if (sIsHooked) {
+        return false;
+    }
+    sIsHooked = true;
+    gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
+    // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 8d 40 f9
+    auto targetRecallC2cSysMsg = AobScanTarget()
+            .WithName("RecallC2cSysMsg")
+            .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
+            .WithStep(4)
+            .WithExecMemOnly(true)
+            .WithOffsetsForResult({-0x20, -0x24, -0x28})
+            .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+
+    // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9
+    auto targetRecallGroupSysMsg = AobScanTarget()
+            .WithName("RecallGroupSysMsg")
+            .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
+            .WithStep(4)
+            .WithExecMemOnly(true)
+            .WithOffsetsForResult({-0x18, -0x24, -0x28})
+            .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+
+    //@formatter:off
+        //OffsetForTmpRev5048
+        //61 01 80 52     mov        w1,#0xb
+        //?? ?? ?? ??     ???        ??,??
+        //?? 10 00 94     bl         FUN_?
+        //?? ?? 00 36     tbz        w0,#0x0,LAB_?
+        //?? ?? 40 f9     ldr        x?,[x??]
+        //61 01 80 52     mov        w1,#0xb
+        // ---------- THE GAP ----------
+        //e0 03 ?? aa     mov        x0,x??
+        //09 !! 40 f9     ldr        x9,[x8, #0x!!] <-- we need to find this
+        //e8 ?? ?? 91     add        x8,sp,#0x??
+        //20 01 3f d6     blr        x9
+        auto targetInstructionOffsetForTmpRev5048 = AobScanTarget()
+                .WithName("InstructionOffsetForTmpRev5048")
+                        //     0x61  0x01  0x80  0x52  0x??  0x??  0x??  0x??
+                        //     0x??  0x10  0x00  0x94  0x??  0x??  0x00  0x36
+                        //     0x??  0x??  0x40  0xf9  0x61  0x01  0x80  0x52
+                .WithSequence({0x61, 0x01, 0x80, 0x52, 0x00, 0x00, 0x00, 0x00,
+                               0x00, 0x10, 0x00, 0x94, 0x00, 0x00, 0x00, 0x36,
+                               0x00, 0x00, 0x40, 0xf9, 0x61, 0x01, 0x80, 0x52})
+                .WithMask({    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                               0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff,
+                               0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+                .WithStep(4)
+                .WithExecMemOnly(true)
+                .WithOffsetsForResult({7 * 4});
+        //@formatter:on
+
+    std::vector<std::string> errorMsgList;
+    // auto start = std::chrono::steady_clock::now();
+    if (!SearchForAllAobScanTargets({&targetRecallC2cSysMsg, &targetRecallGroupSysMsg,
+                                     &targetInstructionOffsetForTmpRev5048},
+                                    gLibkernelBaseAddress, true, errorMsgList)) {
+        LOGE("InitInitNtKernelRecallMsgHook SearchForAllAobScanTargets failed");
+        // sth went wrong
+        for (const auto& msg: errorMsgList) {
+            // report error to UI somehow
+            TraceError(nullptr, gInstanceRevokeMsgHook, msg);
+        }
+        return false;
+    }
+
+    {
+        // nt::IPBMessage::createPBMessage is an exported symbol for libbasic_share.so since 9.0.70.
+        // libbasic_share.so must be already loaded, for 9.0.70+, it's DT_NEEDED by libkernel.so.
+        void* createPBMessage = nullptr;
+        void* libbasic_share = loader_dlopen("libbasic_share.so", RTLD_NOW | RTLD_NOLOAD, gLibkernelBaseAddress);
+        if (libbasic_share != nullptr) {
+            const char* sym = "_ZN2nt10IPBMessage15createPBMessageEv";
+            createPBMessage = dlsym(libbasic_share, sym);
+        }
+
+        LOGD("libbasic_share.so: {:p}, createPBMessage: {:p}", libbasic_share, createPBMessage);
+
+        if (createPBMessage != nullptr) {
+            // we are all set
+            gfnCreatePBMessage = reinterpret_cast<uintptr_t>(createPBMessage);
+        } else {
+            // AOB scan for QQ before 9.0.70
+            // nt::IPBMessage::createPBMessage() 3f 8d 01 f8 f4 03 00 aa 1f 10 00 f9
+            auto targetCreatePBMessage = AobScanTarget()
+                    .WithName("nt::IPBMessage::createPBMessage()")
+                    .WithSequence({0x3f, 0x8d, 0x01, 0xf8, 0xf4, 0x03, 0x00, 0xaa, 0x1f, 0x10, 0x00, 0xf9})
+                    .WithStep(4)
+                    .WithExecMemOnly(true)
+                    .WithOffsetsForResult({-0x78})
+                    .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+
+            errorMsgList.clear();
+            if (!SearchForAllAobScanTargets({&targetCreatePBMessage}, gLibkernelBaseAddress, true, errorMsgList)) {
+                LOGE("InitInitNtKernelRecallMsgHook targetCreatePBMessage failed");
+                // sth went wrong
+                for (const auto& msg: errorMsgList) {
+                    // report error to UI somehow
+                    TraceError(nullptr, gInstanceRevokeMsgHook, msg);
+                }
+                return false;
+            }
+            uint64_t offsetCreatePBMessage = targetCreatePBMessage.GetResultOffset();
+            gfnCreatePBMessage = reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetCreatePBMessage;
+        }
+    }
+
+    // auto end = std::chrono::steady_clock::now();
+    // LOGD("InitInitNtKernelRecallMsgHook AobScan elapsed: {}us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
+
+    if (auto pkg = HostInfo::GetPackageName(); pkg != "com.tencent.mobileqq") {
+        TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, unexpected package name: {}", pkg);
+        return false;
+    }
+
+    uint64_t offsetC2c = targetRecallC2cSysMsg.GetResultOffset();
+    uint64_t offsetGroup = targetRecallGroupSysMsg.GetResultOffset();
+    uint64_t offsetInstForTmpRev5048 = targetInstructionOffsetForTmpRev5048.GetResultOffset();
+
+    {
+        using ::platform::arch::endian::btoh32;
+        uint32_t instructionForTmpRev5048m0 = *reinterpret_cast<uint32_t*>(
+                reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetInstForTmpRev5048);
+        uint32_t instructionForTmpRev5048m4 = *reinterpret_cast<uint32_t*>(
+                reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetInstForTmpRev5048 - 4u);
+        // LOGD("instructionForTmpRev5048={:08x}", instructionForTmpRev5048);
+        if ((instructionForTmpRev5048m0 & btoh32(0xff00ffffu)) == btoh32(0x090040f9u)) {
+            // try 1: for case w/o function outline
+            // 09 !! 40 f9     ldr  x9,[x8, #0x!!]
+            uint32_t imm12 = ((instructionForTmpRev5048m0 >> 10u) & 0xfffu) << 3u;
+            // LOGD("imm12={:x}", imm12);
+            gOffsetForTmpRev5048 = imm12;
+        } else if ((instructionForTmpRev5048m4 & (0b11111100u << 24u)) == (0b10010100u << 24u)) {
+            // try 2: for case w/ function outline
+            //  bl     xxx
+            uint32_t ins_bl = instructionForTmpRev5048m4;
+            auto imm26 = int32_t(ins_bl & 0x3ffffffu);
+            // sign extend
+            imm26 <<= 6u;
+            imm26 >>= 6u;
+            uint64_t curr_pc = reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetInstForTmpRev5048 - 4u;
+            uint64_t target = curr_pc + (imm26 << 2u);
+            LOGD("imm26={:x}, target={:p}(base+{:x})", imm26, (void*) target, target - baseAddress);
+            if (IsMemoryReadable(reinterpret_cast<const void*>(target), 16)) {
+                // try 4 instructions at most
+                std::vector<uint32_t> instructions;
+                instructions.reserve(4);
+                for (int i = 0; i < 4; i++) {
+                    instructions.push_back(*reinterpret_cast<const uint32_t*>(target + i * 4));
+                }
+                for (int i = 0; i < 4; i++) {
+                    auto ins = instructions[i];
+                    if ((ins & btoh32(0xff00ffffu)) == btoh32(0x090040f9u)) {
+                        // try 1: for case w/o function outline
+                        // 09 !! 40 f9     ldr  x9,[x8, #0x!!]
+                        uint32_t imm12 = ((ins >> 10u) & 0xfffu) << 3u;
+                        // LOGD("imm12={:x}", imm12);
+                        gOffsetForTmpRev5048 = imm12;
+                    }
+                }
+            } else {
+                TraceErrorF(nullptr, gInstanceRevokeMsgHook,
+                            "InitInitNtKernelRecallMsgHook failed, target is not readable, target={:p}(base+{:x})",
+                            (void*) target, target - baseAddress);
+                return false;
+            }
+        }
+        if (gOffsetForTmpRev5048 == 0) {
+            TraceErrorF(nullptr,
+                        gInstanceRevokeMsgHook,
+                        "InitInitNtKernelRecallMsgHook failed, gOffsetForTmpRev5048 == 0, offsetInstForTmpRev5048 == 0, "
+                        "ins[0]={:08x}, ins[-4]={:08x}",
+                        instructionForTmpRev5048m0,
+                        instructionForTmpRev5048m4);
+            return false;
+        }
+    }
+    LOGD("offsetC2c={:x}, offsetGroup={:x}, gfnCreatePBMessage={:p},  gOffsetForTmpRev5048={:x}",
+         offsetC2c, offsetGroup, (void*) gfnCreatePBMessage, gOffsetForTmpRev5048);
+
+
+    if (offsetC2c != 0) {
+        void* c2c = (void*) (baseAddress + offsetC2c);
+        if (CreateInlineHook(c2c, (void*) &HandleC2cRecallSysMsgCallback, (void**) &sOriginHandleC2cRecallSysMsgCallback) != 0) {
+            TraceErrorF(nullptr, gInstanceRevokeMsgHook,
+                        "InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed, c2c={:p}({:x}+{:x})",
+                        c2c, baseAddress, offsetC2c);
+            return false;
+        }
+    } else {
+        TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, offsetC2c == 0");
+    }
+    if (offsetGroup != 0) {
+        void* group = (void*) (baseAddress + offsetGroup);
+        if (CreateInlineHook(group, (void*) &HandleGroupRecallSysMsgCallback, (void**) &sOriginHandleGroupRecallSysMsgCallback) != 0) {
+            TraceErrorF(nullptr, gInstanceRevokeMsgHook,
+                        "InitInitNtKernelRecallMsgHook failed, DobbyHook group failed, group={:p}({:x}+{:x})",
+                        group, baseAddress, offsetGroup);
+            return false;
+        }
+    } else {
+        TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, offsetGroup == 0");
+    }
+    return true;
+}
+
 
 bool InitInitNtKernelRecallMsgHook() {
     using namespace utils;
@@ -362,137 +572,7 @@ bool InitInitNtKernelRecallMsgHook() {
         LOGW("InitInitNtKernelRecallMsgHook failed, already hooked");
         return false;
     }
-    auto fnHookProc = [](uint64_t baseAddress) {
-        if (sIsHooked) {
-            return false;
-        }
-        sIsHooked = true;
-        gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
-        // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 8d 40 f9
-        auto targetRecallC2cSysMsg = AobScanTarget()
-                .WithName("RecallC2cSysMsg")
-                .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
-                .WithStep(4)
-                .WithExecMemOnly(true)
-                .WithOffsetsForResult({-0x20, -0x24, -0x28})
-                .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
-
-        // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9
-        auto targetRecallGroupSysMsg = AobScanTarget()
-                .WithName("RecallGroupSysMsg")
-                .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
-                .WithStep(4)
-                .WithExecMemOnly(true)
-                .WithOffsetsForResult({-0x18, -0x24, -0x28})
-                .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
-
-        // GetDecoder 3f 8d 01 f8 f4 03 00 aa 1f 10 00 f9
-        auto targetGetDecoder = AobScanTarget()
-                .WithName("GetDecoder")
-                .WithSequence({0x3f, 0x8d, 0x01, 0xf8, 0xf4, 0x03, 0x00, 0xaa, 0x1f, 0x10, 0x00, 0xf9})
-                .WithStep(4)
-                .WithExecMemOnly(true)
-                .WithOffsetsForResult({-0x78})
-                .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
-
-        //@formatter:off
-        //OffsetForTmpRev5048
-        //61 01 80 52     mov        w1,#0xb
-        //e0 03 ?? aa     mov        x0,x?
-        //?? 10 00 94     bl         FUN_?
-        //?? ?? 00 36     tbz        w0,#0x0,LAB_?
-        //?? 02 40 f9     ldr        x8,[x??]
-        //61 01 80 52     mov        w1,#0xb
-        //e0 03 ?? aa     mov        x0,x??
-        //09 !! 40 f9     ldr        x9,[x8, #0x!!] <-- we need to find this
-        //e8 ?? ?? 91     add        x8,sp,#0x??
-        //20 01 3f d6     blr        x9
-        auto targetInstructionOffsetForTmpRev5048 = AobScanTarget()
-                .WithName("InstructionOffsetForTmpRev5048")
-                        //     0x61  0x01  0x80  0x52  0xe0  0x03  0x??  0xaa
-                        //     0x??  0x10  0x00  0x94  0x??  0x??  0x00  0x36
-                        //     0x??  0x02  0x40  0xf9  0x61  0x01  0x80  0x52
-                        //     0xe0  0x03  0x??  0xaa  0x09  0x??  0x40  0xf9
-                        //     0xe8  0x??  0x??  0x91  0x20  0x01  0x3f  0xd6
-                .WithSequence({0x61, 0x01, 0x80, 0x52, 0xe0, 0x03, 0x00, 0xaa,
-                               0x00, 0x10, 0x00, 0x94, 0x00, 0x00, 0x00, 0x36,
-                               0x00, 0x02, 0x40, 0xf9, 0x61, 0x01, 0x80, 0x52,
-                               0xe0, 0x03, 0x00, 0xaa, 0x09, 0x00, 0x40, 0xf9,
-                               0xe8, 0x00, 0x00, 0x91, 0x20, 0x01, 0x3f, 0xd6})
-                .WithMask({    0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff,
-                               0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff,
-                               0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff,
-                               0xff, 0xff, 0x00, 0xff, 0xff, 0x00, 0xff, 0xff,
-                               0xff, 0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff})
-                .WithStep(4)
-                .WithExecMemOnly(true)
-                .WithOffsetsForResult({7 * 4});
-        //@formatter:on
-
-        std::vector<std::string> errorMsgList;
-        // auto start = std::chrono::steady_clock::now();
-        if (!SearchForAllAobScanTargets({&targetRecallC2cSysMsg, &targetRecallGroupSysMsg, &targetGetDecoder,
-                                         &targetInstructionOffsetForTmpRev5048},
-                                        gLibkernelBaseAddress, true, errorMsgList)) {
-            LOGE("InitInitNtKernelRecallMsgHook SearchForAllAobScanTargets failed");
-            // sth went wrong
-            for (const auto& msg: errorMsgList) {
-                // report error to UI somehow
-                TraceError(nullptr, gInstanceRevokeMsgHook, msg);
-            }
-            return false;
-        }
-        // auto end = std::chrono::steady_clock::now();
-        // LOGD("InitInitNtKernelRecallMsgHook AobScan elapsed: {}us", std::chrono::duration_cast<std::chrono::microseconds>(end - start).count());
-
-        if (auto pkg = HostInfo::GetPackageName(); pkg != "com.tencent.mobileqq") {
-            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, unexpected package name: {}", pkg);
-            return false;
-        }
-
-        uint64_t offsetC2c = targetRecallC2cSysMsg.GetResultOffset();
-        uint64_t offsetGroup = targetRecallGroupSysMsg.GetResultOffset();
-        uint64_t offsetGetDecoder = targetGetDecoder.GetResultOffset();
-        uint64_t offsetInstForTmpRev5048 = targetInstructionOffsetForTmpRev5048.GetResultOffset();
-
-        uint32_t instructionForTmpRev5048 = *reinterpret_cast<uint32_t*>(
-                reinterpret_cast<uintptr_t>(gLibkernelBaseAddress) + offsetInstForTmpRev5048);
-        {
-            // LOGD("instructionForTmpRev5048={:08x}", instructionForTmpRev5048);
-            // 09 !! 40 f9     ldr  x9,[x8, #0x!!]
-            uint32_t imm12 = ((instructionForTmpRev5048 >> 10u) & 0xfffu) << 3u;
-            // LOGD("imm12={:x}", imm12);
-            gOffsetForTmpRev5048 = imm12;
-        }
-
-        LOGD("offsetC2c={:x}, offsetGroup={:x}, offsetGetDecoder={:x}, offsetInstForTmpRev5048={:x}, gOffsetForTmpRev5048={:x}",
-             offsetC2c, offsetGroup, offsetGetDecoder, offsetInstForTmpRev5048, gOffsetForTmpRev5048);
-
-        gOffsetGetDecoderSp = offsetGetDecoder;
-        if (offsetC2c != 0) {
-            void* c2c = (void*) (baseAddress + offsetC2c);
-            if (CreateInlineHook(c2c, (void*) &HandleC2cRecallSysMsgCallback, (void**) &sOriginHandleC2cRecallSysMsgCallback) != 0) {
-                TraceErrorF(nullptr, gInstanceRevokeMsgHook,
-                            "InitInitNtKernelRecallMsgHook failed, DobbyHook c2c failed, c2c={:p}({:x}+{:x})",
-                            c2c, baseAddress, offsetC2c);
-                return false;
-            }
-        } else {
-            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, offsetC2c == 0");
-        }
-        if (offsetGroup != 0) {
-            void* group = (void*) (baseAddress + offsetGroup);
-            if (CreateInlineHook(group, (void*) &HandleGroupRecallSysMsgCallback, (void**) &sOriginHandleGroupRecallSysMsgCallback) != 0) {
-                TraceErrorF(nullptr, gInstanceRevokeMsgHook,
-                            "InitInitNtKernelRecallMsgHook failed, DobbyHook group failed, group={:p}({:x}+{:x})",
-                            group, baseAddress, offsetGroup);
-                return false;
-            }
-        } else {
-            TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, offsetGroup == 0");
-        }
-        return true;
-    };
+    auto fnHookProc = &PerformNtRecallMsgHook;
     ProcessView self;
     if (int err;(err = self.readProcess(getpid())) != 0) {
         TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);

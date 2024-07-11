@@ -63,6 +63,7 @@ add_library(qauxv SHARED
         qauxv_core/SilkCodec.cc
         qauxv_core/HostInfo.cc
         qauxv_core/NativeCoreBridge.cc
+        qauxv_core/linker_utils.cc
 
         utils/shared_memory.cpp
         utils/auto_close_fd.cc
