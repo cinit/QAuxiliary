@@ -132,7 +132,7 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder 
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        val item = CustomMenu.createItemIconNt(msg, "TTS", 0, R.id.item_tts) {
+        val item = CustomMenu.createItemIconNt(msg, "TTS", R.drawable.ic_item_tts_72dp, R.id.item_tts) {
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
@@ -144,7 +144,7 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder 
             }
             TTS.speak(wc, text.toString())
         }
-        val item2 = CustomMenu.createItemIconNt(msg, "TTS+", 0, R.id.item_tts2) {
+        val item2 = CustomMenu.createItemIconNt(msg, "TTS+", R.drawable.ic_item_tts_plus_72dp, R.id.item_tts2) {
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
