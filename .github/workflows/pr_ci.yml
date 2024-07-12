@@ -60,7 +60,7 @@ jobs:
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3.4.1
+        uses: gradle/gradle-build-action@v3.4.2
 
       - name: Build with Gradle
         run: |
