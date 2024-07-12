@@ -364,7 +364,9 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     }
     sIsHooked = true;
     gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
-    // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 8d 40 f9
+
+    //@formatter:off
+    // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 ?? 40 f9
     auto targetRecallC2cSysMsg = AobScanTarget()
             .WithName("RecallC2cSysMsg")
             .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
@@ -373,7 +375,7 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
             .WithOffsetsForResult({-0x20, -0x24, -0x28})
             .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
-    // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 8d 40 f9
+    // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 !! 40 f9
     auto targetRecallGroupSysMsg = AobScanTarget()
             .WithName("RecallGroupSysMsg")
             .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
@@ -382,34 +384,33 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
             .WithOffsetsForResult({-0x18, -0x24, -0x28})
             .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
-    //@formatter:off
-        //OffsetForTmpRev5048
-        //61 01 80 52     mov        w1,#0xb
-        //?? ?? ?? ??     ???        ??,??
-        //?? 10 00 94     bl         FUN_?
-        //?? ?? 00 36     tbz        w0,#0x0,LAB_?
-        //?? ?? 40 f9     ldr        x?,[x??]
-        //61 01 80 52     mov        w1,#0xb
-        // ---------- THE GAP ----------
-        //e0 03 ?? aa     mov        x0,x??
-        //09 !! 40 f9     ldr        x9,[x8, #0x!!] <-- we need to find this
-        //e8 ?? ?? 91     add        x8,sp,#0x??
-        //20 01 3f d6     blr        x9
-        auto targetInstructionOffsetForTmpRev5048 = AobScanTarget()
-                .WithName("InstructionOffsetForTmpRev5048")
-                        //     0x61  0x01  0x80  0x52  0x??  0x??  0x??  0x??
-                        //     0x??  0x10  0x00  0x94  0x??  0x??  0x00  0x36
-                        //     0x??  0x??  0x40  0xf9  0x61  0x01  0x80  0x52
-                .WithSequence({0x61, 0x01, 0x80, 0x52, 0x00, 0x00, 0x00, 0x00,
-                               0x00, 0x10, 0x00, 0x94, 0x00, 0x00, 0x00, 0x36,
-                               0x00, 0x00, 0x40, 0xf9, 0x61, 0x01, 0x80, 0x52})
-                .WithMask({    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
-                               0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff,
-                               0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
-                .WithStep(4)
-                .WithExecMemOnly(true)
-                .WithOffsetsForResult({7 * 4});
-        //@formatter:on
+    //OffsetForTmpRev5048
+    //61 01 80 52     mov        w1,#0xb
+    //?? ?? ?? ??     ???        ??,??
+    //?? 10 00 94     bl         FUN_?
+    //?? ?? 00 36     tbz        w0,#0x0,LAB_?
+    //?? ?? 40 f9     ldr        x?,[x??]
+    //61 01 80 52     mov        w1,#0xb
+    // ---------- THE GAP ----------
+    //e0 03 ?? aa     mov        x0,x??
+    //09 !! 40 f9     ldr        x9,[x8, #0x!!] <-- we need to find this
+    //e8 ?? ?? 91     add        x8,sp,#0x??
+    //20 01 3f d6     blr        x9
+    auto targetInstructionOffsetForTmpRev5048 = AobScanTarget()
+            .WithName("InstructionOffsetForTmpRev5048")
+                    //     0x61  0x01  0x80  0x52  0x??  0x??  0x??  0x??
+                    //     0x??  0x10  0x00  0x94  0x??  0x??  0x00  0x36
+                    //     0x??  0x??  0x40  0xf9  0x61  0x01  0x80  0x52
+            .WithSequence({0x61, 0x01, 0x80, 0x52, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0x10, 0x00, 0x94, 0x00, 0x00, 0x00, 0x36,
+                           0x00, 0x00, 0x40, 0xf9, 0x61, 0x01, 0x80, 0x52})
+            .WithMask({    0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0x00, 0x00,
+                           0x00, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff,
+                           0x00, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+            .WithStep(4)
+            .WithExecMemOnly(true)
+            .WithOffsetsForResult({7 * 4});
+    //@formatter:on
 
     std::vector<std::string> errorMsgList;
     // auto start = std::chrono::steady_clock::now();

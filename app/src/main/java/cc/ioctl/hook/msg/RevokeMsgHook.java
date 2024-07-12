@@ -56,6 +56,7 @@ import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonConfigFunctionHook;
+import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
@@ -64,6 +65,7 @@ import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName;
 import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -71,6 +73,7 @@ import java.util.List;
 import java.util.Objects;
 import java.util.Random;
 import kotlin.Unit;
+import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function3;
 import kotlin.jvm.internal.Intrinsics;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -214,6 +217,28 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             list.clear();
         });
         return isSuccess;
+    }
+
+    private boolean initNtRecallMsgHookV2() throws ReflectiveOperationException {
+        Class<?> kIQQNTWrapperSessionProxy = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IQQNTWrapperSession$CppProxy");
+        Method onMsfPushMethod = ArraysKt.single(kIQQNTWrapperSessionProxy.getDeclaredMethods(), method -> {
+            return "onMsfPush".equals(method.getName()) && (method.getParameterCount() == 3 || method.getParameterCount() == 2);
+        });
+        Class<?> kPushExtraInfo = null;
+        Field transInfoMapField = null;
+        if (onMsfPushMethod.getParameterCount() == 3) {
+            kPushExtraInfo = onMsfPushMethod.getParameterTypes()[2];
+            transInfoMapField = kPushExtraInfo.getDeclaredField("transInfoMap");
+            transInfoMapField.setAccessible(true);
+        }
+        HookUtils.hookBeforeIfEnabled(this, onMsfPushMethod, -51, param -> {
+            String cmd = (String) param.args[0];
+            byte[] protoBuf = (byte[]) param.args[1];
+            Object pushExtraInfo = param.args[2];
+            String procName = SyncUtils.getProcessName();
+            Log.d("onMsfPush: cmd=" + cmd + ", pblength=" + protoBuf.length + ", proc=" + procName);
+        });
+        return true;
     }
 
     private native boolean nativeInitNtKernelRecallMsgHook();
