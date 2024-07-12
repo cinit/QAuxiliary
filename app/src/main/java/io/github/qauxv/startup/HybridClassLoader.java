@@ -54,6 +54,7 @@ public class HybridClassLoader extends ClassLoader {
             || name.startsWith("com.google.android.")
             || name.startsWith("com.google.gson.")
             || name.startsWith("com.google.common.")
+            || name.startsWith("com.google.protobuf.")
             || name.startsWith("com.microsoft.appcenter.")
             || name.startsWith("org.intellij.lang.annotations.")
             || name.startsWith("org.jetbrains.annotations.")
