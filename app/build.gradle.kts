@@ -282,7 +282,7 @@ dependencies {
     implementation(libs.byte.buddy)
     implementation(libs.dalvik.dx)
     ksp(libs.sealedEnum.ksp)
-    implementation(libs.google.protobuf)
+    implementation(libs.google.protobuf.java)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
@@ -478,6 +478,9 @@ val generateEulaAndPrivacy by tasks.registering {
 
 // see https://github.com/google/protobuf-gradle-plugin/issues/518
 protobuf {
+    protoc {
+        artifact = libs.google.protobuf.protoc.get().toString()
+    }
     plugins {
         generateProtoTasks {
             all().forEach {
