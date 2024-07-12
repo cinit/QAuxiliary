@@ -106,8 +106,15 @@ object FakePicSize : BaseFunctionHook(
                 val msgElement = (element as MsgElement)
                 msgElement.picElement?.apply {
                     if (contact.chatType != 4) picSubType = 0
-                    picWidth = size
-                    picHeight = size
+                    val (oldWidth, oldHeight) = Pair(picWidth, picHeight)
+                    val ratio = oldWidth.toDouble() / oldHeight.toDouble()
+                    if (oldWidth > oldHeight) {
+                        picWidth = size
+                        picHeight = (size / ratio).toInt()
+                    } else {
+                        picWidth = (size * ratio).toInt()
+                        picHeight = size
+                    }
                 }
             }
         }
