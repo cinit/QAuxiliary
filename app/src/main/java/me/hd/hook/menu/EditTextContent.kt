@@ -54,6 +54,7 @@ object EditTextContent : CommonSwitchFunctionHook(
 ), OnMenuBuilder {
 
     override val name = "编辑重发文本消息"
+    override val description = "消息菜单中新增功能"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 

@@ -30,23 +30,26 @@ import de.robv.android.xposed.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.kernelcompat.ContactCompat
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CopyMarkdown : CommonSwitchFunctionHook(
+object RecallMsgRecord : CommonSwitchFunctionHook(
     targets = arrayOf(AbstractQQCustomMenuItem)
 ), OnMenuBuilder {
 
-    override val name = "复制Markdown消息"
-    override val description = "消息菜单中新增功能"
+    override val name = "撤回特殊消息"
+    override val description = "消息菜单中新增功能, 当前支持表情泡泡, 戳一戳, 红包转账"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -54,17 +57,26 @@ object CopyMarkdown : CommonSwitchFunctionHook(
         return true
     }
 
-    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent")
+    private const val FACE_BUBBLE_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.facebubble.AIOFaceBubbleContentComponent"
+    private const val POKE_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.poke.AIOPokeContentComponent"
+    private const val Q_WALLET = "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent"
+    override val targetComponentTypes = arrayOf(FACE_BUBBLE_CONTEXT, POKE_CONTEXT, Q_WALLET)
+
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        val item = CustomMenu.createItemIconNt(msg, "复制内容", R.drawable.ic_item_copy_72dp, R.id.item_copy_md) {
-            val ctx = ContextUtils.getCurrentActivity()
+        val item = CustomMenu.createItemIconNt(msg, "撤回消息", R.drawable.ic_item_recall_72dp, R.id.item_recall_msgRecord) {
+            val context = CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity())
             val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
-            msgRecord.elements.forEach { element ->
-                element.markdownElement?.let { markdownElement ->
-                    val content = markdownElement.content
-                    copyToClipboard(ctx, content)
-                    Toasts.success(ctx, "复制成功")
+            val appRuntime = AppRuntimeHelper.getAppRuntime()!!
+            val msgService = MsgServiceHelper.getKernelMsgService(appRuntime)!!
+            msgService.recallMsg(
+                ContactCompat(msgRecord.chatType, msgRecord.peerUid, ""),
+                ArrayList<Long>(listOf(msgRecord.msgId)),
+            ) { status, reason ->
+                if (status == 0) {
+                    Toasts.success(context, "撤回成功")
+                } else {
+                    Toasts.error(context, "撤回失败: $reason")
                 }
             }
         }
