@@ -29,6 +29,7 @@ import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.kernelcompat.ContactCompat
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
@@ -39,6 +40,7 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.data.ConfigData
 import me.ketal.util.ignoreResult
 import xyz.nextalone.util.method
+import java.io.Serializable
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -98,11 +100,12 @@ object FakePicSize : BaseFunctionHook(
         hookBeforeIfEnabled(msgServiceClass.method("sendMsg")!!) { param ->
             val size = sizeMap.values.toList()[sizeIndex]
             if (size == 0) return@hookBeforeIfEnabled
+            val contact = ContactCompat.fromKernelObject(param.args[1] as Serializable)
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
                 msgElement.picElement?.apply {
-                    picSubType = 0
+                    if (contact.chatType != 4) picSubType = 0
                     picWidth = size
                     picHeight = size
                 }

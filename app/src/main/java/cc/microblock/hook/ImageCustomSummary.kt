@@ -191,7 +191,6 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
         val sendMsgMethod = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService\$CppProxy").method("sendMsg")!!
         hookBeforeIfEnabled(sendMsgMethod) { param ->
             val contact = ContactCompat.fromKernelObject(param.args[1] as Serializable)
-            val chatType = contact.chatType
             val elements = param.args[2] as ArrayList<*>
             for (element in elements) {
                 val msgElement = (element as MsgElement)
@@ -202,9 +201,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
                     }
                     if (typePic1247 && picSubType != 0) {
                         picElement.summary = summaryText
-                        if (chatType != 4) { // 不是频道才修改类型, 不然会发送不出去
-                            picElement.picSubType = 7
-                        }
+                        if (contact.chatType != 4) picElement.picSubType = 7
                     }
                 }
                 msgElement.marketFaceElement?.let { marketFaceElement ->
