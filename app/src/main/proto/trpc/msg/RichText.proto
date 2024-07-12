@@ -2,14 +2,14 @@ syntax = "proto3";
 package io.github.qauxv.proto.trpc.msg;
 option java_package = "io.github.qauxv.proto.trpc.msg";
 
-import "Attr.proto";
-import "MsgElement.proto";
-import "NotOnlineFile.proto";
-import "Ptt.proto";
+//import "Attr.proto";
+//import "MsgElement.proto";
+//import "NotOnlineFile.proto";
+//import "Ptt.proto";
 
 message RichText {
-  Attr attr = 1;
-  repeated MsgElement elems = 2;
+  // Attr attr = 1;
+  // repeated MsgElement elems = 2;
   // NotOnlineFile not_online_file = 3;
   // Ptt ptt = 4;
 }
