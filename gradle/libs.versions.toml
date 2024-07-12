@@ -1,12 +1,12 @@
 [versions]
-agp = "8.5.0"
+agp = "8.5.1"
 appCenter = "5.0.4"
 kotlin = "2.0.0"
-ksp = "2.0.0-1.0.22"
-lifecycle = "2.8.2"
+ksp = "2.0.0-1.0.23"
+lifecycle = "2.8.3"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.27.1"
+protobuf = "4.27.2"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -21,9 +21,9 @@ androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "6.10.0.202406032230-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "4.3" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.17.0" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "1.18.0" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.8.1" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.0" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.7.1" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
@@ -40,7 +40,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.17" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.14.18" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
@@ -48,9 +48,9 @@ google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.r
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 
 [plugins]
-changelog = { id = "org.jetbrains.changelog", version = "2.2.0" }
+changelog = { id = "org.jetbrains.changelog", version = "2.2.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.2.1" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.2.2" }
 protobuf = { id = "com.google.protobuf", version = "0.9.4" }
