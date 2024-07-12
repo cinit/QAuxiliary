@@ -1,0 +1,6 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+
+message ResponseForward {
+  string friend_name = 6;
+}

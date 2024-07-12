@@ -1,0 +1,11 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+message ForwardHead {
+  uint32 field1 = 1;
+  uint32 field2 = 2;
+  uint32 field3 = 3; // for friend: 2, for group: null
+  string unknown_base64 = 4;
+  string avatar = 5;
+}

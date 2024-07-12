@@ -43,6 +43,7 @@ plugins {
     id("build-logic.android.application")
     alias(libs.plugins.changelog)
     alias(libs.plugins.ksp)
+    alias(libs.plugins.protobuf)
     alias(libs.plugins.serialization)
     alias(libs.plugins.aboutlibraries)
 }
@@ -471,6 +472,21 @@ val generateEulaAndPrivacy by tasks.registering {
                 append("</body></html>")
             }.lines().joinToString("")
             it.writeText(output)
+        }
+    }
+}
+
+// see https://github.com/google/protobuf-gradle-plugin/issues/518
+protobuf {
+    plugins {
+        generateProtoTasks {
+            all().forEach {
+                it.builtins {
+                    create("java") {
+                        option("lite")
+                    }
+                }
+            }
         }
     }
 }

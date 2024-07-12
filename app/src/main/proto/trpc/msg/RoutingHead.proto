@@ -1,0 +1,17 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+import "trpc/msg/C2C.proto";
+import "trpc/msg/route/Grp.proto";
+import "trpc/msg/route/GrpTmp.proto";
+import "trpc/msg/route/WPATmp.proto";
+import "trpc/msg/route/Trans0X211.proto";
+
+message RoutingHead {
+  C2C c2c = 1;
+  Grp grp = 2;
+  GrpTmp grp_tmp = 3;
+  WPATmp wpa_tmp = 6;
+  Trans0X211 trans_0x211 = 15;
+}

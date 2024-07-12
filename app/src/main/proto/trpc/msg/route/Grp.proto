@@ -1,0 +1,6 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+
+message Grp {
+  uint32 group_code = 1;
+}

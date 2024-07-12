@@ -1,0 +1,6 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+
+message MessageControl {
+  int32 msg_flag = 1;
+}
