@@ -49,6 +49,7 @@ import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.findHostView
 import java.io.File
@@ -63,7 +64,7 @@ object RepeatToImg : CommonSwitchFunctionHook(
 ), OnMenuBuilder {
 
     override val name = "复读消息为图片"
-    override val description = "消息菜单中新增功能"
+    override val description = "消息菜单中新增功能, 长时间使用可能导致页面卡顿"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -95,50 +96,60 @@ object RepeatToImg : CommonSwitchFunctionHook(
         }
     }
 
-    private fun saveAndSendScreenshot(context: Context, view: ViewGroup, msgRecord: MsgRecord) {
+    private fun processBitmap(context: Context, view: ViewGroup, msgRecord: MsgRecord): Bitmap {
         val bitmap = getViewBitmap(view)
-
-        val (contentId, avatarId, nickId) = when {
-            requireMinQQVersion(QQVersion.QQ_9_0_75) -> Triple("ny6", "t6o", "tiq")
-            requireMinQQVersion(QQVersion.QQ_8_9_88) -> Triple("ntl", "skw", "swf")
-            else -> Triple("ntl", "skw", "swf")
+        val (contentId, avatarId, nickId) = when (hostInfo.versionCode) {
+            QQVersion.QQ_9_0_75 -> Triple("ny6", "t6o", "tiq")
+            QQVersion.QQ_9_0_0 -> Triple("nv2", "snz", "szp")
+            QQVersion.QQ_8_9_88 -> Triple("ntl", "skw", "swf")
+            else -> Triple("", "", "")
         }
-        val dp5 = LayoutHelper.dip2px(context, 5f)
-        val contentView = view.findHostView<LinearLayout>(contentId)!!
-        val croppedBitmap = if (msgRecord.chatType == 1) {
-            val avatarView = view.findHostView<FrameLayout>(avatarId)!!
-            if (msgRecord.sendType == 0) {
-                Bitmap.createBitmap(
-                    bitmap, 0, avatarView.top - dp5,
-                    contentView.right, contentView.bottom - (avatarView.top - dp5)
-                )
+        if (contentId.isNotEmpty() && avatarId.isNotEmpty() && nickId.isNotEmpty()) {
+            val dp5 = LayoutHelper.dip2px(context, 5f)
+            val contentView = view.findHostView<LinearLayout>(contentId)!!
+            return if (msgRecord.chatType == 1) {//好友
+                val avatarView = view.findHostView<FrameLayout>(avatarId)!!
+                if (msgRecord.sendType == 0) {//别人
+                    Bitmap.createBitmap(
+                        bitmap,
+                        0, avatarView.top - dp5, contentView.right, contentView.bottom - (avatarView.top - dp5)
+                    )
+                } else {//自己
+                    Bitmap.createBitmap(
+                        bitmap,
+                        contentView.left, avatarView.top - dp5,
+                        bitmap.width - contentView.left, contentView.bottom - (avatarView.top - dp5)
+                    )
+                }
+            } else if (msgRecord.chatType == 2) {//群聊
+                val nickView = view.findHostView<FrameLayout>(nickId)!!
+                if (msgRecord.sendType == 0) {//别人
+                    Bitmap.createBitmap(
+                        bitmap,
+                        0, nickView.top - dp5,
+                        maxOf(contentView.right, nickView.right), contentView.bottom - (nickView.top - dp5)
+                    )
+                } else {//自己
+                    Bitmap.createBitmap(
+                        bitmap,
+                        minOf(contentView.left, nickView.left), nickView.top - dp5,
+                        bitmap.width - minOf(contentView.left, nickView.left), contentView.bottom - (nickView.top - dp5)
+                    )
+                }
             } else {
-                Bitmap.createBitmap(
-                    bitmap, contentView.left, avatarView.top - dp5,
-                    bitmap.width - contentView.left, contentView.bottom - (avatarView.top - dp5)
-                )
-            }
-        } else if (msgRecord.chatType == 2) {
-            val nickView = view.findHostView<FrameLayout>(nickId)!!
-            if (msgRecord.sendType == 0) {
-                Bitmap.createBitmap(
-                    bitmap, 0, nickView.top - dp5,
-                    maxOf(contentView.right, nickView.right), contentView.bottom - (nickView.top - dp5)
-                )
-            } else {
-                Bitmap.createBitmap(
-                    bitmap, minOf(contentView.left, nickView.left), nickView.top - dp5,
-                    bitmap.width - minOf(contentView.left, nickView.left), contentView.bottom - (nickView.top - dp5)
-                )
+                bitmap
             }
         } else {
-            return@saveAndSendScreenshot
+            return bitmap
         }
+    }
 
+    private fun sendBitmap(context: Context, view: ViewGroup, msgRecord: MsgRecord) {
+        val bitmap = processBitmap(context, view, msgRecord)
         val imgFile = File(context.externalCacheDir, "hd_temp/img").apply { parentFile!!.mkdirs() }
         try {
             FileOutputStream(imgFile).use { fos ->
-                croppedBitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
+                bitmap.compress(Bitmap.CompressFormat.PNG, 100, fos)
             }
             MsgSender.send_pic_by_contact(
                 ContactCompat(msgRecord.chatType, msgRecord.peerUid, ""),
@@ -174,7 +185,7 @@ object RepeatToImg : CommonSwitchFunctionHook(
             val context = CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity())
             val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
             val msgView = msgViewHashMap[msgRecord.msgId]
-            msgView?.let { saveAndSendScreenshot(context, it, msgRecord) }
+            msgView?.let { sendBitmap(context, it, msgRecord) }
         }
         param.result = listOf(item) + param.result as List<*>
     }
