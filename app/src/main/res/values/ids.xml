@@ -15,6 +15,7 @@
     <item type="id" name="item_edit_to_send" />
     <item type="id" name="item_translate" />
     <item type="id" name="item_recall_msgRecord" />
+    <item type="id" name="item_repeat_to_img" />
     <item type="id" name="rootBounceScrollView" />
     <item type="id" name="rootMainLayout" />
     <item type="id" name="rootMainList" />
