@@ -627,6 +627,14 @@ data object NCustomWidgetUtil_updateCustomNoteTxt : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.strInClsName("com/tencent/widget") or DexKitFilter.defpackage and DexKitFilter.notHasSuper
 }
 
+data object AIOTitleVB_updateLeftTopBack_NT : DexKitTarget.UsingStr() {
+    // guess
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.aio.title.AIOTitleVB"
+    override val traitString = arrayOf("99+")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/title/")
+}
+
 data object CCustomWidgetUtil_updateCustomNoteTxt_NT : DexKitTarget.UsingStr() {
     // guess
     override val declaringClass = "com.tencent.widget.CustomWidgetUtil"
