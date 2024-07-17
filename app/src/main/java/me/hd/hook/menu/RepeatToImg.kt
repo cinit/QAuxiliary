@@ -72,11 +72,13 @@ object RepeatToImg : CommonSwitchFunctionHook(
 
     override fun initOnce(): Boolean {
         val clazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
-        val method = clazz.declaredMethods.single { method ->
+        hookAfterIfEnabled(clazz.declaredMethods.single { method ->
+            method.name == "onCreateView"
+        }) { msgViewHashMap.clear() }
+        hookAfterIfEnabled(clazz.declaredMethods.single { method ->
             val params = method.parameterTypes
             params.size == 4 && params[0] == Int::class.java && params[2] == List::class.java && params[3] == Bundle::class.java
-        }
-        hookAfterIfEnabled(method) { param ->
+        }) { param ->
             val msg = param.args[1]
             val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
             clazz.declaredFields.single { field ->
