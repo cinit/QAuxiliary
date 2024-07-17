@@ -60,7 +60,7 @@ jobs:
           restore-keys: native-cache-
 
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3.4.2
+        uses: gradle/gradle-build-action@v3.5.0
 
       - name: Build with Gradle
         run: |
