@@ -214,7 +214,8 @@ void NotifyRecallMsgEventForGroup(const std::string& peerUid, const std::string&
 void (* sOriginHandleGroupRecallSysMsgCallback)(void*, void*, void*) = nullptr;
 
 void HandleGroupRecallSysMsgCallback([[maybe_unused]] void* x0, void* x1, [[maybe_unused]] void* x2, [[maybe_unused]] int x3) {
-    // LOGD("HandleGroupRecallSysMsgCallback start p1={:p}, p2={:p}, p3={:p}", x0, x1, x2);
+     LOGD("HandleGroupRecallSysMsgCallback start p1={:p}, p2={:p}, p3={:p}", x0, x1, x2);
+    return;
     // we can still do it... hitherto p3 == null... we need to decode the message manually...
     uintptr_t base = (uintptr_t) gLibkernelBaseAddress;
     void* pVar1 = *(void**) x1;
@@ -309,6 +310,8 @@ void HandleC2cRecallSysMsgCallback([[maybe_unused]] void* p1, [[maybe_unused]] v
         LOGE("HandleC2cGroupSysMsgCallback BUG !!! *p3 = null, this should not happen!!!");
         return;
     }
+    LOGD("HandleC2cRecallSysMsgCallback start p1={:p}, p2={:p}, p3={:p}", p1, p2, p3);
+    return;
 
     std::array<void*, 3> vectorResultStub = {nullptr, nullptr, nullptr};
 
@@ -369,7 +372,8 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     // RecallC2cSysMsg 09 8d 40 f8 f5 03 00 aa 21 00 80 52 f3 03 02 aa 29 ?? 40 f9
     auto targetRecallC2cSysMsg = AobScanTarget()
             .WithName("RecallC2cSysMsg")
-            .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x8d, 0x40, 0xf9})
+            .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0xf5, 0x03, 0x00, 0xaa, 0x21, 0x00, 0x80, 0x52, 0xf3, 0x03, 0x02, 0xaa, 0x29, 0x00, 0x40, 0xf9})
+            .WithMask(    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff})
             .WithStep(4)
             .WithExecMemOnly(true)
             .WithOffsetsForResult({-0x20, -0x24, -0x28})
@@ -378,7 +382,8 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 !! 40 f9
     auto targetRecallGroupSysMsg = AobScanTarget()
             .WithName("RecallGroupSysMsg")
-            .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x8d, 0x40, 0xf9})
+            .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x00, 0x40, 0xf9})
+            .WithMask(    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff})
             .WithStep(4)
             .WithExecMemOnly(true)
             .WithOffsetsForResult({-0x18, -0x24, -0x28})
@@ -642,7 +647,7 @@ bool InitInitNtKernelRecallMsgHook() {
 } // ntqq::hook
 
 extern "C" JNIEXPORT jboolean JNICALL
-Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHook(JNIEnv* env, jobject thiz) {
+Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHookV1p2(JNIEnv* env, jobject thiz) {
     using ntqq::hook::klassRevokeMsgHook;
     using ntqq::hook::gInstanceRevokeMsgHook;
     using ntqq::hook::handleRecallSysMsgFromNtKernel;

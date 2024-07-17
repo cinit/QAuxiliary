@@ -6,6 +6,6 @@ import "trpc/msg/RichText.proto";
 
 message MessageBody {
   RichText rich_text = 1;
-  bytes msg_content = 2; // Offline file is now put here
-  bytes msg_encrypt_content = 3;
+  optional bytes msg_content = 2; // Offline file is now put here
+  optional bytes msg_encrypt_content = 3;
 }

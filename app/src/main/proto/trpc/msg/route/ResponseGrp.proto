@@ -1,8 +1,0 @@
-syntax = "proto3";
-package io.github.qauxv.proto.trpc.msg;
-
-message ResponseGrp {
-  uint32 group_uin = 1;
-  string member_name = 4;
-  string group_name = 7;
-}

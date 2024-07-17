@@ -1,7 +1,0 @@
-syntax = "proto3";
-package io.github.qauxv.proto.trpc.msg;
-
-message WPATmp {
-  uint64 to_uin = 1;
-  bytes sig = 2;
-}

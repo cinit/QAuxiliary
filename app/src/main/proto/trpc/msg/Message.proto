@@ -5,21 +5,9 @@ option java_package = "io.github.qauxv.proto.trpc.msg";
 import "trpc/msg/RoutingHead.proto";
 import "trpc/msg/ContentHead.proto";
 import "trpc/msg/MessageBody.proto";
-import "trpc/msg/MessageControl.proto";
 
 message Message {
   RoutingHead routing_head = 1;
   ContentHead content_head = 2;
   MessageBody body = 3;
-  uint32 seq = 4;
-  uint32 rand = 5;
-  bytes sync_cookie = 6;
-  // AppShareInfo app_share = 7;
-  uint32 via = 8;
-  uint32 data_statist = 9;
-  // MultiMsgAssist multi_msg_assist = 10;
-  // InputNotifyInfo input_notify_info = 11;
-  MessageControl ctrl = 12;
-  // ReceiptReq receipt_req = 13;
-  uint32 multi_send_seq = 14;
 }

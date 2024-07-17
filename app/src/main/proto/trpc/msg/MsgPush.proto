@@ -1,0 +1,11 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+import "trpc/msg/Message.proto";
+
+// trpc.msg.olpush.OlPushService.MsgPush
+
+message MsgPush {
+  Message message = 1;
+}

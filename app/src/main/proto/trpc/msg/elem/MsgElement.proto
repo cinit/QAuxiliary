@@ -1,0 +1,28 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg.elem";
+
+import "trpc/msg/elem/Text.proto";
+import "trpc/msg/elem/ExtraInfo.proto";
+
+message MsgElement {
+  optional Text text = 1; // TextEntity
+  // Face face = 2;
+  // OnlineImage online_image = 3;
+  // NotOnlineImage not_online_image = 4; // Offline Image
+  // TransElem trans_elem = 5;
+  // Marketface marketface = 6;
+  // CustomFace custom_face = 8;
+  // ElemFlags2 elem_flags2 = 9;
+  // RichMsg rich_msg = 12;
+  // GroupFile group_file = 13;
+  optional ExtraInfo extra_info = 16;
+  // VideoFile video_file = 19;
+  // AnonymousGroupMessage anon_group_msg = 21;
+  // QQWalletMsg qq_wallet_msg = 24;
+  // CustomElem custom_elem = 31;
+  // GeneralFlags general_flags = 37;
+  // SrcMsg src_msg = 45; // Forward/ReplyEntity
+  // LightAppElem light_app_elem = 51;
+  // CommonElem common_elem = 53;
+}

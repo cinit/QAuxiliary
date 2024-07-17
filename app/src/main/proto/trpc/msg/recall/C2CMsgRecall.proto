@@ -1,0 +1,21 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+message C2CMsgRecall {
+  repeated MsgInfo msg_infos = 1;
+  int32 field_2 = 2; // 1001
+  int32 field_3 = 3; // i don't know
+  int32 field_4 = 4; // 0
+  bytes field_5 = 5; // 5: {1: 0}
+
+  message MsgInfo {
+    string from_uid = 1;
+    string to_uid = 2;
+    uint32 msg_client_seq = 3;
+    uint64 msg_uid = 4;
+    uint64 timestamp = 5; // unix seconds
+    uint64 random_id = 6;
+    uint64 msg_seq = 20;
+  }
+}

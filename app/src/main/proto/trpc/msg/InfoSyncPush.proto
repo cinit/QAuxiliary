@@ -1,0 +1,38 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+import "trpc/msg/Message.proto";
+
+// trpc.msg.register_proxy.RegisterProxy.InfoSyncPush
+message InfoSyncPush {
+  optional uint32 result = 1;
+  optional string err_msg = 2;
+  uint32 push_flag = 3;
+  optional uint32 push_seq = 4;
+  optional uint32 retry_flag = 5;
+  // repeated GroupNode group_nodes = 6;
+  optional bytes field_7 = 7; // maybe sync messages?
+  optional SyncMsgRecall sync_msg_recall = 8;
+  optional bytes field_9 = 9; // maybe sync guild?
+  optional uint32 use_init_cache_data = 10;
+  // optional GuildNode guild_nodes = 11;
+  // optional RecentContactInfo recent_contact = 12;
+
+  message SyncMsgRecall {
+    SyncTime sync_start = 3;
+    repeated SyncInfoBody body = 4;
+    SyncTime sync_end = 5;
+
+    message SyncTime {
+      uint64 timestamp = 1;
+    }
+
+    message SyncInfoBody {
+      uint64 peer_uin = 1;
+      string peer_uid = 2;
+      uint64 timestamp = 5;
+      repeated Message msg = 8;
+    }
+  }
+}

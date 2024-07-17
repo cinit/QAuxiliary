@@ -6,14 +6,14 @@ import "trpc/msg/ForwardHead.proto";
 
 message ContentHead {
   uint32 type = 1;
-  uint32 sub_type = 2;
-  uint32 div_seq = 3;
+  optional uint32 sub_type = 2; // may be missing
+  optional uint32 div_seq = 3;
   int64 msg_id = 4;
   uint32 sequence = 5;
   int64 timestamp = 6;
-  int64 field_7 = 7;
-  uint32 field_8 = 8;
-  uint32 field_9 = 9;
+  optional int64 field_7 = 7;
+  optional uint32 field_8 = 8;
+  optional uint32 field_9 = 9;
   uint64 new_id = 12;
-  ForwardHead forward = 15;
+  optional ForwardHead forward = 15;
 }

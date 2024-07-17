@@ -1,8 +1,0 @@
-syntax = "proto3";
-package io.github.qauxv.proto.trpc.msg;
-
-message Trans0X211 {
-  uint64 to_uin = 1;
-  uint32 cc_cmd = 2;
-  string uid = 8;
-}

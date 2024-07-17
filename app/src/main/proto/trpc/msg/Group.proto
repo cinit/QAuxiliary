@@ -1,0 +1,12 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+
+message Group {
+  uint32 group_code = 1;
+  uint32 field2 = 2; // 1
+  uint32 field3 = 3; // 500053
+  string sender_nick = 4;
+  uint32 field5 = 5; // 1
+  uint32 field6 = 6; // 1
+  string group_name = 7;
+}

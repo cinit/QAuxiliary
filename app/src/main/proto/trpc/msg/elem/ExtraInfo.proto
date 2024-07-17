@@ -1,0 +1,18 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg.elem";
+
+message ExtraInfo {
+  bytes nick = 1;
+  bytes group_card = 2;
+  int32 level = 3;
+  int32 flags = 4;
+  int32 group_mask = 5;
+  int32 msg_tail_id = 6;
+  bytes sender_title = 7;
+  bytes apns_tips = 8;
+  uint64 uin = 9;
+  int32 msg_state_flag = 10;
+  int32 apns_sound_type = 11;
+  int32 new_group_flag = 12;
+}

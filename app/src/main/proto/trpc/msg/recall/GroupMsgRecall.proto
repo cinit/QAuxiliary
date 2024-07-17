@@ -1,0 +1,28 @@
+syntax = "proto3";
+package io.github.qauxv.proto.trpc.msg;
+option java_package = "io.github.qauxv.proto.trpc.msg";
+
+message GroupMsgRecall {
+  uint32 op_type = 1; // should be 7
+  uint32 group_code = 4;
+  MsgRecallInfo msg_recall = 11;
+  uint32 field_37 = 37; // may be msq_seq
+  uint32 field_39 = 39; // i don't know
+
+  message MsgRecallInfo {
+    string operator_uid = 1;
+    repeated MsgInfo msg_infos = 3;
+    bytes field_5 = 5; // 5: {1: 0}
+    int32 field_6 = 6; // 0
+    int32 field_7 = 7; // 0
+
+    message MsgInfo {
+      uint32 msg_seq = 1;
+      uint64 timestamp = 2; // unix seconds
+      uint32 random_id = 3;
+      int32 field_4 = 4; // 0
+      int32 field_5 = 5; // 0
+      string msg_author_uid = 6;
+    }
+  }
+}
