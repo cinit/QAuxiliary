@@ -60,7 +60,7 @@ object NoAskContinueRecvShortVideoOrNot : BaseSwitchFunctionDecorator(), IStartA
                 }
             }
         }
-        return true
+        return false
     }
 
 }
