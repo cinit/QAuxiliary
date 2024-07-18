@@ -61,8 +61,7 @@ public class CustomDialog {
                     Class clz_Lite = load("com/dataline/activities/LiteActivity");
                     Field[] fs = clz_Lite.getDeclaredFields();
                     for (Field f : fs) {
-                        if (Modifier.isPrivate(f.getModifiers()) && Dialog.class
-                            .isAssignableFrom(f.getType())) {
+                        if (Modifier.isPrivate(f.getModifiers()) && Dialog.class.isAssignableFrom(f.getType())) {
                             clz_CustomDialog = f.getType();
                             break;
                         }
@@ -72,8 +71,7 @@ public class CustomDialog {
             if (m_DialogUtil_a == null) {
                 Method tmpa = null, tmpb = null;
                 for (Method m : clz_DialogUtil.getDeclaredMethods()) {
-                    if (m.getReturnType().equals(clz_CustomDialog) && (Modifier
-                        .isPublic(m.getModifiers()))) {
+                    if (m.getReturnType().equals(clz_CustomDialog) && (Modifier.isPublic(m.getModifiers()))) {
                         Class<?>[] argt = m.getParameterTypes();
                         if (argt.length != 2) {
                             continue;
@@ -118,6 +116,11 @@ public class CustomDialog {
         return ref;
     }
 
+    /**
+     * @param context the context to create the dialog
+     * @return a failsafe dialog builder
+     * @deprecated use {@link androidx.appcompat.app.AlertDialog.Builder} with {@link CommonContextWrapper#createAppCompatContext(Context)}  instead
+     */
     public static CustomDialog createFailsafe(Context context) {
         CustomDialog ref = new CustomDialog();
         // dark/light theme is already handled by CommonContextWrapper.createAppCompatContext(context)
@@ -203,8 +206,7 @@ public class CustomDialog {
     }
 
     @NonNull
-    public CustomDialog setPositiveButton(int text,
-                                          @Nullable DialogInterface.OnClickListener listener) {
+    public CustomDialog setPositiveButton(int text, @Nullable DialogInterface.OnClickListener listener) {
         Context ctx;
         if (failsafe) {
             ctx = mBuilder.getContext();
@@ -215,8 +217,7 @@ public class CustomDialog {
     }
 
     @NonNull
-    public CustomDialog setNegativeButton(int text,
-                                          @Nullable DialogInterface.OnClickListener listener) {
+    public CustomDialog setNegativeButton(int text, @Nullable DialogInterface.OnClickListener listener) {
         Context ctx;
         if (failsafe) {
             ctx = mBuilder.getContext();
@@ -233,15 +234,13 @@ public class CustomDialog {
     }
 
     @NonNull
-    public CustomDialog setPositiveButton(@NonNull String text,
-                                          @Nullable DialogInterface.OnClickListener listener) {
+    public CustomDialog setPositiveButton(@NonNull String text, @Nullable DialogInterface.OnClickListener listener) {
         if (!failsafe) {
             if (text != null && listener == null) {
                 listener = new DummyCallback();
             }
             try {
-                Reflex.invokeVirtual(mDialog, "setPositiveButton", text, listener, String.class,
-                    DialogInterface.OnClickListener.class);
+                Reflex.invokeVirtual(mDialog, "setPositiveButton", text, listener, String.class, DialogInterface.OnClickListener.class);
             } catch (Exception e) {
                 Log.e(e);
             }
@@ -252,8 +251,7 @@ public class CustomDialog {
     }
 
     @NonNull
-    public CustomDialog setNeutralButton(@NonNull String text,
-                                         @Nullable DialogInterface.OnClickListener listener) {
+    public CustomDialog setNeutralButton(@NonNull String text, @Nullable DialogInterface.OnClickListener listener) {
         if (!failsafe) {
             //They don't have a neutral button, sigh...
         } else {
@@ -263,8 +261,7 @@ public class CustomDialog {
     }
 
     @NonNull
-    public CustomDialog setNeutralButton(int text,
-                                         @Nullable DialogInterface.OnClickListener listener) {
+    public CustomDialog setNeutralButton(int text, @Nullable DialogInterface.OnClickListener listener) {
         if (!failsafe) {
             //They don't have a neutral button, sigh...
         } else {

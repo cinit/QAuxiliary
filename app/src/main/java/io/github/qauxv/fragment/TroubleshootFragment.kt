@@ -39,9 +39,14 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
+import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
+import androidx.appcompat.widget.AppCompatCheckBox
+import androidx.appcompat.widget.AppCompatEditText
+import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
@@ -49,6 +54,7 @@ import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
+import cc.ioctl.util.LayoutHelper.dip2px
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
@@ -222,8 +228,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         exitProcess(0)
     }
 
-    private val clickToResetDefaultConfig = confirmBeforeAction(
-        "此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + hostInfo.hostName + ".\n此操作不可恢复"
+    private val clickToResetDefaultConfig = confirmTwiceBeforeAction(
+        "此操作将删除该模块的所有配置信息,包括屏蔽通知的群列表,但不包括历史好友列表.点击确认后请等待3秒后手动重启" + hostInfo.hostName + ".\n此操作不可恢复",
+        "删除所有配置信息"
     ) {
         ConfigManager.getCache().apply {
             clear()
@@ -237,12 +244,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         exitProcess(0)
     }
 
-    private val clickToClearRecoveredFriends = confirmBeforeAction(
+    private val clickToClearRecoveredFriends = confirmTwiceBeforeAction(
         """
             此操作将删除当前账号(${getLongAccountUin()})下的 已恢复 的历史好友记录(记录可单独删除).
             如果因 BUG 大量好友被标记为已删除, 请先刷新好友列表, 然后再点击此按钮.
             此操作不可恢复
-            """.trimIndent()
+            """.trimIndent(),
+        "删除已恢复的好友记录"
     ) {
         val exm = ExfriendManager.getCurrent()
         val it: MutableIterator<*> = exm.events.entries.iterator()
@@ -258,11 +266,12 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         Toasts.success(requireContext(), "操作成功")
     }
 
-    private val clickToClearAllFriends = confirmBeforeAction(
+    private val clickToClearAllFriends = confirmTwiceBeforeAction(
         "此操作将删除当前账号(" + getLongAccountUin()
             + ")下的 全部 的历史好友记录, 通常您不需要进行此操作. \n" +
             "如果您的历史好友列表中因bug出现大量好友,请在联系人列表下拉刷新后点击 删除标记为已恢复的好友. \n" +
-            "此操作不可恢复"
+            "此操作不可恢复",
+        "删除所有好友记录"
     ) {
         val uin = getLongAccountUin()
         if (uin < 10000) {
@@ -301,6 +310,57 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         dialog.setMessage(confirmMessage)
         dialog.setTitle("确认操作")
         dialog.show()
+    }
+
+    private fun confirmTwiceBeforeAction(
+        confirmMessage: String,
+        secondConfirmCheckBoxText: String,
+        action: () -> Unit
+    ) = View.OnClickListener {
+        val ctx = requireContext()
+        val builder = AlertDialog.Builder(ctx)
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            try {
+                action()
+            } catch (e: Exception) {
+                CustomDialog.createFailsafe(ctx)
+                    .setTitle(Reflex.getShortClassName(e))
+                    .setCancelable(true)
+                    .setMessage(e.toString())
+                    .ok().show()
+            }
+        }
+        builder.setNegativeButton(android.R.string.cancel, null)
+        builder.setCancelable(true)
+        builder.setTitle("确认操作")
+        // create a linear layout to hold the message and checkbox
+        val layout = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            val padding = ctx.resources.getDimension(androidx.appcompat.R.dimen.abc_dialog_padding_material).toInt()
+            setPadding(padding, padding / 3, padding, 0)
+        }
+        val message = AppCompatTextView(ctx).apply {
+            text = confirmMessage
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+        }
+        val checkBox = AppCompatCheckBox(ctx).apply {
+            text = secondConfirmCheckBoxText
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+            isClickable = true
+            isChecked = false
+        }
+        layout.addView(message)
+        layout.addView(checkBox)
+        builder.setView(layout)
+        val dialog = builder.show()
+        // get positive button and set listener
+        val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        checkBox.setOnCheckedChangeListener { _, isChecked ->
+            positiveButton.isEnabled = isChecked
+        }
+        positiveButton.isEnabled = false
     }
 
     private fun actionOrShowError(action: () -> Unit) = View.OnClickListener {
