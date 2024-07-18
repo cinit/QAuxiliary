@@ -80,10 +80,13 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Objects;
 import java.util.Random;
+import java.util.Set;
 import kotlin.Unit;
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function3;
@@ -104,6 +107,8 @@ import mqq.app.AppRuntime;
  * 2023-06-16 Fri.12:40 Initial support for NT kernel.
  * <p>
  * 2023-07-12 Mon.23:12 Basic support for NT kernel.
+ * <p>
+ * 2024-07-17 Wed.22:03 Use ProtoBuf to get recall info.
  */
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -393,6 +398,15 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
         String selfUid = RelationNTUinAndUidApi.getUidFromUin(AppRuntimeHelper.getAccount());
         if (TextUtils.isEmpty(selfUid)) {
             Log.e("handleMsgPushForC2cRecall fatal: selfUid is empty");
+            return;
+        }
+        // verify the message type
+        ContentHeadOuterClass.ContentHead contentHead = message.getContentHead();
+        int type = contentHead.getType();
+        int subType = contentHead.getSubType();
+        // group recall: 732, 17
+        if (!(type == 732 && subType == 17)) {
+            // not our business
             return;
         }
         MessageBodyOuterClass.MessageBody body = message.getBody();
