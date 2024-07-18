@@ -131,7 +131,8 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
                 if (vMsg[4].toInt() == 12) {
                     val selfUin = AppRuntimeHelper.getAccount()
                     val troopUin = getLongData(vMsg, 0).toString()
-                    val opUin = getLongData(vMsg, 6).toString()
+                    val opUinTmp = getLongData(vMsg, 6)
+                    val opUin = (opUinTmp.takeIf { it > 0 } ?: (opUinTmp and 0xFFFFFFFFL)).toString()
                     val victimUinTmp = getLongData(vMsg, 16)
                     val victimUin = (victimUinTmp.takeIf { it > 0 } ?: (victimUinTmp and 0xFFFFFFFFL)).toString()
                     val victimTime = getLongData(vMsg, 20)
