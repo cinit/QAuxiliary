@@ -46,7 +46,16 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
         HotUpdateManager.CHANNEL_CANARY to R.id.hotUpdateConfig_channel_canary,
     )
 
+    private val actionIdToViewId = mapOf(
+        HotUpdateManager.ACTION_DISABLE to R.id.hotUpdateConfig_action_disabled,
+        HotUpdateManager.ACTION_QUERY to R.id.hotUpdateConfig_action_query_before_update,
+        HotUpdateManager.ACTION_AUTO_UPDATE_WITH_NOTIFICATION to R.id.hotUpdateConfig_notice_after_update,
+        HotUpdateManager.ACTION_AUTO_UPDATE_WITHOUT_NOTIFICATION to R.id.hotUpdateConfig_auto_update_without_notice,
+    )
+
     private fun viewIdToChannelId(viewId: Int) = channelIdToViewId.filterValues { it == viewId }.keys.first()
+
+    private fun viewIdToActionId(viewId: Int) = actionIdToViewId.filterValues { it == viewId }.keys.first()
 
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         title = "热更新配置"
@@ -55,6 +64,12 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
             hotUpdateConfigChannelStable.setOnClickListener(this@HotUpdateConfigFragment)
             hotUpdateConfigChannelBeta.setOnClickListener(this@HotUpdateConfigFragment)
             hotUpdateConfigChannelCanary.setOnClickListener(this@HotUpdateConfigFragment)
+
+            hotUpdateConfigActionDisabled.setOnClickListener(this@HotUpdateConfigFragment)
+            hotUpdateConfigActionQueryBeforeUpdate.setOnClickListener(this@HotUpdateConfigFragment)
+            hotUpdateConfigNoticeAfterUpdate.setOnClickListener(this@HotUpdateConfigFragment)
+            hotUpdateConfigAutoUpdateWithoutNotice.setOnClickListener(this@HotUpdateConfigFragment)
+
             updateViewStatus(this)
 
             fun adjustTitleTextSize(v: AppCompatTextView) {
@@ -79,6 +94,11 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
             adjustTitleTextSize(hotUpdateConfigChannelStable)
             adjustTitleTextSize(hotUpdateConfigChannelBeta)
             adjustTitleTextSize(hotUpdateConfigChannelCanary)
+
+            adjustTitleTextSize(hotUpdateConfigActionDisabled)
+            adjustTitleTextSize(hotUpdateConfigActionQueryBeforeUpdate)
+            adjustTitleTextSize(hotUpdateConfigNoticeAfterUpdate)
+            adjustTitleTextSize(hotUpdateConfigAutoUpdateWithoutNotice)
         }
         rootLayoutView = binding!!.root
         return binding!!.root
@@ -92,6 +112,7 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
     private fun updateViewStatus(binding: FragmentHotUpdateConfigBinding) {
         val ctx = requireContext()
         val currentChannel = HotUpdateManager.currentChannel
+        val currentAction = HotUpdateManager.currentAction
 
         binding.hotUpdateConfigCurrentInfo.text = "别看了，这个功能还没做好，选什么都没用"
 
@@ -100,6 +121,12 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
             binding.hotUpdateConfigChannelStable,
             binding.hotUpdateConfigChannelBeta,
             binding.hotUpdateConfigChannelCanary,
+        )
+        val actionButtons = arrayOf(
+            binding.hotUpdateConfigActionDisabled,
+            binding.hotUpdateConfigActionQueryBeforeUpdate,
+            binding.hotUpdateConfigNoticeAfterUpdate,
+            binding.hotUpdateConfigAutoUpdateWithoutNotice,
         )
         val accentColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(
             ctx,
@@ -110,6 +137,22 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
         channelButtons.forEach {
             val channelId = viewIdToChannelId(it.id)
             if (currentChannel == channelId) {
+                it.setTextColor(accentColor)
+                if (it.compoundDrawables[2] == null) {
+                    it.setCompoundDrawablesWithIntrinsicBounds(
+                        null, null, ResourcesCompat.getDrawable(
+                            ctx.resources, R.drawable.ic_check_24, ctx.theme
+                        ), null
+                    )
+                }
+            } else {
+                it.setCompoundDrawables(null, null, null, null)
+                it.setTextColor(secondTextColor)
+            }
+        }
+        actionButtons.forEach {
+            val actionId = viewIdToActionId(it.id)
+            if (currentAction == actionId) {
                 it.setTextColor(accentColor)
                 if (it.compoundDrawables[2] == null) {
                     it.setCompoundDrawablesWithIntrinsicBounds(
@@ -159,12 +202,25 @@ class HotUpdateConfigFragment : BaseRootLayoutFragment(), View.OnClickListener {
         }
     }
 
+    private fun onActionClick(v: View, actionId: Int) {
+        if (HotUpdateManager.currentAction == actionId) {
+            return
+        }
+        HotUpdateManager.currentAction = actionId
+        updateViewStatus(binding!!)
+    }
+
     override fun onClick(v: View) {
         when (v.id) {
             R.id.hotUpdateConfig_channel_disabled -> onChannelClick(v, HotUpdateManager.CHANNEL_DISABLED)
             R.id.hotUpdateConfig_channel_stable -> onChannelClick(v, HotUpdateManager.CHANNEL_STABLE)
             R.id.hotUpdateConfig_channel_beta -> onChannelClick(v, HotUpdateManager.CHANNEL_BETA)
             R.id.hotUpdateConfig_channel_canary -> onChannelClick(v, HotUpdateManager.CHANNEL_CANARY)
+
+            R.id.hotUpdateConfig_action_disabled -> onActionClick(v, HotUpdateManager.ACTION_DISABLE)
+            R.id.hotUpdateConfig_action_query_before_update -> onActionClick(v, HotUpdateManager.ACTION_QUERY)
+            R.id.hotUpdateConfig_notice_after_update -> onActionClick(v, HotUpdateManager.ACTION_AUTO_UPDATE_WITH_NOTIFICATION)
+            R.id.hotUpdateConfig_auto_update_without_notice -> onActionClick(v, HotUpdateManager.ACTION_AUTO_UPDATE_WITHOUT_NOTIFICATION)
         }
     }
 

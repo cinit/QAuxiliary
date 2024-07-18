@@ -32,6 +32,11 @@ object HotUpdateManager {
     const val CHANNEL_BETA = 3
     const val CHANNEL_CANARY = 4
 
+    const val ACTION_DISABLE = 0
+    const val ACTION_QUERY = 1
+    const val ACTION_AUTO_UPDATE_WITH_NOTIFICATION = 2
+    const val ACTION_AUTO_UPDATE_WITHOUT_NOTIFICATION = 3
+
     var currentChannel: Int
         get() = ConfigManager.getDefaultConfig().getIntOrDefault(KEY_HOT_UPDATE_CHANNEL, CHANNEL_DISABLED)
         set(value) {
@@ -39,7 +44,14 @@ object HotUpdateManager {
             ConfigManager.getDefaultConfig().putInt(KEY_HOT_UPDATE_CHANNEL, value)
         }
 
+    var currentAction: Int
+        get() = ConfigManager.getDefaultConfig().getIntOrDefault("KEY_HOT_UPDATE_ACTION", ACTION_QUERY)
+        set(value) {
+            check(value in ACTION_DISABLE..ACTION_AUTO_UPDATE_WITHOUT_NOTIFICATION)
+            ConfigManager.getDefaultConfig().putInt("KEY_HOT_UPDATE_ACTION", value)
+        }
+
     val isHotUpdateEnabled: Boolean
-        get() = currentChannel > 0
+        get() = currentChannel > 0 && currentAction > 0
 
 }

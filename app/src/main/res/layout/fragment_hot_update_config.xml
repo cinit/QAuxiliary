@@ -38,10 +38,110 @@
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="20dp"
             android:layout_marginTop="10dp"
+            android:layout_marginBottom="12dp"
             android:gravity="start|top"
             android:text="%s"
             android:textColor="@color/secondTextColor"
             android:textSize="14sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.2"
+            android:background="@color/secondTextColor"
+            android:layout_marginVertical="1dp" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginHorizontal="20dp"
+            android:layout_marginTop="10dp"
+            android:gravity="start|top"
+            android:text="更新方式"
+            android:textStyle="bold"
+            android:textColor="@color/thirdTextColor"
+            android:textSize="16sp" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_action_disabled"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@drawable/ic_check_24"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_action_btn_action_disabled"
+                android:textColor="?attr/colorAccent" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_action_query_before_update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_action_btn_query_before_update"
+                android:textColor="@color/secondTextColor" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_notice_after_update"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:checked="false"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_action_btn_notice_after_update"
+                android:textColor="@color/secondTextColor" />
+
+            <androidx.appcompat.widget.AppCompatTextView
+                android:id="@+id/hotUpdateConfig_auto_update_without_notice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:background="@drawable/bg_ripple_rect"
+                android:clickable="true"
+                android:drawableEnd="@null"
+                android:drawableTint="?attr/colorAccent"
+                android:focusable="true"
+                android:gravity="start|center_vertical"
+                android:minHeight="48dp"
+                android:paddingHorizontal="20dp"
+                android:paddingVertical="10dp"
+                android:text="@string/cfg_ui_hot_update_action_btn_auto_update_without_notice"
+                android:textColor="@color/secondTextColor" />
+
+        </LinearLayout>
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:alpha="0.2"
+            android:background="@color/secondTextColor"
+            android:layout_marginVertical="1dp" />
 
         <TextView
             android:layout_width="match_parent"
@@ -50,7 +150,8 @@
             android:layout_marginTop="10dp"
             android:gravity="start|top"
             android:text="热更新通道"
-            android:textColor="?attr/colorAccent"
+            android:textStyle="bold"
+            android:textColor="@color/thirdTextColor"
             android:textSize="16sp" />
 
         <LinearLayout

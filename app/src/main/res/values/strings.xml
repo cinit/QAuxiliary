@@ -45,6 +45,10 @@
     <string name="cfg_ui_hot_update_channel_btn_stable">稳定版\n其实就是“推荐的 CI”，通常不会有问题，更新频率在一个多星期左右</string>
     <string name="cfg_ui_hot_update_channel_btn_beta">Beta\n测试版，可能存在一些功能性问题（如版本不兼容），更新频率一至两天</string>
     <string name="cfg_ui_hot_update_channel_btn_canary">Canary\n持续集成版，仅供开发者测试，代码未经测试，可能存在严重问题，更新由开发者代码提交触发</string>
+    <string name="cfg_ui_hot_update_action_btn_action_disabled">禁用\n禁用热更新（禁用新版本检测）</string>
+    <string name="cfg_ui_hot_update_action_btn_query_before_update">询问\n发现新版本时询问用户是否更新</string>
+    <string name="cfg_ui_hot_update_action_btn_notice_after_update">自动更新\n发现新版本时自动更新，更新完成后通知用户</string>
+    <string name="cfg_ui_hot_update_action_btn_auto_update_without_notice">静默更新\n发现新版本时自动更新，并且不通知用户</string>
     <string name="dialog_btn_cancel">取消</string>
     <string name="dialog_tx_risk_control_general_title">风控警告</string>
     <string name="dialog_tx_risk_control_btn_copy_user_uin">复制QQ号</string>
