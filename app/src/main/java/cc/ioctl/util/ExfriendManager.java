@@ -94,7 +94,7 @@ public class ExfriendManager {
 
     private static final long[] ROBOT_ENTERPRISE_UIN_ARRAY = new long[]{
             // 查询ROBOT信息 https://qun.qq.com/qunpro/robot/qunshare?robot_uin=66600000
-            66600000L, // =babyQ
+            66600000L, // babyQ
             2854196925L, // QQ小店助手
             2854202683L, // 游戏助手
             2854204259L, // 赞噢机器人
