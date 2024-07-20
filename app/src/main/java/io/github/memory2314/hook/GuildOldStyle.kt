@@ -35,9 +35,10 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object GuildOldStyle : CommonSwitchFunctionHook() {
     override val name = "频道旧版样式"
-    override val description = "当前仅适配QQ9.0.0"    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GUILD_CATEGORY
+    override val description = "当前仅适配QQ9.0.0"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GUILD_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_0)
-    
+
     override fun initOnce() = throwOrTrue {
         "Lcom/tencent/mobileqq/guild/discover/GuildDiscoverABTestHelper;->w()I".method.replace(this, 1)
     }
