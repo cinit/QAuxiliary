@@ -445,9 +445,9 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
             String authorUid = msgInfo.getMsgAuthorUid();
             long random64 = msgInfo.getRandomId();
 
-            Log.d("handleMsgPushForGroupRecall: groupCode=" + groupCodeText + ", operatorUid=" + operatorUid
-                    + ", authorUid=" + authorUid + ", random64=" + random64 + ", timeSeconds=" + timeSeconds
-                    + ", msgSeq=" + msgSeq);
+            // Log.d("handleMsgPushForGroupRecall: groupCode=" + groupCodeText + ", operatorUid=" + operatorUid
+            //        + ", authorUid=" + authorUid + ", random64=" + random64 + ", timeSeconds=" + timeSeconds
+            //        + ", msgSeq=" + msgSeq);
 
             // invoke the handler
             onRecallSysMsgForNT(ChatTypeConstants.GROUP, groupCodeText, operatorUid, authorUid, groupCodeText, random64, timeSeconds, 0, msgSeq, 0);
