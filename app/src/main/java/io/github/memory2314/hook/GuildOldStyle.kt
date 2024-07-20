@@ -21,10 +21,14 @@
  */
 package io.github.memory2314.hook
 
-import io.github.qauxv.base.annotation.FunctionHookEntryimport io.github.qauxv.base.annotation.UiItemAgentEntry
-import io.github.qauxv.dsl.FunctionEntryRouterimport io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.QQVersionimport io.github.qauxv.util.requireMinQQVersion
-import xyz.nextalone.util.methodimport xyz.nextalone.util.replace
+import io.github.qauxv.base.annotation.FunctionHookEntryimport
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouterimport
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.QQVersionimport
+import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.methodimport
+import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
