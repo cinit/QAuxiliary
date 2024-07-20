@@ -21,6 +21,7 @@
  */
 package io.github.qauxv.router.dispacher
 
+import cc.hicore.QApp.QAppUtils
 import de.robv.android.xposed.XC_MethodHook
 import de.robv.android.xposed.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -53,6 +54,11 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
+        if (QAppUtils.isQQnt()) {
+            // QQ NT does not use ItemBuilderFactory
+            // TODO: 2024-07-19 implement an alternative for QQ NT
+            return true
+        }
         var getMsgType: Method? = null
         for (m in DexKit.requireClassFromCache(CItemBuilderFactory).methods) {
             if (m.returnType == Int::class.javaPrimitiveType) {
