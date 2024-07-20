@@ -123,6 +123,9 @@ public class InjectDelayableHooks {
                     }
                 }
             }
+
+            long start = System.currentTimeMillis();
+
             final ArrayList<Step> steps = new ArrayList<>(todos);
             // collect all dex-deobfs steps if backend supports
             HashSet<String> deobfIndexList = new HashSet<>(16);
@@ -208,6 +211,8 @@ public class InjectDelayableHooks {
                 }
             } finally {
                 DexDeobfsProvider.INSTANCE.exitDeobfsSection();
+                long end = System.currentTimeMillis();
+                Log.i("DexDeobfsProvider: cost " + (end - start) + "ms");
             }
         }
         if (LicenseStatus.hasUserAcceptEula()) {
