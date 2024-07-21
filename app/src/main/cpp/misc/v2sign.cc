@@ -75,7 +75,7 @@ namespace teble::v2sign {
     const uint32_t v2Id = 0x7109871a;
 
     std::string getModulePath(JNIEnv *env) {
-        jclass cMainHook = env->FindClass("io/github/qauxv/startup/HookEntry");
+        jclass cMainHook = env->FindClass("io/github/qauxv/core/MainHook");
         jclass cClass = env->FindClass("java/lang/Class");
         jmethodID mGetClassLoader = env->GetMethodID(cClass, "getClassLoader",
                                                      "()Ljava/lang/ClassLoader;");
