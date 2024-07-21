@@ -721,7 +721,7 @@ data object AIO_Destroy_QQNT : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = true
     override val traitStringVectors = arrayOf(arrayOf("ChatPie", "onDestroy "))
     override val declaringClass = "AIO_Create_QQNT"
-    override val filter = DexKitFilter.strInClsName("com/tencent/aio/base/chat/ChatPie")
+    override val filter = DexKitFilter.strInClsName("Lcom/tencent/aio/base/chat/ChatPie;", true)
 }
 
 data object AIO_InputRootInit_QQNT : DexKitTarget.UsingStr() {
