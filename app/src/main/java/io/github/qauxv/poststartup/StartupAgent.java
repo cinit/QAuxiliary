@@ -72,17 +72,13 @@ public class StartupAgent {
         // bypass hidden api
         ensureHiddenApiAccess();
         // we want context
-        Application baseApp = getApplicationByActivityThread();
-        if (baseApp == null) {
+        Context ctx = getBaseApplicationImpl(hostClassLoader);
+        if (ctx == null) {
             if (hookBridge == null) {
                 throw new UnsupportedOperationException("neither base application nor hook bridge found");
             }
             StartupHook.getInstance().initializeBeforeAppCreate(hostClassLoader);
         } else {
-            Context ctx = getBaseApplicationImpl(hostClassLoader);
-            if (ctx == null) {
-                throw new AssertionError("getBaseApplicationImpl() == null but getApplicationByActivityThread() != null");
-            }
             StartupHook.getInstance().initializeAfterAppCreate(ctx);
         }
     }
@@ -105,18 +101,6 @@ public class StartupAgent {
             return app;
         } catch (ReflectiveOperationException e) {
             android.util.Log.e("QAuxv", "getBaseApplicationImpl: failed", e);
-            throw IoUtils.unsafeThrow(e);
-        }
-    }
-
-    @Nullable
-    public static Application getApplicationByActivityThread() {
-        try {
-            Class<?> kActivityThread = Class.forName("android.app.ActivityThread");
-            Method mGetApplication = kActivityThread.getDeclaredMethod("currentApplication");
-            return (Application) mGetApplication.invoke(null);
-        } catch (ReflectiveOperationException e) {
-            android.util.Log.e("QAuxv", "getApplicationByActivityThread: failed", e);
             throw IoUtils.unsafeThrow(e);
         }
     }
