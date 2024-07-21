@@ -24,7 +24,7 @@ package cc.ioctl.util;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import java.lang.reflect.Constructor;

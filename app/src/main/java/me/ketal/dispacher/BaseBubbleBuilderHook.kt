@@ -29,7 +29,7 @@ import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.msg.MultiForwardAvatarHook
 import cc.ioctl.util.HookUtils
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator

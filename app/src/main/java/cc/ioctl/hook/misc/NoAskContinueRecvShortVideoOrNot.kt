@@ -22,7 +22,7 @@
 package cc.ioctl.hook.misc
 
 import android.content.Intent
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry

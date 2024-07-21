@@ -25,7 +25,7 @@ package io.github.fusumayuki.hook
 import android.view.View
 import android.view.ViewStub
 import cc.ioctl.util.HookUtils.hookBeforeIfEnabled
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

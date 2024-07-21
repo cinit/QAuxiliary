@@ -25,7 +25,7 @@ package me.hd.hook
 import android.view.View
 import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

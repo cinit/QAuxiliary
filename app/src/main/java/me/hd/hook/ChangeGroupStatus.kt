@@ -23,7 +23,7 @@
 package me.hd.hook
 
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

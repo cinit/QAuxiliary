@@ -23,8 +23,8 @@ package cc.ioctl.util;
 
 import android.view.View;
 import android.view.ViewGroup;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import java.io.File;

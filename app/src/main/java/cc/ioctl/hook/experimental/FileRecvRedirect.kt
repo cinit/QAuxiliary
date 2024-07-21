@@ -38,7 +38,7 @@ import cc.ioctl.util.HostInfo
 import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.Log
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.duzhaokun123.util.FilePicker
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry

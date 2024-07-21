@@ -52,7 +52,7 @@ import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
-import de.robv.android.xposed.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;

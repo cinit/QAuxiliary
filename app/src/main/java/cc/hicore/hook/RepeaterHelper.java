@@ -39,7 +39,7 @@ import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
 import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.ioctl.util.LayoutHelper;
-import de.robv.android.xposed.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.R;
 import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.LicenseStatus;

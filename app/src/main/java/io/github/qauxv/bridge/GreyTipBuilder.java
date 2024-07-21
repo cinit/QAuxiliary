@@ -21,8 +21,8 @@
  */
 package io.github.qauxv.bridge;
 
-import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.setObjectField;
+import static io.github.qauxv.util.xpcompat.XposedHelpers.callMethod;
+import static io.github.qauxv.util.xpcompat.XposedHelpers.setObjectField;
 
 import android.os.Bundle;
 import cc.ioctl.util.Reflex;

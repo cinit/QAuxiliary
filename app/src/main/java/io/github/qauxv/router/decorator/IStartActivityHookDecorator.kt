@@ -22,7 +22,7 @@
 package io.github.qauxv.router.decorator
 
 import android.content.Intent
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 

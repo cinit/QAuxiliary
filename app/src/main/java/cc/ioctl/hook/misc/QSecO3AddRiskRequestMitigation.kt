@@ -29,7 +29,7 @@ import android.view.View
 import androidx.appcompat.app.AlertDialog
 import cc.ioctl.util.HookUtils
 import cc.ioctl.util.Reflex
-import de.robv.android.xposed.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.ComponentHookEntry
 import io.github.qauxv.hook.BaseComponentHook

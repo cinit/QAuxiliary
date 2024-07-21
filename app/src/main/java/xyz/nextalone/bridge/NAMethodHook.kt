@@ -22,7 +22,7 @@
 
 package xyz.nextalone.bridge
 
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.Log

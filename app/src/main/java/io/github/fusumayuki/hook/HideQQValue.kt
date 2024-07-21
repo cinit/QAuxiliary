@@ -26,7 +26,7 @@ import android.view.View
 import cc.ioctl.util.HookUtils.hookBeforeIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.alphi.qhmk.module.HiddenVipIconForSe
-import de.robv.android.xposed.XC_MethodHook.MethodHookParam
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

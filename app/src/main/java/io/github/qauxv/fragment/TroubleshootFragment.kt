@@ -60,7 +60,7 @@ import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
-import de.robv.android.xposed.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
@@ -175,7 +175,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 val statusInfo = "PID: " + android.os.Process.myPid() +
                     ", UID: " + android.os.Process.myUid() +
                     ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
-                    "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
+                    "Xposed API version: " + StartupInfo.requireHookBridge().apiLevel + "\n" +
                     "module: " + StartupInfo.getModulePath() + "\n" +
                     "ctx.dataDir: " + hostInfo.application.dataDir
                 description(statusInfo, isTextSelectable = true)

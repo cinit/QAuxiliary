@@ -22,9 +22,9 @@
 package me.singleneuron.hook
 
 import com.microsoft.appcenter.analytics.channel.SessionTracker
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XC_MethodReplacement
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodReplacement
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.util.Log
 import java.text.SimpleDateFormat

@@ -9,7 +9,7 @@ import android.util.Log;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import cc.hicore.Env;
-import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
 import java.io.File;

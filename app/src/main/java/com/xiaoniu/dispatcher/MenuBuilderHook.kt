@@ -30,7 +30,7 @@ import cc.ioctl.hook.msg.PicMd5Hook
 import cc.ioctl.hook.msg.PttForwardHook
 import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.duzhaokun123.hook.MessageCopyHook
 import io.github.duzhaokun123.hook.MessageTTSHook
 import io.github.qauxv.base.annotation.FunctionHookEntry

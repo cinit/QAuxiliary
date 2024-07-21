@@ -27,7 +27,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.HostInfo;
-import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;

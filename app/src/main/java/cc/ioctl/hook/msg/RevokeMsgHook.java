@@ -21,8 +21,8 @@
  */
 package cc.ioctl.hook.msg;
 
-import static de.robv.android.xposed.XposedHelpers.callMethod;
-import static de.robv.android.xposed.XposedHelpers.setObjectField;
+import static io.github.qauxv.util.xpcompat.XposedHelpers.callMethod;
+import static io.github.qauxv.util.xpcompat.XposedHelpers.setObjectField;
 import static io.github.qauxv.util.Initiator._C2CMessageProcessor;
 import static io.github.qauxv.util.Initiator._QQMessageFacade;
 
@@ -42,7 +42,7 @@ import cc.ioctl.util.Reflex;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.InvalidProtocolBufferException;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
-import de.robv.android.xposed.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;

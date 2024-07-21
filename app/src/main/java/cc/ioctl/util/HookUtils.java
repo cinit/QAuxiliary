@@ -23,8 +23,8 @@
 package cc.ioctl.util;
 
 import androidx.annotation.NonNull;
-import de.robv.android.xposed.XC_MethodHook;
-import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.base.ITraceableDynamicHook;
 import io.github.qauxv.hook.BaseFunctionHook;
 import io.github.qauxv.hook.BaseHookDispatcher;

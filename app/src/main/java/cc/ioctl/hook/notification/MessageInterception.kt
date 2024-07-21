@@ -24,7 +24,7 @@ package cc.ioctl.hook.notification
 
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.msg.MessageManager
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator

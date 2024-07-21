@@ -37,7 +37,7 @@ import android.graphics.drawable.Drawable;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.util.Log;
 import java.io.InputStream;
 import java.util.HashMap;

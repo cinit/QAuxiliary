@@ -24,7 +24,7 @@ package com.xiaoniu.hook
 import android.content.Context
 import cc.ioctl.util.HostInfo.isQQ
 import cc.ioctl.util.afterHookIfEnabled
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary

@@ -29,7 +29,7 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.hook.notification.MessageInterception
 import cc.ioctl.util.msg.MessageReceiver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry

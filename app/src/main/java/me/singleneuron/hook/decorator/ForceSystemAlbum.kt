@@ -25,7 +25,7 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import de.robv.android.xposed.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter

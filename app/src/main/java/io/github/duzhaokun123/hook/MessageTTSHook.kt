@@ -32,9 +32,9 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
-import de.robv.android.xposed.XC_MethodHook
-import de.robv.android.xposed.XposedBridge
-import de.robv.android.xposed.XposedHelpers
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.duzhaokun123.hook.MessageCopyHook.TAG
 import io.github.duzhaokun123.util.TTS
 import io.github.qauxv.R

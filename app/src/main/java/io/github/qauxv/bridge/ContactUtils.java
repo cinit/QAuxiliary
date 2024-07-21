@@ -26,7 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.Reflex;
 import com.tencent.common.app.AppInterface;
-import de.robv.android.xposed.XposedHelpers;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.base.annotation.DexDeobfs;
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi;
 import io.github.qauxv.util.HostInfo;
