@@ -37,8 +37,6 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.FaultyDialog;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.ShadowShareFileAgentActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -56,6 +54,8 @@ import io.github.qauxv.util.dexkit.DefaultFileModel;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.FileBrowserActivity_InnerClass_onItemClick;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.io.File;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
@@ -112,7 +112,9 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         Class<?> kFileBrowserModelBase = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.model.FileBrowserModelBase");
         Class<?> kDefaultFileModel = DexKit.requireClassFromCache(DefaultFileModel.INSTANCE);
         String fileViewerAdapterClassName;
-        if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_80)) {
+            fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.h";
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
             fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.g";
         } else if (requireMinQQVersion(QQVersion.QQ_8_9_0)) {
             fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.h";
