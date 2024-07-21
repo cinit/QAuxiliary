@@ -26,6 +26,7 @@ import android.view.ViewGroup
 import android.view.ViewTreeObserver
 import android.widget.LinearLayout
 import android.widget.TextView
+import androidx.core.view.children
 import androidx.core.view.forEach
 import androidx.core.view.forEachIndexed
 import androidx.core.view.get
@@ -38,8 +39,6 @@ import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
-import io.github.qauxv.util.xpcompat.XC_MethodReplacement
-import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -59,6 +58,8 @@ import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZplanExpGroup_Old
 import io.github.qauxv.util.dexkit.QQ_SETTING_ME_CONFIG_CLASS
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodReplacement
+import io.github.qauxv.util.xpcompat.XposedBridge
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.*
 import java.lang.reflect.Array
@@ -281,6 +282,19 @@ object SimplifyQQSettingMe :
                     Array.set(returnArray, i, purifiedList[i])
                 }
                 param.result = returnArray
+            }
+        }
+
+        // QQ 9.0.80 在xml布局中固定了14个item，这里将上面步骤完成后还未初始化的item隐藏
+        if (requireMinQQVersion(QQVersion.QQ_9_0_80)) {
+            "com.tencent.mobileqq.bizParts.QQSettingMeMenuPanelPart".clazz!!.method("onInitView")!!.hookAfter { param ->
+//                val parent=param.thisObject.javaClass.declaredFields.first {
+//                    it.javaClass==ViewGroup::class.java && (it.get(param.thisObject) as ViewGroup).childCount>=14
+//                }.get(param.thisObject) as ViewGroup
+                val parent = param.thisObject.get("h") as ViewGroup
+                parent.children.forEach {
+                    if (!it.isClickable) it.setViewZeroSize()
+                }
             }
         }
 
