@@ -4,6 +4,8 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
@@ -68,8 +70,7 @@ public interface IHookBridge {
         Object getResult();
 
         /**
-         * Sets the return value of the method or constructor.
-         * If called in beforeHookedMember, the original method or constructor will not be called.
+         * Sets the return value of the method or constructor. If called in beforeHookedMember, the original method or constructor will not be called.
          *
          * @param result The new return value
          */
@@ -84,18 +85,16 @@ public interface IHookBridge {
         Throwable getThrowable();
 
         /**
-         * Sets the throwable to be thrown by the method or constructor.
-         * If called in beforeHookedMember, the original method or constructor will not be called.
+         * Sets the throwable to be thrown by the method or constructor. If called in beforeHookedMember, the original method or constructor will not be
+         * called.
          *
          * @param throwable The throwable to throw
          */
         void setThrowable(@NonNull Throwable throwable);
 
         /**
-         * Get the extra data for the current IMemberHookParam.
-         * The IMemberHookParam lifecycle is the same as the hooked member invocation.
-         * That is one IMemberHookParam instance per hooked member invocation.
-         * Any data can be stored here.
+         * Get the extra data for the current IMemberHookParam. The IMemberHookParam lifecycle is the same as the hooked member invocation. That is one
+         * IMemberHookParam instance per hooked member invocation. Any data can be stored here.
          *
          * @return The extra data
          */
@@ -174,9 +173,7 @@ public interface IHookBridge {
     long getFrameworkVersionCode();
 
     /**
-     * Hook a method or constructor.
-     * A member can be hooked multiple times with different callbacks.
-     * If hook fails, it will throw an exception.
+     * Hook a method or constructor. A member can be hooked multiple times with different callbacks. If hook fails, it will throw an exception.
      *
      * @param member   The method or constructor to hook
      * @param callback The callback to be invoked
@@ -198,13 +195,36 @@ public interface IHookBridge {
     /**
      * Deoptimize the specified method or constructor.
      * <p>
-     * Deoptimization is an optional feature that only a few implementations support. It is used to
-     * undo the effects of optimization, which can be useful for hooking an inlined method or constructor.
+     * Deoptimization is an optional feature that only a few implementations support. It is used to undo the effects of optimization, which can be useful for
+     * hooking an inlined method or constructor.
      *
      * @param member The method or constructor to deoptimize
      * @return true if the method or constructor was deoptimized or if it was already deoptimized, false otherwise
      */
     boolean deoptimize(@NonNull Member member);
+
+    /**
+     * Basically the same as {@link Method#invoke}, but calls the original method as it was before the interception by Xposed. Also, access permissions are not
+     * checked.
+     *
+     * <p class="caution">There are very few cases where this method is needed. A common mistake is
+     * to replace a method and then invoke the original one based on dynamic conditions. This creates overhead and skips further hooks by other modules.
+     * Instead, just hook (don't replace) the method and call {@code param.setResult(null)} in XC_MethodHook.beforeHookedMethod if the original method should be
+     * skipped.
+     *
+     * @param member     The method to be called.
+     * @param thisObject For non-static calls, the "this" pointer, otherwise {@code null}.
+     * @param args       Arguments for the method call as Object[] array.
+     * @return The result returned from the invoked method.
+     * @throws NullPointerException      if {@code receiver == null} for a non-static method
+     * @throws IllegalAccessException    if this method is not accessible (see {@link AccessibleObject})
+     * @throws IllegalArgumentException  if the number of arguments doesn't match the number of parameters, the receiver is incompatible with the declaring
+     *                                   class, or an argument could not be unboxed or converted by a widening conversion to the corresponding parameter type
+     * @throws InvocationTargetException if an exception was thrown by the invoked method
+     */
+    @Nullable
+    Object invokeOriginalMethod(@NonNull Member member, @Nullable Object thisObject, @NonNull Object[] args)
+            throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
 
     /**
      * Query the extension of the current implementation.

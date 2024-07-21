@@ -3,7 +3,12 @@ package io.github.qauxv.util.xpcompat;
 import androidx.annotation.NonNull;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.poststartup.StartupInfo;
+import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.HashSet;
 import java.util.Set;
 
@@ -158,6 +163,40 @@ public class XposedBridge {
             wrappedParam.args = param.getArgs();
             callback.afterHookedMethod(wrappedParam);
         }
+    }
+
+    /**
+     * Basically the same as {@link Method#invoke}, but calls the original method as it was before the interception by Xposed. Also, access permissions are not
+     * checked.
+     *
+     * <p class="caution">There are very few cases where this method is needed. A common mistake is
+     * to replace a method and then invoke the original one based on dynamic conditions. This creates overhead and skips further hooks by other modules.
+     * Instead, just hook (don't replace) the method and call {@code param.setResult(null)} in {@link XC_MethodHook#beforeHookedMethod} if the original method
+     * should be skipped.
+     *
+     * @param method     The method to be called.
+     * @param thisObject For non-static calls, the "this" pointer, otherwise {@code null}.
+     * @param args       Arguments for the method call as Object[] array.
+     * @return The result returned from the invoked method.
+     * @throws NullPointerException      if {@code receiver == null} for a non-static method
+     * @throws IllegalAccessException    if this method is not accessible (see {@link AccessibleObject})
+     * @throws IllegalArgumentException  if the number of arguments doesn't match the number of parameters, the receiver is incompatible with the declaring
+     *                                   class, or an argument could not be unboxed or converted by a widening conversion to the corresponding parameter type
+     * @throws InvocationTargetException if an exception was thrown by the invoked method
+     */
+    public static Object invokeOriginalMethod(Member method, Object thisObject, Object[] args)
+            throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        if (args == null) {
+            args = ArrayUtils.EMPTY_OBJECT_ARRAY;
+        }
+        if (!(method instanceof Method) && !(method instanceof Constructor)) {
+            throw new IllegalArgumentException("method must be a method on a class");
+        }
+        if (!Modifier.isStatic(method.getModifiers()) && thisObject == null) {
+            throw new IllegalArgumentException("receiver == null for a non-static method");
+        }
+        IHookBridge hookBridge = requireHookBridge();
+        return hookBridge.invokeOriginalMethod(method, thisObject, args);
     }
 
     public static void log(String message) {

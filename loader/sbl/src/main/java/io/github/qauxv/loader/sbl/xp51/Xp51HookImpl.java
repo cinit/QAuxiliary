@@ -30,6 +30,7 @@ import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderInfo;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 
 public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
@@ -73,6 +74,14 @@ public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
             throw new UnsupportedOperationException("XposedBridge.hookMethod return null for member: " + member);
         }
         return new Xp51HookWrapper.Xp51UnhookHandle(unhook, member, cb);
+    }
+
+    @Nullable
+    public Object invokeOriginalMethod(@NonNull Member member, @Nullable Object thisObject, @NonNull Object[] args)
+            throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        CheckUtils.checkNonNull(member, "member");
+        CheckUtils.checkNonNull(args, "args");
+        return XposedBridge.invokeOriginalMethod(member, thisObject, args);
     }
 
     @Override
