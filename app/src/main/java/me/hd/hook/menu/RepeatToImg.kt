@@ -36,8 +36,6 @@ import cc.ioctl.util.hookAfterIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -51,6 +49,8 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.util.findHostView
 import java.io.File
 import java.io.FileOutputStream

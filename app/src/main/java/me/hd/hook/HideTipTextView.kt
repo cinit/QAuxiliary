@@ -25,13 +25,13 @@ package me.hd.hook
 import android.view.ViewGroup
 import android.widget.TextView
 import cc.ioctl.util.hookAfterIfEnabled
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.isPrivate
 import xyz.nextalone.util.isPublic

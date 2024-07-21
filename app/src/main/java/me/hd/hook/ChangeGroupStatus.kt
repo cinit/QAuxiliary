@@ -23,13 +23,13 @@
 package me.hd.hook
 
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 

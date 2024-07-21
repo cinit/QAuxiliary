@@ -23,7 +23,6 @@
 package me.hd.hook
 
 import cc.ioctl.util.hookBeforeIfEnabled
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -35,6 +34,7 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_HandleQQSomeFunExit_fixFileView_Method
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.util.get
 import xyz.nextalone.util.set
 

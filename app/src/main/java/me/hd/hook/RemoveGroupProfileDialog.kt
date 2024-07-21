@@ -24,7 +24,6 @@ package me.hd.hook
 
 import android.os.Bundle
 import cc.ioctl.util.hookBeforeIfEnabled
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -32,6 +31,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.get
+import xyz.nextalone.util.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -56,9 +57,9 @@ object RemoveGroupProfileDialog : CommonSwitchFunctionHook() {
         }
         hookBeforeIfEnabled(profileCardMethod) { param ->
             val respHead = if (requireMinQQVersion(QQVersion.QQ_9_0_0)) param.args[1] else param.args[0]
-            val iResult = XposedHelpers.getObjectField(respHead, "iResult")
+            val iResult = respHead.get("iResult")
             if (iResult == 201 || iResult == 202) {
-                XposedHelpers.setObjectField(respHead, "iResult", 0)
+                respHead.set("iResult", 0)
             }
         }
         return true

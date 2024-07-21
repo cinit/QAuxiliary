@@ -22,6 +22,7 @@
 
 package me.hd.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.graphics.Color
@@ -43,9 +44,8 @@ import androidx.appcompat.widget.SwitchCompat
 import androidx.core.view.children
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookAfterIfEnabled
+import cc.ioctl.util.hookBeforeIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -160,6 +160,7 @@ object HandleSendChatCount : CommonConfigFunctionHook(
             putExCfg(CFG_KEY_FILE, value)
         }
 
+    @SuppressLint("SetTextI18n")
     private fun showConfigDialog(ctx: Context) {
         val showFormat = mShowFormat
         val colorValue = mColorValue
@@ -315,48 +316,46 @@ object HandleSendChatCount : CommonConfigFunctionHook(
         DexKit.loadMethodFromCache(NQQSettingMe_onResume)?.hookAfter(this) {
             viewGroup?.post { updateView(viewGroup!!) }
         }
-        XposedHelpers.findAndHookMethod(
-            Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.MsgService"),
-            "sendMsg",
-            Long::class.java,
-            if (requireMinQQVersion(QQVersion.QQ_9_0_68)) {
-                Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact")
-            } else {
-                Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact")
-            },
-            ArrayList::class.java,
-            HashMap::class.java,
-            Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback"),
-            object : XC_MethodHook() {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    val msgElements = param.args[2] as ArrayList<*>
-                    val msgElement = msgElements[0] as MsgElement
-                    val isToday = Date().today == mDay
-                    if (isToday) {
-                        if (msgElement.textElement != null) {
-                            mText += 1
-                            mTextWord += msgElement.textElement.content.length
-                        }
-                        if (msgElement.pttElement != null) mPtt += 1
-                        if (msgElement.picElement != null) mPic += 1
-                        if (msgElement.faceElement != null) mFace += 1
-                        if (msgElement.videoElement != null) mVideo += 1
-                        if (msgElement.walletElement != null) mWallet += 1
-                        if (msgElement.fileElement != null) mFile += 1
-                    } else {
-                        mDay = Date().today
-                        mText = 0
-                        mTextWord = 0
-                        mPtt = 0
-                        mPic = 0
-                        mFace = 0
-                        mVideo = 0
-                        mWallet = 0
-                        mFile = 0
-                    }
+        hookBeforeIfEnabled(
+            Initiator.loadClass("com.tencent.qqnt.kernel.api.impl.MsgService").getDeclaredMethod(
+                "sendMsg",
+                Long::class.java,
+                if (requireMinQQVersion(QQVersion.QQ_9_0_68)) {
+                    Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact")
+                } else {
+                    Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact")
+                },
+                ArrayList::class.java,
+                HashMap::class.java,
+                Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback"),
+            )
+        ) { param ->
+            val msgElements = param.args[2] as ArrayList<*>
+            val msgElement = msgElements[0] as MsgElement
+            val isToday = Date().today == mDay
+            if (isToday) {
+                if (msgElement.textElement != null) {
+                    mText += 1
+                    mTextWord += msgElement.textElement.content.length
                 }
+                if (msgElement.pttElement != null) mPtt += 1
+                if (msgElement.picElement != null) mPic += 1
+                if (msgElement.faceElement != null) mFace += 1
+                if (msgElement.videoElement != null) mVideo += 1
+                if (msgElement.walletElement != null) mWallet += 1
+                if (msgElement.fileElement != null) mFile += 1
+            } else {
+                mDay = Date().today
+                mText = 0
+                mTextWord = 0
+                mPtt = 0
+                mPic = 0
+                mFace = 0
+                mVideo = 0
+                mWallet = 0
+                mFile = 0
             }
-        )
+        }
         return true
     }
 }

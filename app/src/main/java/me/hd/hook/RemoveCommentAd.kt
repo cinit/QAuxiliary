@@ -23,7 +23,6 @@
 package me.hd.hook
 
 import cc.ioctl.util.hookBeforeIfEnabled
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -31,6 +30,8 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.get
+import xyz.nextalone.util.set
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -47,17 +48,17 @@ object RemoveCommentAd : CommonSwitchFunctionHook() {
         val onBindViewHolderMethod = commentBlockClass.getDeclaredMethod("onBindViewHolder", viewHolderClass, Int::class.java)
         hookBeforeIfEnabled(onBindViewHolderMethod) { param ->
             val adDataList = HashSet<Any>()
-            val mDataList = XposedHelpers.getObjectField(param.thisObject, "mDataList") as ArrayList<*>
+            val mDataList = param.thisObject.get("mDataList") as ArrayList<*>
             for (mDataItem in mDataList) {
-                val comment = XposedHelpers.getObjectField(mDataItem, "comment")
-                val cmtBlockType = XposedHelpers.getObjectField(comment, "cmt_block_type")
-                val value = XposedHelpers.getObjectField(cmtBlockType, "value")
+                val comment = mDataItem.get("comment")
+                val cmtBlockType = comment.get("cmt_block_type")
+                val value = cmtBlockType.get("value")
                 if (value == 1) {
                     adDataList.add(mDataItem)
                 }
             }
             mDataList.removeAll(adDataList)
-            XposedHelpers.setObjectField(param.thisObject, "mDataList", mDataList)
+            param.thisObject.set("mDataList", mDataList)
         }
         return true
     }

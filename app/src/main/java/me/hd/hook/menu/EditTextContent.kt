@@ -28,8 +28,6 @@ import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.findField
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -42,6 +40,8 @@ import io.github.qauxv.util.dexkit.AIO_InputRootInit_QQNT
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedHelpers
 
 @SuppressLint("StaticFieldLeak")
 @FunctionHookEntry
