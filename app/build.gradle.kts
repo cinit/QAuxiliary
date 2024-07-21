@@ -251,12 +251,20 @@ kotlin {
 }
 
 dependencies {
+    // loader
+    compileOnly(projects.loader.hookapi)
+    runtimeOnly(projects.loader.sbl)
+    implementation(projects.loader.startup)
+    // TODO: 2024-07-21 remove libs.xposed.api once refactor done
+    compileOnly(libs.xposed.api)
+    // ksp
+    ksp(projects.libs.ksp)
+    // host stub
     compileOnly(projects.libs.stub)
+    // libraries
     implementation(projects.libs.mmkv)
     implementation(projects.libs.dexkit)
     implementation(projects.libs.xView)
-    ksp(projects.libs.ksp)
-    compileOnly(libs.xposed)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.constraintlayout)
     implementation(libs.androidx.browser)

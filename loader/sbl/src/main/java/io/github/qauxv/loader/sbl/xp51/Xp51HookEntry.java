@@ -1,41 +1,23 @@
-/*
- * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
- * https://github.com/cinit/QAuxiliary
- *
- * This software is non-free but opensource software: you can redistribute it
- * and/or modify it under the terms of the GNU Affero General Public License
- * as published by the Free Software Foundation; either
- * version 3 of the License, or any later version and our eula as published
- * by QAuxiliary contributors.
- *
- * This software is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
- *
- * You should have received a copy of the GNU Affero General Public License
- * and eula along with this software.  If not, see
- * <https://www.gnu.org/licenses/>
- * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
- */
-package io.github.qauxv.startup;
+package io.github.qauxv.loader.sbl.xp51;
 
+import androidx.annotation.Keep;
+import androidx.annotation.NonNull;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
+import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
-import io.github.qauxv.R;
-import io.github.qauxv.util.hookstatus.HookStatusInit;
+import io.github.qauxv.loader.sbl.common.ModuleLoader;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 
 /**
- * Xposed entry class DO NOT MODIFY ANY CODE HERE UNLESS NECESSARY. DO NOT INVOKE ANY METHOD THAT MAY GET IN TOUCH WITH KOTLIN HERE. DO NOT TOUCH ANDROIDX OR
- * KOTLIN HERE, WHATEVER DIRECTLY OR INDIRECTLY. THIS CLASS SHOULD ONLY CALL {@code StartupHook.getInstance().doInit()} AND RETURN GRACEFULLY. OTHERWISE
- * SOMETHING MAY HAPPEN BECAUSE OF A NON-STANDARD PLUGIN CLASSLOADER.
- *
- * @author kinit
+ * Entry point for started Xposed API 51-99.
+ * <p>
+ * Xposed is used as ART hook implementation.
  */
-public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit {
+@Keep
+public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit {
 
     public static final String PACKAGE_NAME_QQ = "com.tencent.mobileqq";
     public static final String PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi";
@@ -54,23 +36,17 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
     /**
      * *** No kotlin code should be invoked here.*** May cause a crash.
      */
+    @Keep
     @Override
-    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws Throwable {
-        if (R.string.res_inject_success >>> 24 == 0x7f) {
-            XposedBridge.log("package id must NOT be 0x7f, reject loading...");
-            return;
-        }
+    public void handleLoadPackage(final XC_LoadPackage.LoadPackageParam lpparam) throws ReflectiveOperationException {
         sLoadPackageParam = lpparam;
         // check LSPosed dex-obfuscation
         Class<?> kXposedBridge = XposedBridge.class;
-        if (!"de.robv.android.xposed.XposedBridge".equals(kXposedBridge.getName())) {
-            String className = kXposedBridge.getName();
-            String pkgName = className.substring(0, className.lastIndexOf('.'));
-            HybridClassLoader.setObfuscatedXposedApiPackage(pkgName);
-        }
         switch (lpparam.packageName) {
             case PACKAGE_NAME_SELF: {
-                HookStatusInit.init(lpparam.classLoader);
+                Class<?> kHookStatusInit = Class.forName("io.github.qauxv.util.hookstatus.HookStatusInit");
+                Method init = kHookStatusInit.getDeclaredMethod("init", ClassLoader.class);
+                init.invoke(null, lpparam.classLoader);
                 break;
             }
             case PACKAGE_NAME_TIM:
@@ -81,7 +57,8 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
                 sCurrentPackageName = lpparam.packageName;
-                StartupHook.getInstance().initialize(lpparam.classLoader);
+                ModuleLoader.initialize(lpparam.appInfo, lpparam.classLoader,
+                        Xp51HookImpl.INSTANCE, Xp51HookImpl.INSTANCE, getModulePath());
                 break;
             }
             case PACKAGE_NAME_QQ_INTERNATIONAL: {
@@ -104,8 +81,6 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
     /**
      * Get the {@link XC_LoadPackage.LoadPackageParam} of the current module.
-     * <p>
-     * Do NOT add @NonNull annotation to this method. *** No kotlin code should be invoked here.*** May cause a crash.
      *
      * @return the lpparam
      */
@@ -118,8 +93,6 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
     /**
      * Get the path of the current module.
-     * <p>
-     * Do NOT add @NonNull annotation to this method. *** No kotlin code should be invoked here.*** May cause a crash.
      *
      * @return the module path
      */
@@ -132,8 +105,6 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
 
     /**
      * Get the {@link IXposedHookZygoteInit.StartupParam} of the current module.
-     * <p>
-     * Do NOT add @NonNull annotation to this method. *** No kotlin code should be invoked here.*** May cause a crash.
      *
      * @return the initZygote param
      */
@@ -143,4 +114,5 @@ public class HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit 
         }
         return sInitZygoteStartupParam;
     }
+
 }

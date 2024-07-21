@@ -22,7 +22,7 @@
 package io.github.qauxv.config;
 
 import android.os.Environment;
-import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.util.PackageConstants;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Log;
 import java.io.File;
@@ -44,7 +44,7 @@ public class SafeModeManager {
         }
         INSTANCE.mSafeModeEnableFile = new File(
                 Environment.getExternalStorageDirectory().getAbsolutePath() + "/Android/data/" +
-                        HookEntry.sCurrentPackageName + "/" + SAFE_MODE_FILE_NAME
+                        HostInfo.getHostInfo().getPackageName() + "/" + SAFE_MODE_FILE_NAME
         );
         return INSTANCE;
     }
@@ -71,10 +71,6 @@ public class SafeModeManager {
 
     public boolean setEnabledForNextTime(boolean isEnable) {
         if (!isAvailable()) {
-            return false;
-        }
-        if (HookEntry.sCurrentPackageName == null || HookEntry.sCurrentPackageName.isBlank()) {
-            Log.e("Failed to enable or disable safe mode, sCurrentPackageName is null or blank");
             return false;
         }
         if (isEnable) {

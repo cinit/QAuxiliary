@@ -27,7 +27,7 @@ import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.ComponentName
 import android.os.Bundle
-import io.github.qauxv.startup.HookEntry
+import io.github.qauxv.util.PackageConstants
 
 class QFileShareToIpadActivity : Activity() {
     companion object {
@@ -38,7 +38,7 @@ class QFileShareToIpadActivity : Activity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        val pkg = HookEntry.PACKAGE_NAME_QQ
+        val pkg = PackageConstants.PACKAGE_NAME_QQ
         intent.apply {
             putExtra("targetUin", "9962")
             putExtra("device_type", 1)

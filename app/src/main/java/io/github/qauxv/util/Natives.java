@@ -30,8 +30,7 @@ import android.system.Os;
 import android.system.StructUtsname;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.startup.HookEntry;
-import io.github.qauxv.startup.HybridClassLoader;
+import io.github.qauxv.poststartup.StartupInfo;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOError;
@@ -198,10 +197,10 @@ public class Natives {
             return;
         }
         try {
-            Class<?> xp = Class.forName(HybridClassLoader.getXposedBridgeClassName());
+            Class<?> xp = Class.forName(LspObfuscationHelper.getXposedBridgeClassName());
             try {
                 xp.getClassLoader()
-                        .loadClass(HybridClassLoader.getObfuscatedLsposedNativeApiClassName())
+                        .loadClass(LspObfuscationHelper.getObfuscatedLsposedNativeApiClassName())
                         .getMethod("recordNativeEntrypoint", String.class)
                         .invoke(null, soTailingName);
             } catch (ClassNotFoundException ignored) {
@@ -222,10 +221,10 @@ public class Natives {
         } catch (UnsatisfiedLinkError ignored) {
         }
         try {
-            Class.forName(HybridClassLoader.getXposedBridgeClassName());
+            Class.forName(LspObfuscationHelper.getXposedBridgeClassName());
             // in host process
             List<String> abis = getAbiForLibrary();
-            String modulePath = HookEntry.getModulePath();
+            String modulePath = StartupInfo.getModulePath();
             loadNativeLibraryInHost(ctx, modulePath, abis);
         } catch (ClassNotFoundException e) {
             // not in host process, ignore

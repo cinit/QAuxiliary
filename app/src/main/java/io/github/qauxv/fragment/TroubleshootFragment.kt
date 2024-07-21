@@ -72,7 +72,7 @@ import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
-import io.github.qauxv.startup.HookEntry
+import io.github.qauxv.poststartup.StartupInfo
 import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
@@ -176,8 +176,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     ", UID: " + android.os.Process.myUid() +
                     ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
                     "Xposed API version: " + XposedBridge.getXposedVersion() + "\n" +
-                    HybridClassLoader.getXposedBridgeClassName() + "\n" +
-                    "module: " + HookEntry.getModulePath() + "\n" +
+                    "module: " + StartupInfo.getModulePath() + "\n" +
                     "ctx.dataDir: " + hostInfo.application.dataDir
                 description(statusInfo, isTextSelectable = true)
                 description(generateDebugInfo(), isTextSelectable = true)

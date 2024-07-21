@@ -27,7 +27,7 @@ import android.content.pm.PackageManager;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.poststartup.StartupInfo;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
@@ -89,7 +89,7 @@ public class AbiUtils {
         }
         String apkPath;
         if (HostInfo.isInHostProcess()) {
-            apkPath = HookEntry.getModulePath();
+            apkPath = StartupInfo.getModulePath();
         } else {
             // self process
             apkPath = HostInfo.getApplication().getPackageCodePath();

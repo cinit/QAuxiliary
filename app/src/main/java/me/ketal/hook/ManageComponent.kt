@@ -35,7 +35,6 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
-import io.github.qauxv.startup.HookEntry
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.hostInfo
@@ -65,7 +64,7 @@ object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
         "发送到我的电脑" to ComponentName(hostInfo.packageName, "com.tencent.mobileqq.activity.qfileJumpActivity"),
         "保存到QQ收藏" to ComponentName(hostInfo.packageName, "cooperation.qqfav.widget.QfavJumpActivity"),
         "面对面快传" to ComponentName(hostInfo.packageName, "cooperation.qlink.QlinkShareJumpActivity"),
-        "发送到我的iPad" to ComponentName(HookEntry.PACKAGE_NAME_SELF, "me.ketal.ui.activity.QFileShareToIpadActivity")
+        "发送到我的iPad" to ComponentName(BuildConfig.APPLICATION_ID, "me.ketal.ui.activity.QFileShareToIpadActivity")
     )
 
     private fun showDialog(context: Context) {

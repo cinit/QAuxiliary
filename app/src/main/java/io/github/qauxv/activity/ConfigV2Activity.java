@@ -56,7 +56,7 @@ import io.github.qauxv.fragment.AboutFragment;
 import io.github.qauxv.fragment.CheckAbiVariantFragment;
 import io.github.qauxv.fragment.CheckAbiVariantModel;
 import io.github.qauxv.lifecycle.JumpActivityEntryHook;
-import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.util.PackageConstants;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.UiThread;
@@ -165,11 +165,11 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
         String pkg = null;
         var id = view.getId();
         if (id == R.id.mainRelativeLayoutButtonOpenQQ) {
-            pkg = HookEntry.PACKAGE_NAME_QQ;
+            pkg = PackageConstants.PACKAGE_NAME_QQ;
         } else if (id == R.id.mainRelativeLayoutButtonOpenTIM) {
-            pkg = HookEntry.PACKAGE_NAME_TIM;
+            pkg = PackageConstants.PACKAGE_NAME_TIM;
         } else if (id == R.id.mainRelativeLayoutButtonOpenQQLite) {
-            pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
+            pkg = PackageConstants.PACKAGE_NAME_QQ_LITE;
         }
         if (pkg != null) {
             Intent intent = new Intent();
@@ -205,19 +205,19 @@ public class ConfigV2Activity extends AppCompatTransferActivity {
                         String pkg = null;
                         switch (which) {
                             case 0: {
-                                pkg = HookEntry.PACKAGE_NAME_QQ;
+                                pkg = PackageConstants.PACKAGE_NAME_QQ;
                                 break;
                             }
                             case 1: {
-                                pkg = HookEntry.PACKAGE_NAME_TIM;
+                                pkg = PackageConstants.PACKAGE_NAME_TIM;
                                 break;
                             }
                             case 2: {
-                                pkg = HookEntry.PACKAGE_NAME_QQ_LITE;
+                                pkg = PackageConstants.PACKAGE_NAME_QQ_LITE;
                                 break;
                             }
                             case 3: {
-                                pkg = HookEntry.PACKAGE_NAME_QQ_HD;
+                                pkg = PackageConstants.PACKAGE_NAME_QQ_HD;
                                 break;
                             }
                             default: {

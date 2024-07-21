@@ -53,7 +53,8 @@ import androidx.annotation.RequiresApi;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.R;
 import io.github.qauxv.core.MainHook;
-import io.github.qauxv.startup.HookEntry;
+import io.github.qauxv.poststartup.StartupInfo;
+import io.github.qauxv.util.PackageConstants;
 import io.github.qauxv.ui.WindowIsTranslucent;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -113,7 +114,7 @@ public class Parasitics {
             return;
         } catch (Resources.NotFoundException ignored) {
         }
-        String sModulePath = HookEntry.getModulePath();
+        String sModulePath = StartupInfo.getModulePath();
         if (sModulePath == null) {
             throw new RuntimeException("get module path failed, loader=" + MainHook.class.getClassLoader());
         }

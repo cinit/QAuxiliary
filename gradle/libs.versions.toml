@@ -31,7 +31,7 @@ lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", versi
 material = { module = "com.google.android.material:material", version = "1.12.0" }
 material-dialogs-core = { module = "com.afollestad.material-dialogs:core", version.ref = "materialDialog" }
 material-dialogs-input = { module = "com.afollestad.material-dialogs:input", version.ref = "materialDialog" }
-xposed = { module = "de.robv.android.xposed:api", version = "82" }
+xposed-api = { module = "de.robv.android.xposed:api", version = "82" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version = "3.0.0" }
 colorpicker = { module = "com.jaredrummler:colorpicker", version = "1.1.0" }
 ezXHelper = { module = "com.github.kyuubiran:EzXHelper", version = "1.0.3" }
@@ -54,3 +54,4 @@ kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
 aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.2.2" }
 protobuf = { id = "com.google.protobuf", version = "0.9.4" }
+android-library = { id = "com.android.library", version.ref = "agp" }

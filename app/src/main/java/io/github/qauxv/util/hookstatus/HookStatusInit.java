@@ -22,17 +22,20 @@
 
 package io.github.qauxv.util.hookstatus;
 
+import androidx.annotation.Keep;
 import de.robv.android.xposed.XposedBridge;
 import java.lang.reflect.Field;
 
 /**
  * Called in handleLoadPackage, NO KOTLIN, NO ANDROIDX
  **/
+@Keep
 public class HookStatusInit {
 
     private HookStatusInit() {
     }
 
+    @Keep
     public static void init(ClassLoader classLoader) throws Throwable {
         Class<?> kHookStatusImpl = classLoader.loadClass("io.github.qauxv.util.hookstatus.HookStatusImpl");
         Field f = kHookStatusImpl.getDeclaredField("sZygoteHookMode");

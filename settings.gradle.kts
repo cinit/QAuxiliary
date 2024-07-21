@@ -60,6 +60,9 @@ develocity {
 rootProject.name = "QAuxiliary"
 include(
     ":app",
+    ":loader:startup",
+    ":loader:sbl",
+    ":loader:hookapi",
     ":libs:stub",
     ":libs:ksp",
     ":libs:mmkv",
