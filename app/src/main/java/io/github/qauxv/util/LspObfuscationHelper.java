@@ -21,17 +21,25 @@
  */
 package io.github.qauxv.util;
 
+import androidx.annotation.Nullable;
+import io.github.qauxv.loader.hookapi.IHookBridge;
+import io.github.qauxv.poststartup.StartupInfo;
+
 public class LspObfuscationHelper {
 
-    private static String sObfuscatedPackageName = null;
+    public static final String CMD_GET_XPOSED_BRIDGE_CLASS = "GetXposedBridgeClass";
     private static String sProbeLsposedNativeApiClassName = "Lorg/lsposed/lspd/nativebridge/NativeAPI;";
 
-    public static void setObfuscatedXposedApiPackage(String packageName) {
-        sObfuscatedPackageName = packageName;
+    private LspObfuscationHelper() {
     }
 
-    public static String getObfuscatedXposedApiPackage() {
-        return sObfuscatedPackageName;
+    @Nullable
+    public static Class<?> getXposedBridgeClass() {
+        IHookBridge hookBridge = StartupInfo.getHookBridge();
+        if (hookBridge == null) {
+            return null;
+        }
+        return (Class<?>) hookBridge.queryExtension(CMD_GET_XPOSED_BRIDGE_CLASS);
     }
 
     public static String getObfuscatedLsposedNativeApiClassName() {
@@ -39,12 +47,11 @@ public class LspObfuscationHelper {
     }
 
     public static String getXposedBridgeClassName() {
-        if (sObfuscatedPackageName == null) {
-            return "de.robv.android.xposed.XposedBridge";
+        Class<?> xposedBridgeClass = getXposedBridgeClass();
+        if (xposedBridgeClass != null) {
+            return xposedBridgeClass.getName();
         } else {
-            var sb = new StringBuilder(sObfuscatedPackageName);
-            sb.append(".XposedBridge");
-            return sb.toString();
+            return "de.robv.android.xposed.XposedBridge";
         }
     }
 

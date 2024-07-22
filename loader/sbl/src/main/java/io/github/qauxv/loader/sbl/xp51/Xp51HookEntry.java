@@ -44,9 +44,7 @@ public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteI
         Class<?> kXposedBridge = XposedBridge.class;
         switch (lpparam.packageName) {
             case PACKAGE_NAME_SELF: {
-                Class<?> kHookStatusInit = Class.forName("io.github.qauxv.util.hookstatus.HookStatusInit");
-                Method init = kHookStatusInit.getDeclaredMethod("init", ClassLoader.class);
-                init.invoke(null, lpparam.classLoader);
+                Xp51HookStatusInit.init(lpparam.classLoader);
                 break;
             }
             case PACKAGE_NAME_TIM:

@@ -24,7 +24,11 @@ package io.github.qauxv.util.hookstatus;
 
 import android.app.Application;
 import android.os.Build;
+import androidx.annotation.NonNull;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.core.NativeCoreBridge;
+import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Natives;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
@@ -44,5 +48,49 @@ public class ModuleAppImpl extends Application {
         }
         NativeCoreBridge.initNativeCore(getPackageName(), Build.VERSION.SDK_INT,
                 HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
+        initStartupInfo();
+        // for fail-safe purpose
+        com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
     }
+
+    private void initStartupInfo() {
+        final String apkPath = getApplicationInfo().sourceDir;
+        ILoaderInfo loaderInfo = new ILoaderInfo() {
+            @NonNull
+            @Override
+            public String getEntryPointName() {
+                return "ActivityThread";
+            }
+
+            @NonNull
+            @Override
+            public String getLoaderVersionName() {
+                return BuildConfig.VERSION_NAME;
+            }
+
+            @Override
+            public int getLoaderVersionCode() {
+                return BuildConfig.VERSION_CODE;
+            }
+
+            @NonNull
+            @Override
+            public String getMainModulePath() {
+                return apkPath;
+            }
+
+            @Override
+            public void log(@NonNull String msg) {
+                android.util.Log.i("QAuxv", msg);
+            }
+
+            @Override
+            public void log(@NonNull Throwable tr) {
+                android.util.Log.e("QAuxv", tr.toString(), tr);
+            }
+        };
+        StartupInfo.setModulePath(apkPath);
+        StartupInfo.setLoaderInfo(loaderInfo);
+    }
+
 }

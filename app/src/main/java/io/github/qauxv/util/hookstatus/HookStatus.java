@@ -32,9 +32,9 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
-import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
+import io.github.qauxv.util.LspObfuscationHelper;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
@@ -145,16 +145,22 @@ public class HookStatus {
     }
 
     private static void initHookStatusImplInHostProcess() throws LinkageError {
-        boolean dexObfsEnabled = !"de.robv.android.xposed.XposedBridge".equals(XposedBridge.class.getName());
+        Class<?> xposedClass = LspObfuscationHelper.getXposedBridgeClass();
+        boolean dexObfsEnabled = false;
+        if (xposedClass != null) {
+            dexObfsEnabled = !"de.robv.android.xposed.XposedBridge".equals(xposedClass.getName());
+        }
         String hookProvider = null;
         if (dexObfsEnabled) {
             HookStatusImpl.sIsLsposedDexObfsEnabled = true;
             hookProvider = "LSPosed";
         } else {
             String bridgeTag = null;
-            try {
-                bridgeTag = (String) XposedBridge.class.getDeclaredField("TAG").get(null);
-            } catch (ReflectiveOperationException ignored) {
+            if (xposedClass != null) {
+                try {
+                    bridgeTag = (String) xposedClass.getDeclaredField("TAG").get(null);
+                } catch (ReflectiveOperationException ignored) {
+                }
             }
             if (bridgeTag != null) {
                 if (bridgeTag.startsWith("LSPosed")) {

@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import java.util.Objects;
 
 public class StartupInfo {
 
@@ -33,11 +34,11 @@ public class StartupInfo {
         throw new AssertionError("No instance for you!");
     }
 
-    /* package */ static String modulePath;
+    private static String modulePath;
 
-    /* package */ static ILoaderInfo loaderInfo;
+    private static ILoaderInfo loaderInfo;
 
-    /* package */ static IHookBridge hookBridge;
+    private static IHookBridge hookBridge;
 
     @NonNull
     public static String getModulePath() {
@@ -60,6 +61,20 @@ public class StartupInfo {
             throw new IllegalStateException("HookBridge is not initialized");
         }
         return hookBridge;
+    }
+
+    public static void setHookBridge(@Nullable IHookBridge hookBridge) {
+        StartupInfo.hookBridge = hookBridge;
+    }
+
+    public static void setLoaderInfo(@NonNull ILoaderInfo loaderInfo) {
+        Objects.requireNonNull(loaderInfo);
+        StartupInfo.loaderInfo = loaderInfo;
+    }
+
+    public static void setModulePath(@NonNull String modulePath) {
+        Objects.requireNonNull(modulePath);
+        StartupInfo.modulePath = modulePath;
     }
 
 }

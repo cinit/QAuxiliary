@@ -66,9 +66,9 @@ public class StartupAgent {
             // I don't know... What happened?
             return;
         }
-        StartupInfo.modulePath = modulePath;
-        StartupInfo.loaderInfo = loaderInfo;
-        StartupInfo.hookBridge = hookBridge;
+        StartupInfo.setModulePath(modulePath);
+        StartupInfo.setLoaderInfo(loaderInfo);
+        StartupInfo.setHookBridge(hookBridge);
         // bypass hidden api
         ensureHiddenApiAccess();
         // we want context

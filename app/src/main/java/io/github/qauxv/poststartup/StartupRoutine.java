@@ -24,7 +24,8 @@ package io.github.qauxv.poststartup;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
-import com.github.kyuubiran.ezxhelper.init.EzXHelperInit;
+import com.github.kyuubiran.ezxhelper.init.InitFields;
+import com.github.kyuubiran.ezxhelper.utils.Log;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
@@ -50,13 +51,11 @@ public class StartupRoutine {
      */
     public static void execPostStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
         // init all kotlin utils here
-        EzXHelperInit.INSTANCE.setHostPackageName(ctx.getPackageName());
-        EzXHelperInit.INSTANCE.setEzClassLoader(ctx.getClassLoader());
-        // resource injection is done somewhere else, do not init it here
-        EzXHelperInit.INSTANCE.initAppContext(ctx, false, false);
-        EzXHelperInit.INSTANCE.setLogTag("QAuxv");
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());
+        InitFields.ezXClassLoader = ctx.getClassLoader();
+        // resource injection is done somewhere else, do not init it here
+        Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
         Natives.load(ctx);
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
