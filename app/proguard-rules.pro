@@ -75,6 +75,11 @@
 -dontwarn com.sun.jna.**
 -dontwarn edu.umd.cs.findbugs.annotations.**
 -dontwarn java.lang.instrument.**
+
+# Xposed API
+-dontwarn de.robv.android.xposed.**
+-dontwarn io.github.libxposed.api.**
+
 -keep class com.android.dx.** {
     *;
 }
