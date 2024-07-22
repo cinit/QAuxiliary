@@ -1,0 +1,3 @@
+minApiVersion=51
+targetApiVersion=100
+staticScope=true

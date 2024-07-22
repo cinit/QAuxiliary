@@ -206,12 +206,14 @@ android {
         )
     }
     packaging {
-        resources.excludes.addAll(arrayOf(
-            "META-INF/**",
-            "kotlin/**",
-            "**.bin",
-            "kotlin-tooling-metadata.json"
-        ))
+        // libxposed API uses META-INF/xposed
+        resources.excludes.addAll(
+            arrayOf(
+                "kotlin/**",
+                "**.bin",
+                "kotlin-tooling-metadata.json"
+            )
+        )
     }
 
     buildFeatures {

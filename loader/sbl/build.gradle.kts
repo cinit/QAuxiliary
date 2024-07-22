@@ -27,7 +27,7 @@ dependencies {
     // Xposed API 89
     compileOnly(libs.xposed.api)
     // LSPosed API 100
-    // compileOnly(libs.libxposed.api)
+    compileOnly(projects.libs.libxposed)
     compileOnly(libs.androidx.annotation)
     implementation(projects.loader.hookapi)
 }
