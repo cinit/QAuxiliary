@@ -3,13 +3,12 @@ plugins {
 }
 
 android {
-    namespace = "me.teble.xposed.stub"
+    namespace = "io.github.libxposed.api"
     sourceSets {
         val main by getting
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(listOf("qq-stub/src/main/java"))
-            res.setSrcDirs(listOf("qq-stub/src/main/res"))
+            java.setSrcDirs(listOf("api/api/src/main/java"))
         }
     }
 
@@ -17,4 +16,5 @@ android {
         // androidx nullability stubs
         compileOnly(libs.androidx.annotation)
     }
+
 }
