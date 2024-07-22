@@ -189,14 +189,24 @@ public class XposedBridge {
         if (args == null) {
             args = ArrayUtils.EMPTY_OBJECT_ARRAY;
         }
-        if (!(method instanceof Method) && !(method instanceof Constructor)) {
-            throw new IllegalArgumentException("method must be a method on a class");
-        }
-        if (!Modifier.isStatic(method.getModifiers()) && thisObject == null) {
-            throw new IllegalArgumentException("receiver == null for a non-static method");
+        if (method == null) {
+            throw new IllegalArgumentException("method must not be null");
         }
         IHookBridge hookBridge = requireHookBridge();
-        return hookBridge.invokeOriginalMethod(method, thisObject, args);
+        if (method instanceof Method) {
+            if (!Modifier.isStatic(method.getModifiers()) && thisObject == null) {
+                throw new IllegalArgumentException("receiver == null for a non-static method");
+            }
+            return hookBridge.invokeOriginalMethod((Method) method, thisObject, args);
+        } else if (method instanceof Constructor) {
+            if (thisObject == null) {
+                throw new NullPointerException("receiver == null for a constructor");
+            }
+            hookBridge.invokeOriginalConstructor((Constructor) method, thisObject, args);
+            return null;
+        } else {
+            throw new IllegalArgumentException("method must be a method or constructor");
+        }
     }
 
     public static void log(String message) {

@@ -21,6 +21,7 @@
   -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
+
     <permission
         android:name="${applicationId}.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION"
         android:protectionLevel="signature"
@@ -36,6 +37,7 @@
         android:multiArch="true"
         android:name=".util.hookstatus.ModuleAppImpl"
         android:resizeableActivity="true"
+        android:description="@string/xposeddescription"
         android:theme="@style/AppTheme.Def"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity

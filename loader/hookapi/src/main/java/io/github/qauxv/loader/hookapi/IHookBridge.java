@@ -5,6 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import java.lang.reflect.AccessibleObject;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -50,7 +51,7 @@ public interface IHookBridge {
          *
          * @return The `this` reference
          */
-        @NonNull
+        @Nullable
         Object getThisObject();
 
         /**
@@ -212,7 +213,7 @@ public interface IHookBridge {
      * Instead, just hook (don't replace) the method and call {@code param.setResult(null)} in XC_MethodHook.beforeHookedMethod if the original method should be
      * skipped.
      *
-     * @param member     The method to be called.
+     * @param method     The method to be called.
      * @param thisObject For non-static calls, the "this" pointer, otherwise {@code null}.
      * @param args       Arguments for the method call as Object[] array.
      * @return The result returned from the invoked method.
@@ -223,8 +224,24 @@ public interface IHookBridge {
      * @throws InvocationTargetException if an exception was thrown by the invoked method
      */
     @Nullable
-    Object invokeOriginalMethod(@NonNull Member member, @Nullable Object thisObject, @NonNull Object[] args)
+    Object invokeOriginalMethod(@NonNull Method method, @Nullable Object thisObject, @NonNull Object[] args)
             throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+
+    <T> void invokeOriginalConstructor(@NonNull Constructor<T> ctor, @NonNull T thisObject, @NonNull Object[] args)
+            throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException;
+
+    /**
+     * Basically the same as {@link Constructor#newInstance(Object...)}, but calls the original constructor as it was before the interception by Xposed.
+     *
+     * @param <T>         The type of the constructor
+     * @param constructor The constructor to create and initialize a new instance
+     * @param args        The arguments used for the construction
+     * @return The instance created and initialized by the constructor
+     * @see Constructor#newInstance(Object...)
+     */
+    @NonNull
+    <T> T newInstanceOrigin(@NonNull Constructor<T> constructor, @NonNull Object... args)
+            throws InvocationTargetException, IllegalArgumentException, IllegalAccessException, InstantiationException;
 
     /**
      * Query the extension of the current implementation.

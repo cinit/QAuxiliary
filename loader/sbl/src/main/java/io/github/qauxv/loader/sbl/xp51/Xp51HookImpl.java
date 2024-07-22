@@ -30,8 +30,10 @@ import de.robv.android.xposed.XposedBridge;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderInfo;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
 
@@ -77,11 +79,28 @@ public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
     }
 
     @Nullable
-    public Object invokeOriginalMethod(@NonNull Member member, @Nullable Object thisObject, @NonNull Object[] args)
+    public Object invokeOriginalMethod(@NonNull Method method, @Nullable Object thisObject, @NonNull Object[] args)
             throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
-        CheckUtils.checkNonNull(member, "member");
+        CheckUtils.checkNonNull(method, "method");
         CheckUtils.checkNonNull(args, "args");
-        return XposedBridge.invokeOriginalMethod(member, thisObject, args);
+        return XposedBridge.invokeOriginalMethod(method, thisObject, args);
+    }
+
+    @Override
+    public <T> void invokeOriginalConstructor(@NonNull Constructor<T> ctor, @NonNull T thisObject, @NonNull Object[] args)
+            throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
+        CheckUtils.checkNonNull(ctor, "ctor");
+        CheckUtils.checkNonNull(thisObject, "thisObject");
+        CheckUtils.checkNonNull(args, "args");
+        XposedBridge.invokeOriginalMethod(ctor, thisObject, args);
+    }
+
+    @NonNull
+    @Override
+    public <T> T newInstanceOrigin(@NonNull Constructor<T> constructor, @NonNull Object... args)
+            throws InvocationTargetException, IllegalArgumentException, IllegalAccessException, InstantiationException {
+        // TODO: 2024-07-22 allocate instance
+        throw new UnsupportedOperationException("allocate instance is not supported");
     }
 
     @Override

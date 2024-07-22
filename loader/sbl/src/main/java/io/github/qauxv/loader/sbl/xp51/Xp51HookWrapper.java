@@ -45,7 +45,7 @@ public class Xp51HookWrapper {
             return mParam.method;
         }
 
-        @NonNull
+        @Nullable
         @Override
         public Object getThisObject() {
             return mParam.thisObject;
