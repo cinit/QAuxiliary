@@ -34,7 +34,6 @@ material-dialogs-input = { module = "com.afollestad.material-dialogs:input", ver
 xposed-api = { module = "de.robv.android.xposed:api", version = "82" }
 flexbox = { module = "com.google.android.flexbox:flexbox", version = "3.0.0" }
 colorpicker = { module = "com.jaredrummler:colorpicker", version = "1.1.0" }
-ezXHelper = { module = "com.github.kyuubiran:EzXHelper", version = "1.0.3" }
 confetti = { module = "com.github.jinatonic.confetti:confetti", version = "1.1.2" }
 weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.0.0" }
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }

@@ -248,6 +248,9 @@ kotlin {
     sourceSets.configureEach {
         kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
     }
+    sourceSets.main {
+        kotlin.srcDir(File(rootDir, "libs/ezxhelper/src/main/java"))
+    }
 }
 
 dependencies {
@@ -255,8 +258,6 @@ dependencies {
     compileOnly(projects.loader.hookapi)
     runtimeOnly(projects.loader.sbl)
     implementation(projects.loader.startup)
-    // TODO: 2024-07-21 remove libs.xposed.api once refactor done
-    compileOnly(libs.xposed.api)
     // ksp
     ksp(projects.libs.ksp)
     // host stub
@@ -278,7 +279,6 @@ dependencies {
     implementation(libs.colorpicker)
     implementation(libs.material.dialogs.core)
     implementation(libs.material.dialogs.input)
-    implementation(libs.ezXHelper)
     // festival title
     implementation(libs.confetti)
     implementation(libs.weatherView)
