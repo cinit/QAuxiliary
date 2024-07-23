@@ -48,6 +48,12 @@ plugins {
     alias(libs.plugins.aboutlibraries)
 }
 
+// ------ buildscript config ------
+
+val buildAllAbiForDebug = false
+val isNewXposedApiEnabled = true
+val fullNativeDebugMode = false
+
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
 
@@ -58,9 +64,6 @@ if (ccacheExecutablePath != null) {
 } else {
     println("No ccache found.")
 }
-
-val fullNativeDebugMode = false
-val isNewXposedApiEnabled = true
 
 fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
     var key1: String? = if (signConfig != null && signConfig.storeFile != null) {
@@ -175,8 +178,10 @@ android {
                 if (fullNativeDebugMode) {
                     isJniDebuggable = true
                 } else {
-                    @Suppress("ChromeOsAbiSupport")
-                    abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
+                    if (!buildAllAbiForDebug) {
+                        @Suppress("ChromeOsAbiSupport")
+                        abiFilters += arrayOf("arm64-v8a", "armeabi-v7a")
+                    }
                 }
             }
             isCrunchPngs = false
