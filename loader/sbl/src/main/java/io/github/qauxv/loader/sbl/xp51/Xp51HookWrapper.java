@@ -128,6 +128,7 @@ public class Xp51HookWrapper {
             // for gc
             param.setObjectExtra(tag, null);
             hcbParam.mParam = null;
+            hcbParam.mExtra = null;
         }
     }
 
