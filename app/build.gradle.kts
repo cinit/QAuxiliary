@@ -60,6 +60,7 @@ if (ccacheExecutablePath != null) {
 }
 
 val fullNativeDebugMode = false
+val isNewXposedApiEnabled = true
 
 fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
     var key1: String? = if (signConfig != null && signConfig.storeFile != null) {
@@ -214,6 +215,9 @@ android {
                 "kotlin-tooling-metadata.json"
             )
         )
+        if (!isNewXposedApiEnabled) {
+            resources.excludes.add("META-INF/xposed/**")
+        }
     }
 
     buildFeatures {
