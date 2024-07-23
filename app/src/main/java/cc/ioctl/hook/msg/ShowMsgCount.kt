@@ -29,7 +29,6 @@ import cc.ioctl.util.HookUtils.hookBeforeAndAfterIfEnabled
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
-import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -41,6 +40,7 @@ import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import xyz.nextalone.util.get
 import xyz.nextalone.util.throwOrTrue
 
@@ -83,19 +83,21 @@ object ShowMsgCount : CommonSwitchFunctionHook(
             }
         } else {
             // 群聊左上角返回(8.9.63~9.0.0)
-            DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
-                if (it.args[0] is Int) {
-                    val count = it.args[0] as Int
-                    if (count > 0) {
-                        val (mTitleBinding, unreadTv) = when {
-                            requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("e", "v")
-                            requireMinQQVersion(QQVersion.QQ_8_9_80) -> Pair("e", "s")
-                            requireMinQQVersion(QQVersion.QQ_8_9_70) -> Pair("e", "t")
-                            requireMinQQVersion(QQVersion.QQ_8_9_63) -> Pair("e", "s")
-                            else -> Pair("", "")
-                        }
-                        if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {
-                            (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = "$count"
+            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+                DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
+                    if (it.args[0] is Int) {
+                        val count = it.args[0] as Int
+                        if (count > 0) {
+                            val (mTitleBinding, unreadTv) = when {
+                                requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("e", "v")
+                                requireMinQQVersion(QQVersion.QQ_8_9_80) -> Pair("e", "s")
+                                requireMinQQVersion(QQVersion.QQ_8_9_70) -> Pair("e", "t")
+                                requireMinQQVersion(QQVersion.QQ_8_9_63) -> Pair("e", "s")
+                                else -> Pair("", "")
+                            }
+                            if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {
+                                (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = count.toString()
+                            }
                         }
                     }
                 }
