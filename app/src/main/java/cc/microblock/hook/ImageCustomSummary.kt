@@ -110,7 +110,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
     @SuppressLint("SetTextI18n")
     private fun showConfigDialog(ctx: Context) {
         val switchEnable = SwitchCompat(ctx).apply {
-            isChecked = isEnabled
+            isChecked = this@ImageCustomSummary.isEnabled
             textSize = 16f
             text = "功能总开关"
         }
@@ -179,6 +179,9 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             setView(rootLayout)
             setPositiveButton("确定") { _, _ ->
                 isEnabled = switchEnable.isChecked
+                typePic0 = checkBoxTypePic0.isChecked
+                typePic1247 = checkBoxTypePic1247.isChecked
+                typeMarketFace = checkBoxTypeMarketFace.isChecked
                 summaryText = summaryTextEdit.text.toString()
                 valueState.update { if (isEnabled) "已开启" else "禁用" }
             }
