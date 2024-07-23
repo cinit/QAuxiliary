@@ -28,8 +28,10 @@ import android.os.Build.VERSION;
 import android.os.Process;
 import android.system.Os;
 import android.system.StructUtsname;
+import androidx.annotation.NonNull;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
+import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.poststartup.StartupInfo;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -94,6 +96,8 @@ public class Natives {
     public static final int O_CLOEXEC = 0x80000;
     public static final int O_SYNC = (0x100000 | O_DSYNC);
     public static final int O_PATH = 0x200000;
+
+    private static volatile boolean sInitialized = false;
 
     private Natives() {
         throw new AssertionError("No instance for you!");
@@ -197,41 +201,56 @@ public class Natives {
             return;
         }
         try {
-            Class<?> xp = Class.forName(LspObfuscationHelper.getXposedBridgeClassName());
-            try {
-                xp.getClassLoader()
-                        .loadClass(LspObfuscationHelper.getObfuscatedLsposedNativeApiClassName())
+            ClassLoader apiClassLoader = IHookBridge.class.getClassLoader().getParent();
+            if (apiClassLoader != null) {
+                apiClassLoader.loadClass(LoaderExtensionHelper.getObfuscatedLsposedNativeApiClassName())
                         .getMethod("recordNativeEntrypoint", String.class)
                         .invoke(null, soTailingName);
-            } catch (ClassNotFoundException ignored) {
-                // not LSPosed, ignore
-            } catch (NoSuchMethodException | IllegalArgumentException
-                | InvocationTargetException | IllegalAccessException e) {
-                Log.e(e);
             }
-        } catch (ClassNotFoundException e) {
-            // not in host process, ignore
+        } catch (ClassNotFoundException ignored) {
+            // not LSPosed, ignore
+        } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
+            Log.e(e);
         }
     }
 
-    public static void load(Context ctx) throws LinkageError {
+    /**
+     * Load native library without initializing. This method is useful when you need to call native methods before Application.attachBaseContext() is called.
+     * <p>
+     * Note that typically you should call {@link #initialize(Context)} instead.
+     *
+     * @param filesDir Files directory, can be obtained from {@link Context#getFilesDir()}
+     */
+    public static void loadNativeWithoutInitialization(@NonNull File filesDir) {
         try {
             getpagesize();
             return;
         } catch (UnsatisfiedLinkError ignored) {
         }
-        try {
-            Class.forName(LspObfuscationHelper.getXposedBridgeClassName());
+        if (StartupInfo.isInHostProcess()) {
             // in host process
             List<String> abis = getAbiForLibrary();
             String modulePath = StartupInfo.getModulePath();
-            loadNativeLibraryInHost(ctx, modulePath, abis);
-        } catch (ClassNotFoundException e) {
+            loadNativeLibraryInHost(filesDir, modulePath, abis);
+        } else {
             // not in host process, ignore
             System.loadLibrary("qauxv");
         }
+    }
+
+    /**
+     * Load native library and initialize MMKV
+     * @param ctx Application context
+     * @throws LinkageError if failed to load native library
+     */
+    public static void initialize(@NonNull Context ctx) throws LinkageError {
+        if(sInitialized){
+            return;
+        }
+        File filesDir = ctx.getFilesDir();
+        loadNativeWithoutInitialization(filesDir);
         getpagesize();
-        File mmkvDir = new File(ctx.getFilesDir(), "qa_mmkv");
+        File mmkvDir = new File(filesDir, "qa_mmkv");
         if (!mmkvDir.exists()) {
             mmkvDir.mkdirs();
         }
@@ -245,10 +264,11 @@ public class Natives {
         });
         MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
         MMKV.mmkvWithID("global_cache", MMKV.MULTI_PROCESS_MODE);
+        sInitialized = true;
     }
 
     @SuppressLint("UnsafeDynamicallyLoadedCode")
-    private static void loadNativeLibraryInHost(Context ctx, String modulePath, List<String> abis) throws UnsatisfiedLinkError {
+    private static void loadNativeLibraryInHost(@NonNull File filesDir, String modulePath, List<String> abis) throws UnsatisfiedLinkError {
         Iterator<String> it = abis.iterator();
         if (modulePath != null && modulePath.length() > 0 && new File(modulePath).exists()) {
             // try direct memory map
@@ -264,7 +284,7 @@ public class Natives {
             }
         }
         // direct memory map load failed, extract and dlopen
-        File libname = extractNativeLibrary(ctx, "qauxv", abis.get(0));
+        File libname = extractNativeLibrary(filesDir, "qauxv", abis.get(0));
         registerNativeLibEntry(libname.getName());
         try {
             System.load(libname.getAbsolutePath());
@@ -301,9 +321,9 @@ public class Natives {
      *
      * @param libraryName library name without "lib" or ".so", eg. "qauxv", "mmkv"
      */
-    static File extractNativeLibrary(Context ctx, String libraryName, String abi) throws IOError {
+    static File extractNativeLibrary(@NonNull File filesDir, String libraryName, String abi) throws IOError {
         String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_CODE + "." + abi;
-        File dir = new File(ctx.getFilesDir(), "qa_dyn_lib");
+        File dir = new File(filesDir, "qa_dyn_lib");
         if (!dir.isDirectory()) {
             if (dir.isFile()) {
                 dir.delete();

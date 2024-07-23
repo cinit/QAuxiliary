@@ -56,7 +56,7 @@ public class StartupRoutine {
         InitFields.ezXClassLoader = ctx.getClassLoader();
         // resource injection is done somewhere else, do not init it here
         Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
-        Natives.load(ctx);
+        Natives.initialize(ctx);
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
                 HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());

@@ -25,6 +25,7 @@ package io.github.qauxv.util.hookstatus;
 import android.app.Application;
 import android.os.Build;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.loader.hookapi.ILoaderInfo;
@@ -38,10 +39,11 @@ public class ModuleAppImpl extends Application {
     @Override
     public void onCreate() {
         super.onCreate();
+        StartupInfo.setInHostProcess(false);
         // init host info, even if we are not in the host app
         HostInfo.init(this);
         // load native library
-        Natives.load(this);
+        Natives.initialize(this);
         // bypass hidden api check for current process
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
             HiddenApiBypass.setHiddenApiExemptions("L");
@@ -87,6 +89,12 @@ public class ModuleAppImpl extends Application {
             @Override
             public void log(@NonNull Throwable tr) {
                 android.util.Log.e("QAuxv", tr.toString(), tr);
+            }
+
+            @Nullable
+            @Override
+            public Object queryExtension(@NonNull String key, @Nullable Object... args) {
+                return null;
             }
         };
         StartupInfo.setModulePath(apkPath);

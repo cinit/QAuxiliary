@@ -40,6 +40,8 @@ public class StartupInfo {
 
     private static IHookBridge hookBridge;
 
+    private static Boolean inHostProcess = null;
+
     @NonNull
     public static String getModulePath() {
         return modulePath;
@@ -75,6 +77,20 @@ public class StartupInfo {
     public static void setModulePath(@NonNull String modulePath) {
         Objects.requireNonNull(modulePath);
         StartupInfo.modulePath = modulePath;
+    }
+
+    public static boolean isInHostProcess() {
+        if (inHostProcess == null) {
+            throw new IllegalStateException("Host process status is not initialized");
+        }
+        return inHostProcess;
+    }
+
+    public static void setInHostProcess(boolean inHostProcess) {
+        if (StartupInfo.inHostProcess != null) {
+            throw new IllegalStateException("Host process status is already initialized");
+        }
+        StartupInfo.inHostProcess = inHostProcess;
     }
 
 }

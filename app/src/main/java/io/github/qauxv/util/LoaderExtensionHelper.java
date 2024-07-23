@@ -22,36 +22,34 @@
 package io.github.qauxv.util;
 
 import androidx.annotation.Nullable;
-import io.github.qauxv.loader.hookapi.IHookBridge;
+import io.github.qauxv.loader.hookapi.ILoaderInfo;
 import io.github.qauxv.poststartup.StartupInfo;
 
-public class LspObfuscationHelper {
+public class LoaderExtensionHelper {
 
     public static final String CMD_GET_XPOSED_BRIDGE_CLASS = "GetXposedBridgeClass";
     private static String sProbeLsposedNativeApiClassName = "Lorg/lsposed/lspd/nativebridge/NativeAPI;";
 
-    private LspObfuscationHelper() {
+    private LoaderExtensionHelper() {
     }
 
     @Nullable
     public static Class<?> getXposedBridgeClass() {
-        IHookBridge hookBridge = StartupInfo.getHookBridge();
-        if (hookBridge == null) {
-            return null;
-        }
-        return (Class<?>) hookBridge.queryExtension(CMD_GET_XPOSED_BRIDGE_CLASS);
+        ILoaderInfo loaderInfo = StartupInfo.getLoaderInfo();
+        return (Class<?>) loaderInfo.queryExtension(CMD_GET_XPOSED_BRIDGE_CLASS);
     }
 
     public static String getObfuscatedLsposedNativeApiClassName() {
         return sProbeLsposedNativeApiClassName.replace('.', '/').substring(1, sProbeLsposedNativeApiClassName.length() - 1);
     }
 
+    @Nullable
     public static String getXposedBridgeClassName() {
         Class<?> xposedBridgeClass = getXposedBridgeClass();
         if (xposedBridgeClass != null) {
             return xposedBridgeClass.getName();
         } else {
-            return "de.robv.android.xposed.XposedBridge";
+            return null;
         }
     }
 

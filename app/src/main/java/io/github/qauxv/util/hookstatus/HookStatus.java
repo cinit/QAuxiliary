@@ -34,7 +34,7 @@ import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
-import io.github.qauxv.util.LspObfuscationHelper;
+import io.github.qauxv.util.LoaderExtensionHelper;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
@@ -145,7 +145,7 @@ public class HookStatus {
     }
 
     private static void initHookStatusImplInHostProcess() throws LinkageError {
-        Class<?> xposedClass = LspObfuscationHelper.getXposedBridgeClass();
+        Class<?> xposedClass = LoaderExtensionHelper.getXposedBridgeClass();
         boolean dexObfsEnabled = false;
         if (xposedClass != null) {
             dexObfsEnabled = !"de.robv.android.xposed.XposedBridge".equals(xposedClass.getName());

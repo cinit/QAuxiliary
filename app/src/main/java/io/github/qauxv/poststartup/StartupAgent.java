@@ -66,9 +66,11 @@ public class StartupAgent {
             // I don't know... What happened?
             return;
         }
+        System.setProperty(StartupAgent.class.getName(), "true");
         StartupInfo.setModulePath(modulePath);
         StartupInfo.setLoaderInfo(loaderInfo);
         StartupInfo.setHookBridge(hookBridge);
+        StartupInfo.setInHostProcess(true);
         // bypass hidden api
         ensureHiddenApiAccess();
         // we want context
