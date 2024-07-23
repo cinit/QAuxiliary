@@ -83,14 +83,13 @@ object FakePicSize : BaseFunctionHook(
                 waitForPositiveButton = true,
                 selection = { _, index, _ ->
                     sizeIndex = index
+                    if (sizeIndex != 0) {
+                        isEnabled = true
+                        if (!isInitialized) HookInstaller.initializeHookForeground(context, this@FakePicSize)
+                    }
                 }
             ).ignoreResult()
-            positiveButton(text = "保存") {
-                if (sizeIndex != 0) {
-                    isEnabled = true
-                    if (!isInitialized) HookInstaller.initializeHookForeground(context, this@FakePicSize)
-                }
-            }
+            positiveButton(text = "保存")
             negativeButton(text = "取消")
         }
     }
@@ -106,14 +105,19 @@ object FakePicSize : BaseFunctionHook(
                 val msgElement = (element as MsgElement)
                 msgElement.picElement?.apply {
                     if (contact.chatType != 4) picSubType = 0
-                    val (oldWidth, oldHeight) = Pair(picWidth, picHeight)
-                    val ratio = oldWidth.toDouble() / oldHeight.toDouble()
-                    if (oldWidth > oldHeight) {
+                    if (size == 1) {
                         picWidth = size
-                        picHeight = (size / ratio).toInt()
-                    } else {
-                        picWidth = (size * ratio).toInt()
                         picHeight = size
+                    } else {
+                        val (oldWidth, oldHeight) = Pair(picWidth, picHeight)
+                        val ratio = oldWidth.toDouble() / oldHeight.toDouble()
+                        if (oldWidth > oldHeight) {
+                            picWidth = size
+                            picHeight = (size / ratio).toInt()
+                        } else {
+                            picWidth = (size * ratio).toInt()
+                            picHeight = size
+                        }
                     }
                 }
             }
