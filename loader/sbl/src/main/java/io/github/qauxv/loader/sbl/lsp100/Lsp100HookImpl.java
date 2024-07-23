@@ -123,13 +123,13 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderInfo {
     @Nullable
     @Override
     public Object queryExtension(@NonNull String key, @Nullable Object... args) {
-        return null;
+        return Lsp100ExtCmd.handleQueryExtension(key, args);
     }
 
     @NonNull
     @Override
     public String getEntryPointName() {
-        return this.getClass().getSimpleName();
+        return this.getClass().getName();
     }
 
     @NonNull

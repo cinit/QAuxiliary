@@ -296,7 +296,7 @@ public class Lsp100HookWrapper {
     public static class Lsp100HookAgent implements XposedInterface.Hooker {
 
         @BeforeInvocation
-        public static InvocationParamWrapper beforeInvocation(@NonNull XposedInterface.BeforeHookCallback callback) {
+        public static InvocationParamWrapper before(@NonNull XposedInterface.BeforeHookCallback callback) {
             Member member = callback.getMember();
             // lookup callback list
             ConcurrentHashMap<Member, CallbackListHolder> callbackList = sCallbackRegistry.get(member.getDeclaringClass());
@@ -330,7 +330,7 @@ public class Lsp100HookWrapper {
         }
 
         @AfterInvocation
-        public static void afterInvocation(
+        public static void after(
                 @NonNull XposedInterface.AfterHookCallback callback,
                 @Nullable InvocationParamWrapper param
         ) {

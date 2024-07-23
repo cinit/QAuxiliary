@@ -122,7 +122,7 @@ public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
     @NonNull
     @Override
     public String getEntryPointName() {
-        return "Xp51HookEntry";
+        return this.getClass().getName();
     }
 
     @NonNull

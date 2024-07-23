@@ -243,14 +243,4 @@ public interface IHookBridge {
     <T> T newInstanceOrigin(@NonNull Constructor<T> constructor, @NonNull Object... args)
             throws InvocationTargetException, IllegalArgumentException, IllegalAccessException, InstantiationException;
 
-    /**
-     * Query the extension of the current implementation.
-     *
-     * @param key  The key of the extension
-     * @param args The arguments for the extension, may be empty
-     * @return The result of the extension, may be null
-     */
-    @Nullable
-    Object queryExtension(@NonNull String key, @Nullable Object... args);
-
 }
