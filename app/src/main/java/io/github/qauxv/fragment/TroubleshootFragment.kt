@@ -172,13 +172,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 })
             },
             CategoryItem("调试信息") {
-                val statusInfo = "PID: " + android.os.Process.myPid() +
-                    ", UID: " + android.os.Process.myUid() +
-                    ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
-                    "Xposed API version: " + StartupInfo.requireHookBridge().apiLevel + "\n" +
-                    "module: " + StartupInfo.getModulePath() + "\n" +
-                    "ctx.dataDir: " + hostInfo.application.dataDir
-                description(statusInfo, isTextSelectable = true)
+                description(generateStatusText(), isTextSelectable = true)
                 description(generateDebugInfo(), isTextSelectable = true)
             }
         )
@@ -480,6 +474,25 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val browser = Initiator.loadClass("com.tencent.mobileqq.debug.DebugActivity")
         val intent = Intent(requireContext(), browser)
         startActivity(intent)
+    }
+
+    private fun generateStatusText(): String {
+        val loader = StartupInfo.getLoaderInfo()
+        val hook = StartupInfo.requireHookBridge()
+        var statusInfo = "PID: " + android.os.Process.myPid() +
+            ", UID: " + android.os.Process.myUid() +
+            ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+            "Xposed API version: " + hook.apiLevel + "\n" +
+            "module: " + StartupInfo.getModulePath() + "\n" +
+            "ctx.dataDir: " + hostInfo.application.dataDir + "\n"
+        statusInfo += "entry: " + loader.entryPointName + "\n"
+        var xp = loader.queryExtension("GetXposedBridgeClass") as Class<*>?
+        if (xp == null) {
+            xp = loader.queryExtension("GetXposedInterfaceClass") as Class<*>?
+        }
+        statusInfo += "XposedBridge: " + (if (xp != null) xp.name else "null") + "\n"
+        statusInfo += hook.frameworkName + " " + hook.frameworkVersion + " (" + hook.frameworkVersionCode + ")\n"
+        return statusInfo
     }
 
     private fun generateDebugInfo(): CharSequence {
