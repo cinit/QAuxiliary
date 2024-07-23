@@ -77,6 +77,7 @@ import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.LoaderExtensionHelper
 import io.github.qauxv.util.Natives
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
@@ -492,6 +493,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         }
         statusInfo += "XposedBridge: " + (if (xp != null) xp.name else "null") + "\n"
         statusInfo += hook.frameworkName + " " + hook.frameworkVersion + " (" + hook.frameworkVersionCode + ")\n"
+        statusInfo += "Hook counter: " + LoaderExtensionHelper.getHookCounter();
         return statusInfo
     }
 

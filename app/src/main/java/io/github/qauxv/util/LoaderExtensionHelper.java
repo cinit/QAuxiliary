@@ -28,6 +28,7 @@ import io.github.qauxv.poststartup.StartupInfo;
 public class LoaderExtensionHelper {
 
     public static final String CMD_GET_XPOSED_BRIDGE_CLASS = "GetXposedBridgeClass";
+    public static final String CMD_HOOK_COUNTER = "GetHookCounter";
     private static String sProbeLsposedNativeApiClassName = "Lorg/lsposed/lspd/nativebridge/NativeAPI;";
 
     private LoaderExtensionHelper() {
@@ -50,6 +51,16 @@ public class LoaderExtensionHelper {
             return xposedBridgeClass.getName();
         } else {
             return null;
+        }
+    }
+
+    public static int getHookCounter() {
+        ILoaderInfo loaderInfo = StartupInfo.getLoaderInfo();
+        Number n = (Number) loaderInfo.queryExtension(CMD_HOOK_COUNTER);
+        if (n != null) {
+            return n.intValue();
+        } else {
+            return -1;
         }
     }
 

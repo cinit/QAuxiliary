@@ -390,4 +390,8 @@ public class Lsp100HookWrapper {
 
     }
 
+    public static int getHookCounter() {
+        return (int) (sNextHookId.get() - 1);
+    }
+
 }

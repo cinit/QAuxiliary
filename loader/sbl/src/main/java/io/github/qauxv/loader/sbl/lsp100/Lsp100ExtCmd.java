@@ -44,6 +44,8 @@ public class Lsp100ExtCmd {
                 return null;
             case "GetInitErrors":
                 return ModuleLoader.getInitErrors();
+            case "GetHookCounter":
+                return Lsp100HookWrapper.getHookCounter();
             default:
                 return null;
         }

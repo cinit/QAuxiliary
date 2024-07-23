@@ -169,4 +169,8 @@ public class Xp51HookWrapper {
 
     }
 
+    public static int getHookCounter() {
+        return (int) (sNextHookId.get() - 1);
+    }
+
 }
