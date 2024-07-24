@@ -339,7 +339,7 @@ object TroopGroupHook : CommonSwitchFunctionHook(arrayOf(RecentPopup_onClickActi
     override fun initOnce() = throwOrTrue {
         val itemClazz = "Lcom/tencent/widget/PopupMenuDialog\$MenuItem;".clazz!!
         val entryItem = itemClazz.newInstance(
-            Args(arrayOf(415411, "群聊分组", "群聊分组", R.drawable.ic_troop_group)),
+            Args(arrayOf(415411, "群聊分组", "群聊分组", R.drawable.ic_item_troop_group_72dp)),
             ArgTypes(arrayOf(Int::class.java, String::class.java, String::class.java, Int::class.java))
         )!!
         "Lcom/tencent/widget/PopupMenuDialog;->conversationPlusBuild(Landroid/app/Activity;Ljava/util/List;Lcom/tencent/widget/PopupMenuDialog\$OnClickActionListener;Lcom/tencent/widget/PopupMenuDialog\$OnDismissListener;)Lcom/tencent/widget/PopupMenuDialog;".method.hookBefore {
