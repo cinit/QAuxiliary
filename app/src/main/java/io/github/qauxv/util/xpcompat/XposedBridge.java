@@ -161,12 +161,15 @@ public class XposedBridge {
             wrappedParam.method = param.getMember();
             wrappedParam.thisObject = param.getThisObject();
             wrappedParam.args = param.getArgs();
-            callback.afterHookedMethod(wrappedParam);
-            // clear fields to avoid memory leaks
-            wrappedParam.method = null;
-            wrappedParam.thisObject = null;
-            wrappedParam.args = null;
-            param.setExtra(null);
+            try {
+                callback.afterHookedMethod(wrappedParam);
+            } finally {
+                // clear fields to avoid memory leaks
+                wrappedParam.method = null;
+                wrappedParam.thisObject = null;
+                wrappedParam.args = null;
+                param.setExtra(null);
+            }
         }
     }
 

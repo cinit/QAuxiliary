@@ -206,6 +206,7 @@ public class Lsp100HookWrapper {
         @NonNull
         @Override
         public Member getMember() {
+            checkLifecycle();
             if (isAfter) {
                 return after.getMember();
             } else {
@@ -216,6 +217,7 @@ public class Lsp100HookWrapper {
         @Nullable
         @Override
         public Object getThisObject() {
+            checkLifecycle();
             if (isAfter) {
                 return after.getThisObject();
             } else {
@@ -226,6 +228,7 @@ public class Lsp100HookWrapper {
         @NonNull
         @Override
         public Object[] getArgs() {
+            checkLifecycle();
             if (isAfter) {
                 return after.getArgs();
             } else {
@@ -236,6 +239,7 @@ public class Lsp100HookWrapper {
         @Nullable
         @Override
         public Object getResult() {
+            checkLifecycle();
             if (isAfter) {
                 return after.getResult();
             } else {
@@ -245,6 +249,7 @@ public class Lsp100HookWrapper {
 
         @Override
         public void setResult(@Nullable Object result) {
+            checkLifecycle();
             if (isAfter) {
                 after.setResult(result);
             } else {
@@ -255,6 +260,7 @@ public class Lsp100HookWrapper {
         @Nullable
         @Override
         public Throwable getThrowable() {
+            checkLifecycle();
             if (isAfter) {
                 return after.getThrowable();
             } else {
@@ -264,6 +270,7 @@ public class Lsp100HookWrapper {
 
         @Override
         public void setThrowable(@NonNull Throwable throwable) {
+            checkLifecycle();
             if (isAfter) {
                 after.setThrowable(throwable);
             } else {
@@ -274,6 +281,7 @@ public class Lsp100HookWrapper {
         @Nullable
         @Override
         public Object getExtra() {
+            checkLifecycle();
             if (extras == null) {
                 return null;
             }
@@ -282,12 +290,20 @@ public class Lsp100HookWrapper {
 
         @Override
         public void setExtra(@Nullable Object extra) {
+            checkLifecycle();
             if (extras == null) {
                 // create on demand
                 extras = new Object[callbacks.length];
             }
             extras[index] = extra;
         }
+
+        private void checkLifecycle() {
+            if ((isAfter && after == null) || (!isAfter && before == null)) {
+                throw new IllegalStateException("attempt to access hook param after destroyed");
+            }
+        }
+
     }
 
     private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> sCallbackRegistry = new ConcurrentHashMap<>();

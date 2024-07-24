@@ -42,52 +42,67 @@ public class Xp51HookWrapper {
         @NonNull
         @Override
         public Member getMember() {
+            checkLifecycle();
             return mParam.method;
         }
 
         @Nullable
         @Override
         public Object getThisObject() {
+            checkLifecycle();
             return mParam.thisObject;
         }
 
         @NonNull
         @Override
         public Object[] getArgs() {
+            checkLifecycle();
             return mParam.args;
         }
 
         @Nullable
         @Override
         public Object getResult() {
+            checkLifecycle();
             return mParam.getResult();
         }
 
         @Override
         public void setResult(@Nullable Object result) {
+            checkLifecycle();
             mParam.setResult(result);
         }
 
         @Nullable
         @Override
         public Throwable getThrowable() {
+            checkLifecycle();
             return mParam.getThrowable();
         }
 
         @Override
         public void setThrowable(@NonNull Throwable throwable) {
+            checkLifecycle();
             mParam.setThrowable(throwable);
         }
 
         @Nullable
         @Override
         public Object getExtra() {
+            checkLifecycle();
             return mExtra;
         }
 
         @Override
         public void setExtra(@Nullable Object extra) {
+            checkLifecycle();
             mExtra = extra;
+        }
+
+        private void checkLifecycle() {
+            if (mParam == null) {
+                throw new IllegalStateException("attempt to access hook param after destroyed");
+            }
         }
     }
 
