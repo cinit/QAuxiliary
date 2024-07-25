@@ -22,7 +22,7 @@
 package io.github.qauxv.util;
 
 import androidx.annotation.Nullable;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.poststartup.StartupInfo;
 
 public class LoaderExtensionHelper {
@@ -36,8 +36,8 @@ public class LoaderExtensionHelper {
 
     @Nullable
     public static Class<?> getXposedBridgeClass() {
-        ILoaderInfo loaderInfo = StartupInfo.getLoaderInfo();
-        return (Class<?>) loaderInfo.queryExtension(CMD_GET_XPOSED_BRIDGE_CLASS);
+        ILoaderService loaderService = StartupInfo.getLoaderService();
+        return (Class<?>) loaderService.queryExtension(CMD_GET_XPOSED_BRIDGE_CLASS);
     }
 
     public static String getObfuscatedLsposedNativeApiClassName() {
@@ -55,8 +55,8 @@ public class LoaderExtensionHelper {
     }
 
     public static int getHookCounter() {
-        ILoaderInfo loaderInfo = StartupInfo.getLoaderInfo();
-        Number n = (Number) loaderInfo.queryExtension(CMD_HOOK_COUNTER);
+        ILoaderService loaderService = StartupInfo.getLoaderService();
+        Number n = (Number) loaderService.queryExtension(CMD_HOOK_COUNTER);
         if (n != null) {
             return n.intValue();
         } else {

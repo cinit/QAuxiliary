@@ -25,7 +25,7 @@ package io.github.qauxv.poststartup;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import java.util.Objects;
 
 public class StartupInfo {
@@ -36,7 +36,7 @@ public class StartupInfo {
 
     private static String modulePath;
 
-    private static ILoaderInfo loaderInfo;
+    private static ILoaderService loaderService;
 
     private static IHookBridge hookBridge;
 
@@ -48,8 +48,8 @@ public class StartupInfo {
     }
 
     @NonNull
-    public static ILoaderInfo getLoaderInfo() {
-        return loaderInfo;
+    public static ILoaderService getLoaderService() {
+        return loaderService;
     }
 
     @Nullable
@@ -69,9 +69,9 @@ public class StartupInfo {
         StartupInfo.hookBridge = hookBridge;
     }
 
-    public static void setLoaderInfo(@NonNull ILoaderInfo loaderInfo) {
-        Objects.requireNonNull(loaderInfo);
-        StartupInfo.loaderInfo = loaderInfo;
+    public static void setLoaderService(@NonNull ILoaderService loaderService) {
+        Objects.requireNonNull(loaderService);
+        StartupInfo.loaderService = loaderService;
     }
 
     public static void setModulePath(@NonNull String modulePath) {

@@ -39,13 +39,11 @@ import android.util.TypedValue
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.FrameLayout
 import android.widget.LinearLayout
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.AppCompatCheckBox
-import androidx.appcompat.widget.AppCompatEditText
 import androidx.appcompat.widget.AppCompatTextView
 import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.res.ResourcesCompat
@@ -54,13 +52,11 @@ import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
-import cc.ioctl.util.LayoutHelper.dip2px
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
-import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
@@ -73,7 +69,6 @@ import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextSwitchItem
 import io.github.qauxv.lifecycle.ActProxyMgr
 import io.github.qauxv.poststartup.StartupInfo
-import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.tlb.ConfigTable.cacheMap
 import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
@@ -478,7 +473,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
     }
 
     private fun generateStatusText(): String {
-        val loader = StartupInfo.getLoaderInfo()
+        val loader = StartupInfo.getLoaderService()
         val hook = StartupInfo.requireHookBridge()
         var statusInfo = "PID: " + android.os.Process.myPid() +
             ", UID: " + android.os.Process.myUid() +

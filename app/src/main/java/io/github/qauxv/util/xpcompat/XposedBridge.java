@@ -210,11 +210,11 @@ public class XposedBridge {
     }
 
     public static void log(String message) {
-        StartupInfo.getLoaderInfo().log(message);
+        StartupInfo.getLoaderService().log(message);
     }
 
     public static void log(Throwable tr) {
-        StartupInfo.getLoaderInfo().log(tr);
+        StartupInfo.getLoaderService().log(tr);
     }
 
 }

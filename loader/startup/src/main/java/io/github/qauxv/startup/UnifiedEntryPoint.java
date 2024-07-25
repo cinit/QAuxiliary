@@ -6,7 +6,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import java.lang.reflect.Field;
 
 @Keep
@@ -21,7 +21,7 @@ public class UnifiedEntryPoint {
     public static void entry(
             @NonNull String modulePath,
             @NonNull ApplicationInfo appInfo,
-            @NonNull ILoaderInfo loaderInfo,
+            @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
     ) {
@@ -36,20 +36,20 @@ public class UnifiedEntryPoint {
         ClassLoader parent = self.getParent();
         HybridClassLoader.setLoaderParentClassLoader(parent);
         injectClassLoader(self, loader);
-        callNextStep(modulePath, appInfo, loaderInfo, hostClassLoader, hookBridge);
+        callNextStep(modulePath, appInfo, loaderService, hostClassLoader, hookBridge);
     }
 
     private static void callNextStep(
             @NonNull String modulePath,
             @NonNull ApplicationInfo appInfo,
-            @NonNull ILoaderInfo loaderInfo,
+            @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
     ) {
         try {
             Class<?> kStartupAgent = Class.forName("io.github.qauxv.poststartup.StartupAgent");
-            kStartupAgent.getMethod("startup", String.class, ApplicationInfo.class, ILoaderInfo.class, ClassLoader.class, IHookBridge.class)
-                    .invoke(null, modulePath, appInfo, loaderInfo, hostClassLoader, hookBridge);
+            kStartupAgent.getMethod("startup", String.class, ApplicationInfo.class, ILoaderService.class, ClassLoader.class, IHookBridge.class)
+                    .invoke(null, modulePath, appInfo, loaderService, hostClassLoader, hookBridge);
         } catch (ReflectiveOperationException e) {
             android.util.Log.e("QAuxv", "StartupAgent.startup: failed", e);
             throw new RuntimeException(e);

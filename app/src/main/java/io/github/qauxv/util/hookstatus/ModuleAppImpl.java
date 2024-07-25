@@ -28,7 +28,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.core.NativeCoreBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Natives;
@@ -57,7 +58,11 @@ public class ModuleAppImpl extends Application {
 
     private void initStartupInfo() {
         final String apkPath = getApplicationInfo().sourceDir;
-        ILoaderInfo loaderInfo = new ILoaderInfo() {
+        ILoaderService loaderService = new ILoaderService() {
+
+            // not used, just for compatibility
+            private IClassLoaderHelper mClassLoaderHelper;
+
             @NonNull
             @Override
             public String getEntryPointName() {
@@ -96,9 +101,20 @@ public class ModuleAppImpl extends Application {
             public Object queryExtension(@NonNull String key, @Nullable Object... args) {
                 return null;
             }
+
+            @Override
+            public void setClassLoaderHelper(@Nullable IClassLoaderHelper helper) {
+                mClassLoaderHelper = helper;
+            }
+
+            @Nullable
+            @Override
+            public IClassLoaderHelper getClassLoaderHelper() {
+                return mClassLoaderHelper;
+            }
         };
         StartupInfo.setModulePath(apkPath);
-        StartupInfo.setLoaderInfo(loaderInfo);
+        StartupInfo.setLoaderService(loaderService);
     }
 
 }

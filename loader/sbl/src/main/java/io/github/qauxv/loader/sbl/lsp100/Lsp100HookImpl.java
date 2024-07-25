@@ -26,8 +26,9 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
+import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.loader.sbl.BuildConfig;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
 import java.lang.reflect.Constructor;
@@ -35,10 +36,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
-public class Lsp100HookImpl implements IHookBridge, ILoaderInfo {
+public class Lsp100HookImpl implements IHookBridge, ILoaderService {
 
     public static final Lsp100HookImpl INSTANCE = new Lsp100HookImpl();
     public static XposedModule self = null;
+    private IClassLoaderHelper mClassLoaderHelper;
 
     private Lsp100HookImpl() {
     }
@@ -157,6 +159,17 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderInfo {
     @Override
     public void log(@NonNull Throwable tr) {
         self.log(tr.toString(), tr);
+    }
+
+    @Override
+    public void setClassLoaderHelper(@Nullable IClassLoaderHelper helper) {
+        mClassLoaderHelper = helper;
+    }
+
+    @Nullable
+    @Override
+    public IClassLoaderHelper getClassLoaderHelper() {
+        return mClassLoaderHelper;
     }
 
 }

@@ -118,7 +118,7 @@ public class StartupHook {
         String msg = Log.getStackTraceString(th);
         Log.e("QAuxv", msg);
         try {
-            StartupInfo.getLoaderInfo().log(th);
+            StartupInfo.getLoaderService().log(th);
         } catch (NoClassDefFoundError | NullPointerException e) {
             Log.e("Xposed", msg);
             Log.e("EdXposed-Bridge", msg);

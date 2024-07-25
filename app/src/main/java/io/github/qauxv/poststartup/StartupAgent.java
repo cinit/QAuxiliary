@@ -23,7 +23,6 @@
 package io.github.qauxv.poststartup;
 
 import android.annotation.SuppressLint;
-import android.app.Application;
 import android.content.Context;
 import android.content.pm.ApplicationInfo;
 import android.os.Build;
@@ -31,10 +30,9 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.util.IoUtils;
 import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 @Keep
@@ -50,7 +48,7 @@ public class StartupAgent {
     public static void startup(
             @NonNull String modulePath,
             @NonNull ApplicationInfo appInfo,
-            @NonNull ILoaderInfo loaderInfo,
+            @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
     ) {
@@ -68,7 +66,7 @@ public class StartupAgent {
         }
         System.setProperty(StartupAgent.class.getName(), "true");
         StartupInfo.setModulePath(modulePath);
-        StartupInfo.setLoaderInfo(loaderInfo);
+        StartupInfo.setLoaderService(loaderService);
         StartupInfo.setHookBridge(hookBridge);
         StartupInfo.setInHostProcess(true);
         // bypass hidden api

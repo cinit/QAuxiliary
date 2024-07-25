@@ -27,17 +27,20 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
+import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 
-public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
+public class Xp51HookImpl implements IHookBridge, ILoaderService {
 
     public static final Xp51HookImpl INSTANCE = new Xp51HookImpl();
+
+    private IClassLoaderHelper mClassLoaderHelper;
 
     @Override
     public int getApiLevel() {
@@ -155,4 +158,14 @@ public class Xp51HookImpl implements IHookBridge, ILoaderInfo {
         XposedBridge.log(tr);
     }
 
+    @Override
+    public void setClassLoaderHelper(@Nullable IClassLoaderHelper helper) {
+        mClassLoaderHelper = helper;
+    }
+
+    @Nullable
+    @Override
+    public IClassLoaderHelper getClassLoaderHelper() {
+        return mClassLoaderHelper;
+    }
 }

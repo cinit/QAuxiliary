@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import dalvik.system.BaseDexClassLoader;
 import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.loader.hookapi.ILoaderInfo;
+import io.github.qauxv.loader.hookapi.ILoaderService;
 import java.io.File;
 import java.io.IOException;
 import java.lang.reflect.Method;
@@ -54,7 +54,7 @@ public class ModuleLoader {
     public static void initialize(
             @NonNull ApplicationInfo ai,
             @NonNull ClassLoader hostClassLoader,
-            @NonNull ILoaderInfo loaderInfo,
+            @NonNull ILoaderService loaderService,
             @Nullable IHookBridge hookBridge,
             @NonNull String selfPath
     ) throws ReflectiveOperationException {
@@ -97,9 +97,9 @@ public class ModuleLoader {
         // invoke the startup routine
         Class<?> kUnifiedEntryPoint = targetClassLoader.loadClass("io.github.qauxv.startup.UnifiedEntryPoint");
         Method initialize = kUnifiedEntryPoint.getMethod("entry",
-                String.class, ApplicationInfo.class, ILoaderInfo.class, ClassLoader.class, IHookBridge.class);
+                String.class, ApplicationInfo.class, ILoaderService.class, ClassLoader.class, IHookBridge.class);
         sLoaded = true;
-        initialize.invoke(null, modulePath, ai, loaderInfo, hostClassLoader, hookBridge);
+        initialize.invoke(null, modulePath, ai, loaderService, hostClassLoader, hookBridge);
     }
 
     public static List<Throwable> getInitErrors() {

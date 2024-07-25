@@ -5,7 +5,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 @Keep
-public interface ILoaderInfo {
+public interface ILoaderService {
 
     @NonNull
     String getEntryPointName();
@@ -36,5 +36,22 @@ public interface ILoaderInfo {
      */
     @Nullable
     Object queryExtension(@NonNull String key, @Nullable Object... args);
+
+    /**
+     * Get the class loader helper used by the current underlying loader.
+     *
+     * @return null as default, if not set
+     */
+    @Nullable
+    IClassLoaderHelper getClassLoaderHelper();
+
+    /**
+     * Set the class loader helper for the current implementation. You need to set one before doing something crazy.
+     * <p>
+     * The class loader helper is provided by the superstructure, and is used by the underlying loader to create class loaders.
+     *
+     * @param helper The class loader helper instance
+     */
+    void setClassLoaderHelper(@Nullable IClassLoaderHelper helper);
 
 }
