@@ -88,6 +88,9 @@ public class HybridClassLoader extends ClassLoader {
                 || name.startsWith("org.jetbrains.annotations.")
                 || name.startsWith("com.bumptech.glide.")
                 || name.startsWith("com.google.errorprone.annotations.")
+                || name.startsWith("org.jf.dexlib2.")
+                || name.startsWith("org.jf.util.")
+                || name.startsWith("javax.annotation.")
                 || name.startsWith("_COROUTINE.");
     }
 
