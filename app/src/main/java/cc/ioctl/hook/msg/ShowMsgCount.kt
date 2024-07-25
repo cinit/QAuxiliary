@@ -53,9 +53,9 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object ShowMsgCount : CommonSwitchFunctionHook(
     targets = arrayOf(
-        NCustomWidgetUtil_updateCustomNoteTxt,
-        AIOTitleVB_updateLeftTopBack_NT,
         CCustomWidgetUtil_updateCustomNoteTxt_NT,
+        AIOTitleVB_updateLeftTopBack_NT,
+        NCustomWidgetUtil_updateCustomNoteTxt,
     )
 ) {
 
@@ -64,8 +64,8 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 
     override fun initOnce() = throwOrTrue {
 
-        // 群消息数量
         if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            // 群消息数量 + 群聊左上角返回消息数量
             val clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
             val (updateNumName, mNumName, mTextName) = if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
                 Triple("updateNum", "mNum", "mText")
@@ -83,25 +83,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
             }
         } else {
             if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-                // 群聊左上角返回(8.9.63~9.0.0)
-                DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
-                    if (it.args[0] is Int) {
-                        val count = it.args[0] as Int
-                        if (count > 0) {
-                            val (mTitleBinding, unreadTv) = when {
-                                requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("e", "v")
-                                requireMinQQVersion(QQVersion.QQ_8_9_80) -> Pair("e", "s")
-                                requireMinQQVersion(QQVersion.QQ_8_9_70) -> Pair("e", "t")
-                                requireMinQQVersion(QQVersion.QQ_8_9_63) -> Pair("e", "s")
-                                else -> Pair("", "")
-                            }
-                            if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {
-                                (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = count.toString()
-                            }
-                        }
-                    }
-                }
-
+                // 群消息数量
                 val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
                 val updateNum = clz.declaredMethods.single { method ->
                     val params = method.parameterTypes
@@ -124,11 +106,29 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                         tv.layoutParams = lp
                     }
                 })
+                // 群聊左上角返回消息数量
+                DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
+                    if (it.args[0] is Int) {
+                        val count = it.args[0] as Int
+                        if (count > 0) {
+                            val (mTitleBinding, unreadTv) = when {
+                                requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("e", "v")
+                                requireMinQQVersion(QQVersion.QQ_8_9_80) -> Pair("e", "s")
+                                requireMinQQVersion(QQVersion.QQ_8_9_70) -> Pair("e", "t")
+                                requireMinQQVersion(QQVersion.QQ_8_9_63) -> Pair("e", "s")
+                                else -> Pair("", "")
+                            }
+                            if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {
+                                (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = count.toString()
+                            }
+                        }
+                    }
+                }
             }
         }
 
-        // 总消息数量
         if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+            // 总消息数量
             val clz = DexKit.requireClassFromCache(NCustomWidgetUtil_updateCustomNoteTxt)
             val method = clz.declaredMethods.single { method ->
                 val params = method.parameterTypes
@@ -140,6 +140,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 param.args[3] = Int.MAX_VALUE
             }
         } else {
+            // 总消息数量(QQ[9.0.8]之前) + 群消息数量(QQNT[8.9.63]之前)
             val clz = DexKit.requireClassFromCache(NCustomWidgetUtil_updateCustomNoteTxt)
             val method = clz.declaredMethods.single { method ->
                 val params = method.parameterTypes
@@ -161,11 +162,11 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 }
 
                 override fun afterHookedMethod(param: MethodHookParam) {
-                    val tv = param.args[0] as TextView
-                    tv.maxWidth = Int.MAX_VALUE
-                    val lp = tv.layoutParams
-                    lp.width = ViewGroup.LayoutParams.WRAP_CONTENT
-                    tv.layoutParams = lp
+                    (param.args[0] as TextView).apply {
+                        maxWidth = Int.MAX_VALUE
+                        layoutParams.width = ViewGroup.LayoutParams.WRAP_CONTENT
+                        setPadding(0, 0, 0, 0)
+                    }
                 }
             })
         }
