@@ -82,8 +82,8 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 param.result = null
             }
         } else {
-            // 群聊左上角返回(8.9.63~9.0.0)
             if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+                // 群聊左上角返回(8.9.63~9.0.0)
                 DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
                     if (it.args[0] is Int) {
                         val count = it.args[0] as Int
@@ -101,30 +101,30 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                         }
                     }
                 }
-            }
 
-            val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
-            val updateNum = clz.declaredMethods.single { method ->
-                val params = method.parameterTypes
-                params.size == 6 && params[0] == TextView::class.java
-                    && params[1] == Int::class.java && params[2] == Int::class.java
-                    && params[3] == Int::class.java && params[4] == Int::class.java
-                    && params[5] == String::class.java
-            }
-            hookBeforeAndAfterIfEnabled(this, updateNum, 50, object : BeforeAndAfterHookedMethod {
-                override fun beforeHookedMethod(param: MethodHookParam) {
-                    param.args[4] = Int.MAX_VALUE
+                val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
+                val updateNum = clz.declaredMethods.single { method ->
+                    val params = method.parameterTypes
+                    params.size == 6 && params[0] == TextView::class.java
+                        && params[1] == Int::class.java && params[2] == Int::class.java
+                        && params[3] == Int::class.java && params[4] == Int::class.java
+                        && params[5] == String::class.java
                 }
+                hookBeforeAndAfterIfEnabled(this, updateNum, 50, object : BeforeAndAfterHookedMethod {
+                    override fun beforeHookedMethod(param: MethodHookParam) {
+                        param.args[4] = Int.MAX_VALUE
+                    }
 
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    val tv = param.args[0] as TextView
-                    val count = param.args[2] as Int
-                    val str = count.toString()
-                    val lp = tv.layoutParams
-                    lp.width = LayoutHelper.dip2px(tv.context, (9 + 7 * str.length).toFloat())
-                    tv.layoutParams = lp
-                }
-            })
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        val tv = param.args[0] as TextView
+                        val count = param.args[2] as Int
+                        val str = count.toString()
+                        val lp = tv.layoutParams
+                        lp.width = LayoutHelper.dip2px(tv.context, (9 + 7 * str.length).toFloat())
+                        tv.layoutParams = lp
+                    }
+                })
+            }
         }
 
         // 总消息数量
