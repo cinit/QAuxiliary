@@ -31,6 +31,8 @@ import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Natives;
+import io.github.qauxv.util.hookimpl.InMemoryClassLoaderHelper;
+import io.github.qauxv.util.hookimpl.LibXposedNewApiByteCodeGenerator;
 import java.lang.reflect.Field;
 
 public class StartupRoutine {
@@ -60,6 +62,8 @@ public class StartupRoutine {
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
                 HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
+        StartupInfo.getLoaderService().setClassLoaderHelper(InMemoryClassLoaderHelper.INSTANCE);
+        LibXposedNewApiByteCodeGenerator.init();
         MainHook.getInstance().performHook(ctx, step);
     }
 

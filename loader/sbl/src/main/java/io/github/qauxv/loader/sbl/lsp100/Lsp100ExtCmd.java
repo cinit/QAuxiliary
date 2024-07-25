@@ -27,6 +27,8 @@ import androidx.annotation.Nullable;
 import io.github.libxposed.api.XposedInterface;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
 import io.github.qauxv.loader.sbl.common.ModuleLoader;
+import io.github.qauxv.loader.sbl.lsp100.codegen.Lsp100ProxyClassMaker;
+import java.lang.reflect.Method;
 
 public class Lsp100ExtCmd {
 
@@ -46,6 +48,10 @@ public class Lsp100ExtCmd {
                 return ModuleLoader.getInitErrors();
             case "GetHookCounter":
                 return Lsp100HookWrapper.getHookCounter();
+            case "SetLibXposedNewApiByteCodeGeneratorWrapper": {
+                Lsp100ProxyClassMaker.setWrapperMethod((Method) arg[0]);
+                return Boolean.TRUE;
+            }
             default:
                 return null;
         }

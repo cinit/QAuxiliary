@@ -22,23 +22,18 @@
 
 package io.github.qauxv.loader.sbl.lsp100;
 
-import android.os.ParcelUuid;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
-import io.github.libxposed.api.annotations.AfterInvocation;
-import io.github.libxposed.api.annotations.BeforeInvocation;
-import io.github.libxposed.api.annotations.XposedHooker;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
+import io.github.qauxv.loader.sbl.lsp100.codegen.Lsp100ProxyClassMaker;
+import io.github.qauxv.loader.sbl.lsp100.dyn.Lsp100CallbackProxy;
 import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -55,17 +50,20 @@ public class Lsp100HookWrapper {
 
     private static final Object sRegistryWriteLock = new Object();
 
-    private static final int LSP100_PRIORITY = XposedInterface.PRIORITY_LOWEST + 1;
+    private static final Class<?> DEFAULT_PROXY = Lsp100CallbackProxy.P0000000050.class;
+    private static final int DEFAULT_PRIORITY = 50;
 
     public static class CallbackWrapper {
 
         public final IHookBridge.IMemberHookCallback callback;
         public final long hookId = sNextHookId.getAndIncrement();
         public final int priority;
+        public final int tag;
 
-        public CallbackWrapper(IHookBridge.IMemberHookCallback callback, int priority) {
+        public CallbackWrapper(IHookBridge.IMemberHookCallback callback, int priority, int tag) {
             this.callback = callback;
             this.priority = priority;
+            this.tag = tag;
         }
     }
 
@@ -77,31 +75,58 @@ public class Lsp100HookWrapper {
 
     }
 
-    public static UnhookHandle hookAndRegisterMethodCallback(@NonNull Member method, @NonNull IHookBridge.IMemberHookCallback callback, int priority) {
+    public static UnhookHandle hookAndRegisterMethodCallback(
+            final @NonNull Member method,
+            final @NonNull IHookBridge.IMemberHookCallback callback,
+            final int priority
+    ) {
         CheckUtils.checkNonNull(method, "method");
         CheckUtils.checkNonNull(callback, "callback");
-        CallbackWrapper wrapper = new CallbackWrapper(callback, priority);
+        // select a proxy class
+        final int tag;
+        final Class<?> proxyClass;
+        {
+            Class<?> c;
+            int t;
+            try {
+                c = generateProxyClassForCallback(priority);
+                t = priority;
+            } catch (RuntimeException e) {
+                android.util.Log.e("QAuxv", "failed to generate proxy class", e);
+                c = DEFAULT_PROXY;
+                t = DEFAULT_PRIORITY;
+            }
+            proxyClass = c;
+            tag = t;
+        }
+        CallbackWrapper wrapper = new CallbackWrapper(callback, priority, tag);
         UnhookHandle handle = new UnhookHandle(wrapper, method);
         Class<?> declaringClass = method.getDeclaringClass();
         CallbackListHolder holder;
         synchronized (sRegistryWriteLock) {
-            // 1. check if the method is already hooked
-            ConcurrentHashMap<Member, CallbackListHolder> callbackList = sCallbackRegistry.get(declaringClass);
+            // 1. select the callback list by tag
+            ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> taggedCallbackRegistry = sCallbackRegistry.get(tag);
+            if (taggedCallbackRegistry == null) {
+                taggedCallbackRegistry = new ConcurrentHashMap<>();
+                sCallbackRegistry.put(tag, taggedCallbackRegistry);
+            }
+            // 2. check if the method is already hooked
+            ConcurrentHashMap<Member, CallbackListHolder> callbackList = taggedCallbackRegistry.get(declaringClass);
             if (callbackList == null) {
                 callbackList = new ConcurrentHashMap<>();
-                sCallbackRegistry.put(declaringClass, callbackList);
+                taggedCallbackRegistry.put(declaringClass, callbackList);
             }
             holder = callbackList.get(method);
             if (holder == null) {
-                // 2. tell the underlying framework to hook the method
+                // 3. tell the underlying framework to hook the method
                 if (method instanceof Method) {
-                    self.hook((Method) method, LSP100_PRIORITY, Lsp100HookAgent.class);
+                    self.hook((Method) method, tag, (Class<? extends XposedInterface.Hooker>) proxyClass);
                 } else if (method instanceof Constructor) {
-                    self.hook((Constructor<?>) method, LSP100_PRIORITY, Lsp100HookAgent.class);
+                    self.hook((Constructor<?>) method, tag, (Class<? extends XposedInterface.Hooker>) proxyClass);
                 } else {
                     throw new IllegalArgumentException("only method and constructor can be hooked, but got " + method);
                 }
-                // 3. create a new holder
+                // 4. create a new holder
                 CallbackListHolder newHolder = new CallbackListHolder();
                 callbackList.put(method, newHolder);
                 holder = newHolder;
@@ -133,11 +158,16 @@ public class Lsp100HookWrapper {
         return handle;
     }
 
-    public static void removeMethodCallback(@NonNull Member method, @NonNull CallbackWrapper callback) {
+    public static void removeMethodCallback(@NonNull Member method, final @NonNull CallbackWrapper callback) {
         CheckUtils.checkNonNull(method, "method");
         CheckUtils.checkNonNull(callback, "callback");
         // find the callback holder
-        ConcurrentHashMap<Member, CallbackListHolder> callbackList = sCallbackRegistry.get(method.getDeclaringClass());
+        final int tag = callback.tag;
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> taggedCallbackRegistry = sCallbackRegistry.get(tag);
+        if (taggedCallbackRegistry == null) {
+            return;
+        }
+        ConcurrentHashMap<Member, CallbackListHolder> callbackList = taggedCallbackRegistry.get(method.getDeclaringClass());
         if (callbackList == null) {
             return;
         }
@@ -160,8 +190,13 @@ public class Lsp100HookWrapper {
     public static boolean isMethodCallbackRegistered(@NonNull Member method, @NonNull CallbackWrapper callback) {
         CheckUtils.checkNonNull(method, "method");
         CheckUtils.checkNonNull(callback, "callback");
+        final int tag = callback.tag;
+        ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> taggedCallbackRegistry = sCallbackRegistry.get(tag);
+        if (taggedCallbackRegistry == null) {
+            return false;
+        }
         // find the callback holder
-        ConcurrentHashMap<Member, CallbackListHolder> callbackList = sCallbackRegistry.get(method.getDeclaringClass());
+        ConcurrentHashMap<Member, CallbackListHolder> callbackList = taggedCallbackRegistry.get(method.getDeclaringClass());
         if (callbackList == null) {
             return false;
         }
@@ -306,16 +341,22 @@ public class Lsp100HookWrapper {
 
     }
 
-    private static final ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> sCallbackRegistry = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Integer, ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>>> sCallbackRegistry = new ConcurrentHashMap<>();
 
-    @XposedHooker
     public static class Lsp100HookAgent implements XposedInterface.Hooker {
 
-        @BeforeInvocation
-        public static InvocationParamWrapper before(@NonNull XposedInterface.BeforeHookCallback callback) {
+        public static InvocationParamWrapper handleBeforeHookedMethod(
+                final @NonNull XposedInterface.BeforeHookCallback callback,
+                final int tag
+        ) {
+            // lookup by tag
+            ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>> taggedCallbackRegistry = sCallbackRegistry.get(tag);
+            if (taggedCallbackRegistry == null) {
+                return null;
+            }
             Member member = callback.getMember();
             // lookup callback list
-            ConcurrentHashMap<Member, CallbackListHolder> callbackList = sCallbackRegistry.get(member.getDeclaringClass());
+            ConcurrentHashMap<Member, CallbackListHolder> callbackList = taggedCallbackRegistry.get(member.getDeclaringClass());
             if (callbackList == null) {
                 return null;
             }
@@ -345,10 +386,10 @@ public class Lsp100HookWrapper {
             return param;
         }
 
-        @AfterInvocation
-        public static void after(
-                @NonNull XposedInterface.AfterHookCallback callback,
-                @Nullable InvocationParamWrapper param
+        public static void handleAfterHookedMethod(
+                final @NonNull XposedInterface.AfterHookCallback callback,
+                final @Nullable InvocationParamWrapper param,
+                final int tag
         ) {
             if (param == null) {
                 throw new AssertionError("param is null");
@@ -370,6 +411,12 @@ public class Lsp100HookWrapper {
             param.before = null;
             param.after = null;
         }
+    }
+
+    @NonNull
+    private static Class<?> generateProxyClassForCallback(int priority) throws UnsupportedOperationException {
+        Lsp100ProxyClassMaker maker = Lsp100ProxyClassMaker.getInstance();
+        return maker.createProxyClass(priority);
     }
 
     public static class UnhookHandle implements IHookBridge.MemberUnhookHandle {
