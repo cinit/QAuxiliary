@@ -45,6 +45,8 @@ flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
 google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
+dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
+google-guava = { module = "com.google.guava:guava", version = "33.2.1-android" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.2.1" }

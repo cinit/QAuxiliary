@@ -302,6 +302,9 @@ dependencies {
     implementation(libs.dalvik.dx)
     ksp(libs.sealedEnum.ksp)
     implementation(libs.google.protobuf.java)
+    implementation(libs.dexlib2)
+    // I don't know why, but without this, compilation will fail
+    implementation(libs.google.guava)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
