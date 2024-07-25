@@ -182,3 +182,50 @@ Java_io_github_qauxv_util_dyn_MemoryDexLoader_nativeCreateClassLoaderWithDexBelo
     env->SetObjectField(path_list, dexElementsField, new_dex_elements);
     return classloader;
 }
+
+extern "C" JNIEXPORT jobject JNICALL
+Java_io_github_qauxv_util_dyn_MemoryDexLoader_nativeCreateDexFileFormBytesBelowOreo(JNIEnv* env,
+                                                                                    jclass clazz,
+                                                                                    jbyteArray dex_bytes,
+                                                                                    jobject defining_context,
+                                                                                    jstring jstr_name) {
+    // This method is only used for Android 8.0 and below.
+    if (dex_bytes == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "dex_file is null");
+        return nullptr;
+    }
+    if (!InitLibArtElfView()) {
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "libart symbol resolver init failed");
+        return nullptr;
+    }
+    if (!InitLSPlantImpl(env)) {
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "lsplant init failed");
+        return nullptr;
+    }
+    size_t dex_file_size = env->GetArrayLength(dex_bytes);
+    if (dex_file_size == 0) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalAccessException"), "dex_file is empty");
+        return nullptr;
+    }
+    std::vector<uint8_t> dex_file_data(dex_file_size);
+    env->GetByteArrayRegion(dex_bytes, 0, (int) dex_file_size, reinterpret_cast<jbyte*>(dex_file_data.data()));
+    void* dex_file_ptr = mmap(nullptr, dex_file_size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+    if (dex_file_ptr == MAP_FAILED) {
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), fmt::format("mmap failed: {}", strerror(errno)).c_str());
+        return nullptr;
+    }
+    memcpy(dex_file_ptr, dex_file_data.data(), dex_file_size);
+    // set read-only
+    mprotect(dex_file_ptr, dex_file_size, PROT_READ);
+    std::string err_msg;
+    const auto* dex = lsplant::art::DexFile::OpenMemory(dex_file_ptr, dex_file_size, "qauxv-stub", &err_msg);
+    if (!dex) {
+        env->ThrowNew(env->FindClass("java/lang/RuntimeException"), fmt::format("DexFile::OpenMemory failed: {}", err_msg).c_str());
+        return nullptr;
+    }
+    auto java_dex_file = dex->ToJavaDexFile(env);
+    if (env->ExceptionCheck()) {
+        return nullptr; // exception thrown
+    }
+    return java_dex_file;
+}

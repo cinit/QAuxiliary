@@ -26,6 +26,8 @@ import java.io.Serializable;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.ArrayList;
+import java.util.List;
 
 public class DexMethodDescriptor implements Serializable {
 
@@ -208,6 +210,43 @@ public class DexMethodDescriptor implements Serializable {
             throw (NoSuchMethodException) new NoSuchMethodException(
                 declaringClass + "->" + name + signature).initCause(e);
         }
+    }
+
+    public List<String> getParameterTypes() {
+        String params = signature.substring(1, signature.indexOf(')'));
+        return splitParameterTypes(params);
+    }
+
+    public String getReturnType() {
+        int index = signature.indexOf(')');
+        return signature.substring(index + 1);
+    }
+
+    public static List<String> splitParameterTypes(String s) {
+        int i = 0;
+        ArrayList<String> list = new ArrayList<>();
+        while (i < s.length()) {
+            char c = s.charAt(i);
+            if (c == 'L') {
+                int j = s.indexOf(';', i);
+                list.add(s.substring(i, j + 1));
+                i = j + 1;
+            } else if (c == '[') {
+                int j = i;
+                while (s.charAt(j) == '[') {
+                    j++;
+                }
+                if (s.charAt(j) == 'L') {
+                    j = s.indexOf(';', j);
+                }
+                list.add(s.substring(i, j + 1));
+                i = j + 1;
+            } else {
+                list.add(String.valueOf(c));
+            }
+            i++;
+        }
+        return list;
     }
 
 }
