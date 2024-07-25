@@ -28,11 +28,16 @@ import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.findField
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
+import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.bridge.AppRuntimeHelper
+import io.github.qauxv.bridge.kernelcompat.ContactCompat
+import io.github.qauxv.bridge.ntapi.MsgServiceHelper
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
@@ -89,6 +94,7 @@ object EditTextContent : CommonSwitchFunctionHook(
                         }
                     }
                     editText?.setText(stringBuilder.toString())
+                    recallMsg(msgRecord)
                 }
 
                 MIX_CONTEXT -> {
@@ -98,5 +104,21 @@ object EditTextContent : CommonSwitchFunctionHook(
             }
         }
         param.result = listOf(item) + param.result as List<*>
+    }
+
+    private fun recallMsg(msgRecord: MsgRecord) {
+        val context = CommonContextWrapper.createAppCompatContext(ContextUtils.getCurrentActivity())
+        val appRuntime = AppRuntimeHelper.getAppRuntime()!!
+        val msgService = MsgServiceHelper.getKernelMsgService(appRuntime)!!
+        msgService.recallMsg(
+            ContactCompat(msgRecord.chatType, msgRecord.peerUid, ""),
+            ArrayList<Long>(listOf(msgRecord.msgId)),
+        ) { status, reason ->
+            if (status == 0) {
+                Toasts.success(context, "撤回成功")
+            } else {
+                Toasts.error(context, "撤回失败: $reason")
+            }
+        }
     }
 }
