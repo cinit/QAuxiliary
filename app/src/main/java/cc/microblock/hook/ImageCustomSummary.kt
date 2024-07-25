@@ -59,7 +59,7 @@ import java.io.Serializable
 object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", arrayOf(AIOSendMsg)) {
 
     override val name = "自定义外显内容"
-    override val description = "自定义消息列表中[图片][动画表情]等内容"
+    override val description = "自定义消息列表中[图片][动画表情][平底锅]等内容"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = QAppUtils.isQQnt()
 
@@ -106,6 +106,15 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             val cfg = ConfigManager.getDefaultConfig()
             cfg.putBoolean("customSummary.typeMarketFace", value)
         }
+    private var typeFaceBubble: Boolean
+        get() {
+            val cfg = ConfigManager.getDefaultConfig()
+            return cfg.getBooleanOrDefault("customSummary.typeFaceBubble", true)
+        }
+        set(value) {
+            val cfg = ConfigManager.getDefaultConfig()
+            cfg.putBoolean("customSummary.typeFaceBubble", value)
+        }
 
     @SuppressLint("SetTextI18n")
     private fun showConfigDialog(ctx: Context) {
@@ -129,6 +138,11 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             isChecked = typeMarketFace
             textSize = 16f
             text = "表情商城"
+        }
+        val checkBoxTypeFaceBubble = CheckBox(ctx).apply {
+            isChecked = typeFaceBubble
+            textSize = 16f
+            text = "表情泡泡"
         }
 
         val summaryTextLabel = AppCompatTextView(ctx).apply {
@@ -164,6 +178,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
             addView(checkBoxTypePic0, lp)
             addView(checkBoxTypePic1247, lp)
             addView(checkBoxTypeMarketFace, lp)
+            addView(checkBoxTypeFaceBubble, lp)
             if (!isAvailable) addView(
                 AppCompatTextView(ctx).apply {
                     text = "版本不支持：该功能需要 QQNT 版本"
@@ -182,6 +197,7 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
                 typePic0 = checkBoxTypePic0.isChecked
                 typePic1247 = checkBoxTypePic1247.isChecked
                 typeMarketFace = checkBoxTypeMarketFace.isChecked
+                typeFaceBubble = checkBoxTypeFaceBubble.isChecked
                 summaryText = summaryTextEdit.text.toString()
                 valueState.update { if (isEnabled) "已开启" else "禁用" }
             }
@@ -210,6 +226,11 @@ object ImageCustomSummary : CommonConfigFunctionHook("ImageCustomSummary", array
                 msgElement.marketFaceElement?.let { marketFaceElement ->
                     if (typeMarketFace) {
                         marketFaceElement.set("faceName", summaryText)
+                    }
+                }
+                msgElement.faceBubbleElement?.let { faceBubbleElement ->
+                    if (typeFaceBubble) {
+                        faceBubbleElement.set("content", summaryText)
                     }
                 }
             }
