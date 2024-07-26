@@ -92,7 +92,7 @@ public class Lsp100HookWrapper {
                 c = generateProxyClassForCallback(priority);
                 t = priority;
             } catch (RuntimeException e) {
-                android.util.Log.e("QAuxv", "failed to generate proxy class", e);
+                android.util.Log.w("QAuxv", "failed to generate proxy class, fallback to default", e);
                 c = DEFAULT_PROXY;
                 t = DEFAULT_PRIORITY;
             }
