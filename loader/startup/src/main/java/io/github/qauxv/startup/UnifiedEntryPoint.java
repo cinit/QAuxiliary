@@ -26,7 +26,7 @@ public class UnifiedEntryPoint {
             @Nullable IHookBridge hookBridge
     ) {
         if (sInitialized) {
-            return;
+            throw new IllegalStateException("UnifiedEntryPoint already initialized");
         }
         sInitialized = true;
         // fix up the class loader

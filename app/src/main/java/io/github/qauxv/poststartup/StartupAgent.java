@@ -53,7 +53,7 @@ public class StartupAgent {
             @Nullable IHookBridge hookBridge
     ) {
         if (sInitialized) {
-            return;
+            throw new IllegalStateException("StartupAgent already initialized");
         }
         sInitialized = true;
         if (io.github.qauxv.R.string.res_inject_success >>> 24 == 0x7f) {

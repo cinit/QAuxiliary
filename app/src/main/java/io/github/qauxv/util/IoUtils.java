@@ -246,4 +246,9 @@ public class IoUtils {
         }
         return new String(hex);
     }
+
+    public static void throwRuntimeExceptionForTest() {
+        throw new RuntimeException("This is a test exception");
+    }
+
 }

@@ -66,7 +66,7 @@ public class StartupHook {
      */
     public static void execStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
         if (sSecondStageInit) {
-            return;
+            throw new IllegalStateException("Second stage init already executed");
         }
         HybridClassLoader.setHostClassLoader(ctx.getClassLoader());
         StartupRoutine.execPostStartupInit(ctx, step, lpwReserved, bReserved);
@@ -135,34 +135,41 @@ public class StartupHook {
         try {
             XC_MethodHook startup = new XC_MethodHook(51) {
                 @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                protected void afterHookedMethod(MethodHookParam param) {
                     ClassLoader cl = param.thisObject.getClass().getClassLoader();
+                    assert cl != null;
                     Context app = StartupAgent.getBaseApplicationImpl(cl);
                     execStartupInit(app, param.thisObject, null, false);
                 }
             };
             Class<?> loadDex = findLoadDexTaskClass(rtLoader);
             Method[] ms = loadDex.getDeclaredMethods();
-            Method m = null;
+            Method run = null;
+            Method doStep = null;
             for (Method method : ms) {
-                if (method.getReturnType().equals(boolean.class) && method.getParameterTypes().length == 0) {
-                    m = method;
-                    break;
-                }
                 // QQ NT: 8.9.58.11040 (4054)+
                 // public void run(Context)
                 if (method.getReturnType() == void.class && method.getParameterTypes().length == 1 &&
                         method.getParameterTypes()[0] == Context.class) {
-                    m = method;
-                    break;
+                    run = method;
+                }
+                // public boolean doStep()
+                if (method.getReturnType() == boolean.class && method.getParameterTypes().length == 0) {
+                    doStep = method;
                 }
             }
+            // We should try `public void LoadDexTask.run(Context)` first,
+            // because there exists `public void LoadDexTask.blockUntilFinish()`.
+            if (run == null && doStep == null) {
+                throw new RuntimeException("neither LoadDexTask.run(Context) nor LoadDex.doStep() found");
+            }
+            Method m = run != null ? run : doStep;
             XposedBridge.hookMethod(m, startup);
         } catch (Throwable e) {
-            if ((e + "").contains("com.bug.zqq")) {
+            if (e.toString().contains("com.bug.zqq")) {
                 return;
             }
-            if ((e + "").contains("com.google.android.webview")) {
+            if (e.toString().contains("com.google.android.webview")) {
                 return;
             }
             log_e(e);
@@ -208,7 +215,7 @@ public class StartupHook {
                 Method getDisplayMetrics = ctx.getResources().getClass().getMethod("getDisplayMetrics");
                 XposedBridge.hookMethod(getDisplayMetrics, new XC_MethodHook() {
                     @Override
-                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                    protected void afterHookedMethod(MethodHookParam param) {
                         DisplayMetrics dm = (DisplayMetrics) param.getResult();
                         if (dm == null) {
                             return;
