@@ -123,7 +123,9 @@ android {
                     "-Wno-unused-command-line-argument",
                     "-DMMKV_DISABLE_CRYPT",
                 )
-                cppFlags("-std=c++20", *flags)
+                // do not add -std=c++20 here, it should be added in the CMakeLists.txt where each module is defined
+                // some modules uses features that are REMOVED or deprecated in C++20
+                cppFlags(*flags)
                 cFlags("-std=c18", *flags)
                 targets += "qauxv"
             }

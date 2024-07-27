@@ -8,7 +8,10 @@ macro(SET_OPTION option value)
 endmacro()
 
 enable_language(CXX C)
+
+# keep this synchronized with the ones in build.gradle.kts
 set(CMAKE_CXX_STANDARD 20)
+# C standard should be 18 by default in build.gradle.kts, but we cmake 3.22.1 doesn't support it
 set(CMAKE_C_STANDARD 11)
 
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -Werror=format-invalid-specifier -Werror=return-type -Wno-invalid-offsetof")
