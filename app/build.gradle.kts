@@ -305,6 +305,8 @@ dependencies {
     implementation(libs.dexlib2)
     // I don't know why, but without this, compilation will fail
     implementation(libs.google.guava)
+    // for get activation status
+    implementation(projects.libs.libxposed.service)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath

@@ -37,3 +37,9 @@
 	path = libs/LSPlant
 	url = https://github.com/LSPosed/LSPlant
 	shallow = true
+[submodule "libs/libxposed/api/api"]
+	path = libs/libxposed/api/api
+	url = https://github.com/libxposed/api
+[submodule "libs/libxposed/service/service"]
+	path = libs/libxposed/service/service
+	url = https://github.com/libxposed/service
