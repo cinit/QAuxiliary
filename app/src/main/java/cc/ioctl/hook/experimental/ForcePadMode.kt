@@ -22,9 +22,8 @@
 
 package cc.ioctl.hook.experimental
 
-import cc.ioctl.util.HookUtils
-import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.getStaticObject
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -32,7 +31,6 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NPadUtil_initDeviceType
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
@@ -42,7 +40,7 @@ import xyz.nextalone.util.throwOrTrue
 object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, arrayOf(NPadUtil_initDeviceType)) {
 
     override val name = "强制平板模式"
-    override val description = "支持 QQ 8.9.15及以上，未经测试，谨慎使用"
+    override val description = "支持 QQ8.9.15 及以上，未经测试，谨慎使用"
     override val extraSearchKeywords: Array<String> = arrayOf("pad")
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isApplicationRestartRequired = true
@@ -52,16 +50,21 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY, 
 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
-        HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
-            val type = Initiator._DeviceType().getStaticObject("TABLET")
-            Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", type)
-        }
+//        HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(NPadUtil_initDeviceType)) {
+//            val type = Initiator._DeviceType().getStaticObject("TABLET")
+//            Reflex.setStaticObject(DexKit.requireClassFromCache(NPadUtil_initDeviceType), "b", type)
+//        }
 //        val k = Initiator.loadClass("com.tencent.mobileqq.injector.a");
 //        val getAppId = k.getDeclaredMethod("getAppId")
 //        HookUtils.hookAfterAlways(this, getAppId) {
 //            val result = it.result as Int
 //            Log.i("ForcePadMode getAppId: $result")
 //        }
+        val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
+        appSettingClass.getDeclaredMethod("f").hookAfter {
+            val appId = appSettingClass.getStaticObject("f")
+            it.result = appId
+        }
     }
 
 }
