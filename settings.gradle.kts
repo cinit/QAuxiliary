@@ -69,5 +69,6 @@ include(
     ":libs:dexkit",
     ":libs:ezXHelper",
     ":libs:xView",
-    ":libs:libxposed",
+    ":libs:libxposed:api",
+    ":libs:libxposed:service",
 )
