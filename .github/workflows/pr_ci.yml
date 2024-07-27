@@ -6,7 +6,11 @@ on:
     paths-ignore:
       - '**.md'
       - '**.txt'
+      - 'renovate.json'
+      - '.editorconfig'
+      - '.gitignore'
       - '.github/**'
+      - '.idea/**'
       - '!.github/workflows/**'
 
 jobs:
