@@ -12,6 +12,17 @@ android {
         }
     }
 
+    defaultConfig {
+        minSdk = Version.minSdk
+        targetSdk = Version.targetSdk
+        buildToolsVersion = Version.buildToolsVersion
+    }
+
+    compileOptions {
+        sourceCompatibility = JavaVersion.VERSION_1_8
+        targetCompatibility = JavaVersion.VERSION_1_8
+    }
+
     dependencies {
         // androidx nullability stubs
         compileOnly(libs.androidx.annotation)
