@@ -52,7 +52,7 @@ develocity {
         val ci = System.getenv("GITHUB_ACTIONS") == "true"
         publishing {
             onlyIf { System.getenv("GITHUB_ACTIONS") == "true" }
-            onlyIf { !isOffline && (it.buildResult.failures.isNotEmpty() || ci) }
+            // onlyIf { !isOffline && (it.buildResult.failures.isNotEmpty() || ci) }
         }
     }
 }
