@@ -31,6 +31,7 @@ import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.security.KeyStore
 import java.security.MessageDigest
@@ -517,5 +518,25 @@ protobuf {
                 }
             }
         }
+    }
+}
+
+// force kotlin to produce java 11 class files
+tasks.withType<KotlinCompile> {
+    kotlinOptions {
+        jvmTarget = "11"
+    }
+}
+
+// force javac to produce java 11 class files
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+}
+
+// javac should be able to read java 17 class files, although we force it to produce java 11 class files for this module
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(17)
     }
 }
