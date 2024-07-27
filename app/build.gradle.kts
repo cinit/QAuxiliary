@@ -96,7 +96,7 @@ fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
 
 android {
     namespace = "io.github.qauxv"
-    ndkVersion = "25.1.8937393"
+    ndkVersion = Version.getNdkVersion(rootProject)
     defaultConfig {
         applicationId = "io.github.qauxv"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
