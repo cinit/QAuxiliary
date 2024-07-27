@@ -32,6 +32,8 @@ import android.os.Bundle;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
+import io.github.libxposed.service.XposedService;
+import io.github.libxposed.service.XposedServiceHelper;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.util.LoaderExtensionHelper;
@@ -39,6 +41,8 @@ import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.NonUiThread;
 import java.io.File;
 import java.util.HashMap;
+import kotlinx.coroutines.flow.MutableStateFlow;
+import kotlinx.coroutines.flow.StateFlowKt;
 
 /**
  * This class is only intended to be used in module process, not in host process.
@@ -50,6 +54,21 @@ public class HookStatus {
 
     private static boolean sExpCpCalled = false;
     private static boolean sExpCpResult = false;
+    private static final MutableStateFlow<XposedService> sXposedService = StateFlowKt.MutableStateFlow(null);
+    private static boolean sXposedServiceListenerRegistered = false;
+    private static final XposedServiceHelper.OnServiceListener sXposedServiceListener = new XposedServiceHelper.OnServiceListener() {
+
+        @Override
+        public void onServiceBind(@NonNull XposedService service) {
+            sXposedService.setValue(service);
+        }
+
+        @Override
+        public void onServiceDied(@NonNull XposedService service) {
+            sXposedService.setValue(null);
+        }
+
+    };
 
     public enum HookType {
         /**
@@ -124,6 +143,10 @@ public class HookStatus {
 
     public static void init(@NonNull Context context) {
         if (context.getPackageName().equals(BuildConfig.APPLICATION_ID)) {
+            if (!sXposedServiceListenerRegistered) {
+                XposedServiceHelper.registerListener(sXposedServiceListener);
+                sXposedServiceListenerRegistered = true;
+            }
             SyncUtils.async(() -> {
                 sExpCpCalled = callTaichiContentProvider(context);
                 sExpCpResult = sExpCpCalled;
@@ -135,6 +158,11 @@ public class HookStatus {
             } catch (LinkageError ignored) {
             }
         }
+    }
+
+    @NonNull
+    public static MutableStateFlow<XposedService> getXposedService() {
+        return sXposedService;
     }
 
     public static HookType getHookType() {
@@ -177,7 +205,7 @@ public class HookStatus {
         }
     }
 
-    public static String getHookProviderName() {
+    public static String getHookProviderNameForLegacyApi() {
         if (isZygoteHookMode()) {
             String name = getZygoteHookProvider();
             if (name != null) {
