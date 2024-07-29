@@ -63,7 +63,7 @@ public final class TimForceReplyHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         Class<?> baseBubbleBuilderClass = Initiator.loadClass("com.tencent.mobileqq.activity.aio.BaseBubbleBuilder");
-        Method a = baseBubbleBuilderClass.getDeclaredMethod("a", Initiator.loadClass('com.tencent.mobileqq.data.ChatMessage'), Initiator.loadClass('com.tencent.mobileqq.utils.dialogutils.QQCustomMenu'));
+        Method a = baseBubbleBuilderClass.getDeclaredMethod("a", Initiator.loadClass("com.tencent.mobileqq.data.ChatMessage"), Initiator.loadClass("com.tencent.mobileqq.utils.dialogutils.QQCustomMenu"));
         HookUtils.hookBeforeIfEnabled(this, a, param -> {
             // Lcom/tencent/mobileqq/utils/dialogutils/QQCustomMenu;
             Object qqCustomMenu = param.args[0];
