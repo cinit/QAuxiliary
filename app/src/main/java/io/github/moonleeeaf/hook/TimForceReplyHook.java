@@ -21,15 +21,13 @@
 
 package com.example.hook;
 
-import cc.ioctl.util.hookBeforeIfEnabled;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.util.QQVersion;
-import io.github.qauxv.util.requireMinQQVersion;
+import cc.ioctl.util.HookUtils;
 import java.lang.reflect.Method;
 
 // FunctionHookEntry 和 UiItemAgentEntry 用于注册功能，这两个注解都是必要的
@@ -67,7 +65,7 @@ public final class TimForceReplyHook extends CommonSwitchFunctionHook {
         HookUtils.hookBeforeIfEnabled(this, a, param -> {
             // Lcom/tencent/mobileqq/utils/dialogutils/QQCustomMenu;
             Object qqCustomMenu = param.args[0];
-            Method f = qqCustomMenu.getClass().getDeclaredMethod('F', int.class, String.class, int.class);
+            Method f = qqCustomMenu.getClass().getDeclaredMethod("F", int.class, String.class, int.class);
             f.setAccessible(true);
             // 暂时先硬编码了
             // 字符串Resource资源ID： 2131631067 即 7f0e1bdb
