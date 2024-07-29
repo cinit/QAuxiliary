@@ -41,7 +41,7 @@ object RemoveFavPreviewLimit : PluginDelayableHook("hd_fav_preview_limit") {
     }
     override val pluginID = "qqfav.apk"
     override val targetProcesses = SyncUtils.PROC_QQFAV
-    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_85)
 
     override fun startHook(classLoader: ClassLoader): Boolean {
