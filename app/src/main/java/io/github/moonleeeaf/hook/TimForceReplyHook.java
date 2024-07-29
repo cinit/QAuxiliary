@@ -66,13 +66,13 @@ public final class TimForceReplyHook extends CommonSwitchFunctionHook {
         Method a = baseBubbleBuilderClass.getDeclaredMethod("a", Initiator.loadClass('com.tencent.mobileqq.data.ChatMessage'), Initiator.loadClass('com.tencent.mobileqq.utils.dialogutils.QQCustomMenu'));
         HookUtils.hookBeforeIfEnabled(this, a, param -> {
             // Lcom/tencent/mobileqq/utils/dialogutils/QQCustomMenu;
-            Object qQCustomMenu = param.args[0];
-            Method f = qQCustomMenu.getClass().getDeclaredMethod('F', int.class, String.class, int.class);
+            Object qqCustomMenu = param.args[0];
+            Method f = qqCustomMenu.getClass().getDeclaredMethod('F', int.class, String.class, int.class);
             f.setAccessible(true);
             // 暂时先硬编码了
             // 字符串Resource资源ID： 2131631067 即 7f0e1bdb
             // 可以同thisObject再反射，但因为在网页编辑不便测试，故暂时省去
-            f.invoke(2131238756, "回复", 2131165801);
+            f.invoke(qqCustomMenu, 2131238756, "回复", 2131165801);
             // 后面我再看看这样能不能阻断代码执行，也许可以
             param.setResult(null);
         });
