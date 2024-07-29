@@ -41,7 +41,7 @@ object TimReplyMsgMenu : CommonSwitchFunctionHook() {
     override val isAvailable = isTim() && hostInfo.versionCode == TIMVersion.TIM_3_0_0
 
     override fun initOnce(): Boolean {
-        " Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;->a(Lcom/tencent/mobileqq/data/ChatMessage;Lcom/tencent/mobileqq/utils/dialogutils/QQCustomMenu;)V".method.hookBefore {
+        "Lcom/tencent/mobileqq/activity/aio/BaseBubbleBuilder;->a(Lcom/tencent/mobileqq/data/ChatMessage;Lcom/tencent/mobileqq/utils/dialogutils/QQCustomMenu;)V".method.hookBefore {
             val qqCustomMenu = it.args[1]
             qqCustomMenu::class.java
                 .getDeclaredMethod("F", Int::class.java, String::class.java, Int::class.java)
