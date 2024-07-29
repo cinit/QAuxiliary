@@ -28,6 +28,7 @@ import android.os.Build.VERSION;
 import android.os.Process;
 import android.system.Os;
 import android.system.StructUtsname;
+import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
@@ -378,6 +379,7 @@ public class Natives {
         return soFile;
     }
 
+    @SuppressWarnings("deprecation")
     public static List<String> getAbiForLibrary() {
         String[] supported = Process.is64Bit() ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
         if (supported.length == 0) {
@@ -389,6 +391,15 @@ public class Natives {
             for (String abi : Build.SUPPORTED_ABIS) {
                 if (knownAbi.contains(abi)) {
                     candidates.add(abi);
+                }
+            }
+            if (candidates.isEmpty()) {
+                // give deprecated CPU_ABI a chance
+                if (!TextUtils.isEmpty(Build.CPU_ABI) && knownAbi.contains(Build.CPU_ABI)) {
+                    candidates.add(Build.CPU_ABI);
+                }
+                if (!TextUtils.isEmpty(Build.CPU_ABI2) && knownAbi.contains(Build.CPU_ABI2)) {
+                    candidates.add(Build.CPU_ABI2);
                 }
             }
             supported = candidates.toArray(new String[0]);
