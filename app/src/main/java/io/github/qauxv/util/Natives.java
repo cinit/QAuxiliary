@@ -42,8 +42,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Set;
 
 public class Natives {
 
@@ -184,16 +186,16 @@ public class Natives {
      * <p>
      * Do not use this directly, use {@link cc.ioctl.util.Reflex#invokeNonVirtual(Object, Method, Object[])} instead.
      *
-     * @param declaringClass   the class of the method, e.g. "Ljava/lang/String;"
-     * @param methodName the method name
-     * @param methodSig  the method signature, e.g. "(Ljava/lang/String;)Ljava/lang/String;"
-     * @param obj        the object to invoke the method on, must not be null
-     * @param args       the arguments to pass to the method, may be null if no arguments are passed
+     * @param declaringClass the class of the method, e.g. "Ljava/lang/String;"
+     * @param methodName     the method name
+     * @param methodSig      the method signature, e.g. "(Ljava/lang/String;)Ljava/lang/String;"
+     * @param obj            the object to invoke the method on, must not be null
+     * @param args           the arguments to pass to the method, may be null if no arguments are passed
      * @return the return value of the method
      * @throws InvocationTargetException if the method threw an exception
      */
     public static native Object invokeNonVirtualImpl(Class<?> declaringClass, String methodName,
-                                                     String methodSig, Object obj, Object[] args)
+            String methodSig, Object obj, Object[] args)
             throws InvocationTargetException;
 
     private static void registerNativeLibEntry(String soTailingName) {
@@ -229,9 +231,14 @@ public class Natives {
         }
         if (StartupInfo.isInHostProcess()) {
             // in host process
-            List<String> abis = getAbiForLibrary();
             String modulePath = StartupInfo.getModulePath();
-            loadNativeLibraryInHost(filesDir, modulePath, abis);
+            try {
+                List<String> abis = getAbiForLibrary();
+                loadNativeLibraryInHost(filesDir, modulePath, abis);
+            } catch (UnsupportedOperationException | IllegalStateException | NullPointerException | LinkageError e) {
+                dumpDeviceAbiInfoToLog();
+                throw e;
+            }
         } else {
             // not in host process, ignore
             System.loadLibrary("qauxv");
@@ -240,11 +247,12 @@ public class Natives {
 
     /**
      * Load native library and initialize MMKV
+     *
      * @param ctx Application context
      * @throws LinkageError if failed to load native library
      */
     public static void initialize(@NonNull Context ctx) throws LinkageError {
-        if(sInitialized){
+        if (sInitialized) {
             return;
         }
         File filesDir = ctx.getFilesDir();
@@ -291,23 +299,27 @@ public class Natives {
             Log.d("dlopen by extract success");
         } catch (UnsatisfiedLinkError e3) {
             throwIfJniError(e3);
-            // give enough information to help debug
-            // Is this CPU_ABI bad?
-            Log.e("Build.SDK_INT=" + VERSION.SDK_INT);
-            Log.e("Build.CPU_ABI is: " + Build.CPU_ABI);
-            Log.e("Build.CPU_ABI2 is: " + Build.CPU_ABI2);
-            Log.e("Build.SUPPORTED_ABIS is: " + Arrays.toString(Build.SUPPORTED_ABIS));
-            Log.e("Build.SUPPORTED_32_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
-            Log.e("Build.SUPPORTED_64_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
-            // check whether this is a 64-bit ART runtime
-            Log.e("Process.is64bit is: " + Process.is64Bit());
-            StructUtsname uts = Os.uname();
-            Log.e("uts.machine is: " + uts.machine);
-            Log.e("uts.version is: " + uts.version);
-            Log.e("uts.sysname is: " + uts.sysname);
+            dumpDeviceAbiInfoToLog();
             // panic, this is a bug
             throw e3;
         }
+    }
+
+    private static void dumpDeviceAbiInfoToLog() {
+        // give enough information to help debug
+        // Is this CPU_ABI bad?
+        Log.e("Build.SDK_INT=" + VERSION.SDK_INT);
+        Log.e("Build.CPU_ABI is: " + Build.CPU_ABI);
+        Log.e("Build.CPU_ABI2 is: " + Build.CPU_ABI2);
+        Log.e("Build.SUPPORTED_ABIS is: " + Arrays.toString(Build.SUPPORTED_ABIS));
+        Log.e("Build.SUPPORTED_32_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
+        Log.e("Build.SUPPORTED_64_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
+        // check whether this is a 64-bit ART runtime
+        Log.e("Process.is64bit is: " + Process.is64Bit());
+        StructUtsname uts = Os.uname();
+        Log.e("uts.machine is: " + uts.machine);
+        Log.e("uts.version is: " + uts.version);
+        Log.e("uts.sysname is: " + uts.sysname);
     }
 
     private static void throwIfJniError(UnsatisfiedLinkError error) {
@@ -332,15 +344,13 @@ public class Natives {
         }
         File soFile = new File(dir, soName);
         if (!soFile.exists()) {
-            InputStream in = Natives.class.getClassLoader()
-                .getResourceAsStream("lib/" + abi + "/lib" + libraryName + ".so");
+            InputStream in = Natives.class.getClassLoader().getResourceAsStream("lib/" + abi + "/lib" + libraryName + ".so");
             if (in == null) {
                 throw new UnsatisfiedLinkError("Unsupported ABI: " + abi);
             }
             //clean up old files
             for (String name : dir.list()) {
-                if (name.startsWith("lib" + libraryName + "_")
-                    || name.startsWith("lib" + libraryName + ".so")) {
+                if (name.startsWith("lib" + libraryName + "_") || name.startsWith("lib" + libraryName + ".so")) {
                     new File(dir, name).delete();
                 }
             }
@@ -370,7 +380,20 @@ public class Natives {
 
     public static List<String> getAbiForLibrary() {
         String[] supported = Process.is64Bit() ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
-        if (supported == null || supported.length == 0) {
+        if (supported.length == 0) {
+            // maybe we are on a 64-bit only cpu with 32-bit software emulation
+            String[] knownAbi32 = new String[]{"x86", "armeabi-v7a", "armeabi", "mips"};
+            String[] knownAbi64 = new String[]{"x86_64", "arm64-v8a", "mips64", "riscv64"};
+            Set<String> knownAbi = new HashSet<>(Arrays.asList(Process.is64Bit() ? knownAbi64 : knownAbi32));
+            ArrayList<String> candidates = new ArrayList<>(2);
+            for (String abi : Build.SUPPORTED_ABIS) {
+                if (knownAbi.contains(abi)) {
+                    candidates.add(abi);
+                }
+            }
+            supported = candidates.toArray(new String[0]);
+        }
+        if (supported.length == 0) {
             throw new IllegalStateException("No supported ABI in this device");
         }
         List<String> result = new ArrayList<>(2);
