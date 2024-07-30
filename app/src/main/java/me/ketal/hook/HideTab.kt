@@ -24,6 +24,7 @@ package me.ketal.hook
 
 import android.annotation.SuppressLint
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TabHost
@@ -31,16 +32,17 @@ import android.widget.TextView
 import androidx.core.view.get
 import androidx.core.view.plusAssign
 import cc.ioctl.hook.sideswipe.SimplifyQQSettingMe
+import com.github.kyuubiran.ezxhelper.utils.findViewByCondition
 import com.github.kyuubiran.ezxhelper.utils.setViewZeroSize
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.tlb.ConfigTable
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
-import me.ketal.util.findViewByType
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfterAllConstructors
@@ -68,15 +70,11 @@ object HideTab : CommonSwitchFunctionHook() {
             if (m.name == "setOnTabSelectionListener") {
                 m.hookBefore(this) {
                     tab = it.thisObject as TabHost
-                    val blur = tab.findViewByType(
-                        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
-                            "com.tencent.qui.quiblurview.QQBlurView"
-                        } else {
-                            "com.tencent.mobileqq.widget.QQBlurView"
-                        }.clazz!!
-                    ) as View
                     tab.tabWidget.setViewZeroSize()
-                    blur.setViewZeroSize()
+                    (tab.tabWidget.parent as ViewGroup).findViewByCondition { view ->
+                        val blurViewWrapperClass = Initiator.loadClass("com.tencent.qui.quiblurview.QQBlurViewWrapper")
+                        blurViewWrapperClass.isAssignableFrom(view::class.java)
+                    }?.setViewZeroSize()
                 }
             }
         }
@@ -104,10 +102,16 @@ object HideTab : CommonSwitchFunctionHook() {
 
     private fun addSettingItem(linearLayout: LinearLayout, resName: String, label: String, clickListener: View.OnClickListener) {
         val ctx = linearLayout.context
-        if (requireMinQQVersion(QQVersion.QQ_9_0_0)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_20)) {
             val view = View.inflate(ctx, ctx.hostLayout("qq_setting_me_item")!!, null) as LinearLayout
             (view[0] as ImageView).setImageResource(ctx.hostDrawable(resName)!!)
             ((view[1] as LinearLayout)[0] as TextView).text = label
+            view.setOnClickListener(clickListener)
+            linearLayout += view
+        } else if (requireMinQQVersion(QQVersion.QQ_8_9_90)) {
+            val view = View.inflate(ctx, ctx.hostLayout("qq_setting_me_item")!!, null) as LinearLayout
+            (view[0] as ImageView).setImageResource(ctx.hostDrawable(resName)!!)
+            (view[1] as TextView).text = label
             view.setOnClickListener(clickListener)
             linearLayout += view
         } else {
