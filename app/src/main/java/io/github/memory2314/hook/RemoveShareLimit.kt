@@ -22,12 +22,14 @@
 
 package io.github.memory2314.hook
 
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import xyz.nextalone.util.method
-import xyz.nextalone.util.replace
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.xpcompat.XposedHelpers
+import xyz.nextalone.util.get
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
@@ -37,6 +39,29 @@ object RemoveShareLimit : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        "Lcom/tencent/mobileqq/activity/ForwardRecentActivity;->add2ForwardTargetList(Lcom/tencent/mobileqq/selectmember/ResultRecord;)Z".method.replace(this, true)
+        Initiator.loadClass("com.tencent.mobileqq.activity.ForwardRecentActivity")
+            .getDeclaredMethod(
+                "add2ForwardTargetList",
+                Initiator.loadClass("com.tencent.mobileqq.selectmember.ResultRecord")
+            ).hookBefore { param ->
+                val resultRecord = param.args[0] ?: return@hookBefore
+                val forwardTargetKey = XposedHelpers.callMethod(
+                    param.thisObject,
+                    "getForwardTargetKey",
+                    resultRecord.get("uin"),
+                    XposedHelpers.callMethod(resultRecord, "getUinType")
+                )
+                val mForwardTargetMap = param.thisObject.get("mForwardTargetMap") as MutableMap<Any, Any?>
+                mForwardTargetMap[forwardTargetKey] = XposedHelpers.callMethod(resultRecord, "copyResultRecord", resultRecord)
+                XposedHelpers.callMethod(param.thisObject, "refreshRightBtn")
+                val mSelectedAndSearchBar = param.thisObject.get("mSelectedAndSearchBar")
+                XposedHelpers.callMethod(mSelectedAndSearchBar, "z", ArrayList(mForwardTargetMap.values), true)
+                val arrayList = mForwardTargetMap.values.map { it.get("uin") }
+                val mSearchFragment = param.thisObject.get("mSearchFragment")
+                if (mSearchFragment != null) {
+                    XposedHelpers.callMethod(mSearchFragment, "setSelectedAndJoinedUins", arrayList, arrayList)
+                }
+                param.result = true
+            }
     }
 }
