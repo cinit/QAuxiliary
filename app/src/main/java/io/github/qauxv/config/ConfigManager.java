@@ -27,6 +27,7 @@ import androidx.annotation.Nullable;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import java.io.File;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 public abstract class ConfigManager implements SharedPreferences, SharedPreferences.Editor {
@@ -148,6 +149,11 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
     @NonNull
     public String getStringOrDefault(@NonNull String key, @NonNull String defVal) {
         return getString(key, defVal);
+    }
+
+    @NonNull
+    public Set<String> getStringSetOrDefault(@NonNull String key, @NonNull Set<String> defVal) {
+        return getStringSet(key, defVal);
     }
 
     @Nullable

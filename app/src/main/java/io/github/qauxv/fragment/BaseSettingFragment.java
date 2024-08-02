@@ -59,6 +59,14 @@ public abstract class BaseSettingFragment extends Fragment {
         return mSettingsHostActivity;
     }
 
+    @NonNull
+    protected SettingsUiFragmentHostActivity requireSettingsHostActivity() {
+        if (mSettingsHostActivity == null) {
+            throw new IllegalStateException("mSettingsHostActivity is null, is current fragment attached?");
+        }
+        return mSettingsHostActivity;
+    }
+
     public void finishFragment() {
         if (mSettingsHostActivity == null) {
             throw new IllegalStateException("mSettingsHostActivity is null, is current fragment attached?");

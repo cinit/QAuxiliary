@@ -47,6 +47,8 @@ import io.github.qauxv.config.SafeModeManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.func.*
 import io.github.qauxv.dsl.item.*
+import io.github.qauxv.tips.newfeaturehint.NewFeatureIntroduceFragment
+import io.github.qauxv.tips.newfeaturehint.NewFeatureManager
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.SyncUtils.async
 import io.github.qauxv.util.SyncUtils.runOnUiThread
@@ -381,6 +383,21 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
 
     private fun addHeaderItemToRootDslTree(dslTree: ArrayList<DslTMsgListItemInflatable>) {
         // TODO: 2022-02-22 add flavor to root dsl tree
+        if (NewFeatureManager.newFeatureTipEnabled) {
+            val newFeatureCount = NewFeatureManager.queryNewFeatures()?.size ?: 0
+            if (newFeatureCount > 0) {
+                val newFeatureBanner = TextBannerItem(
+                    text = "本次更新增加了 $newFeatureCount 项新功能，点击查看",
+                    isCloseable = true,
+                    onClick = {
+                        val fragment = NewFeatureIntroduceFragment()
+                        requireSettingsHostActivity().presentFragment(fragment)
+                    }
+                )
+                // add to the beginning
+                dslTree.add(0, newFeatureBanner)
+            }
+        }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
