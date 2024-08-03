@@ -148,6 +148,7 @@ public class LsplantHookImpl {
             throw IoUtils.unsafeThrow(e);
         }
         LsplantBridge.nativeInitializeLsplant();
+        isInitialized = true;
     }
 
     private static void checkMemberValid(@NonNull Member target) {
