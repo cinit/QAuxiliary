@@ -25,11 +25,11 @@ import android.app.Application;
 import android.content.Context;
 import android.os.Build;
 import com.github.kyuubiran.ezxhelper.init.InitFields;
-import com.github.kyuubiran.ezxhelper.utils.Log;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.hookimpl.InMemoryClassLoaderHelper;
 import io.github.qauxv.util.hookimpl.LibXposedNewApiByteCodeGenerator;
@@ -57,7 +57,7 @@ public class StartupRoutine {
         Initiator.init(ctx.getClassLoader());
         InitFields.ezXClassLoader = ctx.getClassLoader();
         // resource injection is done somewhere else, do not init it here
-        Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
+        com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
         Natives.initialize(ctx);
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,

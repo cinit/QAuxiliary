@@ -22,13 +22,13 @@
 package io.github.qauxv.util;
 
 import androidx.annotation.Nullable;
+import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.poststartup.StartupInfo;
 
 public class LoaderExtensionHelper {
 
     public static final String CMD_GET_XPOSED_BRIDGE_CLASS = "GetXposedBridgeClass";
-    public static final String CMD_HOOK_COUNTER = "GetHookCounter";
     private static String sProbeLsposedNativeApiClassName = "Lorg/lsposed/lspd/nativebridge/NativeAPI;";
 
     private LoaderExtensionHelper() {
@@ -54,11 +54,10 @@ public class LoaderExtensionHelper {
         }
     }
 
-    public static int getHookCounter() {
-        ILoaderService loaderService = StartupInfo.getLoaderService();
-        Number n = (Number) loaderService.queryExtension(CMD_HOOK_COUNTER);
-        if (n != null) {
-            return n.intValue();
+    public static long getHookCounter() {
+        IHookBridge hookBridge = StartupInfo.getHookBridge();
+        if (hookBridge != null) {
+            return hookBridge.getHookCounter();
         } else {
             return -1;
         }

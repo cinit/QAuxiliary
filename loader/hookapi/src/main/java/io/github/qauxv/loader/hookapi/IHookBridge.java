@@ -243,4 +243,11 @@ public interface IHookBridge {
     <T> T newInstanceOrigin(@NonNull Constructor<T> constructor, @NonNull Object... args)
             throws InvocationTargetException, IllegalArgumentException, IllegalAccessException, InstantiationException;
 
+    /**
+     * Get the hook counter.
+     *
+     * @return The hook counter, or -1 if not supported
+     */
+    long getHookCounter();
+
 }

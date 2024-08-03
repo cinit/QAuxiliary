@@ -22,8 +22,6 @@ public class Xp51ExtCmd {
                 return Xp51HookEntry.getInitZygoteStartupParam();
             case "GetInitErrors":
                 return ModuleLoader.getInitErrors();
-            case "GetHookCounter":
-                return Xp51HookWrapper.getHookCounter();
             default:
                 return null;
         }

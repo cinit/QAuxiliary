@@ -341,6 +341,10 @@ public class Lsp100HookWrapper {
 
     }
 
+    // WARNING: This will only work for Android 7.0 and above.
+    // Since SDK 24, Method.equals() and Method.hashCode() can correctly compare hooked methods.
+    // Before SDK 24, equals() uses AbstractMethod which is not safe for hooked methods.
+    // If you need to support lower versions, go and read cs.android.com.
     private static final ConcurrentHashMap<Integer, ConcurrentHashMap<Class<?>, ConcurrentHashMap<Member, CallbackListHolder>>> sCallbackRegistry = new ConcurrentHashMap<>();
 
     public static class Lsp100HookAgent implements XposedInterface.Hooker {

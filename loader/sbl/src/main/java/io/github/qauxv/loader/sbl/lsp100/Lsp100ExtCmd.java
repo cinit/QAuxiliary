@@ -46,8 +46,6 @@ public class Lsp100ExtCmd {
                 return null;
             case "GetInitErrors":
                 return ModuleLoader.getInitErrors();
-            case "GetHookCounter":
-                return Lsp100HookWrapper.getHookCounter();
             case "SetLibXposedNewApiByteCodeGeneratorWrapper": {
                 Lsp100ProxyClassMaker.setWrapperMethod((Method) arg[0]);
                 return Boolean.TRUE;

@@ -168,4 +168,10 @@ public class Xp51HookImpl implements IHookBridge, ILoaderService {
     public IClassLoaderHelper getClassLoaderHelper() {
         return mClassLoaderHelper;
     }
+
+    @Override
+    public long getHookCounter() {
+        return Xp51HookWrapper.getHookCounter();
+    }
+
 }

@@ -172,4 +172,9 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderService {
         return mClassLoaderHelper;
     }
 
+    @Override
+    public long getHookCounter() {
+        return Lsp100HookWrapper.getHookCounter();
+    }
+
 }
