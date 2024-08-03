@@ -32,30 +32,45 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import xyz.nextalone.util.get
 import xyz.nextalone.util.set
+import cc.ioctl.util.HostInfo
+
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object TimRemoveToastTips : CommonSwitchFunctionHook() {
     override val name = "移除群聊“修改/设置消息设置”提示"
-    override val description = "仅供 TIM 3.5.1 使用";
+    override val description = "仅供 TIM 3.5.1 和 TIM 3.0.0(1082) 使用";
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
 
     override fun initOnce(): Boolean {
-        HookUtils.hookBeforeIfEnabled(
-            this, Reflex.findMethod(
-                Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$8\$1"),
-                "run")
-        ) {
-            it.result = null;
-        }
-        // 漏了一个“你可以在这里xxxxx”，实在吐了，这玩意不定时的
-        HookUtils.hookBeforeIfEnabled(
-            this, Reflex.findMethod(
-                Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$38"),
-                "run")
-        ) {
-            it.result = null;
+
+        if (HostInfo.getLongVersionCode‎ == TIMVersion.TIM_3_0_0_1) {
+            // 3.0.0 (1082)
+            HookUtils.hookBeforeIfEnabled(
+                this, Reflex.findMethod(
+                    Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$39\$1"),
+                    "run")
+            ) {
+                it.result = null;
+            }
+        } else {
+            // 3.5.1
+            HookUtils.hookBeforeIfEnabled(
+                this, Reflex.findMethod(
+                    Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$8\$1"),
+                    "run")
+            ) {
+                it.result = null;
+            }
+            // “你可以在这里xxxxx”
+            HookUtils.hookBeforeIfEnabled(
+                this, Reflex.findMethod(
+                    Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$38"),
+                    "run")
+            ) {
+                it.result = null;
+            }
         }
         return true;
     }
