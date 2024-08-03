@@ -33,6 +33,7 @@ import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.hookimpl.InMemoryClassLoaderHelper;
 import io.github.qauxv.util.hookimpl.LibXposedNewApiByteCodeGenerator;
+import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl;
 import java.lang.reflect.Field;
 
 public class StartupRoutine {
@@ -64,6 +65,10 @@ public class StartupRoutine {
                 HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
         StartupInfo.getLoaderService().setClassLoaderHelper(InMemoryClassLoaderHelper.INSTANCE);
         LibXposedNewApiByteCodeGenerator.init();
+        if (StartupInfo.getHookBridge() == null) {
+            Log.w("HookBridge is null, fallback to embedded LSPlant.");
+            LsplantHookImpl.initializeLsplantHookBridge();
+        }
         MainHook.getInstance().performHook(ctx, step);
     }
 

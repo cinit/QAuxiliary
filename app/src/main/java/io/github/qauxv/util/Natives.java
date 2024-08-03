@@ -30,6 +30,7 @@ import android.system.Os;
 import android.system.StructUtsname;
 import android.text.TextUtils;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.loader.hookapi.IHookBridge;
@@ -40,6 +41,7 @@ import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -181,6 +183,9 @@ public class Natives {
      * @return the allocated object
      */
     public static native Object allocateInstanceImpl(Class<?> clazz);
+
+    public static native Object callObjectMethod(@NonNull Member method, @Nullable Object obj, @NonNull Object... args)
+            throws InvocationTargetException;
 
     /**
      * Invoke an instance method non-virtually (i.e. without calling the overridden method).

@@ -1003,3 +1003,14 @@ Java_io_github_qauxv_util_Natives_open(JNIEnv *env,
     }
     return result;
 }
+
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_io_github_qauxv_util_Natives_callObjectMethod(JNIEnv* env, jclass clazz, jobject method, jobject obj, jobjectArray args) {
+    if (method == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "method is null");
+        return nullptr;
+    }
+    jmethodID methodId = env->FromReflectedMethod(method);
+    return env->CallObjectMethod(obj, methodId, args);
+}
