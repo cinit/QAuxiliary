@@ -38,13 +38,13 @@ import io.github.qauxv.util.TIMVersion
 @FunctionHookEntry
 @UiItemAgentEntry
 object TimRemoveToastTips : CommonSwitchFunctionHook() {
-    override val name = "移除群聊“修改/设置消息设置”提示"
+    override val name = "移除群聊“修改/设置消息设置”提示";
     override val description = "仅供 TIM 3.5.1 和 TIM 3.0.0(1082) 使用";
 
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY;
 
     override fun initOnce(): Boolean {
-// 功能基于 Issue #781 和 #667 移植实现
+        // 功能基于 Issue #781 和 #667 移植实现
         if (HostInfo.getLongVersionCode‎() == TIMVersion.TIM_3_0_0_1) {
             // 3.0.0 (1082)
             HookUtils.hookBeforeIfEnabled(
