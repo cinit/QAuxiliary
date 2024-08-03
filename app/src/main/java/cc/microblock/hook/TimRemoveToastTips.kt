@@ -45,7 +45,8 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         // 功能基于 Issue #781 和 #667 移植实现
-        if (HostInfo.getLongVersionCode‎() == TIMVersion.TIM_3_0_0_1) {
+        val versionCode = HostInfo.getLongVersionCode‎();
+        if (versionCode == TIMVersion.TIM_3_0_0_1) {
             // 3.0.0 (1082)
             HookUtils.hookBeforeIfEnabled(
                 this, Reflex.findMethod(
@@ -53,7 +54,7 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
                     "run")
             ) {
                 it.result = null;
-            }
+            };
         } else {
             // 3.5.1
             HookUtils.hookBeforeIfEnabled(
@@ -62,7 +63,7 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
                     "run")
             ) {
                 it.result = null;
-            }
+            };
             // “你可以在这里xxxxx”
             HookUtils.hookBeforeIfEnabled(
                 this, Reflex.findMethod(
@@ -70,7 +71,7 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
                     "run")
             ) {
                 it.result = null;
-            }
+            };
         }
         return true;
     }
