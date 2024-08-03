@@ -37,9 +37,9 @@ import xyz.nextalone.util.set
 @UiItemAgentEntry
 object TimRemoveToastTips : CommonSwitchFunctionHook() {
     override val name = "移除群聊“修改/设置消息设置”提示"
-    override val description = "本功能仅在 TIM 3.5.1 测试通过，功能可能对其他版本或其他客户端无效\n\n功能基于 Issue #781 和 #667 移植实现";
+    override val description = "仅供 TIM 3.5.1 使用";
 
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
 
     override fun initOnce(): Boolean {
         HookUtils.hookBeforeIfEnabled(
