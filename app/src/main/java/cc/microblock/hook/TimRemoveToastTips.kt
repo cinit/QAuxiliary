@@ -45,7 +45,7 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
 
-        if (HostInfo.getLongVersionCode‎ == TIMVersion.TIM_3_0_0_1) {
+        if (HostInfo.getLongVersionCode‎() == TIMVersion.TIM_3_0_0_1) {
             // 3.0.0 (1082)
             HookUtils.hookBeforeIfEnabled(
                 this, Reflex.findMethod(
