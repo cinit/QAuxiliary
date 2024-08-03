@@ -45,7 +45,8 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         // 功能基于 Issue #781 和 #667 移植实现
-        val versionCodeLong = HostInfo.getLongVersionCode‎()
+        // get调用要写成其他样式（？）
+        val versionCodeLong = HostInfo.longVersionCode‎
         if (versionCodeLong == TIMVersion.TIM_3_0_0_1) {
             // 3.0.0 (1082)
             HookUtils.hookBeforeIfEnabled(
