@@ -96,6 +96,13 @@ fun requireMinTimVersion(versionCode: Long): Boolean {
     return requireMinVersion(versionCode, HostSpecies.TIM)
 }
 
+fun requireTimVersionExactly(vararg versionCodeList: Long): Boolean {
+    if (hostInfo.hostSpecies != HostSpecies.TIM) {
+        return false
+    }
+    return hostInfo.versionCode in versionCodeList
+}
+
 fun requireMinVersion(versionCode: Long, hostSpecies: HostSpecies): Boolean {
     return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCode >= versionCode
 }
