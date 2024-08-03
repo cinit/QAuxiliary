@@ -44,7 +44,7 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
 
     override fun initOnce(): Boolean {
-
+// 功能基于 Issue #781 和 #667 移植实现
         if (HostInfo.getLongVersionCode‎() == TIMVersion.TIM_3_0_0_1) {
             // 3.0.0 (1082)
             HookUtils.hookBeforeIfEnabled(
