@@ -1,6 +1,5 @@
 package io.github.qauxv.loader.sbl.common;
 
-import android.content.pm.ApplicationInfo;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import dalvik.system.BaseDexClassLoader;
@@ -21,14 +20,13 @@ public class ModuleLoader {
     private static final ArrayList<Throwable> sInitErrors = new ArrayList<>(1);
 
     @Nullable
-    public static String findTargetModulePath(@NonNull ApplicationInfo ai) {
+    public static String findTargetModulePath(@NonNull String hostDataDir) {
         // TODO: 2024-07-21 implement this method
         return null;
     }
 
-    public static ClassLoader createTargetClassLoader(@NonNull File path, @NonNull ApplicationInfo ai) {
+    public static ClassLoader createTargetClassLoader(@NonNull File path, @NonNull String dataDirPath) {
         ClassLoader parent = new TransitClassLoader();
-        String dataDirPath = ai.dataDir;
         File dataDir = new File(dataDirPath);
         if (!dataDir.canWrite()) {
             sInitErrors.add(new IOException("createTargetClassLoader: dataDir is not writable: " + dataDirPath));
@@ -52,25 +50,28 @@ public class ModuleLoader {
     }
 
     public static void initialize(
-            @NonNull ApplicationInfo ai,
+            @NonNull String hostDataDir,
             @NonNull ClassLoader hostClassLoader,
             @NonNull ILoaderService loaderService,
             @Nullable IHookBridge hookBridge,
-            @NonNull String selfPath
+            @NonNull String selfPath,
+            boolean allowDynamicLoad
     ) throws ReflectiveOperationException {
         if (sLoaded) {
             return;
         }
         File targetModule = null;
         boolean useDynamicLoad = false;
-        try {
-            String path = findTargetModulePath(ai);
-            if (path != null) {
-                targetModule = new File(path);
+        if (allowDynamicLoad) {
+            try {
+                String path = findTargetModulePath(hostDataDir);
+                if (path != null) {
+                    targetModule = new File(path);
+                }
+            } catch (Exception | Error e) {
+                sInitErrors.add(e);
+                android.util.Log.e("QAuxv", "initialize: findTargetModulePath failed", e);
             }
-        } catch (Exception | Error e) {
-            sInitErrors.add(e);
-            android.util.Log.e("QAuxv", "initialize: findTargetModulePath failed", e);
         }
         if (targetModule != null && targetModule.isFile() && !targetModule.canWrite()) {
             // ART requires W^X since Android 14
@@ -79,7 +80,7 @@ public class ModuleLoader {
         ClassLoader targetClassLoader = null;
         try {
             if (useDynamicLoad) {
-                targetClassLoader = createTargetClassLoader(targetModule, ai);
+                targetClassLoader = createTargetClassLoader(targetModule, hostDataDir);
             }
         } catch (Exception | Error e) {
             sInitErrors.add(e);
@@ -97,9 +98,9 @@ public class ModuleLoader {
         // invoke the startup routine
         Class<?> kUnifiedEntryPoint = targetClassLoader.loadClass("io.github.qauxv.startup.UnifiedEntryPoint");
         Method initialize = kUnifiedEntryPoint.getMethod("entry",
-                String.class, ApplicationInfo.class, ILoaderService.class, ClassLoader.class, IHookBridge.class);
+                String.class, String.class, ILoaderService.class, ClassLoader.class, IHookBridge.class);
         sLoaded = true;
-        initialize.invoke(null, modulePath, ai, loaderService, hostClassLoader, hookBridge);
+        initialize.invoke(null, modulePath, hostDataDir, loaderService, hostClassLoader, hookBridge);
     }
 
     public static List<Throwable> getInitErrors() {

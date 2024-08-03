@@ -20,7 +20,7 @@ public class UnifiedEntryPoint {
     @Keep
     public static void entry(
             @NonNull String modulePath,
-            @NonNull ApplicationInfo appInfo,
+            @NonNull String hostDataDir,
             @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
@@ -36,20 +36,20 @@ public class UnifiedEntryPoint {
         ClassLoader parent = self.getParent();
         HybridClassLoader.setLoaderParentClassLoader(parent);
         injectClassLoader(self, loader);
-        callNextStep(modulePath, appInfo, loaderService, hostClassLoader, hookBridge);
+        callNextStep(modulePath, hostDataDir, loaderService, hostClassLoader, hookBridge);
     }
 
     private static void callNextStep(
             @NonNull String modulePath,
-            @NonNull ApplicationInfo appInfo,
+            @NonNull String hostDataDir,
             @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
     ) {
         try {
             Class<?> kStartupAgent = Class.forName("io.github.qauxv.poststartup.StartupAgent");
-            kStartupAgent.getMethod("startup", String.class, ApplicationInfo.class, ILoaderService.class, ClassLoader.class, IHookBridge.class)
-                    .invoke(null, modulePath, appInfo, loaderService, hostClassLoader, hookBridge);
+            kStartupAgent.getMethod("startup", String.class, String.class, ILoaderService.class, ClassLoader.class, IHookBridge.class)
+                    .invoke(null, modulePath, hostDataDir, loaderService, hostClassLoader, hookBridge);
         } catch (ReflectiveOperationException e) {
             android.util.Log.e("QAuxv", "StartupAgent.startup: failed", e);
             throw new RuntimeException(e);

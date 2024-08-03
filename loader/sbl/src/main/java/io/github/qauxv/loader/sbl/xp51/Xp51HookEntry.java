@@ -1,15 +1,11 @@
 package io.github.qauxv.loader.sbl.xp51;
 
 import androidx.annotation.Keep;
-import androidx.annotation.NonNull;
 import de.robv.android.xposed.IXposedHookLoadPackage;
 import de.robv.android.xposed.IXposedHookZygoteInit;
-import de.robv.android.xposed.XC_MethodHook;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import io.github.qauxv.loader.sbl.common.ModuleLoader;
-import java.lang.reflect.Field;
-import java.lang.reflect.Method;
 
 /**
  * Entry point for started Xposed API 51-99.
@@ -55,8 +51,8 @@ public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteI
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
                 sCurrentPackageName = lpparam.packageName;
-                ModuleLoader.initialize(lpparam.appInfo, lpparam.classLoader,
-                        Xp51HookImpl.INSTANCE, Xp51HookImpl.INSTANCE, getModulePath());
+                ModuleLoader.initialize(lpparam.appInfo.dataDir, lpparam.classLoader,
+                        Xp51HookImpl.INSTANCE, Xp51HookImpl.INSTANCE, getModulePath(), true);
                 break;
             }
             case PACKAGE_NAME_QQ_INTERNATIONAL: {

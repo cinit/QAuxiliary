@@ -60,7 +60,7 @@ public class Lsp100HookEntry extends XposedModule {
 
     private void handleLoadHostPackage(@NonNull ClassLoader cl, @NonNull ApplicationInfo ai, @NonNull String modulePath) {
         try {
-            ModuleLoader.initialize(ai, cl, Lsp100HookImpl.INSTANCE, Lsp100HookImpl.INSTANCE, modulePath);
+            ModuleLoader.initialize(ai.dataDir, cl, Lsp100HookImpl.INSTANCE, Lsp100HookImpl.INSTANCE, modulePath, true);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

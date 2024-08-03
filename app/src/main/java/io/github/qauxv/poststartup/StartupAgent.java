@@ -47,7 +47,7 @@ public class StartupAgent {
     @Keep
     public static void startup(
             @NonNull String modulePath,
-            @NonNull ApplicationInfo appInfo,
+            @NonNull String hostDataDir,
             @NonNull ILoaderService loaderService,
             @NonNull ClassLoader hostClassLoader,
             @Nullable IHookBridge hookBridge
