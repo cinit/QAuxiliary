@@ -24,6 +24,8 @@ package io.github.qauxv.poststartup;
 import android.app.Application;
 import android.content.Context;
 import android.os.Build;
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import com.github.kyuubiran.ezxhelper.init.InitFields;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.core.NativeCoreBridge;
@@ -52,7 +54,7 @@ public class StartupRoutine {
      * @param lpwReserved null, not used
      * @param bReserved   false, not used
      */
-    public static void execPostStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
+    public static void execPostStartupInit(@NonNull Context ctx, @Nullable Object step, String lpwReserved, boolean bReserved) {
         // init all kotlin utils here
         HostInfo.init((Application) ctx);
         Initiator.init(ctx.getClassLoader());

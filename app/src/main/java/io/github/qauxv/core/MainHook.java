@@ -29,6 +29,7 @@ import android.content.res.Resources;
 import android.os.Bundle;
 import android.system.Os;
 import android.system.StructUtsname;
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.hook.SettingEntryHook;
@@ -98,7 +99,7 @@ public class MainHook {
         }
     }
 
-    public void performHook(Context ctx, Object step) {
+    public void performHook(@NonNull Context ctx, @Nullable Object step) {
         SyncUtils.initBroadcast(ctx);
         injectLifecycleForProcess(ctx);
         if (HostInfo.isQQHD()) {
@@ -182,6 +183,9 @@ public class MainHook {
 
     @Nullable
     private static Object getStartDirector(Object step) {
+        if (step == null) {
+            return null;
+        }
         Class<?> director = Initiator._StartupDirector();
         if (director == null && (QAppUtils.isQQnt())) {
             // NT QQ has different StartupDirector, and removed in 8.9.63(4190)

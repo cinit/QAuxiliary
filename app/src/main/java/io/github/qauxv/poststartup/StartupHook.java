@@ -26,6 +26,7 @@ import android.os.Environment;
 import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.github.qauxv.startup.HybridClassLoader;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
@@ -64,7 +65,7 @@ public class StartupHook {
      * @param lpwReserved null, not used
      * @param bReserved   false, not used
      */
-    public static void execStartupInit(Context ctx, Object step, String lpwReserved, boolean bReserved) {
+    public static void execStartupInit(@NonNull Context ctx, @Nullable Object step, String lpwReserved, boolean bReserved) {
         if (sSecondStageInit) {
             throw new IllegalStateException("Second stage init already executed");
         }
