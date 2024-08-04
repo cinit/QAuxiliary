@@ -18,7 +18,7 @@
 #include "utils/shared_memory.h"
 #include "misc/v2sign.h"
 
-static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
+static bool throwIfNull(JNIEnv* env, jobject obj, const char* msg) {
     if (obj == nullptr) {
         jclass clazz = env->FindClass("java/lang/NullPointerException");
         env->ThrowNew(clazz, msg);
@@ -31,7 +31,7 @@ static bool throwIfNull(JNIEnv *env, jobject obj, const char *msg) {
 #define requiresNonNullV(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return; ((void)0)
 #define requiresNonNullZ(__obj, __msg) if (throwIfNull(env, __obj, __msg)) return 0; ((void)0)
 
-static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
+static std::string getJstringToUtf8(JNIEnv* env, jstring jstr) {
     if (jstr == nullptr) {
         return "";
     }
@@ -47,8 +47,8 @@ static std::string getJstringToUtf8(JNIEnv *env, jstring jstr) {
  * Signature: (JI[BI)V
  */
 EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mwrite
-        (JNIEnv *env, jclass clz, jlong ptr, jint len, jbyteArray arr, jint offset) {
-    auto *bufptr = (jbyte *) ptr;
+        (JNIEnv* env, jclass clz, jlong ptr, jint len, jbyteArray arr, jint offset) {
+    auto* bufptr = (jbyte*) ptr;
     int blen = env->GetArrayLength(arr);
     if (offset < 0) {
         env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), "offset < 0");
@@ -71,8 +71,8 @@ EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mwrite
  * Signature: (JI[BI)V
  */
 EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mread
-        (JNIEnv *env, jclass, jlong ptr, jint len, jbyteArray arr, jint offset) {
-    auto *bufptr = (jbyte *) ptr;
+        (JNIEnv* env, jclass, jlong ptr, jint len, jbyteArray arr, jint offset) {
+    auto* bufptr = (jbyte*) ptr;
     int blen = env->GetArrayLength(arr);
     if (offset < 0) {
         env->ThrowNew(env->FindClass("java/lang/IndexOutOfBoundsException"), "offset < 0");
@@ -95,7 +95,7 @@ EXPORT extern "C" void Java_io_github_qauxv_util_Natives_mread
  * Signature: (I)J
  */
 EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_malloc
-        (JNIEnv *env, jclass, jint len) {
+        (JNIEnv* env, jclass, jint len) {
     auto ptr = (jlong) malloc(len);
     return ptr;
 }
@@ -105,9 +105,9 @@ EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_malloc
  * Method:    free
  * Signature: (J)V
  */
-EXPORT extern "C" void Java_io_github_qauxv_util_Natives_free(JNIEnv *, jclass, jlong ptr) {
+EXPORT extern "C" void Java_io_github_qauxv_util_Natives_free(JNIEnv*, jclass, jlong ptr) {
     if (ptr != 0L) {
-        free((void *) ptr);
+        free((void*) ptr);
     }
 }
 
@@ -117,8 +117,8 @@ EXPORT extern "C" void Java_io_github_qauxv_util_Natives_free(JNIEnv *, jclass, 
  * Signature: (JJI)V
  */
 EXPORT extern "C" void
-Java_io_github_qauxv_util_Natives_memcpy(JNIEnv *, jclass, jlong dest, jlong src, jint n) {
-    memcpy((void *) dest, (void *) src, n);
+Java_io_github_qauxv_util_Natives_memcpy(JNIEnv*, jclass, jlong dest, jlong src, jint n) {
+    memcpy((void*) dest, (void*) src, n);
 }
 
 /*
@@ -127,8 +127,8 @@ Java_io_github_qauxv_util_Natives_memcpy(JNIEnv *, jclass, jlong dest, jlong src
  * Signature: (JII)V
  */
 EXPORT extern "C" void Java_io_github_qauxv_util_Natives_memset
-        (JNIEnv *, jclass, jlong addr, jint c, jint num) {
-    memset((void *) addr, c, num);
+        (JNIEnv*, jclass, jlong addr, jint c, jint num) {
+    memset((void*) addr, c, num);
 }
 
 /*
@@ -137,8 +137,8 @@ EXPORT extern "C" void Java_io_github_qauxv_util_Natives_memset
  * Signature: (JII)I
  */
 EXPORT extern "C" jint
-Java_io_github_qauxv_util_Natives_mprotect(JNIEnv *, jclass, jlong addr, jint len, jint prot) {
-    if (mprotect((void *) addr, len, prot)) {
+Java_io_github_qauxv_util_Natives_mprotect(JNIEnv*, jclass, jlong addr, jint len, jint prot) {
+    if (mprotect((void*) addr, len, prot)) {
         return errno;
     } else {
         return 0;
@@ -151,12 +151,12 @@ Java_io_github_qauxv_util_Natives_mprotect(JNIEnv *, jclass, jlong addr, jint le
  * Signature: (JLjava/lang/String;)J
  */
 EXPORT extern "C" jlong
-Java_io_github_qauxv_util_Natives_dlsym(JNIEnv *env, jclass, jlong h, jstring name) {
-    const char *p;
+Java_io_github_qauxv_util_Natives_dlsym(JNIEnv* env, jclass, jlong h, jstring name) {
+    const char* p;
     jboolean copy;
     p = env->GetStringUTFChars(name, &copy);
     if (!p)return 0;
-    void *ret = dlsym((void *) h, p);
+    void* ret = dlsym((void*) h, p);
     env->ReleaseStringUTFChars(name, p);
     return (jlong) ret;
 }
@@ -167,12 +167,12 @@ Java_io_github_qauxv_util_Natives_dlsym(JNIEnv *env, jclass, jlong h, jstring na
  * Signature: (Ljava/lang/String;I)J
  */
 EXPORT extern "C" jlong
-Java_io_github_qauxv_util_Natives_dlopen(JNIEnv *env, jclass, jstring name, jint flag) {
-    const char *p;
+Java_io_github_qauxv_util_Natives_dlopen(JNIEnv* env, jclass, jstring name, jint flag) {
+    const char* p;
     jboolean copy;
     p = env->GetStringUTFChars(name, &copy);
     if (!p)return 0;
-    void *ret = dlopen(p, flag);
+    void* ret = dlopen(p, flag);
     env->ReleaseStringUTFChars(name, p);
     return (jlong) ret;
 }
@@ -182,8 +182,8 @@ Java_io_github_qauxv_util_Natives_dlopen(JNIEnv *env, jclass, jstring name, jint
  * Method:    dlclose
  * Signature: (J)I
  */
-EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv *, jclass, jlong h) {
-    return (jint) dlclose((void *) h);
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv*, jclass, jlong h) {
+    return (jint) dlclose((void*) h);
 }
 
 /*
@@ -192,8 +192,8 @@ EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_dlclose(JNIEnv *, jclas
  * Signature: ()Ljava/lang/String;
  */
 EXPORT extern "C" jstring Java_io_github_qauxv_util_Natives_dlerror
-        (JNIEnv *env, jclass) {
-    const char *str = dlerror();
+        (JNIEnv* env, jclass) {
+    const char* str = dlerror();
     if (str == nullptr) {
         return nullptr;
     }
@@ -205,8 +205,8 @@ EXPORT extern "C" jstring Java_io_github_qauxv_util_Natives_dlerror
  * Method:    sizeofptr
  * Signature: ()I
  */
-EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv *, jclass) {
-    return sizeof(void *);
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv*, jclass) {
+    return sizeof(void*);
 }
 
 /*
@@ -214,7 +214,7 @@ EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_sizeofptr(JNIEnv *, jcl
  * Method:    getpagesize
  * Signature: ()I
  */
-EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv *, jclass) {
+EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv*, jclass) {
     return getpagesize();
 }
 
@@ -223,15 +223,15 @@ EXPORT extern "C" jint Java_io_github_qauxv_util_Natives_getpagesize(JNIEnv *, j
  * Method:    call
  * Signature: (J)J
  */
-EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv *env, jclass, jlong addr) {
-    void *(*fun)();
-    fun = (void *(*)()) (addr);
+EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv* env, jclass, jlong addr) {
+    void* (* fun)();
+    fun = (void* (*)()) (addr);
     if (fun == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"),
                       "address == null");
         return 0L;
     }
-    void *ret = fun();
+    void* ret = fun();
     return (jlong) ret;
 }
 
@@ -241,19 +241,19 @@ EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__J(JNIEnv *env, j
  * Signature: (JJ)J
  */
 EXPORT extern "C" jlong Java_io_github_qauxv_util_Natives_call__JJ
-        (JNIEnv *env, jclass, jlong addr, jlong arg) {
-    void *(*fun)(void *);
-    fun = (void *(*)(void *)) (addr);
+        (JNIEnv* env, jclass, jlong addr, jlong arg) {
+    void* (* fun)(void*);
+    fun = (void* (*)(void*)) (addr);
     if (fun == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"),
                       "address == null");
         return 0L;
     }
-    void *ret = fun((void *) arg);
+    void* ret = fun((void*) arg);
     return (jlong) ret;
 }
 
-uint32_t update_adler32(unsigned adler, const uint8_t *data, uint32_t len) {
+uint32_t update_adler32(unsigned adler, const uint8_t* data, uint32_t len) {
     unsigned s1 = adler & 0xffffu;
     unsigned s2 = (adler >> 16u) & 0xffffu;
 
@@ -272,7 +272,7 @@ uint32_t update_adler32(unsigned adler, const uint8_t *data, uint32_t len) {
     return (s2 << 16u) | s1;
 }
 
-uint8_t *extractPayload(uint8_t *dex, int dexLength, int *outLength) {
+uint8_t* extractPayload(uint8_t* dex, int dexLength, int* outLength) {
     int chunkROff = readLe32(dex, dexLength - 4);
     if (chunkROff > dexLength) {
         *outLength = 0;
@@ -292,7 +292,7 @@ uint8_t *extractPayload(uint8_t *dex, int dexLength, int *outLength) {
         return nullptr;
     }
     uint32_t key = extra & 0xFFu;
-    auto *dat = (uint8_t *) malloc(size);
+    auto* dat = (uint8_t*) malloc(size);
     if (key == 0) {
         memcpy(dat, dex + base + 16, size);
     } else {
@@ -313,7 +313,7 @@ static int64_t sBuildTimestamp = -2;
 
 static const int DEX_MAX_SIZE = 12 * 1024 * 1024;
 
-jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject session, jstring msg) {
+jboolean handleSendCardMsg(JNIEnv* env, jclass clazz, jobject rt, jobject session, jstring msg) {
     if (rt == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "appInterface== null");
         return false;
@@ -329,12 +329,12 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     if (env->GetStringLength(msg) < 3)return false;
 
     jclass cardMsgListClass = env->FindClass("me/singleneuron/util/KotlinUtilsKt");
-    jmethodID getInstance = env->GetStaticMethodID(cardMsgListClass,"checkCardMsg", "(Ljava/lang/String;)Lme/singleneuron/data/CardMsgCheckResult;");
-    jobject result = env->CallStaticObjectMethod(cardMsgListClass,getInstance,msg);
+    jmethodID getInstance = env->GetStaticMethodID(cardMsgListClass, "checkCardMsg", "(Ljava/lang/String;)Lme/singleneuron/data/CardMsgCheckResult;");
+    jobject result = env->CallStaticObjectMethod(cardMsgListClass, getInstance, msg);
     jclass cardMsgCheckResultClass = env->FindClass("me/singleneuron/data/CardMsgCheckResult");
-    jmethodID toString = env->GetMethodID(cardMsgCheckResultClass,"toString", "()Ljava/lang/String;");
-    jmethodID getAccepted = env->GetMethodID(cardMsgCheckResultClass,"getAccept", "()Z");
-    auto resultString = (jstring) env->CallObjectMethod(result,toString);
+    jmethodID toString = env->GetMethodID(cardMsgCheckResultClass, "toString", "()Ljava/lang/String;");
+    jmethodID getAccepted = env->GetMethodID(cardMsgCheckResultClass, "getAccept", "()Z");
+    auto resultString = (jstring) env->CallObjectMethod(result, toString);
     bool boolean = env->CallBooleanMethod(result, getAccepted);
     if (!boolean) {
         jmethodID getReason = env->GetMethodID(cardMsgCheckResultClass,
@@ -343,8 +343,8 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
         auto reason = (jstring) env->CallObjectMethod(result, getReason);
         jclass cl_Toasts = env->FindClass("io/github/qauxv/util/Toasts");
         jmethodID showErrorToastAnywhere = env->GetStaticMethodID(
-            cl_Toasts, "error",
-            "(Landroid/content/Context;Ljava/lang/CharSequence;)V");
+                cl_Toasts, "error",
+                "(Landroid/content/Context;Ljava/lang/CharSequence;)V");
         env->CallStaticVoidMethod(cl_Toasts, showErrorToastAnywhere,
                                   (jobject) nullptr, reason);
         return true;
@@ -409,9 +409,9 @@ jboolean handleSendCardMsg(JNIEnv *env, jclass clazz, jobject rt, jobject sessio
     }
 }
 
-EXPORT extern "C" jint JNI_OnLoad(JavaVM *vm, void *reserved) {
-    JNIEnv *env = nullptr;
-    if (vm->GetEnv((void **) &env, JNI_VERSION_1_6) != JNI_OK) {
+EXPORT extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
+    JNIEnv* env = nullptr;
+    if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
         return -1;
     }
     jclass appInterface = env->FindClass("mqq/app/AppRuntime");
@@ -434,23 +434,23 @@ EXPORT extern "C" jint JNI_OnLoad(JavaVM *vm, void *reserved) {
         jclass clazz = env->FindClass("cc/ioctl/hook/experimental/CardMsgSender");
         lMethods[0].name = "ntSendCardMsg";
         lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/String;)Z";
-        lMethods[0].fnPtr = (void *) &handleSendCardMsg;
+        lMethods[0].fnPtr = (void*) &handleSendCardMsg;
         if (env->RegisterNatives(clazz, lMethods, 1)) {
             __android_log_print(ANDROID_LOG_INFO, "QAuxv", "register native method[1] failed!\n");
             return -1;
         }
-       // NativeHook_initOnce();
+        // NativeHook_initOnce();
     }
     return retCode;
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_io_github_qauxv_util_Natives_allocateInstanceImpl(JNIEnv *env, jclass, jclass targetClass) {
+Java_io_github_qauxv_util_Natives_allocateInstanceImpl(JNIEnv* env, jclass, jclass targetClass) {
     requiresNonNullP(targetClass, "targetClass is null");
     return env->AllocObject(targetClass);
 }
 
-jobject wrapPrimitiveValue(JNIEnv *env, char type, const jvalue &jvalue) {
+jobject wrapPrimitiveValue(JNIEnv* env, char type, const jvalue& jvalue) {
     switch (type) {
         case 'Z': {
             jclass kBoolean = env->FindClass("java/lang/Boolean");
@@ -506,7 +506,7 @@ jobject wrapPrimitiveValue(JNIEnv *env, char type, const jvalue &jvalue) {
     }
 }
 
-void extractWrappedValue(JNIEnv *env, jvalue &out, char type, jobject value) {
+void extractWrappedValue(JNIEnv* env, jvalue& out, char type, jobject value) {
     switch (type) {
         case 'Z': {
             jclass kBoolean = env->FindClass("java/lang/Boolean");
@@ -572,11 +572,11 @@ void extractWrappedValue(JNIEnv *env, jvalue &out, char type, jobject value) {
     }
 }
 
-jobject transformArgumentsAndInvokeNonVirtual(JNIEnv *env, jmethodID method, jclass clazz,
-                                              const std::vector<char> &parameterShorts,
+jobject transformArgumentsAndInvokeNonVirtual(JNIEnv* env, jmethodID method, jclass clazz,
+                                              const std::vector<char>& parameterShorts,
                                               char returnTypeShort, jobject obj, jobjectArray args) {
     int argc = int(parameterShorts.size());
-    auto *jargs = new jvalue[argc];
+    auto* jargs = new jvalue[argc];
     memset(jargs, 0, sizeof(jvalue) * argc);
     for (int i = 0; i < argc; i++) {
         extractWrappedValue(env, jargs[i], parameterShorts[i], env->GetObjectArrayElement(args, i));
@@ -653,7 +653,7 @@ jobject transformArgumentsAndInvokeNonVirtual(JNIEnv *env, jmethodID method, jcl
 }
 
 extern "C" JNIEXPORT jobject JNICALL
-Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
+Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv* env, jclass,
                                                        jclass klass, jstring method_name, jstring method_sig,
                                                        jobject obj, jobjectArray args) {
     requiresNonNullP(klass, "declaringClass is null");
@@ -721,7 +721,7 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv *env, jclass,
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_write(JNIEnv *env, jclass clazz, jint fd, jbyteArray buf, jint offset, jint len) {
+Java_io_github_qauxv_util_Natives_write(JNIEnv* env, jclass clazz, jint fd, jbyteArray buf, jint offset, jint len) {
     requiresNonNullZ(buf, "buf is null");
     if (fd < 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
@@ -735,7 +735,7 @@ Java_io_github_qauxv_util_Natives_write(JNIEnv *env, jclass clazz, jint fd, jbyt
                               + std::to_string(len) + " " + std::to_string(arrayLen)).c_str());
         return 0;
     }
-    jbyte *bufPtr = env->GetByteArrayElements(buf, nullptr);
+    jbyte* bufPtr = env->GetByteArrayElements(buf, nullptr);
     if (bufPtr == nullptr) {
         env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
         return 0;
@@ -751,7 +751,7 @@ Java_io_github_qauxv_util_Natives_write(JNIEnv *env, jclass clazz, jint fd, jbyt
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_read(JNIEnv *env, jclass, jint fd, jbyteArray buf, jint offset, jint len) {
+Java_io_github_qauxv_util_Natives_read(JNIEnv* env, jclass, jint fd, jbyteArray buf, jint offset, jint len) {
     requiresNonNullZ(buf, "buf is null");
     if (fd < 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
@@ -765,7 +765,7 @@ Java_io_github_qauxv_util_Natives_read(JNIEnv *env, jclass, jint fd, jbyteArray 
                               + " " + std::to_string(len) + " " + std::to_string(arrayLen)).c_str());
         return 0;
     }
-    jbyte *bufPtr = env->GetByteArrayElements(buf, nullptr);
+    jbyte* bufPtr = env->GetByteArrayElements(buf, nullptr);
     if (bufPtr == nullptr) {
         env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
         return 0;
@@ -781,7 +781,7 @@ Java_io_github_qauxv_util_Natives_read(JNIEnv *env, jclass, jint fd, jbyteArray 
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_io_github_qauxv_util_Natives_close(JNIEnv *env, jclass, jint fd) {
+Java_io_github_qauxv_util_Natives_close(JNIEnv* env, jclass, jint fd) {
     if (fd < 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
                       (std::string("fd is negative: ") + std::to_string(fd)).c_str());
@@ -795,12 +795,12 @@ Java_io_github_qauxv_util_Natives_close(JNIEnv *env, jclass, jint fd) {
 static char sTmpDir[PATH_MAX] = {};
 
 extern "C" JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_MemoryFileUtils_nativeInitializeTmpDir(JNIEnv *env, jclass, jstring jcacheDir) {
+Java_io_github_qauxv_util_MemoryFileUtils_nativeInitializeTmpDir(JNIEnv* env, jclass, jstring jcacheDir) {
     if (jcacheDir == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "cacheDir is null");
         return -EINVAL;
     }
-    const char *cacheDir = env->GetStringUTFChars(jcacheDir, nullptr);
+    const char* cacheDir = env->GetStringUTFChars(jcacheDir, nullptr);
     if (cacheDir == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "failed to allocate memory");
         return -ENOMEM;
@@ -821,7 +821,7 @@ Java_io_github_qauxv_util_MemoryFileUtils_nativeInitializeTmpDir(JNIEnv *env, jc
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, jclass, jstring name, jint size) {
+Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv* env, jclass, jstring name, jint size) {
     if (strlen(sTmpDir) == 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalStateException"), "tmpDir is not initialized");
         return -EINVAL;
@@ -835,7 +835,7 @@ Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, j
                       (std::string("size is negative: ") + std::to_string(size)).c_str());
         return -1;
     }
-    const char *namePtr = env->GetStringUTFChars(name, nullptr);
+    const char* namePtr = env->GetStringUTFChars(name, nullptr);
     if (namePtr == nullptr) {
         env->ThrowNew(env->FindClass("java/io/IOException"), "failed to allocate memory");
         return -1;
@@ -852,11 +852,11 @@ Java_io_github_qauxv_util_MemoryFileUtils_nativeCreateMemoryFile0(JNIEnv *env, j
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_getProcessDumpableState(JNIEnv *env, jclass) {
+Java_io_github_qauxv_util_Natives_getProcessDumpableState(JNIEnv* env, jclass) {
     int dumpable = prctl(PR_GET_DUMPABLE);
     if (dumpable < 0) {
         int err = errno;
-        const char *msg = strerror(err);
+        const char* msg = strerror(err);
         env->ThrowNew(env->FindClass("java/io/IOException"), msg);
         return -1;
     }
@@ -864,7 +864,7 @@ Java_io_github_qauxv_util_Natives_getProcessDumpableState(JNIEnv *env, jclass) {
 }
 
 extern "C" JNIEXPORT void JNICALL
-Java_io_github_qauxv_util_Natives_setProcessDumpableState(JNIEnv *env, jclass, jint dumpable) {
+Java_io_github_qauxv_util_Natives_setProcessDumpableState(JNIEnv* env, jclass, jint dumpable) {
     if (dumpable < 0 || dumpable > 2) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
                       (std::string("dumpable is out of bounds: ") + std::to_string(dumpable)).c_str());
@@ -872,13 +872,13 @@ Java_io_github_qauxv_util_Natives_setProcessDumpableState(JNIEnv *env, jclass, j
     }
     if (prctl(PR_SET_DUMPABLE, dumpable, 0, 0, 0) < 0) {
         int err = errno;
-        const char *msg = strerror(err);
+        const char* msg = strerror(err);
         env->ThrowNew(env->FindClass("java/io/IOException"), msg);
     }
 }
 
 extern "C" JNIEXPORT jlong JNICALL
-Java_io_github_qauxv_util_Natives_lseek(JNIEnv *env, jclass, jint fd, jlong offset, jint whence) {
+Java_io_github_qauxv_util_Natives_lseek(JNIEnv* env, jclass, jint fd, jlong offset, jint whence) {
     if (fd < 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
                       (std::string("fd is negative: ") + std::to_string(fd)).c_str());
@@ -899,11 +899,11 @@ Java_io_github_qauxv_util_Natives_lseek(JNIEnv *env, jclass, jint fd, jlong offs
 }
 
 extern "C" JNIEXPORT jint JNICALL
-Java_cc_ioctl_util_JunkCodeUtils_getJunkCode(JNIEnv *, jclass, jint jtc) {
+Java_cc_ioctl_util_JunkCodeUtils_getJunkCode(JNIEnv*, jclass, jint jtc) {
     auto tc = uint32_t(jtc);
-    const char *magic = "mIplOkwgxe3bzGc6g9K1BNJlXbuNmM+kYGWuoFGDOAZD1vHBEROCj+AN2TmBKXc0wEDLXgE+XgxL";
+    const char* magic = "mIplOkwgxe3bzGc6g9K1BNJlXbuNmM+kYGWuoFGDOAZD1vHBEROCj+AN2TmBKXc0wEDLXgE+XgxL";
     auto magic_len = strlen(magic);
-    uint32_t a32 = update_adler32(tc, reinterpret_cast<const uint8_t *>(magic), magic_len);
+    uint32_t a32 = update_adler32(tc, reinterpret_cast<const uint8_t*>(magic), magic_len);
     uint32_t o = a32 & 0xf;
     // code should be in the range [0, 999999]
     uint32_t code = (a32 >> o) % 1000000;
@@ -912,7 +912,7 @@ Java_cc_ioctl_util_JunkCodeUtils_getJunkCode(JNIEnv *, jclass, jint jtc) {
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_dup(JNIEnv *env, jclass clazz, jint fd) {
+Java_io_github_qauxv_util_Natives_dup(JNIEnv* env, jclass clazz, jint fd) {
     if (fd < 0) {
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
                       (std::string("fd is negative: ") + std::to_string(fd)).c_str());
@@ -929,7 +929,7 @@ Java_io_github_qauxv_util_Natives_dup(JNIEnv *env, jclass clazz, jint fd) {
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_dup2(JNIEnv *env,
+Java_io_github_qauxv_util_Natives_dup2(JNIEnv* env,
                                        jclass clazz,
                                        jint oldfd,
                                        jint newfd) {
@@ -954,7 +954,7 @@ Java_io_github_qauxv_util_Natives_dup2(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_dup3(JNIEnv *env,
+Java_io_github_qauxv_util_Natives_dup3(JNIEnv* env,
                                        jclass clazz,
                                        jint oldfd,
                                        jint newfd,
@@ -980,7 +980,7 @@ Java_io_github_qauxv_util_Natives_dup3(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jint JNICALL
-Java_io_github_qauxv_util_Natives_open(JNIEnv *env,
+Java_io_github_qauxv_util_Natives_open(JNIEnv* env,
                                        jclass clazz,
                                        jstring path,
                                        jint flags,
@@ -989,7 +989,7 @@ Java_io_github_qauxv_util_Natives_open(JNIEnv *env,
         env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "path is null");
         return -1;
     }
-    const char *path_cstr = env->GetStringUTFChars(path, nullptr);
+    const char* path_cstr = env->GetStringUTFChars(path, nullptr);
     if (path_cstr == nullptr) {
         env->ThrowNew(env->FindClass("java/lang/OutOfMemoryError"), "out of memory");
         return -1;
