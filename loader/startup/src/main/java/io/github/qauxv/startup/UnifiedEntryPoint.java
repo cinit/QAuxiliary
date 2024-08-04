@@ -1,13 +1,13 @@
 package io.github.qauxv.startup;
 
 import android.annotation.SuppressLint;
-import android.content.pm.ApplicationInfo;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderService;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 
 @Keep
 public class UnifiedEntryPoint {
@@ -51,8 +51,9 @@ public class UnifiedEntryPoint {
             kStartupAgent.getMethod("startup", String.class, String.class, ILoaderService.class, ClassLoader.class, IHookBridge.class)
                     .invoke(null, modulePath, hostDataDir, loaderService, hostClassLoader, hookBridge);
         } catch (ReflectiveOperationException e) {
-            android.util.Log.e("QAuxv", "StartupAgent.startup: failed", e);
-            throw new RuntimeException(e);
+            Throwable cause = getInvocationTargetExceptionCause(e);
+            android.util.Log.e("QAuxv", "StartupAgent.startup: failed", cause);
+            throw unsafeThrow(cause);
         }
     }
 
@@ -66,6 +67,24 @@ public class UnifiedEntryPoint {
         } catch (Exception e) {
             android.util.Log.e("QAuxv", "injectClassLoader: failed", e);
         }
+    }
+
+    @NonNull
+    private static Throwable getInvocationTargetExceptionCause(@NonNull Throwable e) {
+        while (e instanceof InvocationTargetException) {
+            Throwable cause = ((InvocationTargetException) e).getTargetException();
+            if (cause != null) {
+                e = cause;
+            } else {
+                break;
+            }
+        }
+        return e;
+    }
+
+    @NonNull
+    private static <T extends Throwable> AssertionError unsafeThrow(@NonNull Throwable e) throws T {
+        throw (T) e;
     }
 
 }
