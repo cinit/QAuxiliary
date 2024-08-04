@@ -25,6 +25,7 @@ package io.github.qauxv.util.hookimpl.lsplant;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 public class LsplantBridge {
 
@@ -35,8 +36,9 @@ public class LsplantBridge {
     static native void nativeInitializeLsplant() throws RuntimeException;
 
     // return backup method if success, or null if failed
+    // LSPlant backup is always a method, regardless of the target type being method or constructor
     @Nullable
-    static native Member nativeHookMethod(@NonNull Member target, @NonNull Member callback, @NonNull Object context) throws RuntimeException;
+    static native Method nativeHookMethod(@NonNull Member target, @NonNull Member callback, @NonNull Object context) throws RuntimeException;
 
     static native boolean nativeIsMethodHooked(@NonNull Member target) throws RuntimeException;
 

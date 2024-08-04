@@ -309,15 +309,11 @@ public class LsplantHookImpl {
                 // underlying ArtMethod is not hooked, we need to hook it before adding callback
                 LsplantCallbackToken token = new LsplantCallbackToken(member);
                 // perform hook
-                Member backup = LsplantBridge.nativeHookMethod(member, sCallbackMethod, token);
+                Method backup = LsplantBridge.nativeHookMethod(member, sCallbackMethod, token);
                 if (backup == null) {
                     throw new UnsupportedOperationException("LSPlant failed to hook method: " + member);
                 }
-                if (backup instanceof Method) {
-                    ((Method) backup).setAccessible(true);
-                } else if (backup instanceof Constructor) {
-                    ((Constructor<?>) backup).setAccessible(true);
-                }
+                backup.setAccessible(true);
                 // hook success, set backup method
                 token.setBackupMember(backup);
                 // add token to holder
@@ -403,14 +399,13 @@ public class LsplantHookImpl {
                 }
             }
         }
-        Member invokeTarget;
         if (token != null) {
-            invokeTarget = token.getBackupMember();
+            Method backup = token.getBackupMember();
+            return backup.invoke(thisObject, args);
         } else {
-            // method is not hooked, invoke the original method directly
-            invokeTarget = method;
+            // method is not hooked, invoke the original method/copnstructor directly
+            return Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(method, declaringClass, thisObject, args);
         }
-        return Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(invokeTarget, declaringClass, thisObject, args);
     }
 
     @NonNull

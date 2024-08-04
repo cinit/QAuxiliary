@@ -207,7 +207,7 @@ public class Natives {
             throws InvocationTargetException;
 
     // If the method signature does not match the actual method signature, the behavior is undefined, eg, ART runtime aborts.
-    private static native Object invokeNonVirtualArtMethodImpl(@NonNull Member member, @NonNull String signature, @NonNull Class<?> klass,
+    private static native Object invokeNonVirtualArtMethodImpl(@NonNull Member member, @NonNull String signature, @NonNull Class<?> klass, boolean isStatic,
             @Nullable Object obj, @NonNull Object[] args) throws InvocationTargetException;
 
     /**
@@ -244,15 +244,16 @@ public class Natives {
             if ((method.getModifiers() & (Modifier.ABSTRACT)) != 0) {
                 throw new IllegalArgumentException("abstract method is not allowed");
             }
+            boolean isStatic = Modifier.isStatic(method.getModifiers());
             String signature = DexMethodDescriptor.getMethodTypeSig(method);
-            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, obj, args);
+            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, isStatic, obj, args);
         } else if (member instanceof Constructor) {
             Constructor<?> constructor = (Constructor<?>) member;
             if (constructor.getParameterTypes().length != args.length) {
                 throw new IllegalArgumentException("args length mismatch, expected " + constructor.getParameterTypes().length + ", got " + args.length);
             }
             String signature = DexMethodDescriptor.getConstructorTypeSig(constructor);
-            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, obj, args);
+            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, false, obj, args);
         } else {
             throw new IllegalArgumentException("member must be a method or constructor");
         }

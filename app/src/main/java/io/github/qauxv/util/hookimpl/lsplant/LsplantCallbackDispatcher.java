@@ -27,7 +27,6 @@ import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Natives;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
@@ -140,18 +139,17 @@ public class LsplantCallbackDispatcher {
     static Object handleCallback(
             @NonNull LsplantCallbackToken token,
             @NonNull Member targetMethod,
-            @NonNull Member backupMethod,
+            @NonNull Method backupMethod,
             @NonNull Object[] rawArgs) throws Throwable {
         LsplantHookImpl.CallbackWrapper[] callbacks = LsplantHookImpl.getActiveHookCallbacks(targetMethod);
-        boolean hasThis = (targetMethod instanceof Constructor) || ((targetMethod.getModifiers() & Modifier.STATIC) != 0);
-        Object thisObject = hasThis ? null : rawArgs[0];
+        boolean hasThis = (targetMethod instanceof Constructor) || ((targetMethod.getModifiers() & Modifier.STATIC) == 0);
+        Object thisObject = hasThis ? rawArgs[0] : null;
         Object[] args;
-        Class<?> declaringClass = targetMethod.getDeclaringClass();
         if (hasThis) {
-            args = rawArgs;
-        } else {
             args = new Object[rawArgs.length - 1];
             System.arraycopy(rawArgs, 1, args, 0, args.length);
+        } else {
+            args = rawArgs;
         }
         LsplantHookParam param = new LsplantHookParam(targetMethod, args, thisObject);
         // call before callbacks
@@ -168,7 +166,7 @@ public class LsplantCallbackDispatcher {
         param.currentIndex = -1;
         if (!param.skipOrigin) {
             try {
-                param.result = Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(backupMethod, declaringClass, thisObject, args);
+                param.result = backupMethod.invoke(thisObject, args);
             } catch (Throwable t) {
                 param.throwable = IoUtils.getIteCauseOrSelf(t);
             }

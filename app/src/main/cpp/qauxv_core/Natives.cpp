@@ -574,7 +574,8 @@ void extractWrappedValue(JNIEnv* env, jvalue& out, char type, jobject value) {
 
 jobject transformArgumentsAndInvokeNonVirtual(JNIEnv* env, jmethodID method, jclass clazz,
                                               const std::vector<char>& parameterShorts,
-                                              char returnTypeShort, jobject obj, jobjectArray args) {
+                                              char returnTypeShort, bool isStatic,
+                                              jobject obj, jobjectArray args) {
     int argc = int(parameterShorts.size());
     auto* jargs = new jvalue[argc];
     memset(jargs, 0, sizeof(jvalue) * argc);
@@ -589,43 +590,56 @@ jobject transformArgumentsAndInvokeNonVirtual(JNIEnv* env, jmethodID method, jcl
     memset(&ret, 0, sizeof(jvalue));
     switch (returnTypeShort) {
         case 'L': {
-            ret.l = env->CallNonvirtualObjectMethodA(obj, clazz, method, jargs);
+            ret.l = isStatic ? env->CallStaticObjectMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualObjectMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'Z': {
-            ret.z = env->CallNonvirtualBooleanMethodA(obj, clazz, method, jargs);
+            ret.z = isStatic ? env->CallStaticBooleanMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualBooleanMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'B': {
-            ret.b = env->CallNonvirtualByteMethodA(obj, clazz, method, jargs);
+            ret.b = isStatic ? env->CallStaticByteMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualByteMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'C': {
-            ret.c = env->CallNonvirtualCharMethodA(obj, clazz, method, jargs);
+            ret.c = isStatic ? env->CallStaticCharMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualCharMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'S': {
-            ret.s = env->CallNonvirtualShortMethodA(obj, clazz, method, jargs);
+            ret.s = isStatic ? env->CallStaticShortMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualShortMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'I': {
-            ret.i = env->CallNonvirtualIntMethodA(obj, clazz, method, jargs);
+            ret.i = isStatic ? env->CallStaticIntMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualIntMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'J': {
-            ret.j = env->CallNonvirtualLongMethodA(obj, clazz, method, jargs);
+            ret.j = isStatic ? env->CallStaticLongMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualLongMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'F': {
-            ret.f = env->CallNonvirtualFloatMethodA(obj, clazz, method, jargs);
+            ret.f = isStatic ? env->CallStaticFloatMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualFloatMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'D': {
-            ret.d = env->CallNonvirtualDoubleMethodA(obj, clazz, method, jargs);
+            ret.d = isStatic ? env->CallStaticDoubleMethodA(clazz, method, jargs)
+                             : env->CallNonvirtualDoubleMethodA(obj, clazz, method, jargs);
             break;
         }
         case 'V': {
-            env->CallNonvirtualVoidMethodA(obj, clazz, method, jargs);
+            if (isStatic) {
+                env->CallStaticVoidMethodA(clazz, method, jargs);
+            } else {
+                env->CallNonvirtualVoidMethodA(obj, clazz, method, jargs);
+            }
             ret.l = nullptr;
             break;
         }
@@ -717,7 +731,7 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl(JNIEnv* env, jclass,
         return nullptr;
     }
     // invoke
-    return transformArgumentsAndInvokeNonVirtual(env, method, targetClass, paramShorts, returnTypeShort, obj, args);
+    return transformArgumentsAndInvokeNonVirtual(env, method, targetClass, paramShorts, returnTypeShort, false, obj, args);
 }
 
 extern "C" JNIEXPORT jint JNICALL
@@ -1011,6 +1025,7 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
                                                                 jobject member,
                                                                 jstring signature,
                                                                 jclass klass,
+                                                                jboolean is_static,
                                                                 jobject obj,
                                                                 jobjectArray args) {
     // basic checks have already been done in Java
@@ -1063,5 +1078,5 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
         return nullptr;
     }
     // invoke
-    return transformArgumentsAndInvokeNonVirtual(env, methodId, klass, paramShorts, returnTypeShort, obj, args);
+    return transformArgumentsAndInvokeNonVirtual(env, methodId, klass, paramShorts, returnTypeShort, is_static, obj, args);
 }

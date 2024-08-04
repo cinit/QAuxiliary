@@ -84,7 +84,7 @@ bool InitLSPlantImpl(JNIEnv* env) {
                         result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sLibArtBaseAddress) + offset);
                     } else {
                         result = nullptr;
-                        LOGW("art symbol exact '{}' not found", symbol);
+                        LOGD("art symbol exact '{}' not found", symbol);
                     }
                     return result;
                 },
@@ -95,7 +95,7 @@ bool InitLSPlantImpl(JNIEnv* env) {
                         result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sLibArtBaseAddress) + offset);
                     } else {
                         result = nullptr;
-                        LOGW("art symbol prefix '{}' not found", symbol);
+                        LOGD("art symbol prefix '{}' not found", symbol);
                     }
                     return result;
                 }

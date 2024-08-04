@@ -40,9 +40,10 @@ public final class LsplantCallbackToken {
     }
 
     private Member mMember;
-    private Member mBackup;
+    // LSPlant backup is always a method, regardless of the target type being method or constructor
+    private Method mBackup;
 
-    /*package*/ void setBackupMember(@NonNull Member backup) {
+    /*package*/ void setBackupMember(@NonNull Method backup) {
         Objects.requireNonNull(backup);
         if (mBackup != null) {
             throw new IllegalStateException("Backup member already set");
@@ -50,7 +51,7 @@ public final class LsplantCallbackToken {
         mBackup = backup;
     }
 
-    public Member getBackupMember() {
+    public Method getBackupMember() {
         return mBackup;
     }
 
@@ -61,8 +62,8 @@ public final class LsplantCallbackToken {
     // called from native
     @Keep
     public Object callback(Object[] args) throws Throwable {
-        Method targetMethod = (Method) mMember;
-        Method backupMethod = (Method) mBackup;
+        Member targetMethod = mMember;
+        Method backupMethod = mBackup;
         if (targetMethod == null) {
             throw new AssertionError("targetMethod is null");
         }

@@ -33,6 +33,7 @@ import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Natives;
+import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 public class ModuleAppImpl extends Application {
@@ -54,6 +55,12 @@ public class ModuleAppImpl extends Application {
         initStartupInfo();
         // for fail-safe purpose
         com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
+        // init LSPlant for self test purpose
+        try {
+            LsplantHookImpl.initializeLsplantHookBridge();
+        } catch (RuntimeException e) {
+            android.util.Log.e("QAuxv", "Failed to initialize LsplantHookImpl", e);
+        }
     }
 
     private void initStartupInfo() {
