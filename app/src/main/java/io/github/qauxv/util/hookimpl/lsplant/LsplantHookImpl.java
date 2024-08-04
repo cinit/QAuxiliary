@@ -35,6 +35,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.HashSet;
 import java.util.Objects;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -50,12 +51,12 @@ public class LsplantHookImpl {
         if (StartupInfo.getHookBridge() != null) {
             throw new IllegalStateException("Hook bridge already initialized");
         }
-        Log.d("Initializing LSPlant hook bridge");
         // if we reach here, it's obvious that LSPlant is required
         // without a hook bridge, we can't do anything
         // if that fails, just want to give up
         initializeLsplantInternal();
         StartupInfo.setHookBridge(LsplantHookBridge.INSTANCE);
+        Log.d("LSPlant initialization done.");
     }
 
     private static class LsplantHookBridge implements IHookBridge {
@@ -165,10 +166,52 @@ public class LsplantHookImpl {
         }
     }
 
+    private static HashSet<Member> sExemptMembers = null;
+    private static HashSet<Class<?>> sExemptClasses = null;
+
+    private static HashSet<Member> getExemptMembers() {
+        if (sExemptMembers == null) {
+            synchronized (LsplantHookImpl.class) {
+                if (sExemptMembers == null) {
+                    try {
+                        HashSet<Member> h = new HashSet<>(16);
+                        h.add(System.class.getDeclaredMethod("load", String.class));
+                        h.add(System.class.getDeclaredMethod("loadLibrary", String.class));
+                        // add more if you need
+                        sExemptMembers = h;
+                    } catch (NoSuchMethodException e) {
+                        throw IoUtils.unsafeThrow(e);
+                    }
+                }
+            }
+        }
+        return sExemptMembers;
+    }
+
+    private static HashSet<Class<?>> getExemptClasses() {
+        if (sExemptClasses == null) {
+            synchronized (LsplantHookImpl.class) {
+                if (sExemptClasses == null) {
+                    HashSet<Class<?>> h = new HashSet<>(16);
+                    // add more if you need
+                    h.add(Runtime.class);
+                    sExemptClasses = h;
+                }
+            }
+        }
+        return sExemptClasses;
+    }
+
     private static void checkHookTarget(@NonNull Member target) {
         checkMemberValid(target);
         Class<?> clazz = target.getDeclaringClass();
         if (clazz.getClassLoader() == Runnable.class.getClassLoader()) {
+            if (getExemptClasses().contains(clazz)) {
+                return;
+            }
+            if (getExemptMembers().contains(target)) {
+                return;
+            }
             if (clazz.getName().startsWith("java.lang.")) {
                 throw new IllegalArgumentException("Cannot hook java.lang.* classes");
             } else if (clazz.getName().startsWith("java.util.")) {
