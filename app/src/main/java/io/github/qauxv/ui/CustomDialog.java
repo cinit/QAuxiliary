@@ -121,6 +121,7 @@ public class CustomDialog {
      * @return a failsafe dialog builder
      * @deprecated use {@link androidx.appcompat.app.AlertDialog.Builder} with {@link CommonContextWrapper#createAppCompatContext(Context)}  instead
      */
+    @Deprecated
     public static CustomDialog createFailsafe(Context context) {
         CustomDialog ref = new CustomDialog();
         // dark/light theme is already handled by CommonContextWrapper.createAppCompatContext(context)
