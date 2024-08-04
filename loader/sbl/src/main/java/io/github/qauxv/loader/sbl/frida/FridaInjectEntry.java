@@ -6,6 +6,7 @@ import androidx.annotation.NonNull;
 import java.io.File;
 
 import io.github.qauxv.loader.sbl.common.ModuleLoader;
+import java.lang.reflect.InvocationTargetException;
 
 /**
  * Entry point for runtime injection.
@@ -22,12 +23,13 @@ public class FridaInjectEntry {
      * @param hostDataDir path to the host data directory, e.g. "/data/data/com.example"
      */
     @Keep
-    public static void entry2(@NonNull String modulePath, @NonNull String hostDataDir) throws ReflectiveOperationException {
+    public static void entry2(@NonNull String modulePath, @NonNull String hostDataDir) throws Throwable {
         try {
             startup(new File(modulePath), new File(hostDataDir));
         } catch (Throwable e) {
-            android.util.Log.e("QAuxv", "FridaInjectEntry.entry2: failed", e);
-            throw e;
+            Throwable cause = getInvocationTargetExceptionCause(e);
+            android.util.Log.e("QAuxv", "FridaInjectEntry.entry2: failed", cause);
+            throw cause;
         }
     }
 
@@ -52,6 +54,19 @@ public class FridaInjectEntry {
         Object activityThread = kActivityThread.getMethod("currentActivityThread").invoke(null);
         Application app = (Application) kActivityThread.getMethod("getApplication").invoke(activityThread);
         return app.getClassLoader();
+    }
+
+    @NonNull
+    private static Throwable getInvocationTargetExceptionCause(@NonNull Throwable e) {
+        while (e instanceof InvocationTargetException) {
+            Throwable cause = ((InvocationTargetException) e).getTargetException();
+            if (cause != null) {
+                e = cause;
+            } else {
+                break;
+            }
+        }
+        return e;
     }
 
 }
