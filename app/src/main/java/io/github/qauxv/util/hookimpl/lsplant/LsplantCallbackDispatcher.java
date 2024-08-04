@@ -146,6 +146,7 @@ public class LsplantCallbackDispatcher {
         boolean hasThis = (targetMethod instanceof Constructor) || ((targetMethod.getModifiers() & Modifier.STATIC) != 0);
         Object thisObject = hasThis ? null : rawArgs[0];
         Object[] args;
+        Class<?> declaringClass = targetMethod.getDeclaringClass();
         if (hasThis) {
             args = rawArgs;
         } else {
@@ -167,11 +168,7 @@ public class LsplantCallbackDispatcher {
         param.currentIndex = -1;
         if (!param.skipOrigin) {
             try {
-                if (targetMethod instanceof Method) {
-                    param.result = ((Method) backupMethod).invoke(thisObject, args);
-                } else {
-                    param.result = Natives.callObjectMethod(backupMethod, thisObject, args);
-                }
+                param.result = Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(backupMethod, declaringClass, thisObject, args);
             } catch (Throwable t) {
                 param.throwable = IoUtils.getIteCauseOrSelf(t);
             }

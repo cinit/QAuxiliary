@@ -1006,11 +1006,62 @@ Java_io_github_qauxv_util_Natives_open(JNIEnv *env,
 
 extern "C"
 JNIEXPORT jobject JNICALL
-Java_io_github_qauxv_util_Natives_callObjectMethod(JNIEnv* env, jclass clazz, jobject method, jobject obj, jobjectArray args) {
-    if (method == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "method is null");
+Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
+                                                                jclass clazz,
+                                                                jobject member,
+                                                                jstring signature,
+                                                                jclass klass,
+                                                                jobject obj,
+                                                                jobjectArray args) {
+    // basic checks have already been done in Java
+    jmethodID methodId = env->FromReflectedMethod(member);
+    std::string methodSignature = getJstringToUtf8(env, signature);
+    int argc = args == nullptr ? 0 : env->GetArrayLength(args);
+    // parse method signature
+    std::vector<char> paramShorts;
+    paramShorts.reserve(argc);
+    // skip first '('
+    for (int i = 1; i < methodSignature.length(); i++) {
+        if (methodSignature[i] == ')') {
+            break;
+        }
+        if (methodSignature[i] == 'L') {
+            paramShorts.push_back('L');
+            while (methodSignature[i] != ';') {
+                i++;
+            }
+        } else if (methodSignature[i] == '[') {
+            paramShorts.push_back('L');
+            // it's an array, so we just skip the '['
+            while (methodSignature[i] == '[') {
+                i++;
+            }
+            // check if it's a primitive array
+            if (methodSignature[i] == 'L') {
+                while (methodSignature[i] != ';') {
+                    i++;
+                }
+            }
+        } else {
+            paramShorts.push_back(methodSignature[i]);
+        }
+    }
+    // find return type, start from last ')'
+    char returnTypeShort = 0;
+    for (auto i = methodSignature.length() - 1; i > 0; i--) {
+        if (methodSignature[i] == ')') {
+            returnTypeShort = methodSignature[i + 1];
+            break;
+        }
+    }
+    if (returnTypeShort == '[') {
+        returnTypeShort = 'L';
+    }
+    if (paramShorts.size() != argc) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"),
+                      "parameter count mismatch");
         return nullptr;
     }
-    jmethodID methodId = env->FromReflectedMethod(method);
-    return env->CallObjectMethod(obj, methodId, args);
+    // invoke
+    return transformArgumentsAndInvokeNonVirtual(env, methodId, klass, paramShorts, returnTypeShort, obj, args);
 }

@@ -35,19 +35,24 @@ import com.tencent.mmkv.MMKV;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.poststartup.StartupInfo;
+import io.github.qauxv.util.dexkit.DexMethodDescriptor;
+import io.github.qauxv.util.xpcompat.ArrayUtils;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Objects;
 import java.util.Set;
 
 public class Natives {
@@ -184,9 +189,6 @@ public class Natives {
      */
     public static native Object allocateInstanceImpl(Class<?> clazz);
 
-    public static native Object callObjectMethod(@NonNull Member method, @Nullable Object obj, @NonNull Object... args)
-            throws InvocationTargetException;
-
     /**
      * Invoke an instance method non-virtually (i.e. without calling the overridden method).
      * <p>
@@ -203,6 +205,58 @@ public class Natives {
     public static native Object invokeNonVirtualImpl(Class<?> declaringClass, String methodName,
             String methodSig, Object obj, Object[] args)
             throws InvocationTargetException;
+
+    // If the method signature does not match the actual method signature, the behavior is undefined, eg, ART runtime aborts.
+    private static native Object invokeNonVirtualArtMethodImpl(@NonNull Member member, @NonNull String signature, @NonNull Class<?> klass,
+            @Nullable Object obj, @NonNull Object[] args) throws InvocationTargetException;
+
+    /**
+     * Invoke an instance method non-virtually, no CHA lookup is performed. No declaring class check is performed.
+     * <p>
+     * Caller is responsible for checking that the method declaration class matches the receiver object (aka "this").
+     *
+     * @param member         the method or constructor to invoke, method may be static or non-static method
+     * @param declaringClass the "effective" declaring class of the method
+     * @param obj            the object to invoke the method on, may be null if the method is static
+     * @param args           the arguments to pass to the method. may be null if no arguments are passed
+     * @return the return value of the method
+     * @throws InvocationTargetException if the method threw an exception
+     */
+    public static Object invokeNonVirtualArtMethodNoDeclaringClassCheck(@NonNull Member member, @NonNull Class<?> declaringClass,
+            @Nullable Object obj, @Nullable Object[] args) throws InvocationTargetException {
+        Objects.requireNonNull(member, "member must not be null");
+        Objects.requireNonNull(declaringClass, "declaringClass must not be null");
+        if (args == null) {
+            args = ArrayUtils.EMPTY_OBJECT_ARRAY;
+        }
+        // perform some basic checks
+        if (obj != null) {
+            if (!declaringClass.isInstance(obj)) {
+                throw new IllegalArgumentException("object class mismatch, expected " + declaringClass + ", got " + obj.getClass());
+            }
+        }
+        if (member instanceof Method) {
+            Method method = (Method) member;
+            if (method.getParameterTypes().length != args.length) {
+                throw new IllegalArgumentException("args length mismatch, expected " + method.getParameterTypes().length + ", got " + args.length);
+            }
+            // abstract method is not allowed
+            if ((method.getModifiers() & (Modifier.ABSTRACT)) != 0) {
+                throw new IllegalArgumentException("abstract method is not allowed");
+            }
+            String signature = DexMethodDescriptor.getMethodTypeSig(method);
+            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, obj, args);
+        } else if (member instanceof Constructor) {
+            Constructor<?> constructor = (Constructor<?>) member;
+            if (constructor.getParameterTypes().length != args.length) {
+                throw new IllegalArgumentException("args length mismatch, expected " + constructor.getParameterTypes().length + ", got " + args.length);
+            }
+            String signature = DexMethodDescriptor.getConstructorTypeSig(constructor);
+            return invokeNonVirtualArtMethodImpl(member, signature, declaringClass, obj, args);
+        } else {
+            throw new IllegalArgumentException("member must be a method or constructor");
+        }
+    }
 
     private static void registerNativeLibEntry(String soTailingName) {
         if (soTailingName == null || soTailingName.length() == 0) {

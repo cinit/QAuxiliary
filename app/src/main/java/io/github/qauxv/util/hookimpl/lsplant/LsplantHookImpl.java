@@ -24,6 +24,7 @@ package io.github.qauxv.util.hookimpl.lsplant;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.Reflex;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.IoUtils;
@@ -344,8 +345,11 @@ public class LsplantHookImpl {
         if (hasThis && thisObject == null) {
             throw new NullPointerException("thisObject is null for method " + method);
         }
+        // CHA lookup
+        method = Reflex.virtualMethodLookup(method, thisObject);
         // perform a lookup
         Class<?> declaringClass = method.getDeclaringClass();
+        declaringClass.cast(thisObject);
         LsplantCallbackToken token = null;
         ConcurrentHashMap<Member, CallbackListHolder> map1 = sCallbackRegistry.get(declaringClass);
         if (map1 != null) {
@@ -363,7 +367,7 @@ public class LsplantHookImpl {
             // method is not hooked, invoke the original method directly
             invokeTarget = method;
         }
-        return Natives.callObjectMethod(invokeTarget, thisObject, args);
+        return Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(invokeTarget, declaringClass, thisObject, args);
     }
 
     @NonNull
