@@ -83,6 +83,7 @@ add_library(qauxv SHARED
         utils/AobScanUtils.cc
         utils/arch_utils.cc
         utils/MemoryDexLoader.cc
+        utils/debug_utils.cc
 
         ntkernel/NtRecallMsgHook.cc
 

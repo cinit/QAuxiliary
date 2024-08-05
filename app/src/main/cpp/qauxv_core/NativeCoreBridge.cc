@@ -89,6 +89,8 @@ int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback) {
     return 0;
 }
 
+// true means native hook is ready, e.g dobby is used
+// this does not guarantee that the linker!do_dlopen is hooked
 static volatile bool sIsNativeInitialized = false;
 
 int CreateInlineHook(void* func, void* replace, void** backup) {
@@ -359,7 +361,8 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
                                                           jstring package_name,
                                                           jint current_sdk_level,
                                                           jstring version_name,
-                                                          jlong long_version_code) {
+                                                          jlong long_version_code,
+                                                          jboolean allow_hook_linker) {
     using namespace qauxv;
     if (sIsNativeInitialized) {
         LOGE("initNativeCore: native core is already initialized");
@@ -387,7 +390,11 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
             return DobbyDestroy((void*) func);
         };
         if (!sHandleLoadLibraryCallbackInitialized) {
-            HookLoadLibrary();
+            if (allow_hook_linker) {
+                HookLoadLibrary();
+            } else {
+                LOGD("No HandleLoadLibrary callback and linker hooking is disabled");
+            }
         }
     } else {
         LOGD("initNativeCore: native hook function is not null, use it directly");

@@ -51,16 +51,10 @@ public class ModuleAppImpl extends Application {
             HiddenApiBypass.setHiddenApiExemptions("L");
         }
         NativeCoreBridge.initNativeCore(getPackageName(), Build.VERSION.SDK_INT,
-                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
+                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode(), false);
         initStartupInfo();
         // for fail-safe purpose
         com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
-        // init LSPlant for self test purpose
-        try {
-            LsplantHookImpl.initializeLsplantHookBridge();
-        } catch (RuntimeException e) {
-            android.util.Log.e("QAuxv", "Failed to initialize LsplantHookImpl", e);
-        }
     }
 
     private void initStartupInfo() {

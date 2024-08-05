@@ -31,7 +31,7 @@ public class NativeCoreBridge {
         throw new AssertionError("No NativeCoreBridge instances for you!");
     }
 
-    public static native void initNativeCore(String packageName, int currentSdkLevel, String versionName, long longVersionCode);
+    public static native void initNativeCore(String packageName, int currentSdkLevel, String versionName, long longVersionCode, boolean allowHookLinker);
 
     @Keep
     private static void nativeTraceErrorHelper(Object thiz, Throwable error) {

@@ -64,7 +64,7 @@ public class StartupRoutine {
         Natives.initialize(ctx);
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
         NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
-                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode());
+                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode(), true);
         StartupInfo.getLoaderService().setClassLoaderHelper(InMemoryClassLoaderHelper.INSTANCE);
         LibXposedNewApiByteCodeGenerator.init();
         if (StartupInfo.getHookBridge() == null) {
