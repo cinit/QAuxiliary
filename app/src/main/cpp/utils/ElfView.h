@@ -30,6 +30,8 @@ public:
         ElfClass elfClass = ElfClass::kNone;
         uint16_t machine = 0;
         std::string soname;
+        // the p_vaddr of the first PT_LOAD segment in ELF **file**
+        uint64_t loadBias = 0;
         size_t loadedSize = 0;
         const void* sysv_hash = nullptr;
         uint32_t sysv_hash_nbucket = 0;
@@ -98,6 +100,14 @@ public:
 
     [[nodiscard]] inline int GetArchitecture() const noexcept {
         return mElfInfo.machine;
+    }
+
+    /**
+     * Get the load bias of the elf file. Typically, you don't need to use this value.
+     * @return the load bias of the elf file.
+     */
+    [[nodiscard]] inline uint64_t GetLoadBias() const noexcept {
+        return mElfInfo.loadBias;
     }
 
     [[nodiscard]] inline size_t GetLoadedSize() const noexcept {

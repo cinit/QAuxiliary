@@ -22,6 +22,7 @@
 #include "art/runtime/dex_file.hpp"
 
 // undefine macros from logging.hpp
+#undef LOGV
 #undef LOGD
 #undef LOGI
 #undef LOGW

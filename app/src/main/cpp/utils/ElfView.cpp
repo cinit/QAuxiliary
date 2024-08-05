@@ -7,10 +7,12 @@
 #include <cstring>
 #include <type_traits>
 #include <optional>
+#include <limits>
 
 #include <elf.h>
 
 #include "ElfView.h"
+#include "debug_utils.h"
 
 #ifndef SHT_GNU_HASH
 #define SHT_GNU_HASH      0x6ffffff6
@@ -41,6 +43,7 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
     }
     auto phnum = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phnum;
     auto phentsize = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phentsize;
+    uint64_t firstLoadedSegmentStart = std::numeric_limits<uint64_t>::max();
     uint64_t lastLoadedSegmentEnd = 0;
     const Elf_Phdr* phdrSelf = nullptr;
     const Elf_Phdr* phdrDynamic = nullptr;
@@ -51,12 +54,16 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
         } else if (phdr->p_type == PT_DYNAMIC) {
             phdrDynamic = phdr;
         } else if (phdr->p_type == PT_LOAD) {
+            if (phdr->p_vaddr < firstLoadedSegmentStart) {
+                firstLoadedSegmentStart = phdr->p_vaddr;
+            }
             if (phdr->p_vaddr + phdr->p_memsz > lastLoadedSegmentEnd) {
                 lastLoadedSegmentEnd = phdr->p_vaddr + phdr->p_memsz;
             }
         }
     }
-    info.loadedSize = lastLoadedSegmentEnd;
+    info.loadBias = firstLoadedSegmentStart;
+    info.loadedSize = lastLoadedSegmentEnd - firstLoadedSegmentStart;
     if (phdrDynamic != nullptr) {
         // walk through dynamic section
         uint64_t sonameOffset = 0;
@@ -349,13 +356,13 @@ uint64_t ElfView::GetSymbolOffset(std::string_view symbol) const {
         uint32_t index = 0;
         const Elf32_Sym* sym = nullptr;
         if (GetDynamicSymbolIndexImpl<kElf32>(mMemory, mElfInfo, symbol, index, &sym)) {
-            return sym->st_value;
+            return sym->st_value - mElfInfo.loadBias;
         }
     } else if (mElfInfo.elfClass == kElf64) {
         uint32_t index = 0;
         const Elf64_Sym* sym = nullptr;
         if (GetDynamicSymbolIndexImpl<kElf64>(mMemory, mElfInfo, symbol, index, &sym)) {
-            return sym->st_value;
+            return sym->st_value - mElfInfo.loadBias;
         }
     }
     // search the symtab
@@ -363,12 +370,12 @@ uint64_t ElfView::GetSymbolOffset(std::string_view symbol) const {
         if (mElfInfo.elfClass == kElf32) {
             const auto* sym = GetNonDynamicSymbolImpl<kElf32>(mMemory, mElfInfo, symbol);
             if (sym != nullptr) {
-                return sym->st_value;
+                return sym->st_value - mElfInfo.loadBias;
             }
         } else if (mElfInfo.elfClass == kElf64) {
             const auto* sym = GetNonDynamicSymbolImpl<kElf64>(mMemory, mElfInfo, symbol);
             if (sym != nullptr) {
-                return sym->st_value;
+                return sym->st_value - mElfInfo.loadBias;
             }
         }
     }
@@ -411,12 +418,12 @@ GetFirstSymbolOffsetWithPrefixImpl(std::span<const uint8_t> file, const ElfInfo&
     if (mElfInfo.elfClass == kElf32) {
         const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf32>(mMemory, mElfInfo, symbolPrefix);
         if (sym != nullptr) {
-            return sym->st_value;
+            return sym->st_value - mElfInfo.loadBias;
         }
     } else if (mElfInfo.elfClass == kElf64) {
         const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf64>(mMemory, mElfInfo, symbolPrefix);
         if (sym != nullptr) {
-            return sym->st_value;
+            return sym->st_value - mElfInfo.loadBias;
         }
     }
     return 0;
@@ -458,7 +465,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF32_R_SYM(rel.r_info) == symidx
                         && (ELF32_R_TYPE(rel.r_info) == R_ARM_JUMP_SLOT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_JMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                     break;
                 }
             }
@@ -469,27 +476,27 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF32_R_TYPE(rel.r_info) == R_ARM_GLOB_DAT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_32
                                 || ELF32_R_TYPE(rel.r_info) == R_386_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                 }
             }
         } else {
             for (int i = 0; i < info.relplt_size; i++) {
-                const Elf32_Rela& rel = ((const Elf32_Rela*) info.relplt)[i];
+                const Elf32_Rel& rel = ((const Elf32_Rel*) info.relplt)[i];
                 if (ELF32_R_SYM(rel.r_info) == symidx
                         && (ELF32_R_TYPE(rel.r_info) == R_ARM_JUMP_SLOT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_JMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                     break;
                 }
             }
             for (int i = 0; i < info.reldyn_size; i++) {
-                const Elf32_Rela& rel = ((const Elf32_Rela*) info.reldyn)[i];
+                const Elf32_Rel& rel = ((const Elf32_Rel*) info.reldyn)[i];
                 if (ELF32_R_SYM(rel.r_info) == symidx &&
                         (ELF32_R_TYPE(rel.r_info) == R_ARM_ABS32
                                 || ELF32_R_TYPE(rel.r_info) == R_ARM_GLOB_DAT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_32
                                 || ELF32_R_TYPE(rel.r_info) == R_386_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                 }
             }
             return result;
@@ -502,7 +509,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF64_R_SYM(rel.r_info) == symidx
                         && (ELF64_R_TYPE(rel.r_info) == R_AARCH64_JUMP_SLOT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_JUMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                     break;
                 }
             }
@@ -513,7 +520,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF64_R_TYPE(rel.r_info) == R_AARCH64_GLOB_DAT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_64
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                 }
             }
         } else {
@@ -522,7 +529,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF64_R_SYM(rel.r_info) == symidx
                         && (ELF64_R_TYPE(rel.r_info) == R_AARCH64_JUMP_SLOT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_JUMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                     break;
                 }
             }
@@ -533,7 +540,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF64_R_TYPE(rel.r_info) == R_AARCH64_GLOB_DAT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_64
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset));
+                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
                 }
             }
         }
