@@ -22,11 +22,13 @@
 package xyz.nextalone.hook
 
 import com.github.kyuubiran.ezxhelper.utils.Log
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.step.Step
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator.getHostClassLoader
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
@@ -38,6 +40,7 @@ import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexMethodDescriptor.getTypeSig
 import io.github.qauxv.util.dexkit.NAIOPictureView_onDownloadOriginalPictureClick
 import io.github.qauxv.util.dexkit.NAIOPictureView_setVisibility
+import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
 import org.luckypray.dexkit.result.ClassData
 import xyz.nextalone.util.invoke
@@ -47,7 +50,7 @@ import java.lang.reflect.Modifier
 @FunctionHookEntry
 @UiItemAgentEntry
 object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
-    SyncUtils.PROC_PEAK,
+    SyncUtils.PROC_ANY,
     arrayOf(CAIOPictureView)
 ), DexKitFinder {
 
@@ -56,6 +59,19 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce(): Boolean {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            Initiator.loadClass("com.tencent.qqnt.aio.gallery.part.d").declaredMethods.single { method ->
+                val params = method.parameterTypes
+                params.size == 1 && params[0] == Int::class.java
+            }.hookAfter {
+                if (it.args[0] == 0) {
+                    it.thisObject.invoke("loadOriginImageInner")
+                    val listener = it.thisObject.invoke("getMLayerOperateListener")
+                    listener!!.invoke("clickShowOriginPicBtn")
+                }
+            }
+            return true
+        }
         val kAIOPictureView = DexKit.requireClassFromCache(CAIOPictureView)
         val onDownloadOriginalPictureClick = DexKit.loadMethodFromCache(NAIOPictureView_onDownloadOriginalPictureClick)!!
         val setVisibility = DexKit.requireMethodFromCache(NAIOPictureView_setVisibility)
@@ -67,10 +83,11 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
         return true
     }
 
-    override val isAvailable: Boolean get() = requireMinVersion(
-        QQVersionCode = QQVersion.QQ_8_3_5,
-        PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_11
-    )
+    override val isAvailable: Boolean
+        get() = requireMinVersion(
+            QQVersionCode = QQVersion.QQ_8_3_5,
+            PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_11
+        )
 
     private val mStep: Step = object : Step {
         override fun step(): Boolean {
