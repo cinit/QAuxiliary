@@ -71,6 +71,12 @@ object TimRemoveToastTips : CommonSwitchFunctionHook() {
                 Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$39\$1"),
                 "run"
             )
+            // 7f0e018a
+            // 你可以在这里设置...
+            runMethods += Reflex.findMethod(
+                Initiator.loadClass("com.tencent.mobileqq.activity.aio.rebuild.TroopChatPie\$23"),
+                "run"
+            )
         }
 
         runMethods.forEach {
