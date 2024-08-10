@@ -27,6 +27,7 @@
 
 #include <cstdint>
 #include <string>
+#include <string_view>
 #include <optional>
 #include <jni.h>
 
@@ -34,6 +35,8 @@
 namespace qauxv {
 
 std::optional<std::string> JstringToString(JNIEnv* env, jstring jstr);
+
+void ThrowExceptionIfNoPendingException(JNIEnv* env, const char* klass, std::string_view msg);
 
 }
 

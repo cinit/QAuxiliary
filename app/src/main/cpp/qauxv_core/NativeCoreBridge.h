@@ -35,6 +35,15 @@
 
 namespace qauxv {
 
+// keep in sync with NativeLoader.java
+enum class NativeLibraryInitMode {
+    kNone = 0,
+    kPrimaryOnly = 1,
+    kSecondaryOnly = 2,
+    kBothPrimaryAndSecondary = 3,
+};
+
+
 using LoadLibraryCallback = std::function<void(const char* name, void* handle)>;
 
 int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
@@ -44,6 +53,14 @@ int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback);
 int CreateInlineHook(void* func, void* replace, void** backup);
 
 int DestroyInlineHook(void* func);
+
+void InitializeNativeHookApi(bool allowHookLinker);
+
+bool IsNativeHookApiInitialized();
+
+NativeLibraryInitMode GetCurrentNativeLibraryInitMode();
+
+void SetCurrentNativeLibraryInitMode(NativeLibraryInitMode mode);
 
 /**
  * Add some error message to the error list.

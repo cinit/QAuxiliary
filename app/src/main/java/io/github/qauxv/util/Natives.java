@@ -21,39 +21,17 @@
  */
 package io.github.qauxv.util;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.os.Build;
-import android.os.Build.VERSION;
-import android.os.Process;
-import android.system.Os;
-import android.system.StructUtsname;
-import android.text.TextUtils;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import com.tencent.mmkv.MMKV;
-import io.github.qauxv.BuildConfig;
-import io.github.qauxv.loader.hookapi.IHookBridge;
-import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.xpcompat.ArrayUtils;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
-import java.io.InputStream;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashSet;
-import java.util.Iterator;
-import java.util.List;
 import java.util.Objects;
-import java.util.Set;
 
 public class Natives {
 
@@ -106,8 +84,6 @@ public class Natives {
     public static final int O_CLOEXEC = 0x80000;
     public static final int O_SYNC = (0x100000 | O_DSYNC);
     public static final int O_PATH = 0x200000;
-
-    private static volatile boolean sInitialized = false;
 
     private Natives() {
         throw new AssertionError("No instance for you!");
@@ -259,225 +235,4 @@ public class Natives {
         }
     }
 
-    private static void registerNativeLibEntry(String soTailingName) {
-        if (soTailingName == null || soTailingName.length() == 0) {
-            return;
-        }
-        try {
-            ClassLoader apiClassLoader = IHookBridge.class.getClassLoader().getParent();
-            if (apiClassLoader != null) {
-                apiClassLoader.loadClass(LoaderExtensionHelper.getObfuscatedLsposedNativeApiClassName())
-                        .getMethod("recordNativeEntrypoint", String.class)
-                        .invoke(null, soTailingName);
-            }
-        } catch (ClassNotFoundException ignored) {
-            // not LSPosed, ignore
-        } catch (NoSuchMethodException | IllegalArgumentException | InvocationTargetException | IllegalAccessException e) {
-            Log.e(e);
-        }
-    }
-
-    /**
-     * Load native library without initializing. This method is useful when you need to call native methods before Application.attachBaseContext() is called.
-     * <p>
-     * Note that typically you should call {@link #initialize(Context)} instead.
-     *
-     * @param filesDir Files directory, can be obtained from {@link Context#getFilesDir()}
-     */
-    public static void loadNativeWithoutInitialization(@NonNull File filesDir) {
-        try {
-            getpagesize();
-            return;
-        } catch (UnsatisfiedLinkError ignored) {
-        }
-        if (StartupInfo.isInHostProcess()) {
-            // in host process
-            String modulePath = StartupInfo.getModulePath();
-            try {
-                List<String> abis = getAbiForLibrary();
-                loadNativeLibraryInHost(filesDir, modulePath, abis);
-            } catch (UnsupportedOperationException | IllegalStateException | NullPointerException | LinkageError e) {
-                dumpDeviceAbiInfoToLog();
-                throw e;
-            }
-        } else {
-            // not in host process, ignore
-            System.loadLibrary("qauxv");
-        }
-    }
-
-    /**
-     * Load native library and initialize MMKV
-     *
-     * @param ctx Application context
-     * @throws LinkageError if failed to load native library
-     */
-    public static void initialize(@NonNull Context ctx) throws LinkageError {
-        if (sInitialized) {
-            return;
-        }
-        File filesDir = ctx.getFilesDir();
-        loadNativeWithoutInitialization(filesDir);
-        getpagesize();
-        File mmkvDir = new File(filesDir, "qa_mmkv");
-        if (!mmkvDir.exists()) {
-            mmkvDir.mkdirs();
-        }
-        // MMKV requires a ".tmp" cache directory, we have to create it manually
-        File cacheDir = new File(mmkvDir, ".tmp");
-        if (!cacheDir.exists()) {
-            cacheDir.mkdir();
-        }
-        MMKV.initialize(ctx, mmkvDir.getAbsolutePath(), s -> {
-            // nop, mmkv is attached with libqauxv.so already
-        });
-        MMKV.mmkvWithID("global_config", MMKV.MULTI_PROCESS_MODE);
-        MMKV.mmkvWithID("global_cache", MMKV.MULTI_PROCESS_MODE);
-        sInitialized = true;
-    }
-
-    @SuppressLint("UnsafeDynamicallyLoadedCode")
-    private static void loadNativeLibraryInHost(@NonNull File filesDir, String modulePath, List<String> abis) throws UnsatisfiedLinkError {
-        Iterator<String> it = abis.iterator();
-        if (modulePath != null && modulePath.length() > 0 && new File(modulePath).exists()) {
-            // try direct memory map
-            while (it.hasNext()) {
-                String abi = it.next();
-                try {
-                    System.load(modulePath + "!/lib/" + abi + "/libqauxv.so");
-                    Log.d("dlopen by mmap success");
-                    return;
-                } catch (UnsatisfiedLinkError e1) {
-                    throwIfJniError(e1);
-                }
-            }
-        }
-        // direct memory map load failed, extract and dlopen
-        File libname = extractNativeLibrary(filesDir, "qauxv", abis.get(0));
-        registerNativeLibEntry(libname.getName());
-        try {
-            System.load(libname.getAbsolutePath());
-            Log.d("dlopen by extract success");
-        } catch (UnsatisfiedLinkError e3) {
-            throwIfJniError(e3);
-            dumpDeviceAbiInfoToLog();
-            // panic, this is a bug
-            throw e3;
-        }
-    }
-
-    private static void dumpDeviceAbiInfoToLog() {
-        // give enough information to help debug
-        // Is this CPU_ABI bad?
-        Log.e("Build.SDK_INT=" + VERSION.SDK_INT);
-        Log.e("Build.CPU_ABI is: " + Build.CPU_ABI);
-        Log.e("Build.CPU_ABI2 is: " + Build.CPU_ABI2);
-        Log.e("Build.SUPPORTED_ABIS is: " + Arrays.toString(Build.SUPPORTED_ABIS));
-        Log.e("Build.SUPPORTED_32_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_32_BIT_ABIS));
-        Log.e("Build.SUPPORTED_64_BIT_ABIS is: " + Arrays.toString(Build.SUPPORTED_64_BIT_ABIS));
-        // check whether this is a 64-bit ART runtime
-        Log.e("Process.is64bit is: " + Process.is64Bit());
-        StructUtsname uts = Os.uname();
-        Log.e("uts.machine is: " + uts.machine);
-        Log.e("uts.version is: " + uts.version);
-        Log.e("uts.sysname is: " + uts.sysname);
-    }
-
-    private static void throwIfJniError(UnsatisfiedLinkError error) {
-        if (error.getMessage() != null && error.getMessage().contains("JNI_ERR")) {
-            throw error;
-        }
-    }
-
-    /**
-     * Extract or update native library into "qa_dyn_lib" dir
-     *
-     * @param libraryName library name without "lib" or ".so", eg. "qauxv", "mmkv"
-     */
-    static File extractNativeLibrary(@NonNull File filesDir, String libraryName, String abi) throws IOError {
-        String soName = "lib" + libraryName + ".so." + BuildConfig.VERSION_CODE + "." + abi;
-        File dir = new File(filesDir, "qa_dyn_lib");
-        if (!dir.isDirectory()) {
-            if (dir.isFile()) {
-                dir.delete();
-            }
-            dir.mkdir();
-        }
-        File soFile = new File(dir, soName);
-        if (!soFile.exists()) {
-            InputStream in = Natives.class.getClassLoader().getResourceAsStream("lib/" + abi + "/lib" + libraryName + ".so");
-            if (in == null) {
-                throw new UnsatisfiedLinkError("Unsupported ABI: " + abi);
-            }
-            //clean up old files
-            for (String name : dir.list()) {
-                if (name.startsWith("lib" + libraryName + "_") || name.startsWith("lib" + libraryName + ".so")) {
-                    new File(dir, name).delete();
-                }
-            }
-            try {
-                // extract so file
-                soFile.createNewFile();
-                FileOutputStream fout = new FileOutputStream(soFile);
-                byte[] buf = new byte[1024];
-                int i;
-                while ((i = in.read(buf)) > 0) {
-                    fout.write(buf, 0, i);
-                }
-                in.close();
-                fout.flush();
-                fout.close();
-            } catch (IOException ioe) {
-                try {
-                    in.close();
-                } catch (IOException ignored) {
-                }
-                // rethrow as error
-                throw new IOError(ioe);
-            }
-        }
-        return soFile;
-    }
-
-    @SuppressWarnings("deprecation")
-    public static List<String> getAbiForLibrary() {
-        String[] supported = Process.is64Bit() ? Build.SUPPORTED_64_BIT_ABIS : Build.SUPPORTED_32_BIT_ABIS;
-        if (supported.length == 0) {
-            // maybe we are on a 64-bit only cpu with 32-bit software emulation
-            String[] knownAbi32 = new String[]{"x86", "armeabi-v7a", "armeabi", "mips"};
-            String[] knownAbi64 = new String[]{"x86_64", "arm64-v8a", "mips64", "riscv64"};
-            Set<String> knownAbi = new HashSet<>(Arrays.asList(Process.is64Bit() ? knownAbi64 : knownAbi32));
-            ArrayList<String> candidates = new ArrayList<>(2);
-            for (String abi : Build.SUPPORTED_ABIS) {
-                if (knownAbi.contains(abi)) {
-                    candidates.add(abi);
-                }
-            }
-            if (candidates.isEmpty()) {
-                // give deprecated CPU_ABI a chance
-                if (!TextUtils.isEmpty(Build.CPU_ABI) && knownAbi.contains(Build.CPU_ABI)) {
-                    candidates.add(Build.CPU_ABI);
-                }
-                if (!TextUtils.isEmpty(Build.CPU_ABI2) && knownAbi.contains(Build.CPU_ABI2)) {
-                    candidates.add(Build.CPU_ABI2);
-                }
-            }
-            supported = candidates.toArray(new String[0]);
-        }
-        if (supported.length == 0) {
-            throw new IllegalStateException("No supported ABI in this device");
-        }
-        List<String> result = new ArrayList<>(2);
-        List<String> abis = Arrays.asList("armeabi-v7a", "arm64-v8a", "x86", "x86_64");
-        for (String abi : supported) {
-            if (abis.contains(abi)) {
-                result.add(abi);
-            }
-        }
-        if (result.isEmpty()) {
-            throw new IllegalStateException("No supported ABI in " + Arrays.toString(supported));
-        } else {
-            return result;
-        }
-    }
 }

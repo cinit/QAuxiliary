@@ -18,7 +18,7 @@ _Static_assert(sizeof(void *) == 4, "sizeof(void *) != 4");
 
 __attribute__((used, noreturn, section(".entry_init")))
 void __libqauxv_main(void) {
-    printf("QAuxiliary libqauxv.so version " QAUXV_VERSION ".\n"
+    printf("QAuxiliary libqauxv-core0.so version " QAUXV_VERSION ".\n"
            "Copyright (C) 2019-2023 QAuxiliary developers\n"
            "This software is distributed in the hope that it will be useful,\n"
            "but WITHOUT ANY WARRANTY; without even the implied warranty of\n"

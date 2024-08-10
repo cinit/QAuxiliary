@@ -3,7 +3,14 @@
 
 #ifdef __cplusplus
 
+#include <string_view>
 #include <fmt/format.h>
+
+namespace qauxv::utils {
+
+[[noreturn]] void Abort(std::string_view msg) noexcept;
+
+}
 
 #ifdef __ANDROID__
 

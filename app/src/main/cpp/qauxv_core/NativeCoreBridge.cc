@@ -91,10 +91,10 @@ int RegisterLoadLibraryCallback(const LoadLibraryCallback& callback) {
 
 // true means native hook is ready, e.g dobby is used
 // this does not guarantee that the linker!do_dlopen is hooked
-static volatile bool sIsNativeInitialized = false;
+static volatile bool sIsNativeHookInitialized = false;
 
 int CreateInlineHook(void* func, void* replace, void** backup) {
-    if (!sIsNativeInitialized) {
+    if (!sIsNativeHookInitialized) {
         LOGE("CreateInlineHook: native core is not initialized");
         return RS_FAILED;
     }
@@ -102,7 +102,7 @@ int CreateInlineHook(void* func, void* replace, void** backup) {
 }
 
 int DestroyInlineHook(void* func) {
-    if (!sIsNativeInitialized) {
+    if (!sIsNativeHookInitialized) {
         LOGE("DestroyInlineHook: native core is not initialized");
         return RS_FAILED;
     }
@@ -137,7 +137,7 @@ void HookLoadLibrary() {
     } else {
         soname = "linker";
     }
-    utils::ProcessView processView;
+    ::utils::ProcessView processView;
     int rc;
     if ((rc = processView.readProcess(getpid())) != 0) {
         LOGE("HookLoadLibrary: failed to read process, rc = {}", rc);
@@ -161,7 +161,7 @@ void HookLoadLibrary() {
         LOGE("HookLoadLibrary: failed to map linker file, rc = {}", rc);
         return;
     }
-    ElfView linkerElfView;
+    ::utils::ElfView linkerElfView;
     linkerElfView.AttachFileMemMapping(linkerFileMap.getAddress(), linkerFileMap.getLength());
     if (!linkerElfView.IsValid()) {
         LOGE("HookLoadLibrary: failed to attach linker file");
@@ -344,6 +344,20 @@ void TraceError(JNIEnv* env, jobject thiz, std::string_view errMsg) {
     fnDetachCurrentThread();
 }
 
+static NativeLibraryInitMode sCurrentNativeLibraryInitMode = NativeLibraryInitMode::kNone;
+
+NativeLibraryInitMode GetCurrentNativeLibraryInitMode() {
+    return sCurrentNativeLibraryInitMode;
+}
+
+void SetCurrentNativeLibraryInitMode(NativeLibraryInitMode mode) {
+    auto current = sCurrentNativeLibraryInitMode;
+    if (current != mode && current != NativeLibraryInitMode::kNone) {
+        qauxv::utils::Abort(fmt::format("attempt to change current native library init mode from {} to {}", uint32_t(current), uint32_t(mode)));
+    }
+    sCurrentNativeLibraryInitMode = mode;
+}
+
 }
 
 // called by Xposed framework
@@ -354,33 +368,12 @@ EXPORT extern "C" [[maybe_unused]] NativeOnModuleLoaded native_init(const Native
     return &qauxv::HandleLoadLibrary;
 }
 
-
-extern "C" JNIEXPORT void JNICALL
-Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
-                                                          jclass,
-                                                          jstring package_name,
-                                                          jint current_sdk_level,
-                                                          jstring version_name,
-                                                          jlong long_version_code,
-                                                          jboolean allow_hook_linker) {
+void qauxv::InitializeNativeHookApi(bool allowHookLinker) {
     using namespace qauxv;
-    if (sIsNativeInitialized) {
+    if (sIsNativeHookInitialized) {
         LOGE("initNativeCore: native core is already initialized");
         return;
     }
-    auto packageName = JstringToString(env, package_name);
-    auto versionName = JstringToString(env, version_name);
-    if (!packageName.has_value() || !versionName.has_value()) {
-        LOGE("initNativeCore: failed to get package name or version name");
-        return;
-    }
-    JavaVM* vm = nullptr;
-    if (env->GetJavaVM(&vm) != JNI_OK) {
-        LOGE("initNativeCore: failed to get JavaVM");
-        return;
-    }
-    HostInfo::InitHostInfo(current_sdk_level, packageName.value(),
-                           versionName.value(), uint64_t(long_version_code), vm);
     if (sNativeHookHandle.hookFunction == nullptr) {
         LOGD("initNativeCore: native hook function is null, Dobby will be used");
         sNativeHookHandle.hookFunction = +[](void* func, void* replace, void** backup) {
@@ -390,7 +383,7 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
             return DobbyDestroy((void*) func);
         };
         if (!sHandleLoadLibraryCallbackInitialized) {
-            if (allow_hook_linker) {
+            if (allowHookLinker) {
                 HookLoadLibrary();
             } else {
                 LOGD("No HandleLoadLibrary callback and linker hooking is disabled");
@@ -399,5 +392,9 @@ Java_io_github_qauxv_core_NativeCoreBridge_initNativeCore(JNIEnv* env,
     } else {
         LOGD("initNativeCore: native hook function is not null, use it directly");
     }
-    sIsNativeInitialized = true;
+    sIsNativeHookInitialized = true;
+}
+
+bool qauxv::IsNativeHookApiInitialized() {
+    return sIsNativeHookInitialized;
 }

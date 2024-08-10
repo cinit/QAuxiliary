@@ -59,8 +59,10 @@ public class Lsp100HookEntry extends XposedModule {
     }
 
     private void handleLoadHostPackage(@NonNull ClassLoader cl, @NonNull ApplicationInfo ai, @NonNull String modulePath) {
+        String dataDir = ai.dataDir;
+        android.util.Log.d("QAuxv", "Lsp100HookEntry.handleLoadHostPackage: dataDir=" + dataDir + ", modulePath=" + modulePath);
         try {
-            ModuleLoader.initialize(ai.dataDir, cl, Lsp100HookImpl.INSTANCE, Lsp100HookImpl.INSTANCE, modulePath, true);
+            ModuleLoader.initialize(dataDir, cl, Lsp100HookImpl.INSTANCE, Lsp100HookImpl.INSTANCE, modulePath, true);
         } catch (ReflectiveOperationException e) {
             throw new RuntimeException(e);
         }

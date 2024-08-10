@@ -45,7 +45,7 @@
 namespace ntqq::hook {
 
 using namespace qauxv;
-using namespace utils;
+using namespace ::utils;
 
 static bool sIsHooked = false;
 
@@ -149,7 +149,7 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
 
 
 bool InitInitNtKernelRecallMsgHook() {
-    using namespace utils;
+    using namespace ::utils;
     if (sIsHooked) {
         LOGW("InitInitNtKernelRecallMsgHook failed, already hooked");
         return false;

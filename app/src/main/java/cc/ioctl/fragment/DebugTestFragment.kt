@@ -269,7 +269,7 @@ class DebugTestFragment : BaseRootLayoutFragment() {
             val textClass = klass.newInstance()
             mDebugText.text = mDebugText.text.toString() + "\n" + textClass.getText()
             mDebugText.text = mDebugText.text.toString() + "\n" + performHookTest()
-        } catch (e: Exception) {
+        } catch (e: Throwable) {
             val err = if (e is java.lang.reflect.InvocationTargetException) e.targetException else e
             Log.e(e)
             mDebugText.text = mDebugText.text.toString() + "\n" + Log.getStackTraceString(err)

@@ -50,7 +50,7 @@ void* loader_android_dlopen_ext(const char* filename,
     }
     // for 7.0/7.1, use static symbol __dl__ZL10dlopen_extPKciPK17android_dlextinfoPv
     if (p_loader_android_dlopen_ext.value() == nullptr) {
-        using utils::ElfView;
+        using ::utils::ElfView;
         const char* soname;
         // it's actually ld-android.so, not linker(64)
         if constexpr (sizeof(void*) == 8) {
@@ -58,7 +58,7 @@ void* loader_android_dlopen_ext(const char* filename,
         } else {
             soname = "linker";
         }
-        utils::ProcessView processView;
+        ::utils::ProcessView processView;
         int rc;
         if ((rc = processView.readProcess(getpid())) != 0) {
             LOGE("HookLoadLibrary: failed to read process, rc = {}", rc);

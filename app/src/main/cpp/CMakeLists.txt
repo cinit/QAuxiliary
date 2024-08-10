@@ -55,7 +55,7 @@ target_compile_options(dex_builder_static PRIVATE "-Wno-c++2b-extensions")
 
 target_compile_definitions(fmt-header-only INTERFACE FMT_STATIC_THOUSANDS_SEPARATOR=1 FMT_USE_FLOAT=0 FMT_USE_DOUBLE=0 FMT_USE_LONG_DOUBLE=0)
 
-add_library(qauxv SHARED
+add_library(qauxv-core0 SHARED
         misc/version.c
         misc/v2sign.cc
         misc/md5.cpp
@@ -68,6 +68,8 @@ add_library(qauxv SHARED
         qauxv_core/NativeCoreBridge.cc
         qauxv_core/linker_utils.cc
         qauxv_core/LsplantBridge.cc
+        qauxv_core/jni_method_registry.cc
+        qauxv_core/native_loader.cc
 
         utils/shared_memory.cpp
         utils/auto_close_fd.cc
@@ -84,23 +86,25 @@ add_library(qauxv SHARED
         utils/arch_utils.cc
         utils/MemoryDexLoader.cc
         utils/debug_utils.cc
+        utils/Log.cc
+        utils/art_symbol_resolver.cc
 
         ntkernel/NtRecallMsgHook.cc
 
-        )
+)
 
-set_target_properties(qauxv PROPERTIES
+set_target_properties(qauxv-core0 PROPERTIES
         CXX_EXTENSIONS OFF
         POSITION_INDEPENDENT_CODE ON
-        )
+)
 
-target_include_directories(qauxv PRIVATE ../../../../libs/linux-syscall-support)
-target_include_directories(qauxv PRIVATE ../../../../libs/LSPlant/lsplant/src/main/jni)
-target_include_directories(qauxv PRIVATE .)
+target_include_directories(qauxv-core0 PRIVATE ../../../../libs/linux-syscall-support)
+target_include_directories(qauxv-core0 PRIVATE ../../../../libs/LSPlant/lsplant/src/main/jni)
+target_include_directories(qauxv-core0 PRIVATE .)
 
-target_compile_definitions(qauxv PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
-target_link_options(qauxv PRIVATE "-Wl,-e,__libqauxv_main")
+target_compile_definitions(qauxv-core0 PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
+target_link_options(qauxv-core0 PRIVATE "-Wl,-e,__libqauxv_main")
 
-target_link_libraries(qauxv dobby mmkv dexkit_static unwindstack base silk
+target_link_libraries(qauxv-core0 dobby mmkv dexkit_static unwindstack base silk
         c dl fmt-header-only z lsplant_static
         ${ANDROID_LIBS})

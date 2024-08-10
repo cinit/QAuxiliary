@@ -128,7 +128,7 @@ android {
                 // some modules uses features that are REMOVED or deprecated in C++20
                 cppFlags(*flags)
                 cFlags("-std=c18", *flags)
-                targets += "qauxv"
+                targets += "qauxv-core0"
             }
         }
 

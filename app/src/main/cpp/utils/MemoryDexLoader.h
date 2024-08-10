@@ -5,10 +5,6 @@
 
 namespace qauxv {
 
-std::string GetLibArtPath();
-
-bool InitLibArtElfView();
-
 bool InitLSPlantImpl(JNIEnv* env);
 
 }

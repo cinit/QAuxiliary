@@ -12,12 +12,9 @@
 #include <cerrno>
 
 #include <dobby.h>
-#include <fmt/format.h>
 
 #include "qauxv_core/NativeCoreBridge.h"
-#include "utils/FileMemMap.h"
-#include "utils/ProcessView.h"
-#include "utils/ElfView.h"
+#include "utils/art_symbol_resolver.h"
 
 #include "art/runtime/dex_file.hpp"
 
@@ -33,41 +30,6 @@
 
 namespace qauxv {
 
-static FileMemMap sLibArtFileMap;
-static utils::ElfView sLibArtElfView;
-static std::mutex sLibArtViewInitMutex;
-static void* sLibArtBaseAddress = nullptr;
-
-std::string GetLibArtPath() {
-    utils::ProcessView processView;
-    if (processView.readProcess(getpid()) != 0) {
-        return {};
-    }
-    for (const auto& m: processView.getModules()) {
-        if (m.name == "libart.so") {
-            sLibArtBaseAddress = reinterpret_cast<void*>(m.baseAddress);
-            return m.path;
-        }
-    }
-    return {};
-}
-
-bool InitLibArtElfView() {
-    if (sLibArtElfView.IsValid()) {
-        return true;
-    }
-    std::lock_guard<std::mutex> lock(sLibArtViewInitMutex);
-    auto path = GetLibArtPath();
-    if (path.empty()) {
-        return false;
-    }
-    if (sLibArtFileMap.mapFilePath(path.c_str()) != 0) {
-        return false;
-    }
-    sLibArtElfView.AttachFileMemMapping(sLibArtFileMap.getAddress(), sLibArtFileMap.getLength());
-    return sLibArtElfView.IsValid();
-}
-
 bool InitLSPlantImpl(JNIEnv* env) {
     const auto initProc = [env] {
         ::lsplant::InitInfo sLSPlantInitInfo = {
@@ -79,26 +41,10 @@ bool InitLSPlantImpl(JNIEnv* env) {
                     return qauxv::DestroyInlineHook(t) == RT_SUCCESS;
                 },
                 .art_symbol_resolver = [](auto symbol) {
-                    auto offset = sLibArtElfView.GetSymbolOffset(symbol);
-                    void* result;
-                    if (offset != 0) {
-                        result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sLibArtBaseAddress) + offset);
-                    } else {
-                        result = nullptr;
-                        LOGD("art symbol exact '{}' not found", symbol);
-                    }
-                    return result;
+                    return GetLibArtSymbol(symbol);
                 },
                 .art_symbol_prefix_resolver = [](auto symbol) {
-                    auto offset = sLibArtElfView.GetFirstSymbolOffsetWithPrefix(symbol);
-                    void* result;
-                    if (offset != 0) {
-                        result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(sLibArtBaseAddress) + offset);
-                    } else {
-                        result = nullptr;
-                        LOGD("art symbol prefix '{}' not found", symbol);
-                    }
-                    return result;
+                    return GetLibArtSymbolPrefix(symbol);
                 }
         };
         return ::lsplant::Init(env, sLSPlantInitInfo);

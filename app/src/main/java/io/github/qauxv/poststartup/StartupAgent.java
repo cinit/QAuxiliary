@@ -24,7 +24,6 @@ package io.github.qauxv.poststartup;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
-import android.content.pm.ApplicationInfo;
 import android.os.Build;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
@@ -32,6 +31,9 @@ import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.util.IoUtils;
+import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl;
+import io.github.qauxv.util.soloader.NativeLoader;
+import java.io.File;
 import java.lang.reflect.Field;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
@@ -71,15 +73,39 @@ public class StartupAgent {
         StartupInfo.setInHostProcess(true);
         // bypass hidden api
         ensureHiddenApiAccess();
+        checkWriteXorExecuteForModulePath(modulePath);
         // we want context
         Context ctx = getBaseApplicationImpl(hostClassLoader);
         if (ctx == null) {
             if (hookBridge == null) {
-                throw new UnsupportedOperationException("neither base application nor hook bridge found");
+                initializeHookBridgeForEarlyStartup(hostDataDir);
             }
             StartupHook.getInstance().initializeBeforeAppCreate(hostClassLoader);
         } else {
             StartupHook.getInstance().initializeAfterAppCreate(ctx);
+        }
+    }
+
+    private static void initializeHookBridgeForEarlyStartup(@NonNull String hostDataDir) {
+        if (StartupInfo.getHookBridge() != null) {
+            return;
+        }
+        android.util.Log.w("QAuxv", "initializeHookBridgeForEarlyStartup w/o context");
+        File hostDataDirFile = new File(hostDataDir);
+        if (!hostDataDirFile.exists()) {
+            throw new IllegalStateException("Host data dir not found: " + hostDataDir);
+        }
+        NativeLoader.loadPrimaryNativeLibrary(hostDataDirFile, null);
+        NativeLoader.primaryNativeLibraryPreInitialize(hostDataDirFile, null, true);
+        // initialize hook bridge
+        LsplantHookImpl.initializeLsplantHookBridge();
+    }
+
+    private static void checkWriteXorExecuteForModulePath(@NonNull String modulePath) {
+        File moduleFile = new File(modulePath);
+        if (moduleFile.canWrite()) {
+            android.util.Log.w("QAuxv", "Module path is writable: " + modulePath);
+            android.util.Log.w("QAuxv", "This may cause issues on Android 15+, please check your Xposed framework");
         }
     }
 

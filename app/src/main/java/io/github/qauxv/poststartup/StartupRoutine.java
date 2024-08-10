@@ -23,7 +23,7 @@ package io.github.qauxv.poststartup;
 
 import android.app.Application;
 import android.content.Context;
-import android.os.Build;
+import android.content.pm.ApplicationInfo;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import com.github.kyuubiran.ezxhelper.init.InitFields;
@@ -32,10 +32,11 @@ import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.hookimpl.InMemoryClassLoaderHelper;
 import io.github.qauxv.util.hookimpl.LibXposedNewApiByteCodeGenerator;
 import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl;
+import io.github.qauxv.util.soloader.NativeLoader;
+import java.io.File;
 import java.lang.reflect.Field;
 
 public class StartupRoutine {
@@ -61,10 +62,14 @@ public class StartupRoutine {
         InitFields.ezXClassLoader = ctx.getClassLoader();
         // resource injection is done somewhere else, do not init it here
         com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
-        Natives.initialize(ctx);
+        // load and pre-init primary native library -- in case it has not been pre-initialized
+        File dataDir = ctx.getDataDir();
+        ApplicationInfo ai = ctx.getApplicationInfo();
+        NativeLoader.loadPrimaryNativeLibrary(dataDir, ai);
+        NativeLoader.primaryNativeLibraryPreInitialize(dataDir, ai, true);
         overrideLSPatchModifiedVersionCodeIfNecessary(ctx);
-        NativeCoreBridge.initNativeCore(ctx.getPackageName(), Build.VERSION.SDK_INT,
-                HostInfo.getHostInfo().getVersionName(), HostInfo.getHostInfo().getVersionCode(), true);
+        // perform full initialization for native core -- including primary and secondary native libraries
+        NativeCoreBridge.initNativeCore();
         StartupInfo.getLoaderService().setClassLoaderHelper(InMemoryClassLoaderHelper.INSTANCE);
         LibXposedNewApiByteCodeGenerator.init();
         if (StartupInfo.getHookBridge() == null) {

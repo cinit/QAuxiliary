@@ -43,4 +43,12 @@ std::optional<std::string> JstringToString(JNIEnv* env, jstring jstr) {
     return str;
 }
 
+void ThrowExceptionIfNoPendingException(JNIEnv* env, const char* klass, std::string_view msg) {
+    if (env->ExceptionCheck()) {
+        return;
+    }
+    // in case string_view is not null-terminated
+    env->ThrowNew(env->FindClass(klass), std::string(msg).c_str());
+}
+
 }
