@@ -27,6 +27,8 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
 
@@ -34,6 +36,8 @@ import xyz.nextalone.util.method
 @UiItemAgentEntry
 object DisableInteractivePop : CommonSwitchFunctionHook() {
     override val name = "禁用特定消息触发的交互式弹窗"
+    override val uiItemLocation = Simplify.UI_CHAT_MSG
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_0)
 
     override fun initOnce(): Boolean {
         // keyword string: 跳过, 关闭
@@ -42,6 +46,4 @@ object DisableInteractivePop : CommonSwitchFunctionHook() {
         }!!.hookReturnConstant(null)
         return true
     }
-
-    override val uiItemLocation = Simplify.UI_CHAT_MSG
 }
