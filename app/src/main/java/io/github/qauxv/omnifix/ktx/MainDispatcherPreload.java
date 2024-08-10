@@ -40,7 +40,7 @@ public class MainDispatcherPreload {
 
     public static void preload() {
         try {
-            Class<?> klass = Class.forName(getMainDispatcherLoaderClassName());
+            Class<?> klass = Class.forName(getMainDispatcherLoaderClassName(), false, MainDispatcherPreload.class.getClassLoader());
             Field dispatcherField = klass.getDeclaredField("dispatcher");
             dispatcherField.setAccessible(true);
             // deliberately get the reflection object before we check whether manual invention is needed
