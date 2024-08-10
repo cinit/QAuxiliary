@@ -33,6 +33,22 @@ public class FridaInjectEntry {
         }
     }
 
+    /**
+     * Entry point for runtime injection without hook provider.
+     *
+     * @param modulePath path to the module, e.g. "/data/app/io.github.qauxv-1/base.apk"
+     */
+    @Keep
+    public static void entry1(@NonNull String modulePath) throws Throwable {
+        try {
+            startup(new File(modulePath), findHostDataDir());
+        } catch (Throwable e) {
+            Throwable cause = getInvocationTargetExceptionCause(e);
+            android.util.Log.e("QAuxv", "FridaInjectEntry.entry1: failed", cause);
+            throw cause;
+        }
+    }
+
     private static void startup(@NonNull File modulePath, @NonNull File hostDataDir) throws ReflectiveOperationException {
         if (!modulePath.canRead()) {
             throw new IllegalArgumentException("modulePath is not readable: " + modulePath);
@@ -54,6 +70,15 @@ public class FridaInjectEntry {
         Object activityThread = kActivityThread.getMethod("currentActivityThread").invoke(null);
         Application app = (Application) kActivityThread.getMethod("getApplication").invoke(activityThread);
         return app.getClassLoader();
+    }
+
+    @NonNull
+    private static File findHostDataDir() throws ReflectiveOperationException {
+        // case 1: ActivityThread.currentActivityThread().getApplication().getDataDir()
+        Class<?> kActivityThread = Class.forName("android.app.ActivityThread");
+        Object activityThread = kActivityThread.getMethod("currentActivityThread").invoke(null);
+        Application app = (Application) kActivityThread.getMethod("getApplication").invoke(activityThread);
+        return app.getDataDir();
     }
 
     @NonNull
