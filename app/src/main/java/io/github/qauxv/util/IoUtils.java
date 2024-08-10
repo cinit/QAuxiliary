@@ -159,7 +159,7 @@ public class IoUtils {
     public static File mkdirsOrThrow(@NonNull File dir) {
         Objects.requireNonNull(dir, "dir == null");
         if (!dir.exists() && !dir.mkdirs()) {
-            unsafeThrow(new IOException("Failed to create directory: " + dir.getAbsolutePath()));
+            throw unsafeThrow(new IOException("Failed to create directory: " + dir.getAbsolutePath()));
         }
         return dir;
     }

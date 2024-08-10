@@ -47,7 +47,7 @@ public class UnifiedEntryPoint {
             @Nullable IHookBridge hookBridge
     ) {
         try {
-            Class<?> kStartupAgent = Class.forName("io.github.qauxv.poststartup.StartupAgent");
+            Class<?> kStartupAgent = Class.forName("io.github.qauxv.poststartup.StartupAgent", false, UnifiedEntryPoint.class.getClassLoader());
             kStartupAgent.getMethod("startup", String.class, String.class, ILoaderService.class, ClassLoader.class, IHookBridge.class)
                     .invoke(null, modulePath, hostDataDir, loaderService, hostClassLoader, hookBridge);
         } catch (ReflectiveOperationException e) {

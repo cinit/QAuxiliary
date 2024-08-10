@@ -29,6 +29,7 @@ import android.os.Build;
 import android.os.Process;
 import android.system.Os;
 import android.system.StructUtsname;
+import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
@@ -55,6 +56,7 @@ import java.util.Objects;
 import java.util.Set;
 import java.util.zip.ZipFile;
 
+@Keep
 public class NativeLoader {
 
     // There are two logical native libraries in QAuxiliary:
@@ -306,7 +308,7 @@ public class NativeLoader {
             System.loadLibrary("qauxv-core0");
             sPrimaryNativeLibraryLoaded = true;
             try {
-                Class.forName("io.github.qauxv.isolated.soloader.LoadLibraryInvoker")
+                Class.forName("io.github.qauxv.isolated.soloader.LoadLibraryInvoker", false, NativeLoader.class.getClassLoader())
                         .getMethod("invokeAttachClassLoader", ClassLoader.class)
                         .invoke(null, NativeLoader.class.getClassLoader());
                 sPrimaryNativeLibraryAttached = true;

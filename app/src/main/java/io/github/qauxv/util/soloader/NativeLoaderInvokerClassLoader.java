@@ -39,12 +39,9 @@ public class NativeLoaderInvokerClassLoader extends BaseDexClassLoader {
     protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
         if (name != null && name.startsWith("io.github.qauxv.isolated.soloader.")) {
             return super.loadClass(name, resolve);
-        }
-        try {
+        } else {
             return mReferencedClassLoader.loadClass(name);
-        } catch (ClassNotFoundException ignored) {
         }
-        return super.loadClass(name, resolve);
     }
 
 }

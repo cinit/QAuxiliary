@@ -29,6 +29,7 @@ import androidx.annotation.NonNull;
 /**
  * Keep this class simple and clean.
  */
+@Keep
 public class LoadLibraryInvoker {
 
     private LoadLibraryInvoker() {
@@ -68,5 +69,15 @@ public class LoadLibraryInvoker {
     }
 
     private static native void nativePrimaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent);
+
+    /**
+     * Attach the specified class loader to the secondary native library.
+     * <p>
+     * This method is intended to be called by the primary native library with native bridge, not from Java.
+     *
+     * @param agent    The class loader to attach, must not be null.
+     * @param initInfo The initialization information, a plain-old-data structure native pointer.
+     */
+    private static native void nativeSecondaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent, long initInfo);
 
 }
