@@ -29,6 +29,7 @@ import androidx.annotation.Nullable;
 import com.github.kyuubiran.ezxhelper.init.InitFields;
 import io.github.qauxv.core.MainHook;
 import io.github.qauxv.core.NativeCoreBridge;
+import io.github.qauxv.omnifix.ktx.MainDispatcherPreload;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -76,6 +77,7 @@ public class StartupRoutine {
             Log.w("HookBridge is null, fallback to embedded LSPlant.");
             LsplantHookImpl.initializeLsplantHookBridge();
         }
+        MainDispatcherPreload.preload();
         MainHook.getInstance().performHook(ctx, step);
     }
 

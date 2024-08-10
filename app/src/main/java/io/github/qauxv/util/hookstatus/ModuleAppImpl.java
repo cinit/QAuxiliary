@@ -31,6 +31,7 @@ import io.github.qauxv.BuildConfig;
 import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
 import io.github.qauxv.loader.hookapi.ILoaderService;
+import io.github.qauxv.omnifix.ktx.MainDispatcherPreload;
 import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.soloader.NativeLoader;
@@ -59,6 +60,7 @@ public class ModuleAppImpl extends Application {
         initStartupInfo();
         // for fail-safe purpose
         com.github.kyuubiran.ezxhelper.utils.Log.INSTANCE.getCurrentLogger().setLogTag("QAuxv");
+        MainDispatcherPreload.preload();
     }
 
     private void initStartupInfo() {
