@@ -34,10 +34,13 @@ import android.widget.TextView
 import androidx.annotation.Keep
 import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.isNative
+import com.github.kyuubiran.ezxhelper.utils.isStatic
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.poststartup.StartupInfo
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl
 import io.github.qauxv.util.xpcompat.XposedBridge
 import net.bytebuddy.ByteBuddy
@@ -267,6 +270,7 @@ class DebugTestFragment : BaseRootLayoutFragment() {
                 .load(TextClass::class.java.classLoader, AndroidClassLoadingStrategy.Wrapping())
                 .loaded
             val textClass = klass.newInstance()
+
             mDebugText.text = mDebugText.text.toString() + "\n" + textClass.getText()
             mDebugText.text = mDebugText.text.toString() + "\n" + performHookTest()
         } catch (e: Throwable) {
@@ -289,6 +293,7 @@ class DebugTestFragment : BaseRootLayoutFragment() {
             addView(ll, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
         }
         rootLayoutView = root
+        mDebugText.setTextIsSelectable(true)
 
         SyncUtils.post {
             runTests()
@@ -297,4 +302,93 @@ class DebugTestFragment : BaseRootLayoutFragment() {
         return root
     }
 
+}
+
+////@formatter:off
+//static JNINativeMethod gMethods[] = {
+//    {"nativeInitializeLsplant", "()V", reinterpret_cast<void*>(Java_io_github_qauxv_util_hookimpl_lsplant_LsplantBridge_nativeInitializeLsplant)},
+//    {"nativeHookMethod", "(Ljava/lang/reflect/Member;Ljava/lang/reflect/Member;Ljava/lang/Object;)Ljava/lang/reflect/Method;", reinterpret_cast<void*>(Java_io_github_qauxv_util_hookimpl_lsplant_LsplantBridge_nativeHookMethod)},
+//    {"nativeIsMethodHooked", "(Ljava/lang/reflect/Member;)Z", reinterpret_cast<void*>(Java_io_github_qauxv_util_hookimpl_lsplant_LsplantBridge_nativeIsMethodHooked)},
+//    {"nativeUnhookMethod", "(Ljava/lang/reflect/Member;)Z", reinterpret_cast<void*>(Java_io_github_qauxv_util_hookimpl_lsplant_LsplantBridge_nativeUnhookMethod)},
+//    {"nativeDeoptimizeMethod", "(Ljava/lang/reflect/Member;)Z", reinterpret_cast<void*>(Java_io_github_qauxv_util_hookimpl_lsplant_LsplantBridge_nativeDeoptimizeMethod)},
+//};
+////@formatter:on
+//REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS("io/github/qauxv/util/Natives", gMethods);
+
+private fun makeJniSignatures(klass: Class<*>): String {
+    var body = ""
+    for (method in klass.declaredMethods) {
+        if (!method.isNative) continue
+        val name = method.name
+        val sig = DexMethodDescriptor.getMethodTypeSig(method)
+        val func = "Java_${klass.name.replace(".", "_")}_${name}"
+        body += "    {\"$name\", \"$sig\", reinterpret_cast<void*>($func)},\n"
+    }
+    val defs = "static JNINativeMethod gMethods[] = {\n$body\n};\n"
+    val prefix = "//@formatter:off\n"
+    val suffix = "//@formatter:on\n"
+    val reg = "REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS(\"${klass.name.replace(".", "/")}\", gMethods);\n"
+    return prefix + defs + suffix + reg
+}
+
+private fun typeToJniType(type: Class<*>): Pair<String, String> {
+    // type -> <type, name>
+    // String -> <"jstring", "str">
+    // int -> <"jint", "i">
+    // long[] -> <"jlongArray", "arr">
+    // int[][] -> <"jojectArray", "arr">
+    // Object -> <"jobject", "obj">
+    // void -> <"void", "void">
+    if (type.isArray) {
+        val component = type.componentType
+        if (component.isPrimitive) {
+            return when (component) {
+                Int::class.java -> "jintArray" to "arr"
+                Long::class.java -> "jlongArray" to "arr"
+                Boolean::class.java -> "jbooleanArray" to "arr"
+                Byte::class.java -> "jbyteArray" to "arr"
+                Char::class.java -> "jcharArray" to "arr"
+                Short::class.java -> "jshortArray" to "arr"
+                Float::class.java -> "jfloatArray" to "arr"
+                Double::class.java -> "jdoubleArray" to "arr"
+                else -> error("Unsupported primitive array type: $component")
+            }
+        } else {
+            return "jobjectArray" to "arr"
+        }
+    }
+    // for common types
+    return when (type) {
+        String::class.java -> "jstring" to "str"
+        Class::class.java -> "jclass" to "cls"
+        Int::class.java -> "jint" to "i"
+        Long::class.java -> "jlong" to "j"
+        Boolean::class.java -> "jboolean" to "b"
+        Byte::class.java -> "jbyte" to "b"
+        Char::class.java -> "jchar" to "c"
+        Short::class.java -> "jshort" to "s"
+        Float::class.java -> "jfloat" to "f"
+        Double::class.java -> "jdouble" to "d"
+        Void.TYPE -> "void" to "v"
+        else -> "jobject" to "obj"
+    }
+}
+
+private fun makeJniHeader(klass: Class<*>): String {
+    // void Java_io_github_qauxv_util_Natives_free(JNIEnv* env, jclass klass, jlong j1);
+    // jint Java_org_luckypray_dexkit_DexKitBridge_nativeGetDexNum(JNIEnv *env, jobject thiz, jlong j1);
+    var result = ""
+    for (method in klass.declaredMethods) {
+        if (!method.isNative) continue
+        val name = method.name
+        val isStatic = method.isStatic
+        val ret = typeToJniType(method.returnType)
+        val params = method.parameterTypes.mapIndexed { i, type ->
+            val (jtype, jname) = typeToJniType(type)
+            "$jtype j$i"
+        }.joinToString(", ")
+        val func = "Java_${klass.name.replace(".", "_")}_${name}"
+        result += "JNIEXPORT extern \"C\" " + "${ret.first} $func(JNIEnv* env, ${if (isStatic) "jclass" else "jobject"} ${if (isStatic) "klass" else "thiz"}, $params);\n"
+    }
+    return result
 }
