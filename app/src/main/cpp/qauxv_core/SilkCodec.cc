@@ -12,6 +12,7 @@
 
 #include "utils/auto_close_fd.h"
 #include "SKP_Silk_SDK_API.h"
+#include "qauxv_core/jni_method_registry.h"
 
 /* Define codec specific settings */
 #define MAX_BYTES_PER_FRAME     250 // Equals peak bitrate of 100 kbps
@@ -326,3 +327,13 @@ Java_io_github_qauxv_util_ptt_SilkEncodeUtils_nativePcm16leToSilkSI(JNIEnv *env,
     }
     convertPcm16leToSilk(env, input_fd, output_fd, sample_rate, bit_rate, packet_size, tencent);
 }
+
+//@formatter:off
+static JNINativeMethod gMethods[] = {
+        {"nativePcm16leToSilkII", "(IIIIIZ)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_ptt_SilkEncodeUtils_nativePcm16leToSilkII)},
+        {"nativePcm16leToSilkIS", "(ILjava/lang/String;IIIZ)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_ptt_SilkEncodeUtils_nativePcm16leToSilkIS)},
+        {"nativePcm16leToSilkSI", "(Ljava/lang/String;IIIIZ)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_ptt_SilkEncodeUtils_nativePcm16leToSilkSI)},
+        {"nativePcm16leToSilkSS", "(Ljava/lang/String;Ljava/lang/String;IIIZ)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_ptt_SilkEncodeUtils_nativePcm16leToSilkSS)},
+};
+//@formatter:on
+REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS("io/github/qauxv/util/ptt/SilkEncodeUtils", gMethods);

@@ -90,7 +90,9 @@ add_library(qauxv-core0 SHARED
         utils/art_symbol_resolver.cc
 
         ntkernel/NtRecallMsgHook.cc
+        ntkernel/card_msg_sender.cc
 
+        jni/dexkit_native_bridge.cc
 )
 
 set_target_properties(qauxv-core0 PROPERTIES

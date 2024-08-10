@@ -14,6 +14,7 @@
 #include <dobby.h>
 
 #include "qauxv_core/NativeCoreBridge.h"
+#include "qauxv_core/jni_method_registry.h"
 #include "utils/art_symbol_resolver.h"
 
 #include "art/runtime/dex_file.hpp"
@@ -182,3 +183,11 @@ Java_io_github_qauxv_util_dyn_MemoryDexLoader_nativeCreateDexFileFormBytesBelowO
     }
     return java_dex_file;
 }
+
+//@formatter:off
+static JNINativeMethod gMethods[] = {
+        {"nativeCreateClassLoaderWithDexBelowOreo", "([BLjava/lang/ClassLoader;)Ljava/lang/ClassLoader;", reinterpret_cast<void*>(Java_io_github_qauxv_util_dyn_MemoryDexLoader_nativeCreateClassLoaderWithDexBelowOreo)},
+        {"nativeCreateDexFileFormBytesBelowOreo", "([BLjava/lang/ClassLoader;Ljava/lang/String;)Ldalvik/system/DexFile;", reinterpret_cast<void*>(Java_io_github_qauxv_util_dyn_MemoryDexLoader_nativeCreateDexFileFormBytesBelowOreo)},
+};
+//@formatter:on
+REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS("io/github/qauxv/util/dyn/MemoryDexLoader", gMethods);

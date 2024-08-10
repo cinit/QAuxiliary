@@ -36,6 +36,7 @@
 #include "utils/endian.h"
 #include "qauxv_core/natives_utils.h"
 #include "qauxv_core/linker_utils.h"
+#include "qauxv_core/jni_method_registry.h"
 
 #ifndef STACK_GUARD
 // for debug purpose only
@@ -248,3 +249,11 @@ Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHookV1p2(JNIEnv*
     }
     return ret;
 }
+
+//@formatter:off
+static JNINativeMethod gMethods[] = {
+        {"nativeInitNtKernelRecallMsgHookV1p2", "()Z", reinterpret_cast<void*>(Java_cc_ioctl_hook_msg_RevokeMsgHook_nativeInitNtKernelRecallMsgHookV1p2)},
+
+};
+//@formatter:on
+REGISTER_SECONDARY_FULL_INIT_NATIVE_METHODS("cc/ioctl/hook/msg/RevokeMsgHook", gMethods);

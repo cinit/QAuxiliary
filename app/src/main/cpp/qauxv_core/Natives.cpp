@@ -17,6 +17,7 @@
 #include "Natives.h"
 #include "utils/shared_memory.h"
 #include "misc/v2sign.h"
+#include "qauxv_core/jni_method_registry.h"
 
 static bool throwIfNull(JNIEnv* env, jobject obj, const char* msg) {
     if (obj == nullptr) {
@@ -272,143 +273,6 @@ uint32_t update_adler32(unsigned adler, const uint8_t* data, uint32_t len) {
     return (s2 << 16u) | s1;
 }
 
-uint8_t* extractPayload(uint8_t* dex, int dexLength, int* outLength) {
-    int chunkROff = readLe32(dex, dexLength - 4);
-    if (chunkROff > dexLength) {
-        *outLength = 0;
-        return nullptr;
-    }
-    int base = dexLength - chunkROff;
-    int size = readLe32(dex, base);
-    if (size > dexLength) {
-        *outLength = 0;
-        return nullptr;
-    }
-    uint32_t flags = readLe32(dex, base + 4);
-    uint32_t a32_got = readLe32(dex, base + 8);
-    uint32_t extra = readLe32(dex, base + 12);
-    if (flags != 0) {
-        *outLength = 0;
-        return nullptr;
-    }
-    uint32_t key = extra & 0xFFu;
-    auto* dat = (uint8_t*) malloc(size);
-    if (key == 0) {
-        memcpy(dat, dex + base + 16, size);
-    } else {
-        for (int i = 0; i < size; i++) {
-            dat[i] = (uint8_t) (key ^ dex[base + 16 + i]);
-        }
-    }
-    uint32_t a32 = update_adler32(1, dat, size);
-    if (a32 != a32_got) {
-        free(dat);
-        *outLength = 0;
-        return nullptr;
-    }
-    return dat;
-}
-
-static int64_t sBuildTimestamp = -2;
-
-static const int DEX_MAX_SIZE = 12 * 1024 * 1024;
-
-jboolean handleSendCardMsg(JNIEnv* env, jclass clazz, jobject rt, jobject session, jstring msg) {
-    if (rt == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "appInterface== null");
-        return false;
-    }
-    if (session == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "session == null");
-        return false;
-    }
-    if (msg == nullptr) {
-        env->ThrowNew(env->FindClass("java/lang/NullPointerException"), "msg == null");
-        return false;
-    }
-    if (env->GetStringLength(msg) < 3)return false;
-
-    jclass cardMsgListClass = env->FindClass("me/singleneuron/util/KotlinUtilsKt");
-    jmethodID getInstance = env->GetStaticMethodID(cardMsgListClass, "checkCardMsg", "(Ljava/lang/String;)Lme/singleneuron/data/CardMsgCheckResult;");
-    jobject result = env->CallStaticObjectMethod(cardMsgListClass, getInstance, msg);
-    jclass cardMsgCheckResultClass = env->FindClass("me/singleneuron/data/CardMsgCheckResult");
-    jmethodID toString = env->GetMethodID(cardMsgCheckResultClass, "toString", "()Ljava/lang/String;");
-    jmethodID getAccepted = env->GetMethodID(cardMsgCheckResultClass, "getAccept", "()Z");
-    auto resultString = (jstring) env->CallObjectMethod(result, toString);
-    bool boolean = env->CallBooleanMethod(result, getAccepted);
-    if (!boolean) {
-        jmethodID getReason = env->GetMethodID(cardMsgCheckResultClass,
-                                               "getReason",
-                                               "()Ljava/lang/String;");
-        auto reason = (jstring) env->CallObjectMethod(result, getReason);
-        jclass cl_Toasts = env->FindClass("io/github/qauxv/util/Toasts");
-        jmethodID showErrorToastAnywhere = env->GetStaticMethodID(
-                cl_Toasts, "error",
-                "(Landroid/content/Context;Ljava/lang/CharSequence;)V");
-        env->CallStaticVoidMethod(cl_Toasts, showErrorToastAnywhere,
-                                  (jobject) nullptr, reason);
-        return true;
-    }
-
-    jchar format;
-    env->GetStringRegion(msg, 0, 1, &format);
-    if (format == '<') {
-        jclass AbsStructMsg = env->FindClass("com/tencent/mobileqq/structmsg/AbsStructMsg");
-        if (!AbsStructMsg)return false;
-        jclass DexKit = env->FindClass("io/github/qauxv/util/dexkit/DexKit");
-        jmethodID cid = env->GetStaticMethodID(DexKit, "loadClassFromCache", "(Lio/github/qauxv/util/dexkit/DexKitTarget;)Ljava/lang/Class;");
-        auto TestStructMsg = (jclass) env->CallStaticObjectMethod(DexKit, cid, env->GetStaticObjectField(
-                env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), env->GetStaticFieldID(
-                        env->FindClass("io/github/qauxv/util/dexkit/CTestStructMsg"), "INSTANCE",
-                        "Lio/github/qauxv/util/dexkit/CTestStructMsg;")));
-        if (TestStructMsg == nullptr) {
-            env->ThrowNew(env->FindClass("java/lang/RuntimeException"), "class TestStructMsg not found");
-            return false;
-        }
-        jclass cl_Utils = env->FindClass("cc/ioctl/util/Reflex");
-        cid = env->GetStaticMethodID(cl_Utils, "invokeStaticAny",
-                                     "(Ljava/lang/Class;[Ljava/lang/Object;)Ljava/lang/Object;");
-        jobjectArray va = env->NewObjectArray(3, env->FindClass("java/lang/Object"), nullptr);
-        env->SetObjectArrayElement(va, 0, msg);
-        env->SetObjectArrayElement(va, 1, env->FindClass("java/lang/String"));
-        env->SetObjectArrayElement(va, 2, AbsStructMsg);
-        jobject structMsg = env->CallStaticObjectMethod(cl_Utils, cid, TestStructMsg, va);
-        if (env->ExceptionCheck())return false;
-        if (structMsg == nullptr)return false;
-        // check cast: expected AbsStructMsg
-        if (!env->IsInstanceOf(structMsg, AbsStructMsg)) {
-            env->ThrowNew(env->FindClass("java/lang/ClassCastException"), "expected AbsStructMsg");
-            return false;
-        }
-        jclass ChatActivityFacade = env->FindClass("io/github/qauxv/bridge/ChatActivityFacade");
-        jmethodID sendAbsStructMsg = env->GetStaticMethodID(ChatActivityFacade, "sendAbsStructMsg",
-                                                            "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/io/Externalizable;)V");
-        env->CallStaticVoidMethod(ChatActivityFacade, sendAbsStructMsg, rt, session, structMsg);
-        return !env->ExceptionCheck();
-    } else if (format == '{') {
-        jclass c_ArkAppMessage = env->FindClass("com/tencent/mobileqq/data/ArkAppMessage");
-        if (c_ArkAppMessage == nullptr)return false;
-        jmethodID cid = env->GetMethodID(c_ArkAppMessage, "<init>", "()V");
-        if (env->ExceptionCheck())return false;
-        jobject arkMsg = env->NewObject(c_ArkAppMessage, cid);
-        if (arkMsg == nullptr)return false;
-        jmethodID fromAppXml = env->GetMethodID(c_ArkAppMessage, "fromAppXml",
-                                                "(Ljava/lang/String;)Z");
-        if (env->ExceptionCheck())return false;
-        if (!env->CallBooleanMethod(arkMsg, fromAppXml, msg)) {
-            return false;
-        }
-        jclass ChatActivityFacade = env->FindClass("io/github/qauxv/bridge/ChatActivityFacade");
-        jmethodID sendArkAppMessage = env->GetStaticMethodID(ChatActivityFacade,
-                                                             "sendArkAppMessage",
-                                                             "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/Object;)Z");
-        return env->CallStaticBooleanMethod(ChatActivityFacade, sendArkAppMessage,
-                                            rt, session, arkMsg);
-    } else {
-        return false;
-    }
-}
-
 EXPORT extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     JNIEnv* env = nullptr;
     if (vm->GetEnv((void**) &env, JNI_VERSION_1_6) != JNI_OK) {
@@ -420,28 +284,10 @@ EXPORT extern "C" jint JNI_OnLoad(JavaVM* vm, void* reserved) {
     }
 #if defined(NDEBUG) || defined(TEST_SIGNATURE)
     if (!::teble::v2sign::checkSignature(env, appInterface != nullptr)) {
-        return -1;
+        return JNI_ERR;
     }
 #endif
-    jint retCode = MMKV_JNI_OnLoad(vm, reserved);
-    if (retCode < 0) {
-        return retCode;
-    }
-    JNINativeMethod lMethods[1];
-    if (appInterface == nullptr) {
-        __android_log_print(ANDROID_LOG_WARN, "QAuxv", "not seem to be in host, skip native hooks");
-    } else {
-        jclass clazz = env->FindClass("cc/ioctl/hook/experimental/CardMsgSender");
-        lMethods[0].name = "ntSendCardMsg";
-        lMethods[0].signature = "(Lmqq/app/AppRuntime;Landroid/os/Parcelable;Ljava/lang/String;)Z";
-        lMethods[0].fnPtr = (void*) &handleSendCardMsg;
-        if (env->RegisterNatives(clazz, lMethods, 1)) {
-            __android_log_print(ANDROID_LOG_INFO, "QAuxv", "register native method[1] failed!\n");
-            return -1;
-        }
-        // NativeHook_initOnce();
-    }
-    return retCode;
+    return JNI_VERSION_1_6;
 }
 
 extern "C" JNIEXPORT jobject JNICALL
@@ -1018,6 +864,8 @@ Java_io_github_qauxv_util_Natives_open(JNIEnv* env,
     return result;
 }
 
+// private static native Object invokeNonVirtualArtMethodImpl(@NonNull Member member, @NonNull String signature, @NonNull Class<?> klass, boolean isStatic,
+//            @Nullable Object obj, @NonNull Object[] args)
 extern "C"
 JNIEXPORT jobject JNICALL
 Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
@@ -1080,3 +928,38 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
     // invoke
     return transformArgumentsAndInvokeNonVirtual(env, methodId, klass, paramShorts, returnTypeShort, is_static, obj, args);
 }
+
+//@formatter:off
+static JNINativeMethod gMethods[] = {
+    {"allocateInstanceImpl", "(Ljava/lang/Class;)Ljava/lang/Object;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_allocateInstanceImpl)},
+    {"call", "(J)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_call__J)},
+    {"call", "(JJ)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_call__JJ)},
+    {"close", "(I)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_close)},
+    {"dlclose", "(J)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dlclose)},
+    {"dlerror", "()Ljava/lang/String;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dlerror)},
+    {"dlopen", "(Ljava/lang/String;I)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dlopen)},
+    {"dlsym", "(JLjava/lang/String;)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dlsym)},
+    {"dup", "(I)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dup)},
+    {"dup2", "(II)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dup2)},
+    {"dup3", "(III)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_dup3)},
+    {"free", "(J)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_free)},
+    {"getProcessDumpableState", "()I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_getProcessDumpableState)},
+    {"getpagesize", "()I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_getpagesize)},
+    {"invokeNonVirtualArtMethodImpl", "(Ljava/lang/reflect/Member;Ljava/lang/String;Ljava/lang/Class;ZLjava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl)},
+    {"invokeNonVirtualImpl", "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Ljava/lang/Object;[Ljava/lang/Object;)Ljava/lang/Object;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_invokeNonVirtualImpl)},
+    {"lseek", "(IJI)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_lseek)},
+    {"malloc", "(I)J", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_malloc)},
+    {"memcpy", "(JJI)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_memcpy)},
+    {"memset", "(JII)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_memset)},
+    {"mprotect", "(JII)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_mprotect)},
+    {"mread", "(JI[BI)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_mread)},
+    {"mwrite", "(JI[BI)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_mwrite)},
+    {"open", "(Ljava/lang/String;II)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_open)},
+    {"read", "(I[BII)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_read)},
+    {"setProcessDumpableState", "(I)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_setProcessDumpableState)},
+    {"sizeofptr", "()I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_sizeofptr)},
+    {"write", "(I[BII)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_write)},
+};
+//@formatter:on
+
+REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS("io/github/qauxv/util/Natives", gMethods);

@@ -20,6 +20,7 @@
 #include "jni_method_registry.h"
 #include "utils/JniUtils.h"
 #include "utils/Log.h"
+#include "natives_utils.h"
 
 #include "MMKV.h"
 
@@ -28,6 +29,7 @@ using qauxv::JstringToString;
 static jobject sModuleMainClassLoader = nullptr;
 
 static bool sPrimaryPreInitMethodsRegistered = false;
+static bool sPrimaryMmkvMethodsRegistered = false;
 static bool sPrimaryFullInitMethodsRegistered = false;
 static bool sSecondaryFullInitMethodsRegistered = false;
 
@@ -66,6 +68,13 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativePrimaryNativeLibraryPreIni
     if (!sPrimaryPreInitMethodsRegistered) {
         qauxv::jniutil::RegisterJniLateInitMethodsToClassLoader(env, qauxv::jniutil::JniMethodInitType::kPrimaryPreInit, sModuleMainClassLoader);
         sPrimaryPreInitMethodsRegistered = true;
+    }
+    if (!sPrimaryMmkvMethodsRegistered) {
+        if (jint rc; (rc = MMKV_JNI_OnLoad(vm, nullptr)) < 0) {
+            qauxv::ThrowExceptionIfNoPendingException(env, "java/lang/RuntimeException", fmt::format("MMKV_JNI_OnLoad failed with code {}", rc));
+            return;
+        }
+        sPrimaryMmkvMethodsRegistered = true;
     }
     sPrimaryPreInitDone = true;
 }
@@ -130,6 +139,13 @@ void DoNativeLibraryFullInitializeFormJni(JNIEnv* env,
         if (!sPrimaryPreInitMethodsRegistered) {
             qauxv::jniutil::RegisterJniLateInitMethodsToClassLoader(env, qauxv::jniutil::JniMethodInitType::kPrimaryPreInit, sModuleMainClassLoader);
             sPrimaryPreInitMethodsRegistered = true;
+        }
+        if (!sPrimaryMmkvMethodsRegistered) {
+            if (jint rc; (rc = MMKV_JNI_OnLoad(vm, nullptr)) < 0) {
+                qauxv::ThrowExceptionIfNoPendingException(env, "java/lang/RuntimeException", fmt::format("MMKV_JNI_OnLoad failed with code {}", rc));
+                return;
+            }
+            sPrimaryMmkvMethodsRegistered = true;
         }
     }
     // register full init methods
