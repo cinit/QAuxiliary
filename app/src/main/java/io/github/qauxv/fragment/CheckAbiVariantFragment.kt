@@ -34,9 +34,7 @@ import io.github.qauxv.databinding.FragmentAbiVariantInfoBinding
 import io.github.qauxv.databinding.ItemHostStatusBinding
 import io.github.qauxv.fragment.CheckAbiVariantModel.AbiInfo
 import io.github.qauxv.util.hookstatus.AbiUtils
-import io.github.qauxv.util.hookstatus.HookStatus
 import io.github.qauxv.util.hostInfo
-import io.github.qauxv.util.isInModuleProcess
 
 class CheckAbiVariantFragment : BaseRootLayoutFragment() {
 
@@ -68,14 +66,9 @@ class CheckAbiVariantFragment : BaseRootLayoutFragment() {
     private fun updateView() {
         mBinding?.apply {
             val abiStatus = CheckAbiVariantModel.collectAbiInfo(requireContext())
-            val isTaiChiYin = isInModuleProcess && HookStatus.isTaiChiInstalled(requireContext()) && !HookStatus.isZygoteHookMode()
-            if (isTaiChiYin && abiStatus.suggestedApkAbiVariant != "universal") {
-                abiStatus.suggestedApkAbiVariant = "armAll"
-            }
-            if (!abiStatus.isAbiMatch || (isTaiChiYin && abiStatus.suggestedApkAbiVariant != "universal" && "armAll" != AbiUtils.getModuleFlavorName())) {
+            if (!abiStatus.isAbiMatch) {
                 warnAbiMismatchBar.visibility = View.VISIBLE
-                recommendedModuleAbiVariant.text = "推荐您将模块更换为使用 ${abiStatus.suggestedApkAbiVariant} 原生库的版本" +
-                    (if (isTaiChiYin) "\n太极用户请使用 armAll 原生库，其他版本将不会生效" else "")
+                recommendedModuleAbiVariant.text = "推荐您将模块更换为使用 ${abiStatus.suggestedApkAbiVariant} 原生库的版本"
             } else {
                 warnAbiMismatchBar.visibility = View.GONE
             }
