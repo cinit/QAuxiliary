@@ -80,6 +80,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.soloader.NativeLoader
 import me.ketal.base.PluginDelayableHook
 import me.singleneuron.hook.decorator.FxxkQQBrowser
 import kotlin.system.exitProcess
@@ -477,7 +478,9 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val hook = StartupInfo.requireHookBridge()
         var statusInfo = "PID: " + android.os.Process.myPid() +
             ", UID: " + android.os.Process.myUid() +
-            ", " + (if (android.os.Process.is64Bit()) "64 bit" else "32 bit") + "\n" +
+            ", ISA: " + NativeLoader.getIsaName(NativeLoader.getPrimaryNativeLibraryIsa()) +
+            (if (NativeLoader.isSecondaryNativeLibraryNeeded(requireContext())) "+" +
+                NativeLoader.getIsaName(NativeLoader.getSecondaryNativeLibraryIsa()) else "") + "\n" +
             "Xposed API version: " + hook.apiLevel + "\n" +
             "module: " + StartupInfo.getModulePath() + "\n" +
             "ctx.dataDir: " + hostInfo.application.dataDir + "\n"
