@@ -46,6 +46,8 @@ void RegisterJniLateInitMethod(JniMethodInitType type, const char* declare_class
  */
 void RegisterJniLateInitMethodsToClassLoader(JNIEnv* env, JniMethodInitType type, jobject class_loader);
 
+void RegisterJniMethodsCommon(JNIEnv* env, jobject class_loader, std::string_view klass, const std::vector<JNINativeMethod>& methods);
+
 } // qauxv::jniutil
 
 #define REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS(DECLARE_CLASS, METHOD_ARRAY) \

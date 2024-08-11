@@ -23,28 +23,41 @@
 package io.github.qauxv.util.soloader;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 import dalvik.system.BaseDexClassLoader;
+import java.io.IOException;
+import java.net.URL;
+import java.util.Enumeration;
 
-public class NativeLoaderInvokerClassLoader extends BaseDexClassLoader {
+public class NativeLoaderInvokerStubClassLoader extends BaseDexClassLoader {
 
     private final ClassLoader mReferencedClassLoader;
 
-    public NativeLoaderInvokerClassLoader(@NonNull String dexPath, @Nullable String librarySearchPath, @NonNull ClassLoader reference) {
-        // make sure that both the parent class loader and the native library path are NOT bridged
-        super(dexPath, null, librarySearchPath, ClassLoader.class.getClassLoader());
+    public NativeLoaderInvokerStubClassLoader(@NonNull ClassLoader reference, @NonNull ClassLoader parent, @NonNull String librarySearchPath) {
+        // parent class loader are deliberately set to the target class loader
+        // this class loader is only used to load the native library
+        // and does NOT define any class
+        super("", null, librarySearchPath, parent);
         mReferencedClassLoader = reference;
     }
 
     @Override
+    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+        return mReferencedClassLoader.loadClass(name);
+    }
+
+    @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
-        if (name != null && name.startsWith("io.github.qauxv.isolated.soloader.")) {
-            // this will define the target class
-            return super.findClass(name);
-        } else {
-            // reference
-            return mReferencedClassLoader.loadClass(name);
-        }
+        return mReferencedClassLoader.loadClass(name);
+    }
+
+    @Override
+    public Enumeration<URL> getResources(String name) throws IOException {
+        return mReferencedClassLoader.getResources(name);
+    }
+
+    @Override
+    public URL getResource(String name) {
+        return mReferencedClassLoader.getResource(name);
     }
 
 }

@@ -68,7 +68,9 @@ const ModuleSymbolResolver* GetModuleSymbolResolver(std::string_view module_name
     if (!data->elfView.IsValid()) {
         return nullptr;
     }
-    auto* resolver = new ModuleSymbolResolver(std::string(module_name), path, baseAddress, std::move(data));
+    std::span<const uint8_t, 32> header{reinterpret_cast<const uint8_t*>(data->fileMap.getAddress()), 32};
+    auto isa = qauxv::nativeloader::GetLibraryIsaWithElfHeader(header);
+    auto* resolver = new ModuleSymbolResolver(std::string(module_name), path, baseAddress, std::move(data), isa);
     {
         std::lock_guard<std::mutex> lock(sInitMutex);
         sModuleInfoMap.emplace(module_name, resolver);
@@ -132,7 +134,8 @@ void* ModuleSymbolResolver::GetSymbolPrefix(std::string_view symbol_prefix) cons
     return result;
 }
 
-ModuleSymbolResolver::ModuleSymbolResolver(std::string name, std::string path, void* baseAddress, std::unique_ptr<ModuleInfoData> data)
-        : name(std::move(name)), path(std::move(path)), baseAddress(baseAddress), data(std::move(data)) {}
+ModuleSymbolResolver::ModuleSymbolResolver(std::string name, std::string path, void* baseAddress,
+                                           std::unique_ptr<ModuleInfoData> data, qauxv::nativeloader::LibraryIsa isa)
+        : name(std::move(name)), path(std::move(path)), baseAddress(baseAddress), data(std::move(data)), isa(isa) {}
 
 } // namespace qauxv

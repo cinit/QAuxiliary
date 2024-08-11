@@ -43,7 +43,7 @@ std::optional<std::string> JstringToString(JNIEnv* env, jstring jstr) {
     return str;
 }
 
-void ThrowExceptionIfNoPendingException(JNIEnv* env, const char* klass, std::string_view msg) {
+void ThrowIfNoPendingException(JNIEnv* env, const char* klass, std::string_view msg) {
     if (env->ExceptionCheck()) {
         return;
     }

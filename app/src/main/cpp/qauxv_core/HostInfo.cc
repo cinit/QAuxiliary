@@ -30,6 +30,13 @@ static std::optional<std::string> sDataDir;
 static std::optional<uint64_t> sLongVersionCode = 0;
 static std::optional<JavaVM*> sJavaVM = nullptr;
 
+// can be overridden by HostInfo::InitHostInfo
+#ifdef NDEBUG
+static bool sIsDebugBuild = false;
+#else
+static bool sIsDebugBuild = true;
+#endif
+
 int HostInfo::GetSdkInt() noexcept {
     static int sdkInt = android_get_device_api_level();
     return sdkInt;
@@ -59,6 +66,10 @@ std::string HostInfo::GetDataDir() {
     return sDataDir.value();
 }
 
+bool HostInfo::IsDebugBuild() noexcept {
+    return sIsDebugBuild;
+}
+
 void HostInfo::PreInitHostInfo(JavaVM* jvm, std::string dataDir) {
     CHECK(jvm != nullptr);
     CHECK(!dataDir.empty());
@@ -71,7 +82,8 @@ void HostInfo::InitHostInfo(
         std::string dataDir,
         std::string_view packageName,
         std::string_view versionName,
-        uint64_t longVersionCode
+        uint64_t longVersionCode,
+        bool isDebugBuild
 ) {
     CHECK(!packageName.empty());
     CHECK(jvm != nullptr);
@@ -81,6 +93,7 @@ void HostInfo::InitHostInfo(
     sPackageName = packageName;
     sVersionName = versionName;
     sLongVersionCode = longVersionCode;
+    sIsDebugBuild = isDebugBuild;
 }
 
 } // qauxv

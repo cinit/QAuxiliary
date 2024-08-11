@@ -25,6 +25,7 @@ public:
     static std::string GetDataDir();
     static uint32_t GetVersionCode32() noexcept;
     static uint64_t GetLongVersionCode() noexcept;
+    static bool IsDebugBuild() noexcept;
     static JavaVM* GetJavaVM() noexcept;
 
     static void PreInitHostInfo(JavaVM* jvm, std::string dataDir);
@@ -34,7 +35,8 @@ public:
             std::string dataDir,
             std::string_view packageName,
             std::string_view versionName,
-            uint64_t longVersionCode
+            uint64_t longVersionCode,
+            bool isDebugBuild
     );
 
 };

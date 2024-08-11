@@ -11,19 +11,23 @@
 
 #include <jni.h>
 
+#include "qauxv_core/native_loader.h"
+
 namespace qauxv {
 
 class ModuleInfoData;
 
 class ModuleSymbolResolver {
 public:
-    ModuleSymbolResolver(std::string name, std::string path, void* baseAddress, std::unique_ptr<ModuleInfoData> data);
+    ModuleSymbolResolver(std::string name, std::string path, void* baseAddress,
+                         std::unique_ptr<ModuleInfoData> data, qauxv::nativeloader::LibraryIsa isa);
     // disable copy and move constructor and assignment operator
     ModuleSymbolResolver(const ModuleSymbolResolver&) = delete;
     ModuleSymbolResolver& operator=(const ModuleSymbolResolver&) = delete;
 
     std::string name;
     std::string path;
+    qauxv::nativeloader::LibraryIsa isa;
     void* baseAddress = nullptr;
     std::unique_ptr<ModuleInfoData> data;
 
@@ -39,9 +43,19 @@ public:
         return baseAddress;
     }
 
+    [[nodiscard]] inline qauxv::nativeloader::LibraryIsa GetLibraryIsa() const {
+        return isa;
+    }
+
     [[nodiscard]] void* GetSymbol(std::string_view symbol_name) const;
 
     [[nodiscard]] void* GetSymbolPrefix(std::string_view symbol_prefix) const;
+
+    template<typename T>
+    requires std::is_pointer_v<T>
+    [[nodiscard]] T GetSymbol(std::string_view symbol_name) const {
+        return reinterpret_cast<T>(GetSymbol(symbol_name));
+    }
 
 };
 

@@ -33,6 +33,7 @@ import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.util.HostInfo;
+import dalvik.system.BaseDexClassLoader;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.core.NativeCoreBridge;
 import io.github.qauxv.loader.hookapi.IHookBridge;
@@ -262,6 +263,31 @@ public class NativeLoader {
         return sPrimaryNativeLibraryNativeLoader;
     }
 
+    private static ClassLoader sSecondaryNativeLibraryNativeLoader = null;
+
+    @SuppressLint("DiscouragedPrivateApi")
+    private static synchronized ClassLoader getIsolatedSecondaryNativeLibraryNativeLoader(@NonNull Context ctx) {
+        if (sSecondaryNativeLibraryNativeLoader == null) {
+            Objects.requireNonNull(ctx, "context");
+            // find a BaseDexClassLoader in the context
+            ClassLoader hostClassLoader = ctx.getClassLoader();
+            while (hostClassLoader != null && !(hostClassLoader instanceof BaseDexClassLoader)) {
+                hostClassLoader = hostClassLoader.getParent();
+            }
+            if (hostClassLoader == null) {
+                throw new IllegalStateException("Cannot find a BaseDexClassLoader in the context");
+            }
+            String nativeLibraryDir = ctx.getApplicationInfo().nativeLibraryDir;
+            String dexPath = StartupInfo.getModulePath();
+            ClassLoader reference = NativeLoader.class.getClassLoader();
+            assert reference != null;
+            ClassLoader dexLoader = new NativeLoaderInvokerClassLoader(dexPath, null, reference);
+            ClassLoader nativeLoader = new NativeLoaderInvokerStubClassLoader(dexLoader, hostClassLoader, nativeLibraryDir);
+            sSecondaryNativeLibraryNativeLoader = nativeLoader;
+        }
+        return sSecondaryNativeLibraryNativeLoader;
+    }
+
     private static volatile boolean sPrimaryNativeLibraryLoaded = false;
     private static volatile boolean sPrimaryNativeLibraryAttached = false;
     private static volatile boolean sPrimaryNativeLibraryPreInitialized = false;
@@ -335,8 +361,9 @@ public class NativeLoader {
         int appIsa = getApplicationIsa(context.getApplicationInfo());
         String modulePath = StartupInfo.getModulePath();
         String zipEntry = "lib/" + getNativeLibraryDirName(appIsa) + "/libqauxv-core0.so";
+        ClassLoader classLoader = getIsolatedSecondaryNativeLibraryNativeLoader(context);
         // the native loader will then patch the "libqauxv-core0.so" to "libqauxv-core1.so" before loading
-        nativeLoadSecondaryNativeLibrary(modulePath, zipEntry, appIsa);
+        nativeLoadSecondaryNativeLibrary(modulePath, zipEntry, classLoader, appIsa);
         sSecondaryNativeLibraryLoaded = true;
     }
 
@@ -356,7 +383,8 @@ public class NativeLoader {
         String versionName = HostInfo.getVersionName();
         long longVersionCode = HostInfo.getLongVersionCode();
         String dataDir = context.getDataDir().getAbsolutePath();
-        nativeSecondaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode);
+        boolean isDebugBuild = BuildConfig.DEBUG;
+        nativeSecondaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode, isDebugBuild);
         sSecondaryNativeLibraryInitialized = true;
     }
 
@@ -520,12 +548,13 @@ public class NativeLoader {
     private static native void nativePrimaryNativeLibraryPreInit(@NonNull String dataDir, boolean allowHookLinker);
 
     private static native void nativePrimaryNativeLibraryFullInit(int initMode, @NonNull String dataDir,
-            String packageName, int currentSdkLevel, String versionName, long longVersionCode);
+            String packageName, int currentSdkLevel, String versionName, long longVersionCode, boolean isDebugBuild);
 
-    private static native void nativeLoadSecondaryNativeLibrary(@NonNull String modulePath, @NonNull String entryPath, int isa);
+    private static native void nativeLoadSecondaryNativeLibrary(@NonNull String modulePath, @NonNull String entryPath,
+            @NonNull ClassLoader classLoader, int isa);
 
     private static native void nativeSecondaryNativeLibraryFullInit(int initMode, @NonNull String dataDir,
-            String packageName, int currentSdkLevel, String versionName, long longVersionCode);
+            String packageName, int currentSdkLevel, String versionName, long longVersionCode, boolean isDebugBuild);
 
     public static native int getPrimaryNativeLibraryIsa();
 
@@ -576,6 +605,14 @@ public class NativeLoader {
             loadPrimaryNativeLibrary(dataDir, hostAppInfo);
         }
         if (!sPrimaryNativeLibraryPreInitialized) {
+            // check whether the primary native library ISA matches the current runtime ISA
+            int primaryIsa = getPrimaryNativeLibraryIsa();
+            int runtimeIsa = getCurrentRuntimeIsa();
+            if (primaryIsa != runtimeIsa) {
+                // Stop here. Any further operation will cause the ART crash.
+                throw new IllegalStateException("Primary native library ISA mismatch: runtime ISA=" + getIsaName(runtimeIsa)
+                        + ", primary ISA=" + getIsaName(primaryIsa));
+            }
             nativePrimaryNativeLibraryPreInit(dataDir.getAbsolutePath(), allowHookLinker);
             sPrimaryNativeLibraryPreInitialized = true;
         }
@@ -605,7 +642,8 @@ public class NativeLoader {
             initMode = NATIVE_LIBRARY_INIT_MODE_PRIMARY_ONLY;
             isSecondaryNeeded = false;
         }
-        nativePrimaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode);
+        boolean isDebugBuild = BuildConfig.DEBUG;
+        nativePrimaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode, isDebugBuild);
         NativeCoreBridge.initializeMmkvForPrimaryNativeLibrary(context);
         sPrimaryNativeLibraryFullInitialized = true;
         if (!isSecondaryNeeded && initMode == NATIVE_LIBRARY_INIT_MODE_BOTH_PRIMARY_AND_SECONDARY) {

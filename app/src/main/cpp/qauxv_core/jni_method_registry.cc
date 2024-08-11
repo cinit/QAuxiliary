@@ -62,7 +62,7 @@ std::string NormalizeClassName(std::string_view name) {
  * @param class_loader  the class loader object.
  */
 void RegisterJniLateInitMethodsToClassLoader(JNIEnv* env, JniMethodInitType type, jobject class_loader) {
-    using qauxv::ThrowExceptionIfNoPendingException;
+    using qauxv::ThrowIfNoPendingException;
     std::vector<JniMethodInitMethodList>* methods = nullptr;
     switch (type) {
         case JniMethodInitType::kPrimaryPreInit:
@@ -96,20 +96,45 @@ void RegisterJniLateInitMethodsToClassLoader(JNIEnv* env, JniMethodInitType type
         jstring class_name = env->NewStringUTF(NormalizeClassName(method_list.declare_class).c_str());
         auto klass = static_cast<jclass>(env->CallObjectMethod(class_loader, kLoadClass, class_name));
         if (env->ExceptionCheck() || klass == nullptr) {
-            ThrowExceptionIfNoPendingException(env, "java/lang/NullPointerException",
-                                               fmt::format("class {} not found", method_list.declare_class));
+            ThrowIfNoPendingException(env, "java/lang/NullPointerException", fmt::format("class {} not found", method_list.declare_class));
             return; // with exception
         }
         const JNINativeMethod* method_array = method_list.methods.data();
         if (env->RegisterNatives(klass, method_array, (jint) method_list.methods.size()) != JNI_OK) {
-            ThrowExceptionIfNoPendingException(env, "java/lang/RuntimeException",
-                                               fmt::format("RegisterNatives failed for class {}",
-                                                           method_list.declare_class));
+            ThrowIfNoPendingException(env, "java/lang/RuntimeException",
+                                      fmt::format("RegisterNatives failed for class {}", method_list.declare_class));
             return; // with exception
         }
         env->DeleteLocalRef(class_name);
         env->DeleteLocalRef(klass);
     }
+}
+
+void RegisterJniMethodsCommon(JNIEnv* env, jobject class_loader, std::string_view klass, const std::vector<JNINativeMethod>& methods) {
+    jclass kClassLoader = env->FindClass("java/lang/ClassLoader");
+    // check if the class loader is an instance of ClassLoader
+    if (!env->IsInstanceOf(class_loader, kClassLoader)) {
+        env->ThrowNew(env->FindClass("java/lang/IllegalArgumentException"), "class_loader is not an instance of ClassLoader");
+        return;
+    }
+    jmethodID kLoadClass = env->GetMethodID(kClassLoader, "loadClass", "(Ljava/lang/String;)Ljava/lang/Class;");
+    if (kLoadClass == nullptr) {
+        env->ThrowNew(env->FindClass("java/lang/NoSuchMethodError"), "loadClass method not found");
+        return;
+    }
+    jstring class_name = env->NewStringUTF(NormalizeClassName(klass).c_str());
+    auto klass_obj = static_cast<jclass>(env->CallObjectMethod(class_loader, kLoadClass, class_name));
+    if (env->ExceptionCheck() || klass_obj == nullptr) {
+        ThrowIfNoPendingException(env, "java/lang/NullPointerException", fmt::format("class {} not found", klass));
+        return; // with exception
+    }
+    const JNINativeMethod* method_array = methods.data();
+    if (env->RegisterNatives(klass_obj, method_array, (jint) methods.size()) != JNI_OK) {
+        ThrowIfNoPendingException(env, "java/lang/RuntimeException", fmt::format("RegisterNatives failed for class {}", klass));
+        return; // with exception
+    }
+    env->DeleteLocalRef(class_name);
+    env->DeleteLocalRef(klass_obj);
 }
 
 }

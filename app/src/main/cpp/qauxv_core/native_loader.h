@@ -6,6 +6,9 @@
 #define QAUXV_NATIVE_LOADER_H
 
 #include <cstdint>
+#include <span>
+
+#include <fmt/format.h>
 
 #include <jni.h>
 
@@ -37,7 +40,7 @@ enum LibraryIsa: uint32_t {
     kUnknown = 0xFFFFFFFFu,
 };
 
-bool SetClassLoaderNativeNamespaceNonBridged(JNIEnv* env, jobject class_loader);
+bool CheckClassLoaderNativeNamespaceBridged(JNIEnv* env, jobject class_loader, bool is_bridge);
 
 constexpr LibraryIsa GetCurrentLibraryIsa() noexcept {
 #if defined(__i386__) || defined(__x86_64__)
@@ -69,6 +72,44 @@ constexpr LibraryIsa GetCurrentLibraryIsa() noexcept {
 #endif
 }
 
+LibraryIsa GetLibraryIsaWithElfHeader(std::span<const uint8_t, 32> elf_header);
+
 }
+
+// fmt::formatter specialization for LibraryIsa
+template<>
+struct fmt::formatter<qauxv::nativeloader::LibraryIsa> {
+    constexpr auto parse(format_parse_context& ctx) {
+        return ctx.begin();
+    }
+
+    template<typename FormatContext>
+    auto format(const qauxv::nativeloader::LibraryIsa& isa, FormatContext& ctx) const {
+        switch (isa) {
+            case qauxv::nativeloader::LibraryIsa::kX86:
+                return format_to(ctx.out(), "x86");
+            case qauxv::nativeloader::LibraryIsa::kX86_64:
+                return format_to(ctx.out(), "x86_64");
+            case qauxv::nativeloader::LibraryIsa::kArm:
+                return format_to(ctx.out(), "arm");
+            case qauxv::nativeloader::LibraryIsa::kArm64:
+                return format_to(ctx.out(), "arm64");
+            case qauxv::nativeloader::LibraryIsa::kMips:
+                return format_to(ctx.out(), "mips");
+            case qauxv::nativeloader::LibraryIsa::kMips64:
+                return format_to(ctx.out(), "mips64");
+            case qauxv::nativeloader::LibraryIsa::kRiscv32:
+                return format_to(ctx.out(), "riscv32");
+            case qauxv::nativeloader::LibraryIsa::kRiscv64:
+                return format_to(ctx.out(), "riscv64");
+            case qauxv::nativeloader::LibraryIsa::kUnknown:
+                return format_to(ctx.out(), "unknown");
+            case qauxv::nativeloader::LibraryIsa::kNone:
+                return format_to(ctx.out(), "none");
+            default:
+                return format_to(ctx.out(), "LibraryIsa[{}]", static_cast<uint32_t>(isa));
+        }
+    }
+};
 
 #endif //QAUXV_NATIVE_LOADER_H
