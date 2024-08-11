@@ -10,6 +10,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 
 @Keep
+@SuppressWarnings("unused")
 public class UnifiedEntryPoint {
 
     private static boolean sInitialized = false;
@@ -82,6 +83,7 @@ public class UnifiedEntryPoint {
         return e;
     }
 
+    @SuppressWarnings("unchecked")
     @NonNull
     private static <T extends Throwable> AssertionError unsafeThrow(@NonNull Throwable e) throws T {
         throw (T) e;
