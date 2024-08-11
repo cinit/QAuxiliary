@@ -33,10 +33,7 @@ public class HybridClassLoader extends ClassLoader {
     }
 
     @Override
-    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
-        if (name == null) {
-            return super.loadClass(null, resolve);
-        }
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             return sBootClassLoader.loadClass(name);
         } catch (ClassNotFoundException ignored) {
@@ -61,11 +58,10 @@ public class HybridClassLoader extends ClassLoader {
         if (sHostClassLoader != null) {
             try {
                 return sHostClassLoader.loadClass(name);
-            } catch (ClassNotFoundException e) {
-                return super.loadClass(name, resolve);
+            } catch (ClassNotFoundException ignored) {
             }
         }
-        return super.loadClass(name, resolve);
+        throw new ClassNotFoundException(name);
     }
 
     /**

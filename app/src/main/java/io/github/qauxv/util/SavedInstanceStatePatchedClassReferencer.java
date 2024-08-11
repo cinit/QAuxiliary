@@ -38,7 +38,7 @@ public class SavedInstanceStatePatchedClassReferencer extends ClassLoader {
     }
 
     @Override
-    protected Class<?> loadClass(String name, boolean resolve) throws ClassNotFoundException {
+    protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
             return mBootstrap.loadClass(name);
         } catch (ClassNotFoundException ignored) {
