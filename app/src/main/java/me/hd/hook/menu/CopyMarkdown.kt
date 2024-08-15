@@ -60,13 +60,14 @@ object CopyMarkdown : CommonSwitchFunctionHook(
         val item = CustomMenu.createItemIconNt(msg, "复制内容", R.drawable.ic_item_copy_72dp, R.id.item_copy_md) {
             val ctx = ContextUtils.getCurrentActivity()
             val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
+            val stringBuilder = StringBuilder()
             msgRecord.elements.forEach { element ->
                 element.markdownElement?.let { markdownElement ->
-                    val content = markdownElement.content
-                    copyToClipboard(ctx, content)
-                    Toasts.success(ctx, "复制成功")
+                    stringBuilder.append(markdownElement.content)
                 }
             }
+            copyToClipboard(ctx, stringBuilder.toString())
+            Toasts.success(ctx, "复制成功")
         }
         param.result = listOf(item) + param.result as List<*>
     }
