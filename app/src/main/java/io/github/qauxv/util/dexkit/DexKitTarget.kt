@@ -1010,3 +1010,9 @@ data object Hd_GagInfoDisclosure_Method : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.imcore.message"
     override val filter = DexKitFilter.strInClsName("com/tencent/imcore/message/")
 }
+
+data object OriginalPhotoNT_onInitView : DexKitTarget.UsingDexkit() {
+    override val findMethod: Boolean = true
+    override val declaringClass = ""
+    override val filter: dexkitFilter = DexKitFilter.allowAll
+}

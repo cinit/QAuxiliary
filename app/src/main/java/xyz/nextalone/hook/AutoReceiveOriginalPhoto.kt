@@ -40,6 +40,7 @@ import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexMethodDescriptor.getTypeSig
 import io.github.qauxv.util.dexkit.NAIOPictureView_onDownloadOriginalPictureClick
 import io.github.qauxv.util.dexkit.NAIOPictureView_setVisibility
+import io.github.qauxv.util.dexkit.OriginalPhotoNT_onInitView
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
 import org.luckypray.dexkit.result.ClassData
@@ -60,7 +61,8 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
 
     override fun initOnce(): Boolean {
         if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
-            Initiator.loadClass("com.tencent.qqnt.aio.gallery.part.d").declaredMethods.single { method ->
+//            Initiator.loadClass("com.tencent.qqnt.aio.gallery.part.d").declaredMethods.single { method ->
+            DexKit.requireMethodFromCache(OriginalPhotoNT_onInitView).declaringClass.declaredMethods.single { method ->
                 val params = method.parameterTypes
                 params.size == 1 && params[0] == Int::class.java
             }.hookAfter {
@@ -112,11 +114,21 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     }
 
     override val isNeedFind: Boolean
-        get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null
+        get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null || (requireMinQQVersion(QQVersion.QQ_8_9_63) && OriginalPhotoNT_onInitView.descCache == null)
 
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
             val dexKit = backend.getDexKitBridge()
+            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+                dexKit.findMethod {
+                    matcher {
+                        name = "onInitView"
+                        usingStrings("rootView", "em_bas_view_the_original_picture")
+                    }
+                }.firstOrNull()?.let {
+                    OriginalPhotoNT_onInitView.descCache = it.descriptor
+                } ?: return false
+            }
             var kAIOPictureView = DexKit.loadClassFromCache(CAIOPictureView)
             if (kAIOPictureView == null) {
                 val clazzList = mutableListOf<ClassData>().apply {
