@@ -110,3 +110,8 @@ target_link_options(qauxv-core0 PRIVATE "-Wl,-e,__libqauxv_main")
 target_link_libraries(qauxv-core0 dobby mmkv dexkit_static unwindstack base silk
         c dl fmt-header-only z lsplant_static
         ${ANDROID_LIBS})
+
+add_library(qauxv-dummy SHARED dummy/dummy.cc)
+add_library(qauxv-preload SHARED preload/preload.cc)
+target_link_libraries(qauxv-dummy unwindstack base c ${ANDROID_LIBS})
+target_link_libraries(qauxv-preload unwindstack base c dl ${ANDROID_LIBS})

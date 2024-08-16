@@ -339,34 +339,69 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "libnativebridge.so not found");
         return;
     }
+    // Android 10-14 / SDK 29-34
     //  void* OpenNativeLibrary(
     //    JNIEnv* env, int32_t target_sdk_version, const char* path, jobject class_loader,
     //    const char* caller_location, jstring library_path, bool* needs_native_bridge, char** error_msg);
-    using OpenNativeLibrary_t = void* (*)(JNIEnv*, int32_t, const char*, jobject, const char*, jstring, bool*, char**);
-    auto OpenNativeLibrary = libnativeloader->GetSymbol<OpenNativeLibrary_t>("OpenNativeLibrary");
-    if (OpenNativeLibrary == nullptr) {
+    using OpenNativeLibrary29_t = void* (*)(JNIEnv*, int32_t, const char*, jobject, const char*, jstring, bool*, char**);
+    auto OpenNativeLibrary29 = libnativeloader->GetSymbol<OpenNativeLibrary29_t>("OpenNativeLibrary");
+    // Android 9 / SDK 28
+    // void* OpenNativeLibrary(JNIEnv* env,
+    //                        int32_t target_sdk_version,
+    //                        const char* path,
+    //                        jobject class_loader,
+    //                        jstring library_path,
+    //                        bool* needs_native_bridge,
+    //                        std::string* error_msg)
+    using OpenNativeLibrary28_t = void* (*)(JNIEnv*, int32_t, const char*, jobject, jstring, bool*, std::string*);
+    auto OpenNativeLibrary28 = libnativeloader->GetSymbol<OpenNativeLibrary28_t>(
+            "_ZN7android17OpenNativeLibraryEP7_JNIEnviPKcP8_jobjectP8_jstringPbPNSt3__112basic_stringIcNS9_11char_traitsIcEENS9_9allocatorIcEEEE"
+    );
+    if (OpenNativeLibrary29 == nullptr && OpenNativeLibrary28 == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "OpenNativeLibrary not found");
         return;
     }
+    // Android 10-14 / SDK 29-34
     auto NativeBridgeGetTrampoline =
             libnativebridge->GetSymbol<decltype(android::NativeBridgeGetTrampoline)*>("NativeBridgeGetTrampoline");
+    if (NativeBridgeGetTrampoline == nullptr) {
+        // Android 9 / SDK 28
+        NativeBridgeGetTrampoline = libnativebridge->GetSymbol<decltype(android::NativeBridgeGetTrampoline)*>(
+                "_ZN7android25NativeBridgeGetTrampolineEPvPKcS2_j"
+        );
+    }
     if (NativeBridgeGetTrampoline == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "NativeBridgeGetTrampoline not found");
         return;
     }
     std::string path = modulePath + "!/" + entryPath;
     bool needsNativeBridge = false;
-    char* errorMsg = nullptr;
-    auto lib = OpenNativeLibrary(env, 33, path.c_str(),
-                                 native_loader, path.c_str(), nullptr,
-                                 &needsNativeBridge, &errorMsg);
+    std::string errorMsg;
+    void* lib;
+    if (OpenNativeLibrary29 != nullptr) {
+        char* dlextError = nullptr;
+        lib = OpenNativeLibrary29(env, 33, path.c_str(),
+                                  native_loader, path.c_str(), nullptr,
+                                  &needsNativeBridge, &dlextError);
+        if (lib == nullptr) {
+            errorMsg = dlextError;
+        }
+    } else {
+        std::string dlextError;
+        lib = OpenNativeLibrary28(env, 28, path.c_str(),
+                                  native_loader, nullptr,
+                                  &needsNativeBridge, &dlextError);
+        if (lib == nullptr) {
+            errorMsg = dlextError;
+        }
+    }
     if (lib == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException,
                                   fmt::format("OpenNativeLibrary failed: {}", errorMsg));
         return;
     }
     auto sym = "Java_io_github_qauxv_isolated_soloader_LoadLibraryInvoker_nativeSecondaryNativeLibraryAttachClassLoader";
-    void* fn = NativeBridgeGetTrampoline(lib, sym, "LL", 0);
+    void* fn = NativeBridgeGetTrampoline(lib, sym, "JLL", 0);
     if (fn == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException, "NativeBridgeGetTrampoline failed");
         return;

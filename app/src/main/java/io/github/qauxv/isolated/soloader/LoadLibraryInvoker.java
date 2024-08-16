@@ -80,4 +80,19 @@ public class LoadLibraryInvoker {
      */
     private static native int nativeSecondaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent, long[] initInfo);
 
+    /**
+     * Call android_dlopen_ext() with the specified file descriptor, library name and offset.
+     * <p>
+     * Note: This method is intended to be called by the primary native library with native bridge, not from Java.
+     * <p>
+     * The file descriptor will NOT be closed after the library is loaded.
+     *
+     * @param fd     the file descriptor of the shared library to load, must be valid.
+     * @param name   the name of the shared library to load, must not be null or empty.
+     * @param offset the offset of the shared library to load, must be valid.
+     * @return a handle to the shared library, or null if an error occurred.
+     * @throws RuntimeException if an error occurred.
+     */
+    private static native long nativeCallAndroidDlopenExt(int fd, @NonNull String name, long offset) throws RuntimeException;
+
 }

@@ -69,7 +69,7 @@ public class NativeLoader {
     // For a user running an arm64 QQ on an arm64 device, the primary native library is arm64, and the secondary native library is arm64.
     // There will be only one native library in the process, and it is the primary native library, but it can be considered "primary+secondary" in logic.
     // primary native library: libqauxv-core0.so
-    // secondary native library: libqauxv-core1.so
+    // secondary native library: libqauxv-core1.so (not the real name, just for illustration, the real name is also libqauxv-core0.so)
     // For a typical case in host process, the sequence of loading is:
     // stage 1: primary load, no context available, e.g. postSpecialize: -> load "primary" + "primary" pre-init, register native methods
     // stage 2: primary pre-init, no context available, this happens right after primary load: -> init Dobby, init LSPlant
@@ -394,8 +394,10 @@ public class NativeLoader {
         }
         int runtimeIsa = getCurrentRuntimeIsa();
         // do we support the current runtime ISA?
-        if (!getModuleSupportedIsas().contains(runtimeIsa)) {
-            throw new IllegalStateException("Unsupported runtime ISA: " + getIsaName(runtimeIsa) + ", supported ISAs: " + sModuleSupportedIsas);
+        Set<Integer> supportedIsas = getModuleSupportedIsas();
+        if (!supportedIsas.contains(runtimeIsa)) {
+            throw new IllegalStateException("Unsupported runtime ISA: " + getIsaName(runtimeIsa)
+                    + ", supported ISAs: " + isaSetToString(supportedIsas));
         }
         // do we need to use isolated SoLoader?
         boolean useIsolatedSoLoader;
@@ -492,18 +494,15 @@ public class NativeLoader {
      * @param soname   the name of the native library, e.g. "libqauxv-core0.so"
      * @param abi      the ABI of the native library, e.g. "arm64-v8a"
      */
-    static File extractNativeLibrary(@NonNull File filesDir, String soname, String abi) throws IOError {
+    private static File extractNativeLibrary(@NonNull File filesDir, String soname, String abi) {
         String soName = soname + "." + BuildConfig.VERSION_CODE + "." + abi;
         File dir = new File(filesDir, "qa_dyn_lib");
-        if (!dir.isDirectory()) {
-            if (dir.isFile()) {
-                dir.delete();
-            }
-            dir.mkdir();
-        }
+        IoUtils.mkdirsOrThrow(dir);
+        ClassLoader cl = NativeLoader.class.getClassLoader();
+        assert cl != null;
         File soFile = new File(dir, soName);
         if (!soFile.exists()) {
-            InputStream in = Natives.class.getClassLoader().getResourceAsStream("lib/" + abi + "/" + soname);
+            InputStream in = cl.getResourceAsStream("lib/" + abi + "/" + soname);
             if (in == null) {
                 throw new UnsatisfiedLinkError("Unsupported ABI: " + abi);
             }
@@ -653,7 +652,50 @@ public class NativeLoader {
         }
     }
 
+    private static String isaSetToString(@Nullable Set<Integer> isas) {
+        if (isas == null) {
+            return "null";
+        }
+        StringBuilder sb = new StringBuilder();
+        sb.append("[");
+        boolean first = true;
+        for (int isa : isas) {
+            if (first) {
+                first = false;
+            } else {
+                sb.append(", ");
+            }
+            sb.append(getIsaName(isa));
+        }
+        sb.append("]");
+        return sb.toString();
+    }
+
     // ---------- diagnostic ----------
+
+    private static void throwIfLinkerComplainAboutIsaMismatch(@NonNull Throwable throwable) {
+        Throwable cause = IoUtils.getIteCauseOrSelf(throwable);
+        if (!(cause instanceof UnsatisfiedLinkError)) {
+            return;
+        }
+        UnsatisfiedLinkError e = (UnsatisfiedLinkError) cause;
+        String msg = e.getMessage();
+        if (msg == null) {
+            return;
+        }
+        // Android 10-14
+        String s1 = " is for ";
+        String s2 = " instead of ";
+        String s3 = "EM_";
+        if (msg.contains(s1) && msg.contains(s2) && msg.contains(s3)) {
+            throw e;
+        }
+        // Android 5-9
+        String s4 = " has unexpected e_machine: ";
+        if (msg.contains(s4)) {
+            throw e;
+        }
+    }
 
     @SuppressWarnings("deprecation")
     public static void dumpDeviceAbiInfoToLog() {
