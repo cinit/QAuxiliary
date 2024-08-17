@@ -853,14 +853,14 @@ data object QQ_SETTING_ME_CONFIG_CLASS : DexKitTarget.UsingStringVector() {
             "我的文件",
             "我的收藏",
             "我的相册",
-            "我的小游戏",
+            //"我的小游戏", // removed since 9.0.90
             "免流量",
             "我的个性装扮",
             "财富小金库",
             "我的QQ钱包",
             "开通会员",
             "我的小世界",
-            "直播"
+            //"直播" // removed since 9.0.90
         )
     )
     override val declaringClass: String = ""
