@@ -359,6 +359,12 @@ public class NativeLoader {
             return;
         }
         int appIsa = getApplicationIsa(context.getApplicationInfo());
+        // check whether we support the application's ISA
+        if (!getModuleSupportedIsas().contains(appIsa)) {
+            Set<Integer> supportedIsas = getModuleSupportedIsas();
+            throw new IllegalStateException("Unsupported application ISA: " + getIsaName(appIsa)
+                    + ", supported ISAs: " + isaSetToString(supportedIsas));
+        }
         String modulePath = StartupInfo.getModulePath();
         String zipEntry = "lib/" + getNativeLibraryDirName(appIsa) + "/libqauxv-core0.so";
         ClassLoader classLoader = getIsolatedSecondaryNativeLibraryNativeLoader(context);

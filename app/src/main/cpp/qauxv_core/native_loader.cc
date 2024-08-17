@@ -11,6 +11,7 @@
 
 #include <unistd.h>
 #include <fcntl.h>
+#include <dlfcn.h>
 #include <sys/stat.h>
 
 #include <fmt/format.h>
@@ -345,7 +346,7 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     //    const char* caller_location, jstring library_path, bool* needs_native_bridge, char** error_msg);
     using OpenNativeLibrary29_t = void* (*)(JNIEnv*, int32_t, const char*, jobject, const char*, jstring, bool*, char**);
     auto OpenNativeLibrary29 = libnativeloader->GetSymbol<OpenNativeLibrary29_t>("OpenNativeLibrary");
-    // Android 9 / SDK 28
+    // Android 8-9 / SDK 26-28
     // void* OpenNativeLibrary(JNIEnv* env,
     //                        int32_t target_sdk_version,
     //                        const char* path,
@@ -357,7 +358,17 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     auto OpenNativeLibrary28 = libnativeloader->GetSymbol<OpenNativeLibrary28_t>(
             "_ZN7android17OpenNativeLibraryEP7_JNIEnviPKcP8_jobjectP8_jstringPbPNSt3__112basic_stringIcNS9_11char_traitsIcEENS9_9allocatorIcEEEE"
     );
-    if (OpenNativeLibrary29 == nullptr && OpenNativeLibrary28 == nullptr) {
+    // Android 7.x / SDK 24-25
+    // void* OpenNativeLibrary(JNIEnv* env,
+    //                        int32_t target_sdk_version,
+    //                        const char* path,
+    //                        jobject class_loader,
+    //                        jstring library_path);
+    using OpenNativeLibrary24_t = void* (*)(JNIEnv*, int32_t, const char*, jobject, jstring);
+    auto OpenNativeLibrary24 = libnativeloader->GetSymbol<OpenNativeLibrary24_t>(
+            "_ZN7android17OpenNativeLibraryEP7_JNIEnviPKcP8_jobjectP8_jstring"
+    );
+    if (OpenNativeLibrary29 == nullptr && OpenNativeLibrary28 == nullptr && OpenNativeLibrary24 == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "OpenNativeLibrary not found");
         return;
     }
@@ -386,13 +397,19 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
         if (lib == nullptr) {
             errorMsg = dlextError;
         }
-    } else {
+    } else if (OpenNativeLibrary28 != nullptr) {
         std::string dlextError;
         lib = OpenNativeLibrary28(env, 28, path.c_str(),
                                   native_loader, nullptr,
                                   &needsNativeBridge, &dlextError);
         if (lib == nullptr) {
             errorMsg = dlextError;
+        }
+    } else {
+        lib = OpenNativeLibrary24(env, 24, path.c_str(), native_loader, nullptr);
+        if (lib == nullptr) {
+            errorMsg = "OpenNativeLibrary24 failed, no error message available for this API level, dlerror(): ";
+            errorMsg += dlerror();
         }
     }
     if (lib == nullptr) {
