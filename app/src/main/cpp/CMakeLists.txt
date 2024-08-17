@@ -88,6 +88,8 @@ add_library(qauxv-core0 SHARED
         utils/debug_utils.cc
         utils/Log.cc
         utils/art_symbol_resolver.cc
+        utils/xz_decoder.cc
+        utils/byte_array_output_stream.cc
 
         ntkernel/NtRecallMsgHook.cc
         ntkernel/card_msg_sender.cc
@@ -108,7 +110,7 @@ target_compile_definitions(qauxv-core0 PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\
 target_link_options(qauxv-core0 PRIVATE "-Wl,-e,__libqauxv_main")
 
 target_link_libraries(qauxv-core0 dobby mmkv dexkit_static unwindstack base silk
-        c dl fmt-header-only z lsplant_static
+        c dl fmt-header-only z lsplant_static lzma
         ${ANDROID_LIBS})
 
 add_library(qauxv-dummy SHARED dummy/dummy.cc)

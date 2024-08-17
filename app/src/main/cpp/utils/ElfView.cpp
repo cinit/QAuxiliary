@@ -8,8 +8,13 @@
 #include <type_traits>
 #include <optional>
 #include <limits>
+#include <unordered_map>
 
 #include <elf.h>
+
+#include <fmt/format.h>
+
+#include "utils/Log.h"
 
 #include "ElfView.h"
 #include "debug_utils.h"
@@ -18,13 +23,134 @@
 #define SHT_GNU_HASH      0x6ffffff6
 #endif
 
+// for mmkv::KeyHasher, mmkv::KeyEqualer
+#include "MMKV.h"
+
+#include "xz_decoder.h"
+
+static auto constexpr LOG_TAG = "ElfView";
+
 using namespace utils;
 
 static inline auto constexpr kElf32 = ElfView::ElfClass::kElf32;
 static inline auto constexpr kElf64 = ElfView::ElfClass::kElf64;
 
+class ElfView::ElfInfo {
+public:
+    // prevent accidental copy
+    ElfInfo() = default;
+    ElfInfo(const ElfInfo&) = delete;
+    ElfInfo& operator=(const ElfInfo&) = delete;
+
+    ElfClass elfClass = ElfClass::kNone;
+    uint16_t machine = 0;
+    std::string soname;
+    // the p_vaddr of the first PT_LOAD segment in ELF **file**
+    uint64_t loadBias = 0;
+    size_t loadedSize = 0;
+    const void* sysv_hash = nullptr;
+    uint32_t sysv_hash_nbucket = 0;
+    uint32_t sysv_hash_nchain = 0;
+    const uint32_t* sysv_hash_bucket = nullptr;
+    const uint32_t* sysv_hash_chain = nullptr;
+    const void* gnu_hash = nullptr;
+    const void* symtab = nullptr;
+    size_t symtab_size = 0;
+    const char* strtab = nullptr;
+    const void* dynsym = nullptr;
+    size_t dynsym_size = 0;
+    const char* dynstr = nullptr;
+    bool use_rela = false;
+    const void* reldyn = nullptr;
+    size_t reldyn_size = 0;
+    const void* reladyn = nullptr;
+    size_t reladyn_size = 0;
+    const void* relplt = nullptr;
+    size_t relplt_size = 0;
+    std::span<const uint8_t> miniDebugInfo;
+    // the offset value is saved as is here, must subtract loadBias to get the real offset
+    // symbol from compressed ".gnu_debugdata", aka MiniDebugInfo
+    std::unordered_map<std::string, uint64_t, mmkv::KeyHasher, mmkv::KeyEqualer> compressedDebugSymbols;
+};
+
+ElfView::ElfView() {
+    mElfInfo = std::make_unique<ElfInfo>();
+}
+
+ElfView::~ElfView() noexcept = default;
+
 using ElfInfo = ElfView::ElfInfo;
 using ElfClass = ElfView::ElfClass;
+
+bool ElfView::IsValid() const noexcept {
+    return !mMemory.empty() && mElfInfo && mElfInfo->elfClass != ElfClass::kNone;
+}
+
+void ElfView::Detach() noexcept {
+    mMemory = {};
+    mElfInfo = nullptr;
+    mIsLoaded = false;
+}
+
+int ElfView::GetPointerSize() const noexcept {
+    if (!IsValid()) {
+        return 0;
+    }
+    switch (mElfInfo->elfClass) {
+        case ElfClass::kElf32:
+            return 4;
+        case ElfClass::kElf64:
+            return 8;
+        default:
+            return 0;
+    }
+}
+
+const ElfInfo& ElfView::GetElfInfo() const noexcept {
+    return *mElfInfo;
+}
+
+int ElfView::GetArchitecture() const noexcept {
+    if (!IsValid()) {
+        return 0;
+    }
+    return mElfInfo->machine;
+}
+
+/**
+ * Get the load bias of the elf file. Typically, you don't need to use this value.
+ * @return the load bias of the elf file.
+ */
+uint64_t ElfView::GetLoadBias() const noexcept {
+    return mElfInfo->loadBias;
+}
+
+size_t ElfView::GetLoadedSize() const noexcept {
+    return mElfInfo->loadedSize;
+}
+
+/**
+ * Get the soname of the elf file.
+ * @return may be empty string.
+ */
+const std::string& ElfView::GetSoname() const noexcept {
+    return mElfInfo->soname;
+}
+
+void ElfView::ParseMiniDebugInfo(std::span<const uint8_t> input) {
+    // check xz magic
+    if (input.size() < 6 || input[0] != 0xFD || input[1] != '7' || input[2] != 'z' || input[3] != 'X' || input[4] != 'Z') {
+        return;
+    }
+    bool isSuccess = false;
+    std::string errorMsg;
+    const auto decompressed = util::DecodeXzData(input, &isSuccess, &errorMsg);
+    if (decompressed.empty() || !isSuccess) {
+        LOGW("Failed to decompress mini debug info: {}", errorMsg);
+        return;
+    }
+    ParseDebugSymbol(decompressed);
+}
 
 template<ElfClass kElfClass>
 static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoaded) {
@@ -38,87 +164,86 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
     info.machine = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_machine;
     // walk through program header
     auto phoff = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phoff;
-    if (phoff == 0) {
-        return;
-    }
-    auto phnum = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phnum;
-    auto phentsize = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phentsize;
-    uint64_t firstLoadedSegmentStart = std::numeric_limits<uint64_t>::max();
-    uint64_t lastLoadedSegmentEnd = 0;
-    const Elf_Phdr* phdrSelf = nullptr;
-    const Elf_Phdr* phdrDynamic = nullptr;
-    for (int i = 0; i < phnum; i++) {
-        const auto* phdr = reinterpret_cast<const Elf_Phdr*>(file.data() + phoff + i * phentsize);
-        if (phdr->p_type == PT_PHDR) {
-            phdrSelf = phdr;
-        } else if (phdr->p_type == PT_DYNAMIC) {
-            phdrDynamic = phdr;
-        } else if (phdr->p_type == PT_LOAD) {
-            if (phdr->p_vaddr < firstLoadedSegmentStart) {
-                firstLoadedSegmentStart = phdr->p_vaddr;
-            }
-            if (phdr->p_vaddr + phdr->p_memsz > lastLoadedSegmentEnd) {
-                lastLoadedSegmentEnd = phdr->p_vaddr + phdr->p_memsz;
-            }
-        }
-    }
-    info.loadBias = firstLoadedSegmentStart;
-    info.loadedSize = lastLoadedSegmentEnd - firstLoadedSegmentStart;
-    if (phdrDynamic != nullptr) {
-        // walk through dynamic section
-        uint64_t sonameOffset = 0;
-        const char* strtab = nullptr;
-        for (int i = 0; i < phdrDynamic->p_memsz / sizeof(Elf_Dyn); i++) {
-            auto offset = (isLoaded ? phdrDynamic->p_vaddr : phdrDynamic->p_offset) + i * sizeof(Elf_Dyn);
-            const auto* dyn = reinterpret_cast<const Elf_Dyn*>(file.data() + offset);
-            switch (dyn->d_tag) {
-                case DT_NULL: {
-                    break;
+    if (phoff != 0) {
+        auto phnum = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phnum;
+        auto phentsize = reinterpret_cast<const Elf_Ehdr*>(file.data())->e_phentsize;
+        uint64_t firstLoadedSegmentStart = std::numeric_limits<uint64_t>::max();
+        uint64_t lastLoadedSegmentEnd = 0;
+        const Elf_Phdr* phdrSelf = nullptr;
+        const Elf_Phdr* phdrDynamic = nullptr;
+        for (int i = 0; i < phnum; i++) {
+            const auto* phdr = reinterpret_cast<const Elf_Phdr*>(file.data() + phoff + i * phentsize);
+            if (phdr->p_type == PT_PHDR) {
+                phdrSelf = phdr;
+            } else if (phdr->p_type == PT_DYNAMIC) {
+                phdrDynamic = phdr;
+            } else if (phdr->p_type == PT_LOAD) {
+                if (phdr->p_vaddr < firstLoadedSegmentStart) {
+                    firstLoadedSegmentStart = phdr->p_vaddr;
                 }
-                case DT_SONAME: {
-                    sonameOffset = dyn->d_un.d_val;
-                    break;
-                }
-                case DT_STRTAB: {
-                    strtab = reinterpret_cast<const char*>(file.data() + dyn->d_un.d_val);
-                    break;
-                }
-                case DT_PLTREL: {
-                    info.use_rela = dyn->d_un.d_val == DT_RELA;
-                    break;
-                }
-                case DT_REL: {
-                    info.reldyn = reinterpret_cast<const Elf_Rel*>(file.data() + dyn->d_un.d_ptr);
-                    break;
-                }
-                case DT_RELA: {
-                    info.reladyn = reinterpret_cast<const Elf_Rela*>(file.data() + dyn->d_un.d_ptr);
-                    break;
-                }
-                case DT_RELSZ: {
-                    info.reldyn_size = dyn->d_un.d_val / sizeof(Elf_Rel);
-                    break;
-                }
-                case DT_RELASZ: {
-                    info.reladyn_size = dyn->d_un.d_val / sizeof(Elf_Rela);
-                    break;
-                }
-                case DT_JMPREL: {
-                    info.relplt = reinterpret_cast<const Elf_Rel*>(file.data() + dyn->d_un.d_ptr);
-                    break;
-                }
-                case DT_PLTRELSZ: {
-                    info.relplt_size = dyn->d_un.d_val / sizeof(Elf_Rel);
-                    break;
-                }
-                default: {
-                    // ignore
-                    break;
+                if (phdr->p_vaddr + phdr->p_memsz > lastLoadedSegmentEnd) {
+                    lastLoadedSegmentEnd = phdr->p_vaddr + phdr->p_memsz;
                 }
             }
         }
-        if (sonameOffset != 0 && strtab != nullptr) {
-            info.soname = strtab + sonameOffset;
+        info.loadBias = firstLoadedSegmentStart;
+        info.loadedSize = lastLoadedSegmentEnd - firstLoadedSegmentStart;
+        if (phdrDynamic != nullptr) {
+            // walk through dynamic section
+            uint64_t sonameOffset = 0;
+            const char* strtab = nullptr;
+            for (int i = 0; i < phdrDynamic->p_memsz / sizeof(Elf_Dyn); i++) {
+                auto offset = (isLoaded ? phdrDynamic->p_vaddr : phdrDynamic->p_offset) + i * sizeof(Elf_Dyn);
+                const auto* dyn = reinterpret_cast<const Elf_Dyn*>(file.data() + offset);
+                switch (dyn->d_tag) {
+                    case DT_NULL: {
+                        break;
+                    }
+                    case DT_SONAME: {
+                        sonameOffset = dyn->d_un.d_val;
+                        break;
+                    }
+                    case DT_STRTAB: {
+                        strtab = reinterpret_cast<const char*>(file.data() + dyn->d_un.d_val);
+                        break;
+                    }
+                    case DT_PLTREL: {
+                        info.use_rela = dyn->d_un.d_val == DT_RELA;
+                        break;
+                    }
+                    case DT_REL: {
+                        info.reldyn = reinterpret_cast<const Elf_Rel*>(file.data() + dyn->d_un.d_ptr);
+                        break;
+                    }
+                    case DT_RELA: {
+                        info.reladyn = reinterpret_cast<const Elf_Rela*>(file.data() + dyn->d_un.d_ptr);
+                        break;
+                    }
+                    case DT_RELSZ: {
+                        info.reldyn_size = dyn->d_un.d_val / sizeof(Elf_Rel);
+                        break;
+                    }
+                    case DT_RELASZ: {
+                        info.reladyn_size = dyn->d_un.d_val / sizeof(Elf_Rela);
+                        break;
+                    }
+                    case DT_JMPREL: {
+                        info.relplt = reinterpret_cast<const Elf_Rel*>(file.data() + dyn->d_un.d_ptr);
+                        break;
+                    }
+                    case DT_PLTRELSZ: {
+                        info.relplt_size = dyn->d_un.d_val / sizeof(Elf_Rel);
+                        break;
+                    }
+                    default: {
+                        // ignore
+                        break;
+                    }
+                }
+            }
+            if (sonameOffset != 0 && strtab != nullptr) {
+                info.soname = strtab + sonameOffset;
+            }
         }
     }
     // walk through section header
@@ -170,6 +295,17 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
                 info.gnu_hash = file.data() + (isLoaded ? shdr->sh_addr : shdr->sh_offset);
                 break;
             }
+            case SHT_PROGBITS: {
+                if (strcmp(name, ".gnu_debugdata") == 0) {
+                    // mini debug info
+                    if (!isLoaded) {
+                        // obviously, debug data is not loaded, so only file(not memory) is supported
+                        std::span<const uint8_t> debugData(file.data() + shdr->sh_offset, shdr->sh_size);
+                        info.miniDebugInfo = debugData;
+                    }
+                }
+                break;
+            }
             default: {
                 // ignore
                 break;
@@ -178,19 +314,63 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
     }
 }
 
+
+void ElfView::ParseDebugSymbol(std::span<const uint8_t> input) {
+    // check elf magic
+    if (input.size() < 64 || (memcmp(input.data(), ELFMAG, SELFMAG) != 0)) {
+        return;
+    }
+    // walk through the elf file, and get the symbol table
+    ElfInfo embedded;
+    auto type = static_cast<ElfClass>(input[4]);
+    embedded.elfClass = type;
+    if (type == kElf32) {
+        InitElfInfo<kElf32>(input, embedded, false);
+    } else if (type == kElf64) {
+        InitElfInfo<kElf64>(input, embedded, false);
+    }
+    LOGD("input size: {}, symtab size: {}", input.size(), embedded.symtab_size);
+    // walk through the symbol table, and add it to the symbol map
+    // finally release the memory, because debug symbol is typically large (and it is not file-backed)
+    if (embedded.elfClass == kElf32) {
+        const auto* symtab = static_cast<const Elf32_Sym*>(embedded.symtab);
+        for (uint32_t i = 0; i < embedded.symtab_size; i++) {
+            const char* symname = embedded.strtab + symtab[i].st_name;
+            if (symname[0] == '\0') {
+                continue;
+            }
+            mElfInfo->compressedDebugSymbols.emplace(symname, symtab[i].st_value);
+        }
+    } else if (embedded.elfClass == kElf64) {
+        const auto* symtab = static_cast<const Elf64_Sym*>(embedded.symtab);
+        for (uint32_t i = 0; i < embedded.symtab_size; i++) {
+            const char* symname = embedded.strtab + symtab[i].st_name;
+            if (symname[0] == '\0') {
+                continue;
+            }
+            mElfInfo->compressedDebugSymbols.emplace(symname, symtab[i].st_value);
+        }
+    }
+}
+
 void ElfView::AttachFileMemMapping(std::span<const uint8_t> fileMap) noexcept {
     mMemory = fileMap;
     mIsLoaded = false;
-    mElfInfo = {};
+    mElfInfo = std::make_unique<ElfInfo>();
     if (mMemory.data() == nullptr || mMemory.size() < 64 || (memcmp(mMemory.data(), ELFMAG, SELFMAG) != 0)) {
         // invalid elf, ignore
     } else {
+        auto& elfInfo = *mElfInfo;
         auto type = static_cast<ElfClass>(mMemory[4]);
-        mElfInfo.elfClass = type;
+        elfInfo.elfClass = type;
         if (type == kElf32) {
-            InitElfInfo<kElf32>(mMemory, mElfInfo, mIsLoaded);
+            InitElfInfo<kElf32>(mMemory, elfInfo, mIsLoaded);
         } else if (type == kElf64) {
-            InitElfInfo<kElf64>(mMemory, mElfInfo, mIsLoaded);
+            InitElfInfo<kElf64>(mMemory, elfInfo, mIsLoaded);
+        }
+        // if we found mini debug info, parse it
+        if (!elfInfo.miniDebugInfo.empty()) {
+            ParseMiniDebugInfo(elfInfo.miniDebugInfo);
         }
     }
 }
@@ -198,16 +378,17 @@ void ElfView::AttachFileMemMapping(std::span<const uint8_t> fileMap) noexcept {
 void ElfView::AttachLoadedMemoryView(std::span<const uint8_t> memory) {
     mMemory = memory;
     mIsLoaded = true;
-    mElfInfo = {};
+    mElfInfo = std::make_unique<ElfInfo>();
     if (mMemory.data() == nullptr || mMemory.size() < 64 || (memcmp(mMemory.data(), ELFMAG, SELFMAG) != 0)) {
         // invalid elf, ignore
     } else {
+        auto& elfInfo = *mElfInfo;
         auto type = static_cast<ElfClass>(mMemory[4]);
-        mElfInfo.elfClass = type;
+        elfInfo.elfClass = type;
         if (type == kElf32) {
-            InitElfInfo<kElf32>(mMemory, mElfInfo, mIsLoaded);
+            InitElfInfo<kElf32>(mMemory, elfInfo, mIsLoaded);
         } else if (type == kElf64) {
-            InitElfInfo<kElf64>(mMemory, mElfInfo, mIsLoaded);
+            InitElfInfo<kElf64>(mMemory, elfInfo, mIsLoaded);
         }
     }
 }
@@ -352,32 +533,38 @@ uint64_t ElfView::GetSymbolOffset(std::string_view symbol) const {
     if (symbol.empty()) {
         return 0;
     }
-    if (mElfInfo.elfClass == kElf32) {
+    auto& elfInfo = *mElfInfo;
+    if (elfInfo.elfClass == kElf32) {
         uint32_t index = 0;
         const Elf32_Sym* sym = nullptr;
-        if (GetDynamicSymbolIndexImpl<kElf32>(mMemory, mElfInfo, symbol, index, &sym)) {
-            return sym->st_value - mElfInfo.loadBias;
+        if (GetDynamicSymbolIndexImpl<kElf32>(mMemory, elfInfo, symbol, index, &sym)) {
+            return sym->st_value - elfInfo.loadBias;
         }
-    } else if (mElfInfo.elfClass == kElf64) {
+    } else if (elfInfo.elfClass == kElf64) {
         uint32_t index = 0;
         const Elf64_Sym* sym = nullptr;
-        if (GetDynamicSymbolIndexImpl<kElf64>(mMemory, mElfInfo, symbol, index, &sym)) {
-            return sym->st_value - mElfInfo.loadBias;
+        if (GetDynamicSymbolIndexImpl<kElf64>(mMemory, elfInfo, symbol, index, &sym)) {
+            return sym->st_value - elfInfo.loadBias;
         }
     }
     // search the symtab
-    if (mElfInfo.symtab != nullptr && mElfInfo.strtab != nullptr) {
-        if (mElfInfo.elfClass == kElf32) {
-            const auto* sym = GetNonDynamicSymbolImpl<kElf32>(mMemory, mElfInfo, symbol);
+    if (elfInfo.symtab != nullptr && elfInfo.strtab != nullptr) {
+        if (elfInfo.elfClass == kElf32) {
+            const auto* sym = GetNonDynamicSymbolImpl<kElf32>(mMemory, elfInfo, symbol);
             if (sym != nullptr) {
-                return sym->st_value - mElfInfo.loadBias;
+                return sym->st_value - elfInfo.loadBias;
             }
-        } else if (mElfInfo.elfClass == kElf64) {
-            const auto* sym = GetNonDynamicSymbolImpl<kElf64>(mMemory, mElfInfo, symbol);
+        } else if (elfInfo.elfClass == kElf64) {
+            const auto* sym = GetNonDynamicSymbolImpl<kElf64>(mMemory, elfInfo, symbol);
             if (sym != nullptr) {
-                return sym->st_value - mElfInfo.loadBias;
+                return sym->st_value - elfInfo.loadBias;
             }
         }
+    }
+    // check the compressed debug symbols
+    auto it = elfInfo.compressedDebugSymbols.find(std::string(symbol));
+    if (it != elfInfo.compressedDebugSymbols.end()) {
+        return it->second - elfInfo.loadBias;
     }
     return 0;
 }
@@ -415,17 +602,25 @@ GetFirstSymbolOffsetWithPrefixImpl(std::span<const uint8_t> file, const ElfInfo&
     if (symbolPrefix.empty() || !IsValid()) {
         return 0;
     }
-    if (mElfInfo.elfClass == kElf32) {
-        const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf32>(mMemory, mElfInfo, symbolPrefix);
+    auto& elfInfo = *mElfInfo;
+    if (elfInfo.elfClass == kElf32) {
+        const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf32>(mMemory, elfInfo, symbolPrefix);
         if (sym != nullptr) {
-            return sym->st_value - mElfInfo.loadBias;
+            return sym->st_value - elfInfo.loadBias;
         }
-    } else if (mElfInfo.elfClass == kElf64) {
-        const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf64>(mMemory, mElfInfo, symbolPrefix);
+    } else if (elfInfo.elfClass == kElf64) {
+        const auto* sym = GetFirstSymbolOffsetWithPrefixImpl<kElf64>(mMemory, elfInfo, symbolPrefix);
         if (sym != nullptr) {
-            return sym->st_value - mElfInfo.loadBias;
+            return sym->st_value - elfInfo.loadBias;
         }
     }
+    // walk through the compressed debug symbols
+    for (const auto& [key, value]: elfInfo.compressedDebugSymbols) {
+        if (key.starts_with(symbolPrefix)) {
+            return value - elfInfo.loadBias;
+        }
+    }
+    // not found
     return 0;
 }
 
@@ -436,18 +631,19 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
     if (!IsValid()) {
         return {};
     }
-    ElfClass elfClass = mElfInfo.elfClass;
+    auto& elfInfo = *mElfInfo;
+    ElfClass elfClass = elfInfo.elfClass;
     std::optional<uint32_t> dynSymIdx = std::nullopt;
     if (elfClass == kElf32) {
         uint32_t idx = -1;
         const Elf32_Sym* unused = nullptr;
-        if (GetDynamicSymbolIndexImpl<kElf32>(mMemory, mElfInfo, symbol, idx, &unused, true)) {
+        if (GetDynamicSymbolIndexImpl<kElf32>(mMemory, elfInfo, symbol, idx, &unused, true)) {
             dynSymIdx = idx;
         }
     } else if (elfClass == kElf64) {
         uint32_t idx = -1;
         const Elf64_Sym* unused = nullptr;
-        if (GetDynamicSymbolIndexImpl<kElf64>(mMemory, mElfInfo, symbol, idx, &unused, true)) {
+        if (GetDynamicSymbolIndexImpl<kElf64>(mMemory, elfInfo, symbol, idx, &unused, true)) {
             dynSymIdx = idx;
         }
     }
@@ -455,7 +651,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
         return {};
     }
     std::vector<uint64_t> result;
-    const auto& info = mElfInfo;
+    const auto& info = elfInfo;
     auto symidx = dynSymIdx.value();
     if (elfClass == kElf32) {
         // ELF32
@@ -465,7 +661,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF32_R_SYM(rel.r_info) == symidx
                         && (ELF32_R_TYPE(rel.r_info) == R_ARM_JUMP_SLOT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_JMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                     break;
                 }
             }
@@ -476,7 +672,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF32_R_TYPE(rel.r_info) == R_ARM_GLOB_DAT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_32
                                 || ELF32_R_TYPE(rel.r_info) == R_386_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                 }
             }
         } else {
@@ -485,7 +681,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF32_R_SYM(rel.r_info) == symidx
                         && (ELF32_R_TYPE(rel.r_info) == R_ARM_JUMP_SLOT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_JMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                     break;
                 }
             }
@@ -496,7 +692,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF32_R_TYPE(rel.r_info) == R_ARM_GLOB_DAT
                                 || ELF32_R_TYPE(rel.r_info) == R_386_32
                                 || ELF32_R_TYPE(rel.r_info) == R_386_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                 }
             }
             return result;
@@ -509,7 +705,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF64_R_SYM(rel.r_info) == symidx
                         && (ELF64_R_TYPE(rel.r_info) == R_AARCH64_JUMP_SLOT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_JUMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                     break;
                 }
             }
@@ -520,7 +716,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF64_R_TYPE(rel.r_info) == R_AARCH64_GLOB_DAT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_64
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                 }
             }
         } else {
@@ -529,7 +725,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                 if (ELF64_R_SYM(rel.r_info) == symidx
                         && (ELF64_R_TYPE(rel.r_info) == R_AARCH64_JUMP_SLOT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_JUMP_SLOT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                     break;
                 }
             }
@@ -540,7 +736,7 @@ std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const
                                 || ELF64_R_TYPE(rel.r_info) == R_AARCH64_GLOB_DAT
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_64
                                 || ELF64_R_TYPE(rel.r_info) == R_X86_64_GLOB_DAT)) {
-                    result.emplace_back(uint64_t(rel.r_offset) - mElfInfo.loadBias);
+                    result.emplace_back(uint64_t(rel.r_offset) - elfInfo.loadBias);
                 }
             }
         }
