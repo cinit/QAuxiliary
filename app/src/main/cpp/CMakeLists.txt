@@ -1,4 +1,5 @@
-cmake_minimum_required(VERSION 3.10...3.27)
+cmake_minimum_required(VERSION 3.28)
+# because cmake 3.28 support C++ modules
 project(qauxv)
 
 find_library(ANDROID_LIBS log)
@@ -110,8 +111,8 @@ target_compile_definitions(qauxv-core0 PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\
 target_link_options(qauxv-core0 PRIVATE "-Wl,-e,__libqauxv_main")
 
 target_link_libraries(qauxv-core0 dobby mmkv dexkit_static unwindstack base silk
-        c dl fmt-header-only z lsplant_static lzma
-        ${ANDROID_LIBS})
+        c dl fmt-header-only z lzma lsplant_static ${ANDROID_LIBS}
+)
 
 add_library(qauxv-dummy SHARED dummy/dummy.cc)
 add_library(qauxv-preload SHARED preload/preload.cc)

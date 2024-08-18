@@ -12,8 +12,10 @@ object Version {
     const val targetSdk = 34
     const val versionName = "1.5.2"
 
-    private const val defaultNdkVersion = "26.3.11579264"
-    private const val defaultCMakeVersion = "3.22.1"
+    private const val defaultNdkVersion = "27.0.12077973"
+
+    // LSPlant requires CMake 3.28.0+ to build
+    private const val defaultCMakeVersion = "3.28.0+"
 
     fun getNdkVersion(project: Project): String {
         val prop = getLocalProperty(project, "qauxv.override.ndk.version")
@@ -52,7 +54,8 @@ object Version {
 
     private fun findBuildToolsVersion(): String {
         val defaultBuildToolsVersion = "34.0.0" // AGP 8.2.0 need Build Tools 34.0.0
-        return File(System.getenv("ANDROID_HOME"), "build-tools").listFiles()?.filter { it.isDirectory }?.maxOfOrNull { it.name }?.also { println("Using build tools version $it") }
+        return File(System.getenv("ANDROID_HOME"), "build-tools").listFiles()?.filter { it.isDirectory }?.maxOfOrNull { it.name }
+            ?.also { println("Using build tools version $it") }
             ?: defaultBuildToolsVersion
     }
 }

@@ -23,7 +23,7 @@ QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 ## 一切开发旨在学习，请勿用于非法用途
 
 - 本项目保证永久开源，欢迎提交 PR，但是请不要提交用于非法用途的功能。
-- 如果某功能被大量运用于非法用途或严重侵害插件使用者权益，那么该功能将会被移除。
+- 如果某功能被大量运用于非法用途，或对其他用户的正常使用造成严重影响，那么该功能将会被移除。
 - 本模块完全免费开源，没有任何收费，请勿二次贩卖。
 - 鉴于项目的特殊性，开发团队可能在任何时间**停止更新**或**删除项目**
 
@@ -96,12 +96,14 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 ## 编译
 
-1. 安装 git, ccache(可选), cmake, SDK 和 NDK, JDK 17+, 版本参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);  
+1. 安装 git, ccache(可选), cmake 3.28.0+, SDK 和 NDK, JDK 17+, 版本参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);  
    JDK 版本最低 17, 当然使用 21 也是可以的。  
    注意: 编译脚本会自动寻找 ccache 并使用，而 Windows 平台下 msys2 的 ccache 存在问题会卡在 sync 阶段，
    建议 Windows 用户使用从 ccache 官网下载的 ccache 而不是 msys2 的 ccache;  
    另外你也可以选择不使用 ccache (如果你已经安装了 ccache 但不想使用，可以修改 [build.gradle.kts](app/build.gradle.kts)
-   中的 `ccacheExecutablePath` 为 `null`)
+   中的 `ccacheExecutablePath` 为 `null`)  
+   Android SDK 里的 cmake 最高 3.22.1, 但是我们需要 3.28.0+, 您可以从 [cmake 官网](https://cmake.org/download/) 下载 cmake,
+   并将其添加到您的 PATH 环境变量中。
 2. 将本仓库 clone 至本地；由于本项目使用的 submodule 含有一些不需要的以及非公开的二级 submodule, 请参考以下命令 clone 本项目以跳过这些 submodule:
    ```shell
    git clone https://github.com/cinit/QAuxiliary
@@ -116,11 +118,13 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
    去除不使用的 submodule 后，一共有 14 个 submodule, 如果 clone 了很久也没有完成，请检查您的网络以及代理是否配置正确。
 3. 使用 Gradle 编译安装包: `./gradlew :app:assembleDebug` 或者 `./gradlew :app:synthesizeDistReleaseApksCI`;
 
+本项目编译环境配置可能比较复杂，如果您在配置环境或者编译过程中遇到任何问题，您可以直接在 GitHub Issue 中提出，我们会尽快回复。
+
 ---
 
 ## 赞助
 
 - 由于项目的特殊性，我们不接受任何形式的捐赠，但是我们希望有更多的人能够参与本项目的开发
-- 如果您有兴趣参与本项目的开发，您可以参考[贡献指南](.github/CONTRIBUTING.md)
+- 如果您有兴趣参与本项目的开发，您可以参考[贡献指南](.github/CONTRIBUTING.md)，其中包含了一些可以帮助您快速上手的信息
 
 ## [通用许可协议](https://github.com/qwq233/License/blob/master/v2/LICENSE.md)

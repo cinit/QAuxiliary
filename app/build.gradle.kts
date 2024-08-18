@@ -68,7 +68,7 @@ if (ccacheExecutablePath != null) {
 }
 
 fun getSignatureKeyDigest(signConfig: SigningConfig?): String? {
-    var key1: String? = if (signConfig != null && signConfig.storeFile != null) {
+    val key1: String? = if (signConfig?.storeFile != null) {
         // extract certificate digest
         val key = signConfig.storeFile
         val keyStore = KeyStore.getInstance(signConfig.storeType ?: KeyStore.getDefaultType())
@@ -114,6 +114,7 @@ android {
                         "-DANDROID_CCACHE=$it",
                     )
                 }
+                arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 val flags = arrayOf(
                     "-Qunused-arguments",
                     "-fno-rtti",
