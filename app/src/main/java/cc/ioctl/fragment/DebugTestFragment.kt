@@ -22,6 +22,7 @@
 
 package cc.ioctl.fragment
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -39,9 +40,11 @@ import com.github.kyuubiran.ezxhelper.utils.isStatic
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.poststartup.StartupInfo
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.Natives
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl
+import io.github.qauxv.util.soloader.NativeLoader
 import io.github.qauxv.util.xpcompat.XposedBridge
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.android.AndroidClassLoadingStrategy
@@ -256,7 +259,8 @@ class DebugTestFragment : BaseRootLayoutFragment() {
         return stat
     }
 
-    fun runTests() {
+    fun runTests(): String {
+        var result = ""
         try {
             // init LSPlant for self test purpose
             if (StartupInfo.getHookBridge() == null) {
@@ -271,15 +275,17 @@ class DebugTestFragment : BaseRootLayoutFragment() {
                 .loaded
             val textClass = klass.newInstance()
 
-            mDebugText.text = mDebugText.text.toString() + "\n" + textClass.getText()
-            mDebugText.text = mDebugText.text.toString() + "\n" + performHookTest()
+            result += "\n" + textClass.getText()
+            result += "\n" + performHookTest()
         } catch (e: Throwable) {
             val err = if (e is java.lang.reflect.InvocationTargetException) e.targetException else e
             Log.e(e)
-            mDebugText.text = mDebugText.text.toString() + "\n" + Log.getStackTraceString(err)
+            result += "\n" + Log.getStackTraceString(err)
         }
+        return result
     }
 
+    @SuppressLint("SetTextI18n")
     override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
         title = this.javaClass.simpleName
         val root = ScrollView(context).apply {
@@ -296,7 +302,11 @@ class DebugTestFragment : BaseRootLayoutFragment() {
         mDebugText.setTextIsSelectable(true)
 
         SyncUtils.post {
-            runTests()
+            mDebugText.text =
+                "API " + android.os.Build.VERSION.SDK_INT +
+                    ", ISA: " + NativeLoader.getIsaName(NativeLoader.getPrimaryNativeLibraryIsa()) +
+                    ", page size: " + Natives.getpagesize() +
+                    "\n" + runTests()
         }
 
         return root

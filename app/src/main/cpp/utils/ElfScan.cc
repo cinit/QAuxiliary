@@ -52,7 +52,7 @@ std::vector<uint64_t> FindByteSequenceImpl(const void* baseAddress, bool isLoade
         }
     }
     // check whether the base address is aligned
-    if (reinterpret_cast<uintptr_t>(baseAddress) % 4096 != 0) {
+    if (reinterpret_cast<uintptr_t>(baseAddress) % GetPageSize() != 0) {
         LOGE("base address is not aligned, got {}", baseAddress);
         return {};
     }

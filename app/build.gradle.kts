@@ -26,6 +26,7 @@ import com.android.build.gradle.internal.tasks.factory.dependsOn
 import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
 import com.android.tools.build.apkzlib.zfile.ZFiles
+import com.android.tools.build.apkzlib.zip.AlignmentRule
 import com.android.tools.build.apkzlib.zip.AlignmentRules
 import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
@@ -420,7 +421,23 @@ val synthesizeDistReleaseApksCI by tasks.registering {
         val requiredAbiList = listOf("armeabi-v7a", "arm64-v8a", "x86", "x86_64")
         outputDir.mkdir()
         val options = ZFileOptions().apply {
-            alignmentRule = AlignmentRules.constantForSuffix(".so", 4096)
+            alignmentRule = object : AlignmentRule {
+                override fun alignment(path: String): Int {
+                    if (path.endsWith(".so")) {
+                        if (path.contains("arm64-v8a") || path.contains("x86_64") || path.contains("riscv64")) {
+                            // for 64-bit so files, we use 16k alignment in case of 16k page size
+                            return 16384
+                        } else {
+                            // for 32-bit so files, we use 4k alignment
+                            // will there be any 16k-page-size devices supporting 32-bit abi?
+                            return 4096
+                        }
+                    } else {
+                        // no alignment for other files
+                        return AlignmentRule.NO_ALIGNMENT
+                    }
+                }
+            }
             noTimestamps = true
             autoSortFiles = true
         }
