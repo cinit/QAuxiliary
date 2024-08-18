@@ -1,8 +1,8 @@
 blank_issues_enabled: false
 contact_links:
-  - name: Group
+  - name: 交流群 / Group
     url: https://t.me/QAuxiliaryChat
-    about: Our Telegram Group 
-  - name: smart-question
+    about: Our Telegram Group
+  - name: 如何智慧地提问 / smart-question
     url: https://github.com/ryanhanwu/How-To-Ask-Questions-The-Smart-Way/blob/main/README-zh_CN.md
-    about: READ BEFORE YOU ASKING ANY QUESTION
+    about: 在提问之前请阅读 / READ BEFORE YOU ASKING ANY QUESTION

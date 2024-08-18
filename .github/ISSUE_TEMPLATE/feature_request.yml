@@ -1,6 +1,6 @@
-name: Feature request/功能请求
-description: Feature request./提出你想要的功能。
-labels: [Feature]
+name: 功能请求 / Feature request
+description: 提出你想要的功能。 / Feature request.
+labels: [ Feature ]
 title: "[功能请求] "
 body:
   - type: markdown
@@ -12,8 +12,8 @@ body:
   - type: "input"
     id: version
     attributes:
-      label: "QQ(TIM)版本/QQ(TIM) Version"
-      description: "QQ(TIM)版本/QQ(TIM) Version"
+      label: "QQ(TIM) 版本 / QQ(TIM) Version"
+      description: "QQ(TIM) 版本 / QQ(TIM) Version"
     validations:
       required: true
 
@@ -27,7 +27,7 @@ body:
   - type: textarea
     id: related-feature
     attributes:
-      label: 联系到哪些已经存在的bug或者功能
+      label: 联系到哪些已经存在的 bug 或者功能
       description: 如果没有留空即可
     validations:
       required: false
@@ -35,6 +35,6 @@ body:
   - type: textarea
     id: details
     attributes:
-      label: 具体功能需要/Specific features require
+      label: 具体功能需要 / Detailed features requirements
     validations:
       required: true

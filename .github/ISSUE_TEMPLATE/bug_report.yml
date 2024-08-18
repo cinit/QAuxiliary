@@ -1,5 +1,5 @@
-name: Bug report/反馈 Bug
-description: Report errors or unexpected behavior./反馈错误或异常行为。
+name: 反馈问题 / Bug Report
+description: 反馈错误或异常行为。 / Report errors or unexpected behavior.
 labels: [ "Bug" ]
 title: "[Bug] "
 body:
@@ -10,7 +10,7 @@ body:
         为了使我们更好地帮助你，请提供以下信息。
   - type: textarea
     attributes:
-      label: Steps to reproduce/复现步骤
+      label: 复现步骤 / Steps to reproduce
       placeholder: |
         1. 
         2. 
@@ -19,38 +19,38 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: Expected behaviour/预期行为
-      placeholder: Tell us what should happen/正常情况下应该发生什么
+      label: 预期行为 / Expected behaviour
+      placeholder: 正常情况下应该发生什么 / Tell us what should happen
     validations:
       required: true
   - type: textarea
     attributes:
-      label: Actual behaviour/实际行为
+      label: 实际行为 / Actual behaviour/
       description: 如果含有截图，个人信息注意打码保护
-      placeholder: Tell us what happens instead/实际上发生了什么
+      placeholder: 实际上发生了什么 / Tell us what happens instead
     validations:
       required: true
 
   - type: input
     attributes:
-      label: Xposed Framework you used/你使用的Xposed框架
+      label: 你使用的Xposed框架 / Xposed Framework you used
     validations:
       required: true
   - type: input
     attributes:
-      label: Your Android version/你使用的安卓系统版本
+      label: 你使用的安卓系统版本 / Your Android version
     validations:
       required: true
   - type: input
     attributes:
-      label: QQ(TIM)版本/QQ(TIM) Version
-      description: QQ(TIM)版本/QQ(TIM) Version
+      label: QQ(TIM) 版本 / QQ(TIM) Version
+      description: QQ(TIM) 版本 / QQ(TIM) Version
     validations:
       required: true
   - type: input
     attributes:
-      label: Module Version/模块版本
-      description: Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed. Get the latest CI version from https://t.me/QAuxiliary_CI ./不要使用“最新版”。给出详细版本号，否则 issue 将被关闭。在 https://t.me/QAuxiliary_CI 获取最新 CI 版本。
+      label: 模块版本 / Module Version
+      description: 不要使用“最新版”。给出详细版本号，否则 issue 将被关闭。在 https://t.me/QAuxiliary_CI 获取最新 CI 版本。 / Don't use 'latest'. Specify actual version with 4 digits, otherwise your issue will be closed. Get the latest CI version from https://t.me/QAuxiliary_CI .
     validations:
       required: true
   - type: checkboxes
@@ -58,9 +58,9 @@ body:
     attributes:
       label: Version and Other Requirements/版本和其他要求
       options:
-        - label: I am using latest debug CI version of QAuxiliary and enable verbose log/我正在使用最新 CI 调试版本且启用详细日志
+        - label: 我正在使用最新 CI 调试版本且启用详细日志 / I am using latest debug CI version of QAuxiliary and enable verbose log
           required: false
-        - label: The QQ I am using is an official release version, not a modified or beta version/我使用的 QQ 是官方发布的正式版本，而非修改版或测试版
+        - label: 我使用的 QQ 是官方发布的正式版本，而非修改版或测试版 / The QQ I am using is an official release version, not a modified or beta version
           required: false
         - label: 我已经在 [Issue Tracker](https://github.com/cinit/QAuxiliary/issues) 中找过我要提出的问题，没有找到相同问题。重复问题会被关闭。
           required: true
@@ -71,13 +71,13 @@ body:
 
   - type: textarea
     attributes:
-      label: Logs/日志
+      label: 日志 / Logs
       description: 功能问题请先复现一次错误，然后在 模块设置界面-故障排查-功能异常列表 找到存在问题的功能，复制错误信息粘贴到此处；激活问题请提供 [bugreport](https://developer.android.google.cn/studio/debug/bug-report?hl=zh-cn) 日志。无日志提交会被关闭。
-      placeholder: Paste logs here or upload logs by clicking the bar on the bottom. /将日志粘贴到此处或者点击文本框底栏上传日志文件。
+      placeholder: 将日志粘贴到此处或者点击文本框底栏上传日志文件。 / Paste logs here or upload logs by clicking the bar on the bottom.
     validations:
       required: true
 
   - type: textarea
     id: extra-desc
     attributes:
-      label: 补充说明（可选）
+      label: 补充说明（可选） / Additional information (optional)
