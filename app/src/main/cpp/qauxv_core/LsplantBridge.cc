@@ -2,6 +2,8 @@
 // Created by sulfate on 2024-08-03.
 //
 
+#include "LsplantBridge.h"
+
 #include <string>
 #include <string_view>
 #include <vector>
@@ -13,11 +15,39 @@
 #include "natives_utils.h"
 #include "utils/MemoryDexLoader.h"
 #include "qauxv_core/jni_method_registry.h"
-
+#include "qauxv_core/NativeCoreBridge.h"
+#include "dobby.h"
 #include "utils/art_symbol_resolver.h"
 #include "lsplant.hpp"
 
 static bool sLsplantInitSuccess = false;
+
+namespace qauxv {
+
+bool InitLSPlantImpl(JNIEnv* env) {
+    const auto initProc = [env] {
+        ::lsplant::InitInfo sLSPlantInitInfo = {
+                .inline_hooker = [](auto t, auto r) {
+                    void* backup = nullptr;
+                    return qauxv::CreateInlineHook(t, r, &backup) == RT_SUCCESS ? backup : nullptr;
+                },
+                .inline_unhooker = [](auto t) {
+                    return qauxv::DestroyInlineHook(t) == RT_SUCCESS;
+                },
+                .art_symbol_resolver = [](auto symbol) {
+                    return GetLibArtSymbol(symbol);
+                },
+                .art_symbol_prefix_resolver = [](auto symbol) {
+                    return GetLibArtSymbolPrefix(symbol);
+                }
+        };
+        return ::lsplant::Init(env, sLSPlantInitInfo);
+    };
+    static bool sLSPlantInitializeResult = initProc();
+    return sLSPlantInitializeResult;
+}
+
+}
 
 extern "C"
 JNIEXPORT void JNICALL

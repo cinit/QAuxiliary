@@ -22,6 +22,7 @@
 
 package io.github.qauxv.util.hookimpl;
 
+import android.annotation.SuppressLint;
 import android.os.Build;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -59,6 +60,9 @@ public class InMemoryClassLoaderHelper implements IClassLoaderHelper {
     private Constructor<?> elementConstructor1;
     private Constructor<?> elementConstructor4;
 
+    // Warning: You need to bypass the following hidden API restrictions before using this method:
+    // Ldalvik/system/DexPathList$Element;-><init>(Ldalvik/system/DexFile;)V,lo-prio,max-target-o
+
     private Object createElement(@NonNull DexFile dexFiles) {
         if (Build.VERSION.SDK_INT >= 26) {
             // public Element(DexFile dexFile) since SDK 26+
@@ -89,6 +93,7 @@ public class InMemoryClassLoaderHelper implements IClassLoaderHelper {
         }
     }
 
+    @SuppressLint("DiscouragedPrivateApi")
     @Override
     public void injectDexToClassLoader(@NonNull ClassLoader classLoader, @NonNull byte[] dexBytes, @Nullable String dexName)
             throws IllegalArgumentException, UnsupportedOperationException {

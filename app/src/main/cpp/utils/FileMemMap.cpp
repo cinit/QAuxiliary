@@ -10,6 +10,7 @@
 #include <sys/stat.h>
 
 #include "FileMemMap.h"
+#include "MemoryUtils.h"
 
 FileMemMap::~FileMemMap() noexcept {
     if (mAddress != nullptr) {
@@ -35,8 +36,9 @@ int FileMemMap::mapFilePath(const char* path, bool readOnly, size_t length) {
         close(fd);
         return EINVAL;
     }
-    size_t pageSize = (length + PAGE_SIZE - 1) & PAGE_MASK;
-    void* addr = mmap(nullptr, pageSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE), MAP_PRIVATE, fd, 0);
+    size_t kPageSize = utils::GetPageSize();
+    size_t pageAlignedSize = (length + kPageSize - 1u) & ~(kPageSize - 1u);
+    void* addr = mmap(nullptr, pageAlignedSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE), MAP_PRIVATE, fd, 0);
     if (addr == MAP_FAILED) {
         int err = errno;
         close(fd);
@@ -45,7 +47,7 @@ int FileMemMap::mapFilePath(const char* path, bool readOnly, size_t length) {
     close(fd);
     mAddress = addr;
     mLength = length;
-    mMapLength = pageSize;
+    mMapLength = pageAlignedSize;
     return 0;
 }
 
@@ -63,15 +65,16 @@ int FileMemMap::mapFileDescriptor(int fd, bool readOnly, size_t length, bool sha
     if (length == 0) {
         return EINVAL;
     }
-    size_t pageSize = (length + PAGE_SIZE - 1) & PAGE_MASK;
-    void* addr = mmap(nullptr, pageSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE),
+    size_t kPageSize = utils::GetPageSize();
+    size_t pageAlignedSize = (length + kPageSize - 1u) & ~(kPageSize - 1u);
+    void* addr = mmap(nullptr, pageAlignedSize, readOnly ? PROT_READ : (PROT_READ | PROT_WRITE),
                       shared ? MAP_SHARED : MAP_PRIVATE, fd, 0);
     if (addr == MAP_FAILED) {
         return errno;
     }
     mAddress = addr;
     mLength = length;
-    mMapLength = pageSize;
+    mMapLength = pageAlignedSize;
     return 0;
 }
 
