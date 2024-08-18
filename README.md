@@ -122,7 +122,7 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
    去除不使用的 submodule 后，一共有 14 个 submodule, 如果 clone 了很久也没有完成，请检查您的网络以及代理是否配置正确。
 3. 使用 Gradle 编译安装包: `./gradlew :app:assembleDebug` 或者 `./gradlew :app:synthesizeDistReleaseApksCI`;
 
-本项目编译环境配置可能比较复杂，如果您在配置环境或者编译过程中遇到任何问题，您可以直接在 GitHub Issue 中提出，我们会尽快回复。
+本项目编译环境配置可能比较复杂，如果您在配置环境或者编译过程中遇到任何问题，您可以直接在交流群或 GitHub Issue 中提出，我们会尽快回复。
 
 ---
 

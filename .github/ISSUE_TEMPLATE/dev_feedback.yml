@@ -1,0 +1,28 @@
+name: Development Help/开发者帮助
+description: Report issues or ask for help on development./汇报问题或请求开发帮助（仅限开发者）。
+labels: [ "dev" ]
+title: "[dev] "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        感谢给 QAuxiliary 汇报问题！
+        为了使我们更好地帮助你，请提供以下信息。
+  - type: textarea
+    attributes:
+      label: Description/描述
+      placeholder: |
+        1. 
+        2. 
+        3.
+    validations:
+      required: true
+  - type: checkboxes
+    id: latest
+    attributes:
+      label: Other Requirements/其他要求
+      options:
+        - label: 我已经在 [Issue Tracker](https://github.com/cinit/QAuxiliary/issues) 中找过我要提出的问题，没有找到相同问题。重复问题会被关闭。
+          required: true
+        - label: 我知晓此 Issue 模板仅限开发者使用，普通用户请使用问题反馈或功能请求模板。
+          required: true
