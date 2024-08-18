@@ -16,7 +16,7 @@ on:
 jobs:
   build:
     name: Build CI (Pull Request)
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     env:
       CCACHE_COMPILERCHECK: "%compiler% -dumpmachine; %compiler% -dumpversion"
       CCACHE_NOHASHDIR: "true"
@@ -45,7 +45,7 @@ jobs:
           cache: gradle
       - name: Install ccache
         run: |
-          sudo apt install -y ccache
+          sudo apt install -y ccache ninja-build
           ccache -o max_size=1G
           ccache -o hash_dir=false
           ccache -o hard_link=true
@@ -61,14 +61,13 @@ jobs:
           key: native-cache-${{ github.sha }}
           restore-keys: native-cache-
 
-      - name: Setup cmake
+      - name: Setup SDK
         run: |
           echo "ANDROID_HOME=${ANDROID_HOME}"
           echo "ANDROID_SDK_ROOT=${ANDROID_SDK_ROOT}"
           mkdir -p "$ANDROID_HOME/licenses/"
           echo > "$ANDROID_HOME/licenses/android-sdk-license"
           echo -n 24333f8a63b6825ea9c5514f83c2829b004d1fee > "$ANDROID_HOME/licenses/android-sdk-license"
-          ${ANDROID_HOME}/cmdline-tools/latest/bin/sdkmanager --install "cmake;3.22.1" --sdk_root=${ANDROID_SDK_ROOT}
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
 
       - name: Setup Gradle
