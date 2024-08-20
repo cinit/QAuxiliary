@@ -56,7 +56,7 @@ body:
   - type: checkboxes
     id: latest
     attributes:
-      label: Version and Other Requirements/版本和其他要求
+      label: 版本和其他要求 / Version and Other Requirements
       options:
         - label: 我正在使用最新 CI 调试版本且启用详细日志 / I am using latest debug CI version of QAuxiliary and enable verbose log
           required: false
