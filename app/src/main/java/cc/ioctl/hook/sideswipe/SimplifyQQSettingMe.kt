@@ -52,6 +52,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_6_5
 import io.github.qauxv.util.QQVersion.QQ_8_8_11
 import io.github.qauxv.util.QQVersion.QQ_8_9_23
 import io.github.qauxv.util.QQVersion.QQ_9_0_20
+import io.github.qauxv.util.QQVersion.QQ_9_0_85
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup_New
 import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZplanExpGroup_Old
@@ -63,6 +64,7 @@ import io.github.qauxv.util.xpcompat.XposedBridge
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.*
 import java.lang.reflect.Array
+import java.lang.reflect.Modifier
 import java.util.SortedMap
 
 //侧滑栏精简
@@ -177,7 +179,15 @@ object SimplifyQQSettingMe :
         XposedBridge.hookAllConstructors(kQQSettingMeView, HookUtils.afterIfEnabled(this) { param ->
             //中间部分(QQ会员 我的钱包等)
             val midContentName = ConfigTable.getConfig<String>(MidContentName)
-            val midContentListLayout = if (requireMinQQVersion(QQ_8_6_5)) {
+            val midContentListLayout = if (requireMinQQVersion(QQ_9_0_85)) {
+                param.thisObject::class.java.declaredFields.firstOrNull {
+                    it.modifiers and (Modifier.STATIC or Modifier.FINAL or Modifier.PRIVATE) == Modifier.PRIVATE
+                        && it.type == LinearLayout::class.java
+                }?.let {
+                    it.isAccessible = true
+                    it.get(param.thisObject) as LinearLayout?
+                }
+            } else if (requireMinQQVersion(QQ_8_6_5)) {
                 param.thisObject.get(midContentName, LinearLayout::class.java)
             } else {
                 param.thisObject.get(midContentName, View::class.java) as LinearLayout
@@ -210,9 +220,9 @@ object SimplifyQQSettingMe :
             val underSettingsLayout = if (id is Int && vg is ViewGroup) {
                 vg.findViewById(id)
             } else if (requireMinQQVersion(QQ_8_6_5)) {
-                val parent = midContentListLayout?.parent?.parent as ViewGroup
+                val parent = midContentListLayout?.parent?.parent as ViewGroup?
                 var ret: LinearLayout? = null
-                parent.forEach {
+                parent?.forEach {
                     if (it is LinearLayout && it[0] is LinearLayout) {
                         ret = it
                     }
@@ -223,7 +233,11 @@ object SimplifyQQSettingMe :
                 param.thisObject.get(underSettingsName, View::class.java) as? LinearLayout
             }
             val correctUSLayout: LinearLayout? =
-                if (requireMinQQVersion(QQ_8_9_23)) (underSettingsLayout as LinearLayout)[0] as LinearLayout else underSettingsLayout
+                if (requireMinQQVersion(QQ_8_9_23)) {
+                    (underSettingsLayout as LinearLayout?)?.get(0) as LinearLayout?
+                } else {
+                    underSettingsLayout
+                }
             correctUSLayout?.forEachIndexed { i, v ->
                 val tv = (v as LinearLayout)[1] as TextView
                 val text = tv.text
