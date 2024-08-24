@@ -23,6 +23,8 @@
 package wang.allenyou.hook
 
 import android.annotation.SuppressLint
+import android.graphics.Canvas
+import android.widget.EditText
 import android.widget.TextView
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -30,10 +32,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
-import io.github.qauxv.util.xpcompat.XC_MethodHook
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -52,29 +52,16 @@ object DisableUtfControlCharacterInNicknameHook : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         val textViewClass = Initiator.loadClass("android.widget.TextView")
-        val onPreDrawMethod = textViewClass.getDeclaredMethod("onPreDraw")
-        val wrappedTextViewClass = Initiator.loadClass("android.widget.WrappedTextView")
-        val setWrappedTextMethod = wrappedTextViewClass.getDeclaredMethod("setText", CharSequence::class.java, Initiator.loadClass("android.widget.TextView${'$'}BufferType"))
-        val modifyHook = fun(hookParam: XC_MethodHook.MethodHookParam){
-            if (hookParam.args.isEmpty()) {
-                return
-            }
-            if (hookParam.args[0] !is CharSequence) {
-                return
-            }
-            Log.d("${hookParam.args[0]} [[Allenyou-Debug]]")
-            if (BLACKLIST.map { ch -> (hookParam.args[0] as String).contains(ch)}.isEmpty()) {
-                return
-            }
-            hookParam.args[0] = filterControlCharacter(hookParam.args[0] as CharSequence)
-        }
-        hookBeforeIfEnabled(setWrappedTextMethod, modifyHook)
-        hookBeforeIfEnabled(onPreDrawMethod) {
+        val onDrawMethod = textViewClass.getDeclaredMethod("onDraw", Canvas::class.java)
+        hookBeforeIfEnabled(onDrawMethod) {
             if (it.thisObject !is TextView) {
                 return@hookBeforeIfEnabled
             }
+            if (it.thisObject is EditText) {
+                return@hookBeforeIfEnabled
+            }
             val str = (it.thisObject as TextView).text.toString()
-            if (BLACKLIST.map { ch -> str.contains(ch)}.isEmpty()) {
+            if (BLACKLIST.none { ch -> str.contains(ch) }) {
                 return@hookBeforeIfEnabled
             }
             (it.thisObject as TextView).text = filterControlCharacter(str)
