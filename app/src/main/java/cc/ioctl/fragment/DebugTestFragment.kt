@@ -262,10 +262,6 @@ class DebugTestFragment : BaseRootLayoutFragment() {
     fun runTests(): String {
         var result = ""
         try {
-            // init LSPlant for self test purpose
-            if (StartupInfo.getHookBridge() == null) {
-                LsplantHookImpl.initializeLsplantHookBridge();
-            }
             val klass = ByteBuddy()
                 .subclass(TextClass::class.java)
                 .method(ElementMatchers.named("getText"))
@@ -274,8 +270,12 @@ class DebugTestFragment : BaseRootLayoutFragment() {
                 .load(TextClass::class.java.classLoader, AndroidClassLoadingStrategy.Wrapping())
                 .loaded
             val textClass = klass.newInstance()
-
             result += "\n" + textClass.getText()
+
+            // init LSPlant for self test purpose
+            if (StartupInfo.getHookBridge() == null) {
+                LsplantHookImpl.initializeLsplantHookBridge();
+            }
             result += "\n" + performHookTest()
         } catch (e: Throwable) {
             val err = if (e is java.lang.reflect.InvocationTargetException) e.targetException else e
@@ -305,7 +305,7 @@ class DebugTestFragment : BaseRootLayoutFragment() {
             mDebugText.text =
                 "API " + android.os.Build.VERSION.SDK_INT +
                     ", ISA: " + NativeLoader.getIsaName(NativeLoader.getPrimaryNativeLibraryIsa()) +
-                    ", page size: " + Natives.getpagesize() +
+                    ", page size: " + android.system.Os.sysconf(android.system.OsConstants._SC_PAGESIZE) +
                     "\n" + runTests()
         }
 
