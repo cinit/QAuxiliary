@@ -294,7 +294,7 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
             }
         }
     }
-    LOGD("{}: dynsym size: {}, symtab size: {}", info.soname, info.dynsym_size, info.symtab_size);
+    LOGD("{}: dynsym size: {}, symtab size: {}, bias=0x{:x}", info.soname, info.dynsym_size, info.symtab_size, info.loadBias);
 }
 
 
@@ -382,6 +382,8 @@ static void WalkThroughDynamicSymbolTable(
         }
     }
     // walk through the relocation table to get the PLT offsets
+    // We don't need PLT hook for now.
+    /*
     constexpr auto kRelPltTypes = []() {
         if constexpr (kElfClass == kElf32) {
             return std::make_tuple(
@@ -474,6 +476,7 @@ static void WalkThroughDynamicSymbolTable(
     } else {
         funcWalkThroughRelocationTable.template operator()<false>();
     }
+     */
 }
 
 void ElfView::ParseFileMemMapping(std::span<const uint8_t> fileMap) noexcept {
