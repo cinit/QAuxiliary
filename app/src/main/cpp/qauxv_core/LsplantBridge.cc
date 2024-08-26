@@ -20,6 +20,10 @@
 #include "utils/art_symbol_resolver.h"
 #include "lsplant.hpp"
 
+#undef LOGD
+
+#include "utils/Log.h"
+
 static bool sLsplantInitSuccess = false;
 
 namespace qauxv {
@@ -35,10 +39,18 @@ bool InitLSPlantImpl(JNIEnv* env) {
                     return qauxv::DestroyInlineHook(t) == RT_SUCCESS;
                 },
                 .art_symbol_resolver = [](auto symbol) {
-                    return GetLibArtSymbol(symbol);
+                    auto ret = GetLibArtSymbol(symbol);
+                    if (ret == nullptr) {
+                        LOGD("symbol '{}' not found", symbol);
+                    }
+                    return ret;
                 },
                 .art_symbol_prefix_resolver = [](auto symbol) {
-                    return GetLibArtSymbolPrefix(symbol);
+                    auto ret = GetLibArtSymbolPrefix(symbol);
+                    if (ret == nullptr) {
+                        LOGD("symbol prefix '{}' not found", symbol);
+                    }
+                    return ret;
                 }
         };
         return ::lsplant::Init(env, sLSPlantInitInfo);
