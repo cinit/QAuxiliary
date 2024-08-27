@@ -64,6 +64,17 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 
     override fun initOnce() = throwOrTrue {
 
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            // 小程序菜单键消息数量
+            Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
+                .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
+                .hookAfter { param ->
+                    val tv = param.args[0] as TextView
+                    val count = param.args[1] as Int
+                    tv.text = count.toString()
+                }
+        }
+
         if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
             // 群消息数量 + 群聊左上角返回消息数量
             val clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
