@@ -67,6 +67,7 @@ object AntiNickBlock : MultiItemDelayableHook(
         //public class ? extends com.tencent.mobileqq.aio.msglist.holder.component.nick.block.AbsNickBlockProvider
         val providerList = arrayOf(
             when {
+                requireMinQQVersion(QQVersion.QQ_9_0_65) -> "com.tencent.mobileqq.activity.qcircle.g"
                 requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.activity.qcircle.h"
                 requireMinQQVersion(QQVersion.QQ_9_0_35) -> "com.tencent.mobileqq.activity.qcircle.e"
                 requireMinQQVersion(QQVersion.QQ_9_0_30) -> "com.tencent.mobileqq.activity.qcircle.f"
