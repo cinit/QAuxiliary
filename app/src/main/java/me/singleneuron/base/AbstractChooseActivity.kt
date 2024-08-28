@@ -78,7 +78,7 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
                         null
                     }
                 }
-                val file = File(sendCacheDir, System.currentTimeMillis().toString() + displayName)
+                val file = File(sendCacheDir, displayName ?: "默认文件名${System.currentTimeMillis()}")
                 file.createNewFile()
                 file.outputStream().use { output ->
                     input.copyTo(output)
@@ -105,7 +105,7 @@ abstract class AbstractChooseActivity : AppCompatTransferActivity(), WindowIsTra
                         null
                     }
                 }
-                val file = File(sendCacheDir, System.currentTimeMillis().toString() + displayName)
+                val file = File(sendCacheDir, displayName ?: "默认文件名${System.currentTimeMillis()}")
                 file.createNewFile()
                 file.outputStream().use { output ->
                     input.copyTo(output)
