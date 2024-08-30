@@ -46,7 +46,7 @@ object ForcePhoneMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_15)
 
     override fun initOnce() = throwOrTrue {
-        check(isAvailable) { "ForcePadMode is not available" }
+        check(isAvailable) { "ForcePhoneMode is not available" }
         val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
         appSettingClass.getDeclaredMethod("f").hookAfter {
             val appIdPhone = appSettingClass.getStaticObject("e")
