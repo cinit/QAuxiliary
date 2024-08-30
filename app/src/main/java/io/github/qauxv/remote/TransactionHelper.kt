@@ -161,12 +161,12 @@ object TransactionHelper {
         val cfg = ConfigManager.getDefaultConfig()
         synchronized(sCardMsgHistoryLock) {
             val json = cfg.getString(KEY_MSG_SYNC_LIST, null)
-            val items = if (json.isNullOrEmpty()) {
+            var items = if (json.isNullOrEmpty()) {
                 emptyList()
             } else {
                 deserializeCardMsgSendRecordListFromJson(json)
             }
-            items.filter { it.uuid != uuid }
+            items = items.filter { it.uuid != uuid }
             cfg.putString(KEY_MSG_SYNC_LIST, serializeCardMsgSendRecordListToJson(items))
         }
     }
