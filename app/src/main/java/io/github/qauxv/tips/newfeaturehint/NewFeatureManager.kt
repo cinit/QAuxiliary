@@ -71,6 +71,8 @@ object NewFeatureManager {
             return null
         }
         if (lastCheckVersionCode == -1) {
+            // first time
+            markAllFeaturesKnown()
             return null
         }
         val known = knownFeatures
