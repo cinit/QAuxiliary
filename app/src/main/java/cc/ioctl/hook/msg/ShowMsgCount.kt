@@ -35,6 +35,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
@@ -56,7 +57,8 @@ object ShowMsgCount : CommonSwitchFunctionHook(
         CCustomWidgetUtil_updateCustomNoteTxt_NT,
         AIOTitleVB_updateLeftTopBack_NT,
         NCustomWidgetUtil_updateCustomNoteTxt,
-    )
+    ),
+    targetProc = SyncUtils.PROC_ANY
 ) {
 
     override val name = "显示具体消息数量"
