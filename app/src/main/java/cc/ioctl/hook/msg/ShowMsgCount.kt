@@ -28,6 +28,7 @@ import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod
 import cc.ioctl.util.HookUtils.hookBeforeAndAfterIfEnabled
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.findFieldObjectAs
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -40,8 +41,10 @@ import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
+import me.ketal.util.findViewByType
 import xyz.nextalone.util.get
 import xyz.nextalone.util.throwOrTrue
 
@@ -73,6 +76,24 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 .hookAfter { param ->
                     val tv = param.args[0] as TextView
                     val count = param.args[1] as Int
+                    tv.text = count.toString()
+                }
+        }
+
+        if (QQVersion.QQ_8_9_63 <= hostInfo.versionCode && hostInfo.versionCode <= QQVersion.QQ_9_0_68) {
+            // 隐藏会话右上角消息数量
+            Initiator.loadClass("com.tencent.mobileqq.activity.miniaio.h")
+                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
+                .hookAfter { param ->
+                    val tv = if (requireMinQQVersion(QQVersion.QQ_9_0_60)) {
+                        val view = param.thisObject.get("h") as ViewGroup
+                        view.findViewByType(TextView::class.java) as TextView
+                    } else {
+                        param.thisObject.findFieldObjectAs {
+                            type == TextView::class.java
+                        }
+                    }
+                    val count = param.args[0] as Int
                     tv.text = count.toString()
                 }
         }
