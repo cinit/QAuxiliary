@@ -30,9 +30,7 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.util.hookMethod
 import xyz.nextalone.base.MultiItemDelayableHook
@@ -63,17 +61,32 @@ object AntiNickBlock : MultiItemDelayableHook(
         //     arrayList.add(com.tencent.mobileqq.activity.qcircle.c.class);
         //
         // com.tencent.mobileqq.aio.msglist.holder.component.nick.block.AbsNickBlockProvider:
-        // 9.0.20 -> com.tencent.mobileqq.aio.msglist.holder.component.nick.block.d
+        // 9.0.20~9.0.56 -> .super Lcom/tencent/mobileqq/aio/msglist/holder/component/nick/block/d;
+        // 9.0.60 -> .super Lcom/tencent/mobileqq/aio/msglist/holder/component/nick/block/b;
         //
         //public class ? extends com.tencent.mobileqq.aio.msglist.holder.component.nick.block.AbsNickBlockProvider
         val providerList = arrayOf(
-            "com.tencent.mobileqq.vas.vipicon.g",// com.tencent.mobileqq.vas.vipicon.VasNickBlockProvider
+            when {
+                requireMinQQVersion(QQVersion.QQ_9_0_65) -> "com.tencent.mobileqq.activity.qcircle.g"
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.activity.qcircle.h"
+                requireMinQQVersion(QQVersion.QQ_9_0_35) -> "com.tencent.mobileqq.activity.qcircle.e"
+                requireMinQQVersion(QQVersion.QQ_9_0_30) -> "com.tencent.mobileqq.activity.qcircle.f"
+                else -> "com.tencent.mobileqq.activity.qcircle.c"
+            },
+            when {// com.tencent.mobileqq.aio.msglist.holder.component.nick.block.NickBlockProvider
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.c"
+                requireMinQQVersion(QQVersion.QQ_9_0_30) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.e"
+                else -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.f"
+            },
+            when {// com.tencent.mobileqq.vas.vipicon.VasNickBlockProvider
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.vas.vipicon.b"
+                else -> "com.tencent.mobileqq.vas.vipicon.g"
+            },
             when {// com.tencent.qqnt.aio.nick.ExtNickBlockProvider
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.qqnt.aio.nick.e"
                 requireMinQQVersion(QQVersion.QQ_9_0_20) -> "com.tencent.qqnt.aio.nick.g"
                 else -> "com.tencent.qqnt.aio.nick.f"
             },
-            "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.f",// com.tencent.mobileqq.aio.msglist.holder.component.nick.block.NickBlockProvider
-            "com.tencent.mobileqq.activity.qcircle.c",// com.tencent.mobileqq.activity.qcircle.c
         )
 
         val callBack = HookUtils.afterIfEnabled(this) { param ->

@@ -13,6 +13,7 @@
 #include <sys/mman.h>
 #include <cerrno>
 #include <unordered_map>
+#include <chrono>
 
 #include <fmt/format.h>
 
@@ -29,7 +30,6 @@ namespace qauxv {
 
 class ModuleInfoData {
 public:
-    FileMemMap fileMap;
     ::utils::ElfView elfView;
 };
 
@@ -61,14 +61,19 @@ const ModuleSymbolResolver* GetModuleSymbolResolver(std::string_view module_name
         return nullptr;
     }
     auto data = std::make_unique<ModuleInfoData>();
-    if (data->fileMap.mapFilePath(path.c_str()) != 0) {
+    // the file map will be un-map when the FileMemMap is destroyed
+    FileMemMap fileMap;
+    if (fileMap.mapFilePath(path.c_str()) != 0) {
         return nullptr;
     }
-    data->elfView.AttachFileMemMapping(data->fileMap.getAddress(), data->fileMap.getLength());
+    auto startTs = std::chrono::steady_clock::now();
+    data->elfView.ParseFileMemMapping(fileMap.getAddress(), fileMap.getLength());
+    auto endTs = std::chrono::steady_clock::now();
     if (!data->elfView.IsValid()) {
         return nullptr;
     }
-    std::span<const uint8_t, 32> header{reinterpret_cast<const uint8_t*>(data->fileMap.getAddress()), 32};
+    LOGD("parse elf file '{}' took {:.3f}ms", path, std::chrono::duration<double, std::milli>(endTs - startTs).count());
+    std::span<const uint8_t, 32> header{reinterpret_cast<const uint8_t*>(fileMap.getAddress()), 32};
     auto isa = qauxv::nativeloader::GetLibraryIsaWithElfHeader(header);
     auto* resolver = new ModuleSymbolResolver(std::string(module_name), path, baseAddress, std::move(data), isa);
     {
@@ -116,7 +121,6 @@ void* ModuleSymbolResolver::GetSymbol(std::string_view symbol_name) const {
         result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + offset);
     } else {
         result = nullptr;
-        LOGD("symbol '{}!{}' not found", name, symbol_name);
     }
     return result;
 }
@@ -129,7 +133,6 @@ void* ModuleSymbolResolver::GetSymbolPrefix(std::string_view symbol_prefix) cons
         result = reinterpret_cast<void*>(reinterpret_cast<uintptr_t>(baseAddress) + offset);
     } else {
         result = nullptr;
-        LOGD("symbol prefix '{}!{}' not found", name, symbol_prefix);
     }
     return result;
 }

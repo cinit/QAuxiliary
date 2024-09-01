@@ -162,7 +162,7 @@ void HookLoadLibrary() {
         return;
     }
     ::utils::ElfView linkerElfView;
-    linkerElfView.AttachFileMemMapping(linkerFileMap.getAddress(), linkerFileMap.getLength());
+    linkerElfView.ParseFileMemMapping(linkerFileMap.getAddress(), linkerFileMap.getLength());
     if (!linkerElfView.IsValid()) {
         LOGE("HookLoadLibrary: failed to attach linker file");
         return;

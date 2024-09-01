@@ -27,7 +27,6 @@ import com.android.tools.build.apkzlib.sign.SigningExtension
 import com.android.tools.build.apkzlib.sign.SigningOptions
 import com.android.tools.build.apkzlib.zfile.ZFiles
 import com.android.tools.build.apkzlib.zip.AlignmentRule
-import com.android.tools.build.apkzlib.zip.AlignmentRules
 import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
@@ -54,7 +53,7 @@ plugins {
 
 val buildAllAbiForDebug = false
 val isNewXposedApiEnabled = true
-val fullNativeDebugMode = false
+val isNativeFullDebugMode = false
 
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
@@ -180,7 +179,7 @@ android {
         }
         getByName("debug") {
             ndk {
-                if (fullNativeDebugMode) {
+                if (isNativeFullDebugMode) {
                     isJniDebuggable = true
                 } else {
                     if (!buildAllAbiForDebug) {
@@ -201,6 +200,14 @@ android {
                 arguments.addAll(
                     arrayOf(
                         "-DQAUXV_VERSION=${Version.versionName}.debug",
+                    )
+                )
+                arguments.addAll(
+                    if (isNativeFullDebugMode) arrayOf(
+                        "-DCMAKE_CXX_FLAGS_DEBUG=-O0",
+                        "-DCMAKE_C_FLAGS_DEBUG=-O0",
+                    )
+                    else arrayOf(
                         "-DCMAKE_CXX_FLAGS_DEBUG=-Og",
                         "-DCMAKE_C_FLAGS_DEBUG=-Og",
                     )
@@ -251,7 +258,7 @@ android {
         mergeAssetsProvider.dependsOn(generateEulaAndPrivacy)
     }
 
-    if (fullNativeDebugMode) {
+    if (isNativeFullDebugMode) {
         packagingOptions.jniLibs {
             // be aware that some SIGSEGVs and SIGBUSes are only reproducible with "useLegacyPackaging = false"
             useLegacyPackaging = true

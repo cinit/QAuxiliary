@@ -35,6 +35,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
@@ -56,13 +57,25 @@ object ShowMsgCount : CommonSwitchFunctionHook(
         CCustomWidgetUtil_updateCustomNoteTxt_NT,
         AIOTitleVB_updateLeftTopBack_NT,
         NCustomWidgetUtil_updateCustomNoteTxt,
-    )
+    ),
+    targetProc = SyncUtils.PROC_ANY
 ) {
 
     override val name = "显示具体消息数量"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
+
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            // 小程序菜单键消息数量
+            Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
+                .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
+                .hookAfter { param ->
+                    val tv = param.args[0] as TextView
+                    val count = param.args[1] as Int
+                    tv.text = count.toString()
+                }
+        }
 
         if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
             // 群消息数量 + 群聊左上角返回消息数量
