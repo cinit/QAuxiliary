@@ -25,7 +25,7 @@ body:
       required: true
   - type: textarea
     attributes:
-      label: 实际行为 / Actual behaviour/
+      label: 实际行为 / Actual behaviour
       description: 如果含有截图，个人信息注意打码保护
       placeholder: 实际上发生了什么 / Tell us what happens instead
     validations:
