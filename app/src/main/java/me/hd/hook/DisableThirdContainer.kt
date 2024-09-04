@@ -47,12 +47,18 @@ object DisableThirdContainer : CommonSwitchFunctionHook() {
             else
                 "com.tencent.qqnt.chats.core.ui.d.e"
         )
-        val method = thirdContainerClass.declaredMethods.single { method ->
+        hookBeforeIfEnabled(thirdContainerClass.declaredMethods.single { method ->
             val params = method.parameterTypes
             params.size == 1 && params[0] == List::class.java
-        }
-        hookBeforeIfEnabled(method) { param ->
-            param.args[0] = emptyList<Any>()
+        }) { it.args[0] = emptyList<Any>() }
+
+        if (requireMinQQVersion(QQVersion.QQ_9_0_75)) {
+            val newAdManager = Initiator.loadClass("cooperation.vip.ad.TianshuNewAdManager")
+            val conversationThirdView = Initiator.loadClass("com.tencent.mobileqq.activity.home.chats.biz.tianshu.TianShuConversationThirdView")
+            hookBeforeIfEnabled(newAdManager.declaredMethods.single { method ->
+                val params = method.parameterTypes
+                params.size == 1 && params[0] == conversationThirdView
+            }) { it.result = null }
         }
         return true
     }
