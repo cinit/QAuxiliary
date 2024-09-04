@@ -22,6 +22,7 @@
 
 package me.hd.hook
 
+import android.content.Context
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -33,33 +34,19 @@ import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisableThirdContainer : CommonSwitchFunctionHook() {
+object DisableChatsCardContainer : CommonSwitchFunctionHook() {
 
-    override val name = "屏蔽悬浮广告"
-    override val description = "屏蔽消息页右上角 24年08月 开学季悬浮广告"
+    override val name = "屏蔽聊天列表顶部卡片推荐"
+    override val description = "屏蔽QQ9.0.75+新增的短视频/推荐好友"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_75)
 
     override fun initOnce(): Boolean {
-        val thirdContainerClass = Initiator.loadClass(
-            if (requireMinQQVersion(QQVersion.QQ_9_0_60))
-                "com.tencent.qqnt.chats.core.ui.third.ThirdContainer"
-            else
-                "com.tencent.qqnt.chats.core.ui.d.e"
-        )
-        hookBeforeIfEnabled(thirdContainerClass.declaredMethods.single { method ->
+        val chatsCardContainerClass = Initiator.loadClass("com.tencent.mobileqq.chatlist.MainChatsCardContainerPartImpl")
+        hookBeforeIfEnabled(chatsCardContainerClass.declaredMethods.single { method ->
             val params = method.parameterTypes
-            params.size == 1 && params[0] == List::class.java
-        }) { it.args[0] = emptyList<Any>() }
-
-        if (requireMinQQVersion(QQVersion.QQ_9_0_75)) {
-            val newAdManagerClass = Initiator.loadClass("cooperation.vip.ad.TianshuNewAdManager")
-            val conversationThirdViewClass = Initiator.loadClass("com.tencent.mobileqq.activity.home.chats.biz.tianshu.TianShuConversationThirdView")
-            hookBeforeIfEnabled(newAdManagerClass.declaredMethods.single { method ->
-                val params = method.parameterTypes
-                params.size == 1 && params[0] == conversationThirdViewClass
-            }) { it.result = null }
-        }
+            params.size == 2 && params[0] == Context::class.java && params[1] == Boolean::class.java
+        }) { it.result = null }
         return true
     }
 }
