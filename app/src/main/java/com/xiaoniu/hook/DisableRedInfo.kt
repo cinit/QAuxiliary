@@ -27,6 +27,7 @@ import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Log
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 
@@ -49,15 +50,19 @@ object DisableRedInfo : MultiItemDelayableHook("disable_red_info_multi") {
     override val dialogDesc = "禁用"
     override fun initOnce(): Boolean {
         "com.tencent.qqnt.chats.biz.summary.highlight.AtTypeHelper".clazz!!.declaredMethods
-            .first { it.returnType == String::class.java && it.parameterTypes.size == 1 }
-            .hookAfter { param ->
-                activeItems.forEach {
-                    if (param.result.toString().contains(it)) {
-                        param.result = ""
-                        return@forEach
+            .filter { it.returnType == String::class.java && it.parameterTypes.size == 1 }
+            .forEach {
+                it.hookAfter { param ->
+                    Log.d(param.result.toString())
+                    activeItems.forEach {
+                        if (param.result.toString().contains(it)) {
+                            param.result = ""
+                            return@hookAfter
+                        }
                     }
                 }
             }
+        // 需要hook的方法只有一个，但是有多个签名相似的，多hook了点问题不大
         return true
     }
 }
