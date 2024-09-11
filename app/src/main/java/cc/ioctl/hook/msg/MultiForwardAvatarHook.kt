@@ -44,7 +44,6 @@ import cc.ioctl.util.hookBeforeIfEnabled
 import cc.ioctl.util.ui.FaultyDialog
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
-import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.DexDeobfs
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -67,6 +66,7 @@ import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum.nameOf
 import io.github.qauxv.util.dexkit.Multiforward_Avatar_setListener_NT
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
 import me.singleneuron.data.MsgRecordData
@@ -148,7 +148,9 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             DexKit.requireMethodFromCache(Multiforward_Avatar_setListener_NT).hookBefore { param ->
                 var layout: RelativeLayout?
                 clz.declaredFields.single {
-                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "i" else "h"
+                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_0_95)) "h"
+                    else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "i"
+                    else "h"
                 }.let {
                     it.isAccessible = true  //Lazy
                     layout = (it.get(param.thisObject))!!.invoke("getValue") as RelativeLayout
