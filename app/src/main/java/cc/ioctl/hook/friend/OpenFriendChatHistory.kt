@@ -68,7 +68,7 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
         val linearLayout = LinearLayout(ctx)
         linearLayout.addView(editText, LayoutHelper.newLinearLayoutParams(MATCH_PARENT, WRAP_CONTENT))
         val alertDialog = AlertDialog.Builder(ctx)
-            .setTitle("输入对方 QQ 号")
+            .setTitle("请输入对方 qq 或 uid ")
             .setView(linearLayout)
             .setCancelable(true)
             .setPositiveButton("确认", null)
@@ -79,40 +79,54 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
             .setOnClickListener {
                 val text = editText.text.toString()
                 if (TextUtils.isEmpty(text)) {
-                    Toasts.error(ctx, "请输入 QQ 号")
+                    Toasts.error(ctx, "请输入 qq 或 uid")
                     return@setOnClickListener
                 }
-                var uin: Long = 0
                 try {
-                    uin = text.toLong()
+                    val uin = text.toLong()
+                    if (uin < 10000) {
+                        Toasts.error(ctx, "请输入有效的 qq")
+                        return@setOnClickListener
+                    }
+                    startFriendChatHistoryActivity(ctx, uin)
                 } catch (ignored: NumberFormatException) {
-                }
-                if (uin < 10000) {
-                    Toasts.error(ctx, "请输入有效的 QQ 号")
-                    return@setOnClickListener
+                    val uid = text
+                    if (!(uid.startsWith("u_") && uid.length == 24)) {
+                        Toasts.error(ctx, "请输入有效的 uid")
+                        return@setOnClickListener
+                    }
+                    startFriendChatHistoryActivity(ctx, uid)
                 }
                 alertDialog.dismiss()
-                startFriendChatHistoryActivity(ctx, uin)
             }
-    }
-
-    @JvmStatic
-    fun startFriendChatHistoryActivity(context: Context, uin: String) {
-        try {
-            startFriendChatHistoryActivity(context, uin.toLong())
-        } catch (e: NumberFormatException) {
-            return
-        }
     }
 
     @JvmStatic
     fun startFriendChatHistoryActivity(context: Context, uin: Long) {
         if (uin < 10000L) return
         try {
+            startFriendChatHistory(context, uin.toString(), true)
+        } catch (e: NumberFormatException) {
+            return
+        }
+    }
+
+    @JvmStatic
+    fun startFriendChatHistoryActivity(context: Context, uid: String) {
+        if (!(uid.startsWith("u_") && uid.length == 24)) return
+        try {
+            startFriendChatHistory(context, uid, false)
+        } catch (e: NumberFormatException) {
+            return
+        }
+    }
+
+    private fun startFriendChatHistory(context: Context, userUinOrUid: String, isUin: Boolean) {
+        try {
             if (QAppUtils.isQQnt()) {
-                val peerId = QAppUtils.UserUinToPeerID(uin.toString())
+                val peerId = if (isUin) QAppUtils.UserUinToPeerID(userUinOrUid) else userUinOrUid
                 if (peerId == null) {
-                    FaultyDialog.show(context, "打开好友聊天记录错误", "无法获取 peerId")
+                    FaultyDialog.show(context, "打开好友聊天记录错误", "无法获取 uid")
                     return
                 }
                 val kNTChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.NTChatHistoryActivity")
@@ -123,10 +137,14 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
                 }
                 context.startActivity(intent)
             } else {
+                if (isUin) {
+                    FaultyDialog.show(context, "打开好友聊天记录错误", "非 QQNT 版本无法使用 uid 打开")
+                    return
+                }
                 val kChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.ChatHistoryActivity")
                 val intent = Intent(context, kChatHistoryActivity).apply {
-                    putExtra("uin", uin.toString())
-                    putExtra("SissionUin", uin.toString())
+                    putExtra("uin", userUinOrUid)
+                    putExtra("SissionUin", userUinOrUid)
                     putExtra("uintype", 0)
                     putExtra("TargetTabPos", 0)
                     putExtra("FromType", 3011)
