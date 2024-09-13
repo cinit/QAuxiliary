@@ -102,7 +102,9 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         lateinit var recentInfoBuilder: Method
         cNotificationFacade.declaredMethods.forEach {
             if (it.paramCount < 3 || it.parameterTypes[0] != cAppRuntime) return@forEach
-            if (it.paramCount == 3 && it.parameterTypes[2] == cCommonInfo) {
+            if (it.paramCount == 3 && it.parameterTypes[2] == cCommonInfo ||
+                it.paramCount == 4 && it.parameterTypes[2] == cCommonInfo && it.parameterTypes[3] == cRecentInfo // since 9.1.0
+            ) {
                 buildNotification = it
             } else if (it.paramCount >= 3 && it.parameterTypes[1] == cRecentInfo && it.parameterTypes[2] == Boolean::class.java) {
                 // paramCount=4 since 9.0.75
