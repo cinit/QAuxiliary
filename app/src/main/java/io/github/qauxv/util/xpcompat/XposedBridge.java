@@ -138,12 +138,12 @@ public class XposedBridge {
     /**
      * Deoptimize the specified member.
      * <p>
-     * Note: This method is not available in the original XposedBridge. I put it here just for convenience.
+     * Note: Not all Xposed frameworks support this feature.
      *
      * @param member a method or constructor
      * @return {@code true} if the member was deoptimized, or already was deoptimized, {@code false} otherwise
      */
-    public static boolean deoptimize(@NonNull Member member) {
+    public static boolean deoptimizeMethod(@NonNull Member member) {
         if (!(member instanceof Method) && !(member instanceof Constructor)) {
             throw new IllegalArgumentException("member must be method or constructor");
         }
