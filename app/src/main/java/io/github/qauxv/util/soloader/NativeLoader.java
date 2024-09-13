@@ -507,6 +507,10 @@ public class NativeLoader {
         ClassLoader cl = NativeLoader.class.getClassLoader();
         assert cl != null;
         File soFile = new File(dir, soName);
+        if (soFile.isFile() && soFile.canWrite()) {
+            // dynamically loaded code should not be writable, or ART may complain about it
+            IoUtils.deleteSingleFileOrThrow(soFile);
+        }
         if (!soFile.exists()) {
             InputStream in = cl.getResourceAsStream("lib/" + abi + "/" + soname);
             if (in == null) {
@@ -522,6 +526,7 @@ public class NativeLoader {
                 // extract so file
                 soFile.createNewFile();
                 FileOutputStream fout = new FileOutputStream(soFile);
+                IoUtils.makeFileReadOnly(soFile);
                 byte[] buf = new byte[1024];
                 int i;
                 while ((i = in.read(buf)) > 0) {

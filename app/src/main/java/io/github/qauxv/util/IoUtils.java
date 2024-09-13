@@ -210,6 +210,37 @@ public class IoUtils {
         }
     }
 
+    public static void makeFileReadOnly(@NonNull File file) {
+        if (!file.isFile()) {
+            throw new IllegalArgumentException("Not a file: " + file.getAbsolutePath());
+        }
+        if (!file.setReadOnly() && file.canWrite()) {
+            throw IoUtils.unsafeThrow(new IOException("Failed to set read-only: " + file.getAbsolutePath()));
+        }
+    }
+
+    public static void checkFileReadOnly(@NonNull File file) {
+        if (!file.isFile()) {
+            throw new IllegalStateException("Not a file: " + file.getAbsolutePath());
+        }
+        if (!file.canWrite()) {
+            return;
+        }
+        throw new IllegalStateException("File is not read-only: " + file.getAbsolutePath());
+    }
+
+    public static void deleteSingleFileOrThrow(@NonNull File file) {
+        if (!file.exists()) {
+            return;
+        }
+        if (!file.isFile()) {
+            throw new IllegalArgumentException("Not a file: " + file.getAbsolutePath());
+        }
+        if (!file.delete() && file.exists()) {
+            throw IoUtils.unsafeThrow(new IOException("Failed to delete file: " + file.getAbsolutePath()));
+        }
+    }
+
     @NonNull
     public static byte[] calculateFileMd5(@NonNull InputStream is) throws IOException {
         Objects.requireNonNull(is, "is == null");
