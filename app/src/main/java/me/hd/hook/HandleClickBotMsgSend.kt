@@ -32,8 +32,10 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XposedBridge
+import xyz.nextalone.util.get
 import xyz.nextalone.util.method
 
 @FunctionHookEntry
@@ -50,15 +52,41 @@ object HandleClickBotMsgSend : CommonSwitchFunctionHook() {
             param.result = null
             val activity = ContextUtils.getCurrentActivity()
             val context = CommonContextWrapper.createMaterialDesignContext(activity)
-            val message = param.thisObject.findFieldObjectAs<String> { type == String::class.java }
-            MaterialDialog(context).show {
-                title(text = "是否发送以下内容")
-                message(text = message)
-                positiveButton(text = "是") {
+
+            val (btnModelName, prototypeName) = when (hostInfo.versionCode) {
+                QQVersion.QQ_9_1_0 -> Pair("m", "d")//9.0.70~9.1.0
+                QQVersion.QQ_9_0_60 -> Pair("j", "d")//9.0.60~9.0.68
+                QQVersion.QQ_9_0_35 -> Pair("n", "d")//9.0.0~9.0.50
+                else -> Pair("", "")
+            }
+            if (btnModelName != "" && prototypeName != "") {
+                val btnModel = param.thisObject.get(btnModelName)
+                val prototype = btnModel.get(prototypeName)
+                val label = prototype.get("label") as String
+                val type = prototype.get("type") as Int
+                if (type == 2) {
+                    MaterialDialog(context).show {
+                        title(text = "是否发送内容")
+                        message(text = label)
+                        positiveButton(text = "是") {
+                            XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
+                        }
+                        negativeButton(text = "否")
+                    }
+                } else {
                     XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
                 }
-                negativeButton(text = "否")
+            } else {
+                MaterialDialog(context).show {
+                    title(text = "是否发送内容或打开链接")
+                    message(text = param.thisObject.findFieldObjectAs<String> { type == String::class.java })
+                    positiveButton(text = "是") {
+                        XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
+                    }
+                    negativeButton(text = "否")
+                }
             }
+
         }
         return true
     }
