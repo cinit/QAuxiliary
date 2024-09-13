@@ -121,7 +121,7 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     uint64_t offsetC2c = targetRecallC2cSysMsg.GetResultOffset();
     uint64_t offsetGroup = targetRecallGroupSysMsg.GetResultOffset();
 
-    LOGD("offsetC2c={:x}, offsetGroup={:x}", offsetC2c, offsetGroup);
+    // LOGD("offsetC2c={:x}, offsetGroup={:x}", offsetC2c, offsetGroup);
 
     if (offsetC2c != 0) {
         void* c2c = (void*) (baseAddress + offsetC2c);

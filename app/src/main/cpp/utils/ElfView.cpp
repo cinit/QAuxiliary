@@ -294,7 +294,7 @@ static void InitElfInfo(std::span<const uint8_t> file, ElfInfo& info, bool isLoa
             }
         }
     }
-    LOGD("{}: dynsym size: {}, symtab size: {}, bias=0x{:x}", info.soname, info.dynsym_size, info.symtab_size, info.loadBias);
+    // LOGD("{}: dynsym size: {}, symtab size: {}, bias=0x{:x}", info.soname, info.dynsym_size, info.symtab_size, info.loadBias);
 }
 
 
@@ -340,7 +340,7 @@ void ElfView::ParseDebugSymbol(std::span<const uint8_t> input, ElfInfo* pInfo, b
     // walk through the elf file, and get the symbol table
     auto& info = *pInfo;
     auto& map = isMiniDebugInfo ? info.compressedDebugSymbols : info.debugSymbols;
-    LOGD("input size: {}, symtab size: {}, compressed: {}", input.size(), info.symtab_size, isMiniDebugInfo);
+    // LOGD("input size: {}, symtab size: {}, compressed: {}", input.size(), info.symtab_size, isMiniDebugInfo);
     // walk through the symbol table, and add it to the symbol map
     // finally release the memory, because debug symbol is typically large (and it is not file-backed)
     if (info.elfClass == kElf32) {
@@ -510,8 +510,8 @@ void ElfView::ParseFileMemMapping(std::span<const uint8_t> fileMap) noexcept {
         if (!elfInfo.miniDebugInfo.empty()) {
             ParseMiniDebugInfo(elfInfo.miniDebugInfo);
         }
-        LOGD("{}: dynamic symbols: {}, debug symbols: {}, compressed debug symbols: {}",
-             elfInfo.soname, elfInfo.dynamicSymbols.size(), elfInfo.debugSymbols.size(), elfInfo.compressedDebugSymbols.size());
+        // LOGD("{}: dynamic symbols: {}, debug symbols: {}, compressed debug symbols: {}",
+        //      elfInfo.soname, elfInfo.dynamicSymbols.size(), elfInfo.debugSymbols.size(), elfInfo.compressedDebugSymbols.size());
         mIsValid = true;
     }
 }

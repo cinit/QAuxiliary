@@ -72,7 +72,7 @@ const ModuleSymbolResolver* GetModuleSymbolResolver(std::string_view module_name
     if (!data->elfView.IsValid()) {
         return nullptr;
     }
-    LOGD("parse elf file '{}' took {:.3f}ms", path, std::chrono::duration<double, std::milli>(endTs - startTs).count());
+    // LOGD("parse elf file '{}' took {:.3f}ms", path, std::chrono::duration<double, std::milli>(endTs - startTs).count());
     std::span<const uint8_t, 32> header{reinterpret_cast<const uint8_t*>(fileMap.getAddress()), 32};
     auto isa = qauxv::nativeloader::GetLibraryIsaWithElfHeader(header);
     auto* resolver = new ModuleSymbolResolver(std::string(module_name), path, baseAddress, std::move(data), isa);

@@ -530,13 +530,13 @@ bool qauxv::nativeloader::CheckClassLoaderNativeNamespaceBridged(JNIEnv* env, jo
         return false;
     }
     auto ns = FindNativeLoaderNamespaceByClassLoader(env, class_loader);
-    LOGD("ns = {:p}", (void*) ns);
+    // LOGD("ns = {:p}", (void*) ns);
     if (ns == nullptr) {
         // this means the class loader namespace is not created yet
         return false;
     }
     bool bridged = ns->IsBridged();
-    LOGD("bridged = {}", bridged);
+    // LOGD("bridged = {}", bridged);
     if (bridged != is_bridge) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalArgumentException,
                                   fmt::format("class_loader namespace bridged mismatch: expected {}, actual {}", is_bridge, bridged));
