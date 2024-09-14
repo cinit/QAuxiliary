@@ -38,7 +38,6 @@ import com.github.kyuubiran.ezxhelper.utils.argTypes
 import com.github.kyuubiran.ezxhelper.utils.args
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.newInstance
-import com.tencent.mobileqq.app.BaseActivity
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -58,6 +57,7 @@ import io.github.qauxv.util.dexkit.CMultiMsgManager
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.MultiSelectToBottomIntent
 import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
+import mqq.app.AppActivity
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.invoke
@@ -93,7 +93,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
         val m = DexKit.loadMethodFromCache(NBaseChatPie_createMulti)!!
         m.hookAfter(this) {
             val rootView = findView(m.declaringClass, it.thisObject) ?: return@hookAfter
-            val context = rootView.context as BaseActivity
+            val context = rootView.context as AppActivity
             baseChatPie = if (m.declaringClass.isAssignableFrom(_BaseChatPie())) it.thisObject
             else Reflex.getFirstByType(it.thisObject, _BaseChatPie())
             val count = rootView.childCount
@@ -112,7 +112,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             .method("onCreateView")!!
             .hookAfter(this) {
                 val rootView = findViewNt(it.method.declaringClass, it.thisObject) ?: return@hookAfter
-                val context = rootView.context as BaseActivity
+                val context = rootView.context as AppActivity
                 val count = rootView.childCount
                 val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
                 if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) {
@@ -139,7 +139,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
                     }
                 }
             }
-        val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent);
+        val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
         val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
         Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM")
             .method("handleIntent")!!
