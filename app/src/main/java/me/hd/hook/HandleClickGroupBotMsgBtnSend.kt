@@ -39,11 +39,11 @@ import xyz.nextalone.util.method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object HandleClickBotMsgSend : CommonSwitchFunctionHook() {
+object HandleClickGroupBotMsgBtnSend : CommonSwitchFunctionHook() {
 
-    override val name = "拦截点击机器人消息按钮直接发送"
+    override val name = "拦截点击群机器人消息按钮直接发送"
     override val description = "防止窥屏时不小心点到而被发现"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
