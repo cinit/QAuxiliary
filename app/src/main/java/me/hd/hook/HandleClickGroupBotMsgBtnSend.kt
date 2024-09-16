@@ -63,7 +63,8 @@ object HandleClickGroupBotMsgBtnSend : CommonSwitchFunctionHook() {
                 val prototype = btnModel.get(prototypeName)
                 val label = prototype.get("label") as String
                 val type = prototype.get("type") as Int
-                if (type == 2) {
+                val enter = prototype.get("enter") as Boolean
+                if (type == 2 && enter) {
                     MaterialDialog(context).show {
                         title(text = "是否发送内容")
                         message(text = label)
