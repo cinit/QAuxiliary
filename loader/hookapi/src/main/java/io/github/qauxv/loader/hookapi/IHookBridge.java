@@ -3,7 +3,6 @@ package io.github.qauxv.loader.hookapi;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-
 import java.lang.reflect.AccessibleObject;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -198,6 +197,8 @@ public interface IHookBridge {
      * <p>
      * Deoptimization is an optional feature that only a few implementations support. It is used to undo the effects of optimization, which can be useful for
      * hooking an inlined method or constructor.
+     * <p>
+     * If the current implementation does not support deoptimization, this method should return false without doing anything.
      *
      * @param member The method or constructor to deoptimize
      * @return true if the method or constructor was deoptimized or if it was already deoptimized, false otherwise

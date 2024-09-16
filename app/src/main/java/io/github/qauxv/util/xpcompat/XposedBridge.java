@@ -138,7 +138,7 @@ public class XposedBridge {
     /**
      * Deoptimize the specified member.
      * <p>
-     * Note: Not all Xposed frameworks support this feature.
+     * Note: Not all Xposed frameworks support this feature. If the framework does not support it, this method will return {@code false}.
      *
      * @param member a method or constructor
      * @return {@code true} if the member was deoptimized, or already was deoptimized, {@code false} otherwise
