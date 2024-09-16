@@ -32,7 +32,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XposedBridge
 import xyz.nextalone.util.get
@@ -53,10 +52,10 @@ object HandleClickBotMsgSend : CommonSwitchFunctionHook() {
             val activity = ContextUtils.getCurrentActivity()
             val context = CommonContextWrapper.createMaterialDesignContext(activity)
 
-            val (btnModelName, prototypeName) = when (hostInfo.versionCode) {
-                QQVersion.QQ_9_1_0 -> Pair("m", "d")//9.0.70~9.1.0
-                QQVersion.QQ_9_0_60 -> Pair("j", "d")//9.0.60~9.0.68
-                QQVersion.QQ_9_0_35 -> Pair("n", "d")//9.0.0~9.0.50
+            val (btnModelName, prototypeName) = when {
+                requireMinQQVersion(QQVersion.QQ_9_1_0) -> Pair("m", "d")//9.0.70~9.1.0
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> Pair("j", "d")//9.0.60~9.0.68
+                requireMinQQVersion(QQVersion.QQ_9_0_35) -> Pair("n", "d")//9.0.0~9.0.50
                 else -> Pair("", "")
             }
             if (btnModelName != "" && prototypeName != "") {
