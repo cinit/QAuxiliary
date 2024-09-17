@@ -35,8 +35,6 @@ import androidx.annotation.Nullable;
 import cc.ioctl.dialog.RikkaBaseApkFormatDialog;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
@@ -46,12 +44,13 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.TroopSendFile_QQNT;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.Objects;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -117,6 +116,11 @@ public class BaseApk extends CommonConfigFunctionHook {
                         throw new FileNotFoundException("file not found: path='" + localFile + "'");
                     }
                     fileName.set(item, getFormattedFileNameByPath(localFile));
+                } else if (RikkaBaseApkFormatDialog.IsAlwaysAPKEnabled()) {
+                    String fn = (String) fileName.get(item);
+                    if (fn.endsWith(".apk")) {
+                        fileName.set(item, replaceLast(fn, ".apk", ".APK"));
+                    }
                 }
             });
         } else if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
@@ -199,8 +203,14 @@ public class BaseApk extends CommonConfigFunctionHook {
                     .replace("%p", applicationInfo.packageName)
                     .replace("%v", packageArchiveInfo.versionName)
                     .replace("%c", String.valueOf(packageArchiveInfo.versionCode));
-        } else
+        } else {
             throw new RuntimeException("format is null");
+        }
         return result;
+    }
+
+    public static String replaceLast(String str, String target, String replacement) {
+        // 使用正则表达式匹配最后一个目标子字符串，并替换为新字符串
+        return str.replaceFirst("(?s)(.*)" + target, "$1" + replacement);
     }
 }

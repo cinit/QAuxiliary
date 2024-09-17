@@ -33,8 +33,9 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
-import cc.ioctl.util.HostInfo;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.hook.file.BaseApk;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.config.ConfigManager;
@@ -44,12 +45,13 @@ import java.util.Locale;
 
 public class RikkaBaseApkFormatDialog {
 
-    private static final String DEFAULT_BASE_APK_REGEX = ".*\\.apk";
+    private static final String DEFAULT_BASE_APK_REGEX = "base(\\([0-9]+\\))?\\.apk";
     private static final String DEFAULT_BASE_APK_FORMAT = "%n_%v.APK";
 
     private static final String rq_base_apk_regex = "rq_base_apk_regex";
     private static final String rq_base_apk_format = "rq_base_apk_format";
     private static final String rq_base_apk_enabled = "rq_base_apk_enabled";
+    private static final String rq_base_apk_always_APK = "rq_base_apk_always_APK";
 
     @Nullable
     private AlertDialog dialog;
@@ -59,9 +61,14 @@ public class RikkaBaseApkFormatDialog {
     private String currentRegex;
     private String currentFormat;
     private boolean enableBaseApk;
+    private boolean alwaysAPK;
 
     public static boolean IsEnabled() {
         return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_base_apk_enabled);
+    }
+
+    public static boolean IsAlwaysAPKEnabled() {
+        return ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_base_apk_always_APK);
     }
 
     @Nullable
@@ -103,9 +110,16 @@ public class RikkaBaseApkFormatDialog {
         final TextView regex = vg.findViewById(R.id.editTextBaseApkRegex);
         final TextView format = vg.findViewById(R.id.editTextBaseApkFormat);
         final CheckBox enable = vg.findViewById(R.id.checkBoxEnableBaseApk);
+        final CheckBox always = vg.findViewById(R.id.checkBoxAlwaysAPK);
         final LinearLayout panel = vg.findViewById(R.id.layoutBaseApkPanel);
         enableBaseApk = ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_base_apk_enabled);
         enable.setChecked(enableBaseApk);
+        if (!QAppUtils.isQQnt()) {
+            always.setVisibility(View.GONE);
+        } else {
+            alwaysAPK = ConfigManager.getDefaultConfig().getBooleanOrFalse(rq_base_apk_always_APK);
+            always.setChecked(alwaysAPK);
+        }
         panel.setVisibility(enableBaseApk ? View.VISIBLE : View.GONE);
         currentRegex = ConfigManager.getDefaultConfig().getString(rq_base_apk_regex);
         if (currentRegex == null) {
@@ -159,6 +173,9 @@ public class RikkaBaseApkFormatDialog {
             enableBaseApk = isChecked;
             panel.setVisibility(enableBaseApk ? View.VISIBLE : View.GONE);
         });
+        always.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            alwaysAPK = isChecked;
+        });
         dialog.setView(vg);
         dialog.show();
         dialog.getButton(AlertDialog.BUTTON_POSITIVE)
@@ -170,9 +187,10 @@ public class RikkaBaseApkFormatDialog {
                         done = true;
                     } else {
                         if (currentFormat != null && !currentFormat.isEmpty() &&
-                                currentRegex != null && !currentRegex.isEmpty() &&(
+                                currentRegex != null && !currentRegex.isEmpty() && (
                                 currentFormat.contains("%n") || currentFormat.contains("%p"))) {
                             cfg.putBoolean(rq_base_apk_enabled, true);
+                            cfg.putBoolean(rq_base_apk_always_APK, alwaysAPK);
                             cfg.putString(rq_base_apk_regex, currentRegex);
                             cfg.putString(rq_base_apk_format, currentFormat);
                             done = true;
