@@ -30,8 +30,10 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinQQVersion
+import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.get
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
@@ -39,10 +41,12 @@ import java.io.File
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object OutFileHbDetail : CommonSwitchFunctionHook() {
+object OutFileHbDetail : CommonSwitchFunctionHook(
+    targetProc = SyncUtils.PROC_ANY
+) {
 
     override val name = "输出红包领取列表详情"
-    override val description = "根据领取金额倒序排列, 输出详情到 /cache/hd_temp/output.txt"
+    override val description = "根据领取金额倒序排列, 输出详情到 QQ内部存储/cache/hd_temp/output.txt"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
@@ -59,7 +63,8 @@ object OutFileHbDetail : CommonSwitchFunctionHook() {
                 val context = ContextUtils.getCurrentActivity()
                 val outFile = File(context.externalCacheDir, "hd_temp/output.txt").apply { parentFile!!.mkdirs() }
                 outFile.writeText(receiverInfoList.joinToString("\n"))
-                Toasts.show("已输出到 /cache/hd_temp/output.txt")
+                copyToClipboard(context, outFile.absolutePath)
+                Toasts.success(context, "已复制路径到剪贴板")
             }
         }
         return true
