@@ -1,12 +1,12 @@
 [versions]
-agp = "8.6.0"
+agp = "8.6.1"
 appCenter = "5.0.4"
 kotlin = "2.0.20"
 ksp = "2.0.20-1.0.25"
-lifecycle = "2.8.5"
+lifecycle = "2.8.6"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.28.1"
+protobuf = "4.28.2"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
