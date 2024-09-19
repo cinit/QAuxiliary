@@ -53,9 +53,9 @@ object HandleClickGroupBotMsgBtnSend : CommonSwitchFunctionHook() {
             val context = CommonContextWrapper.createMaterialDesignContext(activity)
 
             val (btnModelName, prototypeName) = when {
-                requireMinQQVersion(QQVersion.QQ_9_1_0) -> Pair("m", "d")//9.0.70~9.1.0
+                requireMinQQVersion(QQVersion.QQ_9_0_70) -> Pair("m", "d")//9.0.70~9.1.0
                 requireMinQQVersion(QQVersion.QQ_9_0_60) -> Pair("j", "d")//9.0.60~9.0.68
-                requireMinQQVersion(QQVersion.QQ_9_0_35) -> Pair("n", "d")//9.0.0~9.0.50
+                requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("n", "d")//9.0.0~9.0.50
                 else -> Pair("", "")
             }
             if (btnModelName != "" && prototypeName != "") {
@@ -78,7 +78,7 @@ object HandleClickGroupBotMsgBtnSend : CommonSwitchFunctionHook() {
                 }
             } else {
                 MaterialDialog(context).show {
-                    title(text = "是否发送内容或打开链接")
+                    title(text = "是否发送或打开")
                     message(text = param.thisObject.findFieldObjectAs<String> { type == String::class.java })
                     positiveButton(text = "是") {
                         XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)
