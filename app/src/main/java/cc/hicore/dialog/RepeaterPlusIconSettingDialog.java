@@ -140,7 +140,7 @@ public class RepeaterPlusIconSettingDialog implements View.OnClickListener,
         check_showInMenu.setChecked(cfg.getBooleanOrFalse(qn_repeat_show_in_menu));
 
         // temporary
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             check_showUpper.setEnabled(false);
         }
 

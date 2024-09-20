@@ -69,7 +69,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 
     override fun initOnce() = throwOrTrue {
 
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             // 小程序菜单键消息数量
             Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
                 .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
@@ -80,7 +80,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 }
         }
 
-        if (QQVersion.QQ_8_9_63 <= hostInfo.versionCode && hostInfo.versionCode <= QQVersion.QQ_9_0_68) {
+        if (QQVersion.QQ_8_9_63_BETA_11345 <= hostInfo.versionCode && hostInfo.versionCode <= QQVersion.QQ_9_0_68) {
             // 隐藏会话右上角消息数量
             Initiator.loadClass("com.tencent.mobileqq.activity.miniaio.h")
                 .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
@@ -116,7 +116,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 param.result = null
             }
         } else {
-            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
                 // 群消息数量
                 val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
                 val updateNum = clz.declaredMethods.single { method ->
@@ -149,7 +149,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                                 requireMinQQVersion(QQVersion.QQ_9_0_0) -> Pair("e", "v")
                                 requireMinQQVersion(QQVersion.QQ_8_9_80) -> Pair("e", "s")
                                 requireMinQQVersion(QQVersion.QQ_8_9_70) -> Pair("e", "t")
-                                requireMinQQVersion(QQVersion.QQ_8_9_63) -> Pair("e", "s")
+                                requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) -> Pair("e", "s")
                                 else -> Pair("", "")
                             }
                             if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {

@@ -136,7 +136,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
                             }
                         }
                     })
-            } else if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            } else if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
                 //Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng;->b(I)Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng$a;
                 Initiator.loadClass("com/tencent/mobileqq/managers/CUOpenCardGuideMng").let { clz ->
                     val m = clz.declaredMethods.single {

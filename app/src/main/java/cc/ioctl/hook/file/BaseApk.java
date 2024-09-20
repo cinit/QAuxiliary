@@ -22,7 +22,7 @@
 package cc.ioctl.hook.file;
 
 import static io.github.qauxv.util.QQVersion.QQ_8_6_0;
-import static io.github.qauxv.util.QQVersion.QQ_8_9_63;
+import static io.github.qauxv.util.QQVersion.QQ_8_9_63_BETA_11345;
 
 import android.app.Activity;
 import android.content.pm.ApplicationInfo;
@@ -96,7 +96,7 @@ public class BaseApk extends CommonConfigFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
-        if (HostInfo.requireMinQQVersion(QQ_8_9_63)) {
+        if (HostInfo.requireMinQQVersion(QQ_8_9_63_BETA_11345)) {
             HookUtils.hookBeforeIfEnabled(this, DexKit.requireMethodFromCache(TroopSendFile_QQNT.INSTANCE), param -> {
                 Field[] fs = param.thisObject.getClass().getDeclaredFields();
                 Field f = null;

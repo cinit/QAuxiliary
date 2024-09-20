@@ -63,7 +63,7 @@ object ChatInputHint : CommonConfigFunctionHook("na_chat_input_hint", arrayOf(NB
     private const val strCfg = "na_chat_input_hint_str"
 
     override fun initOnce(): Boolean = throwOrTrue {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             // 私聊 && QQ9.0.35版本后的群聊
             DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT).hookAfter(this) {
                 it.thisObject.javaClass.declaredFields.single { it.type == EditText::class.java }.apply {

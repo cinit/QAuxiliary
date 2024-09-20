@@ -142,7 +142,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
     @SuppressLint("DiscouragedApi")
     @Throws(Exception::class)
     public override fun initOnce(): Boolean {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             val clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.avatar.AIOAvatarContentComponent")
             // 设置头像点击和长按事件的方法
             DexKit.requireMethodFromCache(Multiforward_Avatar_setListener_NT).hookBefore { param ->

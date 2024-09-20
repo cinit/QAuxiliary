@@ -177,7 +177,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
                 XC_MethodHook callback = new XC_MethodHook() {
                     private ImageView img;

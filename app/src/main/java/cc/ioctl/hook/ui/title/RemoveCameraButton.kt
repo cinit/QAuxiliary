@@ -46,7 +46,7 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
             val methodName = when {
-                requireMinQQVersion(QQVersion.QQ_8_9_63) -> "D"
+                requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) -> "D"
                 requireMinQQVersion(QQVersion.QQ_8_9_10) -> "C"
                 requireMinQQVersion(QQVersion.QQ_8_8_93) -> "G"
                 else -> "a"
@@ -57,7 +57,7 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
         }
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
             val methodName = when {
-                requireMinQQVersion(QQVersion.QQ_8_9_63) -> "C"
+                requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) -> "C"
                 requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
                 requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
                 requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"

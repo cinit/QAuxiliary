@@ -144,7 +144,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
     }
 
     override val isNeedFind: Boolean
-        get() = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63) && TextMsgItem_getText.descCache == null
+        get() = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) && TextMsgItem_getText.descCache == null
 
     override fun doFind(): Boolean {
         DexDeobfsProvider.getCurrentBackend().use { backend ->

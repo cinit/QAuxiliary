@@ -83,7 +83,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             createNotificationChannels()
         }
 
-        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             return NonNTMessageStyleNotification(this).hook()
         }
         val cNotificationFacade = "com.tencent.qqnt.notification.NotificationFacade".clazz!!

@@ -66,7 +66,7 @@ public class DisableEnterEffect extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             Method m = DexKit.requireMethodFromCache(TroopEnterEffect_QQNT.INSTANCE);
             HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(null));
             return true;

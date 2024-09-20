@@ -28,7 +28,6 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.step.Step
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator.getHostClassLoader
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
@@ -60,7 +59,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce(): Boolean {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
 //            Initiator.loadClass("com.tencent.qqnt.aio.gallery.part.d").declaredMethods.single { method ->
             DexKit.requireMethodFromCache(OriginalPhotoNT_onInitView).declaringClass.declaredMethods.single { method ->
                 val params = method.parameterTypes
@@ -114,12 +113,12 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
     }
 
     override val isNeedFind: Boolean
-        get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null || (requireMinQQVersion(QQVersion.QQ_8_9_63) && OriginalPhotoNT_onInitView.descCache == null)
+        get() = NAIOPictureView_onDownloadOriginalPictureClick.descCache == null || (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) && OriginalPhotoNT_onInitView.descCache == null)
 
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
             val dexKit = backend.getDexKitBridge()
-            if (requireMinQQVersion(QQVersion.QQ_8_9_63)) {
+            if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
                 dexKit.findMethod {
                     matcher {
                         name = "onInitView"

@@ -58,7 +58,7 @@ import io.github.qauxv.util.QQVersion.QQ_8_9_2
 import io.github.qauxv.util.QQVersion.QQ_8_9_25
 import io.github.qauxv.util.QQVersion.QQ_8_9_28
 import io.github.qauxv.util.QQVersion.QQ_8_9_3
-import io.github.qauxv.util.QQVersion.QQ_8_9_63
+import io.github.qauxv.util.QQVersion.QQ_8_9_63_BETA_11345
 import io.github.qauxv.util.QQVersion.QQ_8_9_68
 import io.github.qauxv.util.QQVersion.QQ_8_9_70
 import io.github.qauxv.util.QQVersion.QQ_8_9_8
@@ -105,7 +105,7 @@ class QQConfigTable : ConfigTableInterface {
             QQ_8_8_80 to "nmx",
             QQ_8_8_83 to "nnl",
             // NT begin
-            QQ_8_9_63 to "nxj",
+            QQ_8_9_63_BETA_11345 to "nxj",
             QQ_8_9_68 to "nyb",
             QQ_8_9_70 to "nyn"
         ),
