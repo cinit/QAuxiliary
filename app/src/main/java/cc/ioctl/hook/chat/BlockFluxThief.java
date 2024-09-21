@@ -40,6 +40,7 @@ import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.net.HttpURLConnection;
+import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.Locale;
 import java.util.Objects;
@@ -116,11 +117,22 @@ public class BlockFluxThief extends CommonSwitchFunctionHook {
                         // TODO: 2021-1-9 Unknown size, do nothing?
                     }
                 } catch (IOException e) {
-                    Log.d("BlockFluxThief/Req " + e + " URL=" + url);
+                    Log.d("BlockFluxThief/Req " + e + " URL=" + filterUrlForLog(url));
                 }
             }
         });
         return true;
+    }
+
+    private static String filterUrlForLog(String url) {
+        // keep scheme and host and port
+        URL u;
+        try {
+            u = new URL(url);
+        } catch (MalformedURLException e) {
+            return url;
+        }
+        return u.getProtocol() + "://" + u.getHost() + (u.getPort() == -1 ? "" : ":" + u.getPort()) + "/...";
     }
 
     @NonNull
