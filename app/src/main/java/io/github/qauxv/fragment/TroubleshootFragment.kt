@@ -481,6 +481,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             val intent = Intent(requireContext(), browser)
             startActivity(intent)
         }
+        val input = EditText(ctx).apply {
+            id = R.id.input_value
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+        }
         AlertDialog.Builder(ctx).apply {
             setTitle("请输入 activity")
             setCancelable(true)
