@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.os.Looper;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.content.PermissionChecker;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
@@ -118,10 +119,8 @@ public class SyncUtils {
     public static final int FILE_CACHE = 2;
     public static final int FILE_UIN_DATA = 3;
     private static final ConcurrentHashMap<Integer, EnumRequestHolder> sEnumProcCallbacks = new ConcurrentHashMap<>();
-    private static final Collection<OnFileChangedListener> sFileChangedListeners = Collections
-        .synchronizedCollection(new HashSet<>());
-    private static final Collection<BroadcastListener> sBroadcastListeners = Collections
-        .synchronizedCollection(new HashSet<>());
+    private static final Collection<OnFileChangedListener> sFileChangedListeners = Collections.synchronizedCollection(new HashSet<>());
+    private static final Collection<BroadcastListener> sBroadcastListeners = Collections.synchronizedCollection(new HashSet<>());
     private static final Map<Long, Collection<String>> sTlsFlags = new HashMap<>();
     private static final Object sTlsLock = new Object();
     private static int myId = 0;
@@ -130,9 +129,30 @@ public class SyncUtils {
     private static String mProcName = null;
     private static Handler sHandler;
     private static final ExecutorService sExecutor = Executors.newCachedThreadPool();
+    private static final String DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION_SUFFIX = ".DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION";
 
     private SyncUtils() {
         throw new AssertionError("No instance for you!");
+    }
+
+    @Nullable
+    public static String getDynamicReceiverNotExportedPermission(@NonNull Context ctx) {
+        String currentPackageName = ctx.getPackageName();
+        String[] possiblePermissions = new String[]{
+                currentPackageName + DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION_SUFFIX,
+                "com.tencent.msg.permission.pushnotify",
+                "com.tencent.tim.msg.permission.pushnotify",
+                "com.tencent.qqlite.msg.permission.pushnotify",
+        };
+        String permissionForReceiver = null;
+        // pick the first available permission
+        for (String permission : possiblePermissions) {
+            if (PermissionChecker.checkSelfPermission(ctx, permission) == PermissionChecker.PERMISSION_GRANTED) {
+                permissionForReceiver = permission;
+                break;
+            }
+        }
+        return permissionForReceiver;
     }
 
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
@@ -147,12 +167,12 @@ public class SyncUtils {
         filter.addAction(ENUM_PROC_REQ);
         filter.addAction(ENUM_PROC_RESP);
         filter.addAction(GENERIC_WRAPPER);
-        // Must not use ContextImpl.registerReceiver here.
+        // Must not use ContextCompat.registerReceiver here.
         // QQ do not have $packageName.DYNAMIC_RECEIVER_NOT_EXPORTED_PERMISSION
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             ctx.registerReceiver(recv, filter, Context.RECEIVER_NOT_EXPORTED);
         } else {
-            ctx.registerReceiver(recv, filter);
+            ctx.registerReceiver(recv, filter, getDynamicReceiverNotExportedPermission(ctx), null);
         }
         inited = true;
     }
@@ -264,12 +284,11 @@ public class SyncUtils {
         do {
             try {
                 List<ActivityManager.RunningAppProcessInfo> runningAppProcesses =
-                    ((ActivityManager) HostInfo.getApplication().getSystemService(Context.ACTIVITY_SERVICE))
-                        .getRunningAppProcesses();
+                        ((ActivityManager) HostInfo.getApplication().getSystemService(Context.ACTIVITY_SERVICE))
+                                .getRunningAppProcesses();
                 if (runningAppProcesses != null) {
                     for (ActivityManager.RunningAppProcessInfo runningAppProcessInfo : runningAppProcesses) {
-                        if (runningAppProcessInfo != null
-                            && runningAppProcessInfo.pid == android.os.Process.myPid()) {
+                        if (runningAppProcessInfo != null && runningAppProcessInfo.pid == android.os.Process.myPid()) {
                             mProcName = runningAppProcessInfo.processName;
                             return runningAppProcessInfo.processName;
                         }
@@ -286,13 +305,11 @@ public class SyncUtils {
         return name;
     }
 
-    public static EnumRequestHolder enumerateProc(Context ctx, final int procMask, int timeout,
-                                                  EnumCallback callback) {
+    public static EnumRequestHolder enumerateProc(Context ctx, final int procMask, int timeout, EnumCallback callback) {
         return enumerateProc(ctx, randomInt32Bits(), procMask, timeout, callback);
     }
 
-    public static EnumRequestHolder enumerateProc(Context ctx, final int requestSeq,
-                                                  final int procMask, int timeout, EnumCallback callback) {
+    public static EnumRequestHolder enumerateProc(Context ctx, final int requestSeq, final int procMask, int timeout, EnumCallback callback) {
         if (callback == null) {
             throw new NullPointerException("callback == null");
         }

@@ -127,7 +127,10 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         hostInfo.application.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
                     } else {
-                        hostInfo.application.registerReceiver(receiver, intentFilter)
+                        hostInfo.application.registerReceiver(
+                            receiver, intentFilter,
+                            SyncUtils.getDynamicReceiverNotExportedPermission(hostInfo.application), null
+                        )
                     }
                 }
             })
@@ -170,7 +173,12 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         hostInfo.application.registerReceiver(receiver, intentFilter, Context.RECEIVER_NOT_EXPORTED)
                     } else {
-                        hostInfo.application.registerReceiver(receiver, intentFilter)
+                        hostInfo.application.registerReceiver(
+                            receiver,
+                            intentFilter,
+                            SyncUtils.getDynamicReceiverNotExportedPermission(hostInfo.application),
+                            null
+                        )
                     }
                 }
                 return XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args)

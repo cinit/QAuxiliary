@@ -39,6 +39,7 @@
         android:resizeableActivity="true"
         android:description="@string/xposeddescription"
         android:theme="@style/AppTheme.Def"
+        android:vmSafeMode="true"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:exported="true"
