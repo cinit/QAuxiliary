@@ -27,6 +27,9 @@ import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
 import io.github.qauxv.loader.hookapi.ILoaderService;
 import java.io.File;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
 
 public class FridaStartupImpl implements ILoaderService {
 
@@ -34,6 +37,8 @@ public class FridaStartupImpl implements ILoaderService {
 
     private File mModulePath;
     private File mHostDataDir;
+    @Nullable
+    private Map<String, Method> mXblService;
     private IClassLoaderHelper mClassLoaderHelper;
 
     /*package*/ void setModulePath(@NonNull File modulePath) {
@@ -44,23 +49,47 @@ public class FridaStartupImpl implements ILoaderService {
         mHostDataDir = hostDataDir;
     }
 
+    /*package*/ void setXblService(@Nullable Map<String, Method> xblService) {
+        mXblService = xblService;
+    }
+
     private FridaStartupImpl() {
+    }
+
+    private Object unsafeInvokeXblService(@NonNull Method m, @Nullable Object... args) {
+        try {
+            return m.invoke(null, args);
+        } catch (ReflectiveOperationException e) {
+            throw unsafeThrowForIteCause(e);
+        }
     }
 
     @NonNull
     @Override
     public String getEntryPointName() {
+        Method m;
+        if (mXblService != null && (m = mXblService.get("GetEntryPointName")) != null) {
+            return (String) unsafeInvokeXblService(m);
+        }
         return FridaInjectEntry.class.getName();
     }
 
     @NonNull
     @Override
     public String getLoaderVersionName() {
+        Method m;
+        if (mXblService != null && (m = mXblService.get("GetLoaderVersionName")) != null) {
+            return (String) unsafeInvokeXblService(m);
+        }
         return io.github.qauxv.loader.sbl.BuildConfig.VERSION_NAME;
     }
 
     @Override
     public int getLoaderVersionCode() {
+        Method m;
+        if (mXblService != null && (m = mXblService.get("GetLoaderVersionCode")) != null) {
+            return (int) unsafeInvokeXblService(m);
+        }
         return io.github.qauxv.loader.sbl.BuildConfig.VERSION_CODE;
     }
 
@@ -83,6 +112,10 @@ public class FridaStartupImpl implements ILoaderService {
     @Nullable
     @Override
     public Object queryExtension(@NonNull String key, @Nullable Object... args) {
+        Method m;
+        if (mXblService != null && (m = mXblService.get("QueryExtension")) != null) {
+            return unsafeInvokeXblService(m, key, args);
+        }
         return null;
     }
 
@@ -95,6 +128,20 @@ public class FridaStartupImpl implements ILoaderService {
     @Override
     public void setClassLoaderHelper(@Nullable IClassLoaderHelper helper) {
         mClassLoaderHelper = helper;
+    }
+
+    private static <T extends Throwable> AssertionError unsafeThrow(Throwable e) throws T {
+        throw (T) e;
+    }
+
+    private static AssertionError unsafeThrowForIteCause(Throwable e) {
+        if (e instanceof InvocationTargetException) {
+            Throwable cause = e.getCause();
+            if (cause != null) {
+                return unsafeThrow(cause);
+            }
+        }
+        return unsafeThrow(e);
     }
 
 }
