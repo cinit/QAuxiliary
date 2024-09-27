@@ -440,6 +440,9 @@ val synthesizeDistReleaseApksCI by tasks.registering {
                             // will there be any 16k-page-size devices supporting 32-bit abi?
                             return 4096
                         }
+                    } else if (path.endsWith(".dex")) {
+                        // for useEmbeddedDex. it unclear that whether 4k or 16k is required on a 16k-page-size device
+                        return 4096
                     } else {
                         // no alignment for other files
                         return AlignmentRule.NO_ALIGNMENT
