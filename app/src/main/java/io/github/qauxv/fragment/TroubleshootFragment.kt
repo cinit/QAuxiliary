@@ -55,6 +55,7 @@ import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.data.EventRecord
 import cc.ioctl.util.data.FriendRecord
+import cc.ioctl.util.ui.FaultyDialog
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
 import io.github.qauxv.R
@@ -476,10 +477,14 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
     private val clickToStartActivity = actionOrShowError {
         val ctx = requireContext()
-        val r = { url: String ->
-            val browser = Initiator.loadClass(url)
-            val intent = Intent(requireContext(), browser)
-            startActivity(intent)
+        val r = { comp: String ->
+            try {
+                val klass = Initiator.loadClass(if (comp.startsWith(".")) ctx.packageName + comp else comp)
+                val intent = Intent(requireContext(), klass)
+                startActivity(intent)
+            } catch (e: Throwable) {
+                FaultyDialog.show(ctx, e)
+            }
         }
         val input = EditText(ctx).apply {
             id = R.id.input_value
@@ -487,7 +492,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
         }
         AlertDialog.Builder(ctx).apply {
-            setTitle("请输入 activity")
+            setTitle("请输入 Activity 类名")
             setCancelable(true)
             setNeutralButton(android.R.string.paste, null) // set listener later
             setPositiveButton(android.R.string.ok, null)  // set listener later
