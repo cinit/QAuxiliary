@@ -136,6 +136,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开X5调试页面", "内置浏览器调试页面", onClick = clickToOpenX5DebugPage)
                 textItem("打开内置浏览器", "使用内置浏览器打开指定页面", onClick = clickToOpenBrowser)
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
+                textItem("打开指定 Activity", null, onClick = clickToStartActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
             },
             CategoryItem("异常与崩溃测试") {
@@ -471,6 +472,45 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val browser = Initiator.loadClass("com.tencent.mobileqq.debug.DebugActivity")
         val intent = Intent(requireContext(), browser)
         startActivity(intent)
+    }
+
+    private val clickToStartActivity = actionOrShowError {
+        val ctx = requireContext()
+        val r = { url: String ->
+            val browser = Initiator.loadClass(url)
+            val intent = Intent(requireContext(), browser)
+            startActivity(intent)
+        }
+        val input = EditText(ctx).apply {
+            id = R.id.input_value
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+        }
+        AlertDialog.Builder(ctx).apply {
+            setTitle("请输入 activity")
+            setCancelable(true)
+            setNeutralButton(android.R.string.paste, null) // set listener later
+            setPositiveButton(android.R.string.ok, null)  // set listener later
+            setNegativeButton(android.R.string.cancel, null)
+            setView(input)
+        }.show().apply {
+            getButton(AlertDialog.BUTTON_NEUTRAL).setOnClickListener {
+                val clipSvc = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as ClipboardManager
+                val clip = clipSvc.primaryClip
+                if (clip != null && clip.itemCount > 0) {
+                    input.setText(clip.getItemAt(0).text)
+                }
+            }
+            getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val url = input.text.toString()
+                if (url.isEmpty()) {
+                    Toasts.error(ctx, "Activity 不能为空")
+                    return@setOnClickListener
+                }
+                dismiss()
+                r(url)
+            }
+        }
     }
 
     private fun generateStatusText(): String {
