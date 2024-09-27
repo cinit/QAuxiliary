@@ -26,6 +26,7 @@ import android.app.Activity
 import android.content.Context
 import android.view.View
 import io.github.qauxv.BuildConfig
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -110,9 +111,9 @@ object NewFeatureManager {
     object NewFeatureTipEnabledAgent : IUiItemAgentProvider, IUiItemAgent, ISwitchCellAgent {
         override val uiItemAgent: IUiItemAgent = this
         override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-        override val titleProvider: (IUiItemAgent) -> String
+        override val titleProvider: (IEntityAgent) -> String
             get() = { "新功能提示" }
-        override val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?)
+        override val summaryProvider: ((IEntityAgent, Context) -> CharSequence?)
             get() = { _, _ -> "开启后，模块更新后会提示新功能" }
         override val valueState: StateFlow<String?>? = null
         override val validator: ((IUiItemAgent) -> Boolean)? = null

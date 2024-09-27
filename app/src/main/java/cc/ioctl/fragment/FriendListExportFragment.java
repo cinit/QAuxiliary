@@ -55,13 +55,14 @@ import cc.ioctl.util.ui.FaultyDialog;
 import com.tencent.mobileqq.widget.BounceScrollView;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
-import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.fragment.BaseRootLayoutFragment;
+import io.github.qauxv.hook.CommonClickableStaticFunctionItem;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
 import java.io.FileOutputStream;
@@ -380,7 +381,7 @@ public class FriendListExportFragment extends BaseRootLayoutFragment {
     }
 
     @UiItemAgentEntry
-    public static class ItemEntry implements IUiItemAgentProvider, IUiItemAgent {
+    public static class ItemEntry extends CommonClickableStaticFunctionItem {
 
         public static final ItemEntry INSTANCE = new ItemEntry();
 
@@ -407,13 +408,13 @@ public class FriendListExportFragment extends BaseRootLayoutFragment {
 
         @NonNull
         @Override
-        public Function1<IUiItemAgent, String> getTitleProvider() {
+        public Function1<IEntityAgent, String> getTitleProvider() {
             return agent -> "导出好友列表";
         }
 
         @Nullable
         @Override
-        public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
+        public Function2<IEntityAgent, Context, CharSequence> getSummaryProvider() {
             return (agent, ctx) -> "支持 CSV/JSON 格式";
         }
 

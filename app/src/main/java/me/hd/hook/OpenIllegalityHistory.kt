@@ -26,6 +26,7 @@ import android.app.Activity
 import android.content.Context
 import android.content.Intent
 import android.view.View
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -38,8 +39,8 @@ import kotlinx.coroutines.flow.StateFlow
 @UiItemAgentEntry
 object OpenIllegalityHistory : IUiItemAgentProvider {
     override val uiItemAgent = object : IUiItemAgent {
-        override val titleProvider: (IUiItemAgent) -> String = { "查看历史违规记录" }
-        override val summaryProvider: ((IUiItemAgent, Context) -> String?) = { _, _ -> null }
+        override val titleProvider: (IEntityAgent) -> String = { "查看历史违规记录" }
+        override val summaryProvider: ((IEntityAgent, Context) -> String?) = { _, _ -> null }
         override val valueState: StateFlow<String?>? = null
         override val validator: ((IUiItemAgent) -> Boolean)? = null
         override val switchProvider: ISwitchCellAgent? = null

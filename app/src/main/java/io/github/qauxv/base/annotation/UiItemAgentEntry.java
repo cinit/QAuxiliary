@@ -23,6 +23,10 @@
 package io.github.qauxv.base.annotation;
 
 import io.github.qauxv.base.IUiItemAgentProvider;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
 /**
  * It's a UI item agent entry(has nothing to do with the hook).
@@ -31,6 +35,8 @@ import io.github.qauxv.base.IUiItemAgentProvider;
  * <p>
  * Target should be an instance of {@link IUiItemAgentProvider}
  */
+@Target({ElementType.TYPE})
+@Retention(RetentionPolicy.CLASS)
 public @interface UiItemAgentEntry {
 
 }

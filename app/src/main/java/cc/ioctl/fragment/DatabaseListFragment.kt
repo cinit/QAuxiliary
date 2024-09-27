@@ -23,7 +23,6 @@
 package cc.ioctl.fragment
 
 import android.app.Activity
-import android.content.Context
 import android.graphics.Typeface
 import android.os.Bundle
 import android.text.Spannable
@@ -45,14 +44,13 @@ import cc.ioctl.util.ui.FaultyDialog
 import com.tencent.mobileqq.widget.BounceScrollView
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
-import io.github.qauxv.base.ISwitchCellAgent
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.IUiItemAgent
-import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.fragment.BaseRootLayoutFragment
+import io.github.qauxv.hook.CommonClickableStaticFunctionItem
 import io.github.qauxv.util.Toasts
-import kotlinx.coroutines.flow.MutableStateFlow
 import java.io.File
 import java.security.MessageDigest
 import java.util.Locale
@@ -176,17 +174,11 @@ class DatabaseListFragment : BaseRootLayoutFragment() {
     }
 
     @UiItemAgentEntry
-    object DatabaseShrinkItemEntry : IUiItemAgentProvider, IUiItemAgent {
-        override val titleProvider: (IUiItemAgent) -> String = { "清理聊天记录数据库" }
-        override val summaryProvider: ((IUiItemAgent, Context) -> String?)? = null
-        override val valueState: MutableStateFlow<String?>? = null
-        override val validator: ((IUiItemAgent) -> Boolean)? = null
-        override val switchProvider: ISwitchCellAgent? = null
+    object DatabaseShrinkItemEntry : CommonClickableStaticFunctionItem() {
+        override val titleProvider: (IEntityAgent) -> String = { "清理聊天记录数据库" }
         override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit) = { _, activity, _ ->
             SettingsUiFragmentHostActivity.startFragmentWithContext(activity, DatabaseListFragment::class.java)
         }
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
-        override val uiItemAgent: IUiItemAgent = this
         override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     }
 

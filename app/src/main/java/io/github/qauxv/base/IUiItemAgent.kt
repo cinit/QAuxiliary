@@ -60,9 +60,7 @@ import kotlinx.coroutines.flow.StateFlow
  *
  * You can't both have a switch, value, and description at the same time, if you do, the description will be ignored.
  */
-interface IUiItemAgent {
-    val titleProvider: (IUiItemAgent) -> String
-    val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?)?
+interface IUiItemAgent : IEntityAgent {
     val valueState: StateFlow<String?>?
     val validator: ((IUiItemAgent) -> Boolean)?
     val switchProvider: ISwitchCellAgent?

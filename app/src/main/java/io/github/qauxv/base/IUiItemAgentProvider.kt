@@ -22,10 +22,14 @@
 
 package io.github.qauxv.base
 
-interface IUiItemAgentProvider {
+interface IUiItemAgentProvider : IEntityAgentProvider {
+
     val uiItemAgent: IUiItemAgent
+
+    override val entityAgent: IEntityAgent get() = uiItemAgent
 
     val uiItemLocation: Array<String>
 
-    val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+    override val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
+
 }

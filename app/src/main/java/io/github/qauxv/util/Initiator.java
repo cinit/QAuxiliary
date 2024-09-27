@@ -83,6 +83,16 @@ public class Initiator {
         }
     }
 
+    public static boolean checkHostHasClass(String className) {
+        ClassLoader hostClassLoader = getHostClassLoader();
+        try {
+            hostClassLoader.loadClass(className);
+            return true;
+        } catch (ClassNotFoundException e) {
+            return false;
+        }
+    }
+
     /**
      * Load a class, if the class is not found, a ClassNotFoundException will be thrown.
      *

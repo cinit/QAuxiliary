@@ -35,11 +35,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.LayoutHelper;
-import io.github.qauxv.base.ISwitchCellAgent;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.base.IUiItemAgent;
-import io.github.qauxv.base.IUiItemAgentProvider;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Entertainment;
+import io.github.qauxv.hook.CommonClickableStaticFunctionItem;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Toasts;
 import java.io.File;
@@ -48,10 +48,9 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
 import kotlin.jvm.functions.Function3;
-import kotlinx.coroutines.flow.MutableStateFlow;
 
 @UiItemAgentEntry
-public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
+public class AddAccount extends CommonClickableStaticFunctionItem {
 
     public static final AddAccount INSTANCE = new AddAccount();
 
@@ -102,32 +101,8 @@ public class AddAccount implements IUiItemAgent, IUiItemAgentProvider {
 
     @NonNull
     @Override
-    public Function1<IUiItemAgent, String> getTitleProvider() {
+    public Function1<IEntityAgent, String> getTitleProvider() {
         return (agent) -> "添加账号";
-    }
-
-    @Nullable
-    @Override
-    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public MutableStateFlow<String> getValueState() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public Function1<IUiItemAgent, Boolean> getValidator() {
-        return null;
-    }
-
-    @Nullable
-    @Override
-    public ISwitchCellAgent getSwitchProvider() {
-        return null;
     }
 
     @Nullable

@@ -36,6 +36,7 @@ import androidx.appcompat.app.AlertDialog
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.ui.FaultyDialog
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -48,8 +49,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @UiItemAgentEntry
 object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
-    override val titleProvider: (IUiItemAgent) -> String = { "打开好友聊天记录" }
-    override val summaryProvider: ((IUiItemAgent, Context) -> String?) = { _, _ -> "仅支持本地聊天记录" }
+    override val titleProvider: (IEntityAgent) -> String = { "打开好友聊天记录" }
+    override val summaryProvider: ((IEntityAgent, Context) -> String?) = { _, _ -> "仅支持本地聊天记录" }
     override val valueState: MutableStateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent? = null

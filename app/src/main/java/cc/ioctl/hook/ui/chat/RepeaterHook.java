@@ -52,6 +52,7 @@ import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
@@ -140,13 +141,13 @@ public class RepeaterHook extends BaseFunctionHook {
                 }
 
                 @Override
-                public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
+                public Function2<IEntityAgent, Context, CharSequence> getSummaryProvider() {
                     return (agent, context) -> "此功能不支持较新的版本，推荐使用消息+1 Plus。点击设置自定义+1图标";
                 }
 
                 @NonNull
                 @Override
-                public Function1<IUiItemAgent, String> getTitleProvider() {
+                public Function1<IEntityAgent, String> getTitleProvider() {
                     return agent -> "消息+1";
                 }
             };

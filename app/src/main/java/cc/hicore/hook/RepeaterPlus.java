@@ -51,6 +51,7 @@ import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.util.xpcompat.XposedHelpers;
@@ -154,13 +155,13 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                 }
 
                 @Override
-                public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
+                public Function2<IEntityAgent, Context, CharSequence> getSummaryProvider() {
                     return (agent, context) -> "点击设置自定义+1图标和显示位置";
                 }
 
                 @NonNull
                 @Override
-                public Function1<IUiItemAgent, String> getTitleProvider() {
+                public Function1<IEntityAgent, String> getTitleProvider() {
                     return agent -> "消息+1 Plus";
                 }
             };

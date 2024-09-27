@@ -28,6 +28,7 @@ import cc.ioctl.fragment.ExfriendListFragment
 import cc.ioctl.hook.DeletionObserver
 import cc.ioctl.util.ExfriendManager
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.startFragmentWithContext
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -42,8 +43,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 @UiItemAgentEntry
 object FriendDeletionNotification : BaseFunctionHook(defaultEnabled = true), IUiItemAgent {
 
-    override val titleProvider: (IUiItemAgent) -> String = { "被删好友检测通知" }
-    override val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?) = { _, _ -> "检测到被删好友时将发出通知" }
+    override val titleProvider: (IEntityAgent) -> String = { "被删好友检测通知" }
+    override val summaryProvider: ((IEntityAgent, Context) -> CharSequence?)? = { _, _ -> "检测到被删好友时将发出通知" }
     override val uiItemAgent = this
     override val runtimeErrors: List<Throwable> get() = DeletionObserver.INSTANCE.runtimeErrors
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Auxiliary.FRIEND_CATEGORY

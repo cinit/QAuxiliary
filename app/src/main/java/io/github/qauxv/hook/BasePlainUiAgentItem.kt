@@ -23,6 +23,7 @@
 package io.github.qauxv.hook
 
 import android.content.Context
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -35,8 +36,8 @@ abstract class BasePlainUiAgentItem(
         val title: String,
         val description: CharSequence?,
 ) : IUiItemAgent, IUiItemAgentProvider {
-    override val titleProvider: (IUiItemAgent) -> String = { title }
-    override val summaryProvider: ((IUiItemAgent, Context) -> CharSequence?) = { _, _ -> description }
+    override val titleProvider: (IEntityAgent) -> String = { title }
+    override val summaryProvider: ((IEntityAgent, Context) -> CharSequence?) = { _, _ -> description }
     override val valueState: StateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent? = null

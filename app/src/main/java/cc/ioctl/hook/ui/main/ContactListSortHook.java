@@ -33,6 +33,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -254,13 +255,13 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
 
     @NonNull
     @Override
-    public Function1<IUiItemAgent, String> getTitleProvider() {
+    public Function1<IEntityAgent, String> getTitleProvider() {
         return agent -> "联系人排序";
     }
 
     @Nullable
     @Override
-    public Function2<IUiItemAgent, Context, CharSequence> getSummaryProvider() {
+    public Function2<IEntityAgent, Context, CharSequence> getSummaryProvider() {
         return null;
     }
 

@@ -23,6 +23,7 @@ package cc.ioctl.hook.friend
 
 import android.content.Context
 import android.view.View
+import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
@@ -33,8 +34,8 @@ import kotlinx.coroutines.flow.MutableStateFlow
 
 @UiItemAgentEntry
 object ShowDeletedFriendListEntry : IUiItemAgent, IUiItemAgentProvider, ISwitchCellAgent {
-    override val titleProvider: (IUiItemAgent) -> String = { _ -> "显示历史好友入口" }
-    override val summaryProvider: (IUiItemAgent, Context) -> String? = { _, _ -> "在好友列表下方显示历史好友入口" }
+    override val titleProvider: (IEntityAgent) -> String = { _ -> "显示历史好友入口" }
+    override val summaryProvider: (IEntityAgent, Context) -> String? = { _, _ -> "在好友列表下方显示历史好友入口" }
     override val valueState: MutableStateFlow<String?>? = null
     override val validator: ((IUiItemAgent) -> Boolean)? = null
     override val switchProvider: ISwitchCellAgent = this
