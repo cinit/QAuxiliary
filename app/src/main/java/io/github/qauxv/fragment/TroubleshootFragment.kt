@@ -28,6 +28,7 @@ import android.app.PendingIntent
 import android.content.ClipboardManager
 import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.graphics.Color
 import android.os.Bundle
 import android.os.Looper
@@ -49,6 +50,7 @@ import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.content.res.ResourcesCompat
 import androidx.lifecycle.lifecycleScope
 import cc.ioctl.fragment.ExfriendListFragment
+import cc.ioctl.hook.misc.DisableHotPatch
 import cc.ioctl.util.ExfriendManager
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.LayoutHelper
@@ -58,6 +60,10 @@ import cc.ioctl.util.data.FriendRecord
 import cc.ioctl.util.ui.FaultyDialog
 import cc.ioctl.util.ui.ThemeAttrUtils
 import cc.ioctl.util.ui.dsl.RecyclerListViewController
+import com.github.kyuubiran.ezxhelper.utils.invokeAs
+import com.github.kyuubiran.ezxhelper.utils.isPublic
+import com.github.kyuubiran.ezxhelper.utils.isStatic
+import com.tencent.mmkv.MMKV
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.createStartActivityForFragmentIntent
@@ -84,6 +90,8 @@ import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.soloader.NativeLoader
 import me.ketal.base.PluginDelayableHook
 import me.singleneuron.hook.decorator.FxxkQQBrowser
+import java.io.File
+import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
 
@@ -139,6 +147,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("打开 DebugActivity", null, onClick = clickToStartHostDebugActivity)
                 textItem("打开指定 Activity", null, onClick = clickToStartActivity)
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
+                textItem("清除 " + hostInfo.hostName + " 热补丁", "仅限测试，正常情况下不应执行此操作", onClick = clickToDeleteHotPatch)
             },
             CategoryItem("异常与崩溃测试") {
                 textItem("退出 Looper", "Looper.getMainLooper().quit() 没事别按", onClick = clickToTestCrashAction {
@@ -234,6 +243,52 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         }
         Thread.sleep(100)
         exitProcess(0)
+    }
+
+    private val clickToDeleteHotPatch = confirmTwiceBeforeActionWithExtraOption(
+        confirmMessage = "此操作将删除" + hostInfo.hostName + "的云控动态下发的热补丁, 通常情况下用户不应该执行此操作.\n" +
+            "删除热补丁后, 请自行重启" + hostInfo.hostName + "以使更改生效.",
+        secondConfirmCheckBoxText = "删除 " + hostInfo.hostName + " 的热补丁",
+        extraOptionCheckBoxText = "打开 \"" + DisableHotPatch.name + "\" 功能",
+        extraOptionCheckedByDefault = DisableHotPatch.isEnabled
+    ) { extraOptionEnabled ->
+        if (extraOptionEnabled) {
+            DisableHotPatch.isEnabled = true
+        }
+        val ctx = requireContext()
+        val dataDir = requireContext().dataDir
+        val rfixDir = File(dataDir, "rfix")
+        val hotpatchDir = File(requireContext().filesDir, "hotpatch")
+        fun deleteFileRecursively(file: File) {
+            if (file.isDirectory) {
+                file.listFiles()?.forEach { deleteFileRecursively(it) }
+            }
+            file.delete()
+        }
+        rfixDir.listFiles()?.forEach { deleteFileRecursively(it) }
+        hotpatchDir.listFiles()?.forEach { deleteFileRecursively(it) }
+        val sharedPrefsDir = File(dataDir, "shared_prefs")
+        val hotPatchConfigFile = File(sharedPrefsDir, "hotpatch_preference.xml")
+        if (hotPatchConfigFile.exists()) {
+            val sp = ctx.getSharedPreferences("hotpatch_preference", Context.MODE_PRIVATE)
+            sp.edit().clear().commit();
+            hotPatchConfigFile.delete()
+        }
+        if (File(ctx.filesDir, "mmkv/common_mmkv_configurations").exists()
+            && Initiator.checkHostHasClass("com.tencent.mmkv.MMKV")
+        ) {
+            // outer layer has try-catch, so ReflectiveOperationException is fine here
+            val kMMKV = Initiator.loadClass("com.tencent.mmkv.MMKV")
+            val mmkvWithID = kMMKV.declaredMethods.single {
+                it.returnType == kMMKV && it.isStatic && it.isPublic && run {
+                    val argt = it.parameterTypes
+                    argt.size == 2 && argt[0] == String::class.java && argt[1] == Int::class.java
+                }
+            }
+            mmkvWithID.invokeAs<SharedPreferences>(null, "common_mmkv_configurations", MMKV.MULTI_PROCESS_MODE)!!
+                .edit().putBoolean("rfix_patch_info#remove_patch", true).commit()
+        }
+        Toasts.success(requireContext(), "操作成功")
     }
 
     private val clickToClearRecoveredFriends = confirmTwiceBeforeAction(
@@ -351,6 +406,71 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
         val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
         checkBox.setOnCheckedChangeListener { _, isChecked ->
             positiveButton.isEnabled = isChecked
+        }
+        positiveButton.isEnabled = false
+    }
+
+    private fun confirmTwiceBeforeActionWithExtraOption(
+        confirmMessage: String,
+        secondConfirmCheckBoxText: String,
+        extraOptionCheckBoxText: String,
+        extraOptionCheckedByDefault: Boolean,
+        action: (extraOptionChecked: Boolean) -> Unit
+    ) = View.OnClickListener {
+        val ctx = requireContext()
+        val builder = AlertDialog.Builder(ctx)
+        val checkBoxStatus = AtomicBoolean(extraOptionCheckedByDefault)
+        builder.setPositiveButton(android.R.string.ok) { _, _ ->
+            try {
+                action(checkBoxStatus.get())
+            } catch (e: Exception) {
+                CustomDialog.createFailsafe(ctx)
+                    .setTitle(Reflex.getShortClassName(e))
+                    .setCancelable(true)
+                    .setMessage(e.toString())
+                    .ok().show()
+            }
+        }
+        builder.setNegativeButton(android.R.string.cancel, null)
+        builder.setCancelable(true)
+        builder.setTitle("确认操作")
+        // create a linear layout to hold the message and checkbox
+        val layout = LinearLayout(ctx).apply {
+            orientation = LinearLayout.VERTICAL
+            val padding = ctx.resources.getDimension(androidx.appcompat.R.dimen.abc_dialog_padding_material).toInt()
+            setPadding(padding, padding / 3, padding, 0)
+        }
+        val message = AppCompatTextView(ctx).apply {
+            text = confirmMessage
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+        }
+        val checkBoxMain = AppCompatCheckBox(ctx).apply {
+            text = secondConfirmCheckBoxText
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+            isClickable = true
+            isChecked = false
+        }
+        val checkBoxExtra = AppCompatCheckBox(ctx).apply {
+            text = extraOptionCheckBoxText
+            setTextSize(TypedValue.COMPLEX_UNIT_SP, 16f)
+            setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+            isClickable = true
+            isChecked = extraOptionCheckedByDefault
+        }
+        layout.addView(message)
+        layout.addView(checkBoxMain)
+        layout.addView(checkBoxExtra)
+        builder.setView(layout)
+        val dialog = builder.show()
+        // get positive button and set listener
+        val positiveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+        checkBoxMain.setOnCheckedChangeListener { _, isChecked ->
+            positiveButton.isEnabled = isChecked
+        }
+        checkBoxExtra.setOnCheckedChangeListener { _, isChecked ->
+            checkBoxStatus.set(isChecked)
         }
         positiveButton.isEnabled = false
     }
