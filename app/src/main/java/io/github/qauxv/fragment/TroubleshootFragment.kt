@@ -649,7 +649,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             "Xposed API version: " + hook.apiLevel + "\n" +
             "module: " + StartupInfo.getModulePath() + "\n" +
             "ctx.dataDir: " + hostInfo.application.dataDir + "\n"
-        statusInfo += "entry: " + loader.entryPointName + "\n"
+        statusInfo += loader.entryPointName + " " + loader.loaderVersionName + " (" + loader.loaderVersionCode + ")\n"
         var xp = loader.queryExtension("GetXposedBridgeClass") as Class<*>?
         if (xp == null) {
             xp = loader.queryExtension("GetXposedInterfaceClass") as Class<*>?
