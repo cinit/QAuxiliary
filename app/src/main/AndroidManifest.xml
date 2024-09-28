@@ -39,8 +39,8 @@
         android:resizeableActivity="true"
         android:description="@string/xposeddescription"
         android:theme="@style/AppTheme.Def"
-        android:vmSafeMode="true"
-        android:useEmbeddedDex="true"
+        android:vmSafeMode="false"
+        android:useEmbeddedDex="false"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:exported="true"
