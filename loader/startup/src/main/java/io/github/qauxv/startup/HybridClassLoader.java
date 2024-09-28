@@ -32,6 +32,7 @@ public class HybridClassLoader extends ClassLoader {
         return sHostClassLoader;
     }
 
+    // we shall use findClass() instead of loadClass(), because we did not have a parent ClassLoader
     @Override
     protected Class<?> findClass(String name) throws ClassNotFoundException {
         try {
@@ -55,13 +56,32 @@ public class HybridClassLoader extends ClassLoader {
             } catch (ClassNotFoundException ignored) {
             }
         }
-        if (sHostClassLoader != null) {
+        if (sHostClassLoader != null && isHostClass(name)) {
             try {
                 return sHostClassLoader.loadClass(name);
             } catch (ClassNotFoundException ignored) {
             }
         }
         throw new ClassNotFoundException(name);
+    }
+
+    /**
+     * Check whether the class is a host class.
+     *
+     * @param name the FQCN of the class
+     * @return true if the class is a host class
+     */
+    public static boolean isHostClass(String name) {
+        return name.startsWith("com.tencent.")
+                || name.startsWith("com.qq.")
+                || name.startsWith("mqq.")
+                || name.startsWith("NS_")
+                || name.startsWith("oicq.")
+                || name.startsWith("QQService.")
+                || name.startsWith("tencent.")
+                || name.startsWith("cooperation.")
+                || name.startsWith("dov.");
+        // add more if needed
     }
 
     /**
