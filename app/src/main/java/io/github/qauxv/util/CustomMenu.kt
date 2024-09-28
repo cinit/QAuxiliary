@@ -28,6 +28,7 @@ import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.DexKit
 import net.bytebuddy.ByteBuddy
 import net.bytebuddy.android.AndroidClassLoadingStrategy
+import net.bytebuddy.android.InjectableDexClassLoader
 import net.bytebuddy.implementation.FixedValue
 import net.bytebuddy.implementation.MethodCall
 import net.bytebuddy.matcher.ElementMatchers
@@ -86,7 +87,16 @@ object CustomMenu {
 
 
     private val strategy by lazy {
-        AndroidClassLoadingStrategy.Wrapping()
+        AndroidClassLoadingStrategy.Injecting()
+    }
+
+    private lateinit var injectionClassLoader: ClassLoader
+
+    private fun getOrCreateInjectionClassLoader(parent: ClassLoader): ClassLoader {
+        if (!::injectionClassLoader.isInitialized) {
+            injectionClassLoader = InjectableDexClassLoader(parent)
+        }
+        return injectionClassLoader
     }
 
     /**
@@ -108,7 +118,7 @@ object CustomMenu {
             .method(ElementMatchers.named(clickName))
             .intercept(MethodCall.call { click() })
             .make()
-            .load(absMenuItem.classLoader, strategy)
+            .load(getOrCreateInjectionClassLoader(absMenuItem.classLoader!!), strategy)
             .loaded
         return menuItemClass.getDeclaredConstructor(msgClass)
             .newInstance(msg)
@@ -135,7 +145,7 @@ object CustomMenu {
             .method(ElementMatchers.named(clickName))
             .intercept(MethodCall.call { click() })
             .make()
-            .load(absMenuItem.classLoader, strategy)
+            .load(getOrCreateInjectionClassLoader(absMenuItem.classLoader!!), strategy)
             .loaded
         return menuItemClass.getDeclaredConstructor(msgClass).newInstance(msg)
     }

@@ -24,8 +24,6 @@ import com.android.dx.dex.cf.CfOptions;
 import com.android.dx.dex.cf.CfTranslator;
 import com.android.dx.dex.file.ClassDefItem;
 import com.android.dx.dex.file.DexFile;
-import dalvik.system.BaseDexClassLoader;
-import dalvik.system.DexClassLoader;
 import io.github.qauxv.util.dyn.MemoryDexLoader;
 import net.bytebuddy.description.type.TypeDescription;
 import net.bytebuddy.dynamic.loading.ClassLoadingStrategy;
@@ -41,9 +39,6 @@ import java.lang.reflect.Method;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
-import java.util.jar.JarEntry;
-import java.util.jar.JarOutputStream;
-import java.util.logging.Logger;
 
 /**
  * <p>
@@ -559,6 +554,52 @@ public abstract class AndroidClassLoadingStrategy implements ClassLoadingStrateg
             for (TypeDescription typeDescription : typeDescriptions) {
                 try {
                     loadedTypes.put(typeDescription, Class.forName(typeDescription.getName(), false, dexClassLoader));
+                } catch (ClassNotFoundException exception) {
+                    throw new IllegalStateException("Cannot load " + typeDescription, exception);
+                }
+            }
+            return loadedTypes;
+        }
+    }
+
+    /**
+     * An Android class loading strategy that injects a dex file into an existing class loader.
+     */
+    public static class Injecting extends AndroidClassLoadingStrategy {
+
+        /**
+         * Creates a new injecting class loading strategy for Android that uses the default SDK-compiler based dex processor.
+         */
+        public Injecting() {
+            this(DexProcessor.ForSdkCompiler.makeDefault());
+        }
+
+        /**
+         * Creates a new injecting class loading strategy for Android.
+         *
+         * @param dexProcessor The dex processor to be used for creating a dex file out of Java files.
+         */
+        public Injecting(DexProcessor dexProcessor) {
+            super(dexProcessor);
+        }
+
+        /**
+         * {@inheritDoc}
+         */
+        protected Map<TypeDescription, Class<?>> doLoad(@MaybeNull ClassLoader classLoader, Set<TypeDescription> typeDescriptions, byte[] dexFile)
+                throws IOException {
+            if (classLoader == null) {
+                throw new IllegalArgumentException("you need to provide an injectable class loader to use this class loading strategy");
+            }
+            if (!(classLoader instanceof IAndroidInjectableClassLoader)) {
+                throw new IllegalArgumentException("class loader is not injectable");
+            }
+            IAndroidInjectableClassLoader injectableClassLoader = (IAndroidInjectableClassLoader) classLoader;
+            injectableClassLoader.injectDex(dexFile, null);
+            Map<TypeDescription, Class<?>> loadedTypes = new HashMap<TypeDescription, Class<?>>();
+            for (TypeDescription typeDescription : typeDescriptions) {
+                try {
+                    loadedTypes.put(typeDescription, Class.forName(typeDescription.getName(), false, classLoader));
                 } catch (ClassNotFoundException exception) {
                     throw new IllegalStateException("Cannot load " + typeDescription, exception);
                 }
