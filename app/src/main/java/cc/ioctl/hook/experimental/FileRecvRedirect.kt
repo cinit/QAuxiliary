@@ -24,7 +24,6 @@ package cc.ioctl.hook.experimental
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.content.Context
 import android.os.Environment
 import android.view.View
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
@@ -33,12 +32,10 @@ import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.setPadding
 import cc.ioctl.util.HostInfo
 import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.Log
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.duzhaokun123.util.FilePicker
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -53,6 +50,7 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.CAppConstants
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import kotlinx.coroutines.flow.StateFlow
 import java.io.File
 import java.lang.reflect.Field
@@ -100,7 +98,7 @@ object FileRecvRedirect : CommonConfigFunctionHook(SyncUtils.PROC_ANY and (SyncU
                 ll_path.visibility = if (isChecked) View.VISIBLE else View.GONE
             }
             btn_select.setOnClickListener {
-                FilePicker.pickDir(activity, "选择下载文件重定向目录", et_path.text.toString()) { path ->
+                FilePicker.pickDir(activity, "选择下载文件重定向目录", Environment.getExternalStorageDirectory().absolutePath) { path ->
                     et_path.setText(path)
                 }
             }
