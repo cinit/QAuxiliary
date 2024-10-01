@@ -83,8 +83,9 @@ object EditTextContent : CommonSwitchFunctionHook(
     @SuppressLint("SetTextI18n")
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
+        val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
+        if (msgRecord.sendType == 0) return
         val item = CustomMenu.createItemIconNt(msg, "编辑重发", R.drawable.ic_item_edit_72dp, R.id.item_edit_to_send) {
-            val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
             when (componentType) {
                 TEXT_CONTEXT -> {
                     val stringBuilder = StringBuilder()
