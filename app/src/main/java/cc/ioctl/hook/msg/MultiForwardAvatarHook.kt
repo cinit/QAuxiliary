@@ -147,8 +147,8 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             // 设置头像点击和长按事件的方法
             DexKit.requireMethodFromCache(Multiforward_Avatar_setListener_NT).hookBefore { param ->
                 var layout: RelativeLayout?
-                clz.declaredFields.single {
-                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_0_95)) "h"
+                clz.declaredFields.single {//Lazy avatarContainer
+                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_0_90)) "h"
                     else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "i"
                     else "h"
                 }.let {
