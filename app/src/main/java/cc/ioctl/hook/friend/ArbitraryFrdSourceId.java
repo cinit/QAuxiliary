@@ -132,6 +132,20 @@ public class ArbitraryFrdSourceId extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        Class<?> KAddFriendVerifyFragmentForNT = Initiator.load("com.tencent.mobileqq.addfriend.ui.fornt.verify.AddFriendVerifyFragmentForNT");
+        if (KAddFriendVerifyFragmentForNT != null) {
+            Method doOnCreateView = KAddFriendVerifyFragmentForNT.getDeclaredMethod("doOnCreateView",
+                    LayoutInflater.class, ViewGroup.class, Bundle.class);
+            HookUtils.hookAfterIfEnabled(this, doOnCreateView, param -> {
+                ViewGroup contentView = (ViewGroup) Reflex.getInstanceObject(param.thisObject, "mContentView", View.class);
+                Objects.requireNonNull(contentView, "AddFriendVerifyFragmentForNT.this@QIphoneTitleBarFragment.mContentView should not be null");
+                ViewGroup rlRoot = findRlRootRecursive(contentView);
+                Objects.requireNonNull(rlRoot, "rl_root should not be null");
+                Activity activity = (Activity) Reflex.invokeVirtual(param.thisObject, "getActivity");
+                Objects.requireNonNull(activity, "activity should not be null");
+                initFunView(activity, activity.getIntent(), rlRoot);
+            });
+        }
         Class<?> kAddFriendVerifyFragment = Initiator.load("com.tencent.mobileqq.addfriend.ui.AddFriendVerifyFragment");
         if (kAddFriendVerifyFragment != null) {
             Method doOnCreateView = kAddFriendVerifyFragment.getDeclaredMethod("doOnCreateView",
