@@ -33,6 +33,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.get
+import xyz.nextalone.util.invoke
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -44,17 +45,29 @@ object HideFriendChatVoice : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val setOnClickClass = if (requireMinQQVersion(QQVersion.QQ_9_0_70)) {
-            Initiator.loadClass("com.tencent.mobileqq.aio.title.right2.b")
-        } else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
-            Initiator.loadClass("com.tencent.mobileqq.aio.title.c.c")
-        } else {
-            Initiator.loadClass("com.tencent.mobileqq.aio.title.c.d")
-        }
+        val setOnClickClass = Initiator.loadClass(
+            when {
+                requireMinQQVersion(QQVersion.QQ_9_0_95) -> "com.tencent.mobileqq.aio.title.right2.Right2VB"
+                requireMinQQVersion(QQVersion.QQ_9_0_70) -> "com.tencent.mobileqq.aio.title.right2.b"
+                requireMinQQVersion(QQVersion.QQ_9_0_65) -> "com.tencent.mobileqq.aio.title.c.c"
+                else -> "com.tencent.mobileqq.aio.title.c.d"
+            }
+        )
         val bindMethod = setOnClickClass.getDeclaredMethod("bindViewAndData")
         hookAfterIfEnabled(bindMethod) { param ->
-            val redDotImageViewName = if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "f" else "e"
-            val redDotImageView = param.thisObject.get(redDotImageViewName) as View
+            val redDotImageView = if (requireMinQQVersion(QQVersion.QQ_9_0_95)) {
+                setOnClickClass.declaredFields.single { it.type.name == Lazy::class.java.name }.let {
+                    it.isAccessible = true
+                    it.get(param.thisObject)!!.invoke("getValue") as View
+                }
+            } else {
+                param.thisObject.get(
+                    when {
+                        requireMinQQVersion(QQVersion.QQ_9_0_65) -> "f"
+                        else -> "e"
+                    }
+                ) as View
+            }
             redDotImageView.setViewZeroSize()
         }
         return true
