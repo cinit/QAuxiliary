@@ -796,24 +796,31 @@ data object AIOTextElementCtor : DexKitTarget.UsingStr() {
 }
 
 data object AIOPicElementType : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = false;
-    override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElementType.PicElement";
-    override val traitString = arrayOf("PicElement(origPath=");
-    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/");
+    override val findMethod: Boolean = false
+    override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElementType.PicElement"
+    override val traitString = arrayOf("PicElement(origPath=")
+    override val filter = DexKitFilter.strInClsName("com/tencent/qqnt/aio/")
 }
 
 data object MultiSelectToBottomIntent : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = false;
-    override val declaringClass = "com.tencent.mobileqq.aio.input.multiselect.c.toBottomIntent";
-    override val traitString = arrayOf("SelectToBottom(dividingLineTop=");
-    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/multiselect");
+    override val findMethod: Boolean = false
+    override val declaringClass = "com.tencent.mobileqq.aio.input.multiselect.c.toBottomIntent"
+    override val traitString = arrayOf("SelectToBottom(dividingLineTop=")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/multiselect")
+}
+
+data object MultiSelectBarVM : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = false
+    override val declaringClass = ""
+    override val traitString = arrayOf("MultiSelectBarVM")
+    override val filter = DexKitFilter.allowAll
 }
 
 data object AIOSendMsg : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = true;
-    override val declaringClass = "com.tencent.mobileqq.aio.input.sendmsg.AIOSendMsgVMDelegate.sendMsg";
-    override val traitString = arrayOf("[sendMsg] elements is empty");
-    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/sendmsg/AIOSendMsgVMDelegate");
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.aio.input.sendmsg.AIOSendMsgVMDelegate.sendMsg"
+    override val traitString = arrayOf("[sendMsg] elements is empty")
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input/sendmsg/AIOSendMsgVMDelegate")
 }
 
 data object AIODelegate_ISwipeListener : DexKitTarget.UsingStringVector() {

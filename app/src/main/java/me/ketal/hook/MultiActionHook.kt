@@ -50,13 +50,16 @@ import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.CMessageCache
 import io.github.qauxv.util.dexkit.CMessageRecordFactory
 import io.github.qauxv.util.dexkit.CMultiMsgManager
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.MultiSelectBarVM
 import io.github.qauxv.util.dexkit.MultiSelectToBottomIntent
 import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
+import io.github.qauxv.util.requireMinQQVersion
 import mqq.app.AppActivity
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
@@ -74,7 +77,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
         CMessageRecordFactory,
         NBaseChatPie_createMulti,
         CMultiMsgManager,
-        MultiSelectToBottomIntent
+        MultiSelectToBottomIntent,
+        MultiSelectBarVM,
     )
 ), SessionHooker.IAIOParamUpdate {
 
@@ -141,7 +145,8 @@ object MultiActionHook : CommonSwitchFunctionHook(
             }
         val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
         val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
-        Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM")
+        (if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) DexKit.requireClassFromCache(MultiSelectBarVM)
+        else Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM"))
             .method("handleIntent")!!
             .hookBefore(this) {
                 // 劫持一个 intent 自己传参
