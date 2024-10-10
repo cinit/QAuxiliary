@@ -112,7 +112,9 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         Class<?> kFileBrowserModelBase = Initiator.loadClass("com.tencent.mobileqq.filemanager.fileviewer.model.FileBrowserModelBase");
         Class<?> kDefaultFileModel = DexKit.requireClassFromCache(DefaultFileModel.INSTANCE);
         String fileViewerAdapterClassName;
-        if (requireMinQQVersion(QQVersion.QQ_9_0_80)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) {
+            fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.i";
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_80)) {
             fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.h";
         } else if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
             fileViewerAdapterClassName = "com.tencent.mobileqq.filemanager.fileviewer.g";
