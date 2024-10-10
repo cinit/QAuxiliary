@@ -39,7 +39,6 @@ import java.security.cert.X509Certificate
 import java.util.Locale
 import java.util.UUID
 
-@Suppress("DSL_SCOPE_VIOLATION")
 plugins {
     id("build-logic.android.application")
     alias(libs.plugins.changelog)
