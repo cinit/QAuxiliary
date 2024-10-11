@@ -24,6 +24,7 @@ package xyz.nextalone.hook
 
 import android.graphics.Bitmap
 import android.graphics.BitmapFactory
+import android.view.View
 import android.widget.ImageView
 import androidx.core.view.isVisible
 import com.github.kyuubiran.ezxhelper.utils.putObjectByType
@@ -49,11 +50,12 @@ object HideRedPoints : CommonSwitchFunctionHook() {
     override fun initOnce(): Boolean = throwOrTrue {
         // unknown red point
         "com.tencent.mobileqq.tianshu.ui.RedTouch".clazz?.method(
-            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "getRedPoint" else "a", 1, ImageView::class.java
+            if (requireMinQQVersion(QQVersion.QQ_8_8_93)) "getRedPoint" else "a", 1,
+            if (requireMinQQVersion(QQVersion.QQ_9_0_80)) View::class.java else ImageView::class.java,
         ) {
             it.parameterTypes[0] == Int::class.java
         }?.hookAfter(this) {
-            (it.result as ImageView).isVisible = false
+            (it.result as View).isVisible = false
         }
 
         // skin_tips_dot
@@ -74,17 +76,17 @@ object HideRedPoints : CommonSwitchFunctionHook() {
 
     // for skin_tips_dot
     private val TRANSPARENT_PNG = byteArrayOf(
-            0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(),
-            0x1A.toByte(), 0x0A.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x0D.toByte(),
-            0x49.toByte(), 0x48.toByte(), 0x44.toByte(), 0x52.toByte(), 0x00.toByte(), 0x00.toByte(),
-            0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(),
-            0x08.toByte(), 0x06.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x1F.toByte(),
-            0x15.toByte(), 0xC4.toByte(), 0x89.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
-            0x0B.toByte(), 0x49.toByte(), 0x44.toByte(), 0x41.toByte(), 0x54.toByte(), 0x08.toByte(),
-            0xD7.toByte(), 0x63.toByte(), 0x60.toByte(), 0x00.toByte(), 0x02.toByte(), 0x00.toByte(),
-            0x00.toByte(), 0x05.toByte(), 0x00.toByte(), 0x01.toByte(), 0xE2.toByte(), 0x26.toByte(),
-            0x05.toByte(), 0x9B.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
-            0x49.toByte(), 0x45.toByte(), 0x4E.toByte(), 0x44.toByte(), 0xAE.toByte(), 0x42.toByte(),
-            0x60.toByte(), 0x82.toByte()
+        0x89.toByte(), 0x50.toByte(), 0x4E.toByte(), 0x47.toByte(), 0x0D.toByte(), 0x0A.toByte(),
+        0x1A.toByte(), 0x0A.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x0D.toByte(),
+        0x49.toByte(), 0x48.toByte(), 0x44.toByte(), 0x52.toByte(), 0x00.toByte(), 0x00.toByte(),
+        0x00.toByte(), 0x01.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x01.toByte(),
+        0x08.toByte(), 0x06.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x1F.toByte(),
+        0x15.toByte(), 0xC4.toByte(), 0x89.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+        0x0B.toByte(), 0x49.toByte(), 0x44.toByte(), 0x41.toByte(), 0x54.toByte(), 0x08.toByte(),
+        0xD7.toByte(), 0x63.toByte(), 0x60.toByte(), 0x00.toByte(), 0x02.toByte(), 0x00.toByte(),
+        0x00.toByte(), 0x05.toByte(), 0x00.toByte(), 0x01.toByte(), 0xE2.toByte(), 0x26.toByte(),
+        0x05.toByte(), 0x9B.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(), 0x00.toByte(),
+        0x49.toByte(), 0x45.toByte(), 0x4E.toByte(), 0x44.toByte(), 0xAE.toByte(), 0x42.toByte(),
+        0x60.toByte(), 0x82.toByte()
     )
 }
