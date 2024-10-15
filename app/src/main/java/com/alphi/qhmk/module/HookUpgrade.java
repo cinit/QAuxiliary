@@ -17,7 +17,7 @@ import java.lang.reflect.Method;
 
 @UiItemAgentEntry
 @FunctionHookEntry
-public class HookUpgrade  extends CommonSwitchFunctionHook {
+public class HookUpgrade extends CommonSwitchFunctionHook {
 
     public static final HookUpgrade INSTANCE = new HookUpgrade();
 
@@ -33,6 +33,15 @@ public class HookUpgrade  extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
+
+        try {
+            Class<?> shiplyUpgradeManagerClass = Initiator.loadClass("com.tencent.mobileqq.upgrade.a.a");
+            Class<?> upgradeStrategyClass = Initiator.loadClass("com.tencent.upgrade.bean.UpgradeStrategy");
+            Method getConfigUpgradeMethod = shiplyUpgradeManagerClass.getDeclaredMethod("c", upgradeStrategyClass, boolean.class);
+            HookUtils.hookBeforeIfEnabled(this, getConfigUpgradeMethod, param -> param.setResult(null));
+        } catch (Exception ignored) {
+        }
+
         Class<?> configHandlerClass = Initiator.loadClass("com.tencent.mobileqq.app.ConfigHandler");
         for (Method m : configHandlerClass.getDeclaredMethods()) {
             Class<?>[] parameterTypes = m.getParameterTypes();
