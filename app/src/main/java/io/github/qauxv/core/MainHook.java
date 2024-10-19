@@ -106,10 +106,6 @@ public class MainHook {
         if (HostInfo.isQQHD()) {
             initForQQHDBasePadActivityMitigation();
         }
-        if (isWindowsSubsystemForAndroid()) {
-            Log.w("WSA detected, aggressive resource injection is required to prevent ResourceNotFound crash.");
-            // TODO: 2023-1-20 implement aggressive resource injection
-        }
         boolean safeMode = SafeModeManager.getManager().isEnabledForNextTime();
         SafeModeManager.getManager().setSafeModeForThisTime(safeMode);
         if (safeMode) {
