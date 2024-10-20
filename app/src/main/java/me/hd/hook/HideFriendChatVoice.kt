@@ -49,7 +49,7 @@ object HideFriendChatVoice : CommonSwitchFunctionHook() {
             when {
                 requireMinQQVersion(QQVersion.QQ_9_0_95) -> "com.tencent.mobileqq.aio.title.right2.Right2VB"
                 requireMinQQVersion(QQVersion.QQ_9_0_70) -> "com.tencent.mobileqq.aio.title.right2.b"
-                requireMinQQVersion(QQVersion.QQ_9_0_65) -> "com.tencent.mobileqq.aio.title.c.c"
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.aio.title.c.c"
                 else -> "com.tencent.mobileqq.aio.title.c.d"
             }
         )
@@ -63,7 +63,7 @@ object HideFriendChatVoice : CommonSwitchFunctionHook() {
             } else {
                 param.thisObject.get(
                     when {
-                        requireMinQQVersion(QQVersion.QQ_9_0_65) -> "f"
+                        requireMinQQVersion(QQVersion.QQ_9_0_60) -> "f"
                         else -> "e"
                     }
                 ) as View
