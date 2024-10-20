@@ -789,7 +789,7 @@ data object Multiforward_Avatar_setListener_NT : DexKitTarget.UsingDexkit() {
 }
 
 data object AIOTextElementCtor : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = true;
+    override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgElement.AIOTextElementCtor"
     override val traitString = arrayOf("textElement")
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/msg")
@@ -1022,4 +1022,11 @@ data object OriginalPhotoNT_onInitView : DexKitTarget.UsingDexkit() {
     override val findMethod: Boolean = true
     override val declaringClass = ""
     override val filter: dexkitFilter = DexKitFilter.allowAll
+}
+
+data object RemoveAudioTransitionMethod : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("getDrawable onCompositionLoaded lottieComposition is null or mIsDestroyed")
+    override val declaringClass = "Lcom/tencent/mobileqq/activity/aio/audiopanel/AudioTransitionAnimManager;"
+    override val filter = DexKitFilter.allowAll
 }

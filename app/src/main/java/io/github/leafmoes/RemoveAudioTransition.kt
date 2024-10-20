@@ -22,32 +22,27 @@
 
 package io.github.leafmoes
 
-import android.content.Context
-import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookReplace
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.RemoveAudioTransitionMethod
 import xyz.nextalone.util.throwOrTrue
 
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveAudioTransition : CommonSwitchFunctionHook("removeAudioTransition") {
+object RemoveAudioTransition : CommonSwitchFunctionHook(
+    "removeAudioTransition",
+    targets = arrayOf(RemoveAudioTransitionMethod)
+) {
     override val name: String get() = "移除语音面板多余过渡动画"
     override val description: String get() = "QQ语音面板左右滑动的时候因为这个动画导致UI重影\n故写此功能移除这个莫名其妙的动画"
     override val uiItemLocation: Array<String> get() = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
 
-    override fun initOnce()= throwOrTrue {
-        Initiator.loadClass("com.tencent.mobileqq.activity.aio.audiopanel.AudioTransitionAnimManager")
-            .findMethod {
-                val paramsTypes = parameterTypes
-                parameterCount == 4
-                    && paramsTypes[0] == Int::class.javaPrimitiveType
-                    && paramsTypes[1] == String::class.java
-                    && paramsTypes[2] == Context::class.java
-            }.hookReplace {  }
+    override fun initOnce() = throwOrTrue {
+        DexKit.requireMethodFromCache(RemoveAudioTransitionMethod).hookReplace { }
     }
 }
