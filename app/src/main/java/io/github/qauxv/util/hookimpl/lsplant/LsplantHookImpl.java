@@ -380,12 +380,16 @@ public class LsplantHookImpl {
         Objects.requireNonNull(method, "method");
         Objects.requireNonNull(args, "args");
         checkMemberValid(method);
-        boolean hasThis = (method instanceof Constructor) || !Modifier.isStatic(method.getModifiers());
+        // Constructors may have a static modifier, for <clinit>()V, if anyone is trying to hook it.
+        boolean hasThis = !Modifier.isStatic(method.getModifiers());
         if (hasThis && thisObject == null) {
             throw new NullPointerException("thisObject is null for method " + method);
         }
-        // CHA lookup
-        method = Reflex.virtualMethodLookup(method, thisObject);
+        if (Modifier.isAbstract(method.getModifiers())) {
+            // Anyone trying to call invokeOriginalMethod on an abstract method?
+            // CHA lookup in case anyone really does that
+            method = Reflex.virtualMethodLookup(method, thisObject);
+        }
         // perform a lookup
         Class<?> declaringClass = method.getDeclaringClass();
         declaringClass.cast(thisObject);
@@ -403,7 +407,7 @@ public class LsplantHookImpl {
             Method backup = token.getBackupMember();
             return backup.invoke(thisObject, args);
         } else {
-            // method is not hooked, invoke the original method/copnstructor directly
+            // method is not hooked, invoke the original method/constructor directly
             return Natives.invokeNonVirtualArtMethodNoDeclaringClassCheck(method, declaringClass, thisObject, args);
         }
     }
