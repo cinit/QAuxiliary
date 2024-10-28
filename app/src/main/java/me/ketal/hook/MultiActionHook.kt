@@ -162,8 +162,13 @@ object MultiActionHook : CommonSwitchFunctionHook(
                         .map { it!!.invoke("getMsgId") as Long }
                     Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
                     val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
-                    msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam), ArrayList<Long>(list)) { i2, str ->
-                        Log.d("do recallMsg result:$str")
+                    thread {
+                        list.chunked(10).forEach { subList ->
+                            msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam), ArrayList<Long>(subList)) { i2, str ->
+                                Log.d("do recallMsg result:$str")
+                            }
+                            sleep(3500)
+                        }
                     }
                     it.result = null
                 }
