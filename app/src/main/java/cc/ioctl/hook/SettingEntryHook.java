@@ -109,7 +109,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 // 9.0.8+
                 kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.h");
                 if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
-                    throw new IllegalStateException("kSImpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
+                    throw new IllegalStateException("kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
                 }
             }
             Method setOnClickListener;
@@ -120,9 +120,11 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     return m.getReturnType() == void.class && argt.length == 1 && Function0.class.getName().equals(argt[0].getName());
                 });
                 candidates.sort(Comparator.comparing(Method::getName));
-                if (candidates.size() != 2) {
-                    throw new IllegalStateException("com.tencent.mobileqq.setting.processor.g.?(Function0)V candidates.size() != 2");
+                // TIM 4.0.95.4001 only have one method, that is the one we need (onClick() lambda)
+                if (candidates.size() != 2 && candidates.size() != 1) {
+                    throw new IllegalStateException("com.tencent.mobileqq.setting.processor.g.?(Function0)V candidates.size() != 1|2");
                 }
+                // take the smaller one
                 setOnClickListener = candidates.get(0);
             }
             Constructor<?> ctorSimpleItemProcessor = kSimpleItemProcessor.getDeclaredConstructor(Context.class, int.class, CharSequence.class, int.class);
