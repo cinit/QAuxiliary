@@ -2,11 +2,11 @@
 agp = "8.7.1"
 appCenter = "5.0.5"
 kotlin = "2.0.21"
-ksp = "2.0.21-1.0.25"
+ksp = "2.0.21-1.0.26"
 lifecycle = "2.8.6"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.28.2"
+protobuf = "4.28.3"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -39,7 +39,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.15.5" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.15.7" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
