@@ -27,6 +27,7 @@ import cc.ioctl.util.hookBeforeIfEnabled
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.list.listItemsSingleChoice
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.kernelcompat.ContactCompat
@@ -73,6 +74,7 @@ object FakePicSize : BaseFunctionHook(
     }
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? = null
 
     private fun showDialog(activity: Context) {
         MaterialDialog(activity).show {

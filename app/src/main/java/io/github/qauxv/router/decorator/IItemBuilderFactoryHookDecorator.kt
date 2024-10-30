@@ -23,9 +23,11 @@ package io.github.qauxv.router.decorator
 
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
+import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
 
-interface IItemBuilderFactoryHookDecorator : IDynamicHook, RuntimeErrorTracer {
+interface IItemBuilderFactoryHookDecorator : ITraceableDynamicHook {
 
     /**
      * Called when the ItemBuilderFactory.getMsgType is called.
@@ -40,5 +42,8 @@ interface IItemBuilderFactoryHookDecorator : IDynamicHook, RuntimeErrorTracer {
         chatMessage: Any,
         param: XC_MethodHook.MethodHookParam
     ): Boolean
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+        get() = listOf(ItemBuilderFactoryHook)
 
 }

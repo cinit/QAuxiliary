@@ -32,9 +32,11 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.chat.SessionUtils;
+import com.google.common.collect.Lists;
 import com.tencent.qqnt.kernel.nativeinterface.ArkElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import io.github.qauxv.base.IDynamicHook;
+import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
@@ -42,6 +44,7 @@ import io.github.qauxv.bridge.kernelcompat.ContactCompat;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.remote.TransactionHelper;
 import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator;
+import io.github.qauxv.router.decorator.IBaseChatPieDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.util.SyncUtils;
@@ -53,6 +56,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
+import java.util.List;
 import me.singleneuron.data.CardMsgCheckResult;
 import me.singleneuron.util.KotlinUtilsKt;
 import mqq.app.AppRuntime;
@@ -162,14 +166,14 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
     @NonNull
     private static MsgElement getArkMsgElement(@NonNull String text) {
         MsgElement msgElement = new MsgElement();
-        ArkElement arkElement = new ArkElement(text,null,null);
+        ArkElement arkElement = new ArkElement(text, null, null);
         msgElement.setArkElement(arkElement);
         msgElement.setElementType(10);
         return msgElement;
     }
 
     private void sendCard(String text, View sendBtn, EditText input, Context ctx1, AppRuntime qqApp, Parcelable session) throws Exception {
-        if (QAppUtils.isQQnt()){
+        if (QAppUtils.isQQnt()) {
             try {
                 new JSONObject(text);
                 CardMsgCheckResult check = KotlinUtilsKt.checkCardMsg(text);
@@ -205,7 +209,11 @@ public class CardMsgSender extends BaseSwitchFunctionDecorator implements IInput
 
     }
 
-
+    @Nullable
+    @Override
+    public List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
+        return Lists.newArrayList(InputButtonHookDispatcher.INSTANCE);
+    }
 
     @SuppressWarnings("JavaJniMissingFunction")
     static native boolean ntSendCardMsg(AppRuntime rt, Parcelable session, String msg) throws Exception;

@@ -22,7 +22,11 @@
 
 package io.github.qauxv.router.decorator
 
-import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
+import io.github.qauxv.router.dispacher.InputButtonHookDispatcher
 
-interface IBaseChatPieDecorator : RuntimeErrorTracer, IDynamicHook
+interface IBaseChatPieDecorator : ITraceableDynamicHook {
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+        get() = listOf(InputButtonHookDispatcher.INSTANCE)
+}

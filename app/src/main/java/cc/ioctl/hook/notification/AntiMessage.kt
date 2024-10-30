@@ -24,6 +24,7 @@ package cc.ioctl.hook.notification
 
 import cc.ioctl.util.msg.MessageReceiver
 import cc.ioctl.util.MsgRecordUtil
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
@@ -56,6 +57,12 @@ object AntiMessage : MultiItemDelayableHook("qn_anti_message_items"), MessageRec
         }
         return false
     }
+
+    override fun initOnce(): Boolean {
+        return MessageInterception.initialize()
+    }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer> = listOf(MessageInterception)
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
 }

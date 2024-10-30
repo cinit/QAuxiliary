@@ -29,11 +29,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import cc.hicore.QApp.QAppUtils
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator
+import io.github.qauxv.router.dispacher.InputButtonHookDispatcher
 import mqq.app.AppRuntime
 
 
@@ -66,5 +68,7 @@ object CtrlEnterToSend : CommonSwitchFunctionHook(), IBaseChatPieInitDecorator {
         }
 
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer> = listOf(InputButtonHookDispatcher.INSTANCE)
 
 }

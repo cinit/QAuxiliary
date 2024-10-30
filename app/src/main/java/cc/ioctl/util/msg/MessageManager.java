@@ -22,23 +22,15 @@
 package cc.ioctl.util.msg;
 
 import androidx.annotation.NonNull;
-import cc.ioctl.hook.notification.AntiMessage;
-import cn.lliiooll.hook.AntiRobotMessage;
+import cc.ioctl.hook.notification.MessageInterception;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
-import me.singleneuron.hook.decorator.RegexAntiMeg;
 import me.singleneuron.data.MsgRecordData;
 
 public class MessageManager {
 
     private static final Map<Long, Long> MSG = new ConcurrentHashMap<>();
 
-    private static final MessageReceiver[] receivers = {
-        // 在这里添加消息处理
-        RegexAntiMeg.INSTANCE,
-        AntiMessage.INSTANCE, 
-        AntiRobotMessage.INSTANCE,
-    };
     public static Class<?> intType = int.class;
     public static Class<?> booleanType = boolean.class;
 
@@ -54,7 +46,7 @@ public class MessageManager {
         }
 
         // 以上是为了防止消息重复广播
-        for (MessageReceiver receiver : receivers) {
+        for (MessageReceiver receiver : MessageInterception.INSTANCE.getDecorators()) {
             if (receiver.onReceive(data)) {
                 // 返回true退出遍历
                 break;

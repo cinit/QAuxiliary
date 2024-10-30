@@ -22,10 +22,15 @@
 package cc.hicore.message.chat;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.hook.RepeaterPlus;
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker;
+import com.google.common.collect.Lists;
+import io.github.qauxv.base.ITraceableDynamicHook;
+import io.github.qauxv.base.RuntimeErrorTracer;
+import io.github.qauxv.base.annotation.EntityAgentEntry;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.base.IDynamicHook;
@@ -37,9 +42,12 @@ import io.github.qauxv.util.dexkit.AIO_Create_QQNT;
 import io.github.qauxv.util.dexkit.AIO_Destroy_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import java.util.Collections;
+import java.util.List;
 import java.util.Stack;
 import me.ketal.hook.MultiActionHook;
 
+@EntityAgentEntry
 @FunctionHookEntry
 public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpdate> {
 
@@ -106,8 +114,14 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
         return QAppUtils.isQQnt() && super.isEnabled();
     }
 
-    public interface IAIOParamUpdate extends IDynamicHook {
+    public interface IAIOParamUpdate extends ITraceableDynamicHook {
 
         void onAIOParamUpdate(Object AIOParam);
+
+        @Nullable
+        @Override
+        default List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
+            return Lists.asList(SessionHooker.INSTANCE, RuntimeErrorTracer.EMPTY_ARRAY);
+        }
     }
 }

@@ -32,11 +32,13 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
 import io.github.qauxv.BuildConfig
+import io.github.qauxv.base.annotation.EntityAgentEntry
 import me.singleneuron.hook.decorator.DisableQzoneSlideCamera
 import me.singleneuron.hook.decorator.ForceSystemAlbum
 import me.singleneuron.hook.decorator.ForceSystemFile
 import me.singleneuron.hook.decorator.FxxkQQBrowser
 
+@EntityAgentEntry
 @FunctionHookEntry
 object StartActivityHook : BaseHookDispatcher<IStartActivityHookDecorator>(null) {
 

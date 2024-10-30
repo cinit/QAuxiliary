@@ -29,6 +29,7 @@ import cc.ioctl.util.HostInfo
 import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Initiator
@@ -159,5 +160,7 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey =
         }
 
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? get() = null
 
 }

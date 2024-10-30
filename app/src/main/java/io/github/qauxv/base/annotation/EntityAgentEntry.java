@@ -27,6 +27,11 @@ import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
+/**
+ * A passive entity agent entry, for error tracking.
+ * <p>
+ * Target should be an instance of {@link io.github.qauxv.base.IEntityAgentProvider}
+ */
 @Target({ElementType.TYPE})
 @Retention(RetentionPolicy.CLASS)
 public @interface EntityAgentEntry {

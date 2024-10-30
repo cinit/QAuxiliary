@@ -31,6 +31,7 @@ import cc.ioctl.util.msg.MessageReceiver
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -49,6 +50,7 @@ object RegexAntiMeg : CommonConfigFunctionHook(), MessageReceiver {
     override val description = "使用强大的正则表达式自由屏蔽卡片消息"
     override val valueState: MutableStateFlow<String?>? = null
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer> = listOf(MessageInterception)
 
     private var regexCache: Regex? = null
     private var regexStringCache: String = ""

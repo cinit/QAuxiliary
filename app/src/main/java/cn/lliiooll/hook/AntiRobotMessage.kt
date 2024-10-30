@@ -23,6 +23,7 @@ package cn.lliiooll.hook
 
 import cc.ioctl.hook.notification.MessageInterception
 import cc.ioctl.util.msg.MessageReceiver
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -36,7 +37,7 @@ import xyz.nextalone.util.invoke
 // 自动已读群机器人消息
 @FunctionHookEntry
 @UiItemAgentEntry
-object AntiRobotMessage : CommonSwitchFunctionHook("ll_anti_robot_message"),MessageReceiver {
+object AntiRobotMessage : CommonSwitchFunctionHook("ll_anti_robot_message"), MessageReceiver {
     override val name: String
         get() = "自动已读群机器人消息"
 
@@ -48,14 +49,16 @@ object AntiRobotMessage : CommonSwitchFunctionHook("ll_anti_robot_message"),Mess
         get() = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
 
     override fun onReceive(data: MsgRecordData?): Boolean {
-        if (data != null && isEnabled){
+        if (data != null && isEnabled) {
             val runtime = AppRuntimeHelper.getAppRuntime()
-            val service = runtime?.invoke("getRuntimeService","com.tencent.mobileqq.troop.robot.api.ITroopRobotService".clazz!!,Class::class.java)
-            val isRobot = service?.invoke("isRobotUin", data.senderUin!!,String::class.java)as Boolean
-            if (isRobot){
+            val service = runtime?.invoke("getRuntimeService", "com.tencent.mobileqq.troop.robot.api.ITroopRobotService".clazz!!, Class::class.java)
+            val isRobot = service?.invoke("isRobotUin", data.senderUin!!, String::class.java) as Boolean
+            if (isRobot) {
                 XposedHelpers.setBooleanField(data.msgRecord, "isread", true)
             }
         }
         return false
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer> = listOf(MessageInterception)
 }

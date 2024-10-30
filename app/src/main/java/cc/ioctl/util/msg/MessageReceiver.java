@@ -22,9 +22,15 @@
 
 package cc.ioctl.util.msg;
 
+import androidx.annotation.Nullable;
+import cc.ioctl.hook.notification.MessageInterception;
+import com.google.common.collect.Lists;
+import io.github.qauxv.base.ITraceableDynamicHook;
+import io.github.qauxv.base.RuntimeErrorTracer;
+import java.util.List;
 import me.singleneuron.data.MsgRecordData;
 
-public interface MessageReceiver {
+public interface MessageReceiver extends ITraceableDynamicHook {
 
     /**
      * 当拦截到消息时会调用此方法
@@ -33,4 +39,11 @@ public interface MessageReceiver {
      * @return 如果返回为真将不会向下传递拦截到的消息
      */
     boolean onReceive(MsgRecordData data);
+
+    @Nullable
+    @Override
+    default List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
+        return Lists.asList(MessageInterception.INSTANCE, RuntimeErrorTracer.EMPTY_ARRAY);
+    }
+
 }

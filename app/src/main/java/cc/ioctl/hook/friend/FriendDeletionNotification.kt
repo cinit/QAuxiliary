@@ -31,6 +31,7 @@ import io.github.qauxv.activity.SettingsUiFragmentHostActivity.Companion.startFr
 import io.github.qauxv.base.IEntityAgent
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
@@ -53,6 +54,7 @@ object FriendDeletionNotification : BaseFunctionHook(defaultEnabled = true), IUi
     override var isEnabled = true
     override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? = null
 
     override val switchProvider by lazy {
         object : ISwitchCellAgent {

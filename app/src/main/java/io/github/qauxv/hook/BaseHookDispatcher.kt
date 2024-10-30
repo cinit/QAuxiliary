@@ -22,8 +22,12 @@
 
 package io.github.qauxv.hook
 
+import android.content.Context
 import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.IEntityAgent
+import io.github.qauxv.base.IEntityAgentProvider
 import io.github.qauxv.base.ITraceableDynamicHook
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.DexDeobfStep
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
@@ -32,9 +36,9 @@ import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
 import java.util.Arrays
 
-abstract class BaseHookDispatcher<T : IDynamicHook>(
+abstract class BaseHookDispatcher<T : ITraceableDynamicHook>(
     targets: Array<DexKitTarget>?
-) : ITraceableDynamicHook {
+) : ITraceableDynamicHook, IEntityAgentProvider, IEntityAgent {
 
     private val mErrors: ArrayList<Throwable> = ArrayList()
     private var mInitialized = false
@@ -95,6 +99,14 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
 
     override val isApplicationRestartRequired = false
 
+    override val entityAgent: IEntityAgent get() = this
+
+    override val titleProvider: (IEntityAgent) -> String
+        get() = { it.javaClass.simpleName }
+
+    override val summaryProvider: ((IEntityAgent, Context) -> CharSequence?)?
+        get() = null
+
     override var isEnabled: Boolean
         get() {
             decorators.iterator().forEach { if (it.isEnabled) return true }
@@ -117,4 +129,7 @@ abstract class BaseHookDispatcher<T : IDynamicHook>(
         }
         Log.e(e)
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+        get() = null
 }

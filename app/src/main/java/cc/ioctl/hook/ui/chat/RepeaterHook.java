@@ -53,6 +53,7 @@ import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.IEntityAgent;
+import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
@@ -68,6 +69,8 @@ import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.CFaceDe;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -596,6 +599,12 @@ public class RepeaterHook extends BaseFunctionHook {
                 return vg.getChildAt(i);
             }
         }
+        return null;
+    }
+
+    @Nullable
+    @Override
+    public List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
         return null;
     }
 }

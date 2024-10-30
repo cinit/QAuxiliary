@@ -39,6 +39,7 @@ import com.github.kyuubiran.ezxhelper.utils.args
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.newInstance
 import io.github.qauxv.R
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
@@ -296,4 +297,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     override fun onAIOParamUpdate(AIOParam: Any?) {
         nt_aioParam = AIOParam
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer> = listOf(SessionHooker.INSTANCE)
+
 }

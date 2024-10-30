@@ -23,6 +23,7 @@
 package io.github.qauxv.hook
 
 import io.github.qauxv.base.ITraceableDynamicHook
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
@@ -96,4 +97,7 @@ abstract class BaseComponentHook : ITraceableDynamicHook {
         }
         Log.e(e)
     }
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+        get() = null
 }

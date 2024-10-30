@@ -31,6 +31,7 @@ import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.core.HookInstaller
@@ -70,6 +71,7 @@ object FakePhone : BaseFunctionHook(
     }
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? = null
 
     @SuppressLint("RestrictedApi")
     private fun showDialog(activity: Context) {

@@ -22,6 +22,7 @@
 package io.github.qauxv.router.dispacher
 
 import cc.hicore.QApp.QAppUtils
+import io.github.qauxv.base.annotation.EntityAgentEntry
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -37,6 +38,7 @@ import me.singleneuron.hook.decorator.SimpleReceiptMessage
 import java.lang.reflect.Method
 
 @FunctionHookEntry
+@EntityAgentEntry
 object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecorator>(
         arrayOf(CItemBuilderFactory)
 ) {

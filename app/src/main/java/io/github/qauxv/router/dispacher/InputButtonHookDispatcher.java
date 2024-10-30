@@ -43,6 +43,7 @@ import cc.ioctl.util.HookUtils;
 import com.xiaoniu.hook.CtrlEnterToSend;
 import io.github.duzhaokun123.hook.SendTTSHook;
 import io.github.qauxv.R;
+import io.github.qauxv.base.annotation.EntityAgentEntry;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.SessionInfoImpl;
@@ -69,6 +70,7 @@ import java.lang.reflect.Method;
 import java.util.Objects;
 import mqq.app.AppRuntime;
 
+@EntityAgentEntry
 @FunctionHookEntry
 public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDecorator> implements SessionHooker.IAIOParamUpdate {
 

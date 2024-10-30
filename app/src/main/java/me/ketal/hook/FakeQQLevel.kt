@@ -33,6 +33,7 @@ import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
 import io.github.qauxv.base.IUiItemAgent
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.bridge.AppRuntimeHelper
@@ -66,6 +67,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     }
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? = null
 
     private val levelKey = ConfigData<String>("Ketal_FakeQQLevel_level")
     private var level: String

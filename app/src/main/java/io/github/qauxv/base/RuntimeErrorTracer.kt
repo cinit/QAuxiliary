@@ -23,6 +23,16 @@
 package io.github.qauxv.base
 
 interface RuntimeErrorTracer {
+
     val runtimeErrors: List<Throwable>
+
+    val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+
     fun traceError(e: Throwable)
+
+    companion object {
+        @JvmField
+        val EMPTY_ARRAY = arrayOf<RuntimeErrorTracer>()
+    }
+
 }

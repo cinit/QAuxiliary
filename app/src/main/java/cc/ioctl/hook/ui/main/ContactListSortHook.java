@@ -36,6 +36,7 @@ import cc.ioctl.util.Reflex;
 import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
+import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.config.ConfigManager;
@@ -319,5 +320,11 @@ public class ContactListSortHook extends BaseFunctionHook implements IUiItemAgen
     @Override
     public void setEnabled(boolean value) {
         // unsupported
+    }
+
+    @Nullable
+    @Override
+    public List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
+        return null;
     }
 }

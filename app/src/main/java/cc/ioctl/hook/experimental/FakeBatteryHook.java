@@ -37,6 +37,7 @@ import androidx.annotation.Nullable;
 import cc.ioctl.fragment.FakeBatteryConfigFragment;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IEntityAgent;
+import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.util.xpcompat.XposedHelpers;
@@ -60,6 +61,7 @@ import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.lang.reflect.Proxy;
+import java.util.List;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function1;
 import kotlin.jvm.functions.Function2;
@@ -446,4 +448,10 @@ public class FakeBatteryHook extends BaseFunctionHook implements InvocationHandl
             return null;
         }
     };
+
+    @Nullable
+    @Override
+    public List<RuntimeErrorTracer> getRuntimeErrorDependentComponents() {
+        return null;
+    }
 }

@@ -24,22 +24,35 @@ package cc.ioctl.hook.notification
 
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.msg.MessageManager
-import io.github.qauxv.util.xpcompat.XC_MethodHook
+import cc.ioctl.util.msg.MessageReceiver
+import cn.lliiooll.hook.AntiRobotMessage
+import io.github.qauxv.base.annotation.EntityAgentEntry
 import io.github.qauxv.base.annotation.FunctionHookEntry
-import io.github.qauxv.hook.BasePersistBackgroundHook
+import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.singleneuron.data.MsgRecordData
+import me.singleneuron.hook.decorator.RegexAntiMeg
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.method
 import xyz.nextalone.util.methodWithSuper
 import xyz.nextalone.util.throwOrTrue
 
+@EntityAgentEntry
 @FunctionHookEntry
-object MessageInterception : BasePersistBackgroundHook() {
+object MessageInterception : BaseHookDispatcher<MessageReceiver>(arrayOf()) {
+
+    override val decorators: Array<MessageReceiver> = arrayOf(
+        // 在这里添加消息处理
+        RegexAntiMeg,
+        AntiMessage,
+        AntiRobotMessage,
+    )
+
     override fun initOnce() = throwOrTrue {
         val callback: (XC_MethodHook.MethodHookParam) -> Unit = { param ->
             val msgRecordData = MsgRecordData(param.args[0])

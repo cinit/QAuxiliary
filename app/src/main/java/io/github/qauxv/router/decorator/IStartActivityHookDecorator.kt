@@ -22,11 +22,12 @@
 package io.github.qauxv.router.decorator
 
 import android.content.Intent
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.base.IDynamicHook
+import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
+import io.github.qauxv.router.dispacher.StartActivityHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 
-interface IStartActivityHookDecorator : IDynamicHook, RuntimeErrorTracer {
+interface IStartActivityHookDecorator : ITraceableDynamicHook {
 
     /**
      * Called before when [android.content.Context.startActivity] is called with [Intent]
@@ -37,5 +38,8 @@ interface IStartActivityHookDecorator : IDynamicHook, RuntimeErrorTracer {
      */
     @Throws(Throwable::class)
     fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean
+
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
+        get() = listOf(StartActivityHook)
 
 }
