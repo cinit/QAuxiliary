@@ -22,20 +22,24 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookAfterIfEnabled
+import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.Hd_HideShortcutBar_Method
+import io.github.qauxv.util.dexkit.Hd_HideShortcutBar_Method_Troop
+import io.github.qauxv.util.dexkit.Hd_HideShortcutBar_Method_TroopApp
 import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideShortcutBar : CommonSwitchFunctionHook(
-    targets = arrayOf(Hd_HideShortcutBar_Method)
+    targets = arrayOf(
+        Hd_HideShortcutBar_Method_TroopApp,
+        Hd_HideShortcutBar_Method_Troop
+    )
 ) {
 
     override val name = "隐藏聊天快捷栏"
@@ -44,8 +48,13 @@ object HideShortcutBar : CommonSwitchFunctionHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        hookAfterIfEnabled(DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method)) { param ->
+        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method_TroopApp)) { param ->
             param.result = false
+        }
+        if (requireMinQQVersion(QQVersion.QQ_9_1_10_BETA_20440)) {
+            hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method_Troop)) { param ->
+                param.result = null
+            }
         }
         return true
     }

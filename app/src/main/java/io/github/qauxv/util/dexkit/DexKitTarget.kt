@@ -1031,9 +1031,16 @@ data object RemoveAudioTransitionMethod : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object Hd_HideShortcutBar_Method : DexKitTarget.UsingStr() {
+data object Hd_HideShortcutBar_Method_TroopApp : DexKitTarget.UsingStr() {
     override val findMethod = true
     override val traitString = arrayOf("isShortcutBarVisibleOrGoingToBeVisible return false for AIOIceBreakViewShowing")
     override val declaringClass = "Lcom/tencent/mobileqq/activity/aio/helper/TroopAppShortcutBarHelper;"
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/aio/helper/")
+}
+
+data object Hd_HideShortcutBar_Method_Troop : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf(",isShowingCustomShortcut:")
+    override val declaringClass = "Lcom/tencent/mobileqq/troop/shortcut/aio/TroopShortcutVB;"
+    override val filter = DexKitFilter.allowAll
 }
