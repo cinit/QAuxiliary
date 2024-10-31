@@ -136,7 +136,7 @@ public class ContactUtils {
         Objects.requireNonNull(uin, "uin is null");
         Method getBuddyName = DexKit.loadMethodFromCache(NContactUtils_getBuddyName.INSTANCE);
         if (getBuddyName == null) {
-            Log.e("getBuddyName but N_ContactUtils_getBuddyName not found");
+            Log.w("getBuddyName but N_ContactUtils_getBuddyName not found");
             return null;
         }
         try {

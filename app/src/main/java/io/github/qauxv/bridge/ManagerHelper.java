@@ -23,13 +23,15 @@
 package io.github.qauxv.bridge;
 
 import static io.github.qauxv.util.Initiator.load;
+import static io.github.qauxv.util.Initiator.loadClass;
 
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.QQVersion;
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import mqq.app.AppRuntime;
 
 public class ManagerHelper {
@@ -70,47 +72,44 @@ public class ManagerHelper {
     }
 
     public static Object getFriendListHandler() {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_5_0)) {
-            try {
-                Class cl_bh = load("com/tencent/mobileqq/app/BusinessHandler");
-                Class cl_flh = load("com/tencent/mobileqq/app/FriendListHandler");
-                if (cl_bh == null) {
-                    assert cl_flh != null;
-                    cl_bh = cl_flh.getSuperclass();
-                }
-                Object appInterface = AppRuntimeHelper.getQQAppInterface();
-                return Reflex.invokeVirtual(appInterface, "getBusinessHandler", cl_flh.getName(),
-                    String.class, cl_bh);
-            } catch (Exception e) {
-                Log.e(e);
-                return null;
+        try {
+            Object appInterface = AppRuntimeHelper.getQQAppInterface();
+            // BusinessHandler is likely to be obfuscated
+            Class<?> kBusinessHandler = load("com/tencent/mobileqq/app/BusinessHandler");
+            if (kBusinessHandler == null) {
+                // QQ lite 3.5.0, has obfuscated FriendListHandler, other versions look good
+                kBusinessHandler = loadClass("com/tencent/mobileqq/app/FriendListHandler").getSuperclass();
             }
-        } else {
-            try {
-                Class cl_bh = load("com/tencent/mobileqq/app/BusinessHandler");
-                if (cl_bh == null) {
-                    Class cl_flh = load("com/tencent/mobileqq/app/FriendListHandler");
-                    assert cl_flh != null;
-                    cl_bh = cl_flh.getSuperclass();
+            Method getBusinessHandler = null;
+            for (Method m : Initiator._QQAppInterface().getMethods()) {
+                // public, non-static
+                if (!Modifier.isPublic(m.getModifiers()) || Modifier.isStatic(m.getModifiers())) {
+                    continue;
                 }
-                Object appInterface = AppRuntimeHelper.getQQAppInterface();
-                try {
-                    return Reflex.invokeVirtual(appInterface, "a", 1, int.class, cl_bh);
-                } catch (NoSuchMethodException e) {
-                    try {
-                        Method m = appInterface.getClass()
-                            .getMethod("getBusinessHandler", int.class);
-                        m.setAccessible(true);
-                        return m.invoke(appInterface, 1);
-                    } catch (Exception e2) {
-                        e.addSuppressed(e2);
+                // For 8.5.0+, getBusinessHandler use string as parameter
+                if (m.getName().equals("getBusinessHandler")) {
+                    getBusinessHandler = m;
+                    break;
+                }
+                if (m.getReturnType() == kBusinessHandler && "a".equals(m.getName())) {
+                    Class<?>[] params = m.getParameterTypes();
+                    if (params.length == 1 && (params[0] == int.class || params[0] == String.class)) {
+                        getBusinessHandler = m;
+                        break;
                     }
-                    throw e;
                 }
-            } catch (Exception e) {
-                Log.e(e);
-                return null;
             }
+            if (getBusinessHandler == null) {
+                throw new NoSuchMethodException("QQAppInterface.getBusinessHandler");
+            }
+            Class<?> type = getBusinessHandler.getParameterTypes()[0];
+            if (type == String.class) {
+                return getBusinessHandler.invoke(appInterface, loadClass("com/tencent/mobileqq/app/FriendListHandler").getName());
+            } else {
+                return getBusinessHandler.invoke(appInterface, 1);
+            }
+        } catch (ClassNotFoundException | InvocationTargetException | NoSuchMethodException | IllegalAccessException e) {
+            throw IoUtils.unsafeThrowForIteCause(e);
         }
     }
 
