@@ -51,6 +51,7 @@ import io.github.qauxv.R
 import io.github.qauxv.activity.ShadowShareFileAgentActivity
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
@@ -294,7 +295,11 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
                 append("isEnabled: ").append(h.isEnabled).append("\n")
                 append("isAvailable: ").append(h.isAvailable).append("\n")
                 append("isPreparationRequired: ").append(h.isPreparationRequired).append("\n")
-                val errors: List<Throwable> = h.runtimeErrors
+                val errors: List<Throwable> = if (h is RuntimeErrorTracer) {
+                    FuncStatListFragment.collectFunctionErrors(h).toList()
+                } else {
+                    h.runtimeErrors
+                }
                 append("errors: ").append(errors.size).append("\n")
                 for (error in errors) {
                     append(Log.getStackTraceString(error)).append("\n")
@@ -307,7 +312,7 @@ class FuncStatusDetailsFragment : BaseRootLayoutFragment() {
 
     private fun dumpInitException() = buildString {
         append(BuildConfig.VERSION_NAME).append("\n")
-        append(hostInfo.hostName).append(hostInfo.versionName)
+        append(hostInfo.hostName).append(' ').append(hostInfo.versionName).append(' ')
         append('(').append(hostInfo.versionCode).append(')').append('\n')
         append("PID: ").append(Process.myPid()).append(", UID: ").append(Process.myUid()).append('\n')
         append(hostInfo.packageName).append("\n")

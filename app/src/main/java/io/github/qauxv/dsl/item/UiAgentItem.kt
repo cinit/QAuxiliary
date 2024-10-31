@@ -32,6 +32,7 @@ import androidx.recyclerview.widget.RecyclerView
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.core.HookInstaller
 import io.github.qauxv.dsl.cell.TitleValueCell
 import io.github.qauxv.dsl.func.IDslItemNode
@@ -121,7 +122,13 @@ class UiAgentItem(
         val switchAgent: ISwitchCellAgent? = agent.switchProvider
         val hasError = if (agentProvider is IDynamicHook) {
             val hook: IDynamicHook = agentProvider
-            (hook.isInitialized && !hook.isInitializationSuccessful) || hook.runtimeErrors.isNotEmpty()
+            (hook.isInitialized && !hook.isInitializationSuccessful) || run {
+                if (hook is RuntimeErrorTracer) {
+                    hook.hasRuntimeErrors
+                } else {
+                    hook.runtimeErrors.isNotEmpty()
+                }
+            }
         } else false
         cell.hasError = hasError
         if (switchAgent != null) {

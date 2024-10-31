@@ -26,6 +26,15 @@ interface RuntimeErrorTracer {
 
     val runtimeErrors: List<Throwable>
 
+    val hasRuntimeErrors: Boolean
+        get() {
+            val deps = runtimeErrorDependentComponents
+            if (deps.isNullOrEmpty()) {
+                return runtimeErrors.isNotEmpty()
+            }
+            return runtimeErrors.isNotEmpty() || deps.any { it.hasRuntimeErrors }
+        }
+
     val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
 
     fun traceError(e: Throwable)

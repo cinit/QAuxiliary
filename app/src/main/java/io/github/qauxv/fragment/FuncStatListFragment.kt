@@ -38,6 +38,7 @@ import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IDynamicHook
 import io.github.qauxv.base.IUiItemAgentProvider
+import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.databinding.ItemFuncStatusBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Log
@@ -112,7 +113,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         kotlin.runCatching {
             val enabled = item is IDynamicHook && item.isEnabled
             val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
-            val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
+            val errorCount = if (item is RuntimeErrorTracer) collectFunctionErrors(item).size else 0
             val unsupported = item is IDynamicHook && !item.isAvailable
             val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
             if (reportError) {
@@ -195,7 +196,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         val reportError = item is IDynamicHook && item.isInitialized && !item.isInitializationSuccessful
         // dep error +60
         val isDepError = item is IDynamicHook && (item.isEnabled && item.isPreparationRequired)
-        val errorCount = if (item is IDynamicHook) item.runtimeErrors.size else 0
+        val errorCount = if (item is RuntimeErrorTracer) collectFunctionErrors(item).size else 0
         // a error is 10, max is 50
         val errorRank = (errorCount * 10).coerceAtMost(50)
         // unsupported +2
@@ -219,5 +220,27 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         super.onDestroyView()
         mRecyclerView?.adapter = null
         mRecyclerView = null
+    }
+
+    companion object {
+
+        @JvmStatic
+        fun collectFunctionWithDependencies(hook: RuntimeErrorTracer): Set<RuntimeErrorTracer> {
+            val set = mutableSetOf(hook)
+            var lastSize: Int
+            do {
+                lastSize = set.size
+                val toAdd = set.flatMap { it.runtimeErrorDependentComponents ?: emptyList() }
+                set.addAll(toAdd)
+            } while (set.size != lastSize)
+            return set
+        }
+
+        @JvmStatic
+        fun collectFunctionErrors(hook: RuntimeErrorTracer): Set<Throwable> {
+            val all = collectFunctionWithDependencies(hook)
+            return all.flatMap { it.runtimeErrors }.toSet()
+        }
+
     }
 }
