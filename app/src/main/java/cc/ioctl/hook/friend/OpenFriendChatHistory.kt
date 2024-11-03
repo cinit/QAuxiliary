@@ -106,7 +106,7 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
     fun startFriendChatHistoryActivity(context: Context, uin: Long) {
         if (uin < 10000L) return
         try {
-            startFriendChatHistory(context, uin.toString(), true)
+            startFriendChatHistory(context, uin.toString(), false)
         } catch (e: NumberFormatException) {
             return
         }
@@ -116,18 +116,18 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
     fun startFriendChatHistoryActivity(context: Context, uid: String) {
         if (!(uid.startsWith("u_") && uid.length == 24)) return
         try {
-            startFriendChatHistory(context, uid, false)
+            startFriendChatHistory(context, uid, true)
         } catch (e: NumberFormatException) {
             return
         }
     }
 
-    private fun startFriendChatHistory(context: Context, userUinOrUid: String, isUin: Boolean) {
+    private fun startFriendChatHistory(context: Context, userUinOrUid: String, isUid: Boolean) {
         try {
             if (QAppUtils.isQQnt()) {
-                val peerId = if (isUin) QAppUtils.UserUinToPeerID(userUinOrUid) else userUinOrUid
+                val peerId = if (isUid) userUinOrUid else QAppUtils.UserUinToPeerID(userUinOrUid)
                 if (peerId == null) {
-                    FaultyDialog.show(context, "打开好友聊天记录错误", "无法获取 uid")
+                    FaultyDialog.show(context, "打开好友聊天记录错误", "无法获取 peerId")
                     return
                 }
                 val kNTChatHistoryActivity = Initiator.loadClass("com.tencent.mobileqq.activity.history.NTChatHistoryActivity")
@@ -138,7 +138,7 @@ object OpenFriendChatHistory : IUiItemAgent, IUiItemAgentProvider {
                 }
                 context.startActivity(intent)
             } else {
-                if (isUin) {
+                if (isUid) {
                     FaultyDialog.show(context, "打开好友聊天记录错误", "非 QQNT 版本无法使用 uid 打开")
                     return
                 }
