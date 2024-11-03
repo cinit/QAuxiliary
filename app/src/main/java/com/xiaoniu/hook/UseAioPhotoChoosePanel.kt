@@ -29,6 +29,7 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireRangeQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookBeforeAllConstructors
 import xyz.nextalone.util.method
@@ -41,7 +42,7 @@ object UseAioPhotoChoosePanel : CommonSwitchFunctionHook() {
     override val name = "还原图片选择面板"
     override val description = "从QQ9.0.20开始，普通模式半屏的图片选择面板可能被移除\n9.0.65起官方已提供开关，通用-发图方式"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_20) && !requireMinQQVersion(QQVersion.QQ_9_0_65)
+    override val isAvailable = requireRangeQQVersion(QQVersion.QQ_9_0_20, QQVersion.QQ_9_0_60)
 
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_9_0_55)) {

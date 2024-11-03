@@ -28,8 +28,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireRangeQQVersion
 import xyz.nextalone.util.invoke
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
@@ -40,7 +40,7 @@ object GuildOldStyle : CommonSwitchFunctionHook() {
     override val name = "频道旧版样式"
     override val description = "仅支持QQ9.0.15~9.0.73版本"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GUILD_CATEGORY
-    override val isAvailable = hostInfo.versionCode in QQVersion.QQ_9_0_15..QQVersion.QQ_9_0_73
+    override val isAvailable = requireRangeQQVersion(QQVersion.QQ_9_0_15, QQVersion.QQ_9_0_73)
 
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_9_0_30)) { // 9.0.30~9.0.73(之后的版本获取布局方法不存在)

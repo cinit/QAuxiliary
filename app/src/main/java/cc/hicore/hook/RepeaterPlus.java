@@ -316,7 +316,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
     @Override
     public boolean isAvailable() {
-        return HostInfo.isQQ() && requireMinQQVersion(QQVersion.QQ_8_6_0);
+        return requireMinQQVersion(QQVersion.QQ_8_6_0);
     }
 
     private static Object AIOParam;

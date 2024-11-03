@@ -84,17 +84,17 @@ fun isPlayQQ(): Boolean {
     return hostInfo.hostSpecies == HostSpecies.QQ_Play
 }
 
-fun requireMinQQVersion(versionCode: Long): Boolean {
-    return requireMinVersion(versionCode, HostSpecies.QQ)
-}
+fun requireMinQQVersion(versionCode: Long) = requireMinVersion(versionCode, HostSpecies.QQ)
+fun requireMaxQQVersion(versionCode: Long) = requireMaxVersion(versionCode, HostSpecies.QQ)
+fun requireRangeQQVersion(versionMinCode: Long, versionMaxCode: Long) = requireRangeVersion(versionMinCode, versionMaxCode, HostSpecies.QQ)
 
-fun requireMinPlayQQVersion(versionCode: Long): Boolean {
-    return requireMinVersion(versionCode, HostSpecies.QQ_Play)
-}
+fun requireMinPlayQQVersion(versionCode: Long) = requireMinVersion(versionCode, HostSpecies.QQ_Play)
+fun requireMaxPlayQQVersion(versionCode: Long) = requireMaxVersion(versionCode, HostSpecies.QQ_Play)
+fun requireRangePlayQQVersion(versionMinCode: Long, versionMaxCode: Long) = requireRangeVersion(versionMinCode, versionMaxCode, HostSpecies.QQ_Play)
 
-fun requireMinTimVersion(versionCode: Long): Boolean {
-    return requireMinVersion(versionCode, HostSpecies.TIM)
-}
+fun requireMinTimVersion(versionCode: Long) = requireMinVersion(versionCode, HostSpecies.TIM)
+fun requireMaxTimVersion(versionCode: Long) = requireMaxVersion(versionCode, HostSpecies.TIM)
+fun requireRangeTimVersion(versionMinCode: Long, versionMaxCode: Long) = requireRangeVersion(versionMinCode, versionMaxCode, HostSpecies.TIM)
 
 fun requireTimVersionExactly(vararg versionCodeList: Long): Boolean {
     if (hostInfo.hostSpecies != HostSpecies.TIM) {
@@ -105,6 +105,14 @@ fun requireTimVersionExactly(vararg versionCodeList: Long): Boolean {
 
 fun requireMinVersion(versionCode: Long, hostSpecies: HostSpecies): Boolean {
     return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCode >= versionCode
+}
+
+fun requireMaxVersion(versionCode: Long, hostSpecies: HostSpecies): Boolean {
+    return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCode <= versionCode
+}
+
+fun requireRangeVersion(versionMinCode: Long, versionMaxCode: Long, hostSpecies: HostSpecies): Boolean {
+    return hostInfo.hostSpecies == hostSpecies && hostInfo.versionCode in versionMinCode..versionMaxCode
 }
 
 fun requireMinVersion(

@@ -31,8 +31,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireRangeQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -41,7 +41,7 @@ object HideTroopToDo : CommonSwitchFunctionHook() {
     override val name = "隐藏群待办"
     override val description = "对群聊上方的群待办进行简单隐藏"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE
-    override val isAvailable = hostInfo.versionCode in QQVersion.QQ_8_9_88..QQVersion.QQ_9_0_68
+    override val isAvailable = requireRangeQQVersion(QQVersion.QQ_8_9_88, QQVersion.QQ_9_0_68)
 
     override fun initOnce(): Boolean {
         val tipsBarNewClass: Class<*>
