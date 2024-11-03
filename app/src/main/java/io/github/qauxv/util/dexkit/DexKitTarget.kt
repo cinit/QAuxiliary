@@ -1044,3 +1044,10 @@ data object Hd_HideShortcutBar_Method_Troop : DexKitTarget.UsingStr() {
     override val declaringClass = "Lcom/tencent/mobileqq/troop/shortcut/aio/TroopShortcutVB;"
     override val filter = DexKitFilter.allowAll
 }
+
+data object UnlockTroopNameLimitClass : DexKitTarget.UsingStr() {
+    override val findMethod = false
+    override val traitString = arrayOf("[☀-⟿]")
+    override val declaringClass = "Lcom/tencent/mobileqq/activity/editservice/EditTroopMemberNickService\$EmojiFilter;"
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/editservice/EditTroopMemberNickService")
+}
