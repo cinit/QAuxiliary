@@ -75,10 +75,9 @@ import java.util.Date
 object ChatWordsCount : CommonConfigFunctionHook("na_chat_words_count_kt", arrayOf(NQQSettingMe_onResume, NChatActivityFacade_sendMsgButton)) {
 
     override val name = "聊天字数统计"
+    override val description = "此功能不支持较新的版本, 推荐使用 统计聊天发送消息数量"
     override val valueState: MutableStateFlow<String?>? = null
-
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
-
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
         showChatWordsCountDialog(activity)
     }
