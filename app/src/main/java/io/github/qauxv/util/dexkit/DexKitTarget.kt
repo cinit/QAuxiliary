@@ -24,6 +24,7 @@ package io.github.qauxv.util.dexkit
 
 import android.os.Bundle
 import android.view.View
+import android.view.ViewGroup
 import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import com.github.kyuubiran.ezxhelper.utils.isFinal
@@ -1050,4 +1051,14 @@ data object UnlockTroopNameLimitClass : DexKitTarget.UsingStr() {
     override val traitString = arrayOf("[☀-⟿]")
     override val declaringClass = "Lcom/tencent/mobileqq/activity/editservice/EditTroopMemberNickService\$EmojiFilter;"
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/activity/editservice/EditTroopMemberNickService")
+}
+
+data object DisableLightInteractionMethod : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("em_bas_shortcut_bar_above_c2c_input_box")
+    override val declaringClass = "Lcom/tencent/mobileqq/aio/bottombar/c2c/LiteActionBottomBar;"
+    override val filter = filter@{ it: DexMethodDescriptor ->
+        val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+        m.returnType == View::class.java && m.paramCount == 2 && m.parameterTypes[1] == ViewGroup::class.java
+    }
 }

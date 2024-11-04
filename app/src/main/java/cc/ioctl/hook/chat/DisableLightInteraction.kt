@@ -22,7 +22,6 @@
 
 package cc.ioctl.hook.chat
 
-import com.github.kyuubiran.ezxhelper.utils.emptyParam
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -31,11 +30,15 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DisableLightInteractionMethod
 import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object DisableLightInteraction : CommonSwitchFunctionHook() {
+object DisableLightInteraction : CommonSwitchFunctionHook(
+    targets = arrayOf(DisableLightInteractionMethod)
+) {
 
     override val name = "禁用轻互动"
     override val description = "隐藏聊天列表有时出现的表情 (早上好, 戳一戳, 晚安) 点一下发一条消息然后消失"
@@ -50,9 +53,7 @@ object DisableLightInteraction : CommonSwitchFunctionHook() {
                 it.paramCount == 1 && it.returnType == java.util.List::class.java
             }.hookReturnConstant(emptyList<Any>())
         } else {
-            kLIAConfigManager.declaredMethods.single {
-                it.emptyParam && it.returnType == java.util.Map::class.java
-            }.hookReturnConstant(emptyMap<Any, Any>())
+            DexKit.requireMethodFromCache(DisableLightInteractionMethod).hookReturnConstant(null)
         }
         return true
     }
