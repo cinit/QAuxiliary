@@ -41,7 +41,7 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
 
     override val name: String = "屏蔽消息界面标题栏相机/小世界图标"
 
-    override val isAvailable: Boolean get() = !isTim() && !requireMinQQVersion(QQVersion.QQ_8_9_88)
+    override val isAvailable: Boolean get() = !isTim() && !requireMinQQVersion(QQVersion.QQ_9_0_8)
 
     override fun initOnce() = throwOrTrue {
         findMethod(Initiator._ConversationTitleBtnCtrl()) {
