@@ -46,7 +46,7 @@ private val easterEggsMap by lazy {
     hashMapOf(
         arrayOf("\u26A7\uFE0F", "\uD83C\uDF65", "mtf", "mtx", "ftm", "ftx", "transgender") to forSuBanXia,
         arrayOf("喵") to ("喵喵" to "喵喵喵"),
-        arrayOf("lgbt", "lgbtq", "lgbtqia", "lgbtqia+", "lesbian", "gay", "bisexual", "queer") to forPride,
+        arrayOf("lgbt", "lgbtq", "lgbtqia", "lgbtqia+", "lesbian", "gay", "bisexual", "queer"，"nextalone", "na") to forPride,
     )
 }
 
