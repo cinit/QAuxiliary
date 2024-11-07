@@ -22,6 +22,7 @@
 
 package cc.ioctl.hook.msg
 
+import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
 import cc.ioctl.util.HookUtils.BeforeAndAfterHookedMethod
@@ -41,7 +42,6 @@ import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt
-import io.github.qauxv.util.hostInfo
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import me.ketal.util.findViewByType
@@ -65,41 +65,66 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 ) {
 
     override val name = "显示具体消息数量"
+    override val description = """
+        1. 小程序(菜单键)
+        2. 隐藏会话(右上角+悬浮消息列表)
+        3. 群消息数量(消息列表+左上角返回)
+        5. 总消息数量
+    """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
 
         if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
-            // 小程序菜单键消息数量
+            // 小程序菜单键
             Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
                 .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
                 .hookAfter { param ->
-                    val tv = param.args[0] as TextView
-                    val count = param.args[1] as Int
-                    tv.text = count.toString()
+                    (param.args[0] as TextView).text = "${param.args[1] as Int}"
                 }
-        }
 
-        if (QQVersion.QQ_8_9_63_BETA_11345 <= hostInfo.versionCode && hostInfo.versionCode <= QQVersion.QQ_9_0_68) {
-            // 隐藏会话右上角消息数量
-            Initiator.loadClass("com.tencent.mobileqq.activity.miniaio.h")
+            // 隐藏会话(右上角+悬浮消息列表)
+            val (floatViewManagerClass, msgUnreadCallbackClass) = when {
+                requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.10
+                    "com.tencent.mobileqq.activity.miniaio.i",
+                    "com.tencent.mobileqq.activity.miniaio.h"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> Pair(// 9.0.60 ~ 9.0.70
+                    "com.tencent.mobileqq.activity.miniaio.h",
+                    "com.tencent.mobileqq.activity.miniaio.g"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_0_55) -> Pair(// 9.0.55 ~ 9.0.56
+                    "com.tencent.mobileqq.activity.miniaio.f",
+                    "com.tencent.mobileqq.activity.miniaio.e"
+                )
+
+                else -> Pair(// 8.9.70 ~ 9.0.50
+                    "com.tencent.mobileqq.activity.miniaio.i",
+                    "com.tencent.mobileqq.activity.miniaio.h"
+                )
+            }
+            // 隐藏会话右上角
+            Initiator.loadClass(floatViewManagerClass)
                 .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
                 .hookAfter { param ->
-                    val tv = if (requireMinQQVersion(QQVersion.QQ_9_0_60)) {
-                        val view = param.thisObject.get("h") as ViewGroup
-                        view.findViewByType(TextView::class.java) as TextView
-                    } else {
-                        param.thisObject.findFieldObjectAs {
-                            type == TextView::class.java
-                        }
-                    }
-                    val count = param.args[0] as Int
-                    tv.text = count.toString()
+                    (param.thisObject.findFieldObjectAs<ViewGroup> {
+                        type == View::class.java
+                    }.findViewByType(TextView::class.java) as TextView).text = "${param.args[0] as Int}"
+                }
+            // 隐藏会话悬浮消息列表
+            Initiator.loadClass(msgUnreadCallbackClass)
+                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
+                .hookAfter { param ->
+                    param.thisObject.findFieldObjectAs<TextView> {
+                        type == TextView::class.java
+                    }.text = "${param.args[0] as Int}"
                 }
         }
 
         if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
-            // 群消息数量 + 群聊左上角返回消息数量
+            // 群聊消息数量 + 群聊左上角返回
             val clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
             val (updateNumName, mNumName, mTextName) = if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
                 Triple("updateNum", "mNum", "mText")
@@ -117,7 +142,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
             }
         } else {
             if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
-                // 群消息数量
+                // 群聊消息数量
                 val clz = DexKit.requireClassFromCache(CCustomWidgetUtil_updateCustomNoteTxt_NT)
                 val updateNum = clz.declaredMethods.single { method ->
                     val params = method.parameterTypes
@@ -140,7 +165,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                         tv.layoutParams = lp
                     }
                 })
-                // 群聊左上角返回消息数量
+                // 群聊左上角返回
                 DexKit.requireMethodFromCache(AIOTitleVB_updateLeftTopBack_NT).hookAfter {
                     if (it.args[0] is Int) {
                         val count = it.args[0] as Int
@@ -153,7 +178,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                                 else -> Pair("", "")
                             }
                             if (mTitleBinding.isNotEmpty() && unreadTv.isNotEmpty()) {
-                                (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = count.toString()
+                                (it.thisObject.get(mTitleBinding).get(unreadTv) as TextView).text = "$count"
                             }
                         }
                     }
