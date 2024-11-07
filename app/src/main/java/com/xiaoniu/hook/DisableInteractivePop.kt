@@ -36,6 +36,7 @@ import xyz.nextalone.util.method
 @UiItemAgentEntry
 object DisableInteractivePop : CommonSwitchFunctionHook() {
     override val name = "禁用特定消息触发的交互式弹窗"
+    override val extraSearchKeywords = arrayOf("关键词", "三角洲", "宝可梦")
     override val uiItemLocation = Simplify.UI_CHAT_MSG
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_0)
 
