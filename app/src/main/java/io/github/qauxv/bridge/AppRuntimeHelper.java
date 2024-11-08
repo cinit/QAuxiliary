@@ -50,11 +50,8 @@ public class AppRuntimeHelper {
             }
             return (long) Reflex.invokeVirtual(rt, "getLongAccountUin");
         } catch (ReflectiveOperationException e) {
-            Log.e(e);
-            IoUtils.unsafeThrowForIteCause(e);
-            // unreachable
+            throw IoUtils.unsafeThrowForIteCause(e);
         }
-        return -1;
     }
 
     @MainProcess
@@ -72,10 +69,10 @@ public class AppRuntimeHelper {
 
     /**
      * Peek the AppRuntime instance.
+     *
      * @return AppRuntime instance, or null if not ready.
      */
     @Nullable
-    @MainProcess
     public static AppRuntime getAppRuntime() {
         Object sMobileQQ = MobileQQ.sMobileQQ;
         if (sMobileQQ == null) {
@@ -88,28 +85,17 @@ public class AppRuntimeHelper {
             }
             return (AppRuntime) f_mAppRuntime.get(sMobileQQ);
         } catch (ReflectiveOperationException e) {
-            Log.e(e);
-            IoUtils.unsafeThrowForIteCause(e);
-            // unreachable
-            return null;
+            throw IoUtils.unsafeThrowForIteCause(e);
         }
     }
 
     public static String getAccount() {
-        Object rt = getAppRuntime();
-        try {
-            return (String) Reflex.invokeVirtual(rt, "getAccount");
-        } catch (ReflectiveOperationException e) {
-            Log.e(e);
-            IoUtils.unsafeThrowForIteCause(e);
-            // unreachable
-            return null;
-        }
+        return getAppRuntime().getAccount();
     }
 
     @Contract("null -> fail")
     public static void checkUinValid(String uin) {
-        if (uin == null || uin.length() == 0) {
+        if (uin == null || uin.isEmpty()) {
             throw new IllegalArgumentException("uin is empty");
         }
         try {
