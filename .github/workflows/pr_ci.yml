@@ -80,3 +80,5 @@ jobs:
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           ./gradlew :app:packageDebug
           ccache -s
+        env:
+          QAUXV_OVERRIDE_CMAKE_VERSION: "3.30.5"

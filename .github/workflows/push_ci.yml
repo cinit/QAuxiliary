@@ -92,6 +92,7 @@ jobs:
           KEYSTORE_PASSWORD: ${{ secrets.SIGN_KEYSTORE_PASSWORD }}
           KEY_ALIAS: ${{ secrets.SIGN_ALIAS }}
           KEY_PASSWORD: ${{ secrets.SIGN_KEY_PASSWORD }}
+          QAUXV_OVERRIDE_CMAKE_VERSION: "3.30.5"
 
       - name: Show Artifacts SHA256
         run: |
