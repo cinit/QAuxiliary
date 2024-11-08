@@ -15,7 +15,7 @@ object Version {
     private const val defaultNdkVersion = "27.0.12077973"
 
     // LSPlant requires CMake 3.28.0+ to build
-    private const val defaultCMakeVersion = "3.28.0+"
+    private const val defaultCMakeVersion = "3.31.0"
 
     fun getNdkVersion(project: Project): String {
         val prop = getLocalProperty(project, "qauxv.override.ndk.version")
@@ -33,6 +33,15 @@ object Version {
             throw IllegalStateException("Cannot set both QAUXV_OVERRIDE_CMAKE_VERSION and qauxv.override.cmake.version")
         }
         return prop ?: env ?: defaultCMakeVersion
+    }
+
+    fun getNinjaPathOrNull(project: Project): String? {
+        val prop = getLocalProperty(project, "qauxv.override.ninja.path")
+        val env = getEnvVariable("QAUXV_OVERRIDE_NINJA_PATH")
+        if (!prop.isNullOrEmpty() && !env.isNullOrEmpty()) {
+            throw IllegalStateException("Cannot set both QAUXV_OVERRIDE_NINJA_PATH and qauxv.override.ninja.path")
+        }
+        return prop ?: env
     }
 
     fun getLocalProperty(project: Project, propertyName: String): String? {

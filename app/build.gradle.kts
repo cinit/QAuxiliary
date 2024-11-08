@@ -112,6 +112,9 @@ android {
                         "-DANDROID_CCACHE=$it",
                     )
                 }
+                Version.getNinjaPathOrNull(rootProject)?.let {
+                    arguments += "-DCMAKE_MAKE_PROGRAM=$it"
+                }
                 arguments += "-DANDROID_SUPPORT_FLEXIBLE_PAGE_SIZES=ON"
                 val flags = arrayOf(
                     "-Qunused-arguments",

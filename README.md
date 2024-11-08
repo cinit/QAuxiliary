@@ -96,13 +96,11 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
 
 ## 编译
 
-1. 安装 git, CMake 3.28.0+, Ninja 1.11+, JDK 17+, Android SDK, 以及可选的 ccache;
-    - Android SDK 和 NDK 版本请参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);
+1. 安装 git, Ninja 1.11+, JDK 17+, Android SDK, 以及可选的 ccache;
+    - Android SDK 和 NDK 及 CMake 版本请参考 [Version.kt](build-logic/convention/src/main/kotlin/Version.kt);
     - JDK 版本最低 17, 当然使用 21 也是可以的。
-    - Ninja 请使用 1.11 或更高版本。因为 Ninja 从 1.11 开开始支持 C++ 20 module, 你可以从 [Ninja Release](https://github.com/ninja-build/ninja/releases) 下载
-      Ninja 二进制文件, 并将其添加到您的 PATH 环境变量中。
-    - CMake 请使用 3.28.0 或更高版本。注意 Android SDK 里的 CMake 最高 3.22.1, 但是我们需要 3.28.0+, 您可以从 [CMake 官网](https://cmake.org/download/) 下载
-      CMake, 并将其添加到您的 PATH 环境变量中。
+    - Ninja 请使用 1.11 或更高版本。因为 Ninja 从 1.11 开始支持 C++ 20 module, 你可以从 [Ninja Release](https://github.com/ninja-build/ninja/releases) 下载
+      Ninja 二进制文件, 并在 `local.properties` 中指定 `qauxv.override.ninja.path` 为 Ninja 的路径 (如 `qauxv.override.ninja.path=/usr/bin/ninja`).
     - Ccache 是可选的，不装也可以，但它可以让编译更快。  
       注意: 编译脚本会自动寻找 ccache 并使用，而 Windows 平台下 msys2 的 ccache 存在问题会卡在 sync 阶段，
       建议 Windows 用户使用从 ccache 官网下载的 ccache 而不是 msys2 的 ccache;  
