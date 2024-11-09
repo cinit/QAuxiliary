@@ -30,25 +30,33 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.clazz
+import xyz.nextalone.util.get
 import xyz.nextalone.util.hookAfterAllConstructors
 import xyz.nextalone.util.throwOrTrue
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object TimProfileSelectable : CommonSwitchFunctionHook() {
+
     override val name = "TIM账号资料文字可选中"
-
     override val description = "解决资料卡无法复制QQ号的问题"
-
+    override val uiItemLocation = Auxiliary.PROFILE_CATEGORY
     override val isAvailable = requireMinTimVersion(TIMVersion.TIM_3_1_1)
+
     override fun initOnce() = throwOrTrue {
-        val clz = "com.tencent.tim.activity.profile.ProfileCellView".clazz!!
-        val textView = clz.declaredFields.last { it.type == TextView::class.java }.apply { isAccessible = true }
-        clz.hookAfterAllConstructors { param ->
-            val view = textView.get(param.thisObject) as TextView
-            view.setTextIsSelectable(true)
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            val clazz = "com.tencent.mobileqq.profilecard.ProfileCellView".clazz!!
+            clazz.hookAfterAllConstructors { param ->
+                val textView = param.thisObject.get("mTvProfileContent") as TextView
+                textView.setTextIsSelectable(true)
+            }
+        } else {
+            val clazz = "com.tencent.tim.activity.profile.ProfileCellView".clazz!!
+            val field = clazz.declaredFields.last { it.type == TextView::class.java }.apply { isAccessible = true }
+            clazz.hookAfterAllConstructors { param ->
+                val textView = field.get(param.thisObject) as TextView
+                textView.setTextIsSelectable(true)
+            }
         }
     }
-
-    override val uiItemLocation = Auxiliary.PROFILE_CATEGORY
 }
