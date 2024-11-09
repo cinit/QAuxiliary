@@ -1002,7 +1002,7 @@ data object Hd_AutoSendOriginalPhoto_photoListPanel_Method : DexKitTarget.UsingS
     override val filter = DexKitFilter.allowAll
 }
 
-data object Hd_DisableGrowHalfLayer_Method : DexKitTarget.UsingStringVector() {
+data object Hd_DisableGrowHalfLayer_Method1 : DexKitTarget.UsingStringVector() {
     override val findMethod = true
     override val traitStringVectors = arrayOf(arrayOf("grow_half_layer_info", "grow_half_layer_tech_info"))
     override val declaringClass = "cooperation.vip.ad.GrowHalfLayerHelper"
@@ -1010,6 +1010,13 @@ data object Hd_DisableGrowHalfLayer_Method : DexKitTarget.UsingStringVector() {
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
         m.returnType == Void.TYPE && m.paramCount == 3
     }
+}
+
+data object Hd_DisableGrowHalfLayer_Method2 : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("start showVasADBanner")
+    override val declaringClass = "cooperation.vip.qqbanner.manager.VasADBannerManager"
+    override val filter = DexKitFilter.allowAll
 }
 
 data object Hd_GagInfoDisclosure_Method : DexKitTarget.UsingStr() {

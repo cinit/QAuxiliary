@@ -28,14 +28,20 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.Hd_DisableGrowHalfLayer_Method
+import io.github.qauxv.util.dexkit.Hd_DisableGrowHalfLayer_Method1
+import io.github.qauxv.util.dexkit.Hd_DisableGrowHalfLayer_Method2
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XposedBridge
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object DisableGrowHalfLayer : CommonSwitchFunctionHook(
-    targets = arrayOf(Hd_DisableGrowHalfLayer_Method)
+    targets = arrayOf(
+        Hd_DisableGrowHalfLayer_Method1,
+        Hd_DisableGrowHalfLayer_Method2,
+    )
 ) {
 
     override val name = "屏蔽广告弹窗(测试版)"
@@ -44,9 +50,24 @@ object DisableGrowHalfLayer : CommonSwitchFunctionHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_DisableGrowHalfLayer_Method)) { param ->
+        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_DisableGrowHalfLayer_Method1)) { param ->
+            printStackTrace("屏蔽广告弹窗 -> 测试1")
+            Toasts.show("屏蔽广告弹窗 -> 测试1成功")
+            param.result = null
+        }
+        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_DisableGrowHalfLayer_Method2)) { param ->
+            printStackTrace("屏蔽广告弹窗 -> 测试2")
+            Toasts.show("屏蔽广告弹窗 -> 测试2成功")
             param.result = null
         }
         return true
+    }
+
+    private fun printStackTrace(name: String) {
+        val stackTrace = Throwable().stackTrace
+        val stackTraceStr = stackTrace.joinToString("\n") { element ->
+            "at ${element.className}.${element.methodName}(${element.fileName}:${element.lineNumber})"
+        }
+        XposedBridge.log("[$name] -> $stackTraceStr")
     }
 }
