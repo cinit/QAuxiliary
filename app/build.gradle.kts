@@ -151,7 +151,7 @@ android {
             println("No Signature Digest Configured")
         }
         getByName("release") {
-            isShrinkResources = true
+            isShrinkResources = false
             isMinifyEnabled = true
             proguardFiles("proguard-rules.pro")
             kotlinOptions.suppressWarnings = true
