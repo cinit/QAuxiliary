@@ -49,10 +49,10 @@ fun init(applicationContext: Application) {
         applicationContext.applicationInfo.loadLabel(applicationContext.packageManager).toString(),
         PackageInfoCompat.getLongVersionCode(packageInfo),
         PackageInfoCompat.getLongVersionCode(packageInfo).toInt(),
-        packageInfo.versionName,
+        packageInfo.versionName ?: "",
         when (packageName) {
             PACKAGE_NAME_QQ -> {
-                if ("GoogleMarket" in (packageInfo.applicationInfo.metaData["AppSetting_params"]
+                if ("GoogleMarket" in (packageInfo.applicationInfo!!.metaData["AppSetting_params"]
                         ?: "") as String) {
                     HostSpecies.QQ_Play
                 } else HostSpecies.QQ
