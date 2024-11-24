@@ -34,7 +34,6 @@
     <application
         android:icon="@drawable/icon"
         android:label="@string/app_name"
-        android:multiArch="true"
         android:name=".util.hookstatus.ModuleAppImpl"
         android:resizeableActivity="true"
         android:description="@string/xposeddescription"
