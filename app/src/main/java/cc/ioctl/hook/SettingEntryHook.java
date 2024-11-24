@@ -40,9 +40,6 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.BuildConfig;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity;
@@ -55,6 +52,9 @@ import io.github.qauxv.lifecycle.Parasitics;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -75,6 +75,8 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     private static final int BG_TYPE_FIRST = 1;
     private static final int BG_TYPE_MIDDLE = 2;
     private static final int BG_TYPE_LAST = 3;
+
+    // am start "intent:#Intent;component=com.tencent.mobileqq/com.tencent.mobileqq.activity.QPublicFragmentActivity;S.public_fragment_class=com.tencent.mobileqq.setting.main.MainSettingFragment;end"
 
     private SettingEntryHook() {
     }
@@ -101,7 +103,13 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
         Class<?> kMainSettingFragment = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingFragment");
         if (kMainSettingFragment != null) {
             Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
-            Method getItemProcessList = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            // 9.1.20+, NewSettingConfigProvider, A/B test on 9.1.20
+            Class<?> kNewSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.NewSettingConfigProvider");
+            Method getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            Method getItemProcessListNew = null;
+            if (kNewSettingConfigProvider != null) {
+                getItemProcessListNew = Reflex.findSingleMethod(kNewSettingConfigProvider, List.class, false, Context.class);
+            }
             Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
             // 8.9.70 ~ 9.0.0
             Class<?> kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.g");
@@ -128,7 +136,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 setOnClickListener = candidates.get(0);
             }
             Constructor<?> ctorSimpleItemProcessor = kSimpleItemProcessor.getDeclaredConstructor(Context.class, int.class, CharSequence.class, int.class);
-            HookUtils.hookAfterAlways(this, getItemProcessList, 50, param -> {
+            XC_MethodHook callback = HookUtils.afterAlways(this, 50, param -> {
                 List<Object> result = (List<Object>) param.getResult();
                 Context ctx = (Context) param.args[0];
                 Class<?> kItemProcessorGroup = result.get(0).getClass();
@@ -152,8 +160,14 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 ArrayList<Object> list = new ArrayList<>(1);
                 list.add(entryItem);
                 Object group = ctor.newInstance(list, "", "");
-                result.add(1, group);
+                boolean isNew = param.thisObject.getClass().getName().contains("NewSettingConfigProvider");
+                int indexToInsert = isNew ? 2 : 1;
+                result.add(indexToInsert, group);
             });
+            XposedBridge.hookMethod(getItemProcessListOld, callback);
+            if (getItemProcessListNew != null) {
+                XposedBridge.hookMethod(getItemProcessListNew, callback);
+            }
         }
     }
 
