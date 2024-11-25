@@ -28,11 +28,12 @@ import android.view.ViewGroup
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.msg.MultiForwardAvatarHook
 import cc.ioctl.util.HookUtils
+import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
-import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
@@ -58,7 +59,9 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
             val kAIOBubbleMsgItemVB = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.AIOBubbleMsgItemVB")
-            val getHostView = kAIOBubbleMsgItemVB.getMethod("getHostView")
+            val getHostView = kAIOBubbleMsgItemVB.findMethodOrNull(true) {
+                modifiers == Modifier.PUBLIC && returnType == View::class.java && parameterTypes.isEmpty()
+            } ?: kAIOBubbleMsgItemVB.getMethod("getHostView")
             val kAIOMsgItem = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
             val bindMethod = kAIOBubbleMsgItemVB.declaredMethods.single {
                 val argt = it.parameterTypes
