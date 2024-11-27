@@ -48,8 +48,8 @@ object RemoveShareLimit : CommonSwitchFunctionHook() {
                 val forwardTargetKey = XposedHelpers.callMethod(
                     param.thisObject,
                     "getForwardTargetKey",
-                    resultRecord.get("uin"),
-                    XposedHelpers.callMethod(resultRecord, "getUinType")
+                    arrayOf(String::class.java, Int::class.java),
+                    resultRecord.get("uin"), XposedHelpers.callMethod(resultRecord, "getUinType")
                 )
                 val mForwardTargetMap = param.thisObject.get("mForwardTargetMap") as MutableMap<Any, Any?>
                 mForwardTargetMap[forwardTargetKey] = XposedHelpers.callMethod(resultRecord, "copyResultRecord", resultRecord)
