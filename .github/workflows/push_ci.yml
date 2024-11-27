@@ -51,6 +51,7 @@ jobs:
           mkdir -p "$ANDROID_HOME/licenses/"
           echo > "$ANDROID_HOME/licenses/android-sdk-license"
           echo -n 24333f8a63b6825ea9c5514f83c2829b004d1fee > "$ANDROID_HOME/licenses/android-sdk-license"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "cmake;3.31.0"
           echo "sdk.dir=${ANDROID_HOME}" > local.properties
       - name: Install ccache
         run: |
@@ -77,6 +78,7 @@ jobs:
         run: |
           echo 'org.gradle.parallel=true' >> gradle.properties
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
+          echo 'qauxv.override.ninja.path=/usr/bin/ninja' >> local.properties
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
           echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
