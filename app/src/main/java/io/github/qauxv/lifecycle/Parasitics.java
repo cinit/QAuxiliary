@@ -397,18 +397,19 @@ public class Parasitics {
                 Intent intent = (Intent) field_intent.get(activityClientRecord);
                 assert intent != null;
                 Bundle bundle = null;
+                Intent cloneIntent = new Intent(intent);
                 try {
                     Field fExtras = Intent.class.getDeclaredField("mExtras");
                     fExtras.setAccessible(true);
-                    bundle = (Bundle) fExtras.get(intent);
+                    bundle = (Bundle) fExtras.get(cloneIntent);
                 } catch (Exception e) {
                     Log.e(e);
                 }
                 if (bundle != null) {
                     bundle.setClassLoader(Initiator.getHostClassLoader());
                     // we do NOT have a custom Bundle, but the host may have
-                    if (intent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                        Intent realIntent = intent.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                    if (cloneIntent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
+                        Intent realIntent = cloneIntent.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
                         field_intent.set(activityClientRecord, realIntent);
                     }
                 }
@@ -447,18 +448,19 @@ public class Parasitics {
             fmIntent.setAccessible(true);
             Intent wrapper = (Intent) fmIntent.get(item);
             assert wrapper != null;
+            Intent cloneIntent = (Intent) wrapper.clone();
             Bundle bundle = null;
             try {
                 Field fExtras = Intent.class.getDeclaredField("mExtras");
                 fExtras.setAccessible(true);
-                bundle = (Bundle) fExtras.get(wrapper);
+                bundle = (Bundle) fExtras.get(cloneIntent);
             } catch (Exception e) {
                 Log.e(e);
             }
             if (bundle != null) {
                 bundle.setClassLoader(Initiator.getHostClassLoader());
-                if (wrapper.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
-                    Intent realIntent = wrapper.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
+                if (cloneIntent.hasExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT)) {
+                    Intent realIntent = cloneIntent.getParcelableExtra(ActProxyMgr.ACTIVITY_PROXY_INTENT);
                     fmIntent.set(item, realIntent);
                     if (Build.VERSION.SDK_INT >= 31) {
                         IBinder token = (IBinder) clientTransaction.getClass().getMethod("getActivityToken").invoke(clientTransaction);
