@@ -23,6 +23,7 @@ package cc.hicore.hook;
 
 
 import static cc.ioctl.util.HostInfo.requireMinQQVersion;
+import static cc.ioctl.util.HostInfo.requireMinTimVersion;
 import static cc.ioctl.util.Reflex.getFirstNSFByType;
 import static io.github.qauxv.util.Initiator._SessionInfo;
 import static io.github.qauxv.util.Initiator.load;
@@ -45,17 +46,13 @@ import cc.hicore.dialog.RepeaterPlusIconSettingDialog;
 import cc.hicore.message.chat.SessionHooker;
 import cc.hicore.message.chat.SessionUtils;
 import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
-import io.github.qauxv.base.IEntityAgent;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.R;
+import io.github.qauxv.base.IEntityAgent;
 import io.github.qauxv.base.ISwitchCellAgent;
 import io.github.qauxv.base.IUiItemAgent;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -71,11 +68,15 @@ import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.TIMVersion;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.VasAttrBuilder;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -178,7 +179,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
                 XC_MethodHook callback = new XC_MethodHook() {
                     private ImageView img;
@@ -316,7 +317,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
     @Override
     public boolean isAvailable() {
-        return requireMinQQVersion(QQVersion.QQ_8_6_0);
+        return requireMinQQVersion(QQVersion.QQ_8_6_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95);
     }
 
     private static Object AIOParam;
@@ -357,7 +358,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                     });
                 } else {
                     long msgUniqueId;
-                    if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                    if (requireMinQQVersion(QQVersion.QQ_9_0_30) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
                         msgUniqueId = service.generateMsgUniqueId(contact.getChatType(), QAppUtils.getServiceTime());
                     } else {
                         msgUniqueId = service.getMsgUniqueId(QAppUtils.getServiceTime());

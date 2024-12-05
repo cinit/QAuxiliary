@@ -21,16 +21,14 @@
 
 package cc.hicore.message.chat;
 
-import android.text.TextUtils;
-import cc.hicore.QApp.QAppUtils;
-import cc.hicore.ReflectUtil.MField;
+import static cc.ioctl.util.HostInfo.requireMinTimVersion;
+
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.Utils.XLog;
 import io.github.qauxv.bridge.kernelcompat.ContactCompat;
-import io.github.qauxv.bridge.SessionInfoImpl;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.TIMVersion;
 import java.io.Serializable;
-import java.lang.reflect.Field;
 
 public class SessionUtils {
 
@@ -59,12 +57,14 @@ public class SessionUtils {
     }
 
     public static String getCurrentPeerIDByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name("f").type(String.class).get();
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "e" : "f").type(String.class).get();
     }
-    public static int getCurrentChatTypeByAIOContact(Object AIOContact) throws Exception{
-        return XField.obj(AIOContact).name("e").type(int.class).get();
+
+    public static int getCurrentChatTypeByAIOContact(Object AIOContact) throws Exception {
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "d" : "e").type(int.class).get();
     }
-    public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception{
-        return XField.obj(AIOContact).name("g").type(String.class).get();
+
+    public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception {
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "f" : "g").type(String.class).get();
     }
 }
