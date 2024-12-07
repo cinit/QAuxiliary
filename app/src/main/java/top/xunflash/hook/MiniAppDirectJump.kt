@@ -339,7 +339,7 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
                         continue
                     }
                 }
-                //if (foundValidApp) break
+                if (foundValidApp) break
             } catch (e: Exception) {
                 continue
             }
