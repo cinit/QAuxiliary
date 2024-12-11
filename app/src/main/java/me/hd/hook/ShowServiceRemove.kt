@@ -33,9 +33,9 @@ import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ServiceShowRemove : CommonSwitchFunctionHook() {
+object ShowServiceRemove : CommonSwitchFunctionHook() {
 
-    override val name = "业务右上角显示移除"
+    override val name = "显示业务右上角移除选项"
     override val description = "动态-更多, 业务页可移除游戏中心等"
     override val extraSearchKeywords = arrayOf("游戏中心")
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_OPERATION_LOG
