@@ -30,7 +30,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.method
@@ -78,9 +80,11 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
     private var getName: Method? = null
 
     override fun initOnce() = throwOrTrue {
-        if (QAppUtils.isQQnt()) {
+        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
             mutableListOf("com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout").apply {
-                if (requireMinQQVersion(QQVersion.QQ_9_0_0)) add(0, "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout")
+                if (requireMinQQVersion(QQVersion.QQ_9_0_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+                    add(0, "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout")
+                }
             }.firstNotNullOf { it.clazz }
                 .method("setMenu")!!
                 .hookBefore {
