@@ -22,6 +22,7 @@
 package cc.ioctl.hook.msg;
 
 import static io.github.qauxv.util.HostInfo.requireMinQQVersion;
+import static io.github.qauxv.util.HostInfo.requireMinTimVersion;
 import static io.github.qauxv.util.Initiator._MessageRecord;
 import static io.github.qauxv.util.Initiator._PicItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
@@ -34,17 +35,18 @@ import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.TIMVersion;
 import io.github.qauxv.util.dexkit.CBasePicDlProcessor;
 import io.github.qauxv.util.dexkit.CFlashPicHelper;
 import io.github.qauxv.util.dexkit.CItemBuilderFactory;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
@@ -90,8 +92,8 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         // 闪照SubMsgType(8194 -> 2, 12288 -> 4096)
-        if (QAppUtils.isQQnt()) {
-            if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            if (requireMinQQVersion(QQVersion.QQ_9_0_15) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
                 Class<?> AIOMsgItem = loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
                 HookUtils.hookAfterIfEnabled(this, AIOMsgItem.getDeclaredMethod("getMsgRecord"), param -> {
                     MsgRecord msgRecord = (MsgRecord) param.getResult();

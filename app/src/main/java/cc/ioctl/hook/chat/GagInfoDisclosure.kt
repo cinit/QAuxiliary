@@ -39,12 +39,14 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.CMessageRecordFactory
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_GagInfoDisclosure_Method
 import io.github.qauxv.util.dexkit.NContactUtils_getBuddyName
 import io.github.qauxv.util.dexkit.NContactUtils_getDiscussionMemberShowName
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.get
 
 @FunctionHookEntry
@@ -124,7 +126,7 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
     }
 
     override fun initOnce(): Boolean {
-        if (requireMinQQVersion(QQVersion.QQ_9_0_73)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_73) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
             hookAfterIfEnabled(DexKit.requireMethodFromCache(Hd_GagInfoDisclosure_Method)) { param ->
                 val msgInfo = param.args[1]
                 val vMsg = msgInfo.get("vMsg") as ByteArray? ?: return@hookAfterIfEnabled
