@@ -1069,3 +1069,10 @@ data object DisableLightInteractionMethod : DexKitTarget.UsingStr() {
         m.returnType == View::class.java && m.paramCount == 2 && m.parameterTypes[1] == ViewGroup::class.java
     }
 }
+
+data object Hd_HideTipsBar_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("initBannerView | banner = ")
+    override val declaringClass = "Lcom/tencent/mobileqq/banner/BannerManager;"
+    override val filter = DexKitFilter.allowAll
+}
