@@ -29,14 +29,10 @@ import android.util.Log
 import android.view.View
 import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
-import cc.ioctl.util.HostInfo
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedBridge
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -47,10 +43,16 @@ import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexDeobfsProvider
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.TextMsgItem_getText
+import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import java.lang.reflect.Modifier
 
 @FunctionHookEntry
@@ -144,7 +146,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
     }
 
     override val isNeedFind: Boolean
-        get() = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) && TextMsgItem_getText.descCache == null
+        get() = TextMsgItem_getText.descCache == null && (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95))
 
     override fun doFind(): Boolean {
         DexDeobfsProvider.getCurrentBackend().use { backend ->
