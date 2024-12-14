@@ -25,7 +25,6 @@ import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
-import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -34,6 +33,7 @@ import io.github.qauxv.router.decorator.IStartActivityHookDecorator
 import io.github.qauxv.router.dispacher.StartActivityHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.singleneuron.activity.ChooseAgentActivity
 
 @UiItemAgentEntry
@@ -46,10 +46,12 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
     override val dispatcher = StartActivityHook
 
     override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
-        if (intent.component?.className?.contains("NewPhotoListActivity") == true &&
-                intent.getIntExtra("uintype", -1) != -1 &&
-                (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false)) &&
-                (!intent.getBooleanExtra("is_decorated", false))) {
+        val isWinkHomeActivity = intent.component?.className?.contains("WinkHomeActivity") == true
+        val isNewPhotoListActivity = intent.component?.className?.contains("NewPhotoListActivity") == true
+        if ((isWinkHomeActivity || (isNewPhotoListActivity && intent.getIntExtra("uintype", -1) != -1)) &&
+            (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false)) &&
+            (!intent.getBooleanExtra("is_decorated", false))
+        ) {
             // must use Activity context as base context to show dialog window
             val uin = intent.getStringExtra("uin")
             if (uin.toString().length > 10) {
@@ -59,30 +61,30 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
             val context = param.thisObject as Context
             Log.d("context: ${context.javaClass.name}")
             val activityMap = mapOf(
-                    "系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtra("use_ACTION_PICK", true)
-                        putExtras(intent)
-                        type = "image/*"
-                    },
-                    "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
-                        addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                        putExtras(intent)
-                        type = "image/*"
-                    },
-                    "QQ 相册" to intent.apply {
-                        putExtra("is_decorated", true)
-                    }
+                "系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtra("use_ACTION_PICK", true)
+                    putExtras(intent)
+                    type = "image/*"
+                },
+                "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
+                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                    putExtras(intent)
+                    type = "image/*"
+                },
+                "QQ 相册" to intent.apply {
+                    putExtra("is_decorated", true)
+                }
             )
             val materialContext = CommonContextWrapper.createMaterialDesignContext(context)
             MaterialAlertDialogBuilder(materialContext)
-                    .setTitle("选择相册")
-                    .setItems(activityMap.keys.toTypedArray()) { _: DialogInterface, i: Int ->
-                        // recursion here
-                        context.startActivity(activityMap[activityMap.keys.toTypedArray()[i]])
-                    }
-                    .create()
-                    .show()
+                .setTitle("选择相册")
+                .setItems(activityMap.keys.toTypedArray()) { _: DialogInterface, i: Int ->
+                    // recursion here
+                    context.startActivity(activityMap[activityMap.keys.toTypedArray()[i]])
+                }
+                .create()
+                .show()
             param.result = null
             return true
         }
