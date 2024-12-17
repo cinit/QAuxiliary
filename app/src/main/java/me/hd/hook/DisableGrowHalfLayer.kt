@@ -57,8 +57,21 @@ object DisableGrowHalfLayer : CommonSwitchFunctionHook(
         }
         hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_DisableGrowHalfLayer_Method2)) { param ->
             printStackTrace("屏蔽广告弹窗 -> 测试2")
-            Toasts.show("屏蔽广告弹窗 -> 测试2成功")
             param.result = null
+            /**
+             * 9.1.25 Test-01
+             * at LSPHooker_.J(null:8)
+             * at cooperation.vip.qqbanner.manager.VasADImmersionBannerManager.J(P:1)
+             * at com.tencent.mobileqq.activity.recent.bannerprocessor.VasADBannerProcessor.updateBanner(P:3)
+             * at com.tencent.mobileqq.banner.BannerManager.J(P:9)
+             * at com.tencent.mobileqq.banner.BannerManager.a(P:19)
+             * at com.tencent.mobileqq.banner.BannerManager.C(P:5)
+             * at com.tencent.mobileqq.banner.BannerManager.A(P:17)
+             * at com.tencent.mobileqq.banner.BannerManager.O(P:9)
+             * at com.tencent.mobileqq.activity.recent.bannerprocessor.VasADBannerProcessor.i(P:3)
+             * at com.tencent.mobileqq.activity.recent.bannerprocessor.VasADBannerProcessor.handleMessage(P:5)
+             * at com.tencent.mobileqq.utils.ay.handleMessage(P:2)
+             */
         }
         return true
     }
