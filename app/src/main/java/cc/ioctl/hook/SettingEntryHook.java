@@ -111,15 +111,27 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 getItemProcessListNew = Reflex.findSingleMethod(kNewSettingConfigProvider, List.class, false, Context.class);
             }
             Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
-            // 8.9.70 ~ 9.0.0
-            Class<?> kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.g");
-            if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
-                // 9.0.8+
-                kSimpleItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.processor.h");
-                if (kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor) {
-                    throw new IllegalStateException("kSimpleItemProcessor.getSuperclass() != kAbstractItemProcessor");
+            // SimpleItemProcessor has too few xrefs. I have no idea how to find it without a list of candidates.
+            final String[] possibleSimpleItemProcessorNames = new String[]{
+                    // 8.9.70 ~ 9.0.0
+                    "com.tencent.mobileqq.setting.processor.g",
+                    // 9.0.8+
+                    "com.tencent.mobileqq.setting.processor.h",
+                    // QQ 9.1.28.21880 (8398) gray
+                    "as3.i",
+            };
+            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(4);
+            for (String name : possibleSimpleItemProcessorNames) {
+                Class<?> klass = Initiator.load(name);
+                if (klass != null && klass.getSuperclass() == kAbstractItemProcessor) {
+                    possibleSimpleItemProcessorCandidates.add(klass);
                 }
             }
+            // assert possibleSimpleItemProcessorCandidates.size() == 1;
+            if (possibleSimpleItemProcessorCandidates.size() != 1) {
+                throw new IllegalStateException("possibleSimpleItemProcessorCandidates.size() != 1, got " + possibleSimpleItemProcessorCandidates);
+            }
+            Class<?> kSimpleItemProcessor = possibleSimpleItemProcessorCandidates.get(0);
             Method setOnClickListener;
             {
                 List<Method> candidates = ArraysKt.filter(kSimpleItemProcessor.getDeclaredMethods(), m -> {
