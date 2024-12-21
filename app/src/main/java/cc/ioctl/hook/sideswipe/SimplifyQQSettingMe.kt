@@ -305,7 +305,13 @@ object SimplifyQQSettingMe :
 //                val parent=param.thisObject.javaClass.declaredFields.first {
 //                    it.javaClass==ViewGroup::class.java && (it.get(param.thisObject) as ViewGroup).childCount>=14
 //                }.get(param.thisObject) as ViewGroup
-                val parent = param.thisObject.get("h") as ViewGroup
+//                val parent = param.thisObject.get("h") as ViewGroup
+                val parent = param.thisObject.javaClass.declaredFields.lastOrNull {
+                    it.type == ViewGroup::class.java
+                }?.let {
+                    it.isAccessible = true
+                    it.get(param.thisObject)
+                } as ViewGroup
                 parent.children.forEach {
                     if (!it.isClickable) it.setViewZeroSize()
                 }
