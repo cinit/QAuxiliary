@@ -42,6 +42,8 @@ import io.github.qauxv.util.Initiator._TroopChatPie
 import io.github.qauxv.util.Initiator.getHostClassLoader
 import io.github.qauxv.util.Initiator.load
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.data.ConfigData
 import mqq.app.AppRuntime
 
@@ -370,7 +372,7 @@ data object CSystemMessageProcessor : DexKitTarget.UsingStr() {
 data object COnlinePushPbPushTransMsg : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.app.handler.receivesuccess.OnlinePushPbPushTransMsg"
     override val traitString = arrayOf("PbPushTransMsg muteGeneralFlag:")
-    override val filter = DexKitFilter.strInClsName("/receivesuccess/")
+    override val filter = if (requireMinQQVersion(QQVersion.QQ_9_1_30)) DexKitFilter.allowAll else DexKitFilter.strInClsName("/receivesuccess/")
 }
 
 data object CFrameControllerInjectImpl : DexKitTarget.UsingStr() {
