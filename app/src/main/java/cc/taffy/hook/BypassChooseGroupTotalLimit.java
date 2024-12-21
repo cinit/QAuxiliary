@@ -61,16 +61,22 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
     @Override
     public boolean initOnce() throws Exception {
 
+        boolean succeed = false;
         Class<?> clazz = Initiator.loadClass("com.tencent.mobileqq.selectmember.troop.SelectTroopListFragment");
 
         // 9.1.30以后仅能通过hook内部来进行
         if(requireMaxQQVersion(QQVersion.QQ_9_1_28)) {
-            Class<?> implClass = Initiator.loadClass("com.tencent.mobileqq.troop.api.access.impl.TroopManageAccessHandlerApiImpl");
-            Method fetchLimitMethod =  implClass.getDeclaredMethod("getSelectGroupUpperLimit",String.class,String.class,int.class);
+            try {
+                Class<?> implClass = Initiator.loadClass("com.tencent.mobileqq.troop.api.access.impl.TroopManageAccessHandlerApiImpl");
+                Method fetchLimitMethod = implClass.getDeclaredMethod("getSelectGroupUpperLimit", String.class, String.class, int.class);
 
-            HookUtils.hookAfterIfEnabled(this,fetchLimitMethod,
-                    param -> param.setResult(9999));
+                HookUtils.hookAfterIfEnabled(this, fetchLimitMethod,
+                        param -> param.setResult(9999));
+                succeed = true;
+            }
+            finally {
 
+            }
         }
 
         Method onCreateViewMethod = clazz.getDeclaredMethod("onCreateView",
@@ -79,6 +85,7 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
                 android.os.Bundle.class);
 
         // 兜底
+        boolean finalSucceed = succeed;
         HookUtils.hookAfterIfEnabled(this, onCreateViewMethod, param -> {
 
             try
@@ -88,14 +95,14 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
 
             if((int)TroopMaxCount.get(param.thisObject)<1000)
                 TroopMaxCount.setInt(param.thisObject, 9999);
-
             }
             catch (Exception ex)
             {
-
+                if(!finalSucceed)
+                    throw ex;
             }
         });
 
-        return true;
+        return succeed;
     }
 }
