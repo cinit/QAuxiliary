@@ -50,6 +50,7 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
 
     @Override
     public String getDescription() {
+
         return "适用部分选择群的UI(如群成员去重-群选择UI).";
     }
 
