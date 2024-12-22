@@ -10,9 +10,9 @@ fun Window.blurBackground(br: Int, bd: Float) {
     if (Build.VERSION.SDK_INT < Build.VERSION_CODES.S) return
     addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
     attributes.blurBehindRadius = br
-    setBackgroundBlurRadius(br)
     val blurEnableListener = { _: Boolean ->
         setDimAmount(bd)
+        setBackgroundBlurRadius(br)
     }
     decorView.addOnAttachStateChangeListener(object : View.OnAttachStateChangeListener {
         @RequiresApi(Build.VERSION_CODES.S)

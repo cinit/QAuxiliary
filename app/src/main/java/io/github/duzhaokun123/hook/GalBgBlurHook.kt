@@ -117,12 +117,15 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
     override fun initOnce(): Boolean {
         Activity::class.java.hookAfter(this, "onCreate", Bundle::class.java) {
             val activity = it.thisObject as Activity
-            when(activity::class.java.name) {
+            when (activity::class.java.name) {
                 "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
                 "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
                 "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity",
-                "com.tencent.richframework.gallery.QQGalleryActivity"-> {
-                    activity.window.blurBackground(ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10), ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F))
+                "com.tencent.richframework.gallery.QQGalleryActivity" -> {
+                    activity.window.blurBackground(
+                        ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10),
+                        ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F)
+                    )
                 }
             }
         }
