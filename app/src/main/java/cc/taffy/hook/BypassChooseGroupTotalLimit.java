@@ -34,12 +34,10 @@ import io.github.qauxv.util.QQVersion;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 
-// FunctionHookEntry 和 UiItemAgentEntry 用于注册功能，这两个注解都是必要的
 @FunctionHookEntry
 @UiItemAgentEntry
 public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook {
 
-    // INSTANCE 是必须的，因为 Java 没有 object，所以我们需要一个单例
     public static final BypassChooseGroupTotalLimit INSTANCE = new BypassChooseGroupTotalLimit();
 
     @Override
@@ -50,7 +48,6 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
 
     @Override
     public String getDescription() {
-
         return "适用部分选择群的UI(如群成员去重-群选择UI).";
     }
 
@@ -63,9 +60,8 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
     public boolean initOnce() throws Exception {
 
         boolean succeed = false;
-        Class<?> clazz = Initiator.loadClass("com.tencent.mobileqq.selectmember.troop.SelectTroopListFragment");
 
-        // 9.1.30以后仅能通过hook内部来进行
+        // 9.1.30虽然还存在getSelectGroupUpperLimit方法，但是已经找不到调用处。
         if(requireMaxQQVersion(QQVersion.QQ_9_1_28)) {
             try {
                 Class<?> implClass = Initiator.loadClass("com.tencent.mobileqq.troop.api.access.impl.TroopManageAccessHandlerApiImpl");
@@ -76,19 +72,20 @@ public final class BypassChooseGroupTotalLimit extends CommonSwitchFunctionHook 
                 succeed = true;
             }
             finally {
-
+                //写个try，万一找不到方法就试试用下面的方案。
             }
         }
+
+        Class<?> clazz = Initiator.loadClass("com.tencent.mobileqq.selectmember.troop.SelectTroopListFragment");
 
         Method onCreateViewMethod = clazz.getDeclaredMethod("onCreateView",
                 android.view.LayoutInflater.class,
                 android.view.ViewGroup.class,
                 android.os.Bundle.class);
 
-        // 兜底
+
         boolean finalSucceed = succeed;
         HookUtils.hookAfterIfEnabled(this, onCreateViewMethod, param -> {
-
             try
             {
             Field TroopMaxCount = clazz.getDeclaredField(requireMinQQVersion(QQVersion.QQ_9_1_30)?"W":"f0");
