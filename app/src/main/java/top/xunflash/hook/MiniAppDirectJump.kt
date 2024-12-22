@@ -65,7 +65,9 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeout
+import me.ketal.data.ConfigData
 import xyz.nextalone.util.throwOrTrue
+import java.io.Serializable
 import java.lang.reflect.Array
 import java.net.HttpURLConnection
 import java.net.URL
@@ -79,7 +81,7 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
         var packageNames: List<String>,
         var regex: String,
         var parseShortUrls: Boolean
-    )
+    ) : Serializable
 
     override val name: String = "小程序/分享卡片跳转APP"
     override val valueState: MutableStateFlow<String?> by lazy {
@@ -92,28 +94,35 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
         showConfigDialog(activity)
     }
 
-    private var appConfigs = mutableListOf(
-        AppConfig(
-            listOf("tv.danmaku.bili", "com.bilibili.app.in", "tv.danmaku.bilibilihd", "com.bilibili.app.blue"),
-            """https?:\\?/\\?/((b23\.tv)|([\w.]*bilibili\.com))[^"]*""",
-            true
-        ),
-        AppConfig(
-            listOf("com.xingin.xhs"),
-            """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
-            false
-        ),
-        AppConfig(
-            listOf("com.coolapk.market"),
-            """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
-            false
-        ),
-        AppConfig(
-            listOf("com.zhihu.android"),
-            """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
-            false
-    )
-    )
+    private val appConfigsData = ConfigData<MutableList<AppConfig>>("MiniAppDirectJump_appConfigs")
+    private var appConfigs: MutableList<AppConfig>
+        get() = appConfigsData.getOrDefault(
+            mutableListOf(
+                AppConfig(
+                    listOf("tv.danmaku.bili", "com.bilibili.app.in", "tv.danmaku.bilibilihd", "com.bilibili.app.blue"),
+                    """https?:\\?/\\?/((b23\.tv)|([\w.]*bilibili\.com))[^"]*""",
+                    true
+                ),
+                AppConfig(
+                    listOf("com.xingin.xhs"),
+                    """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
+                    false
+                ),
+                AppConfig(
+                    listOf("com.coolapk.market"),
+                    """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
+                    false
+                ),
+                AppConfig(
+                    listOf("com.zhihu.android"),
+                    """(?<="jumpUrl":")https?:\\?/\\?/[^"]*""",
+                    false
+                )
+            )
+        )
+        set(value) {
+            appConfigsData.value = value
+        }
 
     @SuppressLint("SetTextI18n")
     private fun showConfigDialog(ctx: Context) {
@@ -161,10 +170,12 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
                     hint = "应用包名（英文逗号分隔，优先检查的放在前面）"
                     textSize = 14f
                 }
-                addView(packageNameEdit, LinearLayout.LayoutParams(
-                    LinearLayout.LayoutParams.MATCH_PARENT,
-                    LinearLayout.LayoutParams.WRAP_CONTENT
-                ))
+                addView(
+                    packageNameEdit, LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT
+                    )
+                )
 
                 val regexEdit = EditText(ctx).apply {
                     setText(config?.regex ?: "")
@@ -229,16 +240,17 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
                     valueState.value = if (newEnabled) "已开启" else "禁用"
                 }
 
-                appConfigs.clear()
+                val newAppConfigs = mutableListOf<AppConfig>()
                 for (i in 0 until appConfigsContainer.childCount) {
                     val view = appConfigsContainer.getChildAt(i)
                     val config = (view.tag as? Any)?.let {
                         it.javaClass.getDeclaredMethod("getConfig").invoke(it) as? AppConfig
                     } ?: continue
                     if (config.packageNames.isNotEmpty() && config.regex.isNotBlank()) {
-                        appConfigs.add(config)
+                        newAppConfigs.add(config)
                     }
                 }
+                appConfigs = newAppConfigs
 
                 Toasts.success(ctx, "已保存配置")
             }
