@@ -33,7 +33,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.CAbsGalScene;
 import io.github.qauxv.util.dexkit.CGalleryBaseScene;
@@ -59,7 +61,9 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
         if (kRFWLayerAnimPart != null) {
             Method m = kRFWLayerAnimPart.getDeclaredMethod("initStartAnim", ImageView.class);
             HookUtils.hookAfterIfEnabled(this, m, param -> {
-                Object mDragLayout = Reflex.getInstanceObject(param.thisObject, "mDragLayout", null);
+                Object mDragLayout = Reflex.getInstanceObject(param.thisObject,
+                        HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_56) ? "dragLayout" : "mDragLayout",
+                        null);
                 Reflex.setInstanceObject(mDragLayout, "mWindowBgDrawable", new ColorDrawable(Color.TRANSPARENT));
             });
             Method m2 = kRFWLayerAnimPart.getDeclaredMethod("updateBackgroundAlpha", int.class);
