@@ -30,7 +30,9 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 
@@ -39,10 +41,11 @@ import xyz.nextalone.util.replace
 object ChannelProxyHook : CommonSwitchFunctionHook() {
 
     override val name = "环境检测包(trpc.o3.*)拦截"
-    override val description = "拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率，未经测试，如无特殊情况不建议打开。"
+    override val description =
+        "拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率，未经测试，如无特殊情况不建议打开。"
     override val targetProcesses: Int = SyncUtils.PROC_MSF
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83) || requireMinTimVersion(TIMVersion.TIM_4_0_95)
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
 
     override val isApplicationRestartRequired = true
