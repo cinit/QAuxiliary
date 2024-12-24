@@ -31,9 +31,6 @@ import com.google.common.collect.Lists;
 import io.github.qauxv.base.ITraceableDynamicHook;
 import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.base.annotation.EntityAgentEntry;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
-import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.hook.BaseHookDispatcher;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
@@ -42,9 +39,11 @@ import io.github.qauxv.util.dexkit.AIO_Create_QQNT;
 import io.github.qauxv.util.dexkit.AIO_Destroy_QQNT;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
-import java.util.Collections;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.util.List;
 import java.util.Stack;
+import me.hd.hook.TimBarAddEssenceHook;
 import me.ketal.hook.MultiActionHook;
 
 @EntityAgentEntry
@@ -64,7 +63,8 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
             StickerPanelEntryHooker.INSTANCE,
             MultiActionHook.INSTANCE,
             RepeaterPlus.INSTANCE,
-            InputButtonHookDispatcher.INSTANCE
+            InputButtonHookDispatcher.INSTANCE,
+            TimBarAddEssenceHook.INSTANCE
     };
 
     @NonNull
