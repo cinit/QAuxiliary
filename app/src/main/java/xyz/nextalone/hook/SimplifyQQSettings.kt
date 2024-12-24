@@ -35,7 +35,6 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.requireMaxQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
@@ -118,23 +117,20 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
             }
         }
 
-        //单独处理 其他选项
-        Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider").method { it.returnType == List::class.java }!!
-            .hookAfter { param ->
-                param.result = (param.result as List<*>).filter { obj ->
-                    (((obj ?: return@filter true)::class.java.getFieldByType(List::class.java).get(obj)
-                        ?: return@filter true) as List<*>).firstOrNull {
-                        val name = (it ?: return@firstOrNull false)::class.java.simpleName
-                        (activeItems.contains("通知") && name == "MsgNotifyItemProcessor")
-                            || (activeItems.contains("免流量") && name == "CUOpenCardItemProcessor" && requireMinQQVersion(QQVersion.QQ_9_0_30))
-                            || (activeItems.contains("关于") && name == "AboutItemProcessor")
-                    } == null
-                }
-            }
-
-        // 单独处理 免流量(9.0.25之前)
-        if (activeItems.contains("免流量") && requireMaxQQVersion(QQVersion.QQ_9_0_25)) {
-            if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
+        // 免流量 单独处理
+        if (activeItems.contains("免流量")) {
+            // if() CUOpenCardGuideMng guideEntry
+            if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider").method { it.returnType == List::class.java }!!
+                    .hookAfter { param ->
+                        param.result = (param.result as List<*>).filter { obj ->
+                            (((obj ?: return@filter true)::class.java.getFieldByType(List::class.java).get(obj)
+                                ?: return@filter true) as List<*>).firstOrNull {
+                                (it ?: return@firstOrNull false)::class.java.simpleName == "CUOpenCardItemProcessor"
+                            } == null
+                        }
+                    }
+            } else if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
                 //Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng;->b(I)Lcom/tencent/mobileqq/managers/CUOpenCardGuideMng$a;
                 Initiator.loadClass("com/tencent/mobileqq/managers/CUOpenCardGuideMng").let { clz ->
                     val m = clz.declaredMethods.single {
