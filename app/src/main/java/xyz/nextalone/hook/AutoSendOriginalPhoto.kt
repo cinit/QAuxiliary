@@ -26,6 +26,7 @@ import android.os.Bundle
 import android.view.View
 import android.widget.CheckBox
 import cc.hicore.QApp.QAppUtils
+import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
 import com.github.kyuubiran.ezxhelper.utils.hookReturnConstant
@@ -34,12 +35,15 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_AutoSendOriginalPhoto_guildPicker_Method
 import io.github.qauxv.util.dexkit.Hd_AutoSendOriginalPhoto_photoListPanel_Method
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.findHostView
 import xyz.nextalone.util.get
@@ -62,6 +66,21 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            //半屏相册
+            val photoPanelVB = Initiator.loadClass("com.tencent.mobileqq.aio.panel.photo.PhotoPanelVB")
+            val bindViewAndDataMethod = photoPanelVB.getDeclaredMethod("Q0")
+            val setCheckedMethod = photoPanelVB.getDeclaredMethod("s", Boolean::class.java)
+            hookAfterIfEnabled(bindViewAndDataMethod) { param ->
+                setCheckedMethod.invoke(param.thisObject, true)
+            }
+            //全屏相册
+            hookAfterIfEnabled("Lcom/tencent/qqnt/qbasealbum/model/Config;->z()Z".method) { param ->
+                param.result = true
+            }
+            return@throwOrTrue
+        }
+
         if (QAppUtils.isQQnt()) {
             //普通模式半屏Panel的原图勾选框
             val clz = "com.tencent.mobileqq.aio.panel.photo.PhotoPanelVB".clazz!!
