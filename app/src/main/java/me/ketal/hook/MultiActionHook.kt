@@ -53,6 +53,7 @@ import io.github.qauxv.util.Initiator._BaseChatPie
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.CMessageCache
 import io.github.qauxv.util.dexkit.CMessageRecordFactory
 import io.github.qauxv.util.dexkit.CMultiMsgManager
@@ -61,6 +62,7 @@ import io.github.qauxv.util.dexkit.MultiSelectBarVM
 import io.github.qauxv.util.dexkit.MultiSelectToBottomIntent
 import io.github.qauxv.util.dexkit.NBaseChatPie_createMulti
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import mqq.app.AppActivity
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
@@ -113,67 +115,85 @@ object MultiActionHook : CommonSwitchFunctionHook(
     }
 
     private fun hookNt() {
-        Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVB")
-            .method("onCreateView")!!
-            .hookAfter(this) {
-                val rootView = findViewNt(it.method.declaringClass, it.thisObject) ?: return@hookAfter
-                val context = rootView.context as AppActivity
-                val count = rootView.childCount
-                val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
-                if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) {
-                    if (count >= 11) {
-                        // Since QQ 9.0.30, using view to separate
-                        val enableTalkBack = rootView.getChildAt(1).contentDescription != null
-                        val separator = View(context).apply {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            Initiator.loadClass("com.tencent.tim.aio.inputbar.TimMultiSelectBarVB").method("J")
+        } else {
+            Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVB").method("onCreateView")
+        }!!.hookAfter(this) {
+            val rootView = findViewNt(it.method.declaringClass, it.thisObject) ?: return@hookAfter
+            val context = rootView.context as AppActivity
+            val count = rootView.childCount
+            val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
+            if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) {
+                if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+                    // 20241228 TIM_NT 待优化布局
+                    val enableTalkBack = rootView.getChildAt(0).contentDescription != null
+                    rootView.addView(
+                        create(context, iconResId, enableTalkBack, it.thisObject).apply {
                             layoutParams = rootView.getChildAt(0).layoutParams
-                        }
-                        rootView.addView(
-                            create(context, iconResId, enableTalkBack, it.thisObject).apply {
-                                layoutParams = rootView.getChildAt(1).layoutParams
-                            },
-                            count - 2
-                        )
-                        rootView.addView(separator, count - 1)
-                    } else {
-                        val enableTalkBack = rootView.getChildAt(0).contentDescription != null
-                        rootView.addView(
-                            create(context, iconResId, enableTalkBack, it.thisObject),
-                            count - 1
-                        )
-                        setMargin(rootView)
+                        },
+                        count - 1
+                    )
+                    return@hookAfter
+                }
+                if (count >= 11) {
+                    // Since QQ 9.0.30, using view to separate
+                    val enableTalkBack = rootView.getChildAt(1).contentDescription != null
+                    val separator = View(context).apply {
+                        layoutParams = rootView.getChildAt(0).layoutParams
                     }
+                    rootView.addView(
+                        create(context, iconResId, enableTalkBack, it.thisObject).apply {
+                            layoutParams = rootView.getChildAt(1).layoutParams
+                        },
+                        count - 2
+                    )
+                    rootView.addView(separator, count - 1)
+                } else {
+                    val enableTalkBack = rootView.getChildAt(0).contentDescription != null
+                    rootView.addView(
+                        create(context, iconResId, enableTalkBack, it.thisObject),
+                        count - 1
+                    )
+                    setMargin(rootView)
                 }
             }
-        val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
-        val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
-        (if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) DexKit.requireClassFromCache(MultiSelectBarVM)
-        else Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM"))
-            .method("handleIntent")!!
-            .hookBefore(this) {
-                // 劫持一个 intent 自己传参
-                val intent = it.args[0]
+        }
 
-                if (intent.javaClass.isAssignableFrom(intentClass)) {
-                    val flags = Reflex.getFirstByType(intent, Int::class.java)
-                    if (flags != -114514) return@hookBefore
-                    val mContext = it.thisObject.invoke("getMContext")!!
-                    val selectUtil = Reflex.getStaticObject(multiSelectUtilClazz, "a")
-                    val m = multiSelectUtilClazz.findMethod { returnType.isAssignableFrom(List::class.java) }
-                    val list = (m.invoke(selectUtil, mContext) as List<*>)
-                        .map { it!!.invoke("getMsgId") as Long }
-                    Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
-                    val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
-                    thread {
-                        list.chunked(10).forEach { subList ->
-                            msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam), ArrayList<Long>(subList)) { i2, str ->
-                                Log.d("do recallMsg result:$str")
-                            }
-                            sleep(3500)
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            // 20241228 TIM_NT 貌似使用别的方法
+            DexKit.requireClassFromCache(MultiSelectBarVM).method("L")
+        } else if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) {
+            DexKit.requireClassFromCache(MultiSelectBarVM).method("handleIntent")
+        } else {
+            Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVM").method("handleIntent")
+        }!!.hookBefore(this) {
+            // 劫持一个 intent 自己传参
+            val intent = it.args[0]
+
+            val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
+            if (intent.javaClass.isAssignableFrom(intentClass)) {
+                val flags = Reflex.getFirstByType(intent, Int::class.java)
+                if (flags != -114514) return@hookBefore
+                val mContext = it.thisObject.invoke("getMContext")!!
+                val multiSelectUtilClazz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.multifoward.b")
+                val selectUtil = Reflex.getStaticObject(multiSelectUtilClazz, "a")
+                val m = multiSelectUtilClazz.findMethod { returnType.isAssignableFrom(List::class.java) }
+                val list = (m.invoke(selectUtil, mContext) as List<*>)
+                    .map { it!!.invoke("getMsgId") as Long }
+                Log.d("handleIntent, msg: ${list.joinToString("\n") { it.toString() }}")
+                val msgServer = MsgServiceHelper.getKernelMsgService(AppRuntimeHelper.getAppRuntime()!!)
+                thread {
+                    list.chunked(10).forEach { subList ->
+                        msgServer!!.recallMsg(SessionUtils.AIOParam2Contact(nt_aioParam), ArrayList<Long>(subList)) { i2, str ->
+                            Log.d("do recallMsg result:$str")
                         }
+                        sleep(3500)
                     }
-                    it.result = null
                 }
+                it.result = null
             }
+        }
 
     }
 
@@ -216,7 +236,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
             val flags: Int = -114514
             val intent = intentClass.newInstance(args(flags), argTypes(Int::class.java))!!
-            baseVB.method("sendIntent")!!.invoke(vb, intent)
+            baseVB.method(if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) "L1" else "sendIntent")!!.invoke(vb, intent)
             (ctx as Activity).onBackPressed()
         }.onFailure {
             Log.e(it)
