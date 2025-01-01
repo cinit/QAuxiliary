@@ -69,7 +69,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
         1. 小程序(菜单键)
         2. 隐藏会话(右上角+悬浮消息列表)
         3. 群消息数量(消息列表+左上角返回)
-        5. 总消息数量
+        4. 总消息数量
     """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
