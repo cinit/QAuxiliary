@@ -38,7 +38,7 @@ jobs:
           git submodule foreach git submodule update --init --recursive
 
       - name: set up JDK 17
-        uses: actions/setup-java@v4.5.0
+        uses: actions/setup-java@v4.6.0
         with:
           java-version: '17'
           distribution: 'adopt'
@@ -52,7 +52,7 @@ jobs:
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
           ccache -zp
       - name: Cache Native Build
-        uses: actions/cache@v4.1.2
+        uses: actions/cache@v4.2.0
         with:
           path: |
             ~/.cache/ccache
