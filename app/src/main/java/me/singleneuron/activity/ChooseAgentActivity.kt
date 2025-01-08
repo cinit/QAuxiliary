@@ -128,14 +128,10 @@ class ChooseAgentActivity : AbstractChooseActivity() {
                 putExtra("forward_type", 0)
             }
             bundle?.let {
-                val uin = it.getString("targetUin")
-                if (uin != null) {
-                    putExtra("uin", uin)
-                }
-                val type = it.getInt("peerType", -1)
-                if (type != -1) {
-                    putExtra("uintype", type)
-                }
+                val uin = it.getString("targetUin") ?: it.getLong("key_peerUin").toString()
+                putExtra("uin", uin)
+                val type = it.getInt("peerType", it.getInt("key_chat_type", 0) - 1)
+                putExtra("uintype", type)
                 putExtras(it)
             }
             putExtra("selection_mode", 2)
