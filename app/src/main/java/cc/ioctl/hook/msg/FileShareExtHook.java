@@ -89,6 +89,12 @@ public class FileShareExtHook extends CommonSwitchFunctionHook {
         return "[QQ>=8.8.80]为聊天文件菜单添加分享至其他应用";
     }
 
+    @Nullable
+    @Override
+    public String[] getExtraSearchKeywords() {
+        return new String[]{"跨应用分享文件"};
+    }
+
     @NonNull
     @Override
     public String[] getUiItemLocation() {

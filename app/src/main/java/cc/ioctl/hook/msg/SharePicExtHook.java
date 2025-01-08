@@ -96,6 +96,12 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         return FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY;
     }
 
+    @Nullable
+    @Override
+    public String[] getExtraSearchKeywords() {
+        return new String[]{"跨应用分享图片"};
+    }
+
     @Override
     public boolean isAvailable() {
         return !HostInfo.isTim();
