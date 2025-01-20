@@ -37,12 +37,14 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.NCustomWidgetUtil_updateCustomNoteTxt
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import me.ketal.util.findViewByType
 import xyz.nextalone.util.get
@@ -70,11 +72,12 @@ object ShowMsgCount : CommonSwitchFunctionHook(
         2. 隐藏会话(右上角+悬浮消息列表)
         3. 群消息数量(消息列表+左上角返回)
         4. 总消息数量
+        暂未完全适配 TIM NT
     """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-
+        
         if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             // 小程序菜单键
             Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
@@ -123,10 +126,10 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                 }
         }
 
-        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_98)) {
             // 群聊消息数量 + 群聊左上角返回
             val clz = Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
-            val (updateNumName, mNumName, mTextName) = if (requireMinQQVersion(QQVersion.QQ_9_0_15)) {
+            val (updateNumName, mNumName, mTextName) = if (requireMinQQVersion(QQVersion.QQ_9_0_15) || requireMinTimVersion(TIMVersion.TIM_4_0_98)) {
                 Triple("updateNum", "mNum", "mText")
             } else {
                 Triple("w", "j", "n")
