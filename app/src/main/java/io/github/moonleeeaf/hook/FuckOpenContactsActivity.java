@@ -88,4 +88,4 @@ public class FuckOpenContactsActivity extends CommonSwitchFunctionHook {
         return true;
     }
 
-              }
+}
