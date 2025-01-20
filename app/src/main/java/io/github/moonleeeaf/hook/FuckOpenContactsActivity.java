@@ -50,8 +50,7 @@ import kotlin.collections.ArraysKt;
 @FunctionHookEntry
 @UiItemAgentEntry
 public class FuckOpenContactsActivity extends CommonSwitchFunctionHook {
-    private Class<?> clz = Initiator.loadClass('com.tencent.mobileqq.activity.phone.PhoneMatchActivity');
-  
+
     @NonNull
     @Override
     public String getName() {
@@ -73,12 +72,12 @@ public class FuckOpenContactsActivity extends CommonSwitchFunctionHook {
     @Override
     public boolean isAvailable() {
         // 不知道怎么判定, 就先看看有没有这个类罢
-        return !(clz == null);
+        return (Initiator.loadClass('com.tencent.mobileqq.activity.phone.PhoneMatchActivity') != null);
     }
 
     @Override
     public boolean initOnce() throws Exception {
-        Method _onCreate =  clz.getDeclaredMethod('onCreate', Bundle.class);
+        Method _onCreate =  Initiator.loadClass('com.tencent.mobileqq.activity.phone.PhoneMatchActivity').getDeclaredMethod('onCreate', Bundle.class);
 
         HookUtils.hookAfterIfEnabled(this, _onCreate, (param) -> {
             Activity self = (Activity) param.thisObject;
