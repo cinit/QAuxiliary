@@ -77,4 +77,6 @@ public class TIMVersion {
 
     // The first NT version
     public static final long TIM_4_0_95 = 4001;
+    // 如有重复版本名 按照版本号大小排 并修改对应代码
+    public static final long TIM_4_0_98 = 4012;
 }
