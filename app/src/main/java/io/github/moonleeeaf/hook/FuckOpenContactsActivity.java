@@ -68,8 +68,9 @@ public class FuckOpenContactsActivity extends CommonSwitchFunctionHook {
 
     @Override
     public boolean initOnce() throws Exception {
+        // Lcom/tencent/mobileqq/activity/phone/PhoneMatchActivity;->doOnCreate(Landroid/os/Bundle;)Z
         Method _onCreate = Initiator.loadClass("com.tencent.mobileqq.activity.phone.PhoneMatchActivity")
-                .getDeclaredMethod("onCreate", Bundle.class);
+                .getDeclaredMethod("doOnCreate", Bundle.class);
 
         HookUtils.hookAfterIfEnabled(this, _onCreate, (param) -> {
             Activity self = (Activity) param.thisObject;
