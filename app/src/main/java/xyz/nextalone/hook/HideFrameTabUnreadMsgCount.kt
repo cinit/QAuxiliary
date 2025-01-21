@@ -53,7 +53,7 @@ object HideFrameTabUnreadMsgCount : CommonSwitchFunctionHook(arrayOf(CFrameContr
         "com.tencent.mobileqq.activity.home.impl.TabFrameControllerImpl".clazz?.method("updateRedTouch")
             ?.replace(this, null)
         DexKit.requireClassFromCache(CFrameControllerInjectImpl).let {
-            if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+            if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
                 Reflex.findSingleMethod(
                     it, Void.TYPE, false,
                     "com.tencent.mobileqq.quibadge.QUIBadge".clazz,

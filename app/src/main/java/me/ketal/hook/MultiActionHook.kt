@@ -115,7 +115,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
     }
 
     private fun hookNt() {
-        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             Initiator.loadClass("com.tencent.tim.aio.inputbar.TimMultiSelectBarVB").method("J")
         } else {
             Initiator.loadClass("com.tencent.mobileqq.aio.input.multiselect.MultiSelectBarVB").method("onCreateView")
@@ -125,7 +125,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val count = rootView.childCount
             val iconResId: Int = if (ResUtils.isInNightMode()) R.drawable.ic_recall_28dp_white else R.drawable.ic_recall_28dp_black
             if (rootView.findViewById<View?>(R.id.ketalRecallImageView) == null) {
-                if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+                if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
                     // 20241228 TIM_NT 待优化布局
                     val enableTalkBack = rootView.getChildAt(0).contentDescription != null
                     rootView.addView(
@@ -160,7 +160,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             }
         }
 
-        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             // 20241228 TIM_NT 貌似使用别的方法
             DexKit.requireClassFromCache(MultiSelectBarVM).method("L")
         } else if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) {
@@ -236,7 +236,7 @@ object MultiActionHook : CommonSwitchFunctionHook(
             val intentClass = DexKit.requireClassFromCache(MultiSelectToBottomIntent)
             val flags: Int = -114514
             val intent = intentClass.newInstance(args(flags), argTypes(Int::class.java))!!
-            baseVB.method(if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) "L1" else "sendIntent")!!.invoke(vb, intent)
+            baseVB.method(if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "L1" else "sendIntent")!!.invoke(vb, intent)
             (ctx as Activity).onBackPressed()
         }.onFailure {
             Log.e(it)

@@ -45,7 +45,7 @@ object ChannelProxyHook : CommonSwitchFunctionHook() {
         "拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率，未经测试，如无特殊情况不建议打开。"
     override val targetProcesses: Int = SyncUtils.PROC_MSF
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83) || requireMinTimVersion(TIMVersion.TIM_4_0_95)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
 
     override val isApplicationRestartRequired = true

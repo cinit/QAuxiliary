@@ -180,7 +180,7 @@ object SendPangu : CommonSwitchFunctionHook("sendMsgPangu", arrayOf(AIOTextEleme
         DexKit.requireMethodFromCache(AIOTextElementCtor)
             .hookBefore(this) {
                 val inputStrFieldName = when {
-                    requireMinTimVersion(TIMVersion.TIM_4_0_95) -> "d"
+                    requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "d"
                     requireMinQQVersion(QQVersion.QQ_9_0_56) -> "e"
                     else -> "a"
                 }

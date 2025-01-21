@@ -92,8 +92,8 @@ public class FlashPicHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws Exception {
         // 闪照SubMsgType(8194 -> 2, 12288 -> 4096)
-        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
-            if (requireMinQQVersion(QQVersion.QQ_9_0_15) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+            if (requireMinQQVersion(QQVersion.QQ_9_0_15) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
                 Class<?> AIOMsgItem = loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem");
                 HookUtils.hookAfterIfEnabled(this, AIOMsgItem.getDeclaredMethod("getMsgRecord"), param -> {
                     MsgRecord msgRecord = (MsgRecord) param.getResult();

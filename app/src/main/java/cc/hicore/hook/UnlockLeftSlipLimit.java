@@ -57,7 +57,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || HostInfo.requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || HostInfo.requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             XposedHelpers.findAndHookMethod(
                     Initiator.loadClass("com.tencent.mobileqq.ark.api.impl.ArkHelperImpl"),
                     "isSupportReply",

@@ -44,7 +44,7 @@ object TimProfileSelectable : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinTimVersion(TIMVersion.TIM_3_1_1)
 
     override fun initOnce() = throwOrTrue {
-        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             val clazz = "com.tencent.mobileqq.profilecard.ProfileCellView".clazz!!
             clazz.hookAfterAllConstructors { param ->
                 val textView = param.thisObject.get("mTvProfileContent") as TextView

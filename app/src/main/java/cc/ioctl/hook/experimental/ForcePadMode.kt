@@ -45,7 +45,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
     override val extraSearchKeywords: Array<String> = arrayOf("pad")
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY
     override val isApplicationRestartRequired = true
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_15) || requireMinTimVersion(TIMVersion.TIM_4_0_95)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_15) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
         check(isAvailable) { "ForcePadMode is not available" }
@@ -62,8 +62,8 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
         val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
         appSettingClass.getDeclaredMethod("f").hookAfter {
             val (appIdPhone, appIdPad) = Pair(
-                if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) "f" else "e",
-                if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) "g" else "f",
+                if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "f" else "e",
+                if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "g" else "f",
             )
             it.result = appSettingClass.getStaticObject(appIdPad)
         }

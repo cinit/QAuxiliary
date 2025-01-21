@@ -57,14 +57,14 @@ public class SessionUtils {
     }
 
     public static String getCurrentPeerIDByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "e" : "f").type(String.class).get();
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) ? "e" : "f").type(String.class).get();
     }
 
     public static int getCurrentChatTypeByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "d" : "e").type(int.class).get();
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) ? "d" : "e").type(int.class).get();
     }
 
     public static String getCurrentGuildIDByAIOContact(Object AIOContact) throws Exception {
-        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95) ? "f" : "g").type(String.class).get();
+        return XField.obj(AIOContact).name(requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) ? "f" : "g").type(String.class).get();
     }
 }

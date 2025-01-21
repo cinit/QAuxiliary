@@ -66,7 +66,7 @@ object AutoSendOriginalPhoto : CommonSwitchFunctionHook(
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-        if (requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             //半屏相册
             val photoPanelVB = Initiator.loadClass("com.tencent.mobileqq.aio.panel.photo.PhotoPanelVB")
             val bindViewAndDataMethod = photoPanelVB.getDeclaredMethod("Q0")

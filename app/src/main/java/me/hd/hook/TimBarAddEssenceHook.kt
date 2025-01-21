@@ -50,7 +50,7 @@ object TimBarAddEssenceHook : CommonSwitchFunctionHook(), IAIOParamUpdate {
     override val name = "TIM 群标题栏添加精华消息入口"
     override val description = "仅适配 TIM_NT"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
-    override val isAvailable = requireMinTimVersion(TIMVersion.TIM_4_0_95)
+    override val isAvailable = requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     private val Layout_Id = "TimBarAddEssenceHook".hashCode()
     private var AIOParam: Any? = null

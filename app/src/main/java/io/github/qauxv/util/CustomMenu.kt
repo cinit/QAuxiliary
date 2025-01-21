@@ -129,7 +129,7 @@ object CustomMenu {
      */
     @JvmStatic
     fun createItemIconNt(msg: Any, text: String, icon: Int, id: Int, click: () -> Unit): Any {
-        if (!requireMinQQVersion(QQVersion.QQ_9_0_0) && !requireMinTimVersion(TIMVersion.TIM_4_0_95)) return createItemNt(msg, text, id, click)
+        if (!requireMinQQVersion(QQVersion.QQ_9_0_0) && !requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) return createItemNt(msg, text, id, click)
         val msgClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
         val absMenuItem = DexKit.requireClassFromCache(AbstractQQCustomMenuItem)
         val (iconName, idName) = absMenuItem.findAllMethods { returnType == Int::class.java && parameterTypes.isEmpty() }.map { it.name }

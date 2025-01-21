@@ -126,7 +126,7 @@ object GagInfoDisclosure : CommonSwitchFunctionHook(
     }
 
     override fun initOnce(): Boolean {
-        if (requireMinQQVersion(QQVersion.QQ_9_0_73) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_73) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             hookAfterIfEnabled(DexKit.requireMethodFromCache(Hd_GagInfoDisclosure_Method)) { param ->
                 val msgInfo = param.args[1]
                 val vMsg = msgInfo.get("vMsg") as ByteArray? ?: return@hookAfterIfEnabled

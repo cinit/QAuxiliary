@@ -179,7 +179,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
                 XC_MethodHook callback = new XC_MethodHook() {
                     private ImageView img;
@@ -317,7 +317,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
 
     @Override
     public boolean isAvailable() {
-        return requireMinQQVersion(QQVersion.QQ_8_6_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95);
+        return requireMinQQVersion(QQVersion.QQ_8_6_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA);
     }
 
     private static Object AIOParam;
@@ -358,7 +358,7 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                     });
                 } else {
                     long msgUniqueId;
-                    if (requireMinQQVersion(QQVersion.QQ_9_0_30) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+                    if (requireMinQQVersion(QQVersion.QQ_9_0_30) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
                         msgUniqueId = service.generateMsgUniqueId(contact.getChatType(), QAppUtils.getServiceTime());
                     } else {
                         msgUniqueId = service.getMsgUniqueId(QAppUtils.getServiceTime());

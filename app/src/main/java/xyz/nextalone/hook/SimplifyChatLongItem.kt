@@ -80,9 +80,9 @@ object SimplifyChatLongItem : MultiItemDelayableHook("na_simplify_chat_long_item
     private var getName: Method? = null
 
     override fun initOnce() = throwOrTrue {
-        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (QAppUtils.isQQnt() || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             mutableListOf("com/tencent/qqnt/aio/menu/ui/QQCustomMenuNoIconLayout").apply {
-                if (requireMinQQVersion(QQVersion.QQ_9_0_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+                if (requireMinQQVersion(QQVersion.QQ_9_0_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
                     add(0, "com/tencent/qqnt/aio/menu/ui/QQCustomMenuExpandableLayout")
                 }
             }.firstNotNullOf { it.clazz }

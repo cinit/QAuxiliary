@@ -60,7 +60,7 @@ public class ShowAccurateGaggedTime extends CommonSwitchFunctionHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        if (requireMinQQVersion(QQVersion.QQ_9_0_75) || requireMinTimVersion(TIMVersion.TIM_4_0_95)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_0_75) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             HookUtils.hookBeforeIfEnabled(this,
                     Reflex.findMethod(Initiator.loadClass("com.tencent.qqnt.troop.impl.TroopGagUtils"), String.class,
                             "remainingTimeToStringCountDown", long.class), param -> {
