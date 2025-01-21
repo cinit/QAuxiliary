@@ -25,7 +25,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -47,16 +49,18 @@ object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_
     override fun initOnce() = throwOrTrue {
         val methodName: String
         val titleName: String
-        if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+        if (requireMinQQVersion(QQVersion.QQ_8_6_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             methodName = "conversationPlusBuild"
             titleName = "title"
         } else {
             methodName = "b"
             titleName = "a"
         }
-        "com/tencent/widget/PopupMenuDialog".clazz?.method(methodName,
+        "com/tencent/widget/PopupMenuDialog".clazz?.method(
+            methodName,
             4,
-            "com.tencent.widget.PopupMenuDialog".clazz)?.hookBefore(this) {
+            "com.tencent.widget.PopupMenuDialog".clazz
+        )?.hookBefore(this) {
             val list = (it.args[1] as List<*>).toMutableList()
             val iterator = list.iterator()
             while (iterator.hasNext()) {
@@ -69,5 +73,5 @@ object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_3_9)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_3_9) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 }
