@@ -73,10 +73,16 @@ public class TIMVersion {
     public static final long TIM_3_5_0 = 1278;
     public static final long TIM_3_5_0_2 = 1288;
     public static final long TIM_3_5_1 = 1298;
+    public static final long TIM_3_5_2 = 1308;
+    public static final long TIM_3_5_5 = 1328;
     public static final long TIM_3_5_6 = 1338;
+    public static final long TIM_3_5_7 = 1348;
+    public static final long TIM_3_5_8 = 1358;
 
     // The first NT version
-    public static final long TIM_4_0_95 = 4001;
-    // 如有重复版本名 按照版本号大小排 并修改对应代码
+    public static final long TIM_4_0_95_BETA = 4000;
+    public static final long TIM_4_0_95 = 4008;
+    public static final long TIM_4_0_96 = 4010;
+    public static final long TIM_4_0_97 = 4011;
     public static final long TIM_4_0_98 = 4012;
 }
