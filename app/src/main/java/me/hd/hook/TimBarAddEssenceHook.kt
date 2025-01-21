@@ -42,6 +42,7 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinTimVersion
+import io.github.qauxv.ui.ResUtils
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -70,14 +71,18 @@ object TimBarAddEssenceHook : CommonSwitchFunctionHook(), IAIOParamUpdate {
                     id = Layout_Id
                     text = "精"
                     textSize = 16f
-                    setTextColor(Color.BLACK)
+                    if (ResUtils.isInNightMode()) {
+                        setTextColor(Color.WHITE)
+                    } else {
+                        setTextColor(Color.BLACK)
+                    }
                     layoutParams = RelativeLayout.LayoutParams(
                         RelativeLayout.LayoutParams.WRAP_CONTENT,
                         RelativeLayout.LayoutParams.WRAP_CONTENT
                     ).apply {
                         addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                         addRule(RelativeLayout.CENTER_VERTICAL)
-                        marginEnd = XPopupUtils.dp2px(view.context, 60f)
+                        marginEnd = XPopupUtils.dp2px(view.context, 70f)
                     }
                 }
                 textView.setOnClickListener {
