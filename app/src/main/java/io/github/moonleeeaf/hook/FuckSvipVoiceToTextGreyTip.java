@@ -73,7 +73,7 @@ public class FuckSvipVoiceToTextGreyTip extends CommonSwitchFunctionHook {
                 .getDeclaredMethod("addSVipLocalGrayTip", String.class, int.class);
 
         HookUtils.hookBeforeIfEnabled(this, mMethod, (param) -> {
-            param.setResult(null)
+            param.setResult(null);
         });
         return true;
     }
