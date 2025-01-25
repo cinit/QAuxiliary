@@ -25,7 +25,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.*
 
@@ -37,10 +39,10 @@ object SimplifyContactTabs : MultiItemDelayableHook("na_simplify_contact_tabs_mu
     override val allItems = setOf("好友", "分组", "群聊", "设备", "通讯录", "订阅号", "推荐", "频道", "机器人")
     override val defaultItems = setOf<String>()
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_CONTACT
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_5)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
-        val nameContactsTabs = if (requireMinQQVersion(QQVersion.QQ_8_9_2)) "b" else "ContactsTabs"
+        val nameContactsTabs = if (requireMinQQVersion(QQVersion.QQ_8_9_2) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "b" else "ContactsTabs"
         "Lcom.tencent.mobileqq.activity.contacts.base.tabs.$nameContactsTabs;->a()V".method.hookAfter(this) {
 
             val listTabId: ArrayList<Int> = arrayListOf()
