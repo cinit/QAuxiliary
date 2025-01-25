@@ -36,7 +36,7 @@ object HideGroupAssistantBanner : CommonSwitchFunctionHook() {
 
     override val name = "隐藏群助手顶部Banner提示"
 
-    override val description = "隐藏群助手顶部'收进群助手且不提醒'的Banner"
+    override val description = "隐藏群助手顶部 '以下为\"收进群助手且不提醒\"的群消息：' 的提示"
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER
 
