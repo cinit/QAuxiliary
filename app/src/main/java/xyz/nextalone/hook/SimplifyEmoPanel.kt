@@ -25,7 +25,9 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -57,16 +59,14 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
     override val enableCustom = false
 
     override fun initOnce() = throwOrTrue {
-        val clazz = "com.tencent.mobileqq.emoticonview.BasePanelView".clazz
-            ?: "com.tencent.mobileqq.emoticonview.EmoticonPanelController".clazz
-        val m = clazz?.method("initTabView")
-        m?.hookBefore(this) {
-            val mutableList: MutableList<*> =
-                if ("com.tencent.mobileqq.emoticonview.BasePanelModel".clazz != null) {
-                    it.thisObject.get("mPanelController").get("mBasePanelModel").get("panelDataList") as MutableList<*>
-                } else {
-                    it.thisObject.get("panelDataList") as MutableList<*>
-                }
+        val clazz = "com.tencent.mobileqq.emoticonview.BasePanelView".clazz ?: "com.tencent.mobileqq.emoticonview.EmoticonPanelController".clazz
+        val method = clazz?.method("initTabView")
+        method?.hookBefore(this) {
+            val mutableList = if ("com.tencent.mobileqq.emoticonview.BasePanelModel".clazz != null) {
+                it.thisObject.get("mPanelController").get("mBasePanelModel").get("panelDataList")
+            } else {
+                it.thisObject.get("panelDataList")
+            } as MutableList<*>
             mutableList.removeAll { item ->
                 if (item == null) return@removeAll false
                 val i = item.javaClass.getDeclaredField("type").get(item) as Int
@@ -85,5 +85,5 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 }
