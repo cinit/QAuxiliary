@@ -42,7 +42,7 @@ object ChannelProxyHook : CommonSwitchFunctionHook() {
 
     override val name = "环境检测包(trpc.o3.*)拦截"
     override val description =
-        "拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率，未经测试，如无特殊情况不建议打开。"
+        "此为开发调试功能，普通用户请不要启用\n拦截 trpc.o3.* 包体以防止 QQ 上报环境检测(其中包含 root/Magisk/Xposed 安装情况)，理论上降低新号封号概率\n警告：请勿在 QQ v9.1.30 (8538) 及更高版本上启用此功能，否则可能导致您的 QQ 账号异常下线甚至冻结。"
     override val targetProcesses: Int = SyncUtils.PROC_MSF
 
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_83) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
