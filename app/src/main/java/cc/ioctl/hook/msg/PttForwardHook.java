@@ -28,10 +28,10 @@ import static cc.ioctl.util.LayoutHelper.dip2sp;
 import static cc.ioctl.util.LayoutHelper.newLinearLayoutParams;
 import static cc.ioctl.util.Reflex.findField;
 import static cc.ioctl.util.Reflex.getFirstByType;
-import static io.github.qauxv.util.xpcompat.XposedHelpers.findAndHookMethod;
 import static io.github.qauxv.bridge.AppRuntimeHelper.getQQAppInterface;
 import static io.github.qauxv.util.Initiator._PttItemBuilder;
 import static io.github.qauxv.util.Initiator.load;
+import static io.github.qauxv.util.xpcompat.XposedHelpers.findAndHookMethod;
 
 import android.annotation.SuppressLint;
 import android.app.Activity;
@@ -60,12 +60,9 @@ import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.PttElement;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.bridge.AppRuntimeHelper;
 import io.github.qauxv.bridge.ChatActivityFacade;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.bridge.SessionInfoImpl;
@@ -84,6 +81,8 @@ import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.CDialogUtil;
 import io.github.qauxv.util.dexkit.CFaceDe;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
@@ -452,9 +451,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
                 }
             }
             PttElement element = (PttElement) getElement.invoke(msg);
-            String filename = element.getFileName();
-            String filePath = cc.ioctl.util.HostInfo.getApplication().getExternalFilesDir(null).getParent() +
-                    "/Tencent/MobileQQ/" + AppRuntimeHelper.getAccount() + "/ptt/" + filename;
+            String filePath = element.getFilePath();
             return new File(filePath);
         } catch (Throwable e) {
             traceError(e);
