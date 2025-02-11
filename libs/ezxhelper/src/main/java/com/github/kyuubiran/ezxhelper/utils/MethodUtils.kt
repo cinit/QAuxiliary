@@ -3,7 +3,6 @@ package com.github.kyuubiran.ezxhelper.utils
 import com.github.kyuubiran.ezxhelper.init.InitFields
 import io.github.qauxv.util.xpcompat.XposedHelpers
 import java.lang.reflect.Constructor
-import java.lang.reflect.Field
 import java.lang.reflect.Method
 
 @JvmInline
@@ -35,7 +34,7 @@ fun Any.method(
     argTypes: ArgTypes = argTypes()
 ): Method {
     if (methodName.isBlank()) throw IllegalArgumentException("Method name must not be empty!")
-    var c = if (this is Class<*>) this else this.javaClass
+    var c = if (this is Class<*>) this else this::class.java
     do {
         c.declaredMethods.toList().asSequence()
             .filter { it.name == methodName }
@@ -513,7 +512,10 @@ fun findAllMethods(
  * @return 方法的返回值
  * @throws NoSuchMethodException 未找到方法
  */
-fun Any.invokeMethod(vararg args: Any?, condition: MethodCondition): Any? {
+fun Any.invokeMethod(
+    vararg args: Any?,
+    condition: MethodCondition
+): Any? {
     this::class.java.declaredMethods.firstOrNull { it.condition() }
         ?.let { it.isAccessible = true;return it(this, *args) }
     throw NoSuchMethodException()
@@ -530,8 +532,8 @@ fun Class<*>.invokeStaticMethod(
     vararg args: Any?,
     condition: MethodCondition
 ): Any? {
-    this::class.java.declaredMethods.firstOrNull { it.isStatic && it.condition() }
-        ?.let { it.isAccessible = true;return it(this, *args) }
+    this.declaredMethods.firstOrNull { it.isStatic && it.condition() }
+        ?.let { it.isAccessible = true;return it.invoke(null, *args) }
     throw NoSuchMethodException()
 }
 
@@ -555,18 +557,8 @@ fun Any.invokeMethod(
 ): Any? {
     if (methodName.isBlank()) throw IllegalArgumentException("Object name must not be empty!")
     if (args.args.size != argTypes.argTypes.size) throw IllegalArgumentException("Method args size must equals argTypes size!")
-    return if (args.args.isEmpty()) {
-        try {
-            this.method(methodName, returnType, false)
-        } catch (e: NoSuchMethodException) {
-            return null
-        }.invoke(this)
-    } else {
-        try {
-            this.method(methodName, returnType, false, argTypes = argTypes)
-        } catch (e: NoSuchMethodException) {
-            return null
-        }.invoke(this, *args.args)
+    return tryOrNull {
+        this.method(methodName, returnType, false, argTypes).invoke(this, *args.args)
     }
 }
 
@@ -634,18 +626,8 @@ fun Class<*>.invokeStaticMethod(
     returnType: Class<*>? = null
 ): Any? {
     if (args.args.size != argTypes.argTypes.size) throw IllegalArgumentException("Method args size must equals argTypes size!")
-    return if (args.args.isEmpty()) {
-        try {
-            this.method(methodName, returnType, true)
-        } catch (e: NoSuchMethodException) {
-            return null
-        }.invoke(this)
-    } else {
-        try {
-            this.method(methodName, returnType, true, argTypes = argTypes)
-        } catch (e: NoSuchMethodException) {
-            return null
-        }.invoke(this, *args.args)
+    return tryOrNull {
+        this.method(methodName, returnType, true, argTypes).invoke(null, *args.args)
     }
 }
 
@@ -702,17 +684,9 @@ fun Class<*>.newInstance(
 ): Any? {
     if (args.args.size != argTypes.argTypes.size) throw IllegalArgumentException("Method args size must equals argTypes size!")
     return tryOrLogNull {
-        val constructor: Constructor<*> =
-            if (argTypes.argTypes.isNotEmpty())
-                this.getDeclaredConstructor(*argTypes.argTypes)
-            else
-                this.getDeclaredConstructor()
-        constructor.isAccessible = true
-
-        if (args.args.isEmpty())
-            constructor.newInstance()
-        else
-            constructor.newInstance(*args.args)
+        this.getDeclaredConstructor(*argTypes.argTypes).apply {
+            isAccessible = true
+        }.newInstance(*args.args)
     }
 }
 
@@ -735,7 +709,10 @@ fun <T> Class<*>.newInstanceAs(
  * @param args 形参表
  */
 @Suppress("UNCHECKED_CAST")
-fun <T> Method.invokeAs(obj: Any?, vararg args: Any?): T? = this.run {
+fun <T> Method.invokeAs(
+    obj: Any?,
+    vararg args: Any?
+): T? = this.run {
     isAccessible = true
     invoke(obj, *args) as T?
 }
