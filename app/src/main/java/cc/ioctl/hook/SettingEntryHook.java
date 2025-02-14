@@ -117,10 +117,12 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     "com.tencent.mobileqq.setting.processor.g",
                     // 9.0.8+
                     "com.tencent.mobileqq.setting.processor.h",
+                    // 9.1.50 (9006)
+                    "com.tencent.mobileqq.setting.processor.i",
                     // QQ 9.1.28.21880 (8398) gray
                     "as3.i",
             };
-            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(4);
+            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(5);
             for (String name : possibleSimpleItemProcessorNames) {
                 Class<?> klass = Initiator.load(name);
                 if (klass != null && klass.getSuperclass() == kAbstractItemProcessor) {
