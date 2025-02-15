@@ -27,7 +27,6 @@ import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.step.Step
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.SyncUtils
-import java.util.Arrays
 
 abstract class BaseComponentHook : ITraceableDynamicHook {
 
@@ -84,15 +83,20 @@ abstract class BaseComponentHook : ITraceableDynamicHook {
             // do nothing, because a component is lazy initialized on demand
         }
 
+    @Synchronized
     override fun traceError(e: Throwable) {
         // check if there is already an error with the same error message and stack trace
         var alreadyLogged = false
         for (error in mErrors) {
-            if (error.message == e.message && Arrays.equals(error.stackTrace, e.stackTrace)) {
+            if (error.message == e.message && Log.getStackTraceString(error) == Log.getStackTraceString(e)) {
                 alreadyLogged = true
             }
         }
         if (!alreadyLogged) {
+            // limit the number of errors to 100
+            if (mErrors.size >= 100) {
+                mErrors.removeAt(50)
+            }
             mErrors.add(e)
         }
         Log.e(e)
