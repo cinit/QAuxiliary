@@ -148,7 +148,8 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             DexKit.requireMethodFromCache(Multiforward_Avatar_setListener_NT).hookBefore { param ->
                 var layout: RelativeLayout?
                 clz.declaredFields.single {//Lazy avatarContainer
-                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_0_90)) "h"
+                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "i"
+                    else if (requireMinQQVersion(QQVersion.QQ_9_0_90)) "h"
                     else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "i"
                     else "h"
                 }.let {
