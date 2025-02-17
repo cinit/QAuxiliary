@@ -87,6 +87,11 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 
             // 隐藏会话(右上角+悬浮消息列表)
             val (floatViewManagerClass, msgUnreadCallbackClass) = when {
+                requireMinQQVersion(QQVersion.QQ_9_1_50) -> Pair(// 9.1.50+
+                    "com.tencent.mobileqq.activity.miniaio.e",
+                    "com.tencent.mobileqq.activity.miniaio.d"
+                )
+
                 requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.10
                     "com.tencent.mobileqq.activity.miniaio.i",
                     "com.tencent.mobileqq.activity.miniaio.h"
