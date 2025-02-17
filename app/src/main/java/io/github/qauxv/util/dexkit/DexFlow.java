@@ -23,8 +23,10 @@ package io.github.qauxv.util.dexkit;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.NonUiThread;
+import io.github.qauxv.util.QQVersion;
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Locale;
@@ -233,7 +235,11 @@ public class DexFlow {
         int insnsSize = readLe16(buf, dexCodeOffset + 12);
         int insnsOff = dexCodeOffset + 16;
         // we only handle const and invoke-virtual Landroid/widget/TextView;->setId(I)V
+        // on 9.1.50+, it called Landroid/view/View;->setId(I)V
         String targetMethodDesc = "Landroid/widget/TextView;->setId(I)V";
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)){
+            targetMethodDesc = "Landroid/view/View;->setId(I)V";
+        }
         Integer[] regObjType = new Integer[registersSize];
         ArrayList<Integer> results = new ArrayList<>();
         int pc = 0; // program counter
