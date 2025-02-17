@@ -44,7 +44,11 @@ object DisableReactionLimit : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_8)
     override fun initOnce() = throwOrTrue {
         // keyword string: AIOEmoReplyUtils
-        "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/c/a;->c()J".method.hookReturnConstant(0L)
+        if (!requireMinQQVersion(QQVersion.QQ_9_1_50)){
+            "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/c/a;->c()J".method.hookReturnConstant(0L)
+        } else {
+            "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/utils/a;->c()J".method.hookReturnConstant(0L)
+        }
         "Lcom/tencent/mobileqq/guild/emoj/api/impl/QQGuildEmojiApiImpl;->getFilterEmojiData()Ljava/util/List;".method.hookReturnConstant(null)
         "Lcom/tencent/mobileqq/guild/emoj/api/impl/QQGuildEmojiApiImpl;->getFilterSysData()Ljava/util/List;".method.hookReturnConstant(null)
     }
