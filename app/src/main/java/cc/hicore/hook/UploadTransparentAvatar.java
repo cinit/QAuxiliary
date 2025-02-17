@@ -86,6 +86,9 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
         });
         var methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "i" : "a";
         var clazzName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0) ? "com.tencent.mobileqq.pic.compress.e" : "com.tencent.mobileqq.pic.compress.Utils";
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)){
+            clazzName = "com.tencent.mobileqq.pic.compress.g";
+        }
         Method hookMethod = Reflex.findMethod(Initiator.loadClass(clazzName),
                 boolean.class, methodName, String.class, Bitmap.class, int.class, String.class,
                 Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));
