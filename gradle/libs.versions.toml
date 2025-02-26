@@ -1,5 +1,5 @@
 [versions]
-agp = "8.8.1"
+agp = "8.8.2"
 appCenter = "5.0.6"
 kotlin = "2.1.10"
 ksp = "2.1.10-1.0.30"
@@ -14,14 +14,14 @@ appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", vers
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
 androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
-androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.0" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.15.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.1.0.202411261347-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.0.0" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.1.0" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
@@ -53,6 +53,6 @@ changelog = { id = "org.jetbrains.changelog", version = "2.2.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.6.0" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.6.3" }
 protobuf = { id = "com.google.protobuf", version = "0.9.4" }
 android-library = { id = "com.android.library", version.ref = "agp" }
