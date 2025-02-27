@@ -148,10 +148,12 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
             DexKit.requireMethodFromCache(Multiforward_Avatar_setListener_NT).hookBefore { param ->
                 var layout: RelativeLayout?
                 clz.declaredFields.single {//Lazy avatarContainer
-                    it.name == if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "i"
-                    else if (requireMinQQVersion(QQVersion.QQ_9_0_90)) "h"
-                    else if (requireMinQQVersion(QQVersion.QQ_9_0_65)) "i"
-                    else "h"
+                    it.name == when {
+                        requireMinQQVersion(QQVersion.QQ_9_1_50) -> "i"
+                        requireMinQQVersion(QQVersion.QQ_9_0_90) -> "h"
+                        requireMinQQVersion(QQVersion.QQ_9_0_65) -> "i"
+                        else -> "h"
+                    }
                 }.let {
                     it.isAccessible = true  //Lazy
                     layout = (it.get(param.thisObject))!!.invoke("getValue") as RelativeLayout

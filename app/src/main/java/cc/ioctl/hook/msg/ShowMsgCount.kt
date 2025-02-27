@@ -92,7 +92,7 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                     "com.tencent.mobileqq.activity.miniaio.d"
                 )
 
-                requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.10
+                requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.30
                     "com.tencent.mobileqq.activity.miniaio.i",
                     "com.tencent.mobileqq.activity.miniaio.h"
                 )
