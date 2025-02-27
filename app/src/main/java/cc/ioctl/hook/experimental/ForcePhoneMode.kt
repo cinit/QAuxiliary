@@ -52,8 +52,16 @@ object ForcePhoneMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY
         val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
         appSettingClass.getDeclaredMethod("f").hookAfter {
             val (appIdPhone, appIdPad) = Pair(
-                if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "f" else "e",
-                if (requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) "g" else "f",
+                when {
+                    requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "f"
+                    requireMinTimVersion(QQVersion.QQ_9_1_50) -> "f"
+                    else -> "e"
+                },
+                when {
+                    requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "g"
+                    requireMinTimVersion(QQVersion.QQ_9_1_50) -> "g"
+                    else -> "f"
+                },
             )
             it.result = appSettingClass.getStaticObject(appIdPhone)
         }
