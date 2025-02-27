@@ -105,6 +105,7 @@ set_target_properties(qauxv-core0 PROPERTIES
 
 target_include_directories(qauxv-core0 PRIVATE ../../../../libs/linux-syscall-support)
 target_include_directories(qauxv-core0 PRIVATE ../../../../libs/LSPlant/lsplant/src/main/jni)
+target_include_directories(qauxv-core0 PRIVATE ../../../../libs/mmkv/MMKV/Core)
 target_include_directories(qauxv-core0 PRIVATE .)
 
 target_compile_definitions(qauxv-core0 PRIVATE QAUXV_VERSION=\"${QAUXV_VERSION}\")
