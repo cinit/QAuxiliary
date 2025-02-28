@@ -41,11 +41,9 @@ import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.LoaderExtensionHelper;
 import io.github.qauxv.util.Log;
-import io.github.qauxv.util.Natives;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOError;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Field;
@@ -296,6 +294,8 @@ public class NativeLoader {
     private static volatile boolean sSecondaryNativeLibraryLoaded = false;
     private static volatile boolean sSecondaryNativeLibraryInitialized = false;
     private static volatile Set<Integer> sModuleSupportedIsas = null;
+    private static volatile long sPrimaryNativeLibraryHandle = 0;
+    private static volatile long sSecondaryNativeLibraryHandle = 0;
 
     public static Set<Integer> getModuleSupportedIsas() {
         if (sModuleSupportedIsas == null) {
@@ -337,6 +337,10 @@ public class NativeLoader {
                 Class.forName("io.github.qauxv.isolated.soloader.LoadLibraryInvoker", false, NativeLoader.class.getClassLoader())
                         .getMethod("invokeAttachClassLoader", ClassLoader.class)
                         .invoke(null, NativeLoader.class.getClassLoader());
+                sPrimaryNativeLibraryHandle = nativeGetPrimaryNativeLibraryHandle();
+                if (sPrimaryNativeLibraryHandle == 0) {
+                    throw new AssertionError("nativeGetPrimaryNativeLibraryHandle returned 0");
+                }
                 sPrimaryNativeLibraryAttached = true;
             } catch (ReflectiveOperationException e) {
                 // should not happen
@@ -369,7 +373,10 @@ public class NativeLoader {
         String zipEntry = "lib/" + getNativeLibraryDirName(appIsa) + "/libqauxv-core0.so";
         ClassLoader classLoader = getIsolatedSecondaryNativeLibraryNativeLoader(context);
         // the native loader will then patch the "libqauxv-core0.so" to "libqauxv-core1.so" before loading
-        nativeLoadSecondaryNativeLibrary(modulePath, zipEntry, classLoader, appIsa);
+        sSecondaryNativeLibraryHandle = nativeLoadSecondaryNativeLibrary(modulePath, zipEntry, classLoader, appIsa);
+        if (sSecondaryNativeLibraryHandle == 0) {
+            throw new AssertionError("nativeLoadSecondaryNativeLibrary returned 0");
+        }
         sSecondaryNativeLibraryLoaded = true;
     }
 
@@ -391,6 +398,10 @@ public class NativeLoader {
         String dataDir = context.getDataDir().getAbsolutePath();
         boolean isDebugBuild = BuildConfig.DEBUG;
         nativeSecondaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode, isDebugBuild);
+        sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle;
+        if (sSecondaryNativeLibraryHandle == 0) {
+            throw new AssertionError("(sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle) == 0");
+        }
         sSecondaryNativeLibraryInitialized = true;
     }
 
@@ -475,6 +486,10 @@ public class NativeLoader {
         try {
             invokeAttach.invoke(null, self);
             sPrimaryNativeLibraryAttached = true;
+            sPrimaryNativeLibraryHandle = nativeGetPrimaryNativeLibraryHandle();
+            if (sPrimaryNativeLibraryHandle == 0) {
+                throw new AssertionError("nativeGetPrimaryNativeLibraryHandle returned 0");
+            }
         } catch (InvocationTargetException e) {
             Throwable cause = e.getTargetException();
             Log.w("Failed to attach primary native library", cause);
@@ -560,7 +575,7 @@ public class NativeLoader {
     private static native void nativePrimaryNativeLibraryFullInit(int initMode, @NonNull String dataDir,
             String packageName, int currentSdkLevel, String versionName, long longVersionCode, boolean isDebugBuild);
 
-    private static native void nativeLoadSecondaryNativeLibrary(@NonNull String modulePath, @NonNull String entryPath,
+    private static native long nativeLoadSecondaryNativeLibrary(@NonNull String modulePath, @NonNull String entryPath,
             @NonNull ClassLoader classLoader, int isa);
 
     private static native void nativeSecondaryNativeLibraryFullInit(int initMode, @NonNull String dataDir,
@@ -569,6 +584,16 @@ public class NativeLoader {
     public static native int getPrimaryNativeLibraryIsa();
 
     public static native int getSecondaryNativeLibraryIsa();
+
+    private static native long nativeGetPrimaryNativeLibraryHandle();
+
+    public static long getPrimaryNativeLibraryHandle() {
+        return sPrimaryNativeLibraryHandle;
+    }
+
+    public static long getSecondaryNativeLibraryHandle() {
+        return sSecondaryNativeLibraryHandle;
+    }
 
     public static boolean isSecondaryNativeLibraryNeeded(@NonNull Context context) {
         Objects.requireNonNull(context);

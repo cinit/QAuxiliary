@@ -310,7 +310,7 @@ std::string GetShortyFromSignature(std::string_view signature) {
 // private static native void nativeLoadSecondaryNativeLibrary(@NonNull String modulePath, @NonNull String entryPath,
 //      @NonNull ClassLoader classLoader, int isa);
 extern "C"
-JNIEXPORT void JNICALL
+JNIEXPORT jlong JNICALL
 Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
         (JNIEnv* env, jclass clazz, jstring module_path_j, jstring entry_path_l, jobject native_loader, jint isa) {
     using namespace qauxv;
@@ -319,26 +319,26 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     auto entryPath = JstringToString(env, entry_path_l).value_or("");
     if (modulePath.empty() || entryPath.empty()) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalArgumentException, "modulePath or entryPath is empty");
-        return;
+        return 0;
     }
     if (native_loader == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kNullPointerException, "class_loader is null");
-        return;
+        return 0;
     }
     // check file existence
     if (access(modulePath.c_str(), F_OK) != 0) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalArgumentException, fmt::format("modulePath {} not exists", modulePath));
-        return;
+        return 0;
     }
     auto libnativeloader = GetModuleSymbolResolver("libnativeloader.so");
     if (libnativeloader == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "libnativeloader.so not found");
-        return;
+        return 0;
     }
     auto libnativebridge = GetModuleSymbolResolver("libnativebridge.so");
     if (libnativebridge == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "libnativebridge.so not found");
-        return;
+        return 0;
     }
     // Android 10-14 / SDK 29-34
     //  void* OpenNativeLibrary(
@@ -370,7 +370,7 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     );
     if (OpenNativeLibrary29 == nullptr && OpenNativeLibrary28 == nullptr && OpenNativeLibrary24 == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "OpenNativeLibrary not found");
-        return;
+        return 0;
     }
     // Android 10-14 / SDK 29-34
     auto NativeBridgeGetTrampoline =
@@ -383,7 +383,7 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     }
     if (NativeBridgeGetTrampoline == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kIllegalStateException, "NativeBridgeGetTrampoline not found");
-        return;
+        return 0;
     }
     std::string path = modulePath + "!/" + entryPath;
     bool needsNativeBridge = false;
@@ -415,13 +415,13 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     if (lib == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException,
                                   fmt::format("OpenNativeLibrary failed: {}", errorMsg));
-        return;
+        return 0;
     }
     auto sym = "Java_io_github_qauxv_isolated_soloader_LoadLibraryInvoker_nativeSecondaryNativeLibraryAttachClassLoader";
     void* fn = NativeBridgeGetTrampoline(lib, sym, "JLL", 0);
     if (fn == nullptr) {
         ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException, "NativeBridgeGetTrampoline failed");
-        return;
+        return 0;
     }
     using func_t2 = jint (*)(JNIEnv*, jclass, jobject, jlongArray);
     auto func2 = reinterpret_cast<func_t2>(fn);
@@ -435,13 +435,14 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
     auto ret = func2(env, clazz, sModuleMainClassLoader, input);
     // check if any exception occurred
     if (env->ExceptionCheck()) {
-        return; // with exception
+        return 0; // with exception
     }
     if (ret < 0) {
         ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException,
                                   fmt::format("nativeSecondaryNativeLibraryAttachClassLoader failed with code {}", ret));
-        return;
+        return 0;
     }
+    return static_cast<jlong>(ret);
 }
 
 // private static native void nativePrimaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent);
@@ -479,12 +480,34 @@ Java_io_github_qauxv_isolated_soloader_LoadLibraryInvoker_nativePrimaryNativeLib
     }
 }
 
+extern "C"
+JNIEXPORT jlong JNICALL
+Java_io_github_qauxv_util_soloader_NativeLoader_nativeGetPrimaryNativeLibraryHandle(JNIEnv* env, jclass clazz) {
+    using namespace qauxv;
+    static std::string errorMsg;
+    static void* handle = nullptr;
+    static std::once_flag flag;
+    const char* soname = "libqauxv-core0.so";
+    std::call_once(flag, [&]() {
+        handle = dlopen(soname, RTLD_NOW | RTLD_NOLOAD);
+        if (handle == nullptr) {
+            errorMsg = dlerror();
+        }
+    });
+    if (handle == nullptr) {
+        ThrowIfNoPendingException(env, ExceptionNames::kRuntimeException, fmt::format("dlopen failed: {}", errorMsg));
+        return 0;
+    }
+    return reinterpret_cast<jlong>(handle);
+}
+
 //@formatter:off
 static JNINativeMethod gPrimaryPreInitMethods[] = {
         {"nativePrimaryNativeLibraryPreInit", "(Ljava/lang/String;Z)V", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_nativePrimaryNativeLibraryPreInit},
         {"nativePrimaryNativeLibraryFullInit", "(ILjava/lang/String;Ljava/lang/String;ILjava/lang/String;JZ)V", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_nativePrimaryNativeLibraryFullInit},
         {"getPrimaryNativeLibraryIsa", "()I", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_getPrimaryNativeLibraryIsa},
-        {"nativeLoadSecondaryNativeLibrary", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;I)V", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary},
+        {"nativeLoadSecondaryNativeLibrary", "(Ljava/lang/String;Ljava/lang/String;Ljava/lang/ClassLoader;I)J", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary},
+        {"nativeGetPrimaryNativeLibraryHandle", "()J", (void*) Java_io_github_qauxv_util_soloader_NativeLoader_nativeGetPrimaryNativeLibraryHandle},
 };
 //@formatter:on
 REGISTER_PRIMARY_PRE_INIT_NATIVE_METHODS("io/github/qauxv/util/soloader/NativeLoader", gPrimaryPreInitMethods);
