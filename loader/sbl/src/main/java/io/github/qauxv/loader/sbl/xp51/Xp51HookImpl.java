@@ -35,6 +35,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 public class Xp51HookImpl implements IHookBridge, ILoaderService {
 
@@ -78,6 +80,8 @@ public class Xp51HookImpl implements IHookBridge, ILoaderService {
         if (unhook == null) {
             throw new UnsupportedOperationException("XposedBridge.hookMethod return null for member: " + member);
         }
+        // add to hooked methods set
+        Xp51HookWrapper.getHookedMethodsRaw().add(member);
         return new Xp51HookWrapper.Xp51UnhookHandle(unhook, member, cb);
     }
 
@@ -174,4 +178,9 @@ public class Xp51HookImpl implements IHookBridge, ILoaderService {
         return Xp51HookWrapper.getHookCounter();
     }
 
+    @Override
+    public Set<Member> getHookedMethods() {
+        // return a read-only set
+        return Collections.unmodifiableSet(Xp51HookWrapper.getHookedMethodsRaw());
+    }
 }

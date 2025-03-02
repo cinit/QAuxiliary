@@ -35,8 +35,10 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -134,10 +136,17 @@ public class LsplantHookImpl {
         public long getHookCounter() {
             return sHookCounter.get() - 1;
         }
+
+        @Override
+        public Set<Member> getHookedMethods() {
+            // return a read-only set
+            return Collections.unmodifiableSet(sHookedMethods);
+        }
     }
 
     private static Member sCallbackMethod;
     private static AtomicLong sHookCounter = new AtomicLong(0);
+    private static final Set<Member> sHookedMethods = ConcurrentHashMap.newKeySet();
 
     private static synchronized void initializeLsplantInternal() {
         if (isInitialized) {
@@ -318,6 +327,8 @@ public class LsplantHookImpl {
                 token.setBackupMember(backup);
                 // add token to holder
                 holder.token = token;
+                // add to hooked methods set
+                sHookedMethods.add(member);
             }
             // step 2. add callback to list, descending order by priority
             int newSize = holder.callbacks.length + 1;

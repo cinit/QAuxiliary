@@ -34,6 +34,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
@@ -47,6 +48,7 @@ public class Lsp100HookWrapper {
     private static final CallbackWrapper[] EMPTY_CALLBACKS = new CallbackWrapper[0];
 
     private static final AtomicLong sNextHookId = new AtomicLong(1);
+    private static final Set<Member> sHookedMethods = ConcurrentHashMap.newKeySet();
 
     private static final Object sRegistryWriteLock = new Object();
 
@@ -130,6 +132,8 @@ public class Lsp100HookWrapper {
                 CallbackListHolder newHolder = new CallbackListHolder();
                 callbackList.put(method, newHolder);
                 holder = newHolder;
+                // add to hooked methods set
+                sHookedMethods.add(method);
             }
         }
         // 4. add the callback to the holder
@@ -459,6 +463,10 @@ public class Lsp100HookWrapper {
 
     public static int getHookCounter() {
         return (int) (sNextHookId.get() - 1);
+    }
+
+    public static Set<Member> getHookedMethodsRaw() {
+        return sHookedMethods;
     }
 
 }

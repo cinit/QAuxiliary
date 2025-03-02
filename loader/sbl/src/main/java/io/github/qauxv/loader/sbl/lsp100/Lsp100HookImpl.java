@@ -35,6 +35,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Collections;
+import java.util.Set;
 
 public class Lsp100HookImpl implements IHookBridge, ILoaderService {
 
@@ -175,6 +177,12 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderService {
     @Override
     public long getHookCounter() {
         return Lsp100HookWrapper.getHookCounter();
+    }
+
+    @Override
+    public Set<Member> getHookedMethods() {
+        // return a read-only set
+        return Collections.unmodifiableSet(Lsp100HookWrapper.getHookedMethodsRaw());
     }
 
 }

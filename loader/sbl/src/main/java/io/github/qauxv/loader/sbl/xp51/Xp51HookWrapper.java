@@ -27,11 +27,14 @@ import androidx.annotation.Nullable;
 import de.robv.android.xposed.XC_MethodHook;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import java.lang.reflect.Member;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 public class Xp51HookWrapper {
 
     private static final AtomicLong sNextHookId = new AtomicLong(1);
+    private static final Set<Member> sHookedMethods = ConcurrentHashMap.newKeySet();
     private static final String TAG_PREFIX = "qauxv_hcb_";
 
     public static class Xp51HookParam implements IHookBridge.IMemberHookParam {
@@ -186,6 +189,11 @@ public class Xp51HookWrapper {
 
     public static int getHookCounter() {
         return (int) (sNextHookId.get() - 1);
+    }
+
+    @NonNull
+    public static Set<Member> getHookedMethodsRaw() {
+        return sHookedMethods;
     }
 
 }

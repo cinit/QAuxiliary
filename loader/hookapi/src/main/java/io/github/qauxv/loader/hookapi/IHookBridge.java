@@ -8,6 +8,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Method;
+import java.util.Set;
 
 @Keep
 public interface IHookBridge {
@@ -250,5 +251,14 @@ public interface IHookBridge {
      * @return The hook counter, or -1 if not supported
      */
     long getHookCounter();
+
+    /**
+     * Get the hooked methods. Caller should not modify the returned set.
+     * <p>
+     * Hooked methods are methods that have been hooked by this module. This method is useful for debugging and logging purposes.
+     *
+     * @return The hooked methods
+     */
+    Set<Member> getHookedMethods();
 
 }
