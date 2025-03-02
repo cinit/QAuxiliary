@@ -24,6 +24,7 @@ package io.github.qauxv.util.dexkit;
 import androidx.annotation.NonNull;
 import java.io.Serializable;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Member;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.ArrayList;
@@ -249,4 +250,14 @@ public class DexMethodDescriptor implements Serializable {
         return list;
     }
 
+    @NonNull
+    public static DexMethodDescriptor forReflectedMethod(@NonNull Member method) {
+        if (method instanceof Method) {
+            return new DexMethodDescriptor((Method) method);
+        } else if (method instanceof Constructor) {
+            return new DexMethodDescriptor((Constructor<?>) method);
+        } else {
+            throw new IllegalArgumentException("Not a method or constructor: " + method);
+        }
+    }
 }

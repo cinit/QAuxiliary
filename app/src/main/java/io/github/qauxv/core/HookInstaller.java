@@ -27,17 +27,18 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import cc.ioctl.hook.SettingEntryHook;
 import cc.ioctl.util.HostInfo;
-import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.BuildConfig;
-import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.base.RuntimeErrorTracer;
 import io.github.qauxv.step.Step;
 import io.github.qauxv.ui.CustomDialog;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.DexDeobfsBackend;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.libart.OatInlineDeoptManager;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 
 public class HookInstaller {
 
@@ -141,16 +142,6 @@ public class HookInstaller {
                     }
                 }
             }
-        } catch (Throwable stepErr) {
-            if (hook instanceof RuntimeErrorTracer) {
-                ((RuntimeErrorTracer) hook).traceError(stepErr);
-            }
-            err = stepErr;
-            isSuccessful = false;
-        } finally {
-            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
-        }
-        if (isSuccessful) {
             if (hook.isTargetProcess()) {
                 boolean success = false;
                 try {
@@ -160,9 +151,19 @@ public class HookInstaller {
                 }
                 if (!success) {
                     SyncUtils.runOnUiThread(() -> Toasts.error(context, "初始化失败"));
+                } else {
+                    OatInlineDeoptManager.getInstance().updateDeoptListForCurrentProcess();
+                    OatInlineDeoptManager.performOatDeoptimizationForCache();
                 }
             }
             SyncUtils.requestInitHook(HookInstaller.getHookIndex(hook), hook.getTargetProcesses());
+        } catch (Throwable stepErr) {
+            if (hook instanceof RuntimeErrorTracer) {
+                ((RuntimeErrorTracer) hook).traceError(stepErr);
+            }
+            err = stepErr;
+        } finally {
+            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
         }
         if (err != null) {
             Throwable finalErr = err;

@@ -929,6 +929,21 @@ Java_io_github_qauxv_util_Natives_invokeNonVirtualArtMethodImpl(JNIEnv* env,
     return transformArgumentsAndInvokeNonVirtual(env, methodId, klass, paramShorts, returnTypeShort, is_static, obj, args);
 }
 
+extern "C"
+JNIEXPORT jobject JNICALL
+Java_io_github_qauxv_util_Natives_getReflectedMethod(JNIEnv* env, jclass clazz, jclass cls, jstring name, jstring sig, jboolean is_static) {
+    throwIfNull(env, cls, "cls is null");
+    throwIfNull(env, name, "name is null");
+    throwIfNull(env, sig, "sig is null");
+    const auto fn = is_static ? &JNIEnv::GetStaticMethodID : &JNIEnv::GetMethodID;
+    jmethodID methodId = (env->*fn)(cls, getJstringToUtf8(env, name).c_str(), getJstringToUtf8(env, sig).c_str());
+    if (methodId == nullptr) {
+        // will throw exception in Java
+        return nullptr;
+    }
+    return env->ToReflectedMethod(cls, methodId, is_static);
+}
+
 //@formatter:off
 static JNINativeMethod gMethods[] = {
     {"allocateInstanceImpl", "(Ljava/lang/Class;)Ljava/lang/Object;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_allocateInstanceImpl)},
@@ -959,6 +974,7 @@ static JNINativeMethod gMethods[] = {
     {"setProcessDumpableState", "(I)V", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_setProcessDumpableState)},
     {"sizeofptr", "()I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_sizeofptr)},
     {"write", "(I[BII)I", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_write)},
+    {"getReflectedMethod", "(Ljava/lang/Class;Ljava/lang/String;Ljava/lang/String;Z)Ljava/lang/reflect/Member;", reinterpret_cast<void*>(Java_io_github_qauxv_util_Natives_getReflectedMethod)},
 };
 //@formatter:on
 

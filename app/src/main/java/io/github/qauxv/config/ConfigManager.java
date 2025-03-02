@@ -34,6 +34,7 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
 
     private static ConfigManager sDefConfig;
     private static ConfigManager sCache;
+    private static ConfigManager sOatInlineDeoptCacahe;
     private static final ConcurrentHashMap<Long, ConfigManager> sUinConfig =
         new ConcurrentHashMap<>(4);
 
@@ -72,6 +73,14 @@ public abstract class ConfigManager implements SharedPreferences, SharedPreferen
             sDefConfig = new MmkvConfigManagerImpl("global_config");
         }
         return sDefConfig;
+    }
+
+    @NonNull
+    public static synchronized ConfigManager getOatInlineDeoptCache() {
+        if (sOatInlineDeoptCacahe == null) {
+            sOatInlineDeoptCacahe = new MmkvConfigManagerImpl("oat_inline_deopt_cache");
+        }
+        return sOatInlineDeoptCacahe;
     }
 
     /**

@@ -36,6 +36,8 @@ import androidx.core.content.PermissionChecker;
 import cc.ioctl.util.HostInfo;
 import io.github.qauxv.base.IDynamicHook;
 import io.github.qauxv.core.HookInstaller;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.libart.OatInlineDeoptManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -515,11 +517,20 @@ public class SyncUtils {
                     if (hookId != -1 && (myType & targetType) != 0) {
                         IDynamicHook hook = HookInstaller.getHookById(hookId);
                         if (hook != null && hook.isTargetProcess() && !hook.isPreparationRequired()) {
-                            try {
-                                hook.initialize();
-                            } catch (Throwable e) {
-                                Log.e(e);
-                            }
+                            async(() -> {
+                                DexDeobfsProvider.INSTANCE.enterDeobfsSection();
+                                try {
+                                    hook.initialize();
+                                    try {
+                                        OatInlineDeoptManager.getInstance().updateDeoptListForCurrentProcess();
+                                    } finally {
+                                        DexDeobfsProvider.INSTANCE.exitDeobfsSection();
+                                    }
+                                    OatInlineDeoptManager.performOatDeoptimizationForCache();
+                                } catch (Throwable e) {
+                                    Log.e(e);
+                                }
+                            });
                         }
                     }
                     break;

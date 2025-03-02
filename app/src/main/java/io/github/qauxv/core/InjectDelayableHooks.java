@@ -50,6 +50,7 @@ import io.github.qauxv.util.dexkit.DexDeobfsBackend;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
+import io.github.qauxv.util.libart.OatInlineDeoptManager;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -98,45 +99,42 @@ public class InjectDelayableHooks {
         final LinearLayout[] main = new LinearLayout[1];
         final ProportionDrawable[] prog = new ProportionDrawable[1];
         final TextView[] text = new TextView[1];
-        if (needDeobf) {
-            final HashSet<Step> todos = new HashSet<>();
-            for (IDynamicHook h : hooks) {
-                try {
-                    if (!h.isEnabled()) {
-                        continue;
-                    }
-                    if (h.isPreparationRequired()) {
-                        Step[] steps = h.makePreparationSteps();
-                        if (steps != null) {
-                            for (Step i : steps) {
-                                if (!i.isDone()) {
-                                    todos.add(i);
+        DexDeobfsProvider.INSTANCE.enterDeobfsSection();
+        try (DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
+            if (needDeobf) {
+                final HashSet<Step> todos = new HashSet<>();
+                for (IDynamicHook h : hooks) {
+                    try {
+                        if (!h.isEnabled()) {
+                            continue;
+                        }
+                        if (h.isPreparationRequired()) {
+                            Step[] steps = h.makePreparationSteps();
+                            if (steps != null) {
+                                for (Step i : steps) {
+                                    if (!i.isDone()) {
+                                        todos.add(i);
+                                    }
                                 }
                             }
                         }
-                    }
-                } catch (Exception | LinkageError | AssertionError e) {
-                    if (h instanceof RuntimeErrorTracer) {
-                        ((RuntimeErrorTracer) h).traceError(e);
-                    } else {
-                        Log.e("Hook " + h.getClass().getName() + " failed to make preparation steps", e);
+                    } catch (Exception | LinkageError | AssertionError e) {
+                        if (h instanceof RuntimeErrorTracer) {
+                            ((RuntimeErrorTracer) h).traceError(e);
+                        } else {
+                            Log.e("Hook " + h.getClass().getName() + " failed to make preparation steps", e);
+                        }
                     }
                 }
-            }
-
-            long start = System.currentTimeMillis();
-
-            final ArrayList<Step> steps = new ArrayList<>(todos);
-            // collect all dex-deobfs steps if backend supports
-            HashSet<String> deobfIndexList = new HashSet<>(16);
-            for (Step step : steps) {
-                if (step.getClass() == DexDeobfStep.class && !step.isDone()) {
-                    String id = ((DexDeobfStep) step).getId();
-                    deobfIndexList.add(id);
+                final ArrayList<Step> steps = new ArrayList<>(todos);
+                // collect all dex-deobfs steps if backend supports
+                HashSet<String> deobfIndexList = new HashSet<>(16);
+                for (Step step : steps) {
+                    if (step.getClass() == DexDeobfStep.class && !step.isDone()) {
+                        String id = ((DexDeobfStep) step).getId();
+                        deobfIndexList.add(id);
+                    }
                 }
-            }
-            DexDeobfsProvider.INSTANCE.enterDeobfsSection();
-            try (DexDeobfsBackend backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
                 if (backend.isBatchFindMethodSupported()) {
                     List<DexKitTarget> ids = new LinkedList<>();
                     for (String id : deobfIndexList) {
@@ -209,28 +207,30 @@ public class InjectDelayableHooks {
                         Log.e(e);
                     }
                 }
-            } finally {
-                DexDeobfsProvider.INSTANCE.exitDeobfsSection();
-                long end = System.currentTimeMillis();
-                Log.i("DexDeobfsProvider: cost " + (end - start) + "ms");
             }
-        }
-        if (LicenseStatus.hasUserAcceptEula()) {
-            for (IDynamicHook h : hooks) {
-                try {
-                    if (h.isEnabled() && h.isTargetProcess()) {
-                        if (!h.isPreparationRequired()) {
-                            h.initialize();
-                        } else {
-                            Log.e("InjectDelayableHooks/E not init " + h + ", checkPreconditions == false");
+            if (LicenseStatus.hasUserAcceptEula()) {
+                for (IDynamicHook h : hooks) {
+                    try {
+                        if (h.isEnabled() && h.isTargetProcess()) {
+                            if (!h.isPreparationRequired()) {
+                                h.initialize();
+                            } else {
+                                Log.e("InjectDelayableHooks/E not init " + h + ", checkPreconditions == false");
+                            }
                         }
+                    } catch (Throwable e) {
+                        Log.e(e);
                     }
-                } catch (Throwable e) {
-                    Log.e(e);
                 }
+                if (OatInlineDeoptManager.getInstance().isDeoptListCacheOutdated()) {
+                    OatInlineDeoptManager.getInstance().updateDeoptListForCurrentProcess();
+                }
+                OatInlineDeoptManager.performOatDeoptimizationForCache();
+            } else {
+                SettingEntryHook.INSTANCE.initialize();
             }
-        } else {
-            SettingEntryHook.INSTANCE.initialize();
+        } finally {
+            DexDeobfsProvider.INSTANCE.exitDeobfsSection();
         }
         if (activity != null && main[0] != null) {
             System.gc();

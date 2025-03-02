@@ -23,6 +23,7 @@ package io.github.qauxv.util;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import dalvik.annotation.optimization.FastNative;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.xpcompat.ArrayUtils;
 import java.io.IOException;
@@ -185,6 +186,9 @@ public class Natives {
     // If the method signature does not match the actual method signature, the behavior is undefined, eg, ART runtime aborts.
     private static native Object invokeNonVirtualArtMethodImpl(@NonNull Member member, @NonNull String signature, @NonNull Class<?> klass, boolean isStatic,
             @Nullable Object obj, @NonNull Object[] args) throws InvocationTargetException;
+
+    @FastNative
+    public static native Member getReflectedMethod(@NonNull Class<?> cls, @NonNull String name, @NonNull String sig, boolean isStatic) throws NoSuchMethodError;
 
     /**
      * Invoke an instance method non-virtually, no CHA lookup is performed. No declaring class check is performed.
