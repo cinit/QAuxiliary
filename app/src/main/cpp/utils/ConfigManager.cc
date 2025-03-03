@@ -61,6 +61,20 @@ qauxv::ConfigManager& qauxv::ConfigManager::GetCache() {
     return *sConfigManager;
 }
 
+qauxv::ConfigManager& qauxv::ConfigManager::GetOatInlineDeoptCache() {
+    static ConfigManager* sConfigManager = nullptr;
+    if (sConfigManager != nullptr) {
+        return *sConfigManager;
+    }
+    auto id = "oat_inline_deopt_cache";
+    auto mmkv = MMKV::mmkvWithID(std::string(id), mmkv::DEFAULT_MMAP_SIZE, MMKV_MULTI_PROCESS);
+    if (mmkv == nullptr) {
+        AbortWithMsg(fmt::format("Failed to create MMKV with id '{}'", id).c_str());
+    }
+    sConfigManager = new ConfigManager(mmkv, id);
+    return *sConfigManager;
+}
+
 qauxv::ConfigManager& qauxv::ConfigManager::ForAccount(int64_t uin) {
     static std::mutex sMutex;
     static std::map<int64_t, ConfigManager*> sConfigManagerMap;

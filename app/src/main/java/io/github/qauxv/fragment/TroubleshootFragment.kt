@@ -87,6 +87,7 @@ import io.github.qauxv.util.dexkit.DexKitTarget
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.libart.OatInlineDeoptManager
 import io.github.qauxv.util.soloader.NativeLoader
 import me.ketal.base.PluginDelayableHook
 import me.singleneuron.hook.decorator.FxxkQQBrowser
@@ -149,6 +150,38 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 textItem("测试通知", "点击测试通知", onClick = clickToTestNotification)
                 textItem("清除 " + hostInfo.hostName + " 热补丁", "仅限测试，正常情况下不应执行此操作", onClick = clickToDeleteHotPatch)
             },
+            CategoryItem("ART inline optimization mitigation") {
+                add(
+                    TextSwitchItem(
+                        title = "禁用 ART profile saver",
+                        summary = "禁用 art::ProfileSaver::ProcessProfilingInfo 修改后自下次冷启动开始生效",
+                        switchAgent = mDisableArtProfileSaverSwitch
+                    )
+                )
+                add(
+                    TextSwitchItem(
+                        title = "Caller deoptimization",
+                        summary = "对被 hook 的方法的全部直系调用者取消优化，修改后自下次冷启动开始生效",
+                        switchAgent = mOatDeoptSwitch
+                    )
+                )
+                textItem(
+                    "清除 oat inline deopt cache list",
+                    "会在下次冷启动或开启新功能时重新生成",
+                    onClick = clickToResetAotDeoptInlineCache
+                )
+                description(
+                    "提示：以上措施仅限用于协助排查定位问题，主流框架（如 LSPosed/LSPatch 及其衍生框架）用户不需要开启上述措施。" +
+                        "如果您不知道上述措施意味着什么，您不应该打开它们。\n" +
+                        "上述方法可以一定程度上缓解由于 ART 内联优化导致的部分功能随机失效问题，" +
+                        "但这也会导致冷启动时间变长(0.2-1.5s)并伴随有少量性能下降.\n" +
+                        "LSPosed 框架的 dex2oat wrapper 已经包含了 --inline-max-code-units=0 参数, " +
+                        "LSPatch 框架已经自带了禁用 ART profile saver, 请勿重复开启，否则可能导致尚不明确的不良反应。\n" +
+                        "重新安装（同版本覆盖安装，保留数据）宿主 apk 可以清除 oat.\n" +
+                        "Hooked method count = " + StartupInfo.requireHookBridge().hookedMethods.size + "\n" +
+                        "Cached deopt method list size = " + OatInlineDeoptManager.getInstance().cachedDeoptList.size
+                )
+            },
             CategoryItem("异常与崩溃测试") {
                 textItem("退出 Looper", "Looper.getMainLooper().quit() 没事别按", onClick = clickToTestCrashAction {
                     val looper = Looper.getMainLooper()
@@ -201,6 +234,34 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                             if (isResumed) Toasts.info(it, "重启应用后生效")
                         } else Toasts.error(it, "${if (value) "启用" else "禁用"}安全模式失败")
                     }
+                }
+            }
+    }
+
+    private val mDisableArtProfileSaverSwitch: ISwitchCellAgent = object : ISwitchCellAgent {
+        override val isCheckable = true
+        override var isChecked: Boolean
+            get() {
+                return OatInlineDeoptManager.getInstance().isDisableArtProfileSaverEnabled
+            }
+            set(value) {
+                val oldValue = OatInlineDeoptManager.getInstance().isDisableArtProfileSaverEnabled
+                if (value != oldValue) {
+                    OatInlineDeoptManager.getInstance().isDisableArtProfileSaverEnabled = value
+                }
+            }
+    }
+
+    private val mOatDeoptSwitch: ISwitchCellAgent = object : ISwitchCellAgent {
+        override val isCheckable = true
+        override var isChecked: Boolean
+            get() {
+                return OatInlineDeoptManager.getInstance().isOatInlineDeoptEnabled
+            }
+            set(value) {
+                val oldValue = OatInlineDeoptManager.getInstance().isOatInlineDeoptEnabled
+                if (value != oldValue) {
+                    OatInlineDeoptManager.getInstance().isOatInlineDeoptEnabled = value
                 }
             }
     }
@@ -636,6 +697,13 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 r(url)
             }
         }
+    }
+
+    private val clickToResetAotDeoptInlineCache = actionOrShowError {
+        val ctx = requireContext()
+        val cache = ConfigManager.getOatInlineDeoptCache();
+        cache.edit().clear().apply()
+        Toasts.success(ctx, "已清除 oat inline deopt list")
     }
 
     private fun generateStatusText(): String {

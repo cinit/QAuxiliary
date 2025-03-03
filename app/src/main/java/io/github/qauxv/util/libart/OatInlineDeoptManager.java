@@ -29,6 +29,7 @@ import io.github.qauxv.poststartup.StartupInfo;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.NonUiThread;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexDeobfsProvider;
@@ -42,8 +43,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 import org.luckypray.dexkit.DexKitBridge;
-import org.luckypray.dexkit.query.FindMethod;
-import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.result.MethodData;
 import org.luckypray.dexkit.result.MethodDataList;
 
 public class OatInlineDeoptManager {
@@ -62,6 +62,31 @@ public class OatInlineDeoptManager {
     private static final String KEY_LAST_HOST_VERSION_CODE = "KEY_LAST_HOST_VERSION_CODE";
     private static final String KEY_LAST_HOST_VERSION_CODE_FOR_PROCESS = "KEY_LAST_HOST_VERSION_CODE_FOR_PROCESS_";
     private static final String KEY_LAST_DEOPT_LIST = "KEY_LAST_DEOPT_LIST";
+    private static final String KEY_OAT_INLINE_DEOPT_ENABLED = "KEY_OAT_INLINE_DEOPT_ENABLED";
+    // KEY_DISABLE_ART_PROFILE_SAVER is used in native
+    private static final String KEY_DISABLE_ART_PROFILE_SAVER = "KEY_DISABLE_ART_PROFILE_SAVER";
+
+    public void clearOatInlineListCache() {
+        mConfig.remove(KEY_LAST_DEOPT_LIST);
+        mConfig.remove(KEY_LAST_HOST_VERSION_CODE);
+        mConfig.apply();
+    }
+
+    public boolean isOatInlineDeoptEnabled() {
+        return mConfig.getBooleanOrDefault(KEY_OAT_INLINE_DEOPT_ENABLED, false);
+    }
+
+    public void setOatInlineDeoptEnabled(boolean enabled) {
+        mConfig.putBoolean(KEY_OAT_INLINE_DEOPT_ENABLED, enabled);
+    }
+
+    public boolean isDisableArtProfileSaverEnabled() {
+        return mConfig.getBooleanOrDefault(KEY_DISABLE_ART_PROFILE_SAVER, false);
+    }
+
+    public void setDisableArtProfileSaverEnabled(boolean enabled) {
+        mConfig.putBoolean(KEY_DISABLE_ART_PROFILE_SAVER, enabled);
+    }
 
     /**
      * Get the cached deopt list.
@@ -86,6 +111,9 @@ public class OatInlineDeoptManager {
     }
 
     public boolean isDeoptListCacheOutdated() {
+        if (!getInstance().isOatInlineDeoptEnabled()) {
+            return false;
+        }
         long currentVersion = HostInfo.getHostInfo().getVersionCode();
         long lastVersion = mConfig.getLong(KEY_LAST_HOST_VERSION_CODE, -1);
         String processName = SyncUtils.getProcessName();
@@ -103,18 +131,23 @@ public class OatInlineDeoptManager {
             hookedDescriptors.add(DexMethodDescriptor.forReflectedMethod(member).getDescriptor());
         }
         Log.d("hookedMethods.size = " + hookedMethods.size());
-        HashSet<String> deoptSet;
+        HashSet<String> deoptSet = new HashSet<>();
         // 2. DexKit: find caller methods
         try (DexKitDeobfs backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
-            DexKitBridge dexKit = backend.getDexKitBridge();
-            MethodMatcher matcher = MethodMatcher.create();
+//            int ii = 0;
+            DexKitBridge bridge = backend.getDexKitBridge();
             for (String descriptor : hookedDescriptors) {
-                matcher.addCaller(descriptor);
-            }
-            MethodDataList callers = dexKit.findMethod(FindMethod.create().matcher(matcher));
-            deoptSet = new HashSet<>(callers.size());
-            for (int i = 0; i < callers.size(); i++) {
-                deoptSet.add(callers.get(i).getDescriptor());
+//                long start = System.currentTimeMillis();
+                MethodData md = bridge.getMethodData(descriptor);
+                if (md != null) {
+                    MethodDataList callers = md.getCallers();
+                    for (int i = 0; i < callers.size(); i++) {
+                        deoptSet.add(callers.get(i).getDescriptor());
+                    }
+                }
+                long end = System.currentTimeMillis();
+//                Log.d(ii + "/" + hookedDescriptors.size() + ": " + (end - start));
+//                ii++;
             }
         }
         return deoptSet;
@@ -122,6 +155,9 @@ public class OatInlineDeoptManager {
 
     @NonUiThread
     public void updateDeoptListForCurrentProcess() {
+        if (!isOatInlineDeoptEnabled()) {
+            return;
+        }
         long start = System.nanoTime();
         HashSet<String> deoptSet = enumerateCurrentExpectedDeoptimizedMethodDescriptors();
         long end = System.nanoTime();
@@ -140,6 +176,9 @@ public class OatInlineDeoptManager {
     }
 
     public static void performOatDeoptimizationForCache() {
+        if (!getInstance().isOatInlineDeoptEnabled()) {
+            return;
+        }
         if (!StartupInfo.requireHookBridge().isDeoptimizationSupported()) {
             return;
         }
@@ -149,10 +188,13 @@ public class OatInlineDeoptManager {
             OatInlineDeoptManager manager = OatInlineDeoptManager.getInstance();
             String[] deoptList = manager.getCachedDeoptList();
             for (String descriptor : deoptList) {
+                if (descriptor.contains("-><clinit>()V")) {
+                    continue;
+                }
                 Member member = getReflectedMethodFromDescriptorOrNull(cl, descriptor);
                 if (member != null) {
-                    Log.d("OatInlineDeoptManager.performOatDeoptimizationForCache deopt: " + descriptor);
-                    if ((Modifier.ABSTRACT & member.getModifiers()) == 0) {
+                    //Log.d("OatInlineDeoptManager.performOatDeoptimizationForCache deopt: " + descriptor);
+                    if (((Modifier.ABSTRACT | Modifier.NATIVE) & member.getModifiers()) == 0) {
                         StartupInfo.requireHookBridge().deoptimize(member);
                     }
                 } else {
@@ -169,6 +211,21 @@ public class OatInlineDeoptManager {
     @Nullable
     private static Member getReflectedMethodFromDescriptorOrNull(@NonNull ClassLoader cl, @NonNull String descriptor) {
         DexMethodDescriptor dexMethodDescriptor = new DexMethodDescriptor(descriptor);
+        // fast path
+        try {
+            Class<?> klass = cl.loadClass(dexMethodDescriptor.getDeclaringClassName());
+            if (dexMethodDescriptor.name.equals("<init>")) {
+                try {
+                    return Natives.getReflectedMethod(klass, dexMethodDescriptor.name, dexMethodDescriptor.signature, false);
+                } catch (NoSuchMethodError ignored) {
+                }
+            }
+            if (dexMethodDescriptor.name.equals("<clinit>")) {
+                // ignore for now
+                return null;
+            }
+        } catch (ReflectiveOperationException | LinkageError ignored) {
+        }
         try {
             return dexMethodDescriptor.getMethodInstance(cl);
         } catch (NoSuchMethodException e) {

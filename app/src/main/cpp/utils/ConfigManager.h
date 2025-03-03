@@ -31,6 +31,7 @@ private:
 public:
     [[nodiscard]] static ConfigManager& GetDefaultConfig();
     [[nodiscard]] static ConfigManager& GetCache();
+    [[nodiscard]] static ConfigManager& GetOatInlineDeoptCache();
     [[nodiscard]] static ConfigManager& ForAccount(int64_t uin);
 
     [[nodiscard]] bool ContainsKey(const std::string& key);
