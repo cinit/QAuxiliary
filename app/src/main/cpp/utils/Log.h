@@ -15,6 +15,7 @@ namespace qauxv::utils {
 #ifdef __ANDROID__
 
 #include <android/log.h>
+#include <android/set_abort_message.h>
 
 #else
 
@@ -47,6 +48,8 @@ int __android_log_print(int prio, const char* tag, const char* fmt, ...) __attri
 #define LOGI(...) ::__android_log_write(ANDROID_LOG_INFO, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
 #define LOGW(...) ::__android_log_write(ANDROID_LOG_WARN, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
 #define LOGE(...) ::__android_log_write(ANDROID_LOG_ERROR, "QAuxv", ::fmt::format(__VA_ARGS__).c_str())
+
+#define CHECK(cond_) if (!(cond_)) [[unlikely]] { ::android_set_abort_message("check fail: " # cond_); ::abort(); } ; (void) 0
 
 #endif
 

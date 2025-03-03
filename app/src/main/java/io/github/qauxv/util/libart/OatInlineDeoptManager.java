@@ -24,10 +24,11 @@ package io.github.qauxv.util.libart;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import cc.ioctl.util.HostInfo;
 import io.github.qauxv.config.ConfigManager;
 import io.github.qauxv.poststartup.StartupInfo;
-import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.Natives;
 import io.github.qauxv.util.NonUiThread;
@@ -36,6 +37,8 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider;
 import io.github.qauxv.util.dexkit.DexMethodDescriptor;
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import io.github.qauxv.util.xpcompat.ArrayUtils;
+import java.io.File;
+import java.io.IOException;
 import java.lang.reflect.Member;
 import java.lang.reflect.Modifier;
 import java.util.Arrays;
@@ -81,11 +84,26 @@ public class OatInlineDeoptManager {
     }
 
     public boolean isDisableArtProfileSaverEnabled() {
-        return mConfig.getBooleanOrDefault(KEY_DISABLE_ART_PROFILE_SAVER, false);
+        File file = new File(HostInfo.getApplication().getFilesDir(), "qa_misc/" + KEY_DISABLE_ART_PROFILE_SAVER);
+        return file.exists();
     }
 
     public void setDisableArtProfileSaverEnabled(boolean enabled) {
-        mConfig.putBoolean(KEY_DISABLE_ART_PROFILE_SAVER, enabled);
+        if (enabled != isDisableArtProfileSaverEnabled()) {
+            File file = new File(HostInfo.getApplication().getFilesDir(), "qa_misc/" + KEY_DISABLE_ART_PROFILE_SAVER);
+            try {
+                if (enabled) {
+                    //noinspection ResultOfMethodCallIgnored
+                    file.createNewFile();
+                } else {
+                    IoUtils.deleteSingleFileOrThrowEx(file);
+                }
+            } catch (IOException e) {
+                if (enabled != isDisableArtProfileSaverEnabled()) {
+                    throw IoUtils.unsafeThrow(e);
+                }
+            }
+        }
     }
 
     /**
@@ -97,7 +115,7 @@ public class OatInlineDeoptManager {
      */
     @NonNull
     public String[] getCachedDeoptList() {
-        long currentVersion = HostInfo.getHostInfo().getVersionCode();
+        long currentVersion = HostInfo.getVersionCode();
         long lastVersion = mConfig.getLong(KEY_LAST_HOST_VERSION_CODE, -1);
         if (currentVersion != lastVersion) {
             mConfig.edit().putLong(KEY_LAST_HOST_VERSION_CODE, currentVersion).apply();
@@ -114,7 +132,7 @@ public class OatInlineDeoptManager {
         if (!getInstance().isOatInlineDeoptEnabled()) {
             return false;
         }
-        long currentVersion = HostInfo.getHostInfo().getVersionCode();
+        long currentVersion = HostInfo.getVersionCode();
         long lastVersion = mConfig.getLong(KEY_LAST_HOST_VERSION_CODE, -1);
         String processName = SyncUtils.getProcessName();
         long lastVersionForProcess = mConfig.getLong(KEY_LAST_HOST_VERSION_CODE_FOR_PROCESS + processName, -1);
@@ -167,7 +185,7 @@ public class OatInlineDeoptManager {
         Log.d("OatInlineDeoptManager old size: " + old.size() + ", new size: " + deoptSet.size());
         deoptSet.addAll(old);
         Log.d("OatInlineDeoptManager merged size: " + deoptSet.size());
-        long currentVersion = HostInfo.getHostInfo().getVersionCode();
+        long currentVersion = HostInfo.getVersionCode();
         String processName = SyncUtils.getProcessName();
         mConfig.putLong(KEY_LAST_HOST_VERSION_CODE, currentVersion);
         mConfig.putLong(KEY_LAST_HOST_VERSION_CODE_FOR_PROCESS + processName, currentVersion);

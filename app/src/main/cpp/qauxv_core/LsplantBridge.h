@@ -10,6 +10,9 @@
 namespace qauxv {
 
 bool InitLSPlantImpl(JNIEnv* env);
+
+void HookArtProfileSaver();
+
 }
 
 #endif //QAUXV_LSPLANTBRIDGE_H

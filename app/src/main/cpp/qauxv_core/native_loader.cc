@@ -25,6 +25,7 @@
 #include "natives_utils.h"
 #include "utils/art_symbol_resolver.h"
 #include "nativebridge/native_bridge.h"
+#include "LsplantBridge.h"
 
 #include "MMKV.h"
 
@@ -204,6 +205,9 @@ void DoNativeLibraryFullInitializeFormJni(JNIEnv* env,
             return;
         }
         MMKV::initializeMMKV(mmkvRootDir, HostInfo::IsDebugBuild() ? MMKVLogLevel::MMKVLogDebug : MMKVLogLevel::MMKVLogInfo);
+    }
+    if (isPrimary) {
+        HookArtProfileSaver();
     }
 }
 

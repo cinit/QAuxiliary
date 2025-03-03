@@ -22,7 +22,11 @@
 
 #undef LOGD
 
+#include <unistd.h>
+#include <stdlib.h>
 #include "utils/Log.h"
+#include "utils/ConfigManager.h"
+#include "qauxv_core/HostInfo.h"
 
 static bool sLsplantInitSuccess = false;
 
@@ -56,7 +60,57 @@ bool InitLSPlantImpl(JNIEnv* env) {
         return ::lsplant::Init(env, sLSPlantInitInfo);
     };
     static bool sLSPlantInitializeResult = initProc();
+    HookArtProfileSaver();
     return sLSPlantInitializeResult;
+}
+
+bool ShouldDisableArtProfileSaver() {
+    auto dataDir = qauxv::HostInfo::GetDataDir();
+    CHECK(!dataDir.empty());
+    auto path = fmt::format("{}/files/qa_misc/KEY_DISABLE_ART_PROFILE_SAVER", dataDir);
+    return access(path.c_str(), F_OK) == 0;
+}
+
+void HookArtProfileSaver() {
+    if (!InitLibArtElfView()) {
+        LOGE("HookArtProfileSaver: InitLibArtElfView fail");
+        return;
+    }
+    if (ShouldDisableArtProfileSaver()) {
+        static bool hooked = false;
+        if (hooked) {
+            return;
+        }
+        hooked = true;
+        void* fn2 = GetLibArtSymbol("_ZN3art12ProfileSaver20ProcessProfilingInfoEbPt");
+        LOGD("_ZN3art12ProfileSaver20ProcessProfilingInfoEbPt={}", fn2);
+        {
+            static void* fn2backup = nullptr;
+            int res = 0;
+            if (fn2 != nullptr) {
+                res = CreateInlineHook(fn2, reinterpret_cast<void*>(+[](void* thiz, bool, uint16_t*) {
+                    LOGD("skip _ZN3art12ProfileSaver20ProcessProfilingInfoEbPt");
+                }), &fn2backup);
+                if (res != 0) {
+                    LOGE("hook _ZN3art12ProfileSaver20ProcessProfilingInfoEbPt {} fail, rc {}", fn2, res);
+                }
+            }
+        }
+        void* fn3 = GetLibArtSymbol("_ZN3art12ProfileSaver20ProcessProfilingInfoEbbPt");
+        LOGD("_ZN3art12ProfileSaver20ProcessProfilingInfoEbbPt={}", fn3);
+        {
+            static void* fn3backup = nullptr;
+            int res = 0;
+            if (fn3 != nullptr) {
+                res = CreateInlineHook(fn3, reinterpret_cast<void*>(+[](void* thiz, bool, bool, uint16_t*) {
+                    LOGD("skip _ZN3art12ProfileSaver20ProcessProfilingInfoEbbPt");
+                }), &fn3backup);
+                if (res != 0) {
+                    LOGE("hook _ZN3art12ProfileSaver20ProcessProfilingInfoEbbPt {} fail, rc {}", fn3, res);
+                }
+            }
+        }
+    }
 }
 
 }

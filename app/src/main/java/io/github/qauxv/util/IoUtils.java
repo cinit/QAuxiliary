@@ -241,6 +241,18 @@ public class IoUtils {
         }
     }
 
+    public static void deleteSingleFileOrThrowEx(@NonNull File file) throws IOException {
+        if (!file.exists()) {
+            return;
+        }
+        if (!file.isFile()) {
+            throw new IllegalArgumentException("Not a file: " + file.getAbsolutePath());
+        }
+        if (!file.delete() && file.exists()) {
+            throw new IOException("Failed to delete file: " + file.getAbsolutePath());
+        }
+    }
+
     @NonNull
     public static byte[] calculateFileMd5(@NonNull InputStream is) throws IOException {
         Objects.requireNonNull(is, "is == null");
