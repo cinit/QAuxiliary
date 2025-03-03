@@ -42,7 +42,7 @@ sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref 
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
 byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.1" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
-flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
+flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "25.2.10" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
 google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
