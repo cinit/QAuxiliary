@@ -48,7 +48,7 @@ namespace ntqq::hook {
 using namespace qauxv;
 using namespace ::utils;
 
-static bool sIsHooked = false;
+static volatile bool sIsHooked = false;
 
 EXPORT extern "C" void* gLibkernelBaseAddress = nullptr;
 
@@ -75,7 +75,7 @@ void HandleC2cRecallSysMsgCallback([[maybe_unused]] void* p1, [[maybe_unused]] v
 // Nobody uses PaiYiPai, right?
 bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     if (sIsHooked) {
-        return false;
+        return true;
     }
     sIsHooked = true;
     gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
@@ -155,7 +155,7 @@ bool InitInitNtKernelRecallMsgHook() {
         LOGW("InitInitNtKernelRecallMsgHook failed, already hooked");
         return false;
     }
-    auto fnHookProc = &PerformNtRecallMsgHook;
+    const auto fnHookProc = &PerformNtRecallMsgHook;
     ProcessView self;
     if (int err;(err = self.readProcess(getpid())) != 0) {
         TraceErrorF(nullptr, gInstanceRevokeMsgHook, "InitInitNtKernelRecallMsgHook failed, readProcess failed: {}", err);
