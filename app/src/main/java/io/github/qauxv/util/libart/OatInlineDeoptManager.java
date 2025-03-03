@@ -148,14 +148,11 @@ public class OatInlineDeoptManager {
         for (Member member : hookedMethods) {
             hookedDescriptors.add(DexMethodDescriptor.forReflectedMethod(member).getDescriptor());
         }
-        Log.d("hookedMethods.size = " + hookedMethods.size());
         HashSet<String> deoptSet = new HashSet<>();
         // 2. DexKit: find caller methods
         try (DexKitDeobfs backend = DexDeobfsProvider.INSTANCE.getCurrentBackend()) {
-//            int ii = 0;
             DexKitBridge bridge = backend.getDexKitBridge();
             for (String descriptor : hookedDescriptors) {
-//                long start = System.currentTimeMillis();
                 MethodData md = bridge.getMethodData(descriptor);
                 if (md != null) {
                     MethodDataList callers = md.getCallers();
@@ -163,9 +160,6 @@ public class OatInlineDeoptManager {
                         deoptSet.add(callers.get(i).getDescriptor());
                     }
                 }
-                long end = System.currentTimeMillis();
-//                Log.d(ii + "/" + hookedDescriptors.size() + ": " + (end - start));
-//                ii++;
             }
         }
         return deoptSet;
@@ -182,9 +176,9 @@ public class OatInlineDeoptManager {
         Log.d("OatInlineDeoptManager enumerateCurrentExpectedDeoptimizedMethodDescriptors took " + (end - start) / 1000000 + "ms");
         // merge with the old list
         List<String> old = Arrays.asList(getCachedDeoptList());
-        Log.d("OatInlineDeoptManager old size: " + old.size() + ", new size: " + deoptSet.size());
+        // Log.d("OatInlineDeoptManager old size: " + old.size() + ", new size: " + deoptSet.size());
         deoptSet.addAll(old);
-        Log.d("OatInlineDeoptManager merged size: " + deoptSet.size());
+        // Log.d("OatInlineDeoptManager merged size: " + deoptSet.size());
         long currentVersion = HostInfo.getVersionCode();
         String processName = SyncUtils.getProcessName();
         mConfig.putLong(KEY_LAST_HOST_VERSION_CODE, currentVersion);
