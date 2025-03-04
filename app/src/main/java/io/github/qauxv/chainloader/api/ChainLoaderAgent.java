@@ -20,7 +20,7 @@
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
 
-package io.github.qauxv.chainloader;
+package io.github.qauxv.chainloader.api;
 
 import android.app.Application;
 import androidx.annotation.Keep;

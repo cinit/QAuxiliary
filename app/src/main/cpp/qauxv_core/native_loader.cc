@@ -597,3 +597,8 @@ Java_io_github_qauxv_isolated_soloader_LoadLibraryInvoker_nativeSecondaryNativeL
     }
     return JNI_OK;
 }
+
+__attribute__((visibility("protected")))
+extern "C" jobject GetModuleMainClassLoader() {
+    return sModuleMainClassLoader;
+}

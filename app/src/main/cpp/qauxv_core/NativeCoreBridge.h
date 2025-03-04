@@ -84,5 +84,6 @@ static inline void TraceErrorF(JNIEnv* env, jobject thiz, ::fmt::format_string<T
 
 }
 
+extern "C" void ChainLoaderCallTargetNativeInit(NativeInit func);
 
 #endif //QAUXV_NATIVECOREBRIDGE_H

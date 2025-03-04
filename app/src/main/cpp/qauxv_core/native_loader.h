@@ -112,4 +112,6 @@ struct fmt::formatter<qauxv::nativeloader::LibraryIsa> {
     }
 };
 
+extern "C" jobject GetModuleMainClassLoader();
+
 #endif //QAUXV_NATIVE_LOADER_H

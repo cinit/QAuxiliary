@@ -56,6 +56,7 @@ struct NativeHookHandle {
 };
 
 static NativeHookHandle sNativeHookHandle = {};
+static const NativeAPIEntries* sXposedNativeHookEntries = nullptr;
 
 namespace qauxv {
 
@@ -383,10 +384,25 @@ void SetCurrentNativeLibraryInitMode(NativeLibraryInitMode mode) {
 
 // called by Xposed framework
 EXPORT extern "C" [[maybe_unused]] NativeOnModuleLoaded native_init(const NativeAPIEntries* entries) {
+    sXposedNativeHookEntries = entries;
     sNativeHookHandle.hookFunction = entries->hookFunc;
     sNativeHookHandle.unhookFunction = entries->unhookFunc;
     qauxv::sHandleLoadLibraryCallbackInitialized = true;
     return &qauxv::HandleLoadLibrary;
+}
+
+__attribute__((visibility("protected")))
+void ChainLoaderCallTargetNativeInit(NativeInit func) {
+    static const NativeAPIEntries sFallbackNativeAPIEntries = {
+            .version=1,
+            .hookFunc=qauxv::CreateInlineHook,
+            .unhookFunc=qauxv::DestroyInlineHook
+    };
+    const NativeAPIEntries* entries = sXposedNativeHookEntries ? sXposedNativeHookEntries : &sFallbackNativeAPIEntries;
+    auto callback = func(entries);
+    if (callback != nullptr) {
+        qauxv::RegisterLoadLibraryCallback(callback);
+    }
 }
 
 void qauxv::InitializeNativeHookApi(bool allowHookLinker) {
