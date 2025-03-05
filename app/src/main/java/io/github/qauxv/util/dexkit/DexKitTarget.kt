@@ -848,7 +848,7 @@ data object X5_Properties_conf : DexKitTarget.UsingStr() {
 
 data object EmotionDownloadEnableSwitch : DexKitTarget.UsingStringVector() {
     override val findMethod = true
-    override val traitStringVectors = arrayOf(arrayOf("emotion_download_disable_8980_887036489", "QRoute.api(IUnitedConfig…le_8980_887036489"))
+    override val traitStringVectors = arrayOf(arrayOf("emotion_download_disable_8980_887036489", "…le_8980_887036489"))
     override val declaringClass: String = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/emotionintegrate/")
 }

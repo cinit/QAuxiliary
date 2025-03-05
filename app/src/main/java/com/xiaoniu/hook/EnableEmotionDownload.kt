@@ -28,9 +28,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.EmotionDownloadEnableSwitch
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -44,5 +46,5 @@ object EnableEmotionDownload : CommonSwitchFunctionHook(arrayOf(EmotionDownloadE
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_80)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_80) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 }
