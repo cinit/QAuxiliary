@@ -38,6 +38,7 @@ import io.github.qauxv.util.dexkit.NLeftSwipeReplyHelper_reply;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.lang.reflect.Method;
+import io.github.qauxv.util.PlayQQVersion;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -72,7 +73,7 @@ public class UnlockLeftSlipLimit extends CommonSwitchFunctionHook {
             return true;
         }
         Method m = XMethod.clz(DexKit.requireMethodFromCache(NLeftSwipeReplyHelper_reply.INSTANCE).getDeclaringClass())
-                .name(!HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "h" : HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_33) ? "I" : "H")
+                .name(io.github.qauxv.util.HostInfo.requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11) ? "c" : !HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "h" : HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_33) ? "I" : "H")
                 .ret(boolean.class)
                 .get();
         HookUtils.hookBeforeIfEnabled(this, m, param -> param.setResult(true));
