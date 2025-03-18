@@ -34,6 +34,11 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.isTim
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.throwOrTrue
+import top.linl.util.reflect.FieldUtils
+import android.widget.ImageView
+import cc.ioctl.util.hookAfterIfEnabled
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -55,18 +60,25 @@ object RemoveCameraButton : CommonSwitchFunctionHook("kr_disable_camera_button")
         }.hookBefore {
             if (!isEnabled) return@hookBefore; it.result = null
         }
-        findMethod(Initiator._ConversationTitleBtnCtrl()) {
-            val methodName = when {
-                requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) -> "C"
-                requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
-                requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
-                requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
-                else -> "a"
+        if (requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11))
+            hookAfterIfEnabled(Initiator.loadClass("aawg").getDeclaredMethod("a")) { param ->
+                val view = FieldUtils.getField(param.thisObject, "a", android.widget.ImageView::class.java) as ImageView
+                view.visibility = View.GONE
+                FieldUtils.setField(param.thisObject, "a", android.widget.ImageView::class.java, view)
             }
-            name == methodName && returnType == Void.TYPE && parameterTypes.isEmpty()
-        }.hookBefore {
-            if (!isEnabled) return@hookBefore; it.result = null
-        }
+        else
+            findMethod(Initiator._ConversationTitleBtnCtrl()) {
+                val methodName = when {
+                    requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) -> "C"
+                    requireMinQQVersion(QQVersion.QQ_8_9_10) -> "B"
+                    requireMinQQVersion(QQVersion.QQ_8_9_5) -> "E"
+                    requireMinQQVersion(QQVersion.QQ_8_8_93) -> "F"
+                    else -> "a"
+                }
+                name == methodName && returnType == Void.TYPE && parameterTypes.isEmpty()
+            }.hookBefore {
+                if (!isEnabled) return@hookBefore; it.result = null
+            }
     }
 
     override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.Simplify.MAIN_UI_TITLE
