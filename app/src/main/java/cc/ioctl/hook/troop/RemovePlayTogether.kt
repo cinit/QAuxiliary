@@ -33,6 +33,8 @@ import io.github.qauxv.tlb.ConfigTable
 import xyz.nextalone.util.method
 import xyz.nextalone.util.replace
 import xyz.nextalone.util.throwOrTrue
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 //屏蔽群聊界面一起嗨
 @FunctionHookEntry
@@ -46,13 +48,15 @@ object RemovePlayTogether : CommonSwitchFunctionHook() {
     const val ClockInEntryHelper = "RemovePlayTogether.ClockInEntryHelper"
     const val TogetherControlHelper = "RemovePlayTogether.TogetherControlHelper"
     public override fun initOnce(): Boolean = throwOrTrue {
-        if (requireMinQQVersion(QQVersion.QQ_8_4_8)) {
-            //QQ 8.4.8 除了一起嗨按钮，同一个位置还有一个群打卡按钮。默认显示群打卡，如果已经打卡就显示一起嗨，两个按钮点击之后都会打开同一个界面，但是要同时hook两个
-            Initiator._ClockInEntryHelper()?.method(ConfigTable.getConfig(ClockInEntryHelper), 0, Boolean::class.java)?.replace(this, result = false)
+        if (isPlayQQ()) {
+            if (requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11))
+                Initiator.loadClass("adhn").getDeclaredMethod("h").replace(this, result = false)
+        } else {
+            if (requireMinQQVersion(QQVersion.QQ_8_4_8)) {
+                //QQ 8.4.8 除了一起嗨按钮，同一个位置还有一个群打卡按钮。默认显示群打卡，如果已经打卡就显示一起嗨，两个按钮点击之后都会打开同一个界面，但是要同时hook两个
+                Initiator._ClockInEntryHelper()?.method(ConfigTable.getConfig(ClockInEntryHelper), 0, Boolean::class.java)?.replace(this, result = false)
+            }
+            Initiator._TogetherControlHelper()?.method(ConfigTable.getConfig(TogetherControlHelper), 0, Void.TYPE)?.replace(this, result = null)
         }
-        Initiator._TogetherControlHelper()?.method(ConfigTable.getConfig(TogetherControlHelper), 0, Void.TYPE)?.replace(this, result = null)
     }
-
-    override val isAvailable: Boolean
-        get() = !isPlayQQ()
 }
