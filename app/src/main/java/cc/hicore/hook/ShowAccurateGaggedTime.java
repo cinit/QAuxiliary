@@ -36,6 +36,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.TIMVersion;
+import io.github.qauxv.util.PlayQQVersion;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -74,18 +75,32 @@ public class ShowAccurateGaggedTime extends CommonSwitchFunctionHook {
             return true;
         }
 
-        HookUtils.hookBeforeIfEnabled(this,
-                Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.troop.troopgag.api.impl.TroopGagServiceImpl"), String.class,
-                        "gagTimeToStringCountDown", Context.class, long.class), param -> {
-                    long time = (long) param.args[1] + 30;
-                    long serverTime = AppRuntimeHelper.getServerTime();
-                    time = time - serverTime;
-                    if (time <= 0) {
-                        param.setResult("[解禁了,返回再进吧]");
-                        return;
-                    }
-                    param.setResult(secondToTime(time));
-                });
+        if (io.github.qauxv.util.HostInfo.requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11))
+            HookUtils.hookBeforeIfEnabled(this,
+                    Reflex.findMethod(Initiator.loadClass("bahd"), String.class,
+                            "b", Context.class, long.class), param -> {
+                        long time = (long) param.args[1] - 2;
+                        long serverTime = AppRuntimeHelper.getServerTime();
+                        time = time - serverTime;
+                        if (time <= 0) {
+                            param.setResult("[解禁了,返回再进吧]");
+                            return;
+                        }
+                        param.setResult(secondToTime(time));
+                    });
+        else
+            HookUtils.hookBeforeIfEnabled(this,
+                    Reflex.findMethod(Initiator.loadClass("com.tencent.mobileqq.troop.troopgag.api.impl.TroopGagServiceImpl"), String.class,
+                            "gagTimeToStringCountDown", Context.class, long.class), param -> {
+                        long time = (long) param.args[1] + 30;
+                        long serverTime = AppRuntimeHelper.getServerTime();
+                        time = time - serverTime;
+                        if (time <= 0) {
+                            param.setResult("[解禁了,返回再进吧]");
+                            return;
+                        }
+                        param.setResult(secondToTime(time));
+                    });
 
         HookUtils.hookBeforeIfEnabled(this, Reflex.findSingleMethod(Initiator._TroopGagMgr(),
                 String.class, false, Context.class, long.class, long.class), param -> {
