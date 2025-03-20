@@ -34,6 +34,8 @@ import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -56,10 +58,13 @@ object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_
             methodName = "b"
             titleName = "a"
         }
-        "com/tencent/widget/PopupMenuDialog".clazz?.method(
+        var target = "com/tencent/widget/PopupMenuDialog".clazz
+        if (requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11))
+            target = "bfqp".clazz
+        target?.method(
             methodName,
             4,
-            "com.tencent.widget.PopupMenuDialog".clazz
+            target
         )?.hookBefore(this) {
             val list = (it.args[1] as List<*>).toMutableList()
             val iterator = list.iterator()
@@ -73,5 +78,5 @@ object SimplifyRecentDialog : MultiItemDelayableHook("na_simplify_recent_dialog_
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_3_9) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_3_9) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
 }
