@@ -22,8 +22,7 @@
 package io.github.qauxv.tlb
 
 import cc.ioctl.hook.ui.chat.ReplyNoAtHook
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_11
-import io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9
+import io.github.qauxv.util.PlayQQVersion.*
 import me.ketal.hook.SortAtPanel
 import cc.ioctl.hook.entertainment.AutoMosaicName
 
@@ -44,6 +43,10 @@ class PlayQQConfigTable : ConfigTableInterface {
 
         SortAtPanel.sessionInfoTroopUin to mapOf(
             PlayQQ_8_2_11 to "a",
+        ),
+
+        SimplifyQQSettingMe.MidContentName to mapOf(
+            PlayQQ_8_2_11 to "k",
         ),
     )
 
