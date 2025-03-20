@@ -34,6 +34,11 @@ import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
+import cc.ioctl.util.hookBeforeIfEnabled
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
+import top.linl.util.reflect.FieldUtils
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -83,7 +88,17 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
 //                    it2.result = view
 //                }
         }
+        if (requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)) {
+            hookBeforeIfEnabled(Initiator.loadClass("com.tencent.mobileqq.emoticonview.EmoticonMainPanel").getDeclaredMethod("c", Int::class.java)) { param ->
+                val mutableList = FieldUtils.getField(param.thisObject, "a", java.util.List::class.java) as MutableList<*>
+                mutableList.removeAll { item ->
+                    if (item == null) return@removeAll false
+                    val i = FieldUtils.getField(item, "a", Int::class.java) as Int
+                    allItemsDict[i] in activeItems || i !in allItemsDict.keys && "表情包" in activeItems
+                }
+            }
+        }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
 }
