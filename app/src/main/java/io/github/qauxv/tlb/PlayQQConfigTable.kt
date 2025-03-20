@@ -45,6 +45,10 @@ class PlayQQConfigTable : ConfigTableInterface {
         SortAtPanel.sessionInfoTroopUin to mapOf(
             PlayQQ_8_2_11 to "a",
         ),
+
+        SimplifyQQSettingMe.MidContentName to mapOf(
+            PlayQQ_8_2_11 to "k",
+        ),
     )
 
 }

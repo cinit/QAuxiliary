@@ -66,6 +66,8 @@ import xyz.nextalone.util.*
 import java.lang.reflect.Array
 import java.lang.reflect.Modifier
 import java.util.SortedMap
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 //侧滑栏精简
 @FunctionHookEntry
@@ -86,7 +88,7 @@ object SimplifyQQSettingMe :
     override val description: String = "可能需要重启 QQ 后生效"
     override val allItems = setOf<String>()
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
-    override val isAvailable = requireMinQQVersion(QQ_8_4_1)
+    override val isAvailable = requireMinQQVersion(QQ_8_4_1) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
     override val enableCustom = false
 
     //Form 8.4.1
