@@ -46,13 +46,7 @@ import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.QQVersion.QQ_8_4_1
-import io.github.qauxv.util.QQVersion.QQ_8_6_0
-import io.github.qauxv.util.QQVersion.QQ_8_6_5
-import io.github.qauxv.util.QQVersion.QQ_8_8_11
-import io.github.qauxv.util.QQVersion.QQ_8_9_23
-import io.github.qauxv.util.QQVersion.QQ_9_0_20
-import io.github.qauxv.util.QQVersion.QQ_9_0_85
+import io.github.qauxv.util.QQVersion.*
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZPlanExpGroup_New
 import io.github.qauxv.util.dexkit.QQSettingMeABTestHelper_isZplanExpGroup_Old
@@ -66,6 +60,8 @@ import xyz.nextalone.util.*
 import java.lang.reflect.Array
 import java.lang.reflect.Modifier
 import java.util.SortedMap
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 //侧滑栏精简
 @FunctionHookEntry
@@ -86,7 +82,7 @@ object SimplifyQQSettingMe :
     override val description: String = "可能需要重启 QQ 后生效"
     override val allItems = setOf<String>()
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.SLIDING_UI
-    override val isAvailable = requireMinQQVersion(QQ_8_4_1)
+    override val isAvailable = requireMinQQVersion(QQ_8_4_1) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
     override val enableCustom = false
 
     //Form 8.4.1
