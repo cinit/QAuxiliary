@@ -39,6 +39,9 @@ import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Method
+import cc.ioctl.util.hookAfterIfEnabled
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -164,7 +167,28 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                 )
             }
         }
+        hookAfterIfEnabled(Initiator.loadClass("com.tencent.mobileqq.activity.aio.PlusPanel").getDeclaredMethod("a")) { param ->
+            val pluspanel = param.thisObject as android.widget.RelativeLayout
+            val group = pluspanel.getChildAt(0) as android.view.ViewGroup
+            val page = group.getChildAt(0) as android.widget.RelativeLayout
+            val page2 = group.getChildAt(1) as android.widget.RelativeLayout
+            val pageline = page.getChildAt(0) as android.widget.LinearLayout
+            val pageline2 = page.getChildAt(1) as android.widget.LinearLayout
+            val allItemsMap = mapOf(
+                "语音通话" to pageline.getChildAt(0) as android.widget.RelativeLayout,
+                "视频通话" to pageline.getChildAt(1) as android.widget.RelativeLayout,
+                "位置" to pageline.getChildAt(2) as android.widget.RelativeLayout,
+                "热图" to pageline.getChildAt(3) as android.widget.RelativeLayout,
+                "文件" to pageline2.getChildAt(0) as android.widget.RelativeLayout,
+                "收藏" to pageline2.getChildAt(1) as android.widget.RelativeLayout,
+                "名片" to pageline2.getChildAt(2) as android.widget.RelativeLayout,
+                "一起听歌" to pageline2.getChildAt(3) as android.widget.RelativeLayout,
+                "腾讯文档" to page2
+            )
+            for (item in activeItems)
+                allItemsMap[item]?.visibility = android.view.View.GONE
+        }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
 }
