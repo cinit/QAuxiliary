@@ -39,6 +39,10 @@ import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Method
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
+import top.linl.util.reflect.FieldUtils
+import xyz.nextalone.util.hookAfter
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -164,7 +168,52 @@ object SimplifyPlusPanel : MultiItemDelayableHook("na_simplify_plus_panel_multi"
                 )
             }
         }
+        if (requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)) {
+            val hooker: (XC_MethodHook.MethodHookParam) -> Unit= {
+                val pluspanel = it.thisObject as android.widget.RelativeLayout
+                val group = pluspanel.getChildAt(0) as android.view.ViewGroup
+                if (group.getChildAt(0) != null) {
+                    val page = group.getChildAt(0) as android.widget.RelativeLayout
+                    val pageline = page.getChildAt(0) as android.widget.LinearLayout
+                    val pageline2 = page.getChildAt(1) as android.widget.LinearLayout
+                    val page2 = group.getChildAt(1) as android.widget.RelativeLayout
+                    val page2line = page2.getChildAt(0) as android.widget.LinearLayout
+                    var allItemsMap = mapOf(
+                        "语音通话" to pageline.getChildAt(0) as android.widget.RelativeLayout,
+                        "视频通话" to pageline.getChildAt(1) as android.widget.RelativeLayout,
+                        "位置" to pageline.getChildAt(2) as android.widget.RelativeLayout,
+                        "热图" to pageline.getChildAt(3) as android.widget.RelativeLayout,
+                        "文件" to pageline2.getChildAt(0) as android.widget.RelativeLayout,
+                        "收藏" to pageline2.getChildAt(1) as android.widget.RelativeLayout,
+                        "名片" to pageline2.getChildAt(2) as android.widget.RelativeLayout,
+                        "一起听歌" to pageline2.getChildAt(3) as android.widget.RelativeLayout,
+                        "腾讯文档" to page2line.getChildAt(0) as android.widget.RelativeLayout
+                    )
+                    val c = FieldUtils.getField(it.thisObject, "a", Initiator.loadClass("com.tencent.mobileqq.activity.BaseChatPie")) as Object
+                    if (c.javaClass.toString().equals("class aemr")) {
+                        allItemsMap = mapOf(
+                            "语音通话" to pageline.getChildAt(0) as android.widget.RelativeLayout,
+                            "视频通话" to pageline.getChildAt(1) as android.widget.RelativeLayout,
+                            "戳一戳" to pageline.getChildAt(2) as android.widget.RelativeLayout,
+                            "热图" to pageline.getChildAt(3) as android.widget.RelativeLayout,
+                            "位置" to pageline2.getChildAt(0) as android.widget.RelativeLayout,
+                            "文件" to pageline2.getChildAt(1) as android.widget.RelativeLayout,
+                            "一起听歌" to pageline2.getChildAt(2) as android.widget.RelativeLayout,
+                            "收藏" to pageline2.getChildAt(3) as android.widget.RelativeLayout,
+                            "转账" to page2line.getChildAt(0) as android.widget.RelativeLayout,
+                            "名片" to page2line.getChildAt(1) as android.widget.RelativeLayout,
+                            "腾讯文档" to page2line.getChildAt(2) as android.widget.RelativeLayout
+                        )
+                    }
+                    for (item in activeItems)
+                        allItemsMap[item]?.visibility = android.view.View.GONE
+                }
+            }
+            Initiator.loadClass("com.tencent.mobileqq.activity.aio.PlusPanel").getDeclaredMethod("a").hookAfter(this, hooker)
+            Initiator.loadClass("com.tencent.mobileqq.activity.aio.PlusPanel").getDeclaredMethod("setVisibility", Int::class.java).hookBefore(this, hooker)
+            Initiator.loadClass("com.tencent.mobileqq.activity.aio.PlusPanel").getDeclaredMethod("onInterceptTouchEvent", android.view.MotionEvent::class.java).hookBefore(this, hooker)
+        }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_2_0) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
 }
