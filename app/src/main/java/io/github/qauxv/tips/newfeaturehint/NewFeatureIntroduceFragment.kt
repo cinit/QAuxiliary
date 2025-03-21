@@ -56,9 +56,9 @@ class NewFeatureIntroduceFragment : BaseRootLayoutFragment() {
         val disableBtn = mBinding.newFeatureIntroDisableButton
         disableBtn.setOnClickListener {
             AlertDialog.Builder(requireContext())
-                .setTitle("关闭新功能提示")
-                .setMessage("关闭后，您将不再收到新功能提示。\n您可用在 辅助 > 杂项 > 新功能提示 中重新开启。")
-                .setPositiveButton("关闭") { _, _ ->
+                .setTitle("禁用新功能提示")
+                .setMessage("禁用后，您将不再收到新功能提示。\n您可用在 辅助 > 杂项 > 新功能提示 中重新开启。")
+                .setPositiveButton("禁用") { _, _ ->
                     NewFeatureManager.newFeatureTipEnabled = false
                     NewFeatureManager.markAllFeaturesKnown()
                     finishFragment()

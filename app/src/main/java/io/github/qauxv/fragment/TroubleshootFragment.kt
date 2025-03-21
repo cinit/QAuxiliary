@@ -166,7 +166,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                     )
                 )
                 textItem(
-                    "清除 oat inline deopt cache list",
+                    "清除 inline deopt cache list",
                     "会在下次冷启动或开启新功能时重新生成",
                     onClick = clickToResetAotDeoptInlineCache
                 )
@@ -177,7 +177,8 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                         "但这也会导致冷启动时间变长(0.2-1.5s)并伴随有少量性能下降.\n" +
                         "LSPosed 框架的 dex2oat wrapper 已经包含了 --inline-max-code-units=0 参数, " +
                         "LSPatch 框架已经自带了禁用 ART profile saver, 请勿重复开启，否则可能导致尚不明确的不良反应。\n" +
-                        "重新安装（同版本覆盖安装，保留数据）宿主 apk 可以清除 oat.\n" +
+                        "重新安装（同版本覆盖安装，保留数据）宿主 apk 可以清除 oat. " +
+                        "开启 \"禁用 ART profile saver\" 后，建议清除一次 oat (如通过同版本覆盖安装)。\n" +
                         "Hooked method count = " + StartupInfo.requireHookBridge().hookedMethods.size + "\n" +
                         "Cached deopt method list size = " + OatInlineDeoptManager.getInstance().cachedDeoptList.size
                 )
