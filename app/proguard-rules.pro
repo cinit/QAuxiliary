@@ -90,3 +90,4 @@
 }
 
 -dontoptimize
+-dontshrink
