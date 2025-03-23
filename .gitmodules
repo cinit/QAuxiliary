@@ -1,6 +1,6 @@
 [submodule "libs/mmkv/MMKV"]
 	path = libs/mmkv/MMKV
-	url = https://github.com/Tencent/MMKV
+	url = https://github.com/cinit/MMKV
 	shallow = true
 	fetchRecurseSubmodules = false
 [submodule "libs/stub/qq-stub"]
