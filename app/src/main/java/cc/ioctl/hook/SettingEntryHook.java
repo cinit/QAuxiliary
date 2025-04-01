@@ -102,15 +102,35 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
         // 8.9.70+
         Class<?> kMainSettingFragment = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingFragment");
         if (kMainSettingFragment != null) {
-            Class<?> kMainSettingConfigProvider = Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
+            // MainSettingConfigProvider was removed in 9.1.65.24690(9516) gray release
+            Class<?> kMainSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
             // 9.1.20+, NewSettingConfigProvider, A/B test on 9.1.20
             Class<?> kNewSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.NewSettingConfigProvider");
-            Method getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            Method getItemProcessListOld = null;
+            if (kMainSettingConfigProvider != null) {
+                getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
+            }
             Method getItemProcessListNew = null;
             if (kNewSettingConfigProvider != null) {
                 getItemProcessListNew = Reflex.findSingleMethod(kNewSettingConfigProvider, List.class, false, Context.class);
             }
-            Class<?> kAbstractItemProcessor = Initiator.loadClass("com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor").getSuperclass();
+            if (getItemProcessListOld == null && getItemProcessListNew == null) {
+                throw new IllegalStateException("getItemProcessListOld == null && getItemProcessListNew == null");
+            }
+            Class<?> kAbstractItemProcessor = null;
+            for (String possibleParent : new String[]{
+                    "com.tencent.mobileqq.setting.main.processor.AccountSecurityItemProcessor",
+                    "com.tencent.mobileqq.setting.main.processor.AboutItemProcessor"
+            }) {
+                Class<?> k = Initiator.load(possibleParent);
+                if (k != null) {
+                    kAbstractItemProcessor = k.getSuperclass();
+                    break;
+                }
+            }
+            if (kAbstractItemProcessor == null) {
+                throw new IllegalStateException("kAbstractItemProcessor == null");
+            }
             // SimpleItemProcessor has too few xrefs. I have no idea how to find it without a list of candidates.
             final String[] possibleSimpleItemProcessorNames = new String[]{
                     // 8.9.70 ~ 9.0.0
@@ -178,7 +198,9 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 int indexToInsert = isNew ? 2 : 1;
                 result.add(indexToInsert, group);
             });
-            XposedBridge.hookMethod(getItemProcessListOld, callback);
+            if (getItemProcessListOld != null) {
+                XposedBridge.hookMethod(getItemProcessListOld, callback);
+            }
             if (getItemProcessListNew != null) {
                 XposedBridge.hookMethod(getItemProcessListNew, callback);
             }
