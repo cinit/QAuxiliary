@@ -446,7 +446,7 @@ Java_io_github_qauxv_util_soloader_NativeLoader_nativeLoadSecondaryNativeLibrary
                                   fmt::format("nativeSecondaryNativeLibraryAttachClassLoader failed with code {}", ret));
         return 0;
     }
-    return static_cast<jlong>(ret);
+    return reinterpret_cast<jlong>(lib);
 }
 
 // private static native void nativePrimaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent);

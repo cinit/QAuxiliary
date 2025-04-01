@@ -77,6 +77,7 @@ public class LoadLibraryInvoker {
      *
      * @param agent    The class loader to attach, must not be null.
      * @param initInfo The initialization information, a plain-old-data structure native pointer.
+     * @return a non-negative value if successful, otherwise negative or exception.
      */
     private static native int nativeSecondaryNativeLibraryAttachClassLoader(@NonNull ClassLoader agent, long[] initInfo);
 
