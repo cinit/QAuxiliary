@@ -24,6 +24,7 @@
 -keep class io.github.fusumayuki.** { *; }
 -keep class awoo.linwenxuan04.** { *; }
 -keep class wang.allenyou.** { *; }
+-keep class im.mingxi.** { *; }
 
 -keepclasseswithmembernames class * {
     native <methods>;
