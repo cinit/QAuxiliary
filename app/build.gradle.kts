@@ -257,6 +257,7 @@ android {
     applicationVariants.all {
         val variantCapped = name.capitalizeUS()
         tasks.findByName("lintVitalAnalyze${variantCapped}")?.dependsOn(mergeAssetsProvider)
+        tasks.findByName("generate${variantCapped}LintVitalReportModel")?.dependsOn(mergeAssetsProvider)
         mergeAssetsProvider.dependsOn(generateEulaAndPrivacy)
     }
 
