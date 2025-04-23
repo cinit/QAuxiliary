@@ -78,7 +78,8 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_9_70)) {
             val kSimpleItemProcessor = Initiator.loadClass(
-                if (requireMinQQVersion(QQVersion.QQ_9_0_8)) "com.tencent.mobileqq.setting.processor.h"
+                if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "com.tencent.mobileqq.setting.processor.i"
+                else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) "com.tencent.mobileqq.setting.processor.h"
                 else "com.tencent.mobileqq.setting.processor.g"
             )
             val mSetVisibility = kSimpleItemProcessor.declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == Boolean::class.java }
