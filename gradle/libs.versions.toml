@@ -1,13 +1,13 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.8.2"
+agp = "8.9.2"
 appCenter = "5.0.6"
 kotlin = "2.1.20"
-ksp = "2.1.20-1.0.31"
+ksp = "2.1.20-2.0.0"
 lifecycle = "2.8.7"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.30.1"
+protobuf = "4.30.2"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -17,14 +17,14 @@ androidx-annotation = { module = "androidx.annotation:annotation", version = "1.
 androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.15.0" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.2.0.202503040940-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.1.0" }
-kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.1" }
-kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.0" }
+kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
+kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.1" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
@@ -40,20 +40,20 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.4" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.5" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
 google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
-google-guava = { module = "com.google.guava:guava", version = "33.4.5-android" }
+google-guava = { module = "com.google.guava:guava", version = "33.4.8-android" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.2.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "11.6.3" }
-protobuf = { id = "com.google.protobuf", version = "0.9.4" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "12.0.0" }
+protobuf = { id = "com.google.protobuf", version = "0.9.5" }
 android-library = { id = "com.android.library", version.ref = "agp" }
