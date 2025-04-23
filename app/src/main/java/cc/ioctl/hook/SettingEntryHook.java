@@ -139,6 +139,8 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     "com.tencent.mobileqq.setting.processor.h",
                     // 9.1.50 (9006)
                     "com.tencent.mobileqq.setting.processor.i",
+                    // 9.1.70.25540 (9856) gray
+                    "com.tencent.mobileqq.setting.processor.j",
                     // QQ 9.1.28.21880 (8398) gray
                     "as3.i",
             };
