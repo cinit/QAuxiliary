@@ -89,7 +89,7 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
                 // Lcom/scwang/smart/refresh/header/TwoLevelHeader;
                 // com.qqnt.widget.smartrefreshlayout.header.TwoLevelHeader
                 it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first {
-                    it.name == "D"  //mEnableTwoLevel
+                    it.name == (if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "E" else "D") // mEnableTwoLevel
                 }.apply { isAccessible = true }.set(it.thisObject, false)
             }
 //            val name0 = when {
