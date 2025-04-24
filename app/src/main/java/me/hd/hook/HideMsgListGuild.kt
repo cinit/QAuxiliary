@@ -44,7 +44,9 @@ object HideMsgListGuild : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val bindingClass = Initiator.loadClass("com.tencent.qqnt.chats.f.a.e")
+        val bindingClass = Initiator.loadClass(
+            if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "qu2.e" else "com.tencent.qqnt.chats.f.a.e"
+        )
         XposedBridge.hookAllConstructors(
             bindingClass,
             object : XC_MethodHook() {
