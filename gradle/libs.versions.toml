@@ -1,6 +1,8 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.9.2"
+# There's some issues with the lint of AGP 8.9.x, causing the ':app:lintVitalAnalyzeRelease' task to fail.
+# Let's use AGP 8.8.2 for now.
+agp = "8.8.2"
 appCenter = "5.0.6"
 kotlin = "2.1.20"
 ksp = "2.1.20-2.0.0"
