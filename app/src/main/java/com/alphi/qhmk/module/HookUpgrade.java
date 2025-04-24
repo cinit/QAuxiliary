@@ -61,6 +61,8 @@ public class HookUpgrade extends CommonSwitchFunctionHook {
         Class<?> upgc;
         upgc = Initiator.load("com.tencent.mobileqq.upgrade.UpgradeController");
         if (upgc == null)
+            upgc = Initiator.load("com.tencent.mobileqq.upgrade.k");
+        if (upgc == null)
             upgc = Initiator.load("com.tencent.mobileqq.app.upgrade.UpgradeController");
         if (upgc == null && HostInfo.requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11))
             upgc = Initiator.load("aksy");
