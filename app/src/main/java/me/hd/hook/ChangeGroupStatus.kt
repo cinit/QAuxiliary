@@ -39,16 +39,28 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
 
     override val name = "更改群聊状态"
     override val description = """
-        查看消息列表中, 因涉嫌违规被停用群聊的消息
+        查看已退出、被停用或解散群聊的消息
         在群聊列表长按置顶, 即可显示群聊在消息列表
-        可能导致QQ性能卡顿, 未必要请保持关闭状态
+        可能导致 QQ 界面卡顿, 若非必要请保持关闭状态
     """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
         if (requireMinQQVersion(QQVersion.QQ_9_1_50)) {
+            "Lcom/tencent/mobileqq/aio/input/reply/i;->m()Z".method.hookBefore {
+                it.result = false
+            }
+            "Lcom/tencent/mobileqq/aio/msglist/holder/component/b;->r()Z".method.hookBefore {
+                it.result = false
+            }
             "Lcom/tencent/mobileqq/data/troop/TroopInfo;->isUnreadableBlock()Z".method.hookBefore {
+                it.result = false
+            }
+            "Lcom/tencent/mobileqq/troop/troopsetting/vm/TroopSettingViewModel;->Q2()V".method.hookBefore {
+                it.result = null
+            }
+            "Lcom/tencent/qqnt/troop/TroopListRepo;->isExit(Ljava/lang/String;Ljava/lang/String;Z)Z".method.hookBefore {
                 it.result = false
             }
         } else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
