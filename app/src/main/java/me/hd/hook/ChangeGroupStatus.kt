@@ -47,7 +47,11 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_1_50)) {
+            "Lcom/tencent/mobileqq/data/troop/TroopInfo;->isUnreadableBlock()Z".method.hookBefore {
+                it.result = false
+            }
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) {
             "Lcom/tencent/qqnt/aio/helper/TroopBlockHelper\$groupListener\$1;->a(Ljava/util/List;)V".method.hookBefore {
                 val list = it.args[0] as List<*>
                 list.forEach { troopInfo -> XposedHelpers.setBooleanField(troopInfo, "isTroopBlocked", false) }
