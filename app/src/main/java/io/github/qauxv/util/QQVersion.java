@@ -184,4 +184,5 @@ public class QQVersion {
     public static final long QQ_9_1_60 = 9388;
     public static final long QQ_9_1_65_BETA_24705 = 9522;
     public static final long QQ_9_1_65 = 9558;
+    public static final long QQ_9_1_70 = 9898;
 }
