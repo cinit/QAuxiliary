@@ -1,5 +1,6 @@
 package im.mingxi
 
+import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -25,6 +26,12 @@ object RemoveShakeAdExampleHook : CommonSwitchFunctionHook() {
                 param.result = null
             }
         })
+
+        val msgExtClass = Initiator.loadClass("com.tencent.qqnt.msg.MsgExtKt")
+        hookBeforeIfEnabled(msgExtClass.declaredMethods.single { it.name == "T" }) { param ->
+            param.result = false
+        }
+
         return true
     }
 }
