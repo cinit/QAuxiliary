@@ -94,6 +94,7 @@ import java.lang.reflect.Modifier;
 import java.util.ArrayList;
 import java.util.List;
 import kotlin.Unit;
+import nep.timeline.MessageUtils;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -362,6 +363,9 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
                 dialog.setPositiveButton("发送", (dialog1, which) -> {
                     try {
                         for (ContactDescriptor cd : mTargets) {
+                            if (MessageUtils.sendVoice(path, cd))
+                                continue;
+
                             Parcelable sesssion = SessionInfoImpl.createSessionInfo(cd.uin, cd.uinType);
                             ChatActivityFacade.sendPttMessage(getQQAppInterface(), sesssion, path);
                         }
