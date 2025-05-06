@@ -37,6 +37,8 @@ import java.util.Arrays;
 import java.util.Objects;
 
 public class MessageUtils {
+    private static boolean kernelPublic = false;
+
     private static long getDuration(@NonNull String pttPath) {
         Objects.requireNonNull(pttPath, "pttPath == null");
         long duration = 0;
@@ -56,7 +58,7 @@ public class MessageUtils {
     }
 
     public static boolean sendVoice(@NonNull String pttPath, @NonNull ContactDescriptor descriptor) {
-        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_0))
+        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_8))
             return false;
 
         try {
@@ -67,10 +69,15 @@ public class MessageUtils {
             String uid = (String) XposedHelpers.callMethod(uinAndUidApi, "getUidFromUin", descriptor.uin);
 
             Class<?> contactClass;
-            try {
-                contactClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact");
-            } catch (ClassNotFoundException ignored) {
+            if (kernelPublic) {
                 contactClass = Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact");
+            } else {
+                try {
+                    contactClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact");
+                } catch (ClassNotFoundException ignored) {
+                    contactClass = Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact");
+                    kernelPublic = true;
+                }
             }
 
             Object contact = XposedHelpers.newInstance(contactClass, descriptor.uin + 1, uid, "");
