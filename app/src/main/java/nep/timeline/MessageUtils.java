@@ -24,8 +24,10 @@ package nep.timeline;
 
 import android.media.MediaMetadataRetriever;
 import androidx.annotation.NonNull;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.data.ContactDescriptor;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.util.xpcompat.XposedHelpers;
@@ -54,13 +56,24 @@ public class MessageUtils {
     }
 
     public static boolean sendVoice(@NonNull String pttPath, @NonNull ContactDescriptor descriptor) {
+        if (!HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_0))
+            return false;
+
         try {
             Object msgUtilApi = api(Initiator.loadClass("com.tencent.qqnt.msg.api.IMsgUtilApi"));
             Object msgService = api(Initiator.loadClass("com.tencent.qqnt.msg.api.IMsgService"));
 
             Object uinAndUidApi = api(Initiator.loadClass("com.tencent.relation.common.api.IRelationNTUinAndUidApi"));
             String uid = (String) XposedHelpers.callMethod(uinAndUidApi, "getUidFromUin", descriptor.uin);
-            Object contact = XposedHelpers.newInstance(Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact"), descriptor.uin + 1, uid, "");
+
+            Class<?> contactClass;
+            try {
+                contactClass = Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.Contact");
+            } catch (ClassNotFoundException ignored) {
+                contactClass = Initiator.loadClass("com.tencent.qqnt.kernelpublic.nativeinterface.Contact");
+            }
+
+            Object contact = XposedHelpers.newInstance(contactClass, descriptor.uin + 1, uid, "");
 
             Object callbackProxy = Proxy.newProxyInstance(Initiator.getHostClassLoader(), new Class[] { Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback") }, (proxy, method, methodArgs) -> null);
             ArrayList<Object> arrayList = new ArrayList<>();
