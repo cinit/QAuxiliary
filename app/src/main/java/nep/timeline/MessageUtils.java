@@ -80,7 +80,7 @@ public class MessageUtils {
                 }
             }
 
-            Object contact = XposedHelpers.newInstance(contactClass, descriptor.uin + 1, uid, "");
+            Object contact = XposedHelpers.newInstance(contactClass, descriptor.uinType + 1, uid, "");
 
             Object callbackProxy = Proxy.newProxyInstance(Initiator.getHostClassLoader(), new Class[] { Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback") }, (proxy, method, methodArgs) -> null);
             ArrayList<Object> arrayList = new ArrayList<>();
