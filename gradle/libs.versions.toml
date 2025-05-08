@@ -2,11 +2,11 @@
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
 # There's some issues with the lint of AGP 8.9.x, causing the ':app:lintVitalAnalyzeRelease' task to fail.
 # Let's use AGP 8.8.2 for now.
-agp = "8.8.2"
+agp = "8.10.0"
 appCenter = "5.0.6"
 kotlin = "2.1.20"
 ksp = "2.1.20-2.0.1"
-lifecycle = "2.8.7"
+lifecycle = "2.9.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
 protobuf = "4.30.2"
@@ -56,6 +56,6 @@ changelog = { id = "org.jetbrains.changelog", version = "2.2.1" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "12.1.0" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "12.1.2" }
 protobuf = { id = "com.google.protobuf", version = "0.9.5" }
 android-library = { id = "com.android.library", version.ref = "agp" }
