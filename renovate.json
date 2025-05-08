@@ -25,6 +25,7 @@
     {
       "matchPackageNames": [
         "com.android.library",
+        "com.android.application",
         "com.android.tools.build:gradle",
         "com.google.flatbuffers:flatbuffers-java"
       ],
