@@ -41,6 +41,7 @@ import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.databinding.ItemFuncStatusBinding
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.func.IDslFragmentNode
 import io.github.qauxv.util.Log
 import kotlin.math.max
 
@@ -94,6 +95,7 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): FuncStatViewHolder {
             val binding = ItemFuncStatusBinding.inflate(LayoutInflater.from(parent.context), parent, false)
             binding.root.setOnClickListener(mOnItemClickListener)
+            binding.root.setOnLongClickListener(mOnItemLongClickListener)
             return FuncStatViewHolder(binding)
         }
 
@@ -187,6 +189,51 @@ class FuncStatListFragment : BaseRootLayoutFragment() {
                 FuncStatusDetailsFragment.getBundleForLocation(identifier)
             )
         }
+    }
+
+    private val mOnItemLongClickListener = View.OnLongClickListener { v ->
+        val itemAgentProvider = v.tag as? IUiItemAgentProvider
+        if (itemAgentProvider != null) {
+            val hostActivity = activity as? SettingsUiFragmentHostActivity ?: return@OnLongClickListener false
+
+            val identifier = itemAgentProvider.itemAgentProviderUniqueIdentifier
+            val baseContainerLocation = FunctionEntryRouter.resolveUiItemAnycastLocation(itemAgentProvider.uiItemLocation)
+                ?: itemAgentProvider.uiItemLocation
+
+            val absFullLocation = arrayOf(*baseContainerLocation, identifier)
+            var containerForFragmentLookup = absFullLocation.dropLast(1).toTypedArray()
+            var targetFragmentLocation: Array<String>? = null
+            var node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(containerForFragmentLookup)
+
+            while (true) {
+                if (node == null) {
+                    // Should not happen if uiItemLocation is correct
+                    Log.w("Failed to find node for location: " + containerForFragmentLookup.joinToString())
+                    break
+                }
+                if (node is IDslFragmentNode) {
+                    targetFragmentLocation = containerForFragmentLookup
+                    break
+                }
+                if (containerForFragmentLookup.isEmpty()) {
+                    // Reached root without finding a fragment node
+                    Log.w("Reached root while looking for fragment node for: " + absFullLocation.joinToString())
+                    break
+                }
+                containerForFragmentLookup = containerForFragmentLookup.dropLast(1).toTypedArray()
+                node = FunctionEntryRouter.settingsUiItemDslTree.lookupHierarchy(containerForFragmentLookup)
+            }
+
+            if (targetFragmentLocation != null) {
+                val fragment = SettingsMainFragment.newInstance(targetFragmentLocation, identifier)
+                hostActivity.presentFragment(fragment)
+                return@OnLongClickListener true
+            } else {
+                Log.e("Could not determine targetFragmentLocation for " + itemAgentProvider.itemAgentProviderUniqueIdentifier)
+                // Fallback or error message if needed
+            }
+        }
+        false
     }
 
     private fun calculateUiItemRank(item: IUiItemAgentProvider): Int {
