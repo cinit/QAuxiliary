@@ -50,9 +50,12 @@ plugins {
 
 // ------ buildscript config ------
 
-val buildAllAbiForDebug = false
-val isNewXposedApiEnabled = true
-val isNativeFullDebugMode = false
+val buildAllAbiForDebug = Version.getLocalProperty(project, "qauxv.override.forceallabi")
+    ?.toBoolean() ?: false
+val isNewXposedApiEnabled = Version.getLocalProperty(project, "qauxv.override.newxposedapi")
+    ?.toBoolean() ?: true
+val isNativeFullDebugMode = Version.getLocalProperty(project, "qauxv.override.nativefulldebug")
+    ?.toBoolean() ?: false
 
 val currentBuildUuid = UUID.randomUUID().toString()
 println("Current build ID is $currentBuildUuid")
