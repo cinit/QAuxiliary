@@ -71,8 +71,12 @@ public class Nt_kernel_bridge {
     }
 
     public static MsgAttributeInfo getDefaultAttributeInfo() {
-
-        VASMsgNamePlate plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
+        VASMsgNamePlate plate;
+        if (requireMinQQVersion(QQVersion.QQ_9_1_70)) {
+            plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0, 0);
+        } else {
+            plate = new VASMsgNamePlate(258, 64, 0, 0, 0, 0, 258, 0, new ArrayList<>(), 0, 0);
+        }
         VASMsgBubble bubble = new VASMsgBubble(0, 0, 0, 0);
         VASMsgFont font = new VASMsgFont(65536, 0L, 0, 0, 0);
         VASMsgAvatarPendant pendant = new VASMsgAvatarPendant();
