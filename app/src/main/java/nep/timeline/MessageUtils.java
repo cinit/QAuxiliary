@@ -66,7 +66,9 @@ public class MessageUtils {
             Object msgService = api(Initiator.loadClass("com.tencent.qqnt.msg.api.IMsgService"));
 
             Object uinAndUidApi = api(Initiator.loadClass("com.tencent.relation.common.api.IRelationNTUinAndUidApi"));
-            String uid = (String) XposedHelpers.callMethod(uinAndUidApi, "getUidFromUin", descriptor.uin);
+            int type = descriptor.uinType + 1;
+            String uin = descriptor.uin;
+            String uid = (type != 2 && type != 4 && uin.chars().allMatch(Character::isDigit)) ? (String) XposedHelpers.callMethod(uinAndUidApi, "getUidFromUin", uin) : uin;
 
             Class<?> contactClass;
             if (kernelPublic) {
@@ -80,7 +82,7 @@ public class MessageUtils {
                 }
             }
 
-            Object contact = XposedHelpers.newInstance(contactClass, descriptor.uinType + 1, uid, "");
+            Object contact = XposedHelpers.newInstance(contactClass, type, uid, "");
 
             Object callbackProxy = Proxy.newProxyInstance(Initiator.getHostClassLoader(), new Class[] { Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.IOperateCallback") }, (proxy, method, methodArgs) -> null);
             ArrayList<Object> arrayList = new ArrayList<>();
