@@ -19,6 +19,7 @@ QAuxiliary 是一个基于 QNotified 的开源 Xposed 模块
 
 - Android >= 7.0
 - QQ >= 8.2.0, TIM >= 2.2.0, QQLite >= 4.0, QQ HD >= 5.9.3
+- 在没有 Xposed 环境的系统上，QAuxiliary 也可以通过 Frida 来加载 (需要 root)，参考 [instruction-qauxv-frida.md](./docs/instruction-qauxv-frida.md).
 
 ## 一切开发旨在学习，请勿用于非法用途
 
