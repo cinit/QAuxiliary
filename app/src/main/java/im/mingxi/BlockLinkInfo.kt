@@ -11,7 +11,7 @@ import io.github.qauxv.util.xpcompat.XposedBridge
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveShakeAdExampleHook : CommonSwitchFunctionHook() {
+object BlockLinkInfo : CommonSwitchFunctionHook() {
 
     override val name = "屏蔽链接信息"
 
