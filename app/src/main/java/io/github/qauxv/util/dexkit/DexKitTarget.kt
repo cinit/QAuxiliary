@@ -1078,3 +1078,10 @@ data object Hd_HideTipsBar_Method : DexKitTarget.UsingStr() {
     override val declaringClass = "Lcom/tencent/mobileqq/banner/BannerManager;"
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_DisableFekitToAppDialog_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("DTAPIImpl.FekitToApp", "onSecDispatchToAppEvent show dialog"))
+    override val declaringClass = "Lcom/tencent/mobileqq/dt/api/impl/DTAPIImpl;"
+    override val filter = DexKitFilter.allowAll
+}
