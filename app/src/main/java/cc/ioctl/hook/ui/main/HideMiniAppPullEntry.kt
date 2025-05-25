@@ -25,8 +25,6 @@ import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
 import com.github.kyuubiran.ezxhelper.utils.paramCount
-import io.github.qauxv.util.xpcompat.XC_MethodReplacement
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.config.ConfigItems
@@ -41,15 +39,9 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.impl.DexKitDeobfs
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodReplacement
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import org.luckypray.dexkit.result.MethodData
-import kotlin.collections.HashMap
-import kotlin.collections.HashSet
-import kotlin.collections.MutableMap
-import kotlin.collections.MutableSet
-import kotlin.collections.Set
-import kotlin.collections.filter
-import kotlin.collections.first
-import kotlin.collections.indices
 import kotlin.collections.set
 
 @FunctionHookEntry
@@ -84,19 +76,23 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
 //        }
 
 
-        Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew")?.let {
-            it.hookAllConstructorAfter {
+        Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew")?.let { clazz ->
+            clazz.hookAllConstructorAfter {
                 // Lcom/scwang/smart/refresh/header/TwoLevelHeader;
                 // com.qqnt.widget.smartrefreshlayout.header.TwoLevelHeader
-                it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first {
-                    it.name == (if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "E" else "D") // mEnableTwoLevel
+                it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first { field ->// mEnableTwoLevel
+                    field.name == when {// RefreshState.ReleaseToTwoLevel
+                        requireMinQQVersion(QQVersion.QQ_9_1_70) -> "I"// 9.1.70 ~ 9.1.75
+                        requireMinQQVersion(QQVersion.QQ_9_1_30) -> "E"// 9.1.30 ~ 9.1.65
+                        else -> "D"
+                    }
                 }.apply { isAccessible = true }.set(it.thisObject, false)
             }
 //            val name0 = when {
 //                requireMinQQVersion(QQVersion.QQ_9_0_50) -> "c"
 //                else -> "a"
 //            }
-            it.findMethod { name == miniOldStyleHeaderNewMethod && paramCount == 3 }.hookAfter {
+            clazz.findMethod { name == miniOldStyleHeaderNewMethod && paramCount == 3 }.hookAfter {
                 XposedHelpers.callMethod(it.args[0], "finishRefresh")
             }
         } ?: run {
@@ -107,7 +103,7 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
                         it.name == "D"  //mEnableTwoLevel
                     }.apply { isAccessible = true }.set(it.thisObject, false)
                 }
-                it.findMethod { name == "a" && paramCount == 3 }?.hookAfter {
+                it.findMethod { name == "a" && paramCount == 3 }.hookAfter {
                     XposedHelpers.callMethod(it.args[0], "finishRefresh")
                 }
             }
