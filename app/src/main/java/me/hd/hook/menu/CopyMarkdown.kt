@@ -54,7 +54,14 @@ object CopyMarkdown : CommonSwitchFunctionHook(
         return true
     }
 
-    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent")
+    override val targetComponentTypes = arrayOf(
+        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
+            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIORichContentComponent"
+        } else {
+            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent"
+        },
+    )
+
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
         val item = CustomMenu.createItemIconNt(msg, "复制内容", R.drawable.ic_item_copy_72dp, R.id.item_copy_md) {

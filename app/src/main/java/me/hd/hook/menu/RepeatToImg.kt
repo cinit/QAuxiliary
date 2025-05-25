@@ -164,12 +164,20 @@ object RepeatToImg : CommonSwitchFunctionHook(
 
     override val targetComponentTypes = arrayOf(
         "com.tencent.mobileqq.aio.msglist.holder.component.anisticker.AIOAniStickerContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent",
+        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
+            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"
+        } else {
+            "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent"
+        },
         "com.tencent.mobileqq.aio.msglist.holder.component.facebubble.AIOFaceBubbleContentComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.file.AIOFileContentComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.flashpic.AIOFlashPicContentComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent",
+        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
+            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIORichContentComponent"
+        } else {
+            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent"
+        },
         "com.tencent.mobileqq.aio.msglist.holder.component.marketface.AIOMarketFaceComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
         "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
