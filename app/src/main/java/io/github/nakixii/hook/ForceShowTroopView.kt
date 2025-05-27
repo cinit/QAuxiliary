@@ -22,7 +22,7 @@
 
 package io.github.nakixii.hook
 
-import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
+import cc.ioctl.util.hookAfterIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -31,17 +31,17 @@ import io.github.qauxv.util.Initiator
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object ForceUnfoldMessages : CommonSwitchFunctionHook() {
-    override val name = "显示被折叠的消息"
-    override val description = "使得那些被隐藏的色图可见"
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+object ForceShowTroopView : CommonSwitchFunctionHook() {
+    override val name = "显示已退群用户的信息"
+    override val description = "用于直接查看已退群用户的发言记录"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
 
     override fun initOnce(): Boolean {
-        Initiator.loadClass("com.tencent.qqnt.kernel.nativeinterface.FoldingInfo").hookAllConstructorAfter {
-            it.thisObject.javaClass.declaredFields.first {
-                it.name == "beatType"
-            }.apply { isAccessible = true }.set(it.thisObject, null)
+        val troopInfoClass = Initiator.loadClass("com.tencent.mobileqq.profilecard.component.troop.ElegantProfileTroopMemInfoComponent")
+        hookAfterIfEnabled(troopInfoClass.declaredMethods.single { it.name == "getTroopMemeJoinTime" }) {
+            if (it.result == "") it.result = "已退出该群"
         }
+
         return true
     }
 }
