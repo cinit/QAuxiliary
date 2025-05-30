@@ -4,12 +4,12 @@
 # Let's use AGP 8.8.2 for now.
 agp = "8.8.2"
 appCenter = "5.0.6"
-kotlin = "2.1.20"
-ksp = "2.1.20-2.0.1"
+kotlin = "2.1.21"
+ksp = "2.1.21-2.0.1"
 lifecycle = "2.9.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.30.2"
+protobuf = "4.31.0"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -21,10 +21,10 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.0" }
-eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.2.0.202503040940-r" }
+eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.2.1.202505142326-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.1.0" }
+kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.2.0" }
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.10.2" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.8.1" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
