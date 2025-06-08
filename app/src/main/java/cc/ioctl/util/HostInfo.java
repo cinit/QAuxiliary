@@ -23,6 +23,7 @@ package cc.ioctl.util;
 
 import android.app.Application;
 import androidx.annotation.NonNull;
+import io.github.qauxv.util.QQVersion;
 
 /**
  * Helper class for getting host information. Keep it as simple as possible.
@@ -115,5 +116,9 @@ public class HostInfo {
 
     public static boolean requireMinTimVersion(long versionCode) {
         return isTim() && getLongVersionCode() >= versionCode;
+    }
+
+    public static boolean requireStickPlantVersion(long versionCode) {
+        return requireMinTimVersion(versionCode) ||  requireMinQQVersion(QQVersion.QQ_9_1_75);
     }
 }
