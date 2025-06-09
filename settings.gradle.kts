@@ -25,7 +25,7 @@ dependencyResolutionManagement {
             content {
                 includeGroup("com.github.livefront.sealed-enum")
                 includeGroup("com.github.MatteoBattilana")
-                includeGroup("com.github.plattysoft")
+                // includeGroup("com.github.plattysoft")
             }
         }
         maven("https://api.xposed.info/") {
