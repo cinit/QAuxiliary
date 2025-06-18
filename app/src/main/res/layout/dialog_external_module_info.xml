@@ -1,0 +1,84 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ QAuxiliary - An Xposed module for QQ/TIM
+  ~ Copyright (C) 2019-2025 QAuxiliary developers
+  ~ https://github.com/cinit/QAuxiliary
+  ~
+  ~ This software is an opensource software: you can redistribute it
+  ~ and/or modify it under the terms of the General Public License
+  ~ as published by the Free Software Foundation; either
+  ~ version 3 of the License, or any later version as published
+  ~ by QAuxiliary contributors.
+  ~
+  ~ This software is distributed in the hope that it will be useful,
+  ~ but WITHOUT ANY WARRANTY; without even the implied warranty of
+  ~ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+  ~ See the General Public License for more details.
+  ~
+  ~ You should have received a copy of the General Public License
+  ~ along with this software.
+  ~ If not, see
+  ~ <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:orientation="vertical"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingTop="8dp"
+    android:paddingHorizontal="8dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="包名"
+        android:textColor="?attr/colorAccent"
+        android:textSize="12sp" />
+
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/itemExternalModulePackageName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Package Name"
+        android:autofillHints="packageName"
+        android:inputType="text"
+        android:gravity="start|center_vertical"
+        android:text="${packageName}"
+        android:textColor="@color/firstTextColor"
+        android:textSize="16sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:text="安装包签名 SHA2-256 摘要"
+        android:textColor="?attr/colorAccent"
+        android:textSize="12sp" />
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="小写十六进制，支持多个，一行一个"
+        android:textColor="@color/secondTextColor"
+        android:textSize="12sp" />
+
+    <androidx.appcompat.widget.AppCompatEditText
+        android:id="@+id/itemExternalModuleCertSha256"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="start|center_vertical"
+        android:autofillHints="sha256Certificate"
+        android:inputType="textMultiLine"
+        android:text="${certSha256}"
+        android:hint="SHA2-256 of the certificate"
+        android:textColor="@color/firstTextColor"
+        android:textSize="16sp" />
+
+    <androidx.appcompat.widget.AppCompatCheckBox
+        android:id="@+id/itemExternalModuleEnable"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="启用此模块"
+        android:textColor="@color/firstTextColor" />
+
+</LinearLayout>

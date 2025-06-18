@@ -52,11 +52,16 @@ object ExternalModuleConfigHook : CommonConfigFunctionHook(SyncUtils.PROC_ANY) {
     override val valueState: StateFlow<String?> by lazy { mStateFlow }
 
     private fun getStateFlowText(): String {
-        val size = ExternalModuleManager.getActiveExternalModules().size
-        return if (size == 0) {
-            "无"
-        } else {
-            "已启用 $size 个"
+        try {
+            val size = ExternalModuleManager.loadExternalModuleInfoList().size
+            return if (size == 0) {
+                "无"
+            } else {
+                "已启用 $size 个"
+            }
+        } catch (e: Exception) {
+            // keep it simple, users may click this item to open the config page to see the full error message
+            return "出错"
         }
     }
 

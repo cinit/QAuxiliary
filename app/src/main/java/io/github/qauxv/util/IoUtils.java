@@ -317,6 +317,19 @@ public class IoUtils {
         return new String(hex);
     }
 
+    @NonNull
+    public static String bytesToHex(@NonNull byte[] bytes, boolean upperCase) {
+        Objects.requireNonNull(bytes, "bytes == null");
+        char[] hexDigits = upperCase ? HEX_UPPER_DIGITS : HEX_LOWER_DIGITS;
+        char[] hex = new char[bytes.length * 2];
+        for (int i = 0; i < bytes.length; i++) {
+            int b = bytes[i] & 0xFF;
+            hex[i * 2] = hexDigits[b >>> 4];
+            hex[i * 2 + 1] = hexDigits[b & 0xF];
+        }
+        return new String(hex);
+    }
+
     public static void throwRuntimeExceptionForTest() {
         throw new RuntimeException("This is a test exception");
     }

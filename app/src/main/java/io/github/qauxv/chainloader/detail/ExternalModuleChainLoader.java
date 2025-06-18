@@ -38,6 +38,7 @@ import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.security.MessageDigest;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Properties;
@@ -113,6 +114,9 @@ public class ExternalModuleChainLoader {
         Context ctx = HostInfo.getApplication();
         PackageManager pms = ctx.getPackageManager();
         for (ExternalModuleManager.ExternalModuleInfo module : modules) {
+            if (!module.getEnable()) {
+                continue; // skip disabled modules
+            }
             try {
                 String pkg = module.getPackageName();
                 PackageInfo pi = pms.getPackageInfo(pkg, PackageManager.GET_SIGNATURES);
@@ -121,9 +125,17 @@ public class ExternalModuleChainLoader {
                 Signature[] sigs = pi.signatures;
                 assert sigs != null;
                 String certBase64 = getSha256LowerHex(sigs[0].toByteArray());
-                if (!module.getCertificateSha256HexLowerChars().equals(certBase64)) {
+                boolean signatureValid = false;
+                for (String sig : module.getCertificateSha256HexLowerCharsArray()) {
+                    if (sig.equals(certBase64) && !sig.isEmpty()) {
+                        signatureValid = true;
+                        break;
+                    }
+                }
+                if (!signatureValid) {
                     throw new SecurityException("signature mismatch: pkg: " + pi.packageName
-                            + ", expected: " + module.getCertificateSha256HexLowerChars() + ", got " + certBase64);
+                            + ", expected: " + Arrays.toString(module.getCertificateSha256HexLowerCharsArray())
+                            + ", got " + certBase64);
                 }
                 loadModuleFromApkLocked(pkg, ai, module);
             } catch (PackageManager.NameNotFoundException | RuntimeException |
@@ -134,8 +146,8 @@ public class ExternalModuleChainLoader {
         }
     }
 
-    public static void loadExternalModulesForStartup() {
-        loadExternalModules(ExternalModuleManager.INSTANCE.getActiveExternalModules());
+    public static void loadExternalModulesForStartup() throws IOException {
+        loadExternalModules(ExternalModuleManager.INSTANCE.loadExternalModuleInfoList());
     }
 
 }

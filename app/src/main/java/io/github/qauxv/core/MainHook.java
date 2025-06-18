@@ -47,6 +47,7 @@ import cc.ioctl.hook.ui.title.RemoveCameraButton;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import io.github.qauxv.chainloader.detail.ExternalModuleChainLoader;
+import io.github.qauxv.chainloader.detail.ui.ExternalModuleConfigHook;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.config.ConfigItems;
@@ -60,6 +61,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import xyz.nextalone.hook.RemoveSuperQQShow;
@@ -175,13 +177,18 @@ public class MainHook {
         }
         // load external modules, if any
         if (!safeMode) {
-            ExternalModuleChainLoader.loadExternalModulesForStartup();
+            try {
+                ExternalModuleChainLoader.loadExternalModulesForStartup();
+            } catch (IOException | RuntimeException e) {
+                ExternalModuleConfigHook.INSTANCE.traceError(e);
+            }
         }
     }
 
     private static boolean isForegroundStartupForMainProcess(Context ctx, Object step) {
         // TODO: 2022-12-03 find a way to detect foreground startup
         // XXX: BaseApplicationImpl.sIsBgStartup does not work, always false
+        // TODO: 2025-06-17 use ActivityManager.getRunningTasks to detect foreground startup
         return false;
     }
 
