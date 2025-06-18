@@ -44,9 +44,10 @@ class RecyclerListViewController(
 
     // DSL stuff below
 
-    var typeList: Array<Class<*>> = emptyArray()
-    var itemList: ArrayList<TMsgListItem> = ArrayList()
-    var itemTypeIds: Array<Int> = emptyArray()
+    // add, but never remove, item types to this list
+    private val typeList: ArrayList<Class<*>> = ArrayList()
+    private var itemList: ArrayList<TMsgListItem> = ArrayList()
+    private var itemTypeIds: Array<Int> = emptyArray()
     var itemTypeDelegate: Array<TMsgListItem> = emptyArray()
 
     var recyclerListView: RecyclerView? = null
@@ -72,7 +73,13 @@ class RecyclerListViewController(
             itemList.addAll(it.inflateTMsgListItems(context))
         }
         // group items by java class
-        typeList = itemList.map { it.javaClass }.distinct().toTypedArray()
+        val knownTypes = itemList.map { it.javaClass }.distinct().toTypedArray()
+        // make sure that all knows types are added to typeList
+        for (type in knownTypes) {
+            if (type !in typeList) {
+                typeList.add(type)
+            }
+        }
         // item id to type id mapping
         itemTypeIds = Array(itemList.size) {
             typeList.indexOf(itemList[it].javaClass)
