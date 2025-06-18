@@ -85,8 +85,15 @@ class RecyclerListViewController(
             typeList.indexOf(itemList[it].javaClass)
         }
         // item type delegate is used to create view holder
-        itemTypeDelegate = Array(typeList.size) {
-            itemList[itemTypeIds.indexOf(it)]
+        if (itemTypeDelegate.size != typeList.size) {
+            val old = itemTypeDelegate
+            itemTypeDelegate = Array(typeList.size) {
+                if (it < old.size) {
+                    old[it]
+                } else {
+                    itemList[itemTypeIds.indexOf(it)]
+                }
+            }
         }
         if (adapter != null && recyclerListView != null) {
             SyncUtils.runOnUiThread {
