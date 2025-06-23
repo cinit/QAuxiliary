@@ -1085,3 +1085,9 @@ data object Hd_DisableFekitToAppDialog_Method : DexKitTarget.UsingStringVector()
     override val declaringClass = "Lcom/tencent/mobileqq/dt/api/impl/DTAPIImpl;"
     override val filter = DexKitFilter.allowAll
 }
+
+data object RemoveSecurityTipsBanner_Method : DexKitTarget.UsingDexkit() {
+    override val findMethod = true
+    override val declaringClass = ""
+    override val filter = DexKitFilter.allowAll
+}
