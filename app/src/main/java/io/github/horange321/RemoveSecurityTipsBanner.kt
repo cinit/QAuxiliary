@@ -27,52 +27,21 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.step.Step
-import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexKit.requireMethodFromCache
-import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.RemoveSecurityTipsBanner_Method
 
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object RemoveSecurityTipsBanner :
-    CommonSwitchFunctionHook("removeSecurityTipsBanner", arrayOf(RemoveSecurityTipsBanner_Method)),
-    DexKitFinder {
+    CommonSwitchFunctionHook("removeSecurityTipsBanner", arrayOf(RemoveSecurityTipsBanner_Method)) {
     override val name = "隐藏群聊风险提醒"
     override val uiItemLocation: Array<String> = Simplify.CHAT_GROUP_TITLE
-    override val isNeedFind = RemoveSecurityTipsBanner_Method.descCache == null
-    private val steps = object : Step {
-        override fun step() = doFind()
-        override fun isDone() = !isNeedFind
-        override fun getPriority() = 0
-        override fun getDescription() = "移除群聊顶部风险提醒"
-    }
-    override val description = steps.description
-
-    override fun makePreparationSteps(): Array<Step> = arrayOf(steps)
+    override val description = "移除群聊顶部风险提醒"
 
 
     override fun initOnce(): Boolean {
         requireMethodFromCache(RemoveSecurityTipsBanner_Method).hookReplace { }
-        return true
-    }
-
-
-    override fun doFind(): Boolean {
-        getCurrentBackend().use { backend ->
-            val dkb = backend.getDexKitBridge()
-            dkb.findMethod {
-                // void com.tencent.mobileqq.troop.tipsbar.TroopSecurityTipsBanner::doOnCreate(com.tencent.mobileqq.aio.notification.c)
-                matcher {
-                    declaredClass("com.tencent.mobileqq.troop.tipsbar.TroopSecurityTipsBanner")
-                    returnType("void")
-                    paramTypes("com.tencent.mobileqq.aio.notification.c")
-                }
-            }.single().let {
-                RemoveSecurityTipsBanner_Method.descCache = it.descriptor
-            }
-        }
         return true
     }
 }
