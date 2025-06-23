@@ -1086,9 +1086,9 @@ data object Hd_DisableFekitToAppDialog_Method : DexKitTarget.UsingStringVector()
     override val filter = DexKitFilter.allowAll
 }
 
-data object RemoveSecurityTipsBanner_Method : DexKitTarget.UsingStr() {
+data object RemoveSecurityTipsBanner_Method : DexKitTarget.UsingStringVector() {
     override val findMethod = true
     override val declaringClass = "com/tencent/mobileqq/troop/tipsbar/TroopSecurityTipsBanner"
-    override val traitString = arrayOf("[doOnCreate]")
+    override val traitStringVectors = arrayOf(arrayOf("[doOnCreate]", "TroopSecurityTipsBar"))
     override val filter = DexKitFilter.allowAll
 }
