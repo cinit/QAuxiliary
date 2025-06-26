@@ -39,9 +39,9 @@ import io.github.qauxv.util.Log
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object QaDialogStyleHook : CommonSwitchFunctionHook() {
-    override val name = "统一 QA dialog 样式"
-    override val description = "统一成 MD3 风格, 仅影响 dialog 外观 不影响内容"
+object DialogStyleHook : CommonSwitchFunctionHook() {
+    override val name = "统一 QQ dialog 样式"
+    override val description = "统一成 MD3 大圆角, 仅影响 dialog 外观 不影响内容"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
     override fun initOnce(): Boolean {
         Dialog::class.java

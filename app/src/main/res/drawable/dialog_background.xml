@@ -22,5 +22,5 @@
 
 <shape android:shape="rectangle" xmlns:android="http://schemas.android.com/apk/res/android">
     <corners android:radius="28dp" />
-    <solid android:color="?android:attr/colorBackgroundFloating" />
+    <solid android:color="?attr/colorBackgroundFloating" />
 </shape>
