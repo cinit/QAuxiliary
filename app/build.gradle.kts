@@ -273,6 +273,19 @@ android {
     }
     // not use embedded dex
     packagingOptions.dex.useLegacyPackaging = true
+
+    /**
+     * There's some issues with the lint of AGP [8.9.x-8.11.1], causing the ':app:lintVitalAnalyzeRelease' task to fail.
+     * Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)
+     * Message: Unexpected failure during lint analysis (this is a bug in lint or one of the libraries it depends on)
+     * Message: Unexpected failure during lint analysis of QSecO3AddRiskRequestMitigation.kt (this is a bug in lint or one of the libraries it depends on)
+     * Message: Incorrect type 'com/tencent/mobileqq/profilecard/base/framework/impl/AbsComponent' (JDK_24)
+     * The crash seems to involve the detector \\\`com.android.tools.lint.checks.PrivateApiDetector\\\`.
+     * You can try disabling it with something like this:
+     */
+    lint {
+        disable += arrayOf("BlockedPrivateApi", "DiscouragedPrivateApi", "PrivateApi", "SoonBlockedPrivateApi")
+    }
 }
 
 kotlin {

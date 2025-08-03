@@ -1,8 +1,6 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-# There's some issues with the lint of AGP 8.9.x, causing the ':app:lintVitalAnalyzeRelease' task to fail.
-# Let's use AGP 8.8.2 for now.
-agp = "8.8.2"
+agp = "8.11.1"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
 kotlin = "2.2.0"
@@ -18,7 +16,7 @@ appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", vers
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
 # Dependency 'androidx.browser:browser:1.9.0' requires Android Gradle plugin 8.9.1 or higher.
-androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
+androidx-browser = { module = "androidx.browser:browser", version = "1.9.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
