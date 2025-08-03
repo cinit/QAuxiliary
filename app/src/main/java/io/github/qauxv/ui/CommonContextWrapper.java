@@ -185,6 +185,8 @@ public class CommonContextWrapper extends ContextThemeWrapper {
 
     @Override
     public Object getSystemService(String name) {
+        // QQ has a custom layout_inflater in robot AIO, which will cause androidx context class loader mismatches.
+        // E.g. ClassCastException with same class name but different classloaders when showing an androidx dialog.
         if (LAYOUT_INFLATER_SERVICE.equals(name)) {
             if (mInflater == null) {
                 mInflater = LayoutInflater.from(getBaseContextImpl(getBaseContext())).cloneInContext(this);
