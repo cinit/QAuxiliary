@@ -31,6 +31,7 @@ import com.android.tools.build.apkzlib.zip.CompressionMethod
 import com.android.tools.build.apkzlib.zip.ZFile
 import com.android.tools.build.apkzlib.zip.ZFileOptions
 import org.jetbrains.changelog.markdownToHTML
+import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 import org.jetbrains.kotlin.gradle.tasks.KotlinCompile
 import java.io.FileInputStream
 import java.security.KeyStore
@@ -157,7 +158,6 @@ android {
             isShrinkResources = false
             isMinifyEnabled = true
             proguardFiles("proguard-rules.pro")
-            kotlinOptions.suppressWarnings = true
             val ltoCacheFlags = listOf(
                 "-flto=thin",
                 "-Wl,--thinlto-cache-policy,cache_size_bytes=300m",
@@ -556,8 +556,8 @@ protobuf {
 
 // force kotlin to produce java 11 class files
 tasks.withType<KotlinCompile> {
-    kotlinOptions {
-        jvmTarget = "11"
+    compilerOptions {
+        jvmTarget = JvmTarget.JVM_11
     }
 }
 

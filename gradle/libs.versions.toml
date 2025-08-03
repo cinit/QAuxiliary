@@ -4,8 +4,9 @@
 # Let's use AGP 8.8.2 for now.
 agp = "8.8.2"
 appCenter = "5.0.6"
+# keep kotlin and ksp versions in sync
 kotlin = "2.2.0"
-ksp = "2.1.21-2.0.1"
+ksp = "2.2.0-2.0.2"
 lifecycle = "2.9.2"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
@@ -16,7 +17,8 @@ appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", 
 appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", version.ref = "appCenter" }
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.9.1" }
-androidx-browser = { module = "androidx.browser:browser", version = "1.9.0" }
+# Dependency 'androidx.browser:browser:1.9.0' requires Android Gradle plugin 8.9.1 or higher.
+androidx-browser = { module = "androidx.browser:browser", version = "1.8.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
