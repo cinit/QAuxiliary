@@ -24,14 +24,17 @@ package io.github.qauxv.ui;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.ContextWrapper;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
 import android.view.ContextThemeWrapper;
+import android.view.LayoutInflater;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.app.AppCompatActivity;
 import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.SavedInstanceStatePatchedClassReferencer;
 import java.util.Objects;
 
@@ -69,6 +72,7 @@ public class CommonContextWrapper extends ContextThemeWrapper {
 
     private ClassLoader mXref = null;
     private Resources mOverrideResources;
+    private LayoutInflater mInflater = null;
 
     @NonNull
     @Override
@@ -160,4 +164,34 @@ public class CommonContextWrapper extends ContextThemeWrapper {
         // change this if you have a AppCompat theme that is not material theme
         return createAppCompatContext(base);
     }
+
+    @SuppressLint("PrivateApi")
+    private static Context getBaseContextImpl(@NonNull Context context) {
+        Class<?> kContextImpl;
+        try {
+            kContextImpl = Class.forName("android.app.ContextImpl");
+        } catch (ClassNotFoundException e) {
+            throw IoUtils.unsafeThrow(e);
+        }
+        Context c;
+        while ((context instanceof ContextWrapper) && (c = ((ContextWrapper) context).getBaseContext()) != null) {
+            context = c;
+        }
+        if (!kContextImpl.isInstance(context)) {
+            throw new UnsupportedOperationException("unable to get base context from " + context.getClass().getName());
+        }
+        return context;
+    }
+
+    @Override
+    public Object getSystemService(String name) {
+        if (LAYOUT_INFLATER_SERVICE.equals(name)) {
+            if (mInflater == null) {
+                mInflater = LayoutInflater.from(getBaseContextImpl(getBaseContext())).cloneInContext(this);
+            }
+            return mInflater;
+        }
+        return getBaseContext().getSystemService(name);
+    }
+
 }
