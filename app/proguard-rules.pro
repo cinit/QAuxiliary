@@ -7,7 +7,6 @@
 -keep class com.enlysure.** { *; }
 -keep class com.microsoft.** { *; }
 -keep class com.rymmmmm.** { *; }
--keep class com.codepwn.** { *; }
 -keep class com.hicore.** { *; }
 -keep class com.xiaoniu.** { *; }
 -keep class cn.lliiooll.** { *; }
