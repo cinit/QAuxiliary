@@ -37,6 +37,7 @@ import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
 import me.singleneuron.data.MsgRecordData
+import nep.timeline.PromptForNoSeqMessage
 import xyz.nextalone.hook.HideTroopLevel
 import xyz.nextalone.util.hookAfter
 import java.lang.reflect.Method
@@ -52,6 +53,7 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
         HideTroopLevel,
         ShowMsgAt,
         ChatItemShowQQUin,
+        PromptForNoSeqMessage,
         MultiForwardAvatarHook
     )
 
