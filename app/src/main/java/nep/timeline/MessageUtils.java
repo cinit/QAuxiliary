@@ -24,6 +24,7 @@ package nep.timeline;
 
 import android.media.MediaMetadataRetriever;
 import androidx.annotation.NonNull;
+import io.github.qauxv.bridge.ntapi.MsgConstants;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -38,6 +39,10 @@ import java.util.Objects;
 
 public class MessageUtils {
     private static boolean kernelPublic = false;
+
+    public static boolean isNoSeqMessage(int status) {
+        return status == MsgConstants.SEND_STATUS_SUCCESS_NO_SEQ;
+    }
 
     private static long getDuration(@NonNull String pttPath) {
         Objects.requireNonNull(pttPath, "pttPath == null");
