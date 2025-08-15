@@ -26,7 +26,7 @@ jobs:
     if: ${{ !startsWith(github.event.head_commit.message, '[skip ci]') }} && success() && github.ref == 'refs/heads/main' }}
 
     steps:
-      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+      - uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -62,7 +62,7 @@ jobs:
           ccache -o compiler_check='%compiler% -dumpmachine; %compiler% -dumpversion'
           ccache -zp
       - name: Cache Native Build
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v4.2.4
         with:
           path: |
             ~/.cache/ccache
@@ -185,14 +185,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        uses: actions/checkout@08eba0b27e820071cde6df949e0beb9ba4906955 # v4.3.0
       - name: Clone Telegram Bot API
         run: |
           git clone --recursive https://github.com/tdlib/telegram-bot-api.git
           git status telegram-bot-api >> telegram-bot-api-status
       - name: Cache Bot API Binary
         id: cache-bot-api
-        uses: actions/cache@v4.2.3
+        uses: actions/cache@v4.2.4
         with:
           path: telegram-bot-api-binary
           key: CI-telegram-bot-api-${{ hashFiles('telegram-bot-api-status') }}
