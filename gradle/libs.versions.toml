@@ -1,14 +1,14 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.11.1"
+agp = "8.12.1"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
-kotlin = "2.2.0"
-ksp = "2.2.0-2.0.2"
+kotlin = "2.2.10"
+ksp = "2.2.10-2.0.2"
 lifecycle = "2.9.2"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.31.1"
+protobuf = "4.32.0"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -19,7 +19,7 @@ androidx-annotation = { module = "androidx.annotation:annotation", version = "1.
 androidx-browser = { module = "androidx.browser:browser", version = "1.9.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.16.0" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.17.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.3.0.202506031305-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
@@ -42,7 +42,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "4.16.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.6" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.7" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "14.0.0_r21" }
 # do not update com.google.flatbuffers:flatbuffers-java, need to keep it sync with DexKit
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
@@ -53,7 +53,7 @@ dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
 google-guava = { module = "com.google.guava:guava", version = "33.4.8-android" }
 
 [plugins]
-changelog = { id = "org.jetbrains.changelog", version = "2.3.0" }
+changelog = { id = "org.jetbrains.changelog", version = "2.4.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
