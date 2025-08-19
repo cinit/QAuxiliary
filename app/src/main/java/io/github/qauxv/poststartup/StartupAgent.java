@@ -28,13 +28,18 @@ import android.os.Build;
 import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import dalvik.system.BaseDexClassLoader;
+import io.github.qauxv.BuildConfig;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderService;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl;
 import io.github.qauxv.util.soloader.NativeLoader;
 import java.io.File;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
 import org.lsposed.hiddenapibypass.HiddenApiBypass;
 
 @Keep
@@ -58,6 +63,7 @@ public class StartupAgent {
             throw new IllegalStateException("StartupAgent already initialized");
         }
         sInitialized = true;
+        android.util.Log.d("QAuxv", "StartupAgent.start, build uuid " + BuildConfig.BUILD_UUID);
         if (io.github.qauxv.R.string.res_inject_success >>> 24 == 0x7f) {
             throw new AssertionError("package id must NOT be 0x7f, reject loading...");
         }
@@ -75,11 +81,16 @@ public class StartupAgent {
         ensureHiddenApiAccess();
         checkWriteXorExecuteForModulePath(modulePath);
         // we want context
+        // 1. For Xposed/Zygisk early startup, this is called before the host app TinkerApplication.attachBaseContext,
+        //    which means the `hostClassLoader` is probably not the class loader that the host app uses.
+        // 2. For FRIDA and daisy-chain module loading, this is called after the host app has created its Application,
+        //    the `hostClassLoader` is the class loader where Context.getClassLoader() returns, and it is safe to use.
         Context ctx = getBaseApplicationImpl(hostClassLoader);
         if (ctx == null) {
             if (hookBridge == null) {
                 initializeHookBridgeForEarlyStartup(hostDataDir);
             }
+            // This is the only case where we need to work around for Tinker application class loader replacement.
             StartupHook.getInstance().initializeBeforeAppCreate(hostClassLoader);
         } else {
             StartupHook.getInstance().initializeAfterAppCreate(ctx);

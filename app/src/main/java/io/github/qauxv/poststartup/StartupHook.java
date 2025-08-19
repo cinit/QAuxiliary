@@ -27,6 +27,7 @@ import android.util.DisplayMetrics;
 import android.util.Log;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import dalvik.system.BaseDexClassLoader;
 import io.github.qauxv.startup.HybridClassLoader;
 import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
@@ -39,6 +40,8 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Startup hook for QQ/TIM They should act differently according to the process they belong to.
@@ -129,7 +132,84 @@ public class StartupHook {
         deleteDirIfNecessaryNoThrow(ctx);
     }
 
-    public void initializeBeforeAppCreate(@NonNull ClassLoader rtLoader) {
+    public void initializeBeforeAppCreate(@NonNull ClassLoader initialClassLoader) {
+        // We need to be aware that Tinker may not have been applied yet.
+        // Hook com.tencent.common.app.QFixApplicationImplProxy#attachBaseContext(Context) to get the correct class loader.
+        final AtomicReference<ClassLoader> pSecondaryClassLoader = new AtomicReference<>();
+        final AtomicReference<Thread> pCallingThread = new AtomicReference<>();
+        try {
+            Class<?> kQFixApplicationImplProxy = initialClassLoader.loadClass("com.tencent.common.app.QFixApplicationImplProxy");
+            Method attachBaseContext = kQFixApplicationImplProxy.getDeclaredMethod("attachBaseContext", Context.class);
+            final AtomicReference<XC_MethodHook.Unhook> pUnhook1 = new AtomicReference<>();
+            pUnhook1.set(XposedBridge.hookMethod(attachBaseContext, new XC_MethodHook() {
+                @Override
+                protected void beforeHookedMethod(MethodHookParam param) {
+                    Thread currentThread = Thread.currentThread();
+                    pCallingThread.set(currentThread);
+                }
+
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    pCallingThread.set(null);
+                    ClassLoader cl = pSecondaryClassLoader.get();
+                    if (cl == null) {
+                        // No Tinker patch seems to be there. The initial class loader is the one we want.
+                        cl = initialClassLoader;
+                    }
+                    // unhook the method to avoid multiple calls
+                    XC_MethodHook.Unhook unhook = pUnhook1.getAndSet(null);
+                    if (unhook != null) {
+                        unhook.unhook();
+                    }
+                    initializeAfterTinkerApplied(cl);
+                }
+            }));
+            // hook BaseDexClassLoader constructor to get the class loader
+            final AtomicReference<Set<XC_MethodHook.Unhook>> pUnhooks = new AtomicReference<>();
+            pUnhooks.set(XposedBridge.hookAllConstructors(BaseDexClassLoader.class, new XC_MethodHook() {
+                @Override
+                protected void afterHookedMethod(MethodHookParam param) {
+                    ClassLoader cl = (ClassLoader) param.thisObject;
+                    Thread callingThread = pCallingThread.get();
+                    if (callingThread == null || callingThread != Thread.currentThread()) {
+                        // this is not the thread that called attachBaseContext, ignore
+                        return;
+                    }
+                    // TODO: 2025-08-19 replace this dirty classloader <init> hook with a more reliable one to get the Tinker class loader
+                    if (cl.toString().contains("io.github.qauxv")) {
+                        // wtf?
+                        Log.w("QAuxv", "BaseDexClassLoader constructor called in QAuxv, ignoring: " + cl, new Throwable());
+                        return;
+                    }
+                    if (!cl.toString().contains("com.tencent.") && !cl.toString().contains("TinkerClassLoader")) {
+                        // The Tinker class loader should look like this:
+                        // dalvik.system.DelegateLastClassLoader[DexPathList[[zip file "/data/data/com.tencent.mobileqq/tinker/patch-1.apk"],
+                        // dexElements=[Ljava.lang.Object;@...], nativeLibraryDirectories=[/data/data/com.tencent.mobileqq/tinker/patch-1.apk!/lib/arm64-v8a,
+                        // /system/lib64, /system/vendor/lib64]]
+                        // If it is not Tinker's BaseDexClassLoader, ignore
+                        return;
+                    }
+                    if (pSecondaryClassLoader.compareAndSet(null, cl)) {
+                        Log.i("QAuxv", "Using BaseDexClassLoader.<init> for Tinker hot patch: " + cl);
+                        // we have found the class loader, unhook the method
+                        Set<XC_MethodHook.Unhook> unhooks = pUnhooks.getAndSet(null);
+                        if (unhooks != null) {
+                            for (XC_MethodHook.Unhook unhook : unhooks) {
+                                unhook.unhook();
+                            }
+                        }
+                    } else {
+                        // already found, ignore this call
+                    }
+                }
+            }));
+        } catch (ClassNotFoundException | NoSuchMethodException e) {
+            // maybe this is an old version of QQ or TIM, just ignore it
+            initializeAfterTinkerApplied(initialClassLoader);
+        }
+    }
+
+    public void initializeAfterTinkerApplied(@NonNull ClassLoader rtLoader) {
         try {
             XC_MethodHook startup = new XC_MethodHook(51) {
                 @Override

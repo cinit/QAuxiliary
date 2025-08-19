@@ -162,7 +162,7 @@ public class MainHook {
                     }
                 });
             } else {
-                Log.i("LoadData not found, running third stage hooks in background");
+                Log.d("LoadData not found, running third stage hooks in background");
                 if (safeMode) {
                     SettingEntryHook.INSTANCE.initialize();
                 } else {
