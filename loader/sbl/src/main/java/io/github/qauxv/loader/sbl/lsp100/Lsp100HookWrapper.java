@@ -400,7 +400,8 @@ public class Lsp100HookWrapper {
                 final int tag
         ) {
             if (param == null) {
-                throw new AssertionError("param is null");
+                // null param, possibly due to all callbacks being removed
+                return;
             }
             param.isAfter = true;
             param.after = callback;
