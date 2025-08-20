@@ -77,7 +77,7 @@ include(
     ":libs:ksp",
     ":libs:mmkv",
     ":libs:dexkit",
-    ":libs:ezXHelper",
+    ":libs:ezxhelper",
     ":libs:xView",
     ":libs:libxposed:api",
     ":libs:libxposed:service",
