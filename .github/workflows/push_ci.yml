@@ -80,7 +80,8 @@ jobs:
           echo 'org.gradle.vfs.watch=true' >> gradle.properties
           echo 'qauxv.override.ninja.path=/usr/bin/ninja' >> local.properties
           sed -i 's/org.gradle.configuration-cache=true//g' gradle.properties
-          echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
+          # TODO: 2025-08-20 find an alternative to removeUnusedEntriesAfterDays = 1 for Gradle 9.0+
+          # echo 'buildCache { local { removeUnusedEntriesAfterDays = 1 } }' >> settings.gradle.kts
           echo ${{ secrets.SIGN_KEYSTORE_BASE64 }} | base64 -d > keystore.jks
           ./gradlew :app:synthesizeDistReleaseApksCI :app:extractReleaseNativeDebugMetadata
           ccache -s
