@@ -47,7 +47,7 @@ object RemoveDialogWaitTime : CommonSwitchFunctionHook(
 
     override fun initOnce(): Boolean {
         val dialogUtilClass = Initiator.loadClass("com.tencent.mobileqq.utils.DialogUtil")
-        val getEmoReplyMenuViewMethod = dialogUtilClass.getDeclaredMethod(
+        val createCountdownDialogMethod = dialogUtilClass.getDeclaredMethod(
             "createCountdownDialog",
             Context::class.java,
             String::class.java,
@@ -60,7 +60,7 @@ object RemoveDialogWaitTime : CommonSwitchFunctionHook(
             View.OnClickListener::class.java,
             View.OnClickListener::class.java
         )
-        hookBeforeIfEnabled(getEmoReplyMenuViewMethod) { param ->
+        hookBeforeIfEnabled(createCountdownDialogMethod) { param ->
             param.args[6] = 0
         }
         return true

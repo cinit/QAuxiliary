@@ -22,20 +22,21 @@
 
 package me.hd.hook
 
-import android.content.Context
-import android.view.View
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.Hd_RemoveEmoReplyMenu_Method
 import io.github.qauxv.util.requireMinQQVersion
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object RemoveEmoReplyMenu : CommonSwitchFunctionHook() {
+object RemoveEmoReplyMenu : CommonSwitchFunctionHook(
+    targets = arrayOf(Hd_RemoveEmoReplyMenu_Method)
+) {
 
     override val name = "移除消息表态"
     override val description = "移除消息菜单中的表情回应"
@@ -43,15 +44,7 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_8)
 
     override fun initOnce(): Boolean {
-        val emoReplyMenuApiImplClass = Initiator.loadClass("com.tencent.qqnt.aio.api.impl.AIOEmoReplyMenuApiImpl")
-        val getEmoReplyMenuViewMethod = emoReplyMenuApiImplClass.getDeclaredMethod(
-            "getEmoReplyMenuView",
-            Context::class.java,
-            Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem"),
-            Object::class.java,
-            View.OnClickListener::class.java
-        )
-        hookBeforeIfEnabled(getEmoReplyMenuViewMethod) { param ->
+        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
             param.result = null
         }
         return true

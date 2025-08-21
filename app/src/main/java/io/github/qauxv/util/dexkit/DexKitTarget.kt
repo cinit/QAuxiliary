@@ -1092,3 +1092,10 @@ data object RemoveSecurityTipsBanner_Method : DexKitTarget.UsingStringVector() {
     override val traitStringVectors = arrayOf(arrayOf("[doOnCreate]", "TroopSecurityTipsBar"))
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_RemoveEmoReplyMenu_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("msgItem is not support emo reply")
+    override val declaringClass = "Lcom/tencent/qqnt/aio/api/impl/AIOEmoReplyMenuApiImpl;"
+    override val filter = DexKitFilter.allowAll
+}
