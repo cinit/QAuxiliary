@@ -95,7 +95,7 @@ object PromptForNoSeqMessage : CommonSwitchFunctionHook(), OnBubbleBuilder {
     private val constraintSetClz by lazy { "androidx.constraintlayout.widget.ConstraintSet".clazz!! }
     private val constraintLayoutClz by lazy { "androidx.constraintlayout.widget.ConstraintLayout".clazz!! }
 
-    private fun shouldShowTailMsgForMsgRecord(chatMessage: MsgRecord): Boolean {
+    public fun shouldShowTailMsgForMsgRecord(chatMessage: MsgRecord): Boolean {
         // do not show tail message for grey tips
         return chatMessage.msgType != MsgConstants.MSG_TYPE_GRAY_TIPS && MessageUtils.isNoSeqMessage(chatMessage.sendStatus)
     }
@@ -106,7 +106,7 @@ object PromptForNoSeqMessage : CommonSwitchFunctionHook(), OnBubbleBuilder {
 
     @SuppressLint("ResourceType", "SetTextI18n")
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
-        if (!isEnabled) return
+        if (!isEnabled || !shouldShowTailMsgForMsgRecord(chatMessage)) return
 
         if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {

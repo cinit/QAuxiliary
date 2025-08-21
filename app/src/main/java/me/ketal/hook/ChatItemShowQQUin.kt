@@ -75,6 +75,7 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook
+import nep.timeline.PromptForNoSeqMessage
 import kotlinx.coroutines.flow.MutableStateFlow
 import me.ketal.dispacher.BaseBubbleBuilderHook
 import me.ketal.dispacher.OnBubbleBuilder
@@ -369,7 +370,12 @@ object ChatItemShowQQUin : CommonConfigFunctionHook(), OnBubbleBuilder {
     override fun onGetViewNt(rootView: ViewGroup, chatMessage: MsgRecord, param: XC_MethodHook.MethodHookParam) {
         // 因为tailMessage是自己添加的，所以闪照文字也放这里处理
         val isFlashPicTagNeedShow = FlashPicHook.INSTANCE.isInitializationSuccessful && isFlashPicNt(chatMessage)
-        if (!isEnabled && !isFlashPicTagNeedShow) return
+        val isNoSeqMessage = PromptForNoSeqMessage.isEnabled && PromptForNoSeqMessage.shouldShowTailMsgForMsgRecord(chatMessage)
+        if (isNoSeqMessage)
+            return
+
+        if (!isEnabled && !isFlashPicTagNeedShow)
+            return
 
         if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             if (!rootView.children.map { it.id }.contains(ID_ADD_LAYOUT)) {
