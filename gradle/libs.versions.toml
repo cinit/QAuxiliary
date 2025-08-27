@@ -5,7 +5,7 @@ appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
 kotlin = "2.2.10"
 ksp = "2.2.10-2.0.2"
-lifecycle = "2.9.2"
+lifecycle = "2.9.3"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
 protobuf = "4.32.0"
