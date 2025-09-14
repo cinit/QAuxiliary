@@ -23,16 +23,17 @@
 package io.github.duzhaokun123.hook
 
 import android.app.Activity
+import android.app.Application
 import android.os.Build
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.view.Window
 import android.widget.CheckBox
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AlertDialog
 import androidx.core.widget.doAfterTextChanged
+import com.tencent.common.app.BaseApplicationImpl
 import io.github.duzhaokun123.util.blurBackground
 import io.github.qauxv.R
 import io.github.qauxv.base.IUiItemAgent
@@ -43,7 +44,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.SyncUtils
-import xyz.nextalone.util.hookAfter
 import kotlin.properties.Delegates
 
 @FunctionHookEntry
@@ -63,7 +63,6 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
     var bdValue by Delegates.observable(ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F)) { _, _, newValue ->
         ConfigManager.getDefaultConfig().putFloat(bdCfg, newValue)
     }
-    var window: Window? = null
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
         get() = { _, activity, _ ->
@@ -115,20 +114,36 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
         }
 
     override fun initOnce(): Boolean {
-        Activity::class.java.hookAfter(this, "onCreate", Bundle::class.java) {
-            val activity = it.thisObject as Activity
-            when (activity::class.java.name) {
-                "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
-                "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
-                "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity",
-                "com.tencent.richframework.gallery.QQGalleryActivity" -> {
-                    activity.window.blurBackground(
-                        ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10),
-                        ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F)
-                    )
+        (BaseApplicationImpl.sMobileQQ).registerActivityLifecycleCallbacks(
+            object : Application.ActivityLifecycleCallbacks {
+                override fun onActivityCreated(activity: Activity, savedInstanceState: Bundle?) {
+                    when (activity::class.java.name) {
+                        "com.tencent.mobileqq.richmediabrowser.AIOGalleryActivity",
+                        "com.tencent.mobileqq.activity.aio.photo.AIOGalleryActivity",
+                        "com.tencent.mobileqq.activity.photo.album.NewPhotoPreviewActivity",
+                        "com.tencent.richframework.gallery.QQGalleryActivity" -> {
+                            activity.window.blurBackground(
+                                ConfigManager.getDefaultConfig().getIntOrDefault(brCfg, 10),
+                                ConfigManager.getDefaultConfig().getFloat(bdCfg, 0.1F)
+                            )
+                        }
+                    }
                 }
+
+                override fun onActivityDestroyed(activity: Activity) {}
+
+                override fun onActivityPaused(activity: Activity) {}
+
+                override fun onActivityResumed(activity: Activity) {}
+
+                override fun onActivitySaveInstanceState(activity: Activity, outState: Bundle) {}
+
+                override fun onActivityStarted(activity: Activity) {}
+
+                override fun onActivityStopped(activity: Activity) {}
+
             }
-        }
+        )
         return true
     }
 
