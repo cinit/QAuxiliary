@@ -55,8 +55,10 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.decorator.IInputButtonDecorator;
 import io.github.qauxv.ui.TouchEventToLongClickAdapter;
 import io.github.qauxv.ui.widget.InterceptLayout;
+import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.TIMVersion;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AIO_InputRootInit_QQNT;
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder;
@@ -69,6 +71,7 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.util.Objects;
 import mqq.app.AppRuntime;
+import xyz.nextalone.util.HookUtilsKt;
 
 @EntityAgentEntry
 @FunctionHookEntry
@@ -107,7 +110,14 @@ public class InputButtonHookDispatcher extends BaseHookDispatcher<IBaseChatPieDe
     @Override
     public boolean initOnce() throws Exception {
         if (QAppUtils.isQQnt()) {
-            HookUtils.hookAfterIfEnabled(this, DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT.INSTANCE), 40, param -> {
+            Method method;
+            if (HostInfo.requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+                // see xyz.nextalone.hook.ChatInputHint
+                method = HookUtilsKt.getMethod("Lcom/tencent/tim/aio/inputbar/simpleui/TimAIOInputSimpleUIVBDelegate;->B()V");
+            } else {
+                method = DexKit.requireMethodFromCache(AIO_InputRootInit_QQNT.INSTANCE);
+            }
+            HookUtils.hookAfterIfEnabled(this, method, 40, param -> {
                 Button sendBtn = null;
                 EditText editText = null;
                 ViewGroup inputRoot = null;
