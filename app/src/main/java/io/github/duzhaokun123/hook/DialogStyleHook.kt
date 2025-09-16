@@ -40,26 +40,25 @@ import io.github.qauxv.util.Log
 @UiItemAgentEntry
 @FunctionHookEntry
 object DialogStyleHook : CommonSwitchFunctionHook() {
-    override val name = "统一 QQ dialog 样式"
+    override val name = "统一 AlertDialog 样式"
     override val description = "统一成 MD3 大圆角, 仅影响 dialog 外观 不影响内容"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
-
-    val contextBlackList = listOf(
-        "com.tencent.mobileqq.guild.quiprofile.GuildActivityWrapper"
-    )
 
     override fun initOnce(): Boolean {
         Dialog::class.java
             .findConstructor { parameterTypes contentEquals arrayOf(Context::class.java, Int::class.javaPrimitiveType, Boolean::class.javaPrimitiveType) }
             .hookBefore {
+                val dialog = it.thisObject as Dialog
+                val dialogClassName = dialog.javaClass.name
+                if (dialogClassName != "android.app.AlertDialog"
+                    && dialogClassName != "androidx.appcompat.app.AlertDialog") {
+                    Log.d("DialogStyleHook: skip non explicit AlertDialog $dialogClassName")
+                    return@hookBefore
+                }
                 val context = it.args[0] as Context
                 val themeId = it.args[1] as Int
                 val createContextThemeWrapper = it.args[2] as Boolean
-                Log.d("DialogStyleHook: $createContextThemeWrapper $themeId $context")
-                if (context.javaClass.name in contextBlackList) {
-                    Log.d("DialogStyleHook: context in black list, skip")
-                    return@hookBefore
-                }
+                Log.d("DialogStyleHook: $dialog $createContextThemeWrapper $themeId $context")
                 val newContext = ContextThemeWrapper(context, com.google.android.material.R.style.Theme_Material3_DayNight)
                 it.args[0] = newContext
                 it.args[1] = ResourcesCompat.ID_NULL
