@@ -35,36 +35,35 @@ import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
-import io.github.duzhaokun123.hook.MessageCopyHook.TAG
 import io.github.duzhaokun123.util.TTS
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
-import io.github.qauxv.util.dexkit.DexDeobfsProvider
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.DexKitFinder
-import io.github.qauxv.util.dexkit.TextMsgItem_getText
-import java.lang.reflect.Modifier
+import xyz.nextalone.util.method
+import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder {
+object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder {
     override val name: String
         get() = "文字消息转语音 (使用系统 TTS)"
 
     override val description: String
         get() = "提示失败多半是没设置系统 TTS 引擎"
 
+    lateinit var AIOMsgItem_getAccessibleText: Method
+
     override fun initOnce(): Boolean {
-        if (QAppUtils.isQQnt()) return true
+        if (QAppUtils.isQQnt()) {
+            AIOMsgItem_getAccessibleText = "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
+            return true
+        }
 
         val cl_ArkAppItemBuilder = Initiator._TextItemBuilder()
         XposedHelpers.findAndHookMethod(
@@ -127,8 +126,9 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder 
             }
         }
     }
-    override val targetComponentTypes: Array<String>
-        get() = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
+    override val targetComponentTypes = arrayOf(
+        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
+        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
@@ -136,9 +136,7 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder 
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
-                DexKit.requireMethodFromCache(TextMsgItem_getText).also {
-                    it.isAccessible = true
-                }.invoke(msg) as CharSequence
+                AIOMsgItem_getAccessibleText.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }
@@ -148,65 +146,13 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder, DexKitFinder 
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
-                DexKit.requireMethodFromCache(TextMsgItem_getText).also {
-                    it.isAccessible = true
-                }.invoke(msg) as CharSequence
+                AIOMsgItem_getAccessibleText.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }
             TTS.showConfigDialog(wc, text.toString())
         }
         param.result = (param.result as List<*>) + item + item2
-    }
-
-
-    /**
-     * see MessageCopyHook
-     */
-    override fun makePreparationSteps(): Array<Step> {
-        return arrayOf(object : Step {
-            override fun step(): Boolean {
-                return doFind()
-            }
-
-            override fun isDone(): Boolean {
-                return !isNeedFind
-            }
-
-            override fun getPriority(): Int {
-                return 0
-            }
-
-            override fun getDescription(): String {
-                return "文本消息相关方法查找中"
-            }
-        })
-    }
-
-    override val isNeedFind: Boolean
-        get() = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) && TextMsgItem_getText.descCache == null
-
-    override fun doFind(): Boolean {
-        DexDeobfsProvider.getCurrentBackend().use { backend ->
-            val dexKit = backend.getDexKitBridge()
-            android.util.Log.d(TAG, "doFind: doFind")
-            val getText = dexKit.findMethod {
-                searchPackages("com.tencent.mobileqq.aio.msg")
-                matcher {
-                    modifiers = Modifier.PRIVATE
-                    returnType = "java.lang.CharSequence"
-                    paramCount = 0
-                    usingNumbers(24)
-                    usingStrings("biz_src_jc_aio")
-//                    addCall {
-//                        name = "getQQText"
-//                    }
-                }
-            }.firstOrNull() ?: return false
-            android.util.Log.d(TAG, "doFind: $getText")
-            TextMsgItem_getText.descCache = getText.descriptor
-        }
-        return true
     }
 
 }
