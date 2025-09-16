@@ -155,7 +155,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
             val getText = dexKit.findMethod {
                 searchPackages("com.tencent.mobileqq.aio.msg")
                 matcher {
-                    modifiers = Modifier.PRIVATE
+//                    modifiers = Modifier.PRIVATE
                     returnType = "java.lang.CharSequence"
                     paramCount = 0
                     usingNumbers(24)
@@ -164,7 +164,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
 //                        name = "getQQText"
 //                    }
                 }
-            }.firstOrNull() ?: return false
+            }.single()
             Log.d(TAG, "doFind: $getText")
             TextMsgItem_getText.descCache = getText.descriptor
         }
