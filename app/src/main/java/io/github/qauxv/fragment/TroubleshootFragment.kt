@@ -738,7 +738,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             .groupBy { it.findMethod }
         targets[false]?.forEach {
             kotlin.runCatching {
-                val orig = it.declaringClass.replace("/", ".")
+                val orig = it.declaringClass.replace("/", ".").takeIf { it.isNotBlank() } ?: it::class.simpleName
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
                 val md = DexKit.getMethodDescFromCacheImpl(it)
@@ -767,7 +767,7 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
 
         targets[true]?.forEach {
             kotlin.runCatching {
-                val orig = it.declaringClass.replace("/", ".")
+                val orig = it.declaringClass.replace("/", ".").takeIf { it.isNotEmpty() } ?: it::class.simpleName
                 val shortName: String = Reflex.getShortClassName(orig)
                 var currName = "(void*)0"
                 val md = DexKit.getMethodDescFromCacheImpl(it)
