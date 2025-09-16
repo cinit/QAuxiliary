@@ -47,6 +47,7 @@ import androidx.core.view.inputmethod.InputConnectionCompat;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
+import io.github.qauxv.util.Log;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
@@ -64,6 +65,7 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
@@ -144,6 +146,25 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 }
             });
         }
+
+        var class_AIOEditText = Initiator.loadClass("com.tencent.mobileqq.aio.input.edit.AIOEditText");
+        XposedBridge.hookMethod(class_AIOEditText.getDeclaredMethod("onCreateInputConnection", EditorInfo.class),
+                new XC_MethodHook() {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        var thiz = (EditText) param.thisObject;
+                        var outAttrs = (EditorInfo) param.args[0];
+                        var ic = (InputConnection) param.getResult();
+                        EditorInfoCompat.setContentMimeTypes(outAttrs, new String[]{MIME_IMAGE});
+                        var mimeTypes = ViewCompat.getOnReceiveContentMimeTypes(thiz);
+                        if (mimeTypes != null) {
+                            EditorInfoCompat.setContentMimeTypes(outAttrs, mimeTypes);
+                            ic = InputConnectionCompat.createWrapper(thiz, ic, outAttrs);
+                        }
+                        param.setResult(ic);
+                    }
+                });
+
         // init required dispatcher
         return InputButtonHookDispatcher.INSTANCE.initialize();
     }

@@ -727,10 +727,10 @@ data object AIO_Destroy_QQNT : DexKitTarget.UsingStringVector() {
     override val filter = DexKitFilter.strInClsName("Lcom/tencent/aio/base/chat/ChatPie;", true)
 }
 
-data object AIO_InputRootInit_QQNT : DexKitTarget.UsingStr() {
+data object AIO_InputRootInit_QQNT : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("inputRoot.findViewById(R.id.send_btn)")
-    override val declaringClass = ""
+    override val traitStringVectors = arrayOf(arrayOf("binding", "inputRoot", "findViewById(...)", "getContext(...)", "sendBtn"))
+    override val declaringClass = "com.tencent.mobileqq.aio.input.simpleui.AIOInputSimpleUIVBDelegate"
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }
 
