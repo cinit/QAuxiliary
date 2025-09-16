@@ -25,7 +25,6 @@ package io.github.duzhaokun123.hook
 import android.app.Activity
 import android.app.AlertDialog
 import android.content.Context
-import android.util.Log
 import android.view.View
 import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
@@ -38,32 +37,28 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
-import io.github.qauxv.step.Step
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.TIMVersion
-import io.github.qauxv.util.dexkit.DexDeobfsProvider
-import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.DexKitFinder
-import io.github.qauxv.util.dexkit.TextMsgItem_getText
-import io.github.qauxv.util.requireMinQQVersion
-import io.github.qauxv.util.requireMinTimVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
-import java.lang.reflect.Modifier
+import xyz.nextalone.util.method
+import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder {
+object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
     const val TAG = "MessageCopyHook"
     override val name: String
         get() = "文本消息自由复制"
 
+    lateinit var AIOMsgItem_getAccessibleText: Method
+
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
+            // 能获取如 "发送者/我说: 消息内容" 的文本
+            AIOMsgItem_getAccessibleText = "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
             return true
         }
 
@@ -125,62 +120,15 @@ object MessageCopyHook : CommonSwitchFunctionHook(), DexKitFinder, OnMenuBuilder
             .setTextIsSelectable(true)
     }
 
-    override fun makePreparationSteps(): Array<Step> {
-        return arrayOf(object : Step {
-            override fun step(): Boolean {
-                return doFind()
-            }
-
-            override fun isDone(): Boolean {
-                return !isNeedFind
-            }
-
-            override fun getPriority(): Int {
-                return 0
-            }
-
-            override fun getDescription(): String {
-                return "文本消息自由复制相关类查找中"
-            }
-        })
-    }
-
-    override val isNeedFind: Boolean
-        get() = TextMsgItem_getText.descCache == null && (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA))
-
-    override fun doFind(): Boolean {
-        DexDeobfsProvider.getCurrentBackend().use { backend ->
-            val dexKit = backend.getDexKitBridge()
-            Log.d(TAG, "doFind: doFind")
-            val getText = dexKit.findMethod {
-                searchPackages("com.tencent.mobileqq.aio.msg")
-                matcher {
-//                    modifiers = Modifier.PRIVATE
-                    returnType = "java.lang.CharSequence"
-                    paramCount = 0
-                    usingNumbers(24)
-                    usingStrings("biz_src_jc_aio")
-//                    addCall {
-//                        name = "getQQText"
-//                    }
-                }
-            }.single()
-            Log.d(TAG, "doFind: $getText")
-            TextMsgItem_getText.descCache = getText.descriptor
-        }
-        return true
-    }
-
-    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
+    override val targetComponentTypes = arrayOf(
+        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
+        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        // TODO: support ark message
         val item = CustomMenu.createItemIconNt(msg, "自由复制", R.drawable.ic_item_copy_72dp, R.id.item_free_copy) {
             val text = try {
-                DexKit.requireMethodFromCache(TextMsgItem_getText).also {
-                    it.isAccessible = true
-                }.invoke(msg) as CharSequence
+                AIOMsgItem_getAccessibleText.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }
