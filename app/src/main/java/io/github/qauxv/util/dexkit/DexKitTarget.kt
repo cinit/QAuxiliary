@@ -1093,3 +1093,10 @@ data object Hd_RemoveEmoReplyMenu_Method : DexKitTarget.UsingStr() {
     override val declaringClass = "Lcom/tencent/qqnt/aio/api/impl/AIOEmoReplyMenuApiImpl;"
     override val filter = DexKitFilter.allowAll
 }
+
+data object PadUtil_getDeviceType : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("context is null")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/common/config/pad/PadUtil")
+}
