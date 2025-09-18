@@ -40,7 +40,6 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
@@ -125,6 +124,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
+        if (param.thisObject.javaClass.name != componentType) return
         val item = CustomMenu.createItemIconNt(msg, "自由复制", R.drawable.ic_item_copy_72dp, R.id.item_free_copy) {
             val text = try {
                 AIOMsgItem_getAccessibleText.invoke(msg) as String

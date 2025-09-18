@@ -29,7 +29,6 @@ import cc.ioctl.hook.msg.CopyCardMsg
 import cc.ioctl.hook.msg.PicMd5Hook
 import cc.ioctl.hook.msg.PttForwardHook
 import cc.ioctl.util.HookUtils
-import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.isAbstract
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.duzhaokun123.hook.MessageCopyHook
@@ -37,7 +36,6 @@ import io.github.duzhaokun123.hook.MessageTTSHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.Log
 import me.hd.hook.menu.CopyMarkdown
 import me.hd.hook.menu.EditTextContent
 import me.hd.hook.menu.RecallMsgRecord
@@ -85,7 +83,6 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
                 hookedClasses.add(class_ContentComponent)
                 val target = class_ContentComponent.name
                 HookUtils.hookAfterAlways(this, class_ContentComponent.getMethod(listMethodName), 48) {
-                    if (it.thisObject.javaClass != class_ContentComponent) return@hookAfterAlways
                     val msg = getMsgMethod.invoke(it.thisObject)!!
                     for (decorator in decorators) {
                         if (decorator.targetComponentTypes == null || target in decorator.targetComponentTypes!!) {
@@ -105,11 +102,14 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
 
 interface OnMenuBuilder {
     /**
-     * [com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent] 的最终子类名
+     * [com.tencent.mobileqq.aio.msglist.holder.component.BaseContentComponent] 的子类名
      * null 表示所有
      */
     val targetComponentTypes: Array<String>?
 
+    /**
+     * 同一消息可能按照父类多次回调
+     */
     @Throws(Exception::class)
     fun onGetMenuNt(
         msg: Any,
