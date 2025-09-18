@@ -40,6 +40,7 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
@@ -120,9 +121,7 @@ object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
             .setTextIsSelectable(true)
     }
 
-    override val targetComponentTypes = arrayOf(
-        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",)
+    override val targetComponentTypes = null
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return

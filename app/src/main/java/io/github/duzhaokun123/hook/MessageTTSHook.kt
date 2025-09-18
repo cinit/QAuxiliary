@@ -126,9 +126,7 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder {
             }
         }
     }
-    override val targetComponentTypes = arrayOf(
-        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",)
+    override val targetComponentTypes = null
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
