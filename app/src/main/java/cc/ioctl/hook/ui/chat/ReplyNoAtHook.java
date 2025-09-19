@@ -82,8 +82,20 @@ public class ReplyNoAtHook extends CommonSwitchFunctionHook {
     @Override
     public boolean initOnce() throws ReflectiveOperationException {
         if (QAppUtils.isQQnt()) {
-            HookUtils.hookBeforeIfEnabled(this, DexKit.requireMethodFromCache(Reply_At_QQNT.INSTANCE),
-                    49, param -> param.setResult(null));
+            Class<?> msgItemClass = Initiator.load("com.tencent.mobileqq.aio.msg.AIOMsgItem");
+            Class<?> inputReplyClass = DexKit.requireClassFromCache(Reply_At_QQNT.INSTANCE);
+            Method method = null;
+            for (Method m : inputReplyClass.getDeclaredMethods()) {
+                if ((m.getReturnType() == void.class) && (m.getParameterCount() == 1)) {
+                    Class<?>[] argt = m.getParameterTypes();
+                    if (argt[0] == msgItemClass) {
+                        method = m;
+                        break;
+                    }
+                }
+            }
+            Objects.requireNonNull(method, "inputReplyClass.k(AIOMsgItem)V not found");
+            HookUtils.hookBeforeIfEnabled(this, method, 49, param -> param.setResult(null));
         } else if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
             String className = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
             if (className == null) {
