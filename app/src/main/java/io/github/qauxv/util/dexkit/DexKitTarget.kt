@@ -743,8 +743,8 @@ data object EmoMsgUtils_isSingleLottie_QQNT : DexKitTarget.UsingStr() {
 }
 
 data object Reply_At_QQNT : DexKitTarget.UsingStr() {
-    override val findMethod: Boolean = false
-    override val traitString = arrayOf("InputReplyVMDelegate")
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("msgItem.msgRecord.senderUid")
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }

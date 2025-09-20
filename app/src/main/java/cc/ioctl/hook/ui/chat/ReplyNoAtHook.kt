@@ -1,145 +1,124 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2022 qwq233@qwq2333.top
+ * Copyright (C) 2019-2025 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
- * This software is non-free but opensource software: you can redistribute it
- * and/or modify it under the terms of the GNU Affero General Public License
+ * This software is an opensource software: you can redistribute it
+ * and/or modify it under the terms of the General Public License
  * as published by the Free Software Foundation; either
- * version 3 of the License, or any later version and our eula as published
+ * version 3 of the License, or any later version as published
  * by QAuxiliary contributors.
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the General Public License for more details.
  *
- * You should have received a copy of the GNU Affero General Public License
- * and eula along with this software.  If not, see
- * <https://www.gnu.org/licenses/>
+ * You should have received a copy of the General Public License
+ * along with this software.
+ * If not, see
  * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
  */
-package cc.ioctl.hook.ui.chat;
 
-import static io.github.qauxv.util.Initiator._BaseChatPie;
-import static io.github.qauxv.util.PlayQQVersion.PlayQQ_8_2_9;
-import static io.github.qauxv.util.QQVersion.QQ_8_2_0;
-import static io.github.qauxv.util.QQVersion.QQ_8_6_0;
-import static io.github.qauxv.util.TIMVersion.TIM_3_1_1;
+package cc.ioctl.hook.ui.chat
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import cc.hicore.QApp.QAppUtils;
-import cc.ioctl.util.HookUtils;
-import cc.ioctl.util.HostInfo;
-import io.github.qauxv.base.annotation.FunctionHookEntry;
-import io.github.qauxv.base.annotation.UiItemAgentEntry;
-import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
-import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.tlb.ConfigTable;
-import io.github.qauxv.util.Initiator;
-import io.github.qauxv.util.dexkit.DexKit;
-import io.github.qauxv.util.dexkit.DexKitTarget;
-import io.github.qauxv.util.dexkit.Reply_At_QQNT;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
-import java.util.Objects;
+import cc.hicore.QApp.QAppUtils
+import cc.ioctl.util.hookBeforeIfEnabled
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.step.Step
+import io.github.qauxv.tlb.ConfigTable
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.PlayQQVersion
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitFinder
+import io.github.qauxv.util.dexkit.Reply_At_QQNT
+import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinVersion
+import java.lang.reflect.Modifier
 
 @FunctionHookEntry
 @UiItemAgentEntry
-public class ReplyNoAtHook extends CommonSwitchFunctionHook {
+object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
 
-    @NonNull
-    @Override
-    public String getName() {
-        return "禁止回复自动@";
-    }
+    override val name = "禁止回复自动@"
+    override val description = "去除回复消息时自动@特性"
+    override val extraSearchKeywords = arrayOf("艾特", "at")
+    override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
+    override val isAvailable = requireMinVersion(
+        QQVersionCode = QQVersion.QQ_8_2_0,
+        TimVersionCode = TIMVersion.TIM_3_1_1,
+        PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_9,
+    )
 
-    @Nullable
-    @Override
-    public String getDescription() {
-        return "去除回复消息时自动@特性";
-    }
-
-    @Nullable
-    @Override
-    public String[] getExtraSearchKeywords() {
-        return new String[]{"艾特", "at"};
-    }
-
-    @NonNull
-    @Override
-    public String[] getUiItemLocation() {
-        return Simplify.UI_CHAT_MSG;
-    }
-
-    public static final ReplyNoAtHook INSTANCE = new ReplyNoAtHook();
-
-    private ReplyNoAtHook() {
-        super(new DexKitTarget[]{Reply_At_QQNT.INSTANCE});
-    }
-
-    @Override
-    public boolean initOnce() throws ReflectiveOperationException {
+    override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            Class<?> msgItemClass = Initiator.load("com.tencent.mobileqq.aio.msg.AIOMsgItem");
-            Class<?> inputReplyClass = DexKit.requireClassFromCache(Reply_At_QQNT.INSTANCE);
-            Method method = null;
-            for (Method m : inputReplyClass.getDeclaredMethods()) {
-                if ((m.getReturnType() == void.class) && (m.getParameterCount() == 1)) {
-                    Class<?>[] argt = m.getParameterTypes();
-                    if (argt[0] == msgItemClass) {
-                        method = m;
-                        break;
-                    }
-                }
+            val method = DexKit.requireMethodFromCache(Reply_At_QQNT)
+            hookBeforeIfEnabled(method) { param ->
+                param.result = null
             }
-            Objects.requireNonNull(method, "inputReplyClass.k(AIOMsgItem)V not found");
-            HookUtils.hookBeforeIfEnabled(this, method, 49, param -> param.setResult(null));
-        } else if (HostInfo.requireMinQQVersion(QQ_8_6_0)) {
-            String className = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
-            if (className == null) {
-                return false;
+        } else if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
+            val className = ConfigTable.getConfig<String?>(ReplyNoAtHook::class.java.getSimpleName()) ?: return false
+            val clazz = Initiator.loadClass(className)
+            val method = clazz.declaredMethods.single { method ->
+                val isStatic = Modifier.isStatic(method.modifiers)
+                val isReturnVoid = method.returnType == Void::class.java
+                val params = method.parameterTypes
+                val isParamsTrue = params.size >= 3 && params[1] == Initiator._BaseSessionInfo() && params[2] == Boolean::class.java
+                isStatic && isReturnVoid && isParamsTrue
             }
-            Class<?> kInputUIUtils = Initiator.loadClass(className);
-            Method method = null;
-            for (Method m : kInputUIUtils.getDeclaredMethods()) {
-                if (Modifier.isStatic(m.getModifiers()) && m.getReturnType() == void.class) {
-                    Class<?>[] argt = m.getParameterTypes();
-                    if (argt[1] == Initiator._BaseSessionInfo() && argt[2] == boolean.class) {
-                        method = m;
-                        break;
-                    }
-                }
-            }
-            Objects.requireNonNull(method, "InputUIUtils.a(AIOContext, BaseSessionInfo, boolean)V not found");
-            HookUtils.hookBeforeIfEnabled(this, method, 49, param -> {
-                boolean p0 = (boolean) param.args[2];
+            hookBeforeIfEnabled(method) { param ->
+                val p0 = param.args[2] as Boolean
                 if (!p0) {
-                    param.setResult(null);
+                    param.result = null
                 }
-            });
-            return true;
+            }
         } else {
-            String methodName = ConfigTable.getConfig(ReplyNoAtHook.class.getSimpleName());
-            if (methodName == null) {
-                return false;
-            }
-            Method createAtMsg = _BaseChatPie().getDeclaredMethod(methodName, boolean.class);
-            HookUtils.hookBeforeIfEnabled(this, createAtMsg, 49, param -> {
-                boolean p0 = (boolean) param.args[0];
+            val methodName = ConfigTable.getConfig<String?>(ReplyNoAtHook::class.java.getSimpleName()) ?: return false
+            val method = Initiator._BaseChatPie().getDeclaredMethod(methodName, Boolean::class.java)
+            hookBeforeIfEnabled(method) { param ->
+                val p0 = param.args[0] as Boolean
                 if (!p0) {
-                    param.setResult(null);
+                    param.result = null
                 }
-            });
+            }
         }
-        return true;
+        return true
     }
 
-    @Override
-    public boolean isAvailable() {
-        return HostInfo.requireMinQQVersion(QQ_8_2_0)
-                || HostInfo.requireMinTimVersion(TIM_3_1_1)
-                || HostInfo.requireMinPlayQQVersion(PlayQQ_8_2_9);
+    override val isNeedFind = QAppUtils.isQQnt() && Reply_At_QQNT.descCache == null
+
+    override fun doFind(): Boolean {
+        getCurrentBackend().use { backend ->
+            val dexKit = backend.getDexKitBridge()
+            val method = dexKit.findMethod {
+                searchPackages("com.tencent.mobileqq.aio.input")
+                matcher {
+                    paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                    if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+                        usingStrings("mContext", "senderUid")
+                    } else {
+                        usingStrings("msgItem.msgRecord.senderUid")
+                    }
+                }
+            }.firstOrNull() ?: return false
+            io.github.qauxv.util.Log.w(method.descriptor)
+            Reply_At_QQNT.descCache = method.descriptor
+            return true
+        }
     }
+
+    override fun makePreparationSteps(): Array<Step> = arrayOf(
+        object : Step {
+            override fun step() = doFind()
+            override fun isDone() = !isNeedFind
+            override fun getPriority() = 0
+            override fun getDescription() = "${name}相关类查找中"
+        }
+    )
 }
