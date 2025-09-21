@@ -107,7 +107,6 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
                     }
                 }
             }.firstOrNull() ?: return false
-            io.github.qauxv.util.Log.w(method.descriptor)
             Reply_At_QQNT.descCache = method.descriptor
             return true
         }
