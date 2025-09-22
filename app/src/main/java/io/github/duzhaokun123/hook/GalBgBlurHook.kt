@@ -22,6 +22,7 @@
 
 package io.github.duzhaokun123.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.Application
 import android.os.Build
@@ -65,6 +66,7 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
     }
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
+        @SuppressLint("SetTextI18n")
         get() = { _, activity, _ ->
             val ctx = CommonContextWrapper.createMaterialDesignContext(activity)
             val ll = LinearLayout(ctx)
@@ -82,7 +84,7 @@ object GalBgBlurHook : CommonConfigFunctionHook(SyncUtils.PROC_PEAK + SyncUtils.
                 })
                 addView(TextView(ctx).apply {
                     setTextColor(ctx.getColor(R.color.firstTextColor))
-                    text = "模糊半径"
+                    text = "模糊半径 (dp)"
                 })
                 addView(com.google.android.material.textfield.TextInputEditText(ctx).apply {
                     setText(brValue.toString())
