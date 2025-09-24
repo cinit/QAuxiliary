@@ -58,7 +58,12 @@ object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
             // 能获取如 "发送者/我说: 消息内容" 的文本
-            AIOMsgItem_getAccessibleText = "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
+            AIOMsgItem_getAccessibleText =
+                try {
+                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->k1()Ljava/lang/String;".method
+                } catch (_: Exception) {
+                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
+                }
             return true
         }
 
