@@ -54,11 +54,13 @@ object ForcePhoneMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY
             val (appIdPhone, appIdPad) = Pair(
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "f"
+                    requireMinQQVersion(QQVersion.QQ_9_2_15) -> "g"
                     requireMinQQVersion(QQVersion.QQ_9_1_50) -> "f"
                     else -> "e"
                 },
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "g"
+                    requireMinQQVersion(QQVersion.QQ_9_2_15) -> "h"
                     requireMinQQVersion(QQVersion.QQ_9_1_50) -> "g"
                     else -> "f"
                 },
