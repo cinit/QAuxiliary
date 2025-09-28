@@ -26,6 +26,7 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.graphics.Typeface
 import android.view.LayoutInflater
+import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
@@ -40,10 +41,10 @@ object FilePicker {
     private var dialog: AlertDialog? = null
 
     @SuppressLint("SetTextI18n")
-    fun pick(context: Context, message: String, path: String, dorOnly: Boolean, onPick: (String) -> Unit) {
+    fun pick(context: Context, message: String, path: String, dirOnly: Boolean, onPick: (String) -> Unit) {
         val file = File(path)
         var entries = file.listFiles()?.toList()
-        if (dorOnly) entries = entries?.filter { it.isDirectory }
+        if (dirOnly) entries = entries?.filter { it.isDirectory }
         entries = entries?.sorted()
         val item = listOf("..") + (entries?.map { it.name } ?: if (file.isFile) listOf("<entry is file>") else listOf("<can't list files>"))
         val dialogBuilder = MaterialAlertDialogBuilder(context)
@@ -68,9 +69,10 @@ object FilePicker {
                         }
                     view.setOnClickListener {
                         when(i) {
-                            0 -> pick(context, message, file.parent ?: "/", dorOnly, onPick)
-                            else -> entries?.get(i - 1)?.let { pick(context, message, it.absolutePath, dorOnly, onPick) }
-                                ?: run { context.showToast("nope") }
+                            0 -> pick(context, message, file.parent ?: "/", dirOnly, onPick)
+                            else -> entries?.get(i - 1)?.let {
+                                pick(context, message, it.absolutePath, dirOnly, onPick)
+                            } ?: run { context.showToast("nope") }
                         }
                     }
                     addView(view)
@@ -83,6 +85,22 @@ object FilePicker {
         }
         dialogBuilder.setNegativeButton(android.R.string.cancel) { _, _ ->
             dialog = null
+        }
+        dialogBuilder.setNeutralButton("路径") { _, _ ->
+            val et = EditText(context).apply {
+                setText(path)
+                typeface = Typeface.MONOSPACE
+                isSingleLine = true
+            }
+            AlertDialog.Builder(context)
+                .setTitle("输入路径")
+                .setView(et)
+                .setPositiveButton(android.R.string.ok) { _, _ ->
+                    pick(context, message, et.text.toString(), dirOnly, onPick)
+                }.setOnCancelListener {
+                    dialog?.show()
+                }
+                .show()
         }
         dialog?.dismiss()
         dialog = dialogBuilder.show()
