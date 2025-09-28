@@ -25,21 +25,20 @@ package io.github.duzhaokun123.hook
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.app.AlertDialog
-import android.app.NotificationManager
 import android.os.Build
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.view.ViewGroup.LayoutParams.MATCH_PARENT
+import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
 import android.widget.Button
 import android.widget.LinearLayout
 import android.widget.TextView
-import androidx.core.view.updatePadding
-import android.view.ViewGroup.LayoutParams.MATCH_PARENT
-import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.core.app.NotificationChannelCompat
 import androidx.core.app.NotificationManagerCompat
+import androidx.core.view.updatePadding
 import com.tencent.mobileqq.widget.BounceScrollView
-import com.tencent.widget.ScrollView
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -112,35 +111,53 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
             }
             linearLayout.addView(ll_group)
             group.channels.forEach { channel ->
-                ll_group.addView(LinearLayout(context).apply ll_channel@{
-                    orientation = LinearLayout.HORIZONTAL
-                    updatePadding(left = 20)
-                    addView(Button(context).apply {
-                        text = "删除"
-                        setOnClickListener {
-                            AlertDialog.Builder(context).setTitle("删除渠道")
-                                .setMessage("确认删除渠道 ${channel.name}(${channel.id}) 吗？")
-                                .setNegativeButton("取消", null)
-                                .setPositiveButton("删除") { _, _ ->
-                                    notificationManager.deleteNotificationChannel(channel.id)
-                                    ll_group.removeView(this@ll_channel)
-                                }.show()
-                        }
-                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
-                    addView(TextView(context).apply {
-                        text = "渠道：${channel.name}(${channel.id})"
-                        if (channel.parentChannelId != null) {
-                            append(" 父渠道：${channel.parentChannelId}")
-                        }
-                        if (channel.description != null) {
-                            append("\n${channel.description}")
-                        }
-                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        weight = 1F
-                    })
+                ll_group.addView(createChannelView(channel, context, notificationManager, ll_group).apply {
+                    updatePadding(left = 50)
                 })
             }
         }
+        notificationManager.notificationChannelsCompat.forEach { channel ->
+            if (channel.group != null) {
+                // 已经在组内的渠道跳过
+                return@forEach
+            }
+            linearLayout.addView(createChannelView(channel, context, notificationManager, linearLayout))
+        }
         return rootView
+    }
+
+    @SuppressLint("SetTextI18n")
+    private fun createChannelView(
+        channel: NotificationChannelCompat,
+        context: android.content.Context,
+        notificationManager: NotificationManagerCompat,
+        parentLayout: LinearLayout
+    ): LinearLayout {
+        return LinearLayout(context).apply ll@{
+            orientation = LinearLayout.HORIZONTAL
+            addView(Button(context).apply {
+                text = "删除"
+                setOnClickListener {
+                    AlertDialog.Builder(context).setTitle("删除渠道")
+                        .setMessage("确认删除渠道 ${channel.name}(${channel.id}) 吗？")
+                        .setNegativeButton("取消", null)
+                        .setPositiveButton("删除") { _, _ ->
+                            notificationManager.deleteNotificationChannel(channel.id)
+                            parentLayout.removeView(this@ll)
+                        }.show()
+                }
+            }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
+            addView(TextView(context).apply {
+                text = "渠道：${channel.name}(${channel.id})"
+                if (channel.parentChannelId != null) {
+                    append(" 父渠道：${channel.parentChannelId}")
+                }
+                if (channel.description != null) {
+                    append("\n${channel.description}")
+                }
+            }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
+                weight = 1F
+            })
+        }
     }
 }
