@@ -37,6 +37,7 @@ import android.widget.TextView
 import androidx.core.view.updatePadding
 import android.view.ViewGroup.LayoutParams.MATCH_PARENT
 import android.view.ViewGroup.LayoutParams.WRAP_CONTENT
+import androidx.core.app.NotificationManagerCompat
 import com.tencent.mobileqq.widget.BounceScrollView
 import com.tencent.widget.ScrollView
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
@@ -75,14 +76,14 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return TextView(context).apply { text = "系统不支持" }
         }
-        val notificationManager = context.getSystemService(NotificationManager::class.java)
+        val notificationManager = NotificationManagerCompat.from(context)
         val rootView = BounceScrollView(context, null)
         rootLayoutView = rootView
         val linearLayout = LinearLayout(context).apply {
             orientation = LinearLayout.VERTICAL
         }
         rootView.addView(linearLayout, ViewGroup.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
-        notificationManager.notificationChannelGroups.forEach { group ->
+        notificationManager.notificationChannelGroupsCompat.forEach { group ->
             val ll_group = LinearLayout(context).apply ll_group@{
                 orientation = LinearLayout.VERTICAL
                 addView(LinearLayout(context).apply {
@@ -98,12 +99,9 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
                                     linearLayout.removeView(this@ll_group)
                                 }.show()
                         }
-                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        rightMargin = 16
-                    })
+                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
                     addView(TextView(context).apply {
-                        text = "渠道组：${group.name}(${group.id})"
-                        textSize = 18F
+                        text = "渠道组：${group.name}(${group.id}) (${group.description})"
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         weight = 1F
                     })
@@ -125,12 +123,9 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
                                     ll_group.removeView(this@ll_channel)
                                 }.show()
                         }
-                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
-                        rightMargin = 16
-                    })
+                    }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
                     addView(TextView(context).apply {
-                        text = "渠道：${channel.name}(${channel.id})"
-                        textSize = 16F
+                        text = "渠道：${channel.name}(${channel.id}) (${channel.description})"
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         weight = 1F
                     })
