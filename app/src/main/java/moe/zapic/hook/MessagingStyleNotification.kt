@@ -77,6 +77,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
     private val historyMessage: HashMap<String, MessagingStyle> = HashMap()
     val avatarHelper = QQAvatarHelper()
 
+    @RequiresApi(Build.VERSION_CODES.O)
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -90,7 +91,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         val cAppRuntime = "mqq.app.AppRuntime".clazz!!
         val cCommonInfo = "com.tencent.qqnt.kernel.nativeinterface.NotificationCommonInfo".clazz!!
         val cRecentInfo = "com.tencent.qqnt.kernel.nativeinterface.RecentContactInfo".clazz!!
-        val postNotification =
+        val (postNotification, postNotificationIndex) =
             runCatching {
                 Reflex.findSingleMethod(
                     cNotificationFacade,
@@ -98,14 +99,14 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     false,
                     Notification::class.java,
                     Int::class.javaPrimitiveType
-                )
+                ) to 0
             }.getOrNull() ?: runCatching {
                 Reflex.findSingleMethod(
                     cNotificationFacade,
                     null,
                     false,
                     String::class.java, Notification::class.java, Int::class.javaPrimitiveType
-                )
+                ) to 1
             }.getOrThrow()
 
         lateinit var buildNotification: Method
@@ -140,11 +141,11 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             notificationInfoMap.remove(el)
         }
         hookBeforeIfEnabled(postNotification) { param ->
-            val (notificationIndex, oldNotification) =
+            val oldNotification =
                 runCatching {
-                    0 to param.args[0] as Notification
+                    param.args[0] as Notification
                 }.getOrNull() ?: runCatching {
-                    1 to param.args[1] as Notification
+                    param.args[1] as Notification
                 }.getOrThrow()
             val pair = notificationInfoMap[oldNotification.contentIntent] ?: return@hookBeforeIfEnabled
             val info = QQRecentContactInfo(pair.first)
@@ -200,7 +201,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     oldNotification,
                     isSpecial
                 )
-                param.args[notificationIndex] = notification
+                param.args[postNotificationIndex] = notification
             }
         }
         hookBeforeIfEnabled(
@@ -232,6 +233,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         return shortcut
     }
 
+    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotification(
         content: String,
         senderName: String,
@@ -284,13 +286,31 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 .build()
         }
         val message = MessagingStyle.Message(content, oldNotification.`when`, senderPerson)
+        val notificationChannel = NotificationChannel(mainUin.toString(), mainName, NotificationManager.IMPORTANCE_HIGH).apply {
+            group = "qq_evolution"
+            description = "来自 $mainName 的消息"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+                setConversationId(getChannelId(channelId), shortcut.id)
+            }
+        }
+        val notificationManager = hostInfo.application.getSystemService(NotificationManager::class.java)
+        if (notificationManager.getNotificationChannel(notificationChannel.id) == null) {
+            notificationManager.createNotificationChannel(notificationChannel)
+        }
         messageStyle.addMessage(message)
         val builder = NotificationCompat.Builder(hostInfo.application, oldNotification)
             .setContentTitle(mainName)
             .setContentText(content)
             .setLargeIcon(null as Bitmap?)
             .setStyle(messageStyle)
-            .setChannelId(getChannelId(channelId))
+            .setChannelId(notificationChannel.id)
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
+            builder
+                .setBubbleMetadata(
+                    NotificationCompat.BubbleMetadata.Builder(shortcut.id)
+                        .build()
+                )
+        }
 
         builder.setShortcutInfo(shortcut)
         return builder.build()

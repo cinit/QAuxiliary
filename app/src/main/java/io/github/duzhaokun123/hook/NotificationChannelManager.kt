@@ -126,6 +126,9 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
                     addView(TextView(context).apply {
                         text = "渠道：${channel.name}(${channel.id}) (${channel.description})"
+                        if (channel.parentChannelId != null) {
+                            append("\n 父渠道：${channel.parentChannelId}")
+                        }
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         weight = 1F
                     })
