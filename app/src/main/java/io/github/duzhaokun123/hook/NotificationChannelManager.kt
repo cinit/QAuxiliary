@@ -101,7 +101,10 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
                         }
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
                     addView(TextView(context).apply {
-                        text = "渠道组：${group.name}(${group.id}) (${group.description})"
+                        text = "渠道组：${group.name}(${group.id})"
+                        if (group.description != null) {
+                            append("\n${group.description}")
+                        }
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         weight = 1F
                     })
@@ -125,9 +128,12 @@ class NotificationChannelManagerFragment : BaseRootLayoutFragment() {
                         }
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT))
                     addView(TextView(context).apply {
-                        text = "渠道：${channel.name}(${channel.id}) (${channel.description})"
+                        text = "渠道：${channel.name}(${channel.id})"
                         if (channel.parentChannelId != null) {
-                            append("\n 父渠道：${channel.parentChannelId}")
+                            append(" 父渠道：${channel.parentChannelId}")
+                        }
+                        if (channel.description != null) {
+                            append("\n${channel.description}")
                         }
                     }, LinearLayout.LayoutParams(WRAP_CONTENT, WRAP_CONTENT).apply {
                         weight = 1F
