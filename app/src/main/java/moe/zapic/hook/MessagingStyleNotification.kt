@@ -90,20 +90,31 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         val cAppRuntime = "mqq.app.AppRuntime".clazz!!
         val cCommonInfo = "com.tencent.qqnt.kernel.nativeinterface.NotificationCommonInfo".clazz!!
         val cRecentInfo = "com.tencent.qqnt.kernel.nativeinterface.RecentContactInfo".clazz!!
-        val postNotification = Reflex.findSingleMethod(
-            cNotificationFacade,
-            null,
-            false,
-            Notification::class.java,
-            Int::class.javaPrimitiveType
-        )
+        val postNotification =
+            runCatching {
+                Reflex.findSingleMethod(
+                    cNotificationFacade,
+                    null,
+                    false,
+                    Notification::class.java,
+                    Int::class.javaPrimitiveType
+                )
+            }.getOrNull() ?: runCatching {
+                Reflex.findSingleMethod(
+                    cNotificationFacade,
+                    null,
+                    false,
+                    String::class.java, Notification::class.java, Int::class.javaPrimitiveType
+                )
+            }.getOrThrow()
 
         lateinit var buildNotification: Method
         lateinit var recentInfoBuilder: Method
         cNotificationFacade.declaredMethods.forEach {
             if (it.paramCount < 3 || it.parameterTypes[0] != cAppRuntime) return@forEach
             if (it.paramCount == 3 && it.parameterTypes[2] == cCommonInfo ||
-                it.paramCount == 4 && it.parameterTypes[2] == cCommonInfo && it.parameterTypes[3] == cRecentInfo // since 9.1.0
+                it.paramCount == 4 && it.parameterTypes[2] == cCommonInfo && it.parameterTypes[3] == cRecentInfo || // since 9.1.0
+                it.paramCount == 5 && it.parameterTypes[2] == cCommonInfo && it.parameterTypes[3] == cRecentInfo && it.parameterTypes[4] == Boolean::class.javaPrimitiveType // since 9.2.20
             ) {
                 buildNotification = it
             } else if (it.paramCount >= 3 && it.parameterTypes[1] == cRecentInfo && it.parameterTypes[2] == Boolean::class.java) {
@@ -129,7 +140,12 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             notificationInfoMap.remove(el)
         }
         hookBeforeIfEnabled(postNotification) { param ->
-            val oldNotification = param.args[0] as Notification
+            val (notificationIndex, oldNotification) =
+                runCatching {
+                    0 to param.args[0] as Notification
+                }.getOrNull() ?: runCatching {
+                    1 to param.args[1] as Notification
+                }.getOrThrow()
             val pair = notificationInfoMap[oldNotification.contentIntent] ?: return@hookBeforeIfEnabled
             val info = QQRecentContactInfo(pair.first)
             notificationInfoMap.remove(oldNotification.contentIntent)
@@ -184,7 +200,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     oldNotification,
                     isSpecial
                 )
-                param.args[0] = notification
+                param.args[notificationIndex] = notification
             }
         }
         hookBeforeIfEnabled(
