@@ -80,7 +80,11 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
     sIsHooked = true;
     gLibkernelBaseAddress = reinterpret_cast<void*>(baseAddress);
 
+    const uint64_t currentVersion = qauxv::HostInfo::GetLongVersionCode();
+    const uint64_t Version_QQ_9_2_20 = 11650;
+
     //@formatter:off
+
     // RecallC2cSysMsg 09 8d 40 f8 ?? 03 00 aa 21 00 80 52 f3 03 02 aa 29 ?? 40 f9
     auto targetRecallC2cSysMsg = AobScanTarget()
             .WithName("RecallC2cSysMsg")
@@ -91,15 +95,28 @@ bool PerformNtRecallMsgHook(uint64_t baseAddress) {
             .WithOffsetsForResult({-0x20, -0x24, -0x28, -0x3c})
             .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
 
-    // RecallGroupSysMsg 09 8d 40 f8 29 95 40 f9 ?? 11 00 94 ?? 04 00 36
-    auto targetRecallGroupSysMsg = AobScanTarget()
-            .WithName("RecallGroupSysMsg")
-            .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0x29, 0x95, 0x40, 0xf9, 0x00, 0x11, 0x00, 0x94, 0x00, 0x04, 0x00, 0x36})
-            .WithMask(    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff})
-            .WithStep(4)
-            .WithExecMemOnly(true)
-            .WithOffsetsForResult({-0x20, -0x2c, -0x30, -0x44})
-            .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+    AobScanTarget targetRecallGroupSysMsg;
+     if (currentVersion >= Version_QQ_9_2_20) {
+         // RecallGroupSysMsg 09 8d 40 f8 29 95 40 f9 ?? ?? 00 94 ?? 04 00 36 ?? 02 40 f9 61 00 80 52
+        targetRecallGroupSysMsg = AobScanTarget()
+                .WithName("RecallGroupSysMsg")
+                .WithSequence({0x09, 0x8d, 0x40, 0xf8, 0x29, 0x95, 0x40, 0xf9, 0x00, 0x00, 0x00, 0x94, 0x00, 0x04, 0x00, 0x36, 0x00, 0x02, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52})
+                .WithMask(    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0x00, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff})
+                .WithStep(4)
+                .WithExecMemOnly(true)
+                .WithOffsetsForResult({-0x44})
+                .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+    } else {
+         // RecallGroupSysMsg 28 00 40 f9 61 00 80 52 09 8d 40 f8 29 ?? 40 f9
+         targetRecallGroupSysMsg = AobScanTarget()
+                 .WithName("RecallGroupSysMsg")
+                 .WithSequence({0x28, 0x00, 0x40, 0xf9, 0x61, 0x00, 0x80, 0x52, 0x09, 0x8d, 0x40, 0xf8, 0x29, 0x00, 0x40, 0xf9})
+                 .WithMask(    {0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0xff, 0x00, 0xff, 0xff})
+                 .WithStep(4)
+                 .WithExecMemOnly(true)
+                 .WithOffsetsForResult({-0x18, -0x24, -0x28})
+                 .WithResultValidator(CommonAobScanValidator::kArm64StpX29X30SpImm);
+    }
 
     //@formatter:on
 
