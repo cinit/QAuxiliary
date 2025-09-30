@@ -22,6 +22,7 @@
 
 package cc.ioctl.hook.msg;
 
+import android.app.Activity;
 import android.content.ClipData;
 import android.content.ClipData.Item;
 import android.content.ClipDescription;
@@ -47,7 +48,7 @@ import androidx.core.view.inputmethod.InputConnectionCompat;
 import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
-import io.github.qauxv.util.Log;
+import io.github.duzhaokun123.activity.PictureEditProxyActivity;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
@@ -65,9 +66,10 @@ import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.lang.reflect.Method;
@@ -286,6 +288,26 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 .setView(binding.getRoot())
                 .setPositiveButton("发送", (dialog, which) -> executeSendMessage(context, session, data, aioRootView, rt))
                 .setNegativeButton(android.R.string.cancel, null)
+                .setNeutralButton("编辑", (dialog, which) -> {
+                    try {
+                        var tmpFile = new File(context.getCacheDir(), "edit-pic.png");
+                        var os = new FileOutputStream(tmpFile);
+                        os.write(data);
+                        os.close();
+                        PictureEditProxyActivity.startEditPicture((Activity) context, tmpFile.getPath(), path -> {
+                            try {
+                                var is = new FileInputStream(path);
+                                var data2 = is.readAllBytes();
+                                is.close();
+                                executeSendMessage(context, session, data2, aioRootView, rt);
+                            } catch (Exception e) {
+                                FaultyDialog.show(context, e);
+                            }
+                        });
+                    } catch (Exception e) {
+                        FaultyDialog.show(context, e);
+                    }
+                })
                 .setCancelable(true)
                 .show();
     }

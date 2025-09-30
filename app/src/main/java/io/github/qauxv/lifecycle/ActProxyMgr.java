@@ -49,6 +49,7 @@ public class ActProxyMgr {
             || className.startsWith("com.rymmmmm.activity.")
             || className.startsWith("cn.lliiooll.activity.")
             || className.startsWith("xyz.nextalone.activity.")
+            || className.startsWith("io.github.duzhaokun123.activity.")
             || "io.github.qauxv.util.consis.ShadowStartupAgentActivity".equals(className);
     }
 
