@@ -75,10 +75,7 @@ jobs:
         uses: actions/cache@v4.2.4
         with:
           path: |
-            ~/.gradle/caches
-            ~/.gradle/wrapper
-            ~/.gradle/notifications
-            ~/.gradle/jdks
+            ~/.gradle
             .gradle
           key: gradle-cache-${{ hashFiles('**/*.gradle.*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
           restore-keys: gradle-cache-
