@@ -1100,3 +1100,17 @@ data object PadUtil_getDeviceType : DexKitTarget.UsingStr() {
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/common/config/pad/PadUtil")
 }
+
+data object SharePanelSceneData : DexKitTarget.UsingStr() {
+    override val findMethod = false
+    override val traitString = arrayOf("SharePanelSceneData(sceneId=")
+    override val declaringClass = "com.tencent.mobileqq.sharepanel.config.SharePanelSceneDat"
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/sharepanel/config/")
+}
+
+data object SharePanel_Handler_OtherApp_startActivity : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("SharePanel_Handler_OtherApp", "未找到可以打开的应用"))
+    override val declaringClass = "com.tencent.mobileqq.sharepanel.share.handler.SharePanel_Handler_OtherApp"
+    override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.sharepanel.share.handler")
+}
