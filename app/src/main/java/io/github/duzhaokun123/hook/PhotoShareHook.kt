@@ -24,29 +24,37 @@ package io.github.duzhaokun123.hook
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.content.Context
 import android.content.Intent
 import android.net.Uri
+import android.os.Parcel
+import android.os.Parcelable
+import androidx.core.content.FileProvider
 import com.github.kyuubiran.ezxhelper.utils.getObjectByType
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.hookReplace
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
-import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.SharePanelSceneData
-import io.github.qauxv.util.dexkit.SharePanel_Handler_OtherApp_startActivity
+import io.github.qauxv.util.dexkit.SharePanel_Handler_OtherApp_openImageByOtherApp
+import io.github.qauxv.util.dexkit.SharePanel_Handler_OtherApp_openVideoByOtherApp
 import xyz.nextalone.util.SystemServiceUtils
 import xyz.nextalone.util.clazz
+import java.io.File
 import java.lang.ref.WeakReference
 import kotlin.concurrent.thread
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object PhotoShareHook : CommonSwitchFunctionHook(targets = arrayOf(SharePanelSceneData, SharePanel_Handler_OtherApp_startActivity)) {
+object PhotoShareHook : CommonSwitchFunctionHook(targets = arrayOf(
+    SharePanelSceneData, SharePanel_Handler_OtherApp_openImageByOtherApp, SharePanel_Handler_OtherApp_openVideoByOtherApp
+)) {
     override val name = "聊天照片分享增强"
     override val description = "替换外部打开为打开分享复制"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
@@ -74,45 +82,72 @@ object PhotoShareHook : CommonSwitchFunctionHook(targets = arrayOf(SharePanelSce
                 }
             }
         val class_WeakReference = "Lmqq/util/WeakReference;".clazz!!
-        DexKit.requireMethodFromCache(SharePanel_Handler_OtherApp_startActivity)
-            .hookBefore {
-                val activity = it.thisObject.getObjectByTypeAs<WeakReference<Activity>>(class_WeakReference).get()
-                if (activity == null) {
-                    Toasts.show("无法获取 Activity")
-                    return@hookBefore
-                }
-                val uri = it.args[0] as Uri
-                val type = it.args[1] as String
-                val context = CommonContextWrapper.createAppCompatContext(activity)
-                AlertDialog.Builder(context)
-                    .setTitle("外部分享")
-                    .setItems(arrayOf("打开", "分享", "复制")) { _, which ->
-                        when (which) {
-                            0 -> {
-                                val intent = Intent(Intent.ACTION_VIEW).apply {
-                                    setDataAndType(uri, type)
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                }
-                                activity.startActivity(Intent.createChooser(intent, "打开..."))
-                            }
-                            1 -> {
-                                val intent = Intent(Intent.ACTION_SEND).apply {
-                                    setType(type)
-                                    putExtra(Intent.EXTRA_STREAM, uri)
-                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                                }
-                                activity.startActivity(Intent.createChooser(intent, "分享到"))
-                            }
-                            2 -> {
-                                thread {
-                                    SystemServiceUtils.copyToClipboard(context, uri)
-                                }
-                            }
-                        }
-                    }.setNeutralButton(android.R.string.cancel, null)
-                    .show()
-                it.result = null
+        DexKit.requireMethodFromCache(SharePanel_Handler_OtherApp_openImageByOtherApp)
+            .hookReplace {
+                val activity = it.thisObject.getObjectByTypeAs<WeakReference<Activity>>(class_WeakReference).get()!!
+                val context = CommonContextWrapper.createMaterialDesignContext(activity)
+                val imageShareData = it.args[0] as Parcelable
+                val parcel = Parcel.obtain()
+                imageShareData.writeToParcel(parcel, 0)
+                parcel.setDataPosition(0)
+                val filePath = parcel.readString()!!
+                val title = parcel.readString()
+                val desc = parcel.readString()
+                parcel.recycle()
+                val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", File(filePath))
+                showShareDialog(context, uri, "image/*", title, desc)
+            }
+        DexKit.requireMethodFromCache(SharePanel_Handler_OtherApp_openVideoByOtherApp)
+            .hookReplace {
+                val activity = it.thisObject.getObjectByTypeAs<WeakReference<Activity>>(class_WeakReference).get()!!
+                val context = CommonContextWrapper.createMaterialDesignContext(activity)
+                val videoShareData = it.args[0] as Parcelable
+                val parcel = Parcel.obtain()
+                videoShareData.writeToParcel(parcel, 0)
+                parcel.setDataPosition(0)
+                val filePath = parcel.readString()!!
+                val coverUrl = parcel.readString()
+                val title = parcel.readString()
+                val desc = parcel.readString()
+                parcel.recycle()
+                val uri = FileProvider.getUriForFile(context, context.packageName + ".fileprovider", File(filePath))
+                showShareDialog(context, uri, "video/*", title, desc)
             }
         return true
+    }
+
+    fun showShareDialog(
+        context: Context, uri: Uri, type: String,
+        title: String?, desc: String?,
+    ) {
+        AlertDialog.Builder(context)
+            .setTitle("外部分享")
+            .setItems(arrayOf("打开", "分享", "复制")) { _, which ->
+                when (which) {
+                    0 -> {
+                        val intent = Intent(Intent.ACTION_VIEW).apply {
+                            setDataAndType(uri, type)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "打开..."))
+                    }
+                    1 -> {
+                        val intent = Intent(Intent.ACTION_SEND).apply {
+                            setType(type)
+                            putExtra(Intent.EXTRA_STREAM, uri)
+                            putExtra(Intent.EXTRA_TITLE, title)
+                            putExtra(Intent.EXTRA_SUBJECT, desc)
+                            addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        }
+                        context.startActivity(Intent.createChooser(intent, "分享到"))
+                    }
+                    2 -> {
+                        thread {
+                            SystemServiceUtils.copyToClipboard(context, uri)
+                        }
+                    }
+                }
+            }.setNeutralButton(android.R.string.cancel, null)
+            .show()
     }
 }

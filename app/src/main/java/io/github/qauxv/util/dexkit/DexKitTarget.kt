@@ -1108,9 +1108,16 @@ data object SharePanelSceneData : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/sharepanel/config/")
 }
 
-data object SharePanel_Handler_OtherApp_startActivity : DexKitTarget.UsingStringVector() {
+data object SharePanel_Handler_OtherApp_openImageByOtherApp : DexKitTarget.UsingStringVector() {
     override val findMethod = true
-    override val traitStringVectors = arrayOf(arrayOf("SharePanel_Handler_OtherApp", "未找到可以打开的应用"))
+    override val traitStringVectors = arrayOf(arrayOf("SharePanel_Handler_OtherApp", "openImageByOtherApp "))
+    override val declaringClass = "com.tencent.mobileqq.sharepanel.share.handler.SharePanel_Handler_OtherApp"
+    override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.sharepanel.share.handler")
+}
+
+data object SharePanel_Handler_OtherApp_openVideoByOtherApp : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("SharePanel_Handler_OtherApp", "openVideoByOtherApp "))
     override val declaringClass = "com.tencent.mobileqq.sharepanel.share.handler.SharePanel_Handler_OtherApp"
     override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.sharepanel.share.handler")
 }
