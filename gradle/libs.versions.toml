@@ -1,14 +1,14 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.12.1"
+agp = "8.13.0"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
-kotlin = "2.2.10"
-ksp = "2.2.10-2.0.2"
-lifecycle = "2.9.2"
+kotlin = "2.2.20"
+ksp = "2.2.20-2.0.3"
+lifecycle = "2.9.4"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.32.0"
+protobuf = "4.32.1"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -31,7 +31,7 @@ ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = 
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
 lifecycle-common = { module = "androidx.lifecycle:lifecycle-common-java8", version.ref = "lifecycle" }
 lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", version.ref = "lifecycle" }
-material = { module = "com.google.android.material:material", version = "1.12.0" }
+material = { module = "com.google.android.material:material", version = "1.13.0" }
 material-dialogs-core = { module = "com.afollestad.material-dialogs:core", version.ref = "materialDialog" }
 material-dialogs-input = { module = "com.afollestad.material-dialogs:input", version.ref = "materialDialog" }
 xposed-api = { module = "de.robv.android.xposed:api", version = "82" }
@@ -50,7 +50,7 @@ davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:
 google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.ref = "protobuf" }
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
-google-guava = { module = "com.google.guava:guava", version = "33.4.8-android" }
+google-guava = { module = "com.google.guava:guava", version = "33.5.0-android" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.4.0" }
