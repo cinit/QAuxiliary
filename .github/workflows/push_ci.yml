@@ -80,17 +80,6 @@ jobs:
           key: gradle-cache-${{ hashFiles('**/*.gradle.*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
           restore-keys: gradle-cache-
 
-      - name: Cache Build Intermediates
-        uses: actions/cache@v4.2.4
-        with:
-          path: |
-            **/build/
-            !**/build/outputs/apk/**
-            !**/build/outputs/ci/**
-          key: build-intermediates-${{ github.sha }}
-          restore-keys: |
-            build-intermediates-
-
       - name: Setup Gradle
         uses: gradle/gradle-build-action@v3.5.0
 
