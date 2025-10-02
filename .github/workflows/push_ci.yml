@@ -71,17 +71,8 @@ jobs:
           key: native-cache-${{ github.sha }}
           restore-keys: native-cache-
 
-      - name: Cache Gradle Dependencies
-        uses: actions/cache@v4.2.4
-        with:
-          path: |
-            ~/.gradle
-            .gradle
-          key: gradle-cache-${{ hashFiles('**/*.gradle.*', '**/gradle-wrapper.properties', 'gradle/libs.versions.toml') }}
-          restore-keys: gradle-cache-
-
       - name: Setup Gradle
-        uses: gradle/gradle-build-action@v3.5.0
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Build with Gradle
         run: |
