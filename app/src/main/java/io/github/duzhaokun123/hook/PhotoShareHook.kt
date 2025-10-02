@@ -39,7 +39,6 @@ import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.SharePanelSceneData
 import io.github.qauxv.util.dexkit.SharePanel_Handler_OtherApp_startActivity
-import io.github.qauxv.util.xpcompat.XposedBridge
 import xyz.nextalone.util.SystemServiceUtils
 import xyz.nextalone.util.clazz
 import java.lang.ref.WeakReference
@@ -90,11 +89,15 @@ object PhotoShareHook : CommonSwitchFunctionHook(targets = arrayOf(SharePanelSce
                     .setItems(arrayOf("打开", "分享", "复制")) { _, which ->
                         when (which) {
                             0 -> {
-                                XposedBridge.invokeOriginalMethod(it.method, it.thisObject, it.args)
+                                val intent = Intent(Intent.ACTION_VIEW).apply {
+                                    setDataAndType(uri, type)
+                                    addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                                }
+                                activity.startActivity(Intent.createChooser(intent, "打开..."))
                             }
                             1 -> {
                                 val intent = Intent(Intent.ACTION_SEND).apply {
-                                    setDataAndType(uri, type)
+                                    setType(type)
                                     putExtra(Intent.EXTRA_STREAM, uri)
                                     addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
                                 }
