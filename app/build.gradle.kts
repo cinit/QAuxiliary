@@ -586,3 +586,13 @@ java {
         languageVersion = JavaLanguageVersion.of(17)
     }
 }
+
+// Fix for Gradle 9.1.0 validation: KSP task must declare dependency on protobuf generation
+afterEvaluate {
+    android.buildTypes.forEach { buildType ->
+        val variantName = buildType.name.capitalizeUS()
+        tasks.named("ksp${variantName}Kotlin").configure {
+            dependsOn("generate${variantName}Proto")
+        }
+    }
+}
