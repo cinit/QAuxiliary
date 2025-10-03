@@ -24,7 +24,11 @@ package hook
 
 import android.app.Activity
 import android.app.AlertDialog
+import android.os.Build
 import android.view.View
+import android.widget.Button
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.Toast
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -46,16 +50,26 @@ object ToastTest : CommonConfigFunctionHook() {
     }
 
     override val onUiItemClickListener = { _: IUiItemAgent, activity: Activity, _: View ->
-        AlertDialog.Builder(activity)
-            .setItems(arrayOf("error", "success", "info", "plain", "system")) { _, which ->
-                when (which) {
-                    0 -> Toasts.error(activity, "错误 Toast")
-                    1 -> Toasts.success(activity, "成功 Toast")
-                    2 -> Toasts.info(activity, "信息 Toast")
-                    3 -> Toasts.show(activity, "普通 Toast")
-                    4 -> Toast.makeText(activity, "系统 Toast", Toast.LENGTH_SHORT).show()
-                }
+        val et_type = EditText(activity).apply {
+            hint = "类型"
+            if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+                importantForAutofill = View.IMPORTANT_FOR_AUTOFILL_NO
             }
+        }
+        val btn_show = Button(activity).apply {
+            text = "显示"
+            setOnClickListener {
+                Toasts.showToast(activity, et_type.text.toString().toIntOrNull() ?: 0, "测试", Toast.LENGTH_LONG)
+            }
+        }
+        val ll = LinearLayout(activity).apply {
+            orientation = LinearLayout.VERTICAL
+            addView(et_type)
+            addView(btn_show)
+        }
+        AlertDialog.Builder(activity)
+            .setTitle(name)
+            .setView(ll)
             .show()
         Unit
     }
