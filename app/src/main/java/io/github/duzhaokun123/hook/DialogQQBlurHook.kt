@@ -23,10 +23,16 @@
 package io.github.duzhaokun123.hook
 
 import android.app.Dialog
+import android.content.Context
 import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.core.view.get
+import com.github.kyuubiran.ezxhelper.utils.argTypes
+import com.github.kyuubiran.ezxhelper.utils.args
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
-import com.tencent.biz.qui.toast.blur.QUIToastBlurWrapper
+import com.github.kyuubiran.ezxhelper.utils.loadClass
+import com.github.kyuubiran.ezxhelper.utils.loadClassOrNull
+import com.github.kyuubiran.ezxhelper.utils.newInstanceAs
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -40,8 +46,10 @@ object DialogQQBlurHook : CommonSwitchFunctionHook() {
     override val name = "AlertDialog 使用 QQ toast 同款模糊背景"
     override val description = "和官方一样会因为亮色背景看不清字"
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
+    override val isAvailable = loadClassOrNull("com.tencent.biz.qui.toast.blur.QUIToastBlurWrapper") != null
 
     override fun initOnce(): Boolean {
+        val class_QUIToastBlurWrapper = loadClass("com.tencent.biz.qui.toast.blur.QUIToastBlurWrapper")
         "Landroid/app/Dialog;->show()V".method
             .hookBefore {
                 val dialog = it.thisObject as Dialog
@@ -52,12 +60,12 @@ object DialogQQBlurHook : CommonSwitchFunctionHook() {
                     return@hookBefore
                 }
                 val rootView = (dialog.window!!.decorView as ViewGroup)[0]
-                if (rootView is QUIToastBlurWrapper) {
+                if (class_QUIToastBlurWrapper.isInstance(rootView)) {
                     Log.d("DialogQQBlurHook: already wrapped")
                     return@hookBefore
                 }
                 (rootView.parent as ViewGroup).removeView(rootView)
-                val wrapperView = QUIToastBlurWrapper(dialog.context).apply {
+                val wrapperView = class_QUIToastBlurWrapper.newInstanceAs<FrameLayout>(args(dialog.context), argTypes(Context::class.java))!!.apply {
                     addView(rootView)
                 }
                 (dialog.window!!.decorView as ViewGroup).addView(wrapperView)
