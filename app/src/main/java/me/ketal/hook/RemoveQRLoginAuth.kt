@@ -31,7 +31,9 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.QQVersion.QQ_8_9_0
 import io.github.qauxv.util.QQVersion.QQ_8_9_70
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.throwOrTrue
 
@@ -41,10 +43,10 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
 
     override val name = "去除相册扫码登录检验"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
-        val clazz = if (requireMinQQVersion(QQ_8_9_70)) {
+        val clazz = if (requireMinQQVersion(QQ_8_9_70) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             "com/tencent/open/agent/QrAgentLoginManager"
         } else if (requireMinQQVersion(QQ_8_9_0)) {
             "com/tencent/open/agent/QrAgentLoginManager\$a"
