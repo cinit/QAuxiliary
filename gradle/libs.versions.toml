@@ -57,6 +57,6 @@ changelog = { id = "org.jetbrains.changelog", version = "2.4.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "12.2.4" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin", version = "13.0.0" }
 protobuf = { id = "com.google.protobuf", version = "0.9.5" }
 android-library = { id = "com.android.library", version.ref = "agp" }
