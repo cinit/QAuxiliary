@@ -22,12 +22,14 @@
 
 package me.hd.hook
 
+import android.annotation.SuppressLint
 import android.content.Intent
+import android.content.res.Configuration
 import android.graphics.Color
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.RelativeLayout
-import android.widget.TextView
 import androidx.core.view.children
 import cc.hicore.message.chat.SessionHooker.IAIOParamUpdate
 import cc.hicore.message.chat.SessionUtils
@@ -42,7 +44,6 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.requireMinTimVersion
-import io.github.qauxv.ui.ResUtils
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -60,32 +61,39 @@ object TimBarAddEssenceHook : CommonSwitchFunctionHook(), IAIOParamUpdate {
         this.AIOParam = param
     }
 
+    @SuppressLint("DiscouragedApi")
     override fun initOnce(): Boolean {
         Initiator.loadClass("com.tencent.tim.aio.titlebar.TimRight1VB").findMethod {
             returnType == Initiator.loadClass("com.tencent.mobileqq.aio.widget.RedDotImageView")
         }.hookAfter { param ->
             val view = param.result as View
             val rootView = view.parent as ViewGroup
+
             if (!rootView.children.map { it.id }.contains(Layout_Id)) {
-                val textView = TextView(view.context).apply {
+                val imageView = ImageView(view.context).apply {
+
+                    val iconResId = context.resources.getIdentifier(
+                        "qui_tui_brand_products",
+                        "drawable",
+                        context.packageName
+                    )
+                    val night =
+                        context.resources.configuration.uiMode and Configuration.UI_MODE_NIGHT_MASK == Configuration.UI_MODE_NIGHT_YES
+                    setColorFilter(if (night) Color.WHITE else Color.BLACK)
+
                     id = Layout_Id
-                    text = "精"
-                    textSize = 16f
-                    if (ResUtils.isInNightMode()) {
-                        setTextColor(Color.WHITE)
-                    } else {
-                        setTextColor(Color.BLACK)
-                    }
+                    setImageResource(iconResId)
+
                     layoutParams = RelativeLayout.LayoutParams(
-                        RelativeLayout.LayoutParams.WRAP_CONTENT,
-                        RelativeLayout.LayoutParams.WRAP_CONTENT
+                        XPopupUtils.dp2px(view.context, 20f),
+                        XPopupUtils.dp2px(view.context, 20f)
                     ).apply {
                         addRule(RelativeLayout.ALIGN_PARENT_RIGHT)
                         addRule(RelativeLayout.CENTER_VERTICAL)
                         marginEnd = XPopupUtils.dp2px(view.context, 70f)
                     }
                 }
-                textView.setOnClickListener {
+                imageView.setOnClickListener {
                     val contact = SessionUtils.AIOParam2Contact(AIOParam)
                     val troopUin = contact.peerUid
                     try {
@@ -104,7 +112,7 @@ object TimBarAddEssenceHook : CommonSwitchFunctionHook(), IAIOParamUpdate {
                         e.printStackTrace()
                     }
                 }
-                rootView.addView(textView)
+                rootView.addView(imageView)
             }
         }
         return true
