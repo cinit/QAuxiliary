@@ -28,9 +28,11 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.EmoMsgUtils_isSingleLottie_QQNT
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
 import xyz.nextalone.util.hookBefore
@@ -47,7 +49,7 @@ object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLott
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val isAvailable: Boolean
-        get() = requireMinQQVersion(QQVersion.QQ_8_7_5)
+        get() = requireMinQQVersion(QQVersion.QQ_8_7_5) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
