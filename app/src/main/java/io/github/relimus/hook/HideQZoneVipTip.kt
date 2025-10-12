@@ -36,7 +36,7 @@ import xyz.nextalone.util.throwOrTrue
 @UiItemAgentEntry
 object HideQZoneVipTip : CommonSwitchFunctionHook() {
     override val name = "隐藏QQ空间VIP"
-    override val description = "隐藏空间中头像下边的的\"开通VIP\", 会导致右侧小眼睛动画消失 (介意勿用)"
+    override val description = "隐藏空间中头像下边的的\"开通VIP\", 会导致右侧小眼睛动画消失 (介意勿用)\n\n# 仅在 TIM_NT 上测试通过"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.MAIN_UI_MISC
     override val isAvailable = requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
