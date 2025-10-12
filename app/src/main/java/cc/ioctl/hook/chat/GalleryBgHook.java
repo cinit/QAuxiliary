@@ -21,6 +21,8 @@
  */
 package cc.ioctl.hook.chat;
 
+import static io.github.qauxv.util.HostInfo.requireMinTimVersion;
+
 import android.graphics.Color;
 import android.graphics.drawable.ColorDrawable;
 import android.view.View;
@@ -37,6 +39,7 @@ import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
+import io.github.qauxv.util.TIMVersion;
 import io.github.qauxv.util.dexkit.CAbsGalScene;
 import io.github.qauxv.util.dexkit.CGalleryBaseScene;
 import io.github.qauxv.util.dexkit.DexKit;
@@ -59,13 +62,15 @@ public class GalleryBgHook extends CommonSwitchFunctionHook {
         // for QQ NT
         Class<?> kRFWLayerAnimPart = Initiator.load("com.tencent.richframework.gallery.part.RFWLayerAnimPart");
         if (kRFWLayerAnimPart != null) {
-            Method m = kRFWLayerAnimPart.getDeclaredMethod("initStartAnim", ImageView.class);
-            HookUtils.hookAfterIfEnabled(this, m, param -> {
-                Object mDragLayout = Reflex.getInstanceObject(param.thisObject,
-                        HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_56) ? "dragLayout" : "mDragLayout",
-                        null);
-                Reflex.setInstanceObject(mDragLayout, "mWindowBgDrawable", new ColorDrawable(Color.TRANSPARENT));
-            });
+            if (!requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+                Method m = kRFWLayerAnimPart.getDeclaredMethod("initStartAnim", ImageView.class);
+                HookUtils.hookAfterIfEnabled(this, m, param -> {
+                    Object mDragLayout = Reflex.getInstanceObject(param.thisObject,
+                            HostInfo.requireMinQQVersion(QQVersion.QQ_9_0_56) ? "dragLayout" : "mDragLayout",
+                            null);
+                    Reflex.setInstanceObject(mDragLayout, "mWindowBgDrawable", new ColorDrawable(Color.TRANSPARENT));
+                });
+            }
             Method m2 = kRFWLayerAnimPart.getDeclaredMethod("updateBackgroundAlpha", int.class);
             HookUtils.hookBeforeIfEnabled(this, m2, param -> {
                 param.args[0] = 0;
