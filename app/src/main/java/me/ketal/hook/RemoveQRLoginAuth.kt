@@ -43,10 +43,10 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
 
     override val name = "去除相册扫码登录检验"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
+    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
-        val clazz = if (requireMinQQVersion(QQ_8_9_70) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+        val clazz = if (requireMinQQVersion(QQ_8_9_70) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             "com/tencent/open/agent/QrAgentLoginManager"
         } else if (requireMinQQVersion(QQ_8_9_0)) {
             "com/tencent/open/agent/QrAgentLoginManager\$a"

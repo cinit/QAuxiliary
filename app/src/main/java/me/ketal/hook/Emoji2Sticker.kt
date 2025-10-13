@@ -49,7 +49,7 @@ object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLott
     override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     override val isAvailable: Boolean
-        get() = requireMinQQVersion(QQVersion.QQ_8_7_5) or requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
+        get() = requireMinQQVersion(QQVersion.QQ_8_7_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
