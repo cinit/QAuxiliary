@@ -13,7 +13,10 @@ object Version {
     const val targetSdk = 36
     const val versionName = "1.5.9"
 
-    private const val defaultNdkVersion = "27.0.12077973"
+    // LSPlant requires NDK r29+ to build
+    // use NDK 29.0.13599879 rc1 for now
+    // NDK 29.0.14206865 complains duplicate function definitions in emmintrin.h on x86 and x86_64 architectures.
+    private const val defaultNdkVersion = "29.0.13599879"
 
     // LSPlant requires CMake 3.28.0+ to build
     private const val defaultCMakeVersion = "3.31.0"
