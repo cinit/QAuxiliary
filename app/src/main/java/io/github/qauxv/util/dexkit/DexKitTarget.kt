@@ -1104,7 +1104,7 @@ data object PadUtil_getDeviceType : DexKitTarget.UsingStr() {
 data object SharePanelSceneData : DexKitTarget.UsingStr() {
     override val findMethod = false
     override val traitString = arrayOf("SharePanelSceneData(sceneId=")
-    override val declaringClass = "com.tencent.mobileqq.sharepanel.config.SharePanelSceneDat"
+    override val declaringClass = "com.tencent.mobileqq.sharepanel.config.SharePanelSceneData"
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/sharepanel/config/")
 }
 
