@@ -34,6 +34,7 @@ import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
 import com.xiaoniu.dispatcher.OnMenuBuilder
+import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -206,7 +207,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
         val list = param.result as MutableList<Any>
-        val context = param.thisObject.invoke("getMContext")!!
+        val context = ContextUtils.getCurrentActivity()
         val item = CustomMenu.createItemIconNt(msg, "复制图片", R.drawable.ic_item_copy_72dp, R.id.item_copyToClipboard) {
             runCatching {
                 val file = File(getFilePathNt(msg))
