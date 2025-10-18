@@ -49,6 +49,7 @@ import cc.hicore.message.bridge.Chat_facade_bridge;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import io.github.duzhaokun123.activity.PictureEditProxyActivity;
+import io.github.duzhaokun123.util.AioChatPieClipPasteHookUtils;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
@@ -108,6 +109,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
 
     @Override
     protected boolean initOnce() throws Exception {
+        AioChatPieClipPasteHookUtils.preInitOnce();
         // com.tencent.widget.XEditTextEx#onTextContextMenuItem(I)Z
         Method m = Initiator.loadClass("com.tencent.widget.XEditTextEx")
                 .getDeclaredMethod("onTextContextMenuItem", int.class);
@@ -249,6 +251,9 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             cpTimeout.set(false);
             if (data != null) {
                 byte[] finalData = data;
+                if(AioChatPieClipPasteHookUtils.preHandleSendUriPicturePrConfirmSend(aioRootView, finalData)) {
+                    return;
+                }
                 SyncUtils.runOnUiThread(() -> confirmSendMessage(ctx, session, finalData, aioRootView, rt));
             }
         });
