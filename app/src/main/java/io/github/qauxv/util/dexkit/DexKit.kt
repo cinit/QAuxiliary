@@ -56,7 +56,8 @@ object DexKit {
     fun doFindClass(target: DexKitTarget): Class<*>? {
         when (target) {
             is DexKitTarget.UsingStr,
-            is DexKitTarget.UsingStringVector -> {
+            is DexKitTarget.UsingStringVector,
+            is DexKitTarget.UsingDexKitBridge -> {
                 loadClassFromCache(target)?.let { return it }
                 return DexDeobfsProvider.getCurrentBackend().use { it.doFindClass(target) }
             }
@@ -69,7 +70,8 @@ object DexKit {
     fun doFindMethod(target: DexKitTarget): Method? {
         when (target) {
             is DexKitTarget.UsingStr,
-            is DexKitTarget.UsingStringVector -> {
+            is DexKitTarget.UsingStringVector,
+            is DexKitTarget.UsingDexKitBridge -> {
                 check(target.findMethod) { "$target attempted to access method!" }
                 loadMethodFromCache(target)?.let { return it }
                 return DexDeobfsProvider.getCurrentBackend().use { it.doFindMethod(target) }

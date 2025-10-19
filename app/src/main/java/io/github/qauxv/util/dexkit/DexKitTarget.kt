@@ -46,6 +46,10 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.data.ConfigData
 import mqq.app.AppRuntime
+import org.luckypray.dexkit.DexKitBridge
+import org.luckypray.dexkit.result.MethodData
+
+typealias DexKitBridgeFinder = (bridge: DexKitBridge) -> MethodData
 
 sealed class DexKitTarget {
     val version = HostInfo.getVersionCode32()
@@ -61,6 +65,16 @@ sealed class DexKitTarget {
     }
 
     sealed class UsingDexkit : DexKitTarget()
+
+    sealed class UsingDexKitBridge : DexKitTarget() {
+
+        /**
+         * 由于设计上的问题 即使是 findClass 也需要返回 class 中的一个 method
+         * 不能 findField
+         */
+        abstract val finder: DexKitBridgeFinder
+        override val filter = DexKitFilter.allowAll
+    }
 
     abstract val declaringClass: String
     open val findMethod: Boolean = false

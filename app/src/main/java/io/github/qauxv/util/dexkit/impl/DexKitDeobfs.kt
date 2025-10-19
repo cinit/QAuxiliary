@@ -34,6 +34,7 @@ import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
 import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
+import org.luckypray.dexkit.result.MethodDataList
 import java.util.concurrent.locks.Lock
 import kotlin.concurrent.withLock
 
@@ -60,6 +61,7 @@ class DexKitDeobfs private constructor(
         mReadLock.withLock {
             val helper = mDexKitBridge!!
             val targets: MutableList<TargetHolder> = ArrayList()
+            val dexkitBridgeTargets: MutableList<DexKitTarget.UsingDexKitBridge> = ArrayList()
             targetArray.forEach { target ->
                 if (DexKit.getMethodDescFromCacheImpl(target) == null) {
                     if (target is DexKitTarget.UsingStringVector) {
@@ -68,6 +70,8 @@ class DexKitDeobfs private constructor(
                     } else if (target is DexKitTarget.UsingStr) {
                         // v1, Array<String> -> Array<setOf<String>>
                         targets += TargetHolder(target, target.traitString.map { setOf(it) }.toTypedArray())
+                    } else if (target is DexKitTarget.UsingDexKitBridge) {
+                        dexkitBridgeTargets += target
                     }
                 }
             }
@@ -93,6 +97,14 @@ class DexKitDeobfs private constructor(
                     resultMap2[key] = it.value.toSet()
                 }
             }
+            dexkitBridgeTargets.forEach { target ->
+                val result = runCatching {
+                    target.finder(helper)
+                }.onFailure { e ->
+                    Log.e("DexKitDeobfs batch find method for ${target.name} failed", e)
+                }.getOrNull()
+                resultMap2[target.name] = setOfNotNull(result)
+            }
 
             resultMap2.forEach { (key, valueArr) ->
                 val target = DexKitTarget.valueOf(key)
@@ -110,7 +122,8 @@ class DexKitDeobfs private constructor(
     }
 
     override fun doFindMethodImpl(target: DexKitTarget): DexMethodDescriptor? {
-        if (target !is DexKitTarget.UsingStr && target !is DexKitTarget.UsingStringVector) {
+        Log.d("here")
+        if (target !is DexKitTarget.UsingStr && target !is DexKitTarget.UsingStringVector && target !is DexKitTarget.UsingDexKitBridge) {
             return null
         }
         ensureOpen()
@@ -124,13 +137,26 @@ class DexKitDeobfs private constructor(
                 target.traitStringVectors.map { it.toSet() }.toTypedArray()
             } else if (target is DexKitTarget.UsingStr) {
                 target.traitString.map { setOf(it) }.toTypedArray()
+            } else if (target is DexKitTarget.UsingDexKitBridge) {
+                arrayOf(setOf(target.name))
             } else {
                 return null
             }
-            val resultMap = helper.batchFindMethodUsingStrings {
-                val map = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
-                groups(map, StringMatchType.SimilarRegex)
-            }
+            val resultMap =
+                if (target !is DexKitTarget.UsingDexKitBridge) {
+                    helper.batchFindMethodUsingStrings {
+                        val map = keys.mapIndexed { index, set -> "${target.name}#_#${index}" to set }.toMap()
+                        groups(map, StringMatchType.SimilarRegex)
+                    }
+                } else {
+                    val result = runCatching {
+                        target.finder(helper)
+                    }.onFailure { e ->
+                        Log.e("DexKitDeobfs find method for ${target.name} failed", e)
+                    }.getOrNull()
+                    mapOf(target.name to MethodDataList().apply { if (result != null) add(result) })
+                }
+
             if(resultMap.isEmpty()){
                 Log.e("no result found for ${target.name}")
                 target.descCache = DexKit.NO_SUCH_METHOD.toString()
