@@ -45,28 +45,24 @@ import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Toasts
-import xyz.nextalone.util.method
+import io.github.qauxv.util.dexkit.AIOMsgItem_initContentDescription
+import io.github.qauxv.util.dexkit.DexKit
 import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder {
+object MessageTTSHook : CommonSwitchFunctionHook(targets = arrayOf(AIOMsgItem_initContentDescription)), OnMenuBuilder {
     override val name: String
         get() = "文字消息转语音 (使用系统 TTS)"
 
     override val description: String
         get() = "提示失败多半是没设置系统 TTS 引擎"
 
-    lateinit var AIOMsgItem_getAccessibleText: Method
+    lateinit var method_AIOMsgItem_initContentDescription: Method
 
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            AIOMsgItem_getAccessibleText =
-                try {
-                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->k1()Ljava/lang/String;".method
-                } catch (_: Exception) {
-                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
-                }
+            method_AIOMsgItem_initContentDescription = DexKit.requireMethodFromCache(AIOMsgItem_initContentDescription)
             return true
         }
 
@@ -140,17 +136,17 @@ object MessageTTSHook : CommonSwitchFunctionHook(), OnMenuBuilder {
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
-                AIOMsgItem_getAccessibleText.invoke(msg) as String
+                method_AIOMsgItem_initContentDescription.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }
-            TTS.speak(wc, text.toString())
+            TTS.speak(wc, text)
         }
         val item2 = CustomMenu.createItemIconNt(msg, "TTS+", R.drawable.ic_item_tts_plus_72dp, R.id.item_tts2) {
             val ctx = ContextUtils.getCurrentActivity()
             val wc = CommonContextWrapper.createAppCompatContext(ctx)
             val text = try {
-                AIOMsgItem_getAccessibleText.invoke(msg) as String
+                method_AIOMsgItem_initContentDescription.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }

@@ -32,7 +32,6 @@ import io.github.qauxv.util.dexkit.valueOf
 import io.github.qauxv.util.hostInfo
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.query.enums.StringMatchType
-import org.luckypray.dexkit.result.ClassData
 import org.luckypray.dexkit.result.MethodData
 import org.luckypray.dexkit.result.MethodDataList
 import java.util.concurrent.locks.Lock
@@ -122,7 +121,6 @@ class DexKitDeobfs private constructor(
     }
 
     override fun doFindMethodImpl(target: DexKitTarget): DexMethodDescriptor? {
-        Log.d("here")
         if (target !is DexKitTarget.UsingStr && target !is DexKitTarget.UsingStringVector && target !is DexKitTarget.UsingDexKitBridge) {
             return null
         }

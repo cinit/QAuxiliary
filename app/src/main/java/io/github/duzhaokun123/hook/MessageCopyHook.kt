@@ -40,30 +40,27 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
+import io.github.qauxv.util.dexkit.AIOMsgItem_initContentDescription
+import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
-import xyz.nextalone.util.method
 import java.lang.reflect.Method
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
+object MessageCopyHook : CommonSwitchFunctionHook(targets = arrayOf(AIOMsgItem_initContentDescription)), OnMenuBuilder {
     const val TAG = "MessageCopyHook"
     override val name: String
         get() = "文本消息自由复制"
 
-    lateinit var AIOMsgItem_getAccessibleText: Method
+    lateinit var method_AIOMsgItem_initContentDescription: Method
 
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
             // 能获取如 "发送者/我说: 消息内容" 的文本
-            AIOMsgItem_getAccessibleText =
-                try {
-                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->k1()Ljava/lang/String;".method
-                } catch (_: Exception) {
-                    "Lcom/tencent/mobileqq/aio/msg/AIOMsgItem;->j1()Ljava/lang/String;".method
-                }
+            method_AIOMsgItem_initContentDescription = DexKit.requireMethodFromCache(AIOMsgItem_initContentDescription)
             return true
         }
 
@@ -128,11 +125,12 @@ object MessageCopyHook : CommonSwitchFunctionHook(), OnMenuBuilder {
     override val targetComponentTypes = null
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
+        Log.d(componentType)
         if (!isEnabled) return
         if (param.thisObject.javaClass.name != componentType) return
         val item = CustomMenu.createItemIconNt(msg, "自由复制", R.drawable.ic_item_copy_72dp, R.id.item_free_copy) {
             val text = try {
-                AIOMsgItem_getAccessibleText.invoke(msg) as String
+                method_AIOMsgItem_initContentDescription.invoke(msg) as String
             } catch (e: Exception) {
                 "${e.javaClass.name}: ${e.message}\n" + (e.stackTrace.joinToString("\n"))
             }

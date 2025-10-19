@@ -1135,3 +1135,23 @@ data object SharePanel_Handler_OtherApp_openVideoByOtherApp : DexKitTarget.Using
     override val declaringClass = "com.tencent.mobileqq.sharepanel.share.handler.SharePanel_Handler_OtherApp"
     override val filter = DexKitFilter.strInClsName("com.tencent.mobileqq.sharepanel.share.handler")
 }
+
+data object AIOMsgItem_initContentDescription : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgItem"
+    override val finder: DexKitBridgeFinder  = { bridge ->
+        val method1 = bridge.findMethod {
+            matcher {
+                declaredClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                usingStrings("senderUid", "peerUid")
+            }
+        }.single()
+        bridge.findMethod {
+            matcher {
+                declaredClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                returnType(String::class.java)
+                addCaller(method1.descriptor)
+            }
+        }.single()
+    }
+}
