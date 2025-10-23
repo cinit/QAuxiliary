@@ -3,8 +3,8 @@
 agp = "8.13.0"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
-kotlin = "2.2.20"
-ksp = "2.2.20-2.0.4"
+kotlin = "2.2.21"
+ksp = "2.3.0"
 lifecycle = "2.9.4"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
