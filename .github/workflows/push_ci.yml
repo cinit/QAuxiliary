@@ -113,27 +113,27 @@ jobs:
           echo "|universal|$universal" >> $GITHUB_STEP_SUMMARY
 
       - name: Upload Artifacts(arm32)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.APK_FILE_ARM32 }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-arm32
       - name: Upload Artifacts(arm64)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.APK_FILE_ARM64 }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-arm64
       - name: Upload Artifacts(armAll)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.APK_FILE_ARMALL }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-armAll
       - name: Upload Artifacts(universal)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.APK_FILE_UNIVERSAL }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-universal
       - name: Upload Artifacts(symbol)
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           path: ${{ env.SYMBOL_FILE }}
           name: QAuxiliary-release-${{ github.event.head_commit.id }}-symbol
@@ -147,11 +147,11 @@ jobs:
       - telegram-bot-api
     steps:
       - name: Download Artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: artifacts
       - name: Download Telegram Bot API Binary
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           name: telegram-bot-api-binary
           path: .
@@ -213,7 +213,7 @@ jobs:
           ls -l telegram-bot-api/bin/telegram-bot-api*
           cp telegram-bot-api/bin/telegram-bot-api telegram-bot-api-binary
       - name: Upload Binary
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: telegram-bot-api-binary
           path: telegram-bot-api-binary
