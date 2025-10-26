@@ -28,6 +28,7 @@ import android.app.AlertDialog
 import android.graphics.Typeface
 import android.view.View
 import android.widget.TextView
+import androidx.core.util.TypedValueCompat
 import cc.ioctl.util.HostInfo
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -55,7 +56,7 @@ object CacheManager : CommonConfigFunctionHook(defaultEnabled = true) {
         get() = { _, activity, _ ->
             val files = getAllFiles(cacheDir).sortedByDescending { it.length() }
             val fileNames = files.map {
-                "${it.name} (${formatSize(it.length())})"
+                "(${formatSize(it.length())}) ${it.name}"
             }
 
             AlertDialog.Builder(activity)
@@ -70,6 +71,7 @@ object CacheManager : CommonConfigFunctionHook(defaultEnabled = true) {
                 .findViewById<TextView>(android.R.id.message)
                 .apply {
                     typeface = Typeface.MONOSPACE
+                    textSize = TypedValueCompat.spToPx(5F, activity.resources.displayMetrics)
                 }
         }
 
@@ -87,7 +89,7 @@ object CacheManager : CommonConfigFunctionHook(defaultEnabled = true) {
     @JvmStatic
     @JvmOverloads
     fun createTempFile(prefix: String? = null, suffix: String? = null): File {
-        val prefix = prefix ?: RuntimeException().stackTrace[1].className
+        val prefix = prefix ?: Throwable().stackTrace.find { it.className != this::class.java.name }?.className?.substringAfterLast('.') ?: "tempfile"
         if (!cacheDir.exists()) {
             cacheDir.mkdirs()
         }
