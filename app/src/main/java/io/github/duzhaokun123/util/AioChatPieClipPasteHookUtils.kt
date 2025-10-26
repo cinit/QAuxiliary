@@ -63,7 +63,7 @@ object AioChatPieClipPasteHookUtils {
                 if (data == null) return@hookAfter
 
                 val activity = it.thisObject as Activity
-                val cacheFile = File.createTempFile("paste", ".png", activity.cacheDir)
+                val cacheFile = CacheManager.createTempFile("paste", ".png")
                 cacheFile.writeBytes(data!!)
                 data = null
                 val albumResult = AlbumResultUtils.create(cacheFile.path)

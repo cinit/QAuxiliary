@@ -50,6 +50,7 @@ import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import io.github.duzhaokun123.activity.PictureEditProxyActivity;
 import io.github.duzhaokun123.util.AioChatPieClipPasteHookUtils;
+import io.github.duzhaokun123.util.CacheManager;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
@@ -295,7 +296,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 .setNegativeButton(android.R.string.cancel, null)
                 .setNeutralButton("编辑", (dialog, which) -> {
                     try {
-                        var tmpFile = new File(context.getCacheDir(), "edit-pic.png");
+                        var tmpFile = CacheManager.createTempFile();
                         var os = new FileOutputStream(tmpFile);
                         os.write(data);
                         os.close();
