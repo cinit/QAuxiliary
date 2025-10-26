@@ -297,6 +297,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                 .setNeutralButton("编辑", (dialog, which) -> {
                     try {
                         var tmpFile = CacheManager.createTempFile();
+                        CacheManager.deleteNextTimeStartup(tmpFile);
                         var os = new FileOutputStream(tmpFile);
                         os.write(data);
                         os.close();

@@ -33,6 +33,7 @@ import cc.ioctl.util.HostInfo
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonConfigFunctionHook
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -76,6 +77,13 @@ object CacheManager : CommonConfigFunctionHook(defaultEnabled = true) {
         }
 
     override fun initialize(): Boolean {
+        ConfigManager.getDefaultConfig().getStringSetOrDefault("CacaheManager.deleteOnStartupFiles", setOf<String>()).forEach {
+            val f = File(it)
+            if (f.exists()) {
+                f.delete()
+            }
+        }
+        ConfigManager.getDefaultConfig().putStringSet("CacaheManager.deleteOnStartupFiles", setOf<String>())
         updateValueState()
         return super.initialize()
     }
@@ -97,6 +105,14 @@ object CacheManager : CommonConfigFunctionHook(defaultEnabled = true) {
         cacheFile.deleteOnExit()
         updateValueState()
         return cacheFile
+    }
+
+    @JvmStatic
+    fun File.deleteNextTimeStartup() {
+        this.deleteOnExit()
+        var markedFiles = ConfigManager.getDefaultConfig().getStringSetOrDefault("CacaheManager.deleteOnStartupFiles", setOf<String>()).toMutableSet()
+        markedFiles.add(this.absolutePath)
+        ConfigManager.getDefaultConfig().putStringSet("CacaheManager.deleteOnStartupFiles", markedFiles)
     }
 
     fun updateValueState() {
