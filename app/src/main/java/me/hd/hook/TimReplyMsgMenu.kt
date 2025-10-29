@@ -35,8 +35,8 @@ import xyz.nextalone.util.method
 @FunctionHookEntry
 @UiItemAgentEntry
 object TimReplyMsgMenu : CommonSwitchFunctionHook() {
-    override val name = "TIM回复消息菜单"
-    override val description = "在私聊和自己发送的消息上,增加回复菜单,仅支持TIM3.0.0"
+    override val name = "TIM 回复消息菜单"
+    override val description = "在私聊和自己发送的消息上, 增加回复菜单, 仅支持 TIM 3.0.0"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = isTim() && hostInfo.versionCode == TIMVersion.TIM_3_0_0
 
