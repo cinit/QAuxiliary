@@ -116,7 +116,7 @@ object TimMineAddPdFunc : CommonSwitchFunctionHook() {
                                 putExtra("fling_code_key", context.hashCode())
                                 putExtra("useDefBackText", true)
                                 putExtra("param_force_internal_browser", true)
-                                putExtra("url", "https://pd.qq.com/explore")
+                                putExtra("url", "https://pd.qq.com/")
                             }
                         )
                     } catch (e: Exception) {
