@@ -81,9 +81,11 @@ import io.github.qauxv.ui.CustomDialog
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.LoaderExtensionHelper
 import io.github.qauxv.util.Natives
+import io.github.qauxv.util.SafUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitTarget
+import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.dexkit.ordinal
 import io.github.qauxv.util.dexkit.values
 import io.github.qauxv.util.hostInfo
@@ -92,6 +94,9 @@ import io.github.qauxv.util.soloader.NativeLoader
 import me.ketal.base.PluginDelayableHook
 import me.singleneuron.hook.decorator.FxxkQQBrowser
 import java.io.File
+import java.io.IOException
+import java.lang.reflect.Constructor
+import java.lang.reflect.Method
 import java.util.concurrent.atomic.AtomicBoolean
 import kotlin.system.exitProcess
 
@@ -215,6 +220,29 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
             },
             CategoryItem("调试信息") {
                 description(generateStatusText(), isTextSelectable = true)
+                textItem("导出主进程 hook 方法列表", "以 txt 格式导出本模块在主进程 hook 的所有方法", onClick = actionOrShowError {
+                    val hookedMethodsDescriptors = StartupInfo.requireHookBridge().hookedMethods.map {
+                        when (it) {
+                            is Method -> DexMethodDescriptor(it).toString()
+                            is Constructor<*> -> DexMethodDescriptor(it).toString()
+                            else -> it.toString() // should not happen
+                        }
+                    }
+                    val ctx = requireContext()
+                    val text = hookedMethodsDescriptors.joinToString(separator = "\n")
+                    SafUtils.requestSaveFile(ctx)
+                        .setMimeType("text/plain")
+                        .setDefaultFileName("hooked_methods_main_${System.currentTimeMillis()}.txt")
+                        .onResult { uri ->
+                            ctx.contentResolver.openOutputStream(uri)?.use { os ->
+                                val bytes = text.toByteArray()
+                                os.write(bytes)
+                                os.flush()
+                                Toasts.show(ctx, "保存成功")
+                            } ?: FaultyDialog.show(ctx, IOException("contentResolver.openOutputStream failed"))
+                        }
+                        .commit()
+                })
                 description(generateDebugInfo(), isTextSelectable = true)
             }
         )
