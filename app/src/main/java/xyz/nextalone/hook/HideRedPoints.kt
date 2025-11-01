@@ -36,6 +36,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.hookAfter
+import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 
@@ -64,6 +65,12 @@ object HideRedPoints : CommonSwitchFunctionHook() {
         }?.hookAfter(this) {
             if (!it.args[3].toString().contains("skin_tips_dot")) return@hookAfter
             it.result.putObjectByType(transparentBitmap, Bitmap::class.java)
+        }
+
+        "com.tencent.mobileqq.quibadge.QUIBadge".clazz?.method {
+            it.name == "drawDot"
+        }?.hookBefore(this) {
+            it.result = null
         }
     }
 
