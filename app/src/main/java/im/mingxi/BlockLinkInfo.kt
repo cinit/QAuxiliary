@@ -6,6 +6,8 @@ import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.util.xpcompat.XposedBridge
 
@@ -28,7 +30,9 @@ object BlockLinkInfo : CommonSwitchFunctionHook() {
         })
 
         val msgExtClass = Initiator.loadClass("com.tencent.qqnt.msg.MsgExtKt")
-        hookBeforeIfEnabled(msgExtClass.declaredMethods.single { it.name == "T" }) { param ->
+        hookBeforeIfEnabled(msgExtClass.declaredMethods.single { it.name ==
+            (if (requireMinQQVersion(QQVersion.QQ_9_1_70)) "S" else "T")
+        }) { param ->
             param.result = false
         }
 

@@ -149,6 +149,7 @@ object MultiForwardAvatarHook : CommonSwitchFunctionHook(arrayOf(CAIOUtils, Mult
                 var layout: RelativeLayout?
                 clz.declaredFields.single {//Lazy avatarContainer
                     it.name == when {
+                        requireMinQQVersion(QQVersion.QQ_9_1_70) -> "h"
                         requireMinQQVersion(QQVersion.QQ_9_1_50) -> "i"
                         requireMinQQVersion(QQVersion.QQ_9_0_90) -> "h"
                         requireMinQQVersion(QQVersion.QQ_9_0_65) -> "i"
