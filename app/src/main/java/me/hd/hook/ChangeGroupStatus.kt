@@ -48,8 +48,14 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
 
     override fun initOnce(): Boolean {
         if (requireMinQQVersion(QQVersion.QQ_9_1_50)) {
-            "Lcom/tencent/mobileqq/aio/input/reply/i;->m()Z".method.hookBefore {
-                it.result = false
+            if (requireMinQQVersion(QQVersion.QQ_9_1_70)) {
+                "Lcom/tencent/mobileqq/aio/input/reply/i;->l()Z".method.hookBefore {
+                    it.result = false
+                }
+            } else {
+                "Lcom/tencent/mobileqq/aio/input/reply/i;->m()Z".method.hookBefore {
+                    it.result = false
+                }
             }
             "Lcom/tencent/mobileqq/aio/msglist/holder/component/b;->r()Z".method.hookBefore {
                 it.result = false
@@ -57,8 +63,14 @@ object ChangeGroupStatus : CommonSwitchFunctionHook() {
             "Lcom/tencent/mobileqq/data/troop/TroopInfo;->isUnreadableBlock()Z".method.hookBefore {
                 it.result = false
             }
-            "Lcom/tencent/mobileqq/troop/troopsetting/vm/TroopSettingViewModel;->Q2()V".method.hookBefore {
-                it.result = null
+            if (requireMinQQVersion(QQVersion.QQ_9_1_70)) {
+                "Lcom/tencent/mobileqq/troop/troopsetting/vm/TroopSettingViewModel;->a3()V".method.hookBefore {
+                    it.result = null
+                }
+            } else {
+                "Lcom/tencent/mobileqq/troop/troopsetting/vm/TroopSettingViewModel;->Q2()V".method.hookBefore {
+                    it.result = null
+                }
             }
             "Lcom/tencent/qqnt/troop/TroopListRepo;->isExit(Ljava/lang/String;Ljava/lang/String;Z)Z".method.hookBefore {
                 it.result = false
