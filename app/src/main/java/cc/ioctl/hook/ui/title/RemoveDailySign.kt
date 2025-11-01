@@ -56,6 +56,7 @@ object RemoveDailySign : CommonSwitchFunctionHook("kr_remove_daily_sign") {
         val callback = HookUtils.afterIfEnabled(this) { param ->
             // em_drawer_sign_up
             val dailySignName = when {
+                requireMinQQVersion(QQVersion.QQ_9_1_70) -> "k0" // 9.1.70
                 requireMinQQVersion(QQVersion.QQ_9_1_50) -> "g0" // 9.1.50
                 requireMinQQVersion(QQVersion.QQ_9_1_30) -> "c0" // 9.1.30 ~ 9.1.35
                 requireMinQQVersion(QQVersion.QQ_9_0_90) -> "b0" // 9.0.90 ~ 9.1.25
