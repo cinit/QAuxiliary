@@ -108,6 +108,7 @@ object SimplifyQQSettingMe :
         "王卡免流量特权",   //开通王卡 [0,1,0,0,0,1,4,0,15] || [0,1,0,0,0,1,4,0,1,15,1] || d_vip_card
         "厘米秀", // d_cmshow
         "超级QQ秀", // d_zplan
+        "游戏", // d_my_game
         "下拉形象展示",
         "等级",
         "亲密空间",
@@ -130,6 +131,7 @@ object SimplifyQQSettingMe :
         Pair("王卡免流量特权", "d_vip_card"),   //开通王卡 [0,1,0,0,0,1,4,0,15] || [0,1,0,0,0,1,4,0,1,15,1] || d_vip_card
         Pair("厘米秀", "d_cmshow"),  // d_cmshow
         Pair("超级QQ秀", "d_zplan"), // d_zplan
+        Pair("游戏", "d_my_game"),
         Pair("亲密空间", "d_intimate_space"),
         Pair("财富小金库", "d_financial"),
     )
@@ -153,7 +155,6 @@ object SimplifyQQSettingMe :
         "文件" to "我的文件",
         "日程" to "我的日程",
         "视频" to "我的视频",
-        "游戏" to "小游戏",
         "文档" to "腾讯文档",
         "打卡" to "每日打卡",
         "王卡" to "王卡免流量特权",
@@ -277,13 +278,14 @@ object SimplifyQQSettingMe :
                 for (i in 0 until Array.getLength(param.result) - 1) {
                     // 获取单个QQSettingMeBizBean
                     val item = Array.get(qqSettingMeBizBeanArray, i)!!
-                    val itemId = item.get(String::class.java) as String
+                    val itemId: String? = (item.get(String::class.java)
+                        ?: (item::class.java.getMethod("n").invoke(item))) as String?
                     // 获取需要被删掉的列表  ( 超级QQ秀直接删除有bug[空指针(QQ你怎么不校验一下，哭)]，应该在View里面隐藏
                     // 更新：9.0.20可以直接移除
                     val del = items2Hide.filter { activeItems.contains(it.key) }.values.toMutableList()
                         .apply { if (!requireMinQQVersion(QQVersion.QQ_9_0_20)) remove("d_zplan") }
                     // 如果不为需要删除的，就添加到返回列表
-                    if (!del.contains(itemId)) {
+                    if (itemId == null || !del.contains(itemId)) {
                         purifiedList.add(item)
                     }
                 }
