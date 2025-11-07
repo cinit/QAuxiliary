@@ -232,18 +232,22 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
             }
         }
         Method buildConfirmDialog = null;
-        for (Method m : clz_ForwardBaseOption.getDeclaredMethods()) {
-            if (!m.getReturnType().equals(void.class)) {
-                continue;
+        try {
+            buildConfirmDialog = clz_ForwardBaseOption.getDeclaredMethod("buildConfirmDialog");
+        } catch (Exception e) {
+            for (Method m : clz_ForwardBaseOption.getDeclaredMethods()) {
+                if (!m.getReturnType().equals(void.class)) {
+                    continue;
+                }
+                if (!Modifier.isFinal(m.getModifiers())) {
+                    continue;
+                }
+                if (m.getParameterTypes().length != 0) {
+                    continue;
+                }
+                buildConfirmDialog = m;
+                break;
             }
-            if (!Modifier.isFinal(m.getModifiers())) {
-                continue;
-            }
-            if (m.getParameterTypes().length != 0) {
-                continue;
-            }
-            buildConfirmDialog = m;
-            break;
         }
         XposedBridge.hookMethod(buildConfirmDialog, new XC_MethodHook(51) {
             @SuppressLint("SetTextI18n")
