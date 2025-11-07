@@ -22,8 +22,12 @@
 
 package me.hd.hook
 
+import android.view.View
 import android.view.ViewGroup
 import android.widget.RelativeLayout
+import cc.ioctl.util.hookAfterIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.field
+import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -44,20 +48,28 @@ object HideMsgListGuild : CommonSwitchFunctionHook() {
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
-        val bindingClass = Initiator.loadClass(
-            if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "qu2.e" else "com.tencent.qqnt.chats.f.a.e"
-        )
-        XposedBridge.hookAllConstructors(
-            bindingClass,
-            object : XC_MethodHook() {
-                override fun afterHookedMethod(param: MethodHookParam) {
-                    val field = bindingClass.declaredFields.single { field -> field.type == RelativeLayout::class.java }
-                    val relativeLayout = field.get(param.thisObject) as RelativeLayout
-                    val parent = relativeLayout.parent as ViewGroup
-                    parent.layoutParams = ViewGroup.LayoutParams(0, 0)
-                }
+        if (requireMinQQVersion(QQVersion.QQ_9_1_70)) {
+            val builderClass = Initiator.loadClass("com.tencent.qqnt.chats.biz.guild.GuildRecentItemBuilder")
+            hookAfterIfEnabled(builderClass.declaredMethods.first {
+                it.paramCount == 5 && it.parameterTypes[1] == Int::class.java }) {
+                (it.result.field("itemView").get(it.result) as View).layoutParams = ViewGroup.LayoutParams(0, 0)
             }
-        )
+        } else {
+            val bindingClass = Initiator.loadClass(
+                if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "qu2.e" else "com.tencent.qqnt.chats.f.a.e"
+            )
+            XposedBridge.hookAllConstructors(
+                bindingClass,
+                object : XC_MethodHook() {
+                    override fun afterHookedMethod(param: MethodHookParam) {
+                        val field = bindingClass.declaredFields.single { field -> field.type == RelativeLayout::class.java }
+                        val relativeLayout = field.get(param.thisObject) as RelativeLayout
+                        val parent = relativeLayout.parent as ViewGroup
+                        parent.layoutParams = ViewGroup.LayoutParams(0, 0)
+                    }
+                }
+            )
+        }
         return true
     }
 }
