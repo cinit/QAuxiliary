@@ -78,10 +78,13 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
     override fun initOnce() = throwOrTrue {
         if (requireMinQQVersion(QQVersion.QQ_8_9_70)) {
             val kSimpleItemProcessor = Initiator.loadClass(
-                if (requireMinQQVersion(QQVersion.QQ_9_1_70)) "com.tencent.mobileqq.setting.processor.j"
-                else if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "com.tencent.mobileqq.setting.processor.i"
-                else if (requireMinQQVersion(QQVersion.QQ_9_0_8)) "com.tencent.mobileqq.setting.processor.h"
-                else "com.tencent.mobileqq.setting.processor.g"
+                when {
+                    requireMinQQVersion(QQVersion.QQ_9_2_30) -> "com.tencent.mobileqq.setting.processor.i"
+                    requireMinQQVersion(QQVersion.QQ_9_1_70) -> "com.tencent.mobileqq.setting.processor.j"
+                    requireMinQQVersion(QQVersion.QQ_9_1_50) -> "com.tencent.mobileqq.setting.processor.i"
+                    requireMinQQVersion(QQVersion.QQ_9_0_8) -> "com.tencent.mobileqq.setting.processor.h"
+                    else -> "com.tencent.mobileqq.setting.processor.g"
+                }
             )
             val mSetVisibility = kSimpleItemProcessor.declaredMethods.single { it.paramCount == 1 && it.parameterTypes[0] == Boolean::class.java }
             XposedBridge.hookAllConstructors(kSimpleItemProcessor, object : XC_MethodHook() {
@@ -123,6 +126,7 @@ object SimplifyQQSettings : MultiItemDelayableHook("na_simplify_qq_settings_mult
         if (activeItems.contains("免流量")) {
             // if() CUOpenCardGuideMng guideEntry
             if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                if (requireMinQQVersion(QQVersion.QQ_9_2_30)) return@throwOrTrue
                 Initiator.loadClass("com.tencent.mobileqq.setting.main.MainSettingConfigProvider").method { it.returnType == List::class.java }!!
                     .hookAfter { param ->
                         param.result = (param.result as List<*>).filter { obj ->
