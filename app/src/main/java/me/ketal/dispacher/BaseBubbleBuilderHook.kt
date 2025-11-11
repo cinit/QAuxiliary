@@ -29,10 +29,13 @@ import cc.hicore.QApp.QAppUtils
 import cc.ioctl.hook.msg.MultiForwardAvatarHook
 import cc.ioctl.util.HookUtils
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
+import com.github.kyuubiran.ezxhelper.utils.invokeMethod
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BasePersistBackgroundHook
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.ketal.hook.ChatItemShowQQUin
 import me.ketal.hook.ShowMsgAt
@@ -65,23 +68,39 @@ object BaseBubbleBuilderHook : BasePersistBackgroundHook() {
                 modifiers == Modifier.PUBLIC && returnType == View::class.java && parameterTypes.isEmpty()
             } ?: kAIOBubbleMsgItemVB.getMethod("getHostView")
             val kAIOMsgItem = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-            val bindMethod = kAIOBubbleMsgItemVB.declaredMethods.single {
-                val argt = it.parameterTypes
-                it.returnType == Void.TYPE && argt.size == 4 &&
-                    argt[0] == Integer.TYPE &&
-                    argt[1] == kAIOMsgItem.superclass &&
-                    argt[2] == List::class.java &&
-                    argt[3] == Bundle::class.java
-            }
             val getMsgRecord = kAIOMsgItem.getMethod("getMsgRecord")
-            HookUtils.hookAfterAlways(this, bindMethod, 50) {
-                val msg = getMsgRecord.invoke(it.args[1]) as MsgRecord
-                val rootView = getHostView.invoke(it.thisObject) as ViewGroup
-                for (decorator in decorators) {
-                    try {
-                        decorator.onGetViewNt(rootView, msg, it)
-                    } catch (e: Exception) {
-                        traceError(e)
+            if (requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+                val handleMethod = kAIOBubbleMsgItemVB.declaredMethods.single { it.name == "handleUIState" }
+                HookUtils.hookAfterAlways(this, handleMethod, 50) {
+                    val msgItem = it.args[0].invokeMethod("b") ?: return@hookAfterAlways // 9.2.30
+                    val msg = getMsgRecord.invoke(msgItem) as MsgRecord
+                    val rootView = getHostView.invoke(it.thisObject) as ViewGroup
+                    for (decorator in decorators) {
+                        try {
+                            decorator.onGetViewNt(rootView, msg, it)
+                        } catch (e: Exception) {
+                            traceError(e)
+                        }
+                    }
+                }
+            } else {
+                val bindMethod = kAIOBubbleMsgItemVB.declaredMethods.single {
+                    val argt = it.parameterTypes
+                    it.returnType == Void.TYPE && argt.size == 4 &&
+                        argt[0] == Integer.TYPE &&
+                        argt[1] == kAIOMsgItem.superclass &&
+                        argt[2] == List::class.java &&
+                        argt[3] == Bundle::class.java
+                }
+                HookUtils.hookAfterAlways(this, bindMethod, 50) {
+                    val msg = getMsgRecord.invoke(it.args[1]) as MsgRecord
+                    val rootView = getHostView.invoke(it.thisObject) as ViewGroup
+                    for (decorator in decorators) {
+                        try {
+                            decorator.onGetViewNt(rootView, msg, it)
+                        } catch (e: Exception) {
+                            traceError(e)
+                        }
                     }
                 }
             }
