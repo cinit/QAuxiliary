@@ -322,7 +322,13 @@ public class StartupHook {
         // for NT QQ
         // TODO: 2023-04-19 'com.tencent.mobileqq.startup.task.config.a' is not a good way to find the class
         Class<?> kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.a");
-        Class<?> kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.d");
+        Class<?> kITaskFactory;
+        try {
+            kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.d");
+        } catch (ClassNotFoundException e) {
+            // for QQ 9.2.30
+            kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.c");
+        }
         // check cast so that we can sure that we have found the right class
         if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
             kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.b");
