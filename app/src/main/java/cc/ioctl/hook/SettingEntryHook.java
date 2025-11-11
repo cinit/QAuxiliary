@@ -106,6 +106,8 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             Class<?> kMainSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.MainSettingConfigProvider");
             // 9.1.20+, NewSettingConfigProvider, A/B test on 9.1.20
             Class<?> kNewSettingConfigProvider = Initiator.load("com.tencent.mobileqq.setting.main.NewSettingConfigProvider");
+            // 9.2.30, NewSettingConfigProvider was obfuscated to b
+            Class<?> kNewSettingConfigProviderObf = Initiator.load("com.tencent.mobileqq.setting.main.b");
             Method getItemProcessListOld = null;
             if (kMainSettingConfigProvider != null) {
                 getItemProcessListOld = Reflex.findSingleMethod(kMainSettingConfigProvider, List.class, false, Context.class);
@@ -114,8 +116,12 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             if (kNewSettingConfigProvider != null) {
                 getItemProcessListNew = Reflex.findSingleMethod(kNewSettingConfigProvider, List.class, false, Context.class);
             }
-            if (getItemProcessListOld == null && getItemProcessListNew == null) {
-                throw new IllegalStateException("getItemProcessListOld == null && getItemProcessListNew == null");
+            Method getItemProcessListNewObf = null;
+            if (kNewSettingConfigProviderObf != null) {
+                getItemProcessListNewObf = Reflex.findSingleMethod(kNewSettingConfigProviderObf, List.class, false, Context.class);
+            }
+            if (getItemProcessListOld == null && getItemProcessListNew == null && getItemProcessListNewObf == null) {
+                throw new IllegalStateException("getItemProcessListOld == null && getItemProcessListNew == null && getItemProcessListNewObf == null");
             }
             Class<?> kAbstractItemProcessor = null;
             for (String possibleParent : new String[]{
@@ -195,7 +201,14 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 List<Object> result = (List<Object>) param.getResult();
                 Context ctx = (Context) param.args[0];
                 Class<?> kItemProcessorGroup = result.get(0).getClass();
-                Constructor<?> ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
+                Constructor<?> ctor;
+                try {
+                    ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class);
+                } catch (NoSuchMethodException e) {
+                    // 9.2.30
+                    ctor = kItemProcessorGroup.getDeclaredConstructor(List.class, CharSequence.class, CharSequence.class,
+                            int.class, load("kotlin.jvm.internal.DefaultConstructorMarker"));
+                }
                 Parasitics.injectModuleResources(ctx.getResources());
                 @SuppressLint("DiscouragedApi")
                 int resId = ctx.getResources().getIdentifier("qui_tuning", "drawable", ctx.getPackageName());
@@ -219,7 +232,13 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 setOnClickListener.invoke(entryItem, func0);
                 ArrayList<Object> list = new ArrayList<>(1);
                 list.add(entryItem);
-                Object group = ctor.newInstance(list, "", "");
+                Object group;
+                if (ctor.getParameterTypes().length == 5) {
+                    // 9.2.30
+                    group = ctor.newInstance(list, "", "", 6, null);
+                } else {
+                    group = ctor.newInstance(list, "", "");
+                }
                 boolean isNew = param.thisObject.getClass().getName().contains("NewSettingConfigProvider");
                 int indexToInsert = isNew ? 2 : 1;
                 result.add(indexToInsert, group);
@@ -229,6 +248,9 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             }
             if (getItemProcessListNew != null) {
                 XposedBridge.hookMethod(getItemProcessListNew, callback);
+            }
+            if (getItemProcessListNewObf != null) {
+                XposedBridge.hookMethod(getItemProcessListNewObf, callback);
             }
         }
     }
