@@ -1,0 +1,191 @@
+/*
+ * QAuxiliary - An Xposed module for QQ/TIM
+ * Copyright (C) 2019-2025 QAuxiliary developers
+ * https://github.com/cinit/QAuxiliary
+ *
+ * This software is an opensource software: you can redistribute it
+ * and/or modify it under the terms of the General Public License
+ * as published by the Free Software Foundation; either
+ * version 3 of the License, or any later version as published
+ * by QAuxiliary contributors.
+ *
+ * This software is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+ * See the General Public License for more details.
+ *
+ * You should have received a copy of the General Public License
+ * along with this software.
+ * If not, see
+ * <https://github.com/cinit/QAuxiliary/blob/master/LICENSE.md>.
+ */
+
+package io.github.nakixii.hook
+
+import android.app.Activity
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.os.Build
+import android.view.View
+import android.widget.BaseAdapter
+import android.widget.CheckBox
+import android.widget.FrameLayout
+import androidx.annotation.RequiresApi
+import androidx.core.content.ContextCompat
+import cc.ioctl.util.HostInfo
+import com.github.kyuubiran.ezxhelper.utils.findFieldObject
+import com.github.kyuubiran.ezxhelper.utils.getFieldByType
+import com.github.kyuubiran.ezxhelper.utils.hookAfter
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.paramCount
+import io.github.qauxv.base.annotation.FunctionHookEntry
+import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.data.ContactDescriptor
+import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.requireMinQQVersion
+import me.ketal.base.PluginDelayableHook
+import me.ketal.util.findClass
+import nep.timeline.MessageUtils
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.isFinal
+import xyz.nextalone.util.isPublic
+import xyz.nextalone.util.method
+import xyz.nextalone.util.set
+import androidx.core.view.isVisible
+
+@FunctionHookEntry
+@UiItemAgentEntry
+object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
+    override val preference = uiSwitchPreference {
+        title = "允许发送收藏的语音"
+    }
+    override val pluginID = "qqfav.apk"
+    override val targetProcesses = SyncUtils.PROC_MAIN or SyncUtils.PROC_QQFAV
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_1_70)
+
+    @RequiresApi(Build.VERSION_CODES.O)
+    override fun startHook(classLoader: ClassLoader): Boolean {
+        "com.qqfav.FavoriteService".findClass(classLoader).method {
+            it.returnType == "com.qqfav.data.FavoriteData".findClass(classLoader)
+                && it.parameterTypes.contentEquals(arrayOf(Long::class.java, Boolean::class.java))
+        }?.hookAfter {
+            it.result.set("mSecurityBeat", 0)
+        }
+
+        val favoritesListActivityClass = "com.qqfav.activity.FavoritesListActivity".findClass(classLoader)
+        // 多选转发时，这个方法会导致提示有部分内容不能转发（实际上可以）
+        favoritesListActivityClass.declaredFields.first {
+            it.type.superclass != null && it.type.superclass == BaseAdapter::class.java
+        }.type.method {
+            it.returnType == Int::class.java && it.parameterTypes.contentEquals(arrayOf(java.util.List::class.java))
+        }?.hookBefore { it.result = 0 }
+
+        // 收藏列表
+        favoritesListActivityClass.method {
+            it.parameterTypes.contentEquals(arrayOf(ArrayList::class.java))
+        }?.hookBefore { it ->
+            val itemViewFactory = it.thisObject.findFieldObject {
+                type.superclass != null && type.superclass.typeName == BaseAdapter::class.java.typeName
+            }.findFieldObject { isPublic }
+            val uin = (itemViewFactory.javaClass.method {
+                it.returnType == String::class.java && it.paramCount == 0
+            }?.invoke(itemViewFactory)) as String
+            val uinType = (itemViewFactory.javaClass.method {
+                it.returnType == Int::class.java && it.paramCount == 0
+            }?.invoke(itemViewFactory)) as Int
+
+            var hasOtherTypes = false
+            for (favId in (it.args[0] as java.util.ArrayList<*>)) {
+                val qfavAppInterface = it.thisObject.getFieldByType("com.qqfav.QfavAppInterface".findClass(classLoader)).get(it.thisObject)
+                val favoriteService = qfavAppInterface?.invoke("getFavoriteService")
+                val filePath = favoriteService?.javaClass?.method {
+                    it.isPublic && it.isFinal && it.returnType == String::class.java &&
+                        it.parameterTypes.contentEquals(arrayOf(Long::class.java))
+                }?.invoke(favoriteService, favId) as String
+
+                if (!filePath.isEmpty()) sendVoiceMsgBroadcast(filePath, uin, uinType)
+                else hasOtherTypes = true
+            }
+
+            if (!hasOtherTypes) {
+                (it.thisObject as Activity).finish()
+                it.result = null
+            }
+        }
+
+        // 搜索结果列表
+        "com.qqfav.activity.AudioItemViewHolder".findClass(classLoader).method("onClick")?.hookBefore { it ->
+            // 不绕过其他 View 会导致无法在收藏界面播放语音
+            if ((it.args[0] as View) !is FrameLayout) return@hookBefore
+
+            // 绕过收藏列表，否则无法多选发送，并且上面已经处理了
+            val checkBox = (it.thisObject.findFieldObject(findSuper = true) { type == CheckBox::class.java } as CheckBox)
+            if (checkBox.isVisible) return@hookBefore
+
+            val itemViewFactory = it.thisObject.findFieldObject(findSuper = true)
+                { type.name.contains("com.qqfav.activity") }
+            val uin = (itemViewFactory.javaClass.method {
+                it.returnType == String::class.java && it.paramCount == 0
+            }?.invoke(itemViewFactory)) as? String ?: return@hookBefore
+            val uinType = (itemViewFactory.javaClass.method {
+                it.returnType == Int::class.java && it.paramCount == 0
+            }?.invoke(itemViewFactory)) as? Int ?: return@hookBefore
+
+            val favoriteData = it.thisObject.getFieldByType("com.qqfav.data.FavoriteData".findClass(classLoader))
+                .get(it.thisObject) ?: return@hookBefore
+            val favId = favoriteData.invoke("getId") as Long
+
+            val qfavAppInterface = it.thisObject.getFieldByType("com.qqfav.QfavAppInterface"
+                .findClass(classLoader)).get(it.thisObject)
+            val favoriteService = qfavAppInterface?.invoke("getFavoriteService")
+            val filePath = favoriteService?.javaClass?.method {
+                it.isPublic && it.isFinal && it.returnType == String::class.java &&
+                    it.parameterTypes.contentEquals(arrayOf(Long::class.java))
+            }?.invoke(favoriteService, favId) as String
+            sendVoiceMsgBroadcast(filePath, uin, uinType)
+
+            (it.thisObject.getFieldByType("mqq.app.BaseActivity"
+                .findClass(Initiator.getHostClassLoader())
+            ).get(it.thisObject) as Activity).finish()
+            it.result = null
+        }
+
+        if (SyncUtils.isTargetProcess(SyncUtils.PROC_MAIN)) {
+            val receiver = object : BroadcastReceiver() {
+                override fun onReceive(context: Context, intent: Intent) {
+                    val filePath = intent.getStringExtra("file_path") ?: return
+                    MessageUtils.sendVoice(filePath, ContactDescriptor().apply {
+                        uin = intent.getStringExtra("uin")
+                        uinType = intent.getIntExtra("uinType", -1)
+                    })
+                }
+            }
+
+            val intentFilter = IntentFilter()
+            intentFilter.addAction("io.github.nakixii.SEND_VOICE_MESSAGE")
+            ContextCompat.registerReceiver(
+                hostInfo.application, receiver, intentFilter,
+                SyncUtils.getDynamicReceiverNotExportedPermission(hostInfo.application),
+                null, ContextCompat.RECEIVER_NOT_EXPORTED
+            )
+        }
+
+        return true
+    }
+
+    private fun sendVoiceMsgBroadcast(filePath: String, uin: String, uinType: Int) {
+        val intent = Intent("io.github.nakixii.SEND_VOICE_MESSAGE")
+        intent.putExtra("file_path", filePath)
+        intent.putExtra("uin", uin)
+        intent.putExtra("uinType", uinType)
+        intent.setPackage("com.tencent.mobileqq")
+        HostInfo.getApplication().sendBroadcast(intent)
+    }
+}
