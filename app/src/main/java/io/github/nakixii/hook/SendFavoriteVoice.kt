@@ -35,7 +35,6 @@ import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
 import cc.ioctl.util.HostInfo
-import com.github.kyuubiran.ezxhelper.utils.findFieldObject
 import com.github.kyuubiran.ezxhelper.utils.getFieldByType
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.hookBefore
@@ -79,37 +78,45 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
             it.result.set("mSecurityBeat", 0)
         }
 
-        val favoritesListActivityClass = "com.qqfav.activity.FavoritesListActivity".findClass(classLoader)
+        val favoritesListActivity = "com.qqfav.activity.FavoritesListActivity".findClass(classLoader)
         // 多选转发时，这个方法会导致提示有部分内容不能转发（实际上可以）
-        favoritesListActivityClass.declaredFields.first {
+        favoritesListActivity.declaredFields.first {
             it.type.superclass != null && it.type.superclass == BaseAdapter::class.java
         }.type.method {
             it.returnType == Int::class.java && it.parameterTypes.contentEquals(arrayOf(java.util.List::class.java))
         }?.hookBefore { it.result = 0 }
 
+        val favoritesListAdapter = favoritesListActivity.declaredFields.first {
+            it.type.superclass != null && it.type.superclass.typeName == BaseAdapter::class.java.typeName
+        }.apply { isAccessible = true }
+        val itemViewFactoryFLA = favoritesListAdapter.type.declaredFields
+            .first { it.isPublic }.apply { isAccessible = true }
+        val getUin = itemViewFactoryFLA.type.method {
+            it.returnType == String::class.java && it.paramCount == 0
+        }.apply { this?.isAccessible = true }
+        val getUinType = itemViewFactoryFLA.type.method {
+            it.returnType == Int::class.java && it.paramCount == 0
+        }.apply { this?.isAccessible = true }
+
+        val qfavAppInterface = favoritesListActivity.getFieldByType("com.qqfav.QfavAppInterface"
+            .findClass(classLoader)).apply { isAccessible = true }
+        val getFilePath = "com.qqfav.FavoriteService".findClass(classLoader).method {
+            it.isPublic && it.isFinal && it.returnType == String::class.java &&
+                it.parameterTypes.contentEquals(arrayOf(Long::class.java))
+        }.apply { this?.isAccessible = true }
+
         // 收藏列表
-        favoritesListActivityClass.method {
+        favoritesListActivity.method {
             it.parameterTypes.contentEquals(arrayOf(ArrayList::class.java))
         }?.hookBefore { it ->
-            val itemViewFactory = it.thisObject.findFieldObject {
-                type.superclass != null && type.superclass.typeName == BaseAdapter::class.java.typeName
-            }.findFieldObject { isPublic }
-            val uin = (itemViewFactory.javaClass.method {
-                it.returnType == String::class.java && it.paramCount == 0
-            }?.invoke(itemViewFactory)) as String
-            val uinType = (itemViewFactory.javaClass.method {
-                it.returnType == Int::class.java && it.paramCount == 0
-            }?.invoke(itemViewFactory)) as Int
+            val itemViewFactory = itemViewFactoryFLA.get(favoritesListAdapter.get(it.thisObject))
+            val uin = getUin?.invoke(itemViewFactory) as? String ?: return@hookBefore
+            val uinType = getUinType?.invoke(itemViewFactory) as? Int ?: return@hookBefore
 
             var hasOtherTypes = false
             for (favId in (it.args[0] as java.util.ArrayList<*>)) {
-                val qfavAppInterface = it.thisObject.getFieldByType("com.qqfav.QfavAppInterface".findClass(classLoader)).get(it.thisObject)
-                val favoriteService = qfavAppInterface?.invoke("getFavoriteService")
-                val filePath = favoriteService?.javaClass?.method {
-                    it.isPublic && it.isFinal && it.returnType == String::class.java &&
-                        it.parameterTypes.contentEquals(arrayOf(Long::class.java))
-                }?.invoke(favoriteService, favId) as String
-
+                val favoriteService = qfavAppInterface.get(it.thisObject)?.invoke("getFavoriteService")
+                val filePath = getFilePath?.invoke(favoriteService, favId) as String
                 if (!filePath.isEmpty()) sendVoiceMsgBroadcast(filePath, uin, uinType)
                 else hasOtherTypes = true
             }
@@ -120,40 +127,39 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
             }
         }
 
+        val audioItemViewHolder = "com.qqfav.activity.AudioItemViewHolder".findClass(classLoader)
+        val checkBox = audioItemViewHolder.getFieldByType(CheckBox::class.java).apply { isAccessible = true }
+        val itemViewFactoryIVH = audioItemViewHolder.superclass.declaredFields
+            .first { it.type.name.contains("com.qqfav.activity") }.apply { isAccessible = true }
+
+        val favoriteData = audioItemViewHolder.getFieldByType("com.qqfav.data.FavoriteData"
+            .findClass(classLoader)).apply { isAccessible = true }
+        val getFavId = favoriteData.type.getMethod("getId").apply { isAccessible = true }
+        val baseActivity = audioItemViewHolder.getFieldByType("mqq.app.BaseActivity"
+            .findClass(Initiator.getHostClassLoader())).apply { isAccessible = true }
+
         // 搜索结果列表
-        "com.qqfav.activity.AudioItemViewHolder".findClass(classLoader).method("onClick")?.hookBefore { it ->
+        audioItemViewHolder.method("onClick")?.hookBefore { it ->
             // 不绕过其他 View 会导致无法在收藏界面播放语音
             if ((it.args[0] as View) !is FrameLayout) return@hookBefore
 
             // 绕过收藏列表，否则无法多选发送，并且上面已经处理了
-            val checkBox = (it.thisObject.findFieldObject(findSuper = true) { type == CheckBox::class.java } as CheckBox)
-            if (checkBox.isVisible) return@hookBefore
+            val checkBoxObj = checkBox.get(it.thisObject) as CheckBox
+            if (checkBoxObj.isVisible) return@hookBefore
 
-            val itemViewFactory = it.thisObject.findFieldObject(findSuper = true)
-                { type.name.contains("com.qqfav.activity") }
-            val uin = (itemViewFactory.javaClass.method {
-                it.returnType == String::class.java && it.paramCount == 0
-            }?.invoke(itemViewFactory)) as? String ?: return@hookBefore
-            val uinType = (itemViewFactory.javaClass.method {
-                it.returnType == Int::class.java && it.paramCount == 0
-            }?.invoke(itemViewFactory)) as? Int ?: return@hookBefore
+            val itemViewFactory = itemViewFactoryIVH.get(it.thisObject)
+            val uin = getUin?.invoke(itemViewFactory) as? String ?: return@hookBefore
+            val uinType = getUinType?.invoke(itemViewFactory) as? Int ?: return@hookBefore
 
-            val favoriteData = it.thisObject.getFieldByType("com.qqfav.data.FavoriteData".findClass(classLoader))
-                .get(it.thisObject) ?: return@hookBefore
-            val favId = favoriteData.invoke("getId") as Long
+            val favoriteDataObj = favoriteData.get(it.thisObject) ?: return@hookBefore
+            val favId = getFavId(favoriteDataObj) as Long
 
-            val qfavAppInterface = it.thisObject.getFieldByType("com.qqfav.QfavAppInterface"
-                .findClass(classLoader)).get(it.thisObject)
-            val favoriteService = qfavAppInterface?.invoke("getFavoriteService")
-            val filePath = favoriteService?.javaClass?.method {
-                it.isPublic && it.isFinal && it.returnType == String::class.java &&
-                    it.parameterTypes.contentEquals(arrayOf(Long::class.java))
-            }?.invoke(favoriteService, favId) as String
-            sendVoiceMsgBroadcast(filePath, uin, uinType)
+            val baseActivityObj = baseActivity.get(it.thisObject) as Activity
+            val favoriteService = qfavAppInterface.get(baseActivityObj)?.invoke("getFavoriteService")
+            val filePath = getFilePath?.invoke(favoriteService, favId) as String
+            if (!filePath.isEmpty()) sendVoiceMsgBroadcast(filePath, uin, uinType)
 
-            (it.thisObject.getFieldByType("mqq.app.BaseActivity"
-                .findClass(Initiator.getHostClassLoader())
-            ).get(it.thisObject) as Activity).finish()
+            baseActivityObj.finish()
             it.result = null
         }
 
