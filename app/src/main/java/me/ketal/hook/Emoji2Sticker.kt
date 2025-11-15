@@ -23,6 +23,7 @@
 package me.ketal.hook
 
 import cc.hicore.QApp.QAppUtils
+import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -53,8 +54,17 @@ object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLott
 
     override fun initOnce() = throwOrTrue {
         if (QAppUtils.isQQnt()) {
-            DexKit.requireMethodFromCache(EmoMsgUtils_isSingleLottie_QQNT).hookBefore(this) {
-                it.result = false
+            val isSingleLottieMethod = DexKit.requireMethodFromCache(EmoMsgUtils_isSingleLottie_QQNT)
+            if (requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+                isSingleLottieMethod.declaringClass.findMethod {
+                    parameterTypes.contentEquals(arrayOf(Int::class.java, Boolean::class.java))
+                }.hookBefore(this) {
+                    it.args[1] = false
+                }
+            } else {
+                isSingleLottieMethod.hookBefore(this) {
+                    it.result = false
+                }
             }
         }
         "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")
