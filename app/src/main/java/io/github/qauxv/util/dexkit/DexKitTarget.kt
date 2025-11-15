@@ -416,7 +416,7 @@ data object VasAttrBuilder : DexKitTarget.UsingStr() {
 
 data object Guild_Emo_Btn_Create_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("mEmojiLayout.findViewByI…id.guild_aio_emoji_image)")
+    override val traitString = arrayOf("mEmojiLayout")
     override val declaringClass = "Guild_Emo_Btn_Create_QQNT"
     override val filter = DexKitFilter.allowAll
 }
@@ -722,7 +722,7 @@ data object GroupSpecialCare_getCareTroopMemberMsgText : DexKitTarget.UsingStr()
 
 data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("funBtnLayout.findViewById(R.id.fun_btn)")
+    override val traitString = arrayOf("funBtnLayout.findViewById(R.id.fun_btn)", "updateFunBtn")
     override val declaringClass = "ChatPanel_InitPanel_QQNT"
     override val filter = DexKitFilter.allowAll
 }
