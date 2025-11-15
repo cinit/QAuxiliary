@@ -32,6 +32,7 @@ import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.EmoMsgUtils_isSingleLottie_QQNT
+import io.github.qauxv.util.requireMaxQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
 import xyz.nextalone.util.clazz
@@ -67,9 +68,11 @@ object Emoji2Sticker : CommonSwitchFunctionHook(arrayOf(EmoMsgUtils_isSingleLott
                 }
             }
         }
-        "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")
-            ?.hookAfter(this) {
-                it.result.set("singleAniSticker", false)
-            }
+        if (requireMaxQQVersion(QQVersion.QQ_9_0_50)) {
+            "com.tencent.mobileqq.emoticonview.AniStickerSendMessageCallBack".clazz?.method("parseMsgForAniSticker")
+                ?.hookAfter(this) {
+                    it.result.set("singleAniSticker", false)
+                }
+        }
     }
 }

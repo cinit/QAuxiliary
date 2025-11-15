@@ -1139,7 +1139,7 @@ data object SharePanel_Handler_OtherApp_openVideoByOtherApp : DexKitTarget.Using
 data object AIOMsgItem_initContentDescription : DexKitTarget.UsingDexKitBridge() {
     override val findMethod: Boolean = true
     override val declaringClass = "com.tencent.mobileqq.aio.msg.AIOMsgItem"
-    override val finder: DexKitBridgeFinder  = { bridge ->
+    override val finder: DexKitBridgeFinder = { bridge ->
         val method1 = bridge.findMethod {
             matcher {
                 declaredClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
@@ -1154,4 +1154,11 @@ data object AIOMsgItem_initContentDescription : DexKitTarget.UsingDexKitBridge()
             }
         }.single()
     }
+}
+
+data object Hd_HideChatPanelBtn_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("peerUid", "panelCallback"))
+    override val declaringClass = "Lcom/tencent/qqnt/aio/shortcutbar/PanelIconLinearLayout"
+    override val filter = DexKitFilter.allowAll
 }

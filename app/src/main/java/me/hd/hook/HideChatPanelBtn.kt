@@ -26,14 +26,19 @@ import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
 import android.widget.ImageView
+import android.widget.LinearLayout
+import androidx.core.view.isGone
 import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.findAllViewsByCondition
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.Hd_HideChatPanelBtn_Method
 import io.github.qauxv.util.requireMinPlayQQVersion
 import io.github.qauxv.util.requireMinQQVersion
 import xyz.nextalone.base.MultiItemDelayableHook
@@ -41,7 +46,8 @@ import xyz.nextalone.base.MultiItemDelayableHook
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideChatPanelBtn : MultiItemDelayableHook(
-    keyName = "hd_HideChatPanelBtn"
+    keyName = "hd_HideChatPanelBtn",
+    targets = arrayOf(Hd_HideChatPanelBtn_Method)
 ) {
     override val preferenceTitle = "屏蔽聊天面板按钮"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_OTHER
@@ -64,9 +70,10 @@ object HideChatPanelBtn : MultiItemDelayableHook(
     @SuppressLint("ResourceType")
     override fun initOnce(): Boolean {
         if (requireMinPlayQQVersion(PlayQQVersion.PlayQQ_8_2_11)) {
-            hookBeforeIfEnabled(Initiator.loadClass("ayil").getDeclaredMethod("b", Context::class.java, View::class.java)) { param ->
+            val method = Initiator.loadClass("ayil").getDeclaredMethod("b", Context::class.java, View::class.java)
+            hookBeforeIfEnabled(method) { param ->
                 val bar = param.args[1] as View
-                val allItemsMap: Map<String, View?> = mapOf(
+                val itemsMap: Map<String, View?> = mapOf(
                     "语音" to bar.findViewById(0x7f0a2b72),
                     "图片" to bar.findViewById(0x7f0a2b68),
                     "拍照" to bar.findViewById(0x7f0a2b75),
@@ -80,16 +87,19 @@ object HideChatPanelBtn : MultiItemDelayableHook(
                     "定位(临时会话)" to bar.findViewById(0x7f0a2b71)
                 )
                 for (item in activeItems)
-                    allItemsMap[item]?.visibility = View.GONE
+                    itemsMap[item]?.isGone = true
             }
         } else {
-            val panelIconClass = Initiator.loadClass("com.tencent.qqnt.aio.shortcutbar.PanelIconLinearLayout")
-            val iconItemMethod = panelIconClass.declaredMethods.single { method -> method.returnType == ImageView::class.java }
-            hookAfterIfEnabled(iconItemMethod) { param ->
-                val imageView = param.result as ImageView
-                val contentDesc = imageView.contentDescription
-                if (activeItems.contains(contentDesc)) {
-                    imageView.visibility = View.GONE
+            val createItemViewMethod = DexKit.requireMethodFromCache(Hd_HideChatPanelBtn_Method)
+            hookAfterIfEnabled(createItemViewMethod) { param ->
+                val layout = param.thisObject as LinearLayout
+                layout.findAllViewsByCondition { view ->
+                    view is ImageView && view.contentDescription != null
+                }.forEach { panelIcon ->
+                    val desc = panelIcon.contentDescription
+                    if (desc in activeItems) {
+                        panelIcon.isGone = true
+                    }
                 }
             }
         }
