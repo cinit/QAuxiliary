@@ -28,7 +28,6 @@ import android.content.Context
 import android.content.Intent
 import android.content.IntentFilter
 import android.os.Build
-import android.view.View
 import android.widget.BaseAdapter
 import android.widget.CheckBox
 import android.widget.FrameLayout
@@ -51,7 +50,6 @@ import io.github.qauxv.util.requireMinQQVersion
 import me.ketal.base.PluginDelayableHook
 import me.ketal.util.findClass
 import nep.timeline.MessageUtils
-import xyz.nextalone.util.invoke
 import xyz.nextalone.util.isFinal
 import xyz.nextalone.util.isPublic
 import xyz.nextalone.util.method
@@ -100,6 +98,7 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
 
         val qfavAppInterface = favoritesListActivity.getFieldByType("com.qqfav.QfavAppInterface"
             .findClass(classLoader)).apply { isAccessible = true }
+        val getFavoriteService = qfavAppInterface.type.method("getFavoriteService")
         val getFilePath = "com.qqfav.FavoriteService".findClass(classLoader).method {
             it.isPublic && it.isFinal && it.returnType == String::class.java &&
                 it.parameterTypes.contentEquals(arrayOf(Long::class.java))
@@ -115,7 +114,7 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
 
             var hasOtherTypes = false
             for (favId in (it.args[0] as java.util.ArrayList<*>)) {
-                val favoriteService = qfavAppInterface.get(it.thisObject)?.invoke("getFavoriteService")
+                val favoriteService = getFavoriteService?.invoke(qfavAppInterface.get(it.thisObject))
                 val filePath = getFilePath?.invoke(favoriteService, favId) as String
                 if (!filePath.isEmpty()) sendVoiceMsgBroadcast(filePath, uin, uinType)
                 else hasOtherTypes = true
@@ -141,9 +140,9 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
         // 搜索结果列表
         audioItemViewHolder.method("onClick")?.hookBefore { it ->
             // 不绕过其他 View 会导致无法在收藏界面播放语音
-            if ((it.args[0] as View) !is FrameLayout) return@hookBefore
+            if (it.args[0] !is FrameLayout) return@hookBefore
 
-            // 绕过收藏列表，否则无法多选发送，并且上面已经处理了
+            // 绕过收藏列表，否则无法多选发送；收藏列表的语音在上面处理
             val checkBoxObj = checkBox.get(it.thisObject) as CheckBox
             if (checkBoxObj.isVisible) return@hookBefore
 
@@ -155,7 +154,7 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
             val favId = getFavId(favoriteDataObj) as Long
 
             val baseActivityObj = baseActivity.get(it.thisObject) as Activity
-            val favoriteService = qfavAppInterface.get(baseActivityObj)?.invoke("getFavoriteService")
+            val favoriteService = getFavoriteService?.invoke(qfavAppInterface.get(baseActivityObj))
             val filePath = getFilePath?.invoke(favoriteService, favId) as String
             if (!filePath.isEmpty()) sendVoiceMsgBroadcast(filePath, uin, uinType)
 
