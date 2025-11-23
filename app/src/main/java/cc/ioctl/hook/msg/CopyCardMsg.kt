@@ -29,11 +29,9 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import cc.ioctl.util.beforeHookIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
-import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
-import io.github.qauxv.util.xpcompat.XposedBridge
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -48,6 +46,9 @@ import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
+import io.github.qauxv.util.xpcompat.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.Array
@@ -166,9 +167,8 @@ object CopyCardMsg : CommonSwitchFunctionHook("CopyCardMsg::BaseChatPie", arrayO
         if (!isEnabled) return
         val ctx = ContextUtils.getCurrentActivity()
         val item = createItemIconNt(msg, "复制代码", R.drawable.ic_item_copy_72dp, R.id.item_copy_code) {
-            val element = (msg.javaClass.declaredMethods.first {
-                it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
-            }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement
+            val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
+            val element = (msgRecord.elements.first() as MsgElement).arkElement
             copyToClipboard(ctx, element.bytesData)
             Toasts.info(ctx, "复制成功")
         }
