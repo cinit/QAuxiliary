@@ -41,6 +41,7 @@ import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -379,9 +380,8 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
         if (!isEnabled) return
         val ctx = ContextUtils.getCurrentActivity()
         val item = createItemIconNt(msg, "打开", R.drawable.ic_item_open_72dp, R.id.item_jump_to_app) {
-            val element = (msg.javaClass.declaredMethods.first {
-                it.returnType == MsgElement::class.java && it.parameterTypes.isEmpty()
-            }.apply { isAccessible = true }.invoke(msg) as MsgElement).arkElement
+            val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord") as MsgRecord
+            val element = (msgRecord.elements.first() as MsgElement).arkElement
             toApp(ctx, element.bytesData)
         }
         val list = param.result as MutableList<Any>
