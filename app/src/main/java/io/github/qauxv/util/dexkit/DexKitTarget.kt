@@ -722,7 +722,7 @@ data object GroupSpecialCare_getCareTroopMemberMsgText : DexKitTarget.UsingStr()
 
 data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("funBtnLayout.findViewById(R.id.fun_btn)", "updateFunBtn")
+    override val traitString = arrayOf("updateFunBtn")
     override val declaringClass = "ChatPanel_InitPanel_QQNT"
     override val filter = DexKitFilter.allowAll
 }

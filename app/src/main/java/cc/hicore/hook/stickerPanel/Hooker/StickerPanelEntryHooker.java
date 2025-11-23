@@ -26,6 +26,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageButton;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.MRes;
@@ -48,6 +49,7 @@ import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
+import io.github.qauxv.util.dexkit.Hd_HideChatPanelBtn_Method;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.R;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -84,7 +86,8 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
         super(new DexKitTarget[]{
                 ChatPanel_InitPanel_QQNT.INSTANCE,
                 AbstractQQCustomMenuItem.INSTANCE,
-                Guild_Emo_Btn_Create_QQNT.INSTANCE
+                Guild_Emo_Btn_Create_QQNT.INSTANCE,
+                Hd_HideChatPanelBtn_Method.INSTANCE
         });
     }
 
@@ -99,26 +102,30 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
 
     @Override
     protected boolean initOnce() throws Exception {
-        HookUtils.hookAfterIfEnabled(this, DexKit.loadMethodFromCache(ChatPanel_InitPanel_QQNT.INSTANCE), param -> {
-            View v = null;
-            Field[] fs = param.thisObject.getClass().getDeclaredFields();
-            for (Field f : fs) {
-                if (f.getType().equals(ImageButton.class)) {
-                    f.setAccessible(true);
-                    if ("emo_btn".equals(MRes.getViewResName((View) f.get(param.thisObject)))) {
-                        v = (View) f.get(param.thisObject);
+        HookUtils.hookAfterIfEnabled(
+                this,
+                DexKit.loadMethodFromCache(ChatPanel_InitPanel_QQNT.INSTANCE),
+                param -> {
+                    View v = null;
+                    Field[] fs = param.thisObject.getClass().getDeclaredFields();
+                    for (Field f : fs) {
+                        if (f.getType().equals(ImageButton.class)) {
+                            f.setAccessible(true);
+                            if ("emo_btn".equals(MRes.getViewResName((View) f.get(param.thisObject)))) {
+                                v = (View) f.get(param.thisObject);
+                            }
+                        }
+                    }
+                    if (v != null) {
+                        v.setOnLongClickListener(v1 -> {
+                            ICreator.createPanel(v1.getContext());
+                            return true;
+                        });
+                    } else {
+                        XLog.e("Emo_Btn_Hooker", "emo_btn field not found");
                     }
                 }
-            }
-            if (v != null) {
-                v.setOnLongClickListener(v1 -> {
-                    ICreator.createPanel(v1.getContext());
-                    return true;
-                });
-            } else {
-                XLog.e("Emo_Btn_Hooker", "emo_btn field not found");
-            }
-        });
+        );
 
         HookUtils.hookAfterIfEnabled(
                 this,
@@ -136,16 +143,23 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
                     }
                 }
         );
+
         HookUtils.hookAfterIfEnabled(
                 this,
-                XMethod.clz("com.tencent.qqnt.aio.shortcutbar.PanelIconLinearLayout").ret(ImageView.class).ignoreParam().get(),
+                DexKit.requireMethodFromCache(Hd_HideChatPanelBtn_Method.INSTANCE),
                 param -> {
-                    ImageView imageView = (ImageView) param.getResult();
-                    if ("表情".contentEquals(imageView.getContentDescription())) {
-                        imageView.setOnLongClickListener(view -> {
-                            ICreator.createPanel(view.getContext());
-                            return true;
-                        });
+                    LinearLayout layout = (LinearLayout) param.thisObject;
+                    for (int i = 0; i < layout.getChildCount(); i++) {
+                        View child = layout.getChildAt(i);
+                        if (child instanceof ImageView && child.getContentDescription() != null) {
+                            ImageView panelIcon = (ImageView) child;
+                            if ("表情".contentEquals(panelIcon.getContentDescription())) {
+                                panelIcon.setOnLongClickListener(view -> {
+                                    ICreator.createPanel(view.getContext());
+                                    return true;
+                                });
+                            }
+                        }
                     }
                 }
         );
