@@ -38,8 +38,11 @@ import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.Reply_At_QQNT
+import io.github.qauxv.util.dexkit.Reply_At_QQNT_9_0_30
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
+import io.github.qauxv.util.xpcompat.XposedHelpers
+import com.github.kyuubiran.ezxhelper.utils.loadClassOrNull
 import java.lang.reflect.Modifier
 
 @FunctionHookEntry
@@ -58,9 +61,19 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
 
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            val method = DexKit.requireMethodFromCache(Reply_At_QQNT)
-            hookBeforeIfEnabled(method) { param ->
-                param.result = null
+            if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
+                // AIOMsgItem -> getMsgRecord() -> set anonymousExtInfo
+                hookBeforeIfEnabled(method) { param ->
+                    val msgIntent = param.args[0]
+                    val msgRecord = XposedHelpers.callMethod(msg, "getMsgRecord")
+                    val obj = loadClassOrNull("com.tencent.qqnt.kernel.nativeinterface.AnonymousExtInfo").newInstance()
+                    FieldUtils.setField(msgRecord, "anonymousExtInfo", obj)
+                }
+            } else {
+                val method = DexKit.requireMethodFromCache(Reply_At_QQNT)
+                hookBeforeIfEnabled(method) { param ->
+                    param.result = null
+                }
             }
         } else if (requireMinQQVersion(QQVersion.QQ_8_6_0)) {
             val className = ConfigTable.getConfig<String?>(ReplyNoAtHook::class.java.getSimpleName()) ?: return false
