@@ -1,14 +1,14 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.13.0"
+agp = "8.13.1"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
 kotlin = "2.2.21"
-ksp = "2.3.0"
-lifecycle = "2.9.4"
+ksp = "2.3.3"
+lifecycle = "2.10.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.33.0"
+protobuf = "4.33.1"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -42,7 +42,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "5.0.5" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.17.8" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.1" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "16.0.1" }
 #noinspection NewerVersionAvailable do not update com.google.flatbuffers:flatbuffers-java, need to keep it sync with DexKit
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
