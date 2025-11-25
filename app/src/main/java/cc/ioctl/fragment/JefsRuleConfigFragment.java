@@ -37,6 +37,7 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
+import androidx.activity.OnBackPressedCallback;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.view.ViewCompat;
@@ -60,6 +61,13 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
     private LinearLayout layoutDisplay;
     private LinearLayout layoutEdit;
     private boolean currEditMode;
+
+    @Override
+    public void onCreate(@Nullable Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        // register back pressed callback
+        requireActivity().getOnBackPressedDispatcher().addCallback(this, mOnBackPressedCallback);
+    }
 
     @Override
     public View doOnCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
@@ -222,8 +230,17 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
         }
     }
 
-    @Override
-    public boolean doOnBackPressed() {
+    private OnBackPressedCallback mOnBackPressedCallback = new OnBackPressedCallback(true) {
+        @Override
+        public void handleOnBackPressed() {
+            if (doOnBackPressed()) {
+                return;
+            }
+            finishFragment();
+        }
+    };
+
+    private boolean doOnBackPressed() {
         if (currEditMode) {
             CustomDialog.createFailsafe(requireContext())
                     .setPositiveButton("确认", (dialog, which) -> finishFragment())
@@ -239,6 +256,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
 
     private void goToEditMode() {
         currEditMode = true;
+        mOnBackPressedCallback.setEnabled(currEditMode);
         rulesTv.setText("");
         rulesEt.setText(jmpctl.getRuleString());
         layoutDisplay.setVisibility(View.GONE);
@@ -247,6 +265,7 @@ public class JefsRuleConfigFragment extends BaseRootLayoutFragment implements Vi
 
     private void goToDisplayMode() {
         currEditMode = false;
+        mOnBackPressedCallback.setEnabled(currEditMode);
         rulesEt.setText("");
         rulesTv.setText(jmpctl.getRuleString());
         layoutEdit.setVisibility(View.GONE);

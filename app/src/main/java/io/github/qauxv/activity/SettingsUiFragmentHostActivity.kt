@@ -31,6 +31,7 @@ import android.os.Parcelable
 import android.view.View
 import android.view.WindowInsetsController
 import android.view.WindowManager
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.CallSuper
 import androidx.core.view.doOnLayout
 import androidx.fragment.app.Fragment
@@ -99,6 +100,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
                 fragment.notifyLayoutPaddingsChanged()
             }
         }
+        onBackPressedDispatcher.addCallback(this, mFragmentPopOnBackCallback)
         mAppBarLayout.doOnLayout {
             SyncUtils.postDelayed(0) {
                 runOnStart {
@@ -199,9 +201,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
         }
     }
 
-    override fun doOnBackPressed() {
-        val consumed = mTopVisibleFragment?.doOnBackPressed() ?: false
-        if (!consumed) {
+    private val mFragmentPopOnBackCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
             popCurrentFragment()
         }
     }
@@ -273,6 +274,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
             mFragmentStack.add(fragment)
             updateTitle(fragment)
         }
+        // update back callback enabled state
+        mFragmentPopOnBackCallback.isEnabled = mFragmentStack.size > 1
     }
 
     private fun rtlRemoveFragment(fragment: BaseSettingFragment) {
@@ -299,6 +302,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
             // background fragment, just remove it
             supportFragmentManager.beginTransaction().remove(fragment).commit()
         }
+        // update back callback enabled state
+        mFragmentPopOnBackCallback.isEnabled = mFragmentStack.size > 1
     }
 
     open val layoutPaddingTop: Int
@@ -341,7 +346,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
     override fun onFlingRightToLeft() = Unit
 
     override fun onFlingLeftToRight() {
-        doOnBackPressed()
+        onBackPressedDispatcher.onBackPressed()
     }
 
     protected fun runOnStart(action: Runnable) {

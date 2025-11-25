@@ -30,6 +30,7 @@ import android.os.Bundle
 import android.view.*
 import android.view.animation.AlphaAnimation
 import android.widget.FrameLayout
+import androidx.activity.OnBackPressedCallback
 import androidx.appcompat.app.AlertDialog
 import androidx.appcompat.widget.SearchView
 import androidx.core.content.res.ResourcesCompat
@@ -403,6 +404,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setHasOptionsMenu(true)
+        requireActivity().onBackPressedDispatcher.addCallback(this, mSearchModeOnBackPressedCallback)
     }
 
     override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
@@ -433,12 +435,9 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         return super.onOptionsItemSelected(item)
     }
 
-    override fun doOnBackPressed(): Boolean {
-        return if (mSearchSubFragment != null) {
+    private val mSearchModeOnBackPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
             mSearchMenuItem?.collapseActionView() ?: exitSearchMode()
-            true
-        } else {
-            super.doOnBackPressed()
         }
     }
 
@@ -476,6 +475,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
             }
         }
         mSearchSubFragment!!.initForSearchView(searchView)
+        mSearchModeOnBackPressedCallback.isEnabled = true
     }
 
     /**
@@ -503,6 +503,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
         }
         rootLayoutView = recyclerListView
         applyRootLayoutPaddingFor(recyclerListView!!)
+        mSearchModeOnBackPressedCallback.isEnabled = false
     }
 
     /**
@@ -514,6 +515,7 @@ class SettingsMainFragment : BaseRootLayoutFragment() {
             it.onDestroyView()
             mSearchRootLayout = null
             mSearchSubFragment = null
+            mSearchModeOnBackPressedCallback.isEnabled = false
         }
         recyclerListView!!.apply {
             alpha = 1f

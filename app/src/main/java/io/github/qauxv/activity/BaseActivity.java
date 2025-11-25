@@ -412,18 +412,6 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     }
 
     /**
-     * @deprecated use {@link #doOnBackPressed()} instead.
-     */
-    @SuppressLint("MissingSuperCall")
-    @Override
-    @Deprecated
-    public void onBackPressed() {
-        if (!this.mIsInitializing) {
-            doOnBackPressed();
-        }
-    }
-
-    /**
      * @deprecated use {@link #doOnKeyDown(int, KeyEvent)} instead.
      */
     @Override
@@ -518,10 +506,6 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
     public void onMultiWindowModeChanged(boolean isInMultiWindowMode, Configuration newConfig) {
         super.onMultiWindowModeChanged(isInMultiWindowMode, newConfig);
         dispatchOnMultiWindowModeChanged(this, isInMultiWindowMode);
-    }
-
-    protected void doOnBackPressed() {
-        super.onBackPressed();
     }
 
     public static boolean isMoveTaskToBack(@NonNull Context context, @NonNull Intent intent) {

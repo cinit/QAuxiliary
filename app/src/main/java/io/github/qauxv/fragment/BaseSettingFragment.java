@@ -98,10 +98,6 @@ public abstract class BaseSettingFragment extends Fragment {
         }
     }
 
-    public boolean doOnBackPressed() {
-        return false;
-    }
-
     public void notifyLayoutPaddingsChanged() {
         onLayoutPaddingsChanged();
     }

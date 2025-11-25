@@ -28,8 +28,10 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.activity.OnBackPressedCallback
 import androidx.annotation.UiThread
 import androidx.appcompat.app.AlertDialog
+import androidx.lifecycle.lifecycleScope
 import cc.ioctl.util.BugUtils
 import cc.ioctl.util.ui.FaultyDialog
 import cc.ioctl.hook.misc.CustomSplash
@@ -41,12 +43,14 @@ import io.github.qauxv.util.SafUtils
 import io.github.qauxv.util.SyncUtils.async
 import io.github.qauxv.util.SyncUtils.runOnUiThread
 import io.github.qauxv.util.Toasts
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.launch
 import java.io.File
 
 class CustomSplashConfigFragment : BaseRootLayoutFragment() {
 
     private var mBinding: FragmentCustomSplashConfigBinding? = null
-    private var mHasUnsavedChanges = false
+    private val mHasUnsavedChanges: MutableStateFlow<Boolean> = MutableStateFlow(false)
     private var mLightSplashData: ByteArray? = null
     private var mDarkSplashData: ByteArray? = null
     private var mUseCustomLightSplash = false
@@ -91,6 +95,18 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
         }
         rootLayoutView = mBinding!!.root
         return rootLayoutView
+    }
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        // confirm unsaved changes when navigate back
+        requireActivity().onBackPressedDispatcher.addCallback(this, mOnBackPressedCallback)
+        // observe unsaved changes
+        lifecycleScope.launch {
+            mHasUnsavedChanges.collect { hasChanges ->
+                mOnBackPressedCallback.isEnabled = hasChanges
+            }
+        }
     }
 
     override fun onDestroyView() {
@@ -148,7 +164,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                     val data = IoUtils.readFile(file)
                     runOnUiThread {
                         updateLightSplash(data)
-                        mHasUnsavedChanges = true
+                        mHasUnsavedChanges.value = true
                     }
                 } catch (e: Exception) {
                     FaultyDialog.show(requireContext(), e)
@@ -166,7 +182,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                     val data = IoUtils.readFile(file)
                     runOnUiThread {
                         updateDarkSplash(data)
-                        mHasUnsavedChanges = true
+                        mHasUnsavedChanges.value = true
                     }
                 } catch (e: Exception) {
                     FaultyDialog.show(requireContext(), e)
@@ -186,7 +202,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                 val data = IoUtils.readFully(inputStream)
                 runOnUiThread {
                     updateLightSplash(data)
-                    mHasUnsavedChanges = true
+                    mHasUnsavedChanges.value = true
                 }
             }
         }.commit()
@@ -203,7 +219,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
                 val data = IoUtils.readFully(inputStream)
                 runOnUiThread {
                     updateDarkSplash(data)
-                    mHasUnsavedChanges = true
+                    mHasUnsavedChanges.value = true
                 }
             }
         }.commit()
@@ -271,7 +287,7 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
             if (mDarkSplashData != null) {
                 IoUtils.writeFile(hook.darkSplashFile, mDarkSplashData!!)
             }
-            mHasUnsavedChanges = false
+            mHasUnsavedChanges.value = false
             Toasts.success(requireContext(), "保存成功")
             finishFragment()
         } catch (e: Exception) {
@@ -305,18 +321,15 @@ class CustomSplashConfigFragment : BaseRootLayoutFragment() {
         return file
     }
 
-    override fun doOnBackPressed(): Boolean {
-        return if (mHasUnsavedChanges) {
+    private val mOnBackPressedCallback = object : OnBackPressedCallback(false) {
+        override fun handleOnBackPressed() {
             confirmFinishFragment()
-            true
-        } else {
-            super.doOnBackPressed()
         }
     }
 
     @UiThread
     private fun confirmFinishFragment() {
-        if (!mHasUnsavedChanges) {
+        if (!mHasUnsavedChanges.value) {
             finishFragment()
             return
         } else {

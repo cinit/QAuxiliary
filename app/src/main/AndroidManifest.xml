@@ -40,6 +40,7 @@
         android:theme="@style/AppTheme.Def"
         android:vmSafeMode="false"
         android:useEmbeddedDex="false"
+        android:enableOnBackInvokedCallback="true"
         tools:ignore="AllowBackup,GoogleAppIndexingWarning,UnusedAttribute">
         <activity
             android:exported="true"
