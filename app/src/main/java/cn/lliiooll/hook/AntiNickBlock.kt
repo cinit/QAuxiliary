@@ -62,12 +62,14 @@ object AntiNickBlock : MultiItemDelayableHook(
         //
         // com.tencent.mobileqq.aio.msglist.holder.component.nick.block.AbsNickBlockProvider:
         // 9.0.20~9.0.56 -> .super Lcom/tencent/mobileqq/aio/msglist/holder/component/nick/block/d;
-        // 9.0.60~9.1.5 -> .super Lcom/tencent/mobileqq/aio/msglist/holder/component/nick/block/b;
+        // 9.0.60~9.1.60 -> .super Lcom/tencent/mobileqq/aio/msglist/holder/component/nick/block/b;
         //
         //public class ? extends com.tencent.mobileqq.aio.msglist.holder.component.nick.block.AbsNickBlockProvider
         val providerList = arrayOf(
             when {
-                requireMinQQVersion(QQVersion.QQ_9_0_95) -> "com.tencent.mobileqq.activity.qcircle.i"
+                requireMinQQVersion(QQVersion.QQ_9_1_60) -> "com.tencent.mobileqq.activity.qcircle.i"//9.1.60
+                requireMinQQVersion(QQVersion.QQ_9_1_50) -> "com.tencent.mobileqq.activity.qcircle.h"//9.1.50
+                requireMinQQVersion(QQVersion.QQ_9_0_95) -> "com.tencent.mobileqq.activity.qcircle.i"//9.0.95-9.1.30
                 requireMinQQVersion(QQVersion.QQ_9_0_65) -> "com.tencent.mobileqq.activity.qcircle.g"
                 requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.activity.qcircle.h"
                 requireMinQQVersion(QQVersion.QQ_9_0_35) -> "com.tencent.mobileqq.activity.qcircle.e"
@@ -75,16 +77,19 @@ object AntiNickBlock : MultiItemDelayableHook(
                 else -> "com.tencent.mobileqq.activity.qcircle.c"
             },
             when {// com.tencent.mobileqq.aio.msglist.holder.component.nick.block.NickBlockProvider
-                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.c"
+                requireMinQQVersion(QQVersion.QQ_9_2_0) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.f"//9.x.x-9.2.30
+                requireMinQQVersion(QQVersion.QQ_9_1_50) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.e"//9.1.50-9.1.75
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.c"//9.0.60-9.1.30
                 requireMinQQVersion(QQVersion.QQ_9_0_30) -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.e"
                 else -> "com.tencent.mobileqq.aio.msglist.holder.component.nick.block.f"
             },
             when {// com.tencent.mobileqq.vas.vipicon.VasNickBlockProvider
-                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.vas.vipicon.b"
+                requireMinQQVersion(QQVersion.QQ_9_1_50) -> "com.tencent.mobileqq.vas.vipicon.f"//9.1.50-9.2.30
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.mobileqq.vas.vipicon.b"//9.0.60-9.1.30
                 else -> "com.tencent.mobileqq.vas.vipicon.g"
             },
             when {// com.tencent.qqnt.aio.nick.ExtNickBlockProvider
-                requireMinQQVersion(QQVersion.QQ_9_0_70) -> "com.tencent.qqnt.aio.nick.d"
+                requireMinQQVersion(QQVersion.QQ_9_0_70) -> "com.tencent.qqnt.aio.nick.d"//9.0.70-9.2.30
                 requireMinQQVersion(QQVersion.QQ_9_0_60) -> "com.tencent.qqnt.aio.nick.e"
                 requireMinQQVersion(QQVersion.QQ_9_0_20) -> "com.tencent.qqnt.aio.nick.g"
                 else -> "com.tencent.qqnt.aio.nick.f"
