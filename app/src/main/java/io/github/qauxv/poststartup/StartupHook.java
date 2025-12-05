@@ -320,21 +320,63 @@ public class StartupHook {
             // ignore
         }
         // for NT QQ
-        // TODO: 2023-04-19 'com.tencent.mobileqq.startup.task.config.a' is not a good way to find the class
-        Class<?> kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.a");
+        // com.tencent.qqnt.startup.task.ITaskFactory
         Class<?> kITaskFactory;
-        try {
-            kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.d");
-        } catch (ClassNotFoundException e) {
-            // for QQ 9.2.30
-            kITaskFactory = cl.loadClass("com.tencent.qqnt.startup.task.c");
-        }
-        // check cast so that we can sure that we have found the right class
-        if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
-            kTaskFactory = cl.loadClass("com.tencent.mobileqq.startup.task.config.b");
-            if (!kITaskFactory.isAssignableFrom(kTaskFactory)) {
-                throw new AssertionError(kITaskFactory + " is not assignable from " + kTaskFactory);
+        {
+            Class<?> kNtTask = cl.loadClass("com.tencent.qqnt.startup.task.NtTask");
+            String[] kITaskFactoryNameCandidates = {
+                    // QQ [8.9.58, 9.2.30)
+                    "com.tencent.qqnt.startup.task.d",
+                    // QQ 9.2.30+
+                    "com.tencent.qqnt.startup.task.c"
+            };
+            // ITaskFactory is an interface having one method returning NtTask
+            Class<?> kFound = null;
+            for (String name : kITaskFactoryNameCandidates) {
+                try {
+                    Class<?> kCandidate = cl.loadClass(name);
+                    if (kCandidate.isInterface()) {
+                        Method[] methods = kCandidate.getDeclaredMethods();
+                        if (methods.length == 1 && methods[0].getReturnType() == kNtTask) {
+                            kFound = kCandidate;
+                            break;
+                        }
+                    }
+                } catch (ClassNotFoundException ignored) {
+                    // try next one
+                }
             }
+            if (kFound == null) {
+                throw new IllegalStateException("ITaskFactory not found");
+            }
+            kITaskFactory = kFound;
+        }
+        // com.tencent.mobileqq.startup.task.config.TaskFactory
+        // to find TaskFactory: grep -r Inject_ColdStartupTaskFactory */sources/com/tencent/mobileqq/startup
+        Class<?> kTaskFactory;
+        {
+            String[] kTaskFactoryNameCandidates = {
+                    // QQ [8.9.63.11390_4194, 9.0.0.13955_5220]
+                    "com.tencent.mobileqq.startup.task.config.a",
+                    // QQ [9.0.8.14755_5540, 9.2.30.31725_12330]+, TIM 4.0.95_4001
+                    "com.tencent.mobileqq.startup.task.config.b"
+            };
+            Class<?> kFound = null;
+            for (String name : kTaskFactoryNameCandidates) {
+                try {
+                    Class<?> kCandidate = cl.loadClass(name);
+                    if (kITaskFactory.isAssignableFrom(kCandidate)) {
+                        kFound = kCandidate;
+                        break;
+                    }
+                } catch (ClassNotFoundException ignored) {
+                    // try next one
+                }
+            }
+            if (kFound == null) {
+                throw new IllegalStateException("TaskFactory not found");
+            }
+            kTaskFactory = kFound;
         }
         Field taskClassMapField = null;
         for (Field field : kTaskFactory.getDeclaredFields()) {
