@@ -8,7 +8,7 @@ ksp = "2.3.3"
 lifecycle = "2.10.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.33.1"
+protobuf = "4.33.2"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
