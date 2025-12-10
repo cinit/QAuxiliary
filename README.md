@@ -103,7 +103,8 @@ QAuxiliary 将为分 `CI` 和 `推荐的CI` 两个版本
     - JDK 版本最低 17, 当然使用 21 也是可以的。
     - Ninja 请使用 1.11 或更高版本。因为 Ninja 从 1.11 开始支持 C++ 20 module, 你可以从 [Ninja Release](https://github.com/ninja-build/ninja/releases) 下载
       Ninja 二进制文件, 并在 `local.properties` 中指定 `qauxv.override.ninja.path` 为 Ninja 的路径 (如 `qauxv.override.ninja.path=/usr/bin/ninja`).
-    - Ccache 是可选的，不装也可以，但它可以让编译更快。  
+    - Ccache 是可选的，不装也可以，但它可以让编译更快，如果您的 ccache 版本低于 4.8，
+      建议给 gradle daemon 加上环境变量 `CCACHE_NOHASHDIR=true` (推荐) 或者配置 `ccache -o hash_dir=false` (警告：这是全局持久化配置) 。  
       注意: 编译脚本会自动寻找 ccache 并使用，而 Windows 平台下 msys2 的 ccache 存在问题会卡在 sync 阶段，
       建议 Windows 用户使用从 ccache 官网下载的 ccache 而不是 msys2 的 ccache;  
       另外你也可以选择不使用 ccache (如果你已经安装了 ccache 但不想使用，可以修改 [build.gradle.kts](app/build.gradle.kts)
