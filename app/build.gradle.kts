@@ -109,9 +109,13 @@ android {
         externalNativeBuild {
             cmake {
                 ccacheExecutablePath?.let {
+                    // requires ccache 4.8+, multiple options are separated by ';'
+                    // hash_dir is only useful when "-g" debug info across multiple copy of the same project
+                    // disable it to improve cache hit rate
+                    val ccacheOptions = "hash_dir=false"
                     arguments += listOf(
-                        "-DCMAKE_C_COMPILER_LAUNCHER=$it",
-                        "-DCMAKE_CXX_COMPILER_LAUNCHER=$it",
+                        "-DCMAKE_C_COMPILER_LAUNCHER=$it;$ccacheOptions",
+                        "-DCMAKE_CXX_COMPILER_LAUNCHER=$it;$ccacheOptions",
                         "-DNDK_CCACHE=$it",
                         "-DANDROID_CCACHE=$it",
                     )
