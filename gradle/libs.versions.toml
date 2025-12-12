@@ -1,6 +1,6 @@
 [versions]
 # AGP 9.0 no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.0 for now.
-agp = "8.13.1"
+agp = "8.13.2"
 appCenter = "5.0.6"
 # keep kotlin and ksp versions in sync
 kotlin = "2.2.21"
