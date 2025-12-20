@@ -37,8 +37,8 @@ import io.github.qauxv.util.requireMinQQVersion
 @UiItemAgentEntry
 object HideShortcutBar : CommonSwitchFunctionHook(
     targets = arrayOf(
+        Hd_HideShortcutBar_Method_Troop,
         Hd_HideShortcutBar_Method_TroopApp,
-        Hd_HideShortcutBar_Method_Troop
     )
 ) {
 
@@ -48,13 +48,14 @@ object HideShortcutBar : CommonSwitchFunctionHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_88)
 
     override fun initOnce(): Boolean {
+        if (requireMinQQVersion(QQVersion.QQ_9_1_10_BETA_20440)) {
+            val method = DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method_Troop)
+            hookBeforeIfEnabled(method) { param ->
+                param.result = if (method.returnType == Boolean::class.java) false else null
+            }
+        }
         hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method_TroopApp)) { param ->
             param.result = false
-        }
-        if (requireMinQQVersion(QQVersion.QQ_9_1_10_BETA_20440)) {
-            hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_HideShortcutBar_Method_Troop)) { param ->
-                param.result = null
-            }
         }
         return true
     }
