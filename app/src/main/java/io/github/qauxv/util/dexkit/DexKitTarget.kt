@@ -743,7 +743,8 @@ data object AIO_Destroy_QQNT : DexKitTarget.UsingStringVector() {
 
 data object AIO_InputRootInit_QQNT : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = true
-    override val traitStringVectors = arrayOf(arrayOf("binding", "inputRoot", "findViewById(...)", "getContext(...)", "sendBtn"), arrayOf("inputRoot.findViewById(R.id.send_btn)"))
+    override val traitStringVectors =
+        arrayOf(arrayOf("binding", "inputRoot", "findViewById(...)", "getContext(...)", "sendBtn"), arrayOf("inputRoot.findViewById(R.id.send_btn)"))
     override val declaringClass = "com.tencent.mobileqq.aio.input.simpleui.AIOInputSimpleUIVBDelegate"
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }
@@ -759,6 +760,13 @@ data object EmoMsgUtils_isSingleLottie_QQNT : DexKitTarget.UsingStr() {
 data object Reply_At_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("msgItem.msgRecord.senderUid")
+    override val declaringClass = ""
+    override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
+}
+
+data object AIOMsgItemExt_HasInfo : DexKitTarget.UsingStr() {
+    override val findMethod: Boolean = true
+    override val traitString = arrayOf("aioMsgItem.getMsgRecord().anonymousExtInfo != null")
     override val declaringClass = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/aio/input")
 }

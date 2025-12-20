@@ -24,6 +24,8 @@ package cc.ioctl.hook.ui.chat
 
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookBefore
+import com.github.kyuubiran.ezxhelper.utils.hookMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -31,15 +33,15 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.step.Step
 import io.github.qauxv.tlb.ConfigTable
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
+import io.github.qauxv.util.dexkit.AIOMsgItemExt_HasInfo
 import io.github.qauxv.util.dexkit.DexDeobfsProvider.getCurrentBackend
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.DexKitFinder
 import io.github.qauxv.util.dexkit.Reply_At_QQNT
-import io.github.qauxv.util.xpcompat.XC_MethodReplacement
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinVersion
 import java.lang.reflect.Modifier
@@ -58,20 +60,27 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
         PlayQQVersionCode = PlayQQVersion.PlayQQ_8_2_9,
     )
 
+    private var isEnterHook = false
+
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            if (requireMinQQVersion(QQVersion.QQ_9_0_30)) {
-                // AIOMsgItem -> getMsgRecord() -> set anonymousExtInfo
-                // set anonymousExtInfo test as true
-                XposedHelpers.findAndHookMethod(
-                    Initiator.loadClass("com.tencent.mobileqq.aio.utils.d"),
-                    "l",
-                    "com.tencent.mobileqq.aio.msg.AIOMsgItem",
-                    XC_MethodReplacement.returnConstant(true)
-                )
+            if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+                DexKit.requireMethodFromCache(Reply_At_QQNT).hookMethod {
+                    before {
+                        isEnterHook = true
+                    }
+                    after {
+                        isEnterHook = false
+                    }
+                }
+                // aioMsgItem.getMsgRecord().anonymousExtInfo != null
+                // set return result as true
+                DexKit.requireMethodFromCache(AIOMsgItemExt_HasInfo).hookBefore { param ->
+                    if (!isEnterHook) return@hookBefore
+                    param.result = true
+                }
             } else {
-                val method = DexKit.requireMethodFromCache(Reply_At_QQNT)
-                hookBeforeIfEnabled(method) { param ->
+                hookBeforeIfEnabled(DexKit.requireMethodFromCache(Reply_At_QQNT)) { param ->
                     param.result = null
                 }
             }
@@ -104,23 +113,41 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
         return true
     }
 
-    override val isNeedFind = QAppUtils.isQQnt() && Reply_At_QQNT.descCache == null
+    override val isNeedFind: Boolean
+        get() = (QAppUtils.isQQnt() && Reply_At_QQNT.descCache == null) || (requireMinQQVersion(QQVersion.QQ_9_2_10) && AIOMsgItemExt_HasInfo.descCache == null)
 
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
             val dexKit = backend.getDexKitBridge()
-            val method = dexKit.findMethod {
+            val methodReply = dexKit.findMethod {
                 searchPackages("com.tencent.mobileqq.aio.input")
                 matcher {
-                    paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
                     if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+                        paramTypes("com.tencent.mvi.base.route.MsgIntent")
                         usingStrings("mContext", "senderUid")
                     } else {
+                        paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
                         usingStrings("msgItem.msgRecord.senderUid")
                     }
                 }
             }.firstOrNull() ?: return false
-            Reply_At_QQNT.descCache = method.descriptor
+            Reply_At_QQNT.descCache = methodReply.descriptor
+            if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+                val methodHasInfo = dexKit.findMethod {
+                    searchPackages("com.tencent.mobileqq.aio.utils")
+                    matcher {
+                        returnType(Boolean::class.java)
+                        paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                        addInvoke {
+                            name = "getMsgRecord"
+                        }
+                        addUsingField {
+                            name = "anonymousExtInfo"
+                        }
+                    }
+                }.firstOrNull() ?: return false
+                AIOMsgItemExt_HasInfo.descCache = methodHasInfo.descriptor
+            }
             return true
         }
     }
