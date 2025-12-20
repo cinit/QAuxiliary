@@ -22,6 +22,7 @@
 
 package me.ketal.hook
 
+import android.os.Bundle
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -29,8 +30,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.QQVersion.QQ_8_9_0
-import io.github.qauxv.util.QQVersion.QQ_8_9_70
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
@@ -43,21 +42,23 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
 
     override val name = "去除相册扫码登录检验"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_5_0) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)
 
     override fun initOnce() = throwOrTrue {
-        val clazz = if (requireMinQQVersion(QQ_8_9_70) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
-            "com/tencent/open/agent/QrAgentLoginManager"
-        } else if (requireMinQQVersion(QQ_8_9_0)) {
-            "com/tencent/open/agent/QrAgentLoginManager\$a"
-        } else {
-            "com/tencent/open/agent/QrAgentLoginManager\$2"
+        val managerClass = when {
+            requireMinQQVersion(QQVersion.QQ_8_9_70) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "com/tencent/open/agent/QrAgentLoginManager"
+            requireMinQQVersion(QQVersion.QQ_8_9_0) -> "com/tencent/open/agent/QrAgentLoginManager\$a"
+            else -> "com/tencent/open/agent/QrAgentLoginManager\$2"
         }
-        Initiator.loadClass(clazz).declaredMethods
-            .findMethod {
-                returnType == Void.TYPE && parameterTypes.isNotEmpty() && parameterTypes[0] == Boolean::class.java
-            }.hookBefore(this) {
-                it.args[0] = false
-            }
+        Initiator.loadClass(managerClass).findMethod {
+            returnType == Void.TYPE && parameterTypes.isNotEmpty() &&
+                if (requireMinQQVersion(QQVersion.QQ_9_2_27)) {
+                    parameterTypes[1] == Boolean::class.java && parameterTypes[2] == String::class.java && parameterTypes[3] == Bundle::class.java
+                } else {
+                    parameterTypes[0] == Boolean::class.java
+                }
+        }.hookBefore(this) {
+            it.args[0] = false
+        }
     }
 }
