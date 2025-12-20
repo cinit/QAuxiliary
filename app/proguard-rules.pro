@@ -25,6 +25,7 @@
 -keep class wang.allenyou.** { *; }
 -keep class im.mingxi.** { *; }
 -keep class io.github.relimus.** { *; }
+-keep class com.likejson.** { *; }
 
 -keepclasseswithmembernames class * {
     native <methods>;
