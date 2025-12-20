@@ -179,16 +179,17 @@ object SendPangu : CommonSwitchFunctionHook("sendMsgPangu", arrayOf(AIOTextEleme
     override fun initOnce(): Boolean {
         DexKit.requireMethodFromCache(AIOTextElementCtor)
             .hookBefore(this) {
-                val inputStrFieldName = when {
+                val contentFieldName = when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "d"
-                    requireMinQQVersion(QQVersion.QQ_9_0_56) -> "e"
+                    requireMinQQVersion(QQVersion.QQ_9_1_70) -> "d"// 9.1.70 ~ 9.2.55
+                    requireMinQQVersion(QQVersion.QQ_9_0_56) -> "e"// 9.0.56 ~ 9.1.65
                     else -> "a"
                 }
-                val content = it.args[0].get(inputStrFieldName) as String
+                val content = it.args[0].get(contentFieldName) as String
                 if (!content.startsWith("，，") && !content.startsWith(",,"))
-                    it.args[0].set(inputStrFieldName, processPangu(content))
+                    it.args[0].set(contentFieldName, processPangu(content))
                 else
-                    it.args[0].set(inputStrFieldName, content.substring(2))
+                    it.args[0].set(contentFieldName, content.substring(2))
             }
         return true
     }
