@@ -83,14 +83,18 @@ object ForceSystemAlbum : BaseDecorator(
             override val switchProvider = null
             override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit) = { _, activity, _ ->
                 val currentType = getCurrentAlbumType()
-                AlertDialog.Builder(activity).setTitle("选择默认相册类型").setSingleChoiceItems(albumTypes, currentType) { dialog, which ->
-                    setAlbumType(which)
-                    isEnabled = true
-                    dialog.dismiss()
-                }.setNegativeButton(android.R.string.cancel, null).setNeutralButton("禁用") { _, _ ->
-                    isEnabled = false
-                    _valueState.value = null
-                }.show()
+                AlertDialog.Builder(activity)
+                    .setTitle("选择默认相册类型")
+                    .setSingleChoiceItems(albumTypes, currentType) { dialog, which ->
+                        setAlbumType(which)
+                        isEnabled = true
+                        dialog.dismiss()
+                    }
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setNeutralButton("禁用") { _, _ ->
+                        isEnabled = false
+                        _valueState.value = null
+                    }.show()
             }
             override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
         }
@@ -101,9 +105,9 @@ object ForceSystemAlbum : BaseDecorator(
 
         val isWinkHomeActivity = intent.component?.className?.contains("WinkHomeActivity") == true
         val isNewPhotoListActivity = intent.component?.className?.contains("NewPhotoListActivity") == true
-        if ((isWinkHomeActivity || (isNewPhotoListActivity && intent.getIntExtra(
-                "uintype", -1
-            ) != -1)) && (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false)) && (!intent.getBooleanExtra("is_decorated", false))
+        if ((isWinkHomeActivity || (isNewPhotoListActivity && intent.getIntExtra("uintype", -1) != -1))
+            && (!intent.getBooleanExtra("PhotoConst.IS_CALL_IN_PLUGIN", false))
+            && (!intent.getBooleanExtra("is_decorated", false))
         ) {
             val uin = intent.getStringExtra("uin")
             if (uin.toString().length > 10) {
@@ -159,23 +163,31 @@ object ForceSystemAlbum : BaseDecorator(
     }
 
     private fun showAlbumSelectionDialog(context: Context, intent: Intent, param: XC_MethodHook.MethodHookParam) {
-        val activityMap = mapOf("系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtra("use_ACTION_PICK", true)
-            putExtras(intent)
-            type = "image/*"
-        }, "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
-            addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-            putExtras(intent)
-            type = "image/*"
-        }, "QQ 相册" to intent.apply {
-            putExtra("is_decorated", true)
-        })
+        val activityMap = mapOf(
+            "系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtra("use_ACTION_PICK", true)
+                putExtras(intent)
+                type = "image/*"
+            },
+            "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                putExtras(intent)
+                type = "image/*"
+            },
+            "QQ 相册" to intent.apply {
+                putExtra("is_decorated", true)
+            }
+        )
 
         // 使用 AlertDialog 而不是 MaterialAlertDialogBuilder，因为 context 可能不是 Activity
-        AlertDialog.Builder(context).setTitle("选择相册").setItems(activityMap.keys.toTypedArray()) { _, i ->
-            context.startActivity(activityMap[activityMap.keys.toTypedArray()[i]])
-        }.create().show()
+        AlertDialog.Builder(context)
+            .setTitle("选择相册")
+            .setItems(activityMap.keys.toTypedArray()) { _, i ->
+                context.startActivity(activityMap[activityMap.keys.toTypedArray()[i]])
+            }
+            .create()
+            .show()
         param.result = null
     }
 }
