@@ -64,23 +64,24 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
 
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
-                DexKit.requireMethodFromCache(Reply_At_QQNT).hookMethod {
-                    before {
-                        isEnterHook = true
-                    }
-                    after {
-                        isEnterHook = false
-                    }
+            val replyMethod = DexKit.requireMethodFromCache(Reply_At_QQNT)
+            val hasInfoMethod = DexKit.loadMethodFromCache(AIOMsgItemExt_HasInfo)
+
+            if (hasInfoMethod != null) {
+                // Dual hook strategy: avoid frame drops/crashes caused by directly returning null
+                replyMethod.hookMethod {
+                    before { isEnterHook = true }
+                    after { isEnterHook = false }
                 }
                 // aioMsgItem.getMsgRecord().anonymousExtInfo != null
-                // set return result as true
-                DexKit.requireMethodFromCache(AIOMsgItemExt_HasInfo).hookBefore { param ->
+                // Only return true during reply flow to skip @ logic
+                hasInfoMethod.hookBefore { param ->
                     if (!isEnterHook) return@hookBefore
                     param.result = true
                 }
             } else {
-                hookBeforeIfEnabled(DexKit.requireMethodFromCache(Reply_At_QQNT)) { param ->
+                // Fallback strategy: directly return null
+                hookBeforeIfEnabled(replyMethod) { param ->
                     param.result = null
                 }
             }
@@ -114,40 +115,53 @@ object ReplyNoAtHook : CommonSwitchFunctionHook(), DexKitFinder {
     }
 
     override val isNeedFind: Boolean
-        get() = (QAppUtils.isQQnt() && Reply_At_QQNT.descCache == null) || (requireMinQQVersion(QQVersion.QQ_9_2_10) && AIOMsgItemExt_HasInfo.descCache == null)
+        get() = QAppUtils.isQQnt() && (Reply_At_QQNT.descCache == null || AIOMsgItemExt_HasInfo.descCache == null)
 
     override fun doFind(): Boolean {
         getCurrentBackend().use { backend ->
             val dexKit = backend.getDexKitBridge()
+
+            // Reply_At_QQNT: try signatures in order, no version check needed
             val methodReply = dexKit.findMethod {
+                // 9.2.30+: MsgIntent param
                 searchPackages("com.tencent.mobileqq.aio.input")
                 matcher {
-                    if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
-                        paramTypes("com.tencent.mvi.base.route.MsgIntent")
-                        usingStrings("mContext", "senderUid")
-                    } else {
-                        paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-                        usingStrings("msgItem.msgRecord.senderUid")
-                    }
+                    paramTypes("com.tencent.mvi.base.route.MsgIntent")
+                    usingStrings("mContext", "senderUid")
+                }
+            }.firstOrNull() ?: dexKit.findMethod {
+                // 9.2.10 ~ 9.2.2x: AIOMsgItem param with new strings
+                searchPackages("com.tencent.mobileqq.aio.input")
+                matcher {
+                    paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                    usingStrings("mContext", "senderUid")
+                }
+            }.firstOrNull() ?: dexKit.findMethod {
+                // < 9.2.10: AIOMsgItem param with old strings
+                searchPackages("com.tencent.mobileqq.aio.input")
+                matcher {
+                    paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+                    usingStrings("msgItem.msgRecord.senderUid")
                 }
             }.firstOrNull() ?: return false
             Reply_At_QQNT.descCache = methodReply.descriptor
-            if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+
+            // AIOMsgItemExt_HasInfo: try to find, failure does not block
+            runCatching {
                 val methodHasInfo = dexKit.findMethod {
                     searchPackages("com.tencent.mobileqq.aio.utils")
                     matcher {
                         returnType(Boolean::class.java)
                         paramTypes("com.tencent.mobileqq.aio.msg.AIOMsgItem")
-                        addInvoke {
-                            name = "getMsgRecord"
-                        }
-                        addUsingField {
-                            name = "anonymousExtInfo"
-                        }
+                        addInvoke { name = "getMsgRecord" }
+                        addUsingField { name = "anonymousExtInfo" }
                     }
-                }.firstOrNull() ?: return false
-                AIOMsgItemExt_HasInfo.descCache = methodHasInfo.descriptor
+                }.firstOrNull()
+                if (methodHasInfo != null) {
+                    AIOMsgItemExt_HasInfo.descCache = methodHasInfo.descriptor
+                }
             }
+
             return true
         }
     }
