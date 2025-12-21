@@ -45,18 +45,18 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.dexkit.Hd_QuickReplayPai_Method
+import io.github.qauxv.util.dexkit.Hd_QuickReplayPaiYiPai_Method
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XposedBridge
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object QuickReplayPai : CommonSwitchFunctionHook(
-    targets = arrayOf(Hd_QuickReplayPai_Method)
+object QuickReplayPaiYiPai : CommonSwitchFunctionHook(
+    targets = arrayOf(Hd_QuickReplayPaiYiPai_Method)
 ), IAIOParamUpdate {
 
     override val name = "快捷回拍"
-    override val description = "群里有人拍你时, 单击提示中的对方昵称快捷回拍"
+    override val description = "单击对方发起的拍一拍提示中的昵称, 可触发快捷回拍弹窗"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_1_35)
 
@@ -83,7 +83,7 @@ object QuickReplayPai : CommonSwitchFunctionHook(
     }
 
     override fun initOnce(): Boolean {
-        val method = DexKit.requireMethodFromCache(Hd_QuickReplayPai_Method)
+        val method = DexKit.requireMethodFromCache(Hd_QuickReplayPaiYiPai_Method)
         hookBeforeIfEnabled(method) { param ->
             val view = param.args[0] as View
             if (view is TextView && view.text.contains("你的")) {

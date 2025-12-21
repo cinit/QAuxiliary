@@ -1171,9 +1171,9 @@ data object Hd_HideChatPanelBtn_Method : DexKitTarget.UsingStringVector() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object Hd_QuickReplayPai_Method : DexKitTarget.UsingStringVector() {
+data object Hd_QuickReplayPaiYiPai_Method : DexKitTarget.UsingStringVector() {
     override val findMethod = true
     override val traitStringVectors = arrayOf(arrayOf("HighlightClickableSpan", "click handler is null. actionType="))
-    override val declaringClass = "Lcom/tencent/mobileqq/dt/api/impl/DTAPIImpl;"
+    override val declaringClass = ""
     override val filter = DexKitFilter.allowAll
 }

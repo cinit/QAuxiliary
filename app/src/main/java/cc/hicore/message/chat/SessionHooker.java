@@ -43,7 +43,7 @@ import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.util.List;
 import java.util.Stack;
-import me.hd.hook.QuickReplayPai;
+import me.hd.hook.QuickReplayPaiYiPai;
 import me.hd.hook.TimBarAddEssenceHook;
 import me.ketal.hook.MultiActionHook;
 
@@ -66,7 +66,7 @@ public class SessionHooker extends BaseHookDispatcher<SessionHooker.IAIOParamUpd
             RepeaterPlus.INSTANCE,
             InputButtonHookDispatcher.INSTANCE,
             TimBarAddEssenceHook.INSTANCE,
-            QuickReplayPai.INSTANCE,
+            QuickReplayPaiYiPai.INSTANCE,
     };
 
     @NonNull
