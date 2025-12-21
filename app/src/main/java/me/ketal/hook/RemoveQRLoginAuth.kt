@@ -52,7 +52,7 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
         }
         Initiator.loadClass(managerClass).findMethod {
             returnType == Void.TYPE && parameterTypes.isNotEmpty() &&
-                if (requireMinQQVersion(QQVersion.QQ_9_2_27)) {
+                if (requireMinQQVersion(QQVersion.QQ_9_2_30)) {
                     parameterTypes[1] == Boolean::class.java && parameterTypes[2] == String::class.java && parameterTypes[3] == Bundle::class.java
                 } else {
                     parameterTypes[0] == Boolean::class.java
