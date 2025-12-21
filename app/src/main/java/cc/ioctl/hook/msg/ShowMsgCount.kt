@@ -37,8 +37,8 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.dexkit.AIOTitleVB_updateLeftTopBack_NT
 import io.github.qauxv.util.dexkit.CCustomWidgetUtil_updateCustomNoteTxt_NT
 import io.github.qauxv.util.dexkit.DexKit
@@ -68,67 +68,14 @@ object ShowMsgCount : CommonSwitchFunctionHook(
 
     override val name = "显示具体消息数量"
     override val description = """
-        1. 小程序(菜单键)
-        2. 隐藏会话(右上角+悬浮消息列表)
-        3. 群消息数量(消息列表+左上角返回)
-        4. 总消息数量
+        1. 群消息数量(消息列表+左上角返回)
+        2. 总消息数量
+        3. 小程序(菜单键)
+        4. 隐藏会话(右上角+悬浮消息列表)
     """.trimIndent()
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
 
     override fun initOnce() = throwOrTrue {
-
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
-            // 小程序菜单键
-            Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
-                .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
-                .hookAfter { param ->
-                    (param.args[0] as TextView).text = "${param.args[1] as Int}"
-                }
-
-            // 隐藏会话(右上角+悬浮消息列表)
-            val (floatViewManagerClass, msgUnreadCallbackClass) = when {
-                requireMinQQVersion(QQVersion.QQ_9_1_50) -> Pair(// 9.1.50+
-                    "com.tencent.mobileqq.activity.miniaio.e",
-                    "com.tencent.mobileqq.activity.miniaio.d"
-                )
-
-                requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.30
-                    "com.tencent.mobileqq.activity.miniaio.i",
-                    "com.tencent.mobileqq.activity.miniaio.h"
-                )
-
-                requireMinQQVersion(QQVersion.QQ_9_0_60) -> Pair(// 9.0.60 ~ 9.0.70
-                    "com.tencent.mobileqq.activity.miniaio.h",
-                    "com.tencent.mobileqq.activity.miniaio.g"
-                )
-
-                requireMinQQVersion(QQVersion.QQ_9_0_55) -> Pair(// 9.0.55 ~ 9.0.56
-                    "com.tencent.mobileqq.activity.miniaio.f",
-                    "com.tencent.mobileqq.activity.miniaio.e"
-                )
-
-                else -> Pair(// 8.9.70 ~ 9.0.50
-                    "com.tencent.mobileqq.activity.miniaio.i",
-                    "com.tencent.mobileqq.activity.miniaio.h"
-                )
-            }
-            // 隐藏会话右上角
-            Initiator.loadClass(floatViewManagerClass)
-                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
-                .hookAfter { param ->
-                    (param.thisObject.findFieldObjectAs<ViewGroup> {
-                        type == View::class.java
-                    }.findViewByType(TextView::class.java) as TextView).text = "${param.args[0] as Int}"
-                }
-            // 隐藏会话悬浮消息列表
-            Initiator.loadClass(msgUnreadCallbackClass)
-                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
-                .hookAfter { param ->
-                    param.thisObject.findFieldObjectAs<TextView> {
-                        type == TextView::class.java
-                    }.text = "${param.args[0] as Int}"
-                }
-        }
 
         if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             // 群聊消息数量 + 群聊左上角返回
@@ -193,8 +140,20 @@ object ShowMsgCount : CommonSwitchFunctionHook(
             }
         }
 
-        if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
-            // 总消息数量
+        if (requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+            // 总消息数量 9.2.30 ~ 9.2.55
+            val clz = Initiator.loadClass("com.tencent.mobileqq.activity.framebusiness.controllerinject.FrameControllerInjectImpl")
+            val method = clz.declaredMethods.single { method ->
+                val params = method.parameterTypes
+                params.size == 5 && params[0] == Int::class.java && params[1] == Int::class.java && params[2] == Int::class.java
+                    && params[3] == Initiator.loadClass("com.tencent.mobileqq.quibadge.QUIBadge")
+                    && params[4] == String::class.java
+            }
+            hookBeforeIfEnabled(method) { param ->
+                param.args[2] = Int.MAX_VALUE
+            }
+        } else if (requireMinQQVersion(QQVersion.QQ_9_0_8) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+            // 总消息数量 9.0.8 ~ 9.2.20
             val clz = DexKit.requireClassFromCache(NCustomWidgetUtil_updateCustomNoteTxt)
             val method = clz.declaredMethods.single { method ->
                 val params = method.parameterTypes
@@ -235,6 +194,58 @@ object ShowMsgCount : CommonSwitchFunctionHook(
                     }
                 }
             })
+        }
+
+        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
+            // 小程序菜单键
+            Initiator.loadClass("com.tencent.qqmini.sdk.core.utils.CustomWidgetUtil")
+                .getDeclaredMethod("updateCustomNoteTxt", TextView::class.java, Int::class.java)
+                .hookAfter { param ->
+                    (param.args[0] as TextView).text = "${param.args[1] as Int}"
+                }
+
+            // 隐藏会话(右上角+悬浮消息列表)
+            val (floatViewManagerClass, msgUnreadCallbackClass) = when {
+                requireMinQQVersion(QQVersion.QQ_9_2_30) -> Pair(// 9.2.30
+                    "com.tencent.mobileqq.activity.miniaio.c", "com.tencent.mobileqq.activity.miniaio.d"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_1_50) -> Pair(// 9.1.50 ~ 9.2.10
+                    "com.tencent.mobileqq.activity.miniaio.e", "com.tencent.mobileqq.activity.miniaio.d"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_0_90) -> Pair(// 9.0.90 ~ 9.1.30
+                    "com.tencent.mobileqq.activity.miniaio.i", "com.tencent.mobileqq.activity.miniaio.h"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_0_60) -> Pair(// 9.0.60 ~ 9.0.70
+                    "com.tencent.mobileqq.activity.miniaio.h", "com.tencent.mobileqq.activity.miniaio.g"
+                )
+
+                requireMinQQVersion(QQVersion.QQ_9_0_55) -> Pair(// 9.0.55 ~ 9.0.56
+                    "com.tencent.mobileqq.activity.miniaio.f", "com.tencent.mobileqq.activity.miniaio.e"
+                )
+
+                else -> Pair(// 8.9.70 ~ 9.0.50
+                    "com.tencent.mobileqq.activity.miniaio.i", "com.tencent.mobileqq.activity.miniaio.h"
+                )
+            }
+            // 隐藏会话右上角
+            Initiator.loadClass(floatViewManagerClass)
+                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
+                .hookAfter { param ->
+                    (param.thisObject.findFieldObjectAs<ViewGroup> {
+                        type == View::class.java
+                    }.findViewByType(TextView::class.java) as TextView).text = "${param.args[0] as Int}"
+                }
+            // 隐藏会话悬浮消息列表
+            Initiator.loadClass(msgUnreadCallbackClass)
+                .getDeclaredMethod("updateUnreadCount", Int::class.java, Boolean::class.java)
+                .hookAfter { param ->
+                    param.thisObject.findFieldObjectAs<TextView> {
+                        type == TextView::class.java
+                    }.text = "${param.args[0] as Int}"
+                }
         }
 
     }
