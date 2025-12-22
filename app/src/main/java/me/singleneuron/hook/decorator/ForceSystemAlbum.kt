@@ -21,29 +21,52 @@
  */
 package me.singleneuron.hook.decorator
 
+import android.app.Activity
+import android.app.AlertDialog
 import android.content.Context
 import android.content.DialogInterface
 import android.content.Intent
+import android.view.View
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
+import io.github.qauxv.config.ConfigManager
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.router.decorator.BaseSwitchFunctionDecorator
+import io.github.qauxv.router.decorator.BaseConfigFunctionDecorator
 import io.github.qauxv.router.decorator.IStartActivityHookDecorator
 import io.github.qauxv.router.dispacher.StartActivityHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.xpcompat.XC_MethodHook
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.singleneuron.activity.ChooseAgentActivity
 
 @UiItemAgentEntry
 @FunctionHookEntry
-object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecorator {
+object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecorator {
+    const val ALBUM_TYPE = "me.singleneuron.hook.decorator.ForceSystemAlbum.albumType"
+    const val ALBUM_TYPE_DEFAULT = 2 // QQ 相册 (禁用)
+    val albumTypes = arrayOf("系统相册", "系统文档", "QQ 相册 (禁用)", "每次询问")
 
     override val name = "可选使用系统相册"
     override val description = "支持8.3.6及更高"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_CHAT_MSG
+    override val valueState = MutableStateFlow(albumTypes[ConfigManager.getDefaultConfig().getInt(ALBUM_TYPE, ALBUM_TYPE_DEFAULT)])
     override val dispatcher = StartActivityHook
+
+    override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit
+        get() = { _, activity, _ ->
+            AlertDialog.Builder(activity)
+                .setTitle("选择相册类型")
+                .setSingleChoiceItems(albumTypes, ConfigManager.getDefaultConfig().getInt(ALBUM_TYPE, ALBUM_TYPE_DEFAULT)) { dialog, which ->
+                    ConfigManager.getDefaultConfig().putInt(ALBUM_TYPE, which)
+                    valueState.value = albumTypes[which]
+                    isEnabled = which != ALBUM_TYPE_DEFAULT
+                    dialog.dismiss()
+                }.setNegativeButton(android.R.string.cancel, null)
+                .show()
+        }
 
     override fun onStartActivityIntent(intent: Intent, param: XC_MethodHook.MethodHookParam): Boolean {
         val isWinkHomeActivity = intent.component?.className?.contains("WinkHomeActivity") == true
@@ -60,7 +83,7 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
             }
             val context = param.thisObject as Context
             Log.d("context: ${context.javaClass.name}")
-            val activityMap = mapOf(
+            val activityArray = arrayOf(
                 "系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
                     addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                     putExtra("use_ACTION_PICK", true)
@@ -77,14 +100,19 @@ object ForceSystemAlbum : BaseSwitchFunctionDecorator(), IStartActivityHookDecor
                 }
             )
             val materialContext = CommonContextWrapper.createMaterialDesignContext(context)
-            MaterialAlertDialogBuilder(materialContext)
-                .setTitle("选择相册")
-                .setItems(activityMap.keys.toTypedArray()) { _: DialogInterface, i: Int ->
-                    // recursion here
-                    context.startActivity(activityMap[activityMap.keys.toTypedArray()[i]])
-                }
-                .create()
-                .show()
+            val selectedType = activityArray.getOrNull(ConfigManager.getDefaultConfig().getInt(ALBUM_TYPE, ALBUM_TYPE_DEFAULT))
+            if (selectedType != null) {
+                context.startActivity(selectedType.second)
+            } else {
+                MaterialAlertDialogBuilder(materialContext)
+                    .setTitle("选择相册")
+                    .setItems(activityArray.map { it.first }.toTypedArray()) { _: DialogInterface, i: Int ->
+                        // recursion here
+                        context.startActivity(activityArray[i].second)
+                    }
+                    .create()
+                    .show()
+            }
             param.result = null
             return true
         }
