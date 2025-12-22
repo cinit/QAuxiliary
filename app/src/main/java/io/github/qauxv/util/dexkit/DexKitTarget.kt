@@ -1188,3 +1188,10 @@ data object Hd_HideEmoReplyLayout_Method : DexKitTarget.UsingStr() {
             m.returnType == View::class.java
         }
 }
+
+data object Hd_RemoveReplyImagePreviewLimit_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("AIOMsgRepo MsgReplyAbility", "[findSourceOfReply], source result = "))
+    override val declaringClass = "Lcom/tencent/mobileqq/aio/msglist/msgrepo/MsgReplyAbility;"
+    override val filter = DexKitFilter.allowAll
+}
