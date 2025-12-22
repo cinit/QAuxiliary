@@ -1177,3 +1177,14 @@ data object Hd_QuickReplayPaiYiPai_Method : DexKitTarget.UsingStringVector() {
     override val declaringClass = ""
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_HideEmoReplyLayout_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("mBinding.msgTailContainer")
+    override val declaringClass = "Lcom/tencent/mobileqq/aio/msglist/holder/template/AIOReceiverBubbleTemplate;"
+    override val filter = DexKitFilter.strInClsName(declaringClass) and
+        filter@{ it: DexMethodDescriptor ->
+            val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+            m.returnType == View::class.java
+        }
+}
