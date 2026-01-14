@@ -254,13 +254,6 @@ android {
     lint {
         checkDependencies = true
     }
-    kotlinOptions {
-        freeCompilerArgs += listOf(
-            "-Xno-call-assertions",
-            "-Xno-receiver-assertions",
-            "-Xno-param-assertions",
-        )
-    }
     applicationVariants.all {
         val variantCapped = name.capitalizeUS()
         tasks.findByName("lintVitalAnalyze${variantCapped}")?.dependsOn(mergeAssetsProvider)
@@ -298,6 +291,15 @@ kotlin {
     }
     sourceSets.main {
         kotlin.srcDir(File(rootDir, "libs/ezxhelper/src/main/java"))
+    }
+    compilerOptions {
+        freeCompilerArgs.addAll(
+            listOf(
+                "-Xno-call-assertions",
+                "-Xno-receiver-assertions",
+                "-Xno-param-assertions",
+            )
+        )
     }
 }
 
