@@ -53,8 +53,8 @@ object FakePicSize : BaseFunctionHook(
         "默认" to 0,
         "最小" to 1,
         "略小" to 64,
-        "略大" to 256,
-        "最大" to 512
+        "略大" to 512,
+        "最大" to 1024
     )
     private val sizeIndexKey = ConfigData<Int>("hd_FakePicSize_sizeIndex")
     private var sizeIndex: Int
