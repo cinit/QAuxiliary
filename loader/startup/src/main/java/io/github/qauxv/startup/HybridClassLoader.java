@@ -107,6 +107,7 @@ public class HybridClassLoader extends ClassLoader {
                 || name.startsWith("org.jf.dexlib2.")
                 || name.startsWith("org.jf.util.")
                 || name.startsWith("javax.annotation.")
+                || name.startsWith("com.google.j2objc.annotations.")
                 || name.startsWith("_COROUTINE.");
     }
 
