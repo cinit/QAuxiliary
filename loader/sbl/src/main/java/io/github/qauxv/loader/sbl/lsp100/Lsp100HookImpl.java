@@ -103,7 +103,15 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderService {
             throws NullPointerException, IllegalAccessException, IllegalArgumentException, InvocationTargetException {
         CheckUtils.checkNonNull(method, "method");
         CheckUtils.checkNonNull(args, "args");
-        return self.invokeOrigin(method, thisObject, args);
+        boolean isAccessible = method.isAccessible();
+        // XposedBridge says invokeOriginalMethod will not check accessibility.
+        // While LSPosed implementation 1.9.2-it-7465 (other versions may differ) does check accessibility for method which are NOT HOOKED.
+        try {
+            method.setAccessible(true);
+            return self.invokeOrigin(method, thisObject, args);
+        } finally {
+            method.setAccessible(isAccessible);
+        }
     }
 
     @NonNull
@@ -112,7 +120,14 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderService {
             throws InvocationTargetException, IllegalArgumentException, IllegalAccessException, InstantiationException {
         CheckUtils.checkNonNull(constructor, "constructor");
         CheckUtils.checkNonNull(args, "args");
-        return self.newInstanceOrigin(constructor, args);
+        // same reason as invokeOriginalMethod, not tested yet
+        boolean isAccessible = constructor.isAccessible();
+        try {
+            constructor.setAccessible(true);
+            return self.newInstanceOrigin(constructor, args);
+        } finally {
+            constructor.setAccessible(isAccessible);
+        }
     }
 
     @Override
@@ -121,7 +136,14 @@ public class Lsp100HookImpl implements IHookBridge, ILoaderService {
         CheckUtils.checkNonNull(ctor, "ctor");
         CheckUtils.checkNonNull(thisObject, "thisObject");
         CheckUtils.checkNonNull(args, "args");
-        self.invokeOrigin(ctor, thisObject, args);
+        // same reason as invokeOriginalMethod, not tested yet
+        boolean isAccessible = ctor.isAccessible();
+        try {
+            ctor.setAccessible(true);
+            self.invokeOrigin(ctor, thisObject, args);
+        } finally {
+            ctor.setAccessible(isAccessible);
+        }
     }
 
     @Nullable
