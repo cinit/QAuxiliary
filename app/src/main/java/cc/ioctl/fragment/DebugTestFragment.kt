@@ -23,7 +23,11 @@
 package cc.ioctl.fragment
 
 import android.annotation.SuppressLint
+import android.graphics.Typeface
 import android.os.Bundle
+import android.text.SpannableStringBuilder
+import android.text.method.LinkMovementMethod
+import android.text.style.ClickableSpan
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -33,15 +37,20 @@ import android.widget.LinearLayout.LayoutParams.WRAP_CONTENT
 import android.widget.ScrollView
 import android.widget.TextView
 import androidx.annotation.Keep
+import androidx.core.content.res.ResourcesCompat
+import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.Reflex
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import com.github.kyuubiran.ezxhelper.utils.isNative
 import com.github.kyuubiran.ezxhelper.utils.isStatic
+import io.github.qauxv.R
 import io.github.qauxv.fragment.BaseRootLayoutFragment
 import io.github.qauxv.poststartup.StartupInfo
+import io.github.qauxv.startup.HybridClassLoader
 import io.github.qauxv.util.Log
-import io.github.qauxv.util.Natives
+import io.github.qauxv.util.NonUiThread
 import io.github.qauxv.util.SyncUtils
+import io.github.qauxv.util.dexkit.DexFlow
 import io.github.qauxv.util.dexkit.DexMethodDescriptor
 import io.github.qauxv.util.hookimpl.lsplant.LsplantHookImpl
 import io.github.qauxv.util.soloader.NativeLoader
@@ -50,10 +59,325 @@ import net.bytebuddy.ByteBuddy
 import net.bytebuddy.android.AndroidClassLoadingStrategy
 import net.bytebuddy.implementation.FixedValue
 import net.bytebuddy.matcher.ElementMatchers
+import java.util.zip.ZipFile
 
 class DebugTestFragment : BaseRootLayoutFragment() {
 
     private lateinit var mDebugText: TextView
+
+    private fun isScrolledToBottom(): Boolean {
+        val scrollView = rootLayoutView as ScrollView
+        val child = scrollView.getChildAt(0)
+        return scrollView.scrollY + scrollView.height >= child.height
+    }
+
+    private fun scrollToBottom() {
+        val scrollView = rootLayoutView as ScrollView
+        val child = scrollView.getChildAt(0)
+        scrollView.scrollTo(0, child.height)
+    }
+
+    // can be call on any thread
+    private fun appendTextToTextView(text: CharSequence) {
+        if (text.isEmpty()) return
+        SyncUtils.runOnUiThread {
+            val shouldScroll = isScrolledToBottom()
+            val current = mDebugText.text
+            val ssb = SpannableStringBuilder(current)
+            if (current.isNotEmpty() && !current.endsWith("\n")) {
+                ssb.append("\n")
+            }
+            ssb.append(text)
+            if (!text.endsWith("\n")) {
+                ssb.append("\n")
+            }
+            mDebugText.text = ssb
+            mDebugText.invalidate()
+            if (shouldScroll) {
+                scrollToBottom()
+            }
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
+    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
+        title = this.javaClass.simpleName
+        val ctx = inflater.context
+        val root = ScrollView(context).apply {
+            val ll = LinearLayout(context).apply {
+                orientation = LinearLayout.VERTICAL
+                mDebugText = TextView(context).apply {
+                    text = "DebugTestFragment"
+
+                    textSize = 14f
+                    typeface = Typeface.MONOSPACE
+                    setTextIsSelectable(true)
+                    setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, ctx.theme))
+                    val dp8 = LayoutHelper.dip2px(ctx, 8f)
+                    setPadding(dp8, dp8, dp8, dp8)
+                    movementMethod = LinkMovementMethod.getInstance()
+                }
+                addView(mDebugText, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+            }
+            addView(ll, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
+        }
+        rootLayoutView = root
+        mDebugText.setTextIsSelectable(true)
+
+        SyncUtils.post {
+            showInitialTexts()
+        }
+
+        return root
+    }
+
+    private fun clickableSpan(text: String, onClick: () -> Unit): CharSequence {
+        return object : ClickableSpan() {
+            override fun onClick(widget: View) {
+                onClick()
+            }
+        }.let {
+            val ssb = SpannableStringBuilder(text)
+            ssb.setSpan(it, 0, text.length, 0)
+            ssb
+        }
+    }
+
+    // ====== begin hook test code ======
+
+    private fun showInitialTexts() {
+        val ssb = SpannableStringBuilder()
+        val info = "API " + android.os.Build.VERSION.SDK_INT +
+            ", ISA: " + NativeLoader.getIsaName(NativeLoader.getPrimaryNativeLibraryIsa()) +
+            ", page size: " + android.system.Os.sysconf(android.system.OsConstants._SC_PAGESIZE)
+        ssb.append(info)
+
+        ssb.append('\n')
+        ssb.append('\n')
+        ssb.append(clickableSpan("Run Xposed Hook Tests") {
+            appendTextToTextView("Running tests...")
+            val result = runTests()
+            appendTextToTextView("Tests finished:\n$result")
+        })
+        ssb.append('\n')
+        ssb.append('\n')
+
+        ssb.append(clickableSpan("Check for conflict class for host") {
+            SyncUtils.async {
+                checkForConflictClassForHost()
+            }
+        })
+        appendTextToTextView(ssb)
+        ssb.append('\n')
+    }
+
+    @NonUiThread
+    private fun checkForConflictClassForHost() {
+        val ctx = requireContext().applicationContext
+        // where base.apk is located
+        val hostPaths = ArrayList<String>()
+        val selfPath = StartupInfo.getModulePath()
+        if (StartupInfo.isInHostProcess()) {
+            hostPaths.add(ctx.packageCodePath)
+        } else {
+            val candidates = arrayOf(
+                "com.tencent.mobileqq",
+                "com.tencent.tim",
+                "com.tencent.mobileqqi",
+                "com.tencent.minihd.qq",
+                "com.tencent.qqlite",
+            )
+            // check whether the host app is installed
+            for (pkg in candidates) {
+                val pms = ctx.packageManager
+                try {
+                    val pi = pms.getPackageInfo(pkg, 0)
+                    hostPaths.add(pi.applicationInfo!!.sourceDir)
+                } catch (e: Exception) {
+                    // not installed
+                }
+            }
+        }
+        if (hostPaths.isEmpty()) {
+            appendTextToTextView("No host app found to check")
+            return
+        }
+        for (hostPath in hostPaths) {
+            try {
+                checkForConflictClassForSingleHostPackage(selfPath, hostPath)
+            } catch (e: Throwable) {
+                val err = if (e is java.lang.reflect.InvocationTargetException) e.targetException else e
+                Log.e(e)
+                appendTextToTextView("Error checking host package $hostPath:\n" + Log.getStackTraceString(err))
+            }
+        }
+    }
+
+    @NonUiThread
+    private fun checkForConflictClassForSingleHostPackage(selfPath: String, hostPackage: String) {
+
+        appendTextToTextView("\n\n====== Checking host package: $hostPackage ======")
+
+        val apk = ZipFile(selfPath)
+
+        val moduleClasses = HashSet<String>()
+        var i = 1
+        while (true) {
+            val name = if (i == 1) "classes.dex" else "classes${i}.dex"
+            val entry = apk.getEntry(name) ?: break
+            apk.getInputStream(entry).use { ins ->
+                val classes = getDeclaredClassesFromDex(readAll(ins))
+                moduleClasses.addAll(classes)
+                appendTextToTextView("Module $name has ${classes.size} classes")
+            }
+            i++
+        }
+        appendTextToTextView("Load module classes done")
+        apk.close()
+
+        val hostBasePath = java.io.File(hostPackage)
+        val hostClasses = HashSet<String>(10000)
+        if (hostBasePath.isDirectory) {
+            var j = 1
+            while (true) {
+                val name = if (j == 1) "classes.dex" else "classes${j}.dex"
+                val dexFile = java.io.File(hostBasePath, name)
+                if (!dexFile.exists()) break
+                java.io.FileInputStream(dexFile).use { fis ->
+                    val dex = readAll(fis)
+                    val dexClasses = getDeclaredClassesFromDex(dex)
+                    hostClasses.addAll(dexClasses)
+                    appendTextToTextView("Host $name has ${dexClasses.size} classes.")
+                }
+                j++
+            }
+        } else {
+            ZipFile(hostBasePath).use { hostApk ->
+                var j = 1
+                while (true) {
+                    val name = if (j == 1) "classes.dex" else "classes${j}.dex"
+                    val entry = hostApk.getEntry(name) ?: break
+                    hostApk.getInputStream(entry).use { ins ->
+                        val classes = getDeclaredClassesFromDex(readAll(ins))
+                        hostClasses.addAll(classes)
+                        appendTextToTextView("Host $name has ${classes.size} classes")
+                    }
+                    j++
+                }
+            }
+        }
+        appendTextToTextView("Load host classes done")
+
+        val hostPackages = getClassPackages(hostClasses)
+        val modulePackages = getClassPackages(moduleClasses)
+
+        val hostDefaultClasses = getDefaultClasses(hostClasses)
+        val moduleDefaultClasses = getDefaultClasses(moduleClasses)
+
+        appendTextToTextView("Host has ${hostClasses.size} classes, in ${hostPackages.size} packages.")
+        appendTextToTextView("Module has ${moduleClasses.size} classes, in ${modulePackages.size} packages.")
+        val overlaps = HashSet<String>(384)
+        for (s in modulePackages) {
+            if (hostPackages.contains(s)) {
+                overlaps.add(s)
+            }
+        }
+        appendTextToTextView("Overlapping package count: ${overlaps.size}")
+        val oa = ArrayList<String>(128)
+        for (s in overlaps) {
+            if (!HybridClassLoader.isConflictingClass("$s.")) {
+                oa.add(s)
+            }
+        }
+        oa.sort()
+        appendTextToTextView("Conflicting package count: ${oa.size}")
+        for (s in oa) {
+            appendTextToTextView(s)
+        }
+
+        overlaps.clear()
+
+        appendTextToTextView("Host has ${hostDefaultClasses.size} default classes.")
+        appendTextToTextView("Module has ${moduleDefaultClasses.size} default classes.")
+        for (s in moduleDefaultClasses) {
+            if (hostDefaultClasses.contains(s)) {
+                overlaps.add(s)
+            }
+        }
+        appendTextToTextView("Overlapping default class count: ${overlaps.size}")
+        val oda = ArrayList<String>(128)
+        for (s in overlaps) {
+            if (!HybridClassLoader.isConflictingClass(s)) {
+                oda.add(s)
+            }
+        }
+        oda.sort()
+        appendTextToTextView("Conflicting default class count: ${oda.size}")
+        for (s in oda) {
+            appendTextToTextView(s)
+        }
+
+        appendTextToTextView("====== Check finished for host package: $hostPackage ======\n\n")
+    }
+
+    private fun readAll(input: java.io.InputStream): ByteArray {
+        val baos = java.io.ByteArrayOutputStream()
+        input.use { ins ->
+            val buf = ByteArray(4096)
+            while (true) {
+                val n = ins.read(buf)
+                if (n <= 0) break
+                baos.write(buf, 0, n)
+            }
+        }
+        return baos.toByteArray()
+    }
+
+    private fun getDeclaredClassesFromDex(dex: ByteArray): HashSet<String> {
+        val result = HashSet<String>(1024)
+        val classDefsSize = DexFlow.readLe32(dex, 0x60)
+        val classDefsOff = DexFlow.readLe32(dex, 0x64)
+        for (cn in 0 until classDefsSize) {
+            val classIdx = DexFlow.readLe32(dex, classDefsOff + cn * 32)
+            val c = DexFlow.readType(dex, classIdx)
+            result.add(c)
+        }
+        return result
+    }
+
+    private fun getClassPackages(vararg clazzes: HashSet<String>): HashSet<String> {
+        val result = HashSet<String>(128)
+        for (clz in clazzes) {
+            for (s in clz) {
+                if (s.startsWith("L") && s.endsWith(";")) {
+                    val body = s.substring(1, s.length - 1)
+                    if (body.contains("/")) {
+                        result.add(body.substring(0, body.lastIndexOf('/')).replace('/', '.').intern())
+                    }
+                } else {
+                    throw IllegalArgumentException("Bad class name: $s")
+                }
+            }
+        }
+        return result
+    }
+
+    private fun getDefaultClasses(vararg clazzes: HashSet<String>): HashSet<String> {
+        val result = HashSet<String>(128)
+        for (clz in clazzes) {
+            for (s in clz) {
+                if (s.startsWith("L") && s.endsWith(";")) {
+                    val body = s.substring(1, s.length - 1)
+                    if (!body.contains("/")) {
+                        result.add(body.intern())
+                    }
+                } else {
+                    throw IllegalArgumentException("Bad class name: $s")
+                }
+            }
+        }
+        return result
+    }
 
     open abstract class TextClass {
         abstract fun getText(): String
@@ -285,32 +609,6 @@ class DebugTestFragment : BaseRootLayoutFragment() {
         return result
     }
 
-    @SuppressLint("SetTextI18n")
-    override fun doOnCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View {
-        title = this.javaClass.simpleName
-        val root = ScrollView(context).apply {
-            val ll = LinearLayout(context).apply {
-                orientation = LinearLayout.VERTICAL
-                mDebugText = TextView(context).apply {
-                    text = "DebugTestFragment"
-                }
-                addView(mDebugText, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
-            }
-            addView(ll, LinearLayout.LayoutParams(MATCH_PARENT, WRAP_CONTENT))
-        }
-        rootLayoutView = root
-        mDebugText.setTextIsSelectable(true)
-
-        SyncUtils.post {
-            mDebugText.text =
-                "API " + android.os.Build.VERSION.SDK_INT +
-                    ", ISA: " + NativeLoader.getIsaName(NativeLoader.getPrimaryNativeLibraryIsa()) +
-                    ", page size: " + android.system.Os.sysconf(android.system.OsConstants._SC_PAGESIZE) +
-                    "\n" + runTests()
-        }
-
-        return root
-    }
 
 }
 
