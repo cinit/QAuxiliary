@@ -66,7 +66,7 @@ object Version {
     }
 
     private fun findBuildToolsVersion(): String {
-        val defaultBuildToolsVersion = "35.0.0" // AGP 8.2.0 need Build Tools 34.0.0
+        val defaultBuildToolsVersion = "36.0.0" // AGP 9.0.0 need Build Tools 36.0.0
         return File(System.getenv("ANDROID_HOME"), "build-tools").listFiles()?.filter { it.isDirectory }?.maxOfOrNull { it.name }
             ?.also { println("Using build tools version $it") }
             ?: defaultBuildToolsVersion

@@ -8,13 +8,13 @@ android {
         val main by getting
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(listOf("api/api/src/main/java"))
+            java.directories += "api/api/src/main/java"
         }
     }
 
     defaultConfig {
         minSdk = Version.minSdk
-        targetSdk = Version.targetSdk
+        lint.targetSdk = Version.targetSdk
         buildToolsVersion = Version.buildToolsVersion
     }
 

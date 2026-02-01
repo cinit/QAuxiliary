@@ -8,8 +8,8 @@ android {
         val main by getting
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(listOf("qq-stub/src/main/java"))
-            res.setSrcDirs(listOf("qq-stub/src/main/res"))
+            java.directories += "qq-stub/src/main/java"
+            res.directories += "qq-stub/src/main/res"
         }
     }
 

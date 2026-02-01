@@ -22,39 +22,35 @@
 
 @file:Suppress("UnstableApiUsage")
 
-import com.android.build.gradle.BaseExtension
+import com.android.build.api.dsl.CommonExtension
+import org.jetbrains.kotlin.gradle.dsl.KotlinAndroidProjectExtension
 
 plugins {
     id("com.android.base")
-    kotlin("android")
 }
 
-extensions.findByType(BaseExtension::class)?.run {
-    compileSdkVersion(Version.compileSdkVersion)
+extensions.findByType(CommonExtension::class)?.run {
+    compileSdk {
+        version = release(Version.compileSdkVersion)
+    }
     buildToolsVersion = Version.buildToolsVersion
     ndkVersion = Version.getNdkVersion(project)
 
-    defaultConfig {
+    defaultConfig.apply {
         minSdk = Version.minSdk
-        targetSdk = Version.targetSdk
-        versionCode = Common.getBuildVersionCode(rootProject)
-        versionName = Common.getBuildVersionName(rootProject)
-        resourceConfigurations += listOf("zh", "en")
     }
 
-    compileOptions {
+    compileOptions.apply {
         sourceCompatibility = Version.java
         targetCompatibility = Version.java
     }
 
-    packagingOptions.jniLibs.useLegacyPackaging = false
+    packaging.jniLibs.useLegacyPackaging = false
 }
 
-kotlin {
-    jvmToolchain(Version.java.toString().toInt())
-    sourceSets.all {
-        languageSettings {
-            languageVersion = "2.0"
-        }
+extensions.findByType(KotlinAndroidProjectExtension::class)?.run {
+    compilerOptions {
+        languageVersion = org.jetbrains.kotlin.gradle.dsl.KotlinVersion.KOTLIN_2_0
+        jvmTarget = org.jetbrains.kotlin.gradle.dsl.JvmTarget.fromTarget(Version.java.toString())
     }
 }

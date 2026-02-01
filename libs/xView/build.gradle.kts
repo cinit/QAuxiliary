@@ -32,8 +32,9 @@ android {
         val main by getting
         main.apply {
             manifest.srcFile("AndroidManifest.xml")
-            java.setSrcDirs(listOf("XPopup/library/src/main/java", "EasyAdapter/easy-adapter/src/main/java"))
-            res.setSrcDirs(listOf("EasyAdapter/easy-adapter/src/main/res", "XPopup/library/src/main/res"))
+            java.directories += listOf("XPopup/library/src/main/java", "EasyAdapter/easy-adapter/src/main/java")
+            kotlin.directories += listOf("XPopup/library/src/main/java", "EasyAdapter/easy-adapter/src/main/java")
+            res.directories += listOf("EasyAdapter/easy-adapter/src/main/res", "XPopup/library/src/main/res")
         }
     }
 }

@@ -106,6 +106,11 @@ android {
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
+        targetSdk = Version.targetSdk
+        versionCode = Common.getBuildVersionCode(rootProject)
+        versionName = Common.getBuildVersionName(rootProject)
+        resourceConfigurations += listOf("zh", "en")
+
         externalNativeBuild {
             cmake {
                 ccacheExecutablePath?.let {
@@ -145,6 +150,16 @@ android {
 
         ndk.debugSymbolLevel = "FULL"
     }
+
+    sourceSets {
+        configureEach {
+            kotlin.directories += "$buildDir/generated/ksp/$name/kotlin/"
+        }
+        named("main") {
+            kotlin.directories += "$rootDir/libs/ezxhelper/src/main/java"
+        }
+    }
+
     externalNativeBuild {
         cmake {
             path = File(projectDir, "src/main/cpp/CMakeLists.txt")
@@ -286,12 +301,6 @@ android {
 }
 
 kotlin {
-    sourceSets.configureEach {
-        kotlin.srcDir("$buildDir/generated/ksp/$name/kotlin/")
-    }
-    sourceSets.main {
-        kotlin.srcDir(File(rootDir, "libs/ezxhelper/src/main/java"))
-    }
     compilerOptions {
         freeCompilerArgs.addAll(
             listOf(
