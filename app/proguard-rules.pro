@@ -92,4 +92,14 @@
 }
 
 -dontoptimize
--dontshrink
+
+# AGP 9.0.0 R8 bug
+# https://issuetracker.google.com/issues/470510982
+# replace '-dontshrink' with the following line for TEMPORARY WORKAROUND
+#-dontshrink
+-keep class * { *; }
+# Change the above line back to '-dontshrink' when AGP 9.0.0 R8 bug is fixed.
+# Notice: AGP 9.0.0 R8 creates method outline even with '-dontoptimize' option.
+#         This may lead to incorrect behavior in some cases.
+#         e.g. "org.jf.util.Hex$$ExternalSyntheticBUOutline0"
+# End of AGP 9.0.0 R8 bug workaround
