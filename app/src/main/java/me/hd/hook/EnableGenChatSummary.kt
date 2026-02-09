@@ -22,7 +22,7 @@
 
 package me.hd.hook
 
-import cc.ioctl.util.hookAfterIfEnabled
+import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.findConstructor
 import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
@@ -50,7 +50,7 @@ object EnableGenChatSummary : CommonSwitchFunctionHook(
         val cons = clazz.findConstructor {
             paramCount == 5 && parameterTypes[1] == Boolean::class.java
         }
-        hookAfterIfEnabled(cons) { param ->
+        hookBeforeIfEnabled(cons) { param ->
             param.args[1] = true
         }
         return true

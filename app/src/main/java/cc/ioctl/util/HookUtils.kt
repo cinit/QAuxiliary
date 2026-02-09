@@ -44,9 +44,28 @@ fun BaseFunctionHook.hookBeforeIfEnabled(m: Method, priority: Int, hook: (XC_Met
     })
 }
 
+fun BaseFunctionHook.hookBeforeIfEnabled(m: Constructor<*>, priority: Int, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
+    XposedBridge.hookMethod(m, object : XC_MethodHook(priority) {
+        override fun beforeHookedMethod(param: MethodHookParam) {
+            try {
+                if (isEnabled && !LicenseStatus.sDisableCommonHooks) {
+                    hook(param)
+                }
+            } catch (e: Throwable) {
+                traceError(e)
+            }
+        }
+    })
+}
+
 fun BaseFunctionHook.hookBeforeIfEnabled(m: Method, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
     hookBeforeIfEnabled(m, 50, hook)
 }
+
+fun BaseFunctionHook.hookBeforeIfEnabled(m: Constructor<*>, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
+    hookBeforeIfEnabled(m, 50, hook)
+}
+
 
 fun BaseFunctionHook.hookAfterIfEnabled(m: Method, priority: Int, hook: (XC_MethodHook.MethodHookParam) -> Unit) {
     XposedBridge.hookMethod(m, object : XC_MethodHook(priority) {
@@ -84,6 +103,7 @@ fun BaseFunctionHook.hookAfterIfEnabled(m: Constructor<*>, hook: (XC_MethodHook.
     hookAfterIfEnabled(m, 50, hook)
 }
 
+
 fun BaseFunctionHook.afterHookIfEnabled(priority: Int, hook: (XC_MethodHook.MethodHookParam) -> Unit): XC_MethodHook {
     return object : XC_MethodHook(priority) {
         override fun afterHookedMethod(param: MethodHookParam) {
@@ -119,6 +139,7 @@ fun BaseFunctionHook.beforeHookIfEnabled(priority: Int, hook: (XC_MethodHook.Met
 fun BaseFunctionHook.beforeHookIfEnabled(hook: (XC_MethodHook.MethodHookParam) -> Unit): XC_MethodHook {
     return beforeHookIfEnabled(50, hook)
 }
+
 
 fun ClassLoader.findDexClassLoader(): BaseDexClassLoader? {
     var classLoader = this
