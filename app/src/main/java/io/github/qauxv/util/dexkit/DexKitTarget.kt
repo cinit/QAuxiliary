@@ -1195,3 +1195,10 @@ data object Hd_RemoveReplyImagePreviewLimit_Method : DexKitTarget.UsingStringVec
     override val declaringClass = "Lcom/tencent/mobileqq/aio/msglist/msgrepo/MsgReplyAbility;"
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_EnableGenChatSummary_Class : DexKitTarget.UsingStringVector() {
+    override val findMethod = false
+    override val traitStringVectors = arrayOf(arrayOf("未读消息较多时，可以进行群聊总结", "立即总结"))
+    override val declaringClass = "Lchat_summary/compose/SummaryGenGuideViewKt\$SummaryGenGuideView$2$2$1;"
+    override val filter = DexKitFilter.strInClsName("chat_summary/compose/SummaryGenGuideViewKt/")
+}
