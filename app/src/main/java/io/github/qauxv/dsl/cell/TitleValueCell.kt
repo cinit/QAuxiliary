@@ -25,6 +25,7 @@ package io.github.qauxv.dsl.cell
 import android.content.Context
 import android.graphics.Canvas
 import android.graphics.Paint
+import android.text.TextUtils
 import android.util.TypedValue
 import android.view.Gravity
 import android.widget.FrameLayout
@@ -53,10 +54,14 @@ class TitleValueCell(
 
     private val dividerPaint by lazy { Paint() }
 
-    private val mCenterVertical = LayoutHelper.newFrameLayoutParamsRel(MATCH_PARENT, WRAP_CONTENT,
-            Gravity.CENTER_VERTICAL or Gravity.START, 21.dp, 0, 21.dp, 0)
-    private val mCenterTop = LayoutHelper.newFrameLayoutParamsRel(MATCH_PARENT, WRAP_CONTENT,
-            Gravity.TOP or Gravity.START, 21.dp, 10.dp, 21.dp, 0)
+    private val mCenterVertical = LayoutHelper.newFrameLayoutParamsRel(
+        MATCH_PARENT, WRAP_CONTENT,
+        Gravity.CENTER_VERTICAL or Gravity.START, 21.dp, 0, 21.dp, 0
+    )
+    private val mCenterTop = LayoutHelper.newFrameLayoutParamsRel(
+        MATCH_PARENT, WRAP_CONTENT,
+        Gravity.TOP or Gravity.START, 21.dp, 10.dp, 21.dp, 0
+    )
 
     init {
         minimumHeight = 50.dp
@@ -66,6 +71,8 @@ class TitleValueCell(
             setTextSize(TypedValue.COMPLEX_UNIT_DIP, 16f)
             setTextColor(ResourcesCompat.getColor(resources, R.color.firstTextColor, context.theme))
             gravity = Gravity.CENTER_VERTICAL or Gravity.START
+            maxLines = 1
+            ellipsize = TextUtils.TruncateAt.END
         }.also {
             addView(it, mCenterVertical)
         }
@@ -76,8 +83,12 @@ class TitleValueCell(
             gravity = Gravity.START
             visibility = GONE
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
-                    Gravity.TOP or Gravity.START, 21.dp, 34.dp, 70.dp, 6.dp))
+            addView(
+                it, LayoutHelper.newFrameLayoutParamsRel(
+                    WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.TOP or Gravity.START, 21.dp, 34.dp, 70.dp, 6.dp
+                )
+            )
         }
         val valueTextColor = ThemeAttrUtils.resolveColorOrDefaultColorRes(context, androidx.appcompat.R.attr.colorAccent, R.color.colorAccent)
         errorLineColor = ThemeAttrUtils.resolveColorOrDefaultColorInt(context, R.attr.unusableColor, valueTextColor)
@@ -87,8 +98,12 @@ class TitleValueCell(
             setTextColor(valueTextColor)
             visibility = GONE
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
-                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
+            addView(
+                it, LayoutHelper.newFrameLayoutParamsRel(
+                    WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0
+                )
+            )
         }
         // switch view
         switchView = SwitchCompat(context).apply {
@@ -99,8 +114,12 @@ class TitleValueCell(
             textOn = ""
             textOff = ""
         }.also {
-            addView(it, LayoutHelper.newFrameLayoutParamsRel(WRAP_CONTENT, WRAP_CONTENT,
-                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0))
+            addView(
+                it, LayoutHelper.newFrameLayoutParamsRel(
+                    WRAP_CONTENT, WRAP_CONTENT,
+                    Gravity.CENTER_VERTICAL or Gravity.END, 22.dp, 0, 22.dp, 0
+                )
+            )
         }
     }
 
@@ -177,8 +196,10 @@ class TitleValueCell(
     }
 
     override fun onMeasure(widthMeasureSpec: Int, heightMeasureSpec: Int) {
-        super.onMeasure(MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
-            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED))
+        super.onMeasure(
+            MeasureSpec.makeMeasureSpec(MeasureSpec.getSize(widthMeasureSpec), MeasureSpec.EXACTLY),
+            MeasureSpec.makeMeasureSpec(0, MeasureSpec.UNSPECIFIED)
+        )
     }
 
     override fun onDraw(canvas: Canvas) {
