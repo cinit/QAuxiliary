@@ -58,7 +58,11 @@ object RemoveQRLoginAuth : CommonSwitchFunctionHook() {
                     parameterTypes[0] == Boolean::class.java
                 }
         }.hookBefore(this) {
-            it.args[0] = false
+            if (it.args[0] is Boolean) {
+                it.args[0] = false
+            } else if (it.args.size > 1 && it.args[1] is Boolean) {
+                it.args[1] = false
+            }
         }
     }
 }
