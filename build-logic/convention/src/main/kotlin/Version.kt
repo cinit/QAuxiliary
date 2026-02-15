@@ -11,7 +11,7 @@ object Version {
     val buildToolsVersion = findBuildToolsVersion()
     const val minSdk = 24
     const val targetSdk = 36
-    const val versionName = "1.5.9"
+    const val versionName = "1.6.0"
 
     // LSPlant requires NDK r29+ to build
     // use NDK 29.0.13599879 rc1 for now
