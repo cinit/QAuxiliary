@@ -23,10 +23,12 @@
 package wang.allenyou.hook
 
 import android.annotation.SuppressLint
-import android.graphics.Canvas
-import android.widget.EditText
+import android.graphics.Rect
+import android.text.method.TransformationMethod
+import android.view.View
 import android.widget.TextView
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.hookAllConstructorAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -47,24 +49,33 @@ object DisableUtfControlCharacterInNicknameHook : CommonSwitchFunctionHook() {
 
     override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_9_0_20)
 
+    private class HookTransformationMethod(val originalMethod: TransformationMethod) : TransformationMethod {
+        override fun getTransformation(source: CharSequence?, view: View?): CharSequence {
+            if (source == null) {
+                return originalMethod.getTransformation(null, view)
+            }
+            return originalMethod.getTransformation(filterControlCharacter(source), view)
+        }
+
+        override fun onFocusChanged(view: View?, sourceText: CharSequence?, focused: Boolean, direction: Int, previouslyFocusedRect: Rect?) {
+            originalMethod.onFocusChanged(view, sourceText, focused, direction, previouslyFocusedRect)
+        }
+    }
+
     @SuppressLint("BidiSpoofing")
     private const val BLACKLIST = "‭‮‪‫‎⁦⁧‏"
 
     override fun initOnce(): Boolean {
         val textViewClass = Initiator.loadClass("android.widget.TextView")
-        val onDrawMethod = textViewClass.getDeclaredMethod("onDraw", Canvas::class.java)
-        hookBeforeIfEnabled(onDrawMethod) {
-            if (it.thisObject !is TextView) {
-                return@hookBeforeIfEnabled
+        val setTransformationMethod = textViewClass.getDeclaredMethod("setTransformationMethod", TransformationMethod::class.java)
+        hookBeforeIfEnabled(setTransformationMethod) {
+            it.args[0] = HookTransformationMethod(it.args[0] as TransformationMethod)
+        }
+        textViewClass.hookAllConstructorAfter {
+            val original = (it.thisObject as TextView).transformationMethod
+            if (original != null) {
+                (it.thisObject as TextView).transformationMethod = HookTransformationMethod(original)
             }
-            if (it.thisObject is EditText) {
-                return@hookBeforeIfEnabled
-            }
-            val str = (it.thisObject as TextView).text.toString()
-            if (BLACKLIST.none { ch -> str.contains(ch) }) {
-                return@hookBeforeIfEnabled
-            }
-            (it.thisObject as TextView).text = filterControlCharacter(str)
         }
         return true
     }
