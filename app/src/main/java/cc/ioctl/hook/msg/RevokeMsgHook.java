@@ -221,6 +221,20 @@ public class RevokeMsgHook extends CommonConfigFunctionHook {
                 }
             }
         }
+        if (revokeMsg == null) { // fix on v9.2.66
+            Class<?> messageFacadeImplClazz = Initiator.load("com.tencent.mobileqq.msg.api.impl.MessageFacadeImpl");
+            if (messageFacadeImplClazz != null) {
+                for (Method m : messageFacadeImplClazz.getDeclaredMethods()) {
+                    if (m.getName().equals("handleRevokedNotifyAndNotify") && m.getReturnType().equals(void.class)) {
+                        Class<?>[] argt = m.getParameterTypes();
+                        if (argt.length == 2 && argt[0].equals(ArrayList.class) && argt[1].equals(boolean.class)) {
+                            revokeMsg = m;
+                            break;
+                        }
+                    }
+                }
+            }
+        }
         HookUtils.hookBeforeIfEnabled(this, revokeMsg, -10086, param -> {
             mQQMsgFacade = param.thisObject;
             ArrayList<?> list = (ArrayList<?>) param.args[0];

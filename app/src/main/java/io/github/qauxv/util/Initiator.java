@@ -286,7 +286,7 @@ public class Initiator {
 
     public static Class<?> _QQMessageFacade() {
         return findClassWithSynthetics("com/tencent/mobileqq/app/message/QQMessageFacade",
-                "com/tencent/imcore/message/QQMessageFacade");
+                "com/tencent/imcore/message/QQMessageFacade", 1);
     }
 
     @SuppressWarnings("unchecked")
@@ -320,18 +320,7 @@ public class Initiator {
 
     @SuppressWarnings("unchecked")
     public static Class<? extends AppRuntime> _QQAppInterface() {
-        if (kQQAppInterface == null) {
-            kQQAppInterface = load("com/tencent/mobileqq/app/QQAppInterface");
-            if (kQQAppInterface == null) {
-                Class<?> ref = load("com/tencent/mobileqq/app/QQAppInterface$1");
-                if (ref != null) {
-                    try {
-                        kQQAppInterface = ref.getDeclaredField("this$0").getType();
-                    } catch (Exception ignored) {
-                    }
-                }
-            }
-        }
+        kQQAppInterface = findClassWithSynthetics("com.tencent.mobileqq.app.QQAppInterface", 1);
         return (Class<? extends AppRuntime>) kQQAppInterface;
     }
 
