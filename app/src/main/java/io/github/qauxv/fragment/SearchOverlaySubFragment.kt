@@ -46,7 +46,6 @@ import com.google.android.flexbox.FlexboxLayoutManager
 import com.google.android.flexbox.JustifyContent
 import io.github.qauxv.R
 import io.github.qauxv.activity.SettingsUiFragmentHostActivity
-import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.IUiItemAgentProvider
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi
 import io.github.qauxv.databinding.FragmentSettingSearchBinding
@@ -187,6 +186,7 @@ class SearchOverlaySubFragment {
                     isClickable = true
                     isLongClickable = true
                     isFocusable = true
+                    isSingleLine = true
                     gravity = Gravity.CENTER
                     minHeight = LayoutHelper.dip2px(context, 32f)
                     val dp16 = LayoutHelper.dip2px(context, 16f)
@@ -533,7 +533,7 @@ class SearchOverlaySubFragment {
                     flexDirection = FlexDirection.ROW
                     justifyContent = JustifyContent.FLEX_START
                 }
-                val dp5 = LayoutHelper.dip2px(inflater.context, 5f)
+                val dp5 = LayoutHelper.dip2px(inflater.context, 6f)
                 addItemDecoration(object : RecyclerView.ItemDecoration() {
                     override fun getItemOffsets(outRect: Rect, view: View, parent: RecyclerView, state: RecyclerView.State) {
                         outRect.set(dp5, dp5, dp5, dp5)
