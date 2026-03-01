@@ -85,13 +85,18 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
             }
         });
         var methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "i" : "a";
-        var clazzName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0) ? "com.tencent.mobileqq.pic.compress.e" : "com.tencent.mobileqq.pic.compress.Utils";
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)){
+        var clazzName = "com.tencent.mobileqq.pic.compress.Utils";
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)) {
+            clazzName = "com.tencent.mobileqq.pic.compress.e";
+        }
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)) {
             clazzName = "com.tencent.mobileqq.pic.compress.g";
         }
-        Method hookMethod = Reflex.findMethod(Initiator.loadClass(clazzName),
-                boolean.class, methodName, String.class, Bitmap.class, int.class, String.class,
-                Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+            clazzName = "com.tencent.mobileqq.pic.compress.f";
+        }
+        Method hookMethod = Reflex.findMethod(Initiator.loadClass(clazzName), boolean.class, methodName,
+                String.class, Bitmap.class, int.class, String.class, Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));
         HookUtils.hookBeforeAlways(this, hookMethod, param -> {
             // 自己进行图像转换, 不给QQ把透明背景扣掉的机会
             FileOutputStream fos = new FileOutputStream((String) param.args[0]);
