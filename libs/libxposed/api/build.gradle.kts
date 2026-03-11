@@ -7,8 +7,8 @@ android {
     sourceSets {
         val main by getting
         main.apply {
-            manifest.srcFile("AndroidManifest.xml")
-            java.directories += "api/api/src/main/java"
+            manifest.srcFile("src/main/AndroidManifest.xml")
+            java.directories += "src/main/java"
         }
     }
 
