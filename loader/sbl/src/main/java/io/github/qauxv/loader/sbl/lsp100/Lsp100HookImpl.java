@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
+import io.github.libxposed.api.annotations.XposedApiExact;
 import io.github.qauxv.loader.hookapi.IClassLoaderHelper;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.hookapi.ILoaderService;
@@ -38,6 +39,7 @@ import java.lang.reflect.Method;
 import java.util.Collections;
 import java.util.Set;
 
+@XposedApiExact(100)
 public class Lsp100HookImpl implements IHookBridge, ILoaderService {
 
     public static final Lsp100HookImpl INSTANCE = new Lsp100HookImpl();

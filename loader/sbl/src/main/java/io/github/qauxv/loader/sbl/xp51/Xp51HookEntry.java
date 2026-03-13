@@ -6,6 +6,7 @@ import de.robv.android.xposed.IXposedHookZygoteInit;
 import de.robv.android.xposed.XposedBridge;
 import de.robv.android.xposed.callbacks.XC_LoadPackage;
 import io.github.qauxv.loader.sbl.common.ModuleLoader;
+import io.github.qauxv.loader.sbl.common.WellKnownConstants;
 
 /**
  * Entry point for started Xposed API 51-99.
@@ -14,14 +15,6 @@ import io.github.qauxv.loader.sbl.common.ModuleLoader;
  */
 @Keep
 public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteInit {
-
-    public static final String PACKAGE_NAME_QQ = "com.tencent.mobileqq";
-    public static final String PACKAGE_NAME_QQ_INTERNATIONAL = "com.tencent.mobileqqi";
-    public static final String PACKAGE_NAME_QQ_LITE = "com.tencent.qqlite";
-    public static final String PACKAGE_NAME_QQ_HD = "com.tencent.minihd.qq";
-    public static final String PACKAGE_NAME_TIM = "com.tencent.tim";
-    public static final String PACKAGE_NAME_SELF = "io.github.qauxv";
-    public static final String PACKAGE_NAME_XPOSED_INSTALLER = "de.robv.android.xposed.installer";
 
     private static XC_LoadPackage.LoadPackageParam sLoadPackageParam = null;
     private static IXposedHookZygoteInit.StartupParam sInitZygoteStartupParam = null;
@@ -39,14 +32,14 @@ public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteI
         // check LSPosed dex-obfuscation
         Class<?> kXposedBridge = XposedBridge.class;
         switch (lpparam.packageName) {
-            case PACKAGE_NAME_SELF: {
+            case WellKnownConstants.PACKAGE_NAME_SELF: {
                 Xp51HookStatusInit.init(lpparam.classLoader);
                 break;
             }
-            case PACKAGE_NAME_TIM:
-            case PACKAGE_NAME_QQ:
-            case PACKAGE_NAME_QQ_HD:
-            case PACKAGE_NAME_QQ_LITE: {
+            case WellKnownConstants.PACKAGE_NAME_TIM:
+            case WellKnownConstants.PACKAGE_NAME_QQ:
+            case WellKnownConstants.PACKAGE_NAME_QQ_HD:
+            case WellKnownConstants.PACKAGE_NAME_QQ_LITE: {
                 if (sInitZygoteStartupParam == null) {
                     throw new IllegalStateException("handleLoadPackage: sInitZygoteStartupParam is null");
                 }
@@ -55,7 +48,7 @@ public class Xp51HookEntry implements IXposedHookLoadPackage, IXposedHookZygoteI
                         Xp51HookImpl.INSTANCE, Xp51HookImpl.INSTANCE, getModulePath(), true);
                 break;
             }
-            case PACKAGE_NAME_QQ_INTERNATIONAL: {
+            case WellKnownConstants.PACKAGE_NAME_QQ_INTERNATIONAL: {
                 //coming...
                 break;
             }

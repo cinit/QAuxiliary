@@ -26,6 +26,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
+import io.github.libxposed.api.annotations.XposedApiExact;
 import io.github.qauxv.loader.hookapi.IHookBridge;
 import io.github.qauxv.loader.sbl.common.CheckUtils;
 import io.github.qauxv.loader.sbl.lsp100.codegen.Lsp100ProxyClassMaker;
@@ -38,6 +39,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
+@XposedApiExact(100)
 public class Lsp100HookWrapper {
 
     private Lsp100HookWrapper() {
