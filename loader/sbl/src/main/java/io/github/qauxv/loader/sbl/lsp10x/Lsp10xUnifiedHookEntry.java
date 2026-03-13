@@ -71,12 +71,14 @@ public class Lsp10xUnifiedHookEntry extends XposedModule {
         mHandler = new Lsp101HookEntry(this);
     }
 
+    @RequiresApi(26)
     @XposedApiMin(101)
     @Override
     public void onModuleLoaded(@NonNull ModuleLoadedParam param) {
         ((Lsp101HookEntry) mHandler).onModuleLoaded(param);
     }
 
+    @RequiresApi(26)
     @XposedApiMin(101)
     @Override
     public void onPackageReady(@NonNull PackageReadyParam param) {
