@@ -31,7 +31,10 @@ plugins {
 
 extensions.findByType(CommonExtension::class)?.run {
     compileSdk {
-        version = release(Version.compileSdkVersion)
+        // "36.1" -> major=36, minor=1
+        version = release(Version.compileSdkVersion.substringBefore('.').toInt()) {
+            minorApiLevel = Version.compileSdkVersion.substringAfter('.').toIntOrNull()
+        }
     }
     buildToolsVersion = Version.buildToolsVersion
     ndkVersion = Version.getNdkVersion(project)

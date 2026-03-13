@@ -4,8 +4,13 @@ plugins {
 
 android {
     namespace = "io.github.qauxv.loader.sbl"
-    compileSdk = Version.compileSdkVersion
 
+    compileSdk {
+        // "36.1" -> major=36, minor=1
+        version = release(Version.compileSdkVersion.substringBefore('.').toInt()) {
+            minorApiLevel = Version.compileSdkVersion.substringAfter('.').toIntOrNull()
+        }
+    }
     defaultConfig {
         minSdk = Version.minSdk
 
