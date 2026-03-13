@@ -1,14 +1,14 @@
 [versions]
 # AGP 9.? no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.? for now.
 # AGP 10.0 no longer supports `android.newDsl=false`, so do not use AGP 10.0 for now.
-agp = "9.0.1"
+agp = "9.1.0"
 appCenter = "5.0.6"
 kotlin = "2.3.10"
-ksp = "2.3.5"
+ksp = "2.3.6"
 lifecycle = "2.10.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.33.5"
+protobuf = "4.34.0"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -19,9 +19,9 @@ androidx-annotation = { module = "androidx.annotation:annotation", version = "1.
 androidx-browser = { module = "androidx.browser:browser", version = "1.9.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.17.0" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.18.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
-eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.5.0.202512021534-r" }
+eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.6.0.202603022253-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.2.0" }
@@ -42,7 +42,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "5.0.5" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.5" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.7-jdk5" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "16.0.1" }
 #noinspection NewerVersionAvailable do not update com.google.flatbuffers:flatbuffers-java, need to keep it sync with DexKit
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
