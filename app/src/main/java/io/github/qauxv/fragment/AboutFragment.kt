@@ -51,6 +51,7 @@ import io.github.qauxv.dsl.item.CategoryItem
 import io.github.qauxv.dsl.item.DslTMsgListItemInflatable
 import io.github.qauxv.dsl.item.TextListItem
 import io.github.qauxv.dsl.item.TextSwitchItem
+import io.github.qauxv.poststartup.StartupInfo
 import io.github.qauxv.util.CliOper
 import io.github.qauxv.util.data.Licenses
 import io.github.qauxv.util.hostInfo
@@ -95,6 +96,18 @@ class AboutFragment : BaseRootLayoutFragment() {
                     val hostVersionName = getHostFullVersionNameAndVersionCode()
                     textItem(hostInfo.hostName, value = hostVersionName) {
                         copyText(hostVersionName)
+                    }
+                    val hookBridge = StartupInfo.requireHookBridge()
+                    val xposedName = hookBridge.frameworkName
+                    val versionName = hookBridge.frameworkVersion
+                    val versionCodeString = hookBridge.frameworkVersionCode.toString()
+                    val version = if (versionName == versionCodeString) {
+                        versionName
+                    } else {
+                        "$versionName($versionCodeString)"
+                    }
+                    textItem(xposedName, value = version) {
+                        copyText("$xposedName $version")
                     }
                 }
                 textItem("Build UUID", summary = BuildConfig.BUILD_UUID) {
@@ -337,6 +350,7 @@ class AboutFragment : BaseRootLayoutFragment() {
                 startActivity(intent)
                 true
             }
+
             else -> {
                 super.onOptionsItemSelected(item)
             }
