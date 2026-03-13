@@ -1,41 +1,40 @@
 package io.github.qauxv.loader.sbl.lsp100;
 
 import android.content.pm.ApplicationInfo;
-import androidx.annotation.Keep;
 import androidx.annotation.NonNull;
-import io.github.libxposed.api.XposedInterface;
 import io.github.libxposed.api.XposedModule;
 import io.github.libxposed.api.annotations.XposedApiExact;
 import io.github.qauxv.loader.sbl.common.ModuleLoader;
 import io.github.qauxv.loader.sbl.common.WellKnownConstants;
+import io.github.qauxv.loader.sbl.lsp10x.Lsp10xHookEntryHandler;
 
 /**
  * Entry point for libxpsoed API 100 (typically LSPosed).
  * <p>
  * The libxpsoed API is used as ART hook implementation.
  */
-@Keep
 @XposedApiExact(100)
-public class Lsp100HookEntry extends XposedModule {
+public class Lsp100HookEntry implements Lsp10xHookEntryHandler {
+
+    private final XposedModule self;
+    private XposedModule.ModuleLoadedParam mModule;
 
     /**
      * Instantiates a new Xposed module.
      * <p>
      * When the module is loaded into the target process, the constructor will be called.
      *
-     * @param base  The implementation interface provided by the framework, should not be used by the module
+     * @param self  the Xposed module instance (this module)
      * @param param Information about the process in which the module is loaded
      */
-    public Lsp100HookEntry(@NonNull XposedInterface base, @NonNull ModuleLoadedParam param) {
-        super(base, param);
+    public Lsp100HookEntry(@NonNull XposedModule self, @NonNull XposedModule.ModuleLoadedParam param) {
+        this.self = self;
         mModule = param;
-        Lsp100HookImpl.init(this);
+        Lsp100HookImpl.init(self);
     }
 
-    private ModuleLoadedParam mModule;
-
-    @Override
-    public void onPackageLoaded(@NonNull PackageLoadedParam param) {
+    @XposedApiExact(100)
+    public void onPackageLoaded(@NonNull XposedModule.PackageLoadedParam param) {
         String packageName = param.getPackageName();
         switch (packageName) {
             case WellKnownConstants.PACKAGE_NAME_QQ:
@@ -45,7 +44,7 @@ public class Lsp100HookEntry extends XposedModule {
             case WellKnownConstants.PACKAGE_NAME_TIM:
                 // Initialize the module
                 if (param.isFirstPackage()) {
-                    String modulePath = this.getApplicationInfo().sourceDir;
+                    String modulePath = self.getApplicationInfo().sourceDir;
                     handleLoadHostPackage(param.getClassLoader(), param.getApplicationInfo(), modulePath);
                 }
                 break;

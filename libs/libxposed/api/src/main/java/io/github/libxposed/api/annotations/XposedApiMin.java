@@ -13,7 +13,7 @@ import kotlin.annotation.MustBeDocumented;
  */
 @MustBeDocumented
 @Retention(RetentionPolicy.CLASS)
-@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD})
+@Target({ElementType.TYPE, ElementType.METHOD, ElementType.FIELD, ElementType.CONSTRUCTOR})
 public @interface XposedApiMin {
 
     int value();
