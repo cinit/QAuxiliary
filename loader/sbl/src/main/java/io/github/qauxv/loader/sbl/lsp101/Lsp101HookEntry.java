@@ -50,7 +50,7 @@ public class Lsp101HookEntry implements Lsp10xHookEntryHandler {
     }
 
     public void onModuleLoaded(@NonNull XposedModule.ModuleLoadedParam param) {
-        // noop, not interested in this call
+        Lsp101HookImpl.init(self);
     }
 
     public void onPackageLoaded(@NonNull XposedModule.PackageLoadedParam param) {
@@ -67,7 +67,7 @@ public class Lsp101HookEntry implements Lsp10xHookEntryHandler {
             case WellKnownConstants.PACKAGE_NAME_TIM:
                 // Initialize the module
                 if (param.isFirstPackage()) {
-                    String modulePath = self.getApplicationInfo().sourceDir;
+                    String modulePath = self.getModuleApplicationInfo().sourceDir;
                     handleLoadHostPackage(param.getClassLoader(), param.getApplicationInfo(), modulePath);
                 }
                 break;

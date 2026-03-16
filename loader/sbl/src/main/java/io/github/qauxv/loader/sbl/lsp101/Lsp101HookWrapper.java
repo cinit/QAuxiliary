@@ -361,18 +361,15 @@ public class Lsp101HookWrapper {
                 try {
                     callbacks[i].callback.beforeHookedMember(param);
                 } catch (Throwable t) {
-                    self.log(t.toString(), t);
+                    Lsp101HookImpl.INSTANCE.log(t);
                 }
             }
             param.index = -1;
 
             if (!param.skipOriginal) {
                 // synchronize args to chain
-                for (int i = 0; i < argsCompat.length; i++) {
-                    chain.getArgs().set(i, argsCompat[i]);
-                }
                 try {
-                    result = chain.proceed();
+                    result = chain.proceed(argsCompat);
                 } catch (Throwable t) {
                     throwable = t;
                 }
@@ -390,7 +387,7 @@ public class Lsp101HookWrapper {
                 try {
                     callbacks[i].callback.afterHookedMember(param);
                 } catch (Throwable t) {
-                    self.log(t.toString(), t);
+                    Lsp101HookImpl.INSTANCE.log(t);
                 }
             }
 
