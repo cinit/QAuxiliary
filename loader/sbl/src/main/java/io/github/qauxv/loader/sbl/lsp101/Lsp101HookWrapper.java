@@ -239,33 +239,39 @@ public class Lsp101HookWrapper {
         public Object thisObjectCompat;
         public Object[] argsCompat;
         public Member member;
+        public XposedInterface.Chain chain;
 
         @NonNull
         @Override
         public Member getMember() {
+            checkLifecycle();
             return member;
         }
 
         @Nullable
         @Override
         public Object getThisObject() {
+            checkLifecycle();
             return thisObjectCompat;
         }
 
         @NonNull
         @Override
         public Object[] getArgs() {
+            checkLifecycle();
             return argsCompat;
         }
 
         @Nullable
         @Override
         public Object getResult() {
+            checkLifecycle();
             return result;
         }
 
         @Override
         public void setResult(@Nullable Object result) {
+            checkLifecycle();
             this.result = result;
             this.skipOriginal = true;
         }
@@ -273,11 +279,13 @@ public class Lsp101HookWrapper {
         @Nullable
         @Override
         public Throwable getThrowable() {
+            checkLifecycle();
             return throwable;
         }
 
         @Override
         public void setThrowable(@NonNull Throwable throwable) {
+            checkLifecycle();
             this.throwable = throwable;
             this.skipOriginal = true;
         }
@@ -285,6 +293,7 @@ public class Lsp101HookWrapper {
         @Nullable
         @Override
         public Object getExtra() {
+            checkLifecycle();
             if (extras == null || index < 0 || index >= extras.length) {
                 return null;
             }
@@ -293,6 +302,7 @@ public class Lsp101HookWrapper {
 
         @Override
         public void setExtra(@Nullable Object extra) {
+            checkLifecycle();
             if (callbacks == null || index < 0) {
                 return;
             }
@@ -300,6 +310,12 @@ public class Lsp101HookWrapper {
                 extras = new Object[callbacks.length];
             }
             extras[index] = extra;
+        }
+
+        private void checkLifecycle() {
+            if (chain == null) {
+                throw new IllegalStateException("attempt to access hook param after destroyed");
+            }
         }
 
     }
@@ -351,6 +367,7 @@ public class Lsp101HookWrapper {
             InvocationParamWrapper param = new InvocationParamWrapper();
             Object[] argsCompat = chain.getArgs().toArray();
             param.callbacks = callbacks;
+            param.chain = chain;
 
             Object result = null;
             Throwable throwable = null;
@@ -394,8 +411,15 @@ public class Lsp101HookWrapper {
             result = param.result;
             throwable = param.throwable;
 
+            // for gc
             param.callbacks = null;
             param.extras = null;
+            param.member = null;
+            param.thisObjectCompat = null;
+            param.argsCompat = null;
+            param.result = null;
+            param.throwable = null;
+            param.chain = null;
 
             if (throwable != null) {
                 throw throwable;
