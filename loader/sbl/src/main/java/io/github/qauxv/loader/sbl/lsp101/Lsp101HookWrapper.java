@@ -33,7 +33,6 @@ import io.github.qauxv.loader.sbl.common.CheckUtils;
 import java.lang.reflect.Executable;
 import java.lang.reflect.Member;
 import java.util.ArrayList;
-import java.util.Objects;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
@@ -365,7 +364,12 @@ public class Lsp101HookWrapper {
             }
 
             InvocationParamWrapper param = new InvocationParamWrapper();
-            Object[] argsCompat = chain.getArgs().toArray();
+            Object[] argsCompat = chain.getArgs().toArray(EMPTY_OBJECT_ARRAY);
+
+            // fill in the param
+            param.member = executable;
+            param.thisObjectCompat = chain.getThisObject();
+            param.argsCompat = argsCompat;
             param.callbacks = callbacks;
             param.chain = chain;
 
