@@ -23,6 +23,7 @@
 package me.hd.hook
 
 import cc.ioctl.util.hookBeforeIfEnabled
+import cc.hicore.ReflectUtil.XMethod
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -44,6 +45,14 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_8)
 
     override fun initOnce(): Boolean {
+        val collectViewList = XMethod.clz("com.tencent.qqnt.aio.api.impl.EmotionMenusCreator")
+               .ret(java.util.List::class.java)
+               .paramCount(0)
+               .get()
+        hookBeforeIfEnabled(collectViewList) { param ->
+            param.result = null
+        }
+        
         hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
             param.result = null
         }
