@@ -115,7 +115,10 @@ public class Lsp101HookWrapper {
                 // 3. tell the underlying framework to hook the method
                 if (method instanceof Executable) {
                     Lsp101HookDispatchAgent agent = new Lsp101HookDispatchAgent(priority);
-                    XposedInterface.HookHandle hookHandle = self.hook((Executable) method).setPriority(priority).intercept(agent);
+                    XposedInterface.HookHandle hookHandle = self.hook((Executable) method)
+                            .setPriority(priority)
+                            .setExceptionMode(XposedInterface.ExceptionMode.PASSTHROUGH)
+                            .intercept(agent);
                     agent.setFrameworkHookHandle(hookHandle);
                 } else {
                     throw new IllegalArgumentException("only method and constructor can be hooked, but got " + method);

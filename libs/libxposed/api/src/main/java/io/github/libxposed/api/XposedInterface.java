@@ -514,6 +514,37 @@ public interface XposedInterface {
     }
 
     /**
+     * Exception handling mode for hookers. This determines how the framework handles exceptions
+     * thrown by hookers. The default mode is {@link ExceptionMode#DEFAULT}.
+     */
+    enum ExceptionMode {
+        /**
+         * Follows the global exception mode configured in {@code module.prop}. Defaults to {@link #PROTECTIVE}
+         * if not specified.
+         */
+        DEFAULT,
+
+        /**
+         * Any exception thrown by the <b>hooker</b> will be caught and logged, and the call will proceed as
+         * if no hook exists. This mode is recommended for most cases, as it can prevent crashes caused by
+         * hook errors.
+         * <p>
+         * If the exception is thrown before {@link Chain#proceed()}, the framework will
+         * continue the chain without the hook; if the exception is thrown after proceed, the framework
+         * will return the value / exception proceeded as the result.
+         * </p>
+         * <p>Exceptions thrown by proceed will always be propagated.</p>
+         */
+        PROTECTIVE,
+
+        /**
+         * Any exception thrown by the hooker will be propagated to the caller as usual. This mode is
+         * recommended for debugging purposes, as it can help you find and fix errors in your hooks.
+         */
+        PASSTHROUGH,
+    }
+
+    /**
      * Builder for configuring a hook.
      */
     @XposedApiMin(101)
@@ -526,6 +557,14 @@ public interface XposedInterface {
          * @return The builder itself for chaining
          */
         HookBuilder setPriority(int priority);
+
+        /**
+         * Sets the exception handling mode for the hook. The default mode is {@link ExceptionMode#DEFAULT}.
+         *
+         * @param mode The exception handling mode
+         * @return The builder itself for chaining
+         */
+        HookBuilder setExceptionMode(@NonNull ExceptionMode mode);
 
         /**
          * Sets the hooker for the method / constructor and builds the hook.
