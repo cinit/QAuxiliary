@@ -58,7 +58,7 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook(
             hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
                 param.result = null
             }
-            return true
         }
+            return true
     }
 }
