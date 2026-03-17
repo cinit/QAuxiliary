@@ -45,17 +45,20 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_8)
 
     override fun initOnce(): Boolean {
-        val collectViewList = XMethod.clz("com.tencent.qqnt.aio.api.impl.EmotionMenusCreator")
-               .ret(java.util.List::class.java)
-               .paramCount(0)
-               .get()
-        hookBeforeIfEnabled(collectViewList) { param ->
-            param.result = null
+        if (requireMinQQVersion(QQVersion.QQ_9_2_70)) {
+            val collectViewList = XMethod.clz("com.tencent.qqnt.aio.api.impl.EmotionMenusCreator")
+                   .ret(java.util.List::class.java)
+                   .paramCount(0)
+                   .get()
+            hookBeforeIfEnabled(collectViewList) { param ->
+                param.result = null
+            }
         }
-        
-        hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
-            param.result = null
+        else {
+            hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
+                param.result = null
+            }
+            return true
         }
-        return true
     }
 }
