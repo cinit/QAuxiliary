@@ -36,8 +36,6 @@ import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.MessagingStyle
 import androidx.core.app.Person
 import androidx.core.app.RemoteInput
-import androidx.core.content.pm.ShortcutInfoCompat
-import androidx.core.content.pm.ShortcutManagerCompat
 import androidx.core.graphics.drawable.IconCompat
 import cc.chenhe.qqnotifyevo.utils.NotifyChannel
 import cc.chenhe.qqnotifyevo.utils.getChannelId
@@ -124,7 +122,12 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                 historyMessage[notificationId] = messageStyle
             }
 
-            var person: Person? = null
+            val conversationIcon = bitmap?.let { IconCompat.createWithBitmap(it) }
+            var person = Person.Builder()
+                .setName(title)
+                .setKey(uin)
+                .setIcon(conversationIcon)
+                .build()
 
             if (isTroop == 1) {
                 val sender = senderName.find(text)?.value?.replace(": ", "")
@@ -182,52 +185,46 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                 .addRemoteInput(remoteInput)
                 .build()
             builder.addAction(replyAction)
+            builder.setChannelId(getChannelId(channelId))
 
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                val newIntent = intent.clone() as Intent
-                newIntent.component = ComponentName(
-                    context,
-                    activityName.clazz!!
+                val shortcutIcon = conversationIcon ?: IconCompat.createWithBitmap(bitmap!!)
+                val shortcut = parent.buildShortcut(
+                    key,
+                    title,
+                    shortcutIcon,
+                    intent,
+                    withLocusId = false
                 )
-                newIntent.putExtra("key_mini_from", 2)
-                newIntent.putExtra("minaio_height_ration", 1f)
-                newIntent.putExtra("minaio_scaled_ration", 1f)
-                newIntent.putExtra(
-                    "public_fragment_class",
-                    "com.tencent.mobileqq.activity.miniaio.MiniChatFragment"
-                )
-                val bubbleIntent = PendingIntent.getActivity(
-                    context,
-                    uin.toLong().toInt(), // uin may be lager than Int.MAX_VALUE but small than 2^32-1
-                    newIntent,
-                    PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
-                )
-
-                val bubbleData = NotificationCompat.BubbleMetadata.Builder(
-                    bubbleIntent,
-                    // FIXME: 2022-06-24 handle NPE if bitmap is null
-                    IconCompat.createWithBitmap(bitmap!!)
-                )
-                    .setDesiredHeight(600)
-                    .build()
-
-                val shortcut =
-                    ShortcutInfoCompat.Builder(context, key)
-                        .setIntent(intent)
-                        .setLongLived(true)
-                        .setShortLabel(title)
-                        .setIcon(bubbleData.icon!!)
+                builder.setShortcutInfo(shortcut)
+                if (!parent.disableConversationNotificationAndBubble) {
+                    val newIntent = intent.clone() as Intent
+                    newIntent.component = ComponentName(
+                        context,
+                        activityName.clazz!!
+                    )
+                    newIntent.putExtra("key_mini_from", 2)
+                    newIntent.putExtra("minaio_height_ration", 1f)
+                    newIntent.putExtra("minaio_scaled_ration", 1f)
+                    newIntent.putExtra(
+                        "public_fragment_class",
+                        "com.tencent.mobileqq.activity.miniaio.MiniChatFragment"
+                    )
+                    val bubbleIntent = PendingIntent.getActivity(
+                        context,
+                        uin.toLong().toInt(), // uin may be lager than Int.MAX_VALUE but small than 2^32-1
+                        newIntent,
+                        PendingIntent.FLAG_MUTABLE or PendingIntent.FLAG_CANCEL_CURRENT
+                    )
+                    val bubbleData = NotificationCompat.BubbleMetadata.Builder(
+                        bubbleIntent,
+                        shortcutIcon
+                    )
+                        .setDesiredHeight(600)
                         .build()
-
-                ShortcutManagerCompat.pushDynamicShortcut(
-                    context,
-                    shortcut
-                )
-
-                builder.apply {
-                    setShortcutInfo(shortcut)
-                    bubbleMetadata = bubbleData
-                    setChannelId(getChannelId(channelId))
+                    builder.apply {
+                        bubbleMetadata = bubbleData
+                    }
                 }
             }
             param.result = builder.build()
@@ -316,7 +313,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                 Context::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        if (!isEnabled or LicenseStatus.sDisableCommonHooks) return
+                        if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableConversationNotificationAndBubble) return
                         if ((param.args[0] as? Activity)?.isLaunchedFromBubble == true)
                             param.result = 0
                     }
@@ -330,6 +327,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                     override fun replaceHookedMethod(param: MethodHookParam): Any? {
                         val id = Thread.currentThread().id
                         val unhook = if (isEnabled && !LicenseStatus.sDisableCommonHooks &&
+                            !parent.disableConversationNotificationAndBubble &&
                             param.args[1] as Boolean &&
                             (param.args[0] as Activity).isLaunchedFromBubble
                         )
@@ -356,6 +354,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             XposedBridge.hookMethod(activityName.clazz!!.method("doOnStart")!!, object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam?) {
+                    if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableConversationNotificationAndBubble) return
                     val activity = param!!.thisObject as Activity
                     val rootView = activity.window.decorView
                     windowHeight = activity.window.attributes.height
