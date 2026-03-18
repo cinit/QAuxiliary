@@ -131,7 +131,7 @@ class ConfigV2Activity : AppCompatTransferActivity() {
         }
         lifecycleScope.launch {
             repeatOnLifecycle(Lifecycle.State.RESUMED) {
-                HookStatus.getXposedService().onEach {
+                HookStatus.getXposedService().collect {
                     updateActivationStatus()
                 }
             }
