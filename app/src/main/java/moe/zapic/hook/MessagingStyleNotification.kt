@@ -88,10 +88,16 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
     private val historyMessage: HashMap<String, MessagingStyle> = HashMap()
     val avatarHelper = QQAvatarHelper()
 
-    var disableConversationNotificationAndBubble: Boolean
-        get() = DisableConversationNotificationAndBubble.isEnabled
+    var disableConversationSubChannel: Boolean
+        get() = MessagingStyleNotificationConfig.disableConversationSubChannel
         set(value) {
-            DisableConversationNotificationAndBubble.isEnabled = value
+            MessagingStyleNotificationConfig.disableConversationSubChannel = value
+        }
+
+    var disableBubble: Boolean
+        get() = MessagingStyleNotificationConfig.disableBubble
+        set(value) {
+            MessagingStyleNotificationConfig.disableBubble = value
         }
 
     @Throws(Exception::class)
@@ -99,7 +105,6 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             createNotificationChannels()
         }
-        MessagingStyleNotificationChannelCleaner.cleanupIfNeeded(disableConversationNotificationAndBubble)
 
         if (!HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             return NonNTMessageStyleNotification(this).hook()
@@ -221,9 +226,6 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                 param.args[notificationIndex] = notification
             }
         }
-        hookAfterIfEnabled(postNotification) {
-            MessagingStyleNotificationChannelCleaner.cleanupIfNeeded(disableConversationNotificationAndBubble)
-        }
         hookBeforeIfEnabled(
             Reflex.findMethod(
                 "com.tencent.commonsdk.util.notification.QQNotificationManager".clazz!!,
@@ -291,11 +293,12 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             content,
             messageStyle
         )
-        if (!disableConversationNotificationAndBubble) {
-            applyConversationChannelAndBubble(builder, conversationTarget, shortcut)
+        if (!disableConversationSubChannel) {
+            applyConversationChannel(builder, conversationTarget, shortcut)
         } else {
             builder.setChannelId(getChannelId(conversationTarget.channelId))
         }
+        applyBubbleMetadataIfNeeded(builder, shortcut)
         builder.setShortcutInfo(shortcut)
         return builder.build()
     }
@@ -371,19 +374,26 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
     }
 
     @RequiresApi(Build.VERSION_CODES.O)
-    private fun applyConversationChannelAndBubble(
+    private fun applyConversationChannel(
         builder: NotificationCompat.Builder,
         conversationTarget: ConversationTarget,
         shortcut: ShortcutInfoCompat
     ) {
         val notificationChannel = ensureConversationNotificationChannel(conversationTarget, shortcut)
         builder.setChannelId(notificationChannel.id)
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
-            builder.setBubbleMetadata(
-                NotificationCompat.BubbleMetadata.Builder(shortcut.id)
-                    .build()
-            )
+    }
+
+    private fun applyBubbleMetadataIfNeeded(
+        builder: NotificationCompat.Builder,
+        shortcut: ShortcutInfoCompat
+    ) {
+        if (disableBubble || Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+            return
         }
+        builder.setBubbleMetadata(
+            NotificationCompat.BubbleMetadata.Builder(shortcut.id)
+                .build()
+        )
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

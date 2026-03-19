@@ -197,7 +197,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                     withLocusId = false
                 )
                 builder.setShortcutInfo(shortcut)
-                if (!parent.disableConversationNotificationAndBubble) {
+                if (!parent.disableBubble) {
                     val newIntent = intent.clone() as Intent
                     newIntent.component = ComponentName(
                         context,
@@ -313,7 +313,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                 Context::class.java,
                 object : XC_MethodHook() {
                     override fun afterHookedMethod(param: MethodHookParam) {
-                        if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableConversationNotificationAndBubble) return
+                        if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableBubble) return
                         if ((param.args[0] as? Activity)?.isLaunchedFromBubble == true)
                             param.result = 0
                     }
@@ -327,7 +327,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
                     override fun replaceHookedMethod(param: MethodHookParam): Any? {
                         val id = Thread.currentThread().id
                         val unhook = if (isEnabled && !LicenseStatus.sDisableCommonHooks &&
-                            !parent.disableConversationNotificationAndBubble &&
+                            !parent.disableBubble &&
                             param.args[1] as Boolean &&
                             (param.args[0] as Activity).isLaunchedFromBubble
                         )
@@ -354,7 +354,7 @@ class NonNTMessageStyleNotification(private val parent: MessagingStyleNotificati
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R) {
             XposedBridge.hookMethod(activityName.clazz!!.method("doOnStart")!!, object : XC_MethodHook() {
                 override fun afterHookedMethod(param: MethodHookParam?) {
-                    if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableConversationNotificationAndBubble) return
+                    if (!isEnabled || LicenseStatus.sDisableCommonHooks || parent.disableBubble) return
                     val activity = param!!.thisObject as Activity
                     val rootView = activity.window.decorView
                     windowHeight = activity.window.attributes.height
