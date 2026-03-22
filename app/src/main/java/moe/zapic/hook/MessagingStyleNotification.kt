@@ -21,6 +21,7 @@
 
 package moe.zapic.hook
 
+import android.app.Activity
 import android.app.Notification
 import android.app.NotificationChannel
 import android.app.NotificationChannelGroup
@@ -29,6 +30,7 @@ import android.app.PendingIntent
 import android.content.Intent
 import android.graphics.Bitmap
 import android.os.Build
+import android.view.View
 import androidx.annotation.RequiresApi
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationCompat.MessagingStyle
@@ -46,18 +48,22 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.hookAfterIfEnabled
 import cc.ioctl.util.hookBeforeIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.paramCount
+import io.github.qauxv.activity.SettingsUiFragmentHostActivity
+import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
-import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.ui.ResUtils
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
+import kotlinx.coroutines.flow.MutableStateFlow
 import me.singleneuron.util.NonNTMessageStyleNotification
 import moe.zapic.util.QQAvatarHelper
 import moe.zapic.util.QQRecentContactInfo
+import moe.zapic.fragment.MessagingStyleNotificationConfigFragment
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import java.lang.reflect.Method
@@ -65,7 +71,7 @@ import java.util.WeakHashMap
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY) {
+object MessagingStyleNotification : CommonConfigFunctionHook(targetProc = SyncUtils.PROC_ANY) {
     private data class ConversationTarget(
         val mainUin: Long,
         val mainName: String,
@@ -80,8 +86,16 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
     override val isAvailable = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O
     override val name = "MessagingStyle通知"
     override val description: String = "更加优雅的通知样式，致敬QQ Helper" + if (isAvailable) "" else " [系统不支持]"
+    override val extraSearchKeywords: Array<String> =
+        arrayOf("会话通知", "通知子渠道", "通知气泡", "Bubble")
 
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.NOTIFICATION_CATEGORY
+    private val stateFlowDelegate = lazy(LazyThreadSafetyMode.NONE) { MutableStateFlow(stateText()) }
+    override val valueState: MutableStateFlow<String>
+        get() = stateFlowDelegate.value
+    override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
+        SettingsUiFragmentHostActivity.startFragmentWithContext(activity, MessagingStyleNotificationConfigFragment::class.java)
+    }
 
     private val notificationInfoMap = WeakHashMap<Any, Pair<Any, Intent>>()
 
@@ -100,6 +114,17 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             MessagingStyleNotificationConfig.disableBubble = value
         }
 
+    private fun stateText(): String = if (isEnabled) "已开启" else "禁用"
+
+    override var isEnabled: Boolean
+        get() = super.isEnabled
+        set(value) {
+            super.isEnabled = value
+            if (stateFlowDelegate.isInitialized()) {
+                stateFlowDelegate.value.value = stateText()
+            }
+        }
+
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
@@ -113,7 +138,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
         val cAppRuntime = "mqq.app.AppRuntime".clazz!!
         val cCommonInfo = "com.tencent.qqnt.kernel.nativeinterface.NotificationCommonInfo".clazz!!
         val cRecentInfo = "com.tencent.qqnt.kernel.nativeinterface.RecentContactInfo".clazz!!
-        val postNotification =
+        val (postNotification, postNotificationIndex) =
             runCatching {
                 Reflex.findSingleMethod(
                     cNotificationFacade,
@@ -121,14 +146,14 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     false,
                     Notification::class.java,
                     Int::class.javaPrimitiveType
-                )
+                ) to 0
             }.getOrNull() ?: runCatching {
                 Reflex.findSingleMethod(
                     cNotificationFacade,
                     null,
                     false,
                     String::class.java, Notification::class.java, Int::class.javaPrimitiveType
-                )
+                ) to 1
             }.getOrThrow()
 
         lateinit var buildNotification: Method
@@ -163,12 +188,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
             notificationInfoMap.remove(el)
         }
         hookBeforeIfEnabled(postNotification) { param ->
-            val (notificationIndex, oldNotification) =
-                runCatching {
-                    0 to param.args[0] as Notification
-                }.getOrNull() ?: runCatching {
-                    1 to param.args[1] as Notification
-                }.getOrThrow()
+            val oldNotification = param.args[postNotificationIndex] as Notification
             val pair = notificationInfoMap[oldNotification.contentIntent] ?: return@hookBeforeIfEnabled
             val info = QQRecentContactInfo(pair.first)
             notificationInfoMap.remove(oldNotification.contentIntent)
@@ -223,7 +243,7 @@ object MessagingStyleNotification : CommonSwitchFunctionHook(SyncUtils.PROC_ANY)
                     oldNotification,
                     isSpecial
                 )
-                param.args[notificationIndex] = notification
+                param.args[postNotificationIndex] = notification
             }
         }
         hookBeforeIfEnabled(
