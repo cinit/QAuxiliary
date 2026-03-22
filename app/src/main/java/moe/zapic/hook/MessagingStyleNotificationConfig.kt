@@ -25,49 +25,22 @@ import io.github.qauxv.config.ConfigManager
 
 internal object MessagingStyleNotificationConfig {
 
-    private const val LEGACY_CONFIG_KEY = "MessagingStyleNotification.disableConversationNotificationAndBubble"
     private const val DISABLE_SUB_CHANNEL_CONFIG_KEY = "MessagingStyleNotification.disableConversationSubChannel"
     private const val DISABLE_BUBBLE_CONFIG_KEY = "MessagingStyleNotification.disableBubble"
 
     var disableConversationSubChannel: Boolean
-        get() {
-            val config = getConfig()
-            migrateLegacyConfigIfNeeded(config)
-            return config.getBooleanOrDefault(DISABLE_SUB_CHANNEL_CONFIG_KEY, false)
-        }
+        get() = getConfig().getBooleanOrDefault(DISABLE_SUB_CHANNEL_CONFIG_KEY, false)
         set(value) {
-            val config = getConfig()
-            migrateLegacyConfigIfNeeded(config)
-            config.putBoolean(DISABLE_SUB_CHANNEL_CONFIG_KEY, value)
+            getConfig().putBoolean(DISABLE_SUB_CHANNEL_CONFIG_KEY, value)
         }
 
     var disableBubble: Boolean
-        get() {
-            val config = getConfig()
-            migrateLegacyConfigIfNeeded(config)
-            return config.getBooleanOrDefault(DISABLE_BUBBLE_CONFIG_KEY, false)
-        }
+        get() = getConfig().getBooleanOrDefault(DISABLE_BUBBLE_CONFIG_KEY, false)
         set(value) {
-            val config = getConfig()
-            migrateLegacyConfigIfNeeded(config)
-            config.putBoolean(DISABLE_BUBBLE_CONFIG_KEY, value)
+            getConfig().putBoolean(DISABLE_BUBBLE_CONFIG_KEY, value)
         }
 
     private fun getConfig(): ConfigManager {
         return ConfigManager.getDefaultConfig()
-    }
-
-    private fun migrateLegacyConfigIfNeeded(config: ConfigManager) {
-        if (!config.containsKey(LEGACY_CONFIG_KEY)) {
-            return
-        }
-        val legacyValue = config.getBooleanOrDefault(LEGACY_CONFIG_KEY, false)
-        if (!config.containsKey(DISABLE_SUB_CHANNEL_CONFIG_KEY)) {
-            config.putBoolean(DISABLE_SUB_CHANNEL_CONFIG_KEY, legacyValue)
-        }
-        if (!config.containsKey(DISABLE_BUBBLE_CONFIG_KEY)) {
-            config.putBoolean(DISABLE_BUBBLE_CONFIG_KEY, legacyValue)
-        }
-        config.edit().remove(LEGACY_CONFIG_KEY).apply()
     }
 }
