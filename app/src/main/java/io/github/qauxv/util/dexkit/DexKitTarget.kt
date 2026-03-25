@@ -1113,7 +1113,11 @@ data object Hd_RemoveEmoReplyMenu_Method : DexKitTarget.UsingStr() {
     override val findMethod = true
     override val traitString = arrayOf("msgItem is not support emo reply")
     override val declaringClass = "Lcom/tencent/qqnt/aio/api/impl/AIOEmoReplyMenuApiImpl;"
-    override val filter = DexKitFilter.allowAll
+    override val filter = DexKitFilter.strInClsName(declaringClass) and
+        filter@{ it: DexMethodDescriptor ->
+            val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+            m.returnType == ViewGroup::class.java
+        }
 }
 
 data object PadUtil_getDeviceType : DexKitTarget.UsingStr() {

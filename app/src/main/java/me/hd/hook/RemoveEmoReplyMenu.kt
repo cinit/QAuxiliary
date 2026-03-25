@@ -22,11 +22,13 @@
 
 package me.hd.hook
 
+import android.content.Context
 import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
+import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.Hd_RemoveEmoReplyMenu_Method
@@ -46,6 +48,13 @@ object RemoveEmoReplyMenu : CommonSwitchFunctionHook(
     override fun initOnce(): Boolean {
         hookBeforeIfEnabled(DexKit.requireMethodFromCache(Hd_RemoveEmoReplyMenu_Method)) { param ->
             param.result = null
+        }
+        if (requireMinQQVersion(QQVersion.QQ_9_1_75)) {
+            val switchApiClass = Initiator.loadClass("com.tencent.qqnt.aio.api.impl.AIOEmoReplyMenuApiImpl")
+            val msgItemClass = Initiator.loadClass("com.tencent.mobileqq.aio.msg.AIOMsgItem")
+            hookBeforeIfEnabled(switchApiClass.getDeclaredMethod("hasEmoReplyMenu", Context::class.java, msgItemClass)) { param ->
+                param.result = false
+            }
         }
         return true
     }
