@@ -24,13 +24,13 @@ package cc.ioctl.hook.ui.title;
 import android.view.View;
 import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
-import io.github.qauxv.util.xpcompat.XC_MethodReplacement;
-import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Simplify;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.xpcompat.XC_MethodReplacement;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 
@@ -66,20 +66,25 @@ public class RemoveQbossAD extends CommonSwitchFunctionHook {
             }
         }
         try {
-            XposedBridge.hookAllMethods(Initiator.load(
-                    "com.tencent.mobileqq.activity.recent.bannerprocessor.VasADBannerProcessor"),
-                "handleMessage", new XC_MethodReplacement() {
-                    @Override
-                    protected Object replaceHookedMethod(MethodHookParam param) {
-                        try {
-                            return XposedBridge.invokeOriginalMethod(param.method,
-                                param.thisObject, param.args);
-                        } catch (Exception e) {
-                            traceError(e);
-                            return null;
+            XposedBridge.hookAllMethods(
+                    Initiator.load("com.tencent.mobileqq.activity.recent.bannerprocessor.VasADBannerProcessor"),
+                    "handleMessage",
+                    new XC_MethodReplacement() {
+                        @Override
+                        protected Object replaceHookedMethod(MethodHookParam param) {
+                            try {
+                                return XposedBridge.invokeOriginalMethod(param.method, param.thisObject, param.args);
+                            } catch (Exception e) {
+                                traceError(e);
+                                if (((Method) param.method).getReturnType().equals(boolean.class)) {
+                                    return true;
+                                } else {
+                                    return null;
+                                }
+                            }
                         }
                     }
-                });
+            );
         } catch (Exception e) {
             //ignore
         }
