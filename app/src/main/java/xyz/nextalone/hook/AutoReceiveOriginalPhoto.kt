@@ -138,7 +138,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
                         addAll(it)
                     }
                 }
-                Log.d("clazz: $clazzList")
+                // Log.d("clazz: $clazzList")
                 if (clazzList.size != 1) {
                     return false
                 }
