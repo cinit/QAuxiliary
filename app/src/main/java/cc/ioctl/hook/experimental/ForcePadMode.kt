@@ -60,16 +60,20 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
 //            Log.i("ForcePadMode getAppId: $result")
 //        }
         val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
-        appSettingClass.getDeclaredMethod("f").hookAfter {
+        appSettingClass.getDeclaredMethod(
+            if (requireMinQQVersion(QQVersion.QQ_9_2_30)) "e" else "f"
+        ).hookAfter {
             val (appIdPhone, appIdPad) = Pair(
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "f"
+                    requireMinQQVersion(QQVersion.QQ_9_2_30) -> "f"
                     requireMinQQVersion(QQVersion.QQ_9_2_15) -> "g"
                     requireMinQQVersion(QQVersion.QQ_9_1_50) -> "f"
                     else -> "e"
                 },
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "g"
+                    requireMinQQVersion(QQVersion.QQ_9_2_30) -> "g"
                     requireMinQQVersion(QQVersion.QQ_9_2_15) -> "h"
                     requireMinQQVersion(QQVersion.QQ_9_1_50) -> "g"
                     else -> "f"
