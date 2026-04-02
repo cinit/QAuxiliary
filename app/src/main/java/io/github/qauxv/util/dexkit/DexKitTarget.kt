@@ -48,6 +48,7 @@ import me.ketal.data.ConfigData
 import mqq.app.AppRuntime
 import org.luckypray.dexkit.DexKitBridge
 import org.luckypray.dexkit.result.MethodData
+import java.util.concurrent.ConcurrentHashMap
 
 typealias DexKitBridgeFinder = (bridge: DexKitBridge) -> MethodData
 
@@ -1212,4 +1213,14 @@ data object Hd_EnableGenChatSummary_Class : DexKitTarget.UsingStringVector() {
     override val traitStringVectors = arrayOf(arrayOf("未读消息较多时，可以进行群聊总结", "立即总结"))
     override val declaringClass = "Lchat_summary/compose/SummaryGenGuideViewKt\$SummaryGenGuideView$2$2$1;"
     override val filter = DexKitFilter.strInClsName("chat_summary/compose/SummaryGenGuideViewKt/")
+}
+
+data object Hd_CustomReportStep_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("Health_SportReportHelper", "health_step_count_history"))
+    override val declaringClass = "Lcom/tencent/mobileqq/vashealth/step/Health_SportReportHelper;"
+    override val filter = filter@{ it: DexMethodDescriptor ->
+        val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
+        m.paramCount == 1 && m.parameterTypes.contentEquals(arrayOf(ConcurrentHashMap::class.java))
+    }
 }
