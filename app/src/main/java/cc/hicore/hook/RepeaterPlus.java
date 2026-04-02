@@ -179,7 +179,75 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     @SuppressLint({"WrongConstant", "ResourceType"})
     public boolean initOnce() throws Exception {
-        if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
+        if (requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+            if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
+                XC_MethodHook callback = new XC_MethodHook() {
+                    private volatile long click_time = 0;
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Exception {
+                        if (param.args.length == 3
+                                && param.args[0] instanceof Integer
+                                && param.args[2] instanceof List
+                        ) {
+                            ImageView imageView = null;
+
+                            Object lazyInstance = XField.obj(param.thisObject)
+                                    .filter((field, value) -> {
+                                        String typeName = field.getType().getName();
+                                        return typeName.equals("kotlin.Lazy") || typeName.contains("Lazy");
+                                    })
+                                    .get();
+
+                            if (lazyInstance != null) {
+                                imageView = XMethod.obj(lazyInstance)
+                                        .name("getValue")
+                                        .paramCount(0)
+                                        .invoke();
+                            }
+
+                            if (imageView != null) {
+                                if (imageView.getContext().getClass().getName().contains("MultiForwardActivity")) {
+                                    imageView.setVisibility(View.GONE);
+                                    return;
+                                }
+                                imageView.setImageBitmap(RepeaterPlusIconSettingDialog.getRepeaterIcon());
+
+                                imageView.setOnClickListener(v -> {
+                                    if (RepeaterPlusIconSettingDialog.getIsDoubleClick()) {
+                                        try {
+                                            if (System.currentTimeMillis() - 200 > click_time) {
+                                                return;
+                                            }
+                                        } finally {
+                                            click_time = System.currentTimeMillis();
+                                        }
+                                    }
+
+                                    Object msgObj = param.args[1];
+                                    if (isMessageRepeatable(msgObj)) {
+                                        repeatByForwardNt(msgObj);
+                                    } else {
+                                        Toasts.error(v.getContext(), "该消息不支持复读");
+                                    }
+                                });
+
+                                imageView.setVisibility(0);
+                            }
+                        }
+                    }
+                };
+
+                Class<?> clz = Initiator.loadClass("com.tencent.mobileqq.aio.msglist.holder.component.msgfollow.AIOMsgFollowComponent");
+                for (Method method : clz.getDeclaredMethods()) {
+                    Class<?>[] pts = method.getParameterTypes();
+                    if (pts.length == 3 && pts[0].equals(int.class) && pts[2].equals(List.class)) {
+                        XposedBridge.hookMethod(method, callback);
+                    }
+                }
+            }
+            return true;
+        } else if (requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA)) {
             if (!RepeaterPlusIconSettingDialog.getIsShowInMenu()) {
                 XC_MethodHook callback = new XC_MethodHook() {
                     private ImageView img;
