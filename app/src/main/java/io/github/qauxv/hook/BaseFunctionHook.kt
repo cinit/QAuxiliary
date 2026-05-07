@@ -104,7 +104,11 @@ abstract class BaseFunctionHook(
     override val isApplicationRestartRequired = false
 
     override var isEnabled: Boolean
-        get() = enableAllHook() || ConfigManager.getDefaultConfig().getBooleanOrDefault(mHookEnableConfigKey, mDefaultEnabled)
+        get() = enableAllHook() ||
+            ConfigManager.getDefaultConfig().getBooleanOrDefault(
+                mHookEnableConfigKey,
+                mDefaultEnabled && isAvailable
+            )
         set(value) {
             ConfigManager.getDefaultConfig().putBoolean(mHookEnableConfigKey, value)
         }
