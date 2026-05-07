@@ -41,15 +41,33 @@ object DisableQQCrashReportManager : CommonSwitchFunctionHook(defaultEnabled = t
 
     override val uiItemLocation = FunctionEntryRouter.Locations.DebugCategory.DEBUG_CATEGORY
     override val isApplicationRestartRequired = true
-    override val isAvailable = !isTim()
+    override val isAvailable = true
 
     override fun initOnce(): Boolean {
-        val kQQCrashReportManager = Initiator.loadClass("com.tencent.qqperf.monitor.crash.QQCrashReportManager")
-        val initCrashReport = kQQCrashReportManager.declaredMethods.single {
-            it.isPublic && it.returnType == Void.TYPE && !it.isStatic && it.parameterTypes.size == 2
+        // com/tencent/qqperf/monitor/crash/QQCrashReportManager is added in QQ 8.?.?
+        // and the class name is not obfuscated
+        val kQQCrashReportManager = Initiator.load("com.tencent.qqperf.monitor.crash.QQCrashReportManager")
+        if (kQQCrashReportManager != null) {
+            val initCrashReport = kQQCrashReportManager.declaredMethods.single {
+                it.isPublic && it.returnType == Void.TYPE && !it.isStatic && it.parameterTypes.size == 2
+            }
+            HookUtils.hookBeforeAlways(this, initCrashReport) {
+                it.result = null
+            }
         }
-        HookUtils.hookBeforeAlways(this, initCrashReport) {
-            it.result = null
+        val kStatisticCollector = Initiator.load("com.tencent.mobileqq.statistics.StatisticCollector")
+        if (kStatisticCollector != null) {
+            // for TIM 2.3.1.1834_1072 and QQ 8.0.0.4000_1024
+            // there should be [abcd] 4 methods, select 'c'
+            // public void .+\(String str\)
+            val initCrashReport = kStatisticCollector.declaredMethods.single {
+                it.isPublic && it.returnType == Void.TYPE && !it.isStatic && it.parameterTypes.size == 1 &&
+                    it.name == "c" &&
+                    it.parameterTypes[0] == java.lang.String::class.java
+            }
+            HookUtils.hookBeforeAlways(this, initCrashReport) {
+                it.result = null
+            }
         }
         return true
     }
