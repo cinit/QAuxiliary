@@ -22,7 +22,8 @@
 
 package cc.ioctl.hook.experimental
 
-import com.github.kyuubiran.ezxhelper.utils.getStaticObject
+import com.github.kyuubiran.ezxhelper.utils.findMethod
+import com.github.kyuubiran.ezxhelper.utils.getStaticObjectAs
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -60,9 +61,12 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
 //            Log.i("ForcePadMode getAppId: $result")
 //        }
         val appSettingClass = Initiator.loadClass("com.tencent.common.config.AppSetting")
-        appSettingClass.getDeclaredMethod(
-            if (requireMinQQVersion(QQVersion.QQ_9_2_30)) "e" else "f"
-        ).hookAfter {
+        appSettingClass.findMethod {
+            returnType == Int::class.java && name == when {
+                requireMinQQVersion(QQVersion.QQ_9_2_30) -> "e"
+                else -> "f"
+            }
+        }.hookAfter {
             val (appIdPhone, appIdPad) = Pair(
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "f"
@@ -81,7 +85,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
                     else -> "f"
                 },
             )
-            it.result = appSettingClass.getStaticObject(appIdPad)
+            it.result = appSettingClass.getStaticObjectAs<Int>(appIdPad)
         }
     }
 
