@@ -1,11 +1,46 @@
 package io.github.qauxv.util.xpcompat;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import io.github.qauxv.loader.hookapi.IHookBridge;
+import java.lang.reflect.Member;
+import java.lang.reflect.Method;
 
 /*package*/ class WrappedCallbacks {
 
     private WrappedCallbacks() {
+    }
+
+    @NonNull
+    private static Class<?> getWrapperType(@NonNull Class<?> type) {
+        if (type == boolean.class) {
+            return Boolean.class;
+        }
+        if (type == byte.class) {
+            return Byte.class;
+        }
+        if (type == char.class) {
+            return Character.class;
+        }
+        if (type == double.class) {
+            return Double.class;
+        }
+        if (type == float.class) {
+            return Float.class;
+        }
+        if (type == int.class) {
+            return Integer.class;
+        }
+        if (type == long.class) {
+            return Long.class;
+        }
+        if (type == short.class) {
+            return Short.class;
+        }
+        if (type == void.class) {
+            return Void.class;
+        }
+        throw new IllegalArgumentException("Not a primitive type: " + type);
     }
 
     public static class WrappedHookParam extends XC_MethodHook.MethodHookParam {
@@ -20,8 +55,31 @@ import io.github.qauxv.loader.hookapi.IHookBridge;
             return param.getResult();
         }
 
+        private void checkResultCast(@NonNull Member member, @Nullable Object result) throws ClassCastException {
+            if (!(member instanceof Method)) {
+                // Constructors always return void, so we can skip the check.
+                return;
+            }
+            Class<?> returnType = ((Method) member).getReturnType();
+            if (returnType == void.class) {
+                return;
+            }
+            if (returnType.isPrimitive()) {
+                if (result == null) {
+                    throw new ClassCastException("Cannot return null for a primitive return type");
+                }
+                Class<?> wrapperType = getWrapperType(returnType);
+                wrapperType.cast(result);
+            } else {
+                if (result != null) {
+                    returnType.cast(result);
+                }
+            }
+        }
+
         @Override
         public void setResult(Object result) {
+            checkResultCast(param.getMember(), result);
             param.setResult(result);
         }
 
