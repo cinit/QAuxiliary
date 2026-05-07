@@ -28,7 +28,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.SyncUtils
-import io.github.qauxv.util.isTim
 import xyz.nextalone.util.isPublic
 import xyz.nextalone.util.isStatic
 
@@ -54,19 +53,20 @@ object DisableQQCrashReportManager : CommonSwitchFunctionHook(defaultEnabled = t
             HookUtils.hookBeforeAlways(this, initCrashReport) {
                 it.result = null
             }
-        }
-        val kStatisticCollector = Initiator.load("com.tencent.mobileqq.statistics.StatisticCollector")
-        if (kStatisticCollector != null) {
-            // for TIM 2.3.1.1834_1072 and QQ 8.0.0.4000_1024
-            // there should be [abcd] 4 methods, select 'c'
-            // public void .+\(String str\)
-            val initCrashReport = kStatisticCollector.declaredMethods.single {
-                it.isPublic && it.returnType == Void.TYPE && !it.isStatic && it.parameterTypes.size == 1 &&
-                    it.name == "c" &&
-                    it.parameterTypes[0] == java.lang.String::class.java
-            }
-            HookUtils.hookBeforeAlways(this, initCrashReport) {
-                it.result = null
+        } else {
+            val kStatisticCollector = Initiator.load("com.tencent.mobileqq.statistics.StatisticCollector")
+            if (kStatisticCollector != null) {
+                // for TIM 2.3.1.1834_1072 and QQ 8.0.0.4000_1024
+                // there should be [abcd] 4 methods, select 'c'
+                // public void .+\(String str\)
+                val initCrashReport = kStatisticCollector.declaredMethods.single {
+                    it.isPublic && it.returnType == Void.TYPE && !it.isStatic && it.parameterTypes.size == 1 &&
+                        it.name == "c" &&
+                        it.parameterTypes[0] == java.lang.String::class.java
+                }
+                HookUtils.hookBeforeAlways(this, initCrashReport) {
+                    it.result = null
+                }
             }
         }
         return true
