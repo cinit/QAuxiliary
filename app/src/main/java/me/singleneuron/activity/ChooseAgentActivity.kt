@@ -112,11 +112,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
             putExtra("moInputType", 2)
             putExtra("chooseFriendFrom", 1)
             putExtra("forward_source_business_type", -1)
-            if (intent.type == "image/*") {
-                putExtra("forward_type", 1)
-            } else {
-                putExtra("forward_type", 0)
-            }
+            putExtra("forward_type", intent.getIntExtra("forward_type", 0)) // 0: file 1: image
             bundle?.let {
                 val uin = it.getString("targetUin") ?: it.getLong("key_peerUin").toString()
                 putExtra("uin", uin)

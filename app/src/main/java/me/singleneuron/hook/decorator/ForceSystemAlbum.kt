@@ -89,7 +89,7 @@ object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecor
                     MaterialAlertDialogBuilder(materialContext)
                         .setTitle("系统相册")
                         .setItems(arrayOf("图片", "视频"), { _, i ->
-                            val intent = Intent(context, ChooseAgentActivity::class.java).apply {
+                            val intent = Intent(context, ChooseAgentActivity::class.java).apply ChooseAgentActivity@{
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 putExtras(intent)
                                 putExtra("chooser_intent", Intent(Intent.ACTION_PICK).apply {
@@ -97,6 +97,9 @@ object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecor
                                         0 -> "image/*"
                                         1 -> "video/*"
                                         else -> "*/*"
+                                    }
+                                    if (type == "image/*") {
+                                        this@ChooseAgentActivity.putExtra("forward_type", 1)
                                     }
                                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                                 })
@@ -109,7 +112,7 @@ object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecor
                     MaterialAlertDialogBuilder(materialContext)
                         .setTitle("系统文档")
                         .setItems(arrayOf("图片", "视频"), { _, i ->
-                            val intent = Intent(context, ChooseAgentActivity::class.java).apply {
+                            val intent = Intent(context, ChooseAgentActivity::class.java).apply ChooseAgentActivity@{
                                 addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                                 putExtras(intent)
                                 putExtra("chooser_intent", Intent(Intent.ACTION_GET_CONTENT).apply {
@@ -117,6 +120,9 @@ object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecor
                                         0 -> "image/*"
                                         1 -> "video/*"
                                         else -> "*/*"
+                                    }
+                                    if (type == "image/*") {
+                                        this@ChooseAgentActivity.putExtra("forward_type", 1)
                                     }
                                     putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
                                 })
