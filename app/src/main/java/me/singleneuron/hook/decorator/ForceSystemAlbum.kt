@@ -83,32 +83,62 @@ object ForceSystemAlbum : BaseConfigFunctionDecorator(), IStartActivityHookDecor
             }
             val context = param.thisObject as Context
             Log.d("context: ${context.javaClass.name}")
-            val activityArray = arrayOf(
-                "系统相册" to Intent(context, ChooseAgentActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtra("use_ACTION_PICK", true)
-                    putExtras(intent)
-                    type = "image/*"
+            val materialContext = CommonContextWrapper.createMaterialDesignContext(context)
+            val runnableArray = arrayOf(
+                "系统相册" to {
+                    MaterialAlertDialogBuilder(materialContext)
+                        .setTitle("系统相册")
+                        .setItems(arrayOf("图片", "视频"), { _, i ->
+                            val intent = Intent(context, ChooseAgentActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                putExtras(intent)
+                                putExtra("chooser_intent", Intent(Intent.ACTION_PICK).apply {
+                                    type = when (i) {
+                                        0 -> "image/*"
+                                        1 -> "video/*"
+                                        else -> "*/*"
+                                    }
+                                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                                })
+                            }
+                            context.startActivity(intent)
+                        })
+                        .show()
                 },
-                "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
-                    addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
-                    putExtras(intent)
-                    type = "image/*"
+                "系统文档" to {
+                    MaterialAlertDialogBuilder(materialContext)
+                        .setTitle("系统文档")
+                        .setItems(arrayOf("图片", "视频"), { _, i ->
+                            val intent = Intent(context, ChooseAgentActivity::class.java).apply {
+                                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+                                putExtras(intent)
+                                putExtra("chooser_intent", Intent(Intent.ACTION_GET_CONTENT).apply {
+                                    type = when (i) {
+                                        0 -> "image/*"
+                                        1 -> "video/*"
+                                        else -> "*/*"
+                                    }
+                                    putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                                })
+                            }
+                            context.startActivity(intent)
+                        })
+                        .show()
                 },
-                "QQ 相册" to intent.apply {
-                    putExtra("is_decorated", true)
+                "QQ 相册" to {
+                    intent.putExtra("is_decorated", true)
+                    context.startActivity(intent)
                 }
             )
-            val materialContext = CommonContextWrapper.createMaterialDesignContext(context)
-            val selectedType = activityArray.getOrNull(ConfigManager.getDefaultConfig().getInt(ALBUM_TYPE, ALBUM_TYPE_DEFAULT))
+            val selectedType = runnableArray.getOrNull(ConfigManager.getDefaultConfig().getInt(ALBUM_TYPE, ALBUM_TYPE_DEFAULT))
             if (selectedType != null) {
-                context.startActivity(selectedType.second)
+                selectedType.second.invoke()
             } else {
                 MaterialAlertDialogBuilder(materialContext)
                     .setTitle("选择相册")
-                    .setItems(activityArray.map { it.first }.toTypedArray()) { _: DialogInterface, i: Int ->
+                    .setItems(runnableArray.map { it.first }.toTypedArray()) { _: DialogInterface, i: Int ->
                         // recursion here
-                        context.startActivity(activityArray[i].second)
+                        runnableArray[i].second.invoke()
                     }
                     .create()
                     .show()

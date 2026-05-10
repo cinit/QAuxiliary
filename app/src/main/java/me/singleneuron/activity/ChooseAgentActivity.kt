@@ -24,9 +24,6 @@ package me.singleneuron.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.Intent.ACTION_GET_CONTENT
-import android.content.Intent.ACTION_PICK
-import android.content.Intent.EXTRA_ALLOW_MULTIPLE
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
@@ -47,16 +44,9 @@ class ChooseAgentActivity : AbstractChooseActivity() {
         setTheme(R.style.NoDisplay)
         super.onCreate(savedInstanceState)
         bundle = intent.extras
-        val intent = if (intent.getBooleanExtra("use_ACTION_PICK", false))
-            Intent(ACTION_PICK).apply {
-                type = "image/*"
-                putExtra(EXTRA_ALLOW_MULTIPLE, true)
-            }
-        else Intent(ACTION_GET_CONTENT).apply {
-            type = intent.type ?: "*/*"
-            putExtra(EXTRA_ALLOW_MULTIPLE, true)
-        }
-        startActivityForResult(intent, REQUEST_CODE)
+        val chooserIntent = intent.getParcelableExtra<Intent>("chooser_intent")
+            ?: throw IllegalArgumentException("chooser_intent is null")
+        startActivityForResult(chooserIntent, REQUEST_CODE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
