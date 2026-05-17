@@ -486,7 +486,8 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
                         ? "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"
                         : "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent",
                 "com.tencent.mobileqq.aio.msglist.holder.component.file.AIOFileContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent"
+                "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",
+                "com.tencent.mobileqq.aio.msglist.holder.component.marketface.AIOMarketFaceComponent"
         };
     }
 
