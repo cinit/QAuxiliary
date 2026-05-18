@@ -144,9 +144,9 @@ public final class RemoveShakeAdExampleHook extends CommonSwitchFunctionHook {
 3. 一个 commit 做一件事情
 4. 请勿在 commit 附上任何有关 [skip ci] 的字段
 5. 在 commit 之前请先更新到最新的 main 分支, 以方便我们进行快速合并(fast-forward merge).
-6. 每个 commit 都必须附着有效的GPG签名，如果您不知道如何使用 GPG 签名，请参阅
+6. 每个 commit 都必须附着有效的 GPG/SSH 签名，如果您不知道如何使用 GPG/SSH 签名，请参阅
    [这里](https://docs.github.com/cn/github/authenticating-to-github/managing-commit-signature-verification).
-   如果你实在不会配置 GPG 签名，你仍然可以提交 PR, 但由于 main 分支要求所有 commit 必须附着有效的 GPG 签名，就只好由我们来代替你签名了.
+   如果你实在不会配置 GPG/SSH 签名，你仍然可以提交 PR, 但由于 main 分支要求所有 commit 必须附着有效的 GPG/SSH 签名，就只好由我们来代替你签名了.
 
 ## Pull Request
 
