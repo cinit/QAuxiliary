@@ -153,7 +153,7 @@ object AutoReceiveOriginalPhoto : CommonSwitchFunctionHook(
                     declaredClass = kAIOPictureView.name
                     returnType = "void"
                     paramTypes(*arrayOf<Class<*>>())
-                    addCall {
+                    addCaller {
                         declaredClass = kAIOPictureView.name
                         name = "onClick"
                     }
