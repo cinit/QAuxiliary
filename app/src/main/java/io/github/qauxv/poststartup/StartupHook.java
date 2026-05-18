@@ -75,6 +75,7 @@ public class StartupHook {
         HybridClassLoader.setHostClassLoader(ctx.getClassLoader());
         StartupRoutine.execPostStartupInit(ctx, step, lpwReserved, bReserved);
         sSecondStageInit = true;
+        applyTargetDpiIfNecessary(ctx);
         deleteDirIfNecessaryNoThrow(ctx);
     }
 
