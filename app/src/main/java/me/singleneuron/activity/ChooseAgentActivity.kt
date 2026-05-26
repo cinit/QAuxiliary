@@ -60,12 +60,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
                         initSendCacheDir()
                         val uri = data.data
                         val clip = data.clipData
-                        if (uri != null) {
-                            // Only one file chosen
-                            convertUriToPath(uri)?.let {
-                                sendAFile(it, data)
-                            }
-                        } else if (clip != null) {
+                        if (clip != null) {
                             // multiple file chosen
                             convertClipDataToPath(clip).let {
                                 var delayTime: Long = 0
@@ -75,6 +70,11 @@ class ChooseAgentActivity : AbstractChooseActivity() {
                                     }
                                     delayTime += 1000
                                 }
+                            }
+                        } else if (uri != null) {
+                            // Only one file chosen
+                            convertUriToPath(uri)?.let {
+                                sendAFile(it, data)
                             }
                         }
                     }
