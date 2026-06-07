@@ -3,12 +3,12 @@
 # AGP 10.0 no longer supports `android.newDsl=false`, so do not use AGP 10.0 for now.
 agp = "9.2.1"
 appCenter = "5.0.6"
-kotlin = "2.3.21"
-ksp = "2.3.8"
+kotlin = "2.4.0"
+ksp = "2.3.9"
 lifecycle = "2.10.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.34.1"
+protobuf = "4.35.0"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -19,7 +19,7 @@ androidx-annotation = { module = "androidx.annotation:annotation", version = "1.
 androidx-browser = { module = "androidx.browser:browser", version = "1.10.0" }
 androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
-androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.18.0" }
+androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.19.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
 eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.6.0.202603022253-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
@@ -42,7 +42,7 @@ weatherView = { module = "com.github.MatteoBattilana:WeatherView", version = "3.
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 glide = { module = "com.github.bumptech.glide:glide", version = "5.0.7" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.8" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.10" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "16.0.1" }
 #noinspection NewerVersionAvailable do not update com.google.flatbuffers:flatbuffers-java, need to keep it sync with DexKit
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
@@ -57,6 +57,6 @@ changelog = { id = "org.jetbrains.changelog", version = "2.5.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 kotlin-jvm = { id = "org.jetbrains.kotlin.jvm", version.ref = "kotlin" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version = "14.2.0" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version = "14.2.1" }
 protobuf = { id = "com.google.protobuf", version = "0.10.0" }
 android-library = { id = "com.android.library", version.ref = "agp" }
