@@ -6,8 +6,8 @@ import java.util.Properties
 object Version {
     val java = JavaVersion.VERSION_11
 
-    // some dependencies require compileSdkVersion 36+
-    const val compileSdkVersion = "36.1"
+    // some dependencies require compileSdkVersion 37+
+    const val compileSdkVersion = "37.0"
     val buildToolsVersion = findBuildToolsVersion()
     const val minSdk = 24
     const val targetSdk = 36
