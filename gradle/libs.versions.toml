@@ -51,6 +51,8 @@ google-protobuf-java = { module = "com.google.protobuf:protobuf-java", version.r
 google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = "protobuf" }
 dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
 google-guava = { module = "com.google.guava:guava", version = "33.6.0-android" }
+junit = { module = "junit:junit", version = "4.13.2" }
+androidx-test-runner = { module = "androidx.test:runner", version = "1.6.2" }
 
 [plugins]
 changelog = { id = "org.jetbrains.changelog", version = "2.5.0" }

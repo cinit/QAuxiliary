@@ -103,6 +103,7 @@ android {
     ndkVersion = Version.getNdkVersion(rootProject)
     defaultConfig {
         applicationId = "io.github.qauxv"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
@@ -355,6 +356,8 @@ dependencies {
     implementation(libs.google.guava)
     // for get activation status
     implementation(projects.libs.libxposed.service)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
