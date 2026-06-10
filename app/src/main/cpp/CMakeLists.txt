@@ -44,7 +44,7 @@ set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-omit-frame-pointer -Werror=non-virt
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -fno-omit-frame-pointer")
 
 add_subdirectory(../../../../libs/mmkv mmkv)
-add_subdirectory(../../../../libs/dexkit/DexKit/Core dexkit_static)
+add_subdirectory(../../../../libs/dexkit dexkit_static)
 add_subdirectory(../../../../libs/silk silk)
 add_subdirectory(../../../../libs/libunwindstack unwindstack)
 add_subdirectory(../../../../libs/fmt fmt)
