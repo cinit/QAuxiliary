@@ -399,6 +399,10 @@ public class NativeLoader {
         boolean isDebugBuild = BuildConfig.DEBUG;
         nativeSecondaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode, isDebugBuild);
         sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle;
+        // TODO: 2026-06-11 Secondary handle is overwritten with the primary handle
+        //  replaces the secondary handle obtained during loading
+        //  That contradicts the loader model. It currently appears harmless because the getter is unused, but it is incorrect state.
+        //  Find out why before attempt to make any change to this part.
         if (sSecondaryNativeLibraryHandle == 0) {
             throw new AssertionError("(sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle) == 0");
         }
