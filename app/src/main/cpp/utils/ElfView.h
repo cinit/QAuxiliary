@@ -14,6 +14,7 @@
 #include <string>
 #include <vector>
 #include <memory>
+#include <utility>
 // do not #include <elf.h> here, too many macros
 
 namespace utils {
@@ -97,6 +98,13 @@ public:
      * @return the offset of the symbol, or 0 if not found.
      */
     [[nodiscard]] uint64_t GetFirstSymbolOffsetWithPrefix(std::string_view symbolPrefix) const;
+
+    /**
+     * Just like GetFirstSymbolOffsetWithPrefix, but also returns the matched symbol name.
+     * @param symbolPrefix the prefix of the symbol.
+     * @return the matched symbol and offset, or an empty symbol and 0 if not found.
+     */
+    [[nodiscard]] std::pair<std::string, uint64_t> GetFirstSymbolWithPrefix(std::string_view symbolPrefix) const;
 
     /**
      * Find the offset of a symbol in the GOT table.

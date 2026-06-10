@@ -590,6 +590,32 @@ uint64_t ElfView::GetSymbolOffset(std::string_view symbol) const {
     return 0;
 }
 
+[[nodiscard]] std::pair<std::string, uint64_t> ElfView::GetFirstSymbolWithPrefix(std::string_view symbolPrefix) const {
+    if (symbolPrefix.empty() || !IsValid()) {
+        return {};
+    }
+    // search dynamic symbol table first
+    for (const auto& [sym, offset]: mElfInfo->dynamicSymbols) {
+        if (sym.starts_with(symbolPrefix)) {
+            return {sym, offset};
+        }
+    }
+    // search debug symbol table
+    for (const auto& [sym, offset]: mElfInfo->debugSymbols) {
+        if (sym.starts_with(symbolPrefix)) {
+            return {sym, offset};
+        }
+    }
+    // search mini debug info
+    for (const auto& [sym, offset]: mElfInfo->compressedDebugSymbols) {
+        if (sym.starts_with(symbolPrefix)) {
+            return {sym, offset};
+        }
+    }
+    // not found
+    return {};
+}
+
 std::vector<uint64_t> ElfView::GetSymbolGotOffset(std::string_view symbol) const {
     if (symbol.empty()) {
         return {};
