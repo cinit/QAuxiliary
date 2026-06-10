@@ -176,7 +176,7 @@ android {
         }
         getByName("release") {
             isShrinkResources = false
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles("proguard-rules.pro")
             val ltoCacheFlags = listOf(
                 "-flto=thin",
