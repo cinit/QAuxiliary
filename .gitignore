@@ -73,10 +73,17 @@ app/src/main/res/drawable/icon.xml
 /app/src/main/res/drawable/icon_qa_background.xml
 /app/src/main/res/drawable/icon_qa_foreground.xml
 
+# IDE configs
 .settings
 .project
 .classpath
-app/signing.properties
 .vscode
+
+app/signing.properties
+
+# Generated files
 /app/src/main/assets/open_source_licenses.json
 /app/src/main/assets/eulaAndPrivacy.html
+
+# Local tests
+/app/src/main/java/cc/ioctl/hook/localtest
