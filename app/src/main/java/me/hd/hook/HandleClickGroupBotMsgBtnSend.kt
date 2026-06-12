@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -40,7 +40,6 @@ import xyz.nextalone.util.method
 @FunctionHookEntry
 @UiItemAgentEntry
 object HandleClickGroupBotMsgBtnSend : CommonSwitchFunctionHook() {
-
     override val name = "拦截点击群机器人消息按钮直接发送"
     override val description = "防止窥屏时不小心点到而被发现"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY

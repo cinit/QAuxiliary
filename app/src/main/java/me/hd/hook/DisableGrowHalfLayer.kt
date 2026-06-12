@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -43,7 +43,6 @@ object DisableGrowHalfLayer : CommonSwitchFunctionHook(
         Hd_DisableGrowHalfLayer_Method2,
     )
 ) {
-
     override val name = "屏蔽广告弹窗(测试版)"
     override val description = "屏蔽打开QQ时随缘弹出的(小Q提醒)弹窗"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY

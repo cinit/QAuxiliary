@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -41,7 +41,6 @@ import io.github.qauxv.util.xpcompat.XposedBridge
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideMsgListGuild : CommonSwitchFunctionHook() {
-
     override val name = "隐藏消息列表的QQ频道"
     override val description = "对消息列表中的QQ频道进行简单隐藏"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_OTHER

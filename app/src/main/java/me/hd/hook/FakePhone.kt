@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -52,7 +52,6 @@ object FakePhone : BaseFunctionHook(
     hookKey = "hd_FakePhone",
     targets = arrayOf(Hd_FakePhone_Method)
 ) {
-
     private val phoneKey = ConfigData<String>("hd_FakePhone_phone")
     private var phone: String
         get() = phoneKey.getOrDefault("100******00")

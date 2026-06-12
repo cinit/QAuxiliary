@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -51,7 +51,6 @@ import me.ketal.util.ignoreResult
 object FakeVoiceTime : BaseFunctionHook(
     hookKey = "hd_FakeVoiceTime"
 ) {
-
     private val timeKey = ConfigData<String>("hd_FakeVoiceTime_time")
     private var time: String
         get() = timeKey.getOrDefault("1")
