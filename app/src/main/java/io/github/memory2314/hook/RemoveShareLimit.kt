@@ -54,8 +54,10 @@ object RemoveShareLimit : CommonSwitchFunctionHook() {
                 val mForwardTargetMap = param.thisObject.get("mForwardTargetMap") as MutableMap<Any, Any?>
                 mForwardTargetMap[forwardTargetKey] = XposedHelpers.callMethod(resultRecord, "copyResultRecord", resultRecord)
                 XposedHelpers.callMethod(param.thisObject, "refreshRightBtn")
-                val mSelectedAndSearchBar = param.thisObject.get("mSelectedAndSearchBar")
-                XposedHelpers.callMethod(mSelectedAndSearchBar, "z", ArrayList(mForwardTargetMap.values), true)
+                val mSelectedAndSearchBar = param.thisObject.get("mSelectedAndSearchBar") as? Class<*>
+                mSelectedAndSearchBar?.declaredMethods?.single {
+                    it.returnType == Void::class.java && it.parameterTypes.contentEquals(arrayOf(List::class.java, Boolean::class.java))
+                }?.invoke(ArrayList(mForwardTargetMap.values), true)
                 val arrayList = mForwardTargetMap.values.map { it.get("uin") }
                 val mSearchFragment = param.thisObject.get("mSearchFragment")
                 if (mSearchFragment != null) {
