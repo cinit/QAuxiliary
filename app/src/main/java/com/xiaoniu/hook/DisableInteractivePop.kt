@@ -43,14 +43,14 @@ object DisableInteractivePop : CommonSwitchFunctionHook() {
     override fun initOnce(): Boolean {
         // keyword string: 跳过, 关闭
         // "InteractivePopManager" "showInteractivePop playFile isNull!!"
-        "Lcom/tencent/mobileqq/springhb/interactive/ui/InteractivePopManager;".clazz!!.method {
+        "Lcom/tencent/mobileqq/springhb/interactive/ui/InteractivePopManager;".clazz?.method {
             it.parameterCount > 0 && it.parameterTypes[0].name == "androidx.fragment.app.Fragment"
-        }!!.hookReturnConstant(null)
+        }?.hookReturnConstant(null)
 
         // "PagEggPopManager" "showPop playFile isNull"
         "Lcom/tencent/mobileqq/aio/animation/pag/PagEasterEggPopManager;".clazz?.method {
             it.parameterCount > 0 && it.parameterTypes[0].name == "androidx.fragment.app.Fragment"
-        }!!.hookReturnConstant(null)
+        }?.hookReturnConstant(null)
         return true
     }
 }
