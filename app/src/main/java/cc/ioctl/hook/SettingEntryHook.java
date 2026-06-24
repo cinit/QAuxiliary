@@ -138,6 +138,7 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                 throw new IllegalStateException("kAbstractItemProcessor == null");
             }
             // SimpleItemProcessor has too few xrefs. I have no idea how to find it without a list of candidates.
+            // TODO use 'SimpleItemProcessor' keyword to search (9.2.10 ~ 9.3.10)
             final String[] possibleSimpleItemProcessorNames = new String[]{
                     // 8.9.70 ~ 9.0.0
                     "com.tencent.mobileqq.setting.processor.g",
@@ -151,8 +152,10 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     "as3.i",
                     // 9.3.5.37145 (14498) gray
                     "c25.i",
+                    // 9.3.10.37250
+                    "a35.i",
             };
-            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(5);
+            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(possibleSimpleItemProcessorNames.length);
             for (String name : possibleSimpleItemProcessorNames) {
                 Class<?> klass = Initiator.load(name);
                 if (klass != null && klass.getSuperclass() == kAbstractItemProcessor) {
