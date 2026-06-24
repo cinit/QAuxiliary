@@ -730,7 +730,7 @@ data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
 
 data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("rootVMBuild")
+    override val traitString = arrayOf("rootVMBuild", "recursiveBuildVM")
     override val declaringClass = "AIO_Create_QQNT"
     override val filter = DexKitFilter.allowAll
 }
