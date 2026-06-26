@@ -5,10 +5,10 @@ agp = "9.2.1"
 appCenter = "5.0.6"
 kotlin = "2.4.0"
 ksp = "2.3.9"
-lifecycle = "2.10.0"
+lifecycle = "2.11.0"
 materialDialog = "3.3.0"
 sealedEnum = "0.7.0"
-protobuf = "4.35.0"
+protobuf = "4.35.1"
 
 [libraries]
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
@@ -21,7 +21,7 @@ androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayo
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.19.0" }
 androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
-eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.6.0.202603022253-r" }
+eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.7.0.202606012155-r" }
 hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", version = "6.1" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.3.0" }
