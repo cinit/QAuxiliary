@@ -204,14 +204,14 @@ public class DefaultFont extends CommonSwitchFunctionHook implements DexKitFinde
                 try {
                     MethodData methodData = res.get(0);
                     methodData.getMethodInstance(Initiator.getHostClassLoader());
-                    NTextItemBuilder_setETText.INSTANCE.setDescCache(methodData.toString());
+                    NTextItemBuilder_setETText.INSTANCE.setDescCache(methodData.getDescriptor());
                     Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(NTextItemBuilder_setETText.INSTANCE) + ",method: " + methodData.getDescriptor());
                     return true;
                 } catch (Throwable e) {
                     traceError(e);
                 }
             }
-            NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.toString());
+            NTextItemBuilder_setETText.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.getDescriptor());
             return false;
         }
     }
