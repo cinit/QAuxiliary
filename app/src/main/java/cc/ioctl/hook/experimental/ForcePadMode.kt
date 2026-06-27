@@ -70,6 +70,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
             val (appIdPhone, appIdPad) = Pair(
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "f"
+                    requireMinQQVersion(QQVersion.QQ_9_3_5) -> "a"
                     requireMinQQVersion(QQVersion.QQ_9_2_65) -> "e"
                     requireMinQQVersion(QQVersion.QQ_9_2_30) -> "f"
                     requireMinQQVersion(QQVersion.QQ_9_2_15) -> "g"
@@ -78,6 +79,7 @@ object ForcePadMode : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) 
                 },
                 when {
                     requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) -> "g"
+                    requireMinQQVersion(QQVersion.QQ_9_3_5) -> "b"
                     requireMinQQVersion(QQVersion.QQ_9_2_65) -> "f"
                     requireMinQQVersion(QQVersion.QQ_9_2_30) -> "g"
                     requireMinQQVersion(QQVersion.QQ_9_2_15) -> "h"
