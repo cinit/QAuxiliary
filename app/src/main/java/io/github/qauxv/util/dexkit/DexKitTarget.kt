@@ -1224,3 +1224,9 @@ data object Hd_CustomReportStep_Method : DexKitTarget.UsingStringVector() {
         m.paramCount == 1 && m.parameterTypes.contentEquals(arrayOf(ConcurrentHashMap::class.java))
     }
 }
+
+data object SimpleItemProcessor_Method : DexKitTarget.UsingDexkit() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com/tencent/mobileqq/setting/processor/SimpleItemProcessor"
+    override val filter = DexKitFilter.allowAll
+}

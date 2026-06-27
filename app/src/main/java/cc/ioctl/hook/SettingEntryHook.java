@@ -23,6 +23,7 @@ package cc.ioctl.hook;
 
 import static android.view.ViewGroup.LayoutParams.MATCH_PARENT;
 import static android.view.ViewGroup.LayoutParams.WRAP_CONTENT;
+import static cc.ioctl.util.HostInfo.requireMinQQVersion;
 import static io.github.qauxv.util.Initiator.load;
 
 import android.annotation.SuppressLint;
@@ -36,6 +37,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.LinearLayout;
 import androidx.annotation.NonNull;
+import cc.hicore.QApp.QAppUtils;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.LayoutHelper;
@@ -49,9 +51,16 @@ import io.github.qauxv.fragment.EulaFragment;
 import io.github.qauxv.fragment.FuncStatusDetailsFragment;
 import io.github.qauxv.hook.BasePersistBackgroundHook;
 import io.github.qauxv.lifecycle.Parasitics;
+import io.github.qauxv.step.Step;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Log;
+import io.github.qauxv.util.QQVersion;
+import io.github.qauxv.util.dexkit.DexDeobfsProvider;
+import io.github.qauxv.util.dexkit.DexKit;
+import io.github.qauxv.util.dexkit.DexKitTargetSealedEnum;
+import io.github.qauxv.util.dexkit.SimpleItemProcessor_Method;
+import io.github.qauxv.util.dexkit.impl.DexKitDeobfs;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
 import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.util.xpcompat.XposedHelpers;
@@ -65,6 +74,11 @@ import java.util.Comparator;
 import java.util.List;
 import kotlin.collections.ArraysKt;
 import kotlin.jvm.functions.Function0;
+import org.luckypray.dexkit.DexKitBridge;
+import org.luckypray.dexkit.query.FindMethod;
+import org.luckypray.dexkit.query.matchers.MethodMatcher;
+import org.luckypray.dexkit.result.MethodData;
+import org.luckypray.dexkit.result.MethodDataList;
 
 @FunctionHookEntry
 public class SettingEntryHook extends BasePersistBackgroundHook {
@@ -79,6 +93,64 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
     // am start "intent:#Intent;component=com.tencent.mobileqq/com.tencent.mobileqq.activity.QPublicFragmentActivity;S.public_fragment_class=com.tencent.mobileqq.setting.main.MainSettingFragment;end"
 
     private SettingEntryHook() {
+    }
+
+    @Override
+    public boolean isPreparationRequired() {
+        return isNeedFind();
+    }
+
+    private final Step mStep = new Step() {
+        @Override
+        public boolean step() {
+            return doFindStep();
+        }
+
+        @Override
+        public boolean isDone() {
+            return !isNeedFind();
+        }
+
+        @Override
+        public int getPriority() {
+            return 0;
+        }
+
+        @Override
+        public String getDescription() {
+            return "查找设置入口相关类";
+        }
+    };
+
+    @Override
+    public Step[] makePreparationSteps() {
+        return new Step[]{mStep};
+    }
+
+    private boolean isNeedFind() {
+        return QAppUtils.isQQnt()
+                && requireMinQQVersion(QQVersion.QQ_9_2_10)
+                && DexKit.getMethodDescFromCacheImpl(SimpleItemProcessor_Method.INSTANCE) == null;
+    }
+
+    private boolean doFindStep() {
+        DexDeobfsProvider.checkDeobfuscationAvailable();
+        try (DexKitDeobfs dexKitDeobfs = DexKitDeobfs.newInstance()) {
+            DexKitBridge bridge = dexKitDeobfs.getDexKitBridge();
+            MethodDataList result = bridge.findMethod(FindMethod.create()
+                    .matcher(MethodMatcher.create()
+                            .addEqString("SimpleItemProcessor")
+                    )
+            );
+            if (result.size() == 1) {
+                MethodData methodData = result.get(0);
+                SimpleItemProcessor_Method.INSTANCE.setDescCache(methodData.getDescriptor());
+                Log.d("save id: " + DexKitTargetSealedEnum.INSTANCE.nameOf(SimpleItemProcessor_Method.INSTANCE) + ",method: " + methodData.getDescriptor());
+                return true;
+            }
+            SimpleItemProcessor_Method.INSTANCE.setDescCache(DexKit.NO_SUCH_METHOD.toString());
+            return false;
+        }
     }
 
     @Override
@@ -137,8 +209,8 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
             if (kAbstractItemProcessor == null) {
                 throw new IllegalStateException("kAbstractItemProcessor == null");
             }
+            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(6);
             // SimpleItemProcessor has too few xrefs. I have no idea how to find it without a list of candidates.
-            // TODO use 'SimpleItemProcessor' keyword to search (9.2.10 ~ 9.3.10)
             final String[] possibleSimpleItemProcessorNames = new String[]{
                     // 8.9.70 ~ 9.0.0
                     "com.tencent.mobileqq.setting.processor.g",
@@ -150,16 +222,21 @@ public class SettingEntryHook extends BasePersistBackgroundHook {
                     "com.tencent.mobileqq.setting.processor.j",
                     // 9.1.28.21880 (8398) gray
                     "as3.i",
-                    // 9.3.5.37145 (14498) gray
-                    "c25.i",
-                    // 9.3.10.37250
-                    "a35.i",
             };
-            List<Class<?>> possibleSimpleItemProcessorCandidates = new ArrayList<>(possibleSimpleItemProcessorNames.length);
             for (String name : possibleSimpleItemProcessorNames) {
                 Class<?> klass = Initiator.load(name);
                 if (klass != null && klass.getSuperclass() == kAbstractItemProcessor) {
                     possibleSimpleItemProcessorCandidates.add(klass);
+                }
+            }
+            // use 'SimpleItemProcessor' keyword to search (9.2.10 ~ 9.3.10)
+            if (requireMinQQVersion(QQVersion.QQ_9_2_10)) {
+                Method m = DexKit.loadMethodFromCache(SimpleItemProcessor_Method.INSTANCE);
+                if (m != null) {
+                    Class<?> klass = m.getDeclaringClass();
+                    if (klass.getSuperclass() == kAbstractItemProcessor && !possibleSimpleItemProcessorCandidates.contains(klass)) {
+                        possibleSimpleItemProcessorCandidates.add(klass);
+                    }
                 }
             }
             // assert possibleSimpleItemProcessorCandidates.size() == 1;
