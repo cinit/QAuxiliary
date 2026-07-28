@@ -20,7 +20,7 @@ debug/
 bin/
 gen/
 out/
-app/.cxx/
+.cxx/
 # Gradle files
 .gradle/
 build/

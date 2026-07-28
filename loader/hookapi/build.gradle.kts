@@ -11,6 +11,11 @@ android {
             minorApiLevel = Version.compileSdkVersion.substringAfter('.').toIntOrNull()
         }
     }
+
+    defaultConfig {
+        minSdk = Version.minSdk
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8

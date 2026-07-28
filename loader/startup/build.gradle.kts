@@ -11,6 +11,7 @@ android {
             minorApiLevel = Version.compileSdkVersion.substringAfter('.').toIntOrNull()
         }
     }
+
     defaultConfig {
         minSdk = Version.minSdk
     }
