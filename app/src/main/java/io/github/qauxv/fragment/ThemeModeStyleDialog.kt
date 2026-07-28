@@ -39,7 +39,7 @@ import kotlinx.coroutines.flow.update
 @UiItemAgentEntry
 object ThemeModeStyleDialog : BasePlainUiAgentItem(title = "主题模式") {
 
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.ConfigCategory.CONFIG_CATEGORY
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.ConfigCategory.THEME_CATEGORY
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(ModuleThemeManager.getCurrentThemeModeName())

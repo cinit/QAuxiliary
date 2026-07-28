@@ -181,6 +181,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
                 show(topFragment)
                 commit()
             }
+            // update back callback enabled state
+            mFragmentPopOnBackCallback.isEnabled = mFragmentStack.size > 1
         }
     }
 

@@ -194,8 +194,8 @@ public class ModuleThemeManager {
     }
 
     public enum ThemeMode {
-        FOLLOW_HOST("跟随宿主"),
         FOLLOW_SYSTEM("跟随系统"),
+        FOLLOW_HOST("跟随宿主"),
         LIGHT("浅色"),
         DARK("深色");
 

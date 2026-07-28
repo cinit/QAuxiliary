@@ -42,7 +42,7 @@ import kotlinx.coroutines.flow.update
 @UiItemAgentEntry
 object ThemeColorStyleDialog : BasePlainUiAgentItem(title = "主题颜色") {
 
-    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.ConfigCategory.CONFIG_CATEGORY
+    override val uiItemLocation: Array<String> = FunctionEntryRouter.Locations.ConfigCategory.THEME_CATEGORY
 
     override val valueState: MutableStateFlow<String?> by lazy {
         MutableStateFlow(ModuleThemeManager.getCurrentThemeColorName())
