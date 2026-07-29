@@ -26,6 +26,7 @@ import cc.hicore.QApp.QAppUtils
 import cc.hicore.hook.RepeaterPlus
 import cc.hicore.hook.stickerPanel.Hooker.StickerPanelEntryHooker
 import cc.ioctl.hook.msg.CopyCardMsg
+import cc.ioctl.hook.msg.FanqieDeobfuscateHook
 import cc.ioctl.hook.msg.PicMd5Hook
 import cc.ioctl.hook.msg.PttForwardHook
 import cc.ioctl.util.HookUtils
@@ -53,6 +54,7 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
         RepeaterPlus.INSTANCE,
         StickerPanelEntryHooker.INSTANCE,
         PicMd5Hook.INSTANCE,
+        FanqieDeobfuscateHook,
         PttForwardHook.INSTANCE,
         CopyCardMsg,
         MessageCopyHook,

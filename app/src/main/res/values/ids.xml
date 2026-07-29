@@ -3,6 +3,7 @@
     <item type="id" name="item_repeat" />
     <item type="id" name="item_save_to_panel" />
     <item type="id" name="item_showPicMd5" />
+    <item type="id" name="item_fanqie_deobfuscate" />
     <item type="id" name="item_ptt_forward" />
     <item type="id" name="item_ptt_save" />
     <item type="id" name="item_copy_code" />
