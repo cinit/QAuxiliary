@@ -49,6 +49,7 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.MsgAttributeInfo;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
+import com.xiaoniu.dispatcher.ComponentType;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
 import io.github.qauxv.R;
@@ -474,20 +475,18 @@ public class RepeaterPlus extends BaseFunctionHook implements SessionHooker.IAIO
     @Override
     public String[] getTargetComponentTypes() {
         return new String[]{
-                "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.anisticker.AIOAniStickerContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.video.AIOVideoContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.multifoward.AIOMultifowardContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.longmsg.AIOLongMsgContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
-                requireMinQQVersion(QQVersion.QQ_9_1_55)
-                        ? "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"
-                        : "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.file.AIOFileContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.marketface.AIOMarketFaceComponent"
+                ComponentType.Companion.getTYPE_ANI_STICKER(),
+                ComponentType.Companion.getTYPE_CARD(),
+                ComponentType.Companion.getTYPE_FILE(),
+                ComponentType.Companion.getTYPE_LOCATION(),
+                ComponentType.Companion.getTYPE_LONG_MSG(),
+                ComponentType.Companion.getTYPE_MARKET_FACE(),
+                ComponentType.Companion.getTYPE_MIX(),
+                ComponentType.Companion.getTYPE_MULTI_FOWARD(),
+                ComponentType.Companion.getTYPE_PIC(),
+                ComponentType.Companion.getTYPE_REPLY(),
+                ComponentType.Companion.getTYPE_TEXT(),
+                ComponentType.Companion.getTYPE_VIDEO()
         };
     }
 

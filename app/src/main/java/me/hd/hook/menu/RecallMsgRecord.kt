@@ -23,6 +23,7 @@
 package me.hd.hook.menu
 
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -57,10 +58,11 @@ object RecallMsgRecord : CommonSwitchFunctionHook(
         return true
     }
 
-    private const val FACE_BUBBLE_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.facebubble.AIOFaceBubbleContentComponent"
-    private const val POKE_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.poke.AIOPokeContentComponent"
-    private const val Q_WALLET = "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent"
-    override val targetComponentTypes = arrayOf(FACE_BUBBLE_CONTEXT, POKE_CONTEXT, Q_WALLET)
+    override val targetComponentTypes = arrayOf(
+        ComponentType.TYPE_FACE_BUBBLE,
+        ComponentType.TYPE_POKE,
+        ComponentType.TYPE_WALLET,
+    )
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return

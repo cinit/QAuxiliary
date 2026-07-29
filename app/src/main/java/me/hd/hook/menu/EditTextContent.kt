@@ -27,6 +27,7 @@ import android.widget.EditText
 import cc.ioctl.util.hookAfterIfEnabled
 import com.github.kyuubiran.ezxhelper.utils.findField
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -76,9 +77,10 @@ object EditTextContent : CommonSwitchFunctionHook(
         return true
     }
 
-    private const val TEXT_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent"
-    private const val MIX_CONTEXT = "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent"
-    override val targetComponentTypes = arrayOf(TEXT_CONTEXT, MIX_CONTEXT)
+    override val targetComponentTypes = arrayOf(
+        ComponentType.TYPE_TEXT,
+        ComponentType.TYPE_MIX,
+    )
 
     @SuppressLint("SetTextI18n")
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
@@ -87,7 +89,7 @@ object EditTextContent : CommonSwitchFunctionHook(
         if (msgRecord.sendType == 0) return
         val item = CustomMenu.createItemIconNt(msg, "编辑重发", R.drawable.ic_item_edit_72dp, R.id.item_edit_to_send) {
             when (componentType) {
-                TEXT_CONTEXT -> {
+                ComponentType.TYPE_TEXT -> {
                     val stringBuilder = StringBuilder()
                     msgRecord.elements.forEach { element ->
                         element.textElement?.let { textElement ->
@@ -98,7 +100,7 @@ object EditTextContent : CommonSwitchFunctionHook(
                     recallMsg(msgRecord)
                 }
 
-                MIX_CONTEXT -> {
+                ComponentType.TYPE_MIX -> {
                     // TODO: 待开发
                     Toasts.show("快了快了, 已经新建文件夹了!")
                 }

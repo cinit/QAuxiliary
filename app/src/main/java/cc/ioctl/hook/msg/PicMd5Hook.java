@@ -37,6 +37,7 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qphone.base.remote.FromServiceMsg;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
+import com.xiaoniu.dispatcher.ComponentType;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
 import io.github.qauxv.util.xpcompat.XC_MethodHook;
@@ -158,7 +159,7 @@ public class PicMd5Hook extends CommonSwitchFunctionHook implements OnMenuBuilde
     @Override
     public String[] getTargetComponentTypes() {
         return new String[]{
-                "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent"
+                ComponentType.Companion.getTYPE_PIC()
         };
     }
 

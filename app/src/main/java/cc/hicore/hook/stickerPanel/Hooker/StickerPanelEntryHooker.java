@@ -43,10 +43,10 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.Reflex;
 import com.tencent.qphone.base.remote.FromServiceMsg;
 import com.tencent.qphone.base.remote.ToServiceMsg;
-import com.tencent.qqnt.kernel.nativeinterface.IKernelMsgService;
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement;
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord;
 import com.tencent.qqnt.kernel.nativeinterface.PicElement;
+import com.xiaoniu.dispatcher.ComponentType;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
 import io.github.qauxv.util.dexkit.Hd_HideChatPanelBtn_Method;
@@ -257,8 +257,8 @@ public class StickerPanelEntryHooker extends CommonSwitchFunctionHook implements
     @Override
     public String[] getTargetComponentTypes() {
         return new String[]{
-                "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
-                "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
+                ComponentType.Companion.getTYPE_PIC(),
+                ComponentType.Companion.getTYPE_MIX()
         };
     }
 

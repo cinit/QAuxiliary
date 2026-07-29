@@ -23,6 +23,7 @@
 package me.hd.hook.menu
 
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -54,13 +55,7 @@ object CopyMarkdown : CommonSwitchFunctionHook(
         return true
     }
 
-    override val targetComponentTypes = arrayOf(
-        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
-            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIORichContentComponent"
-        } else {
-            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent"
-        },
-    )
+    override val targetComponentTypes = arrayOf(ComponentType.TYPE_RICH)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return

@@ -42,6 +42,7 @@ import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgElement
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -53,12 +54,10 @@ import io.github.qauxv.hook.CommonConfigFunctionHook
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.CustomMenu.createItemIconNt
 import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.dexkit.CArkAppItemBubbleBuilder
 import io.github.qauxv.util.dexkit.DexKit
-import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.xpcompat.XC_MethodHook.MethodHookParam
 import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.util.xpcompat.XposedHelpers
@@ -368,13 +367,7 @@ object MiniAppDirectJump : CommonConfigFunctionHook(targets = arrayOf(CArkAppIte
         false
     }
 
-    override val targetComponentTypes = arrayOf(
-        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
-            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"
-        } else {
-            "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent"
-        },
-    )
+    override val targetComponentTypes = arrayOf(ComponentType.TYPE_CARD)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: MethodHookParam) {
         if (!isEnabled) return

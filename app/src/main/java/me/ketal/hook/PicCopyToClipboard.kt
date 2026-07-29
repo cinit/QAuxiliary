@@ -33,9 +33,9 @@ import com.github.kyuubiran.ezxhelper.utils.Log
 import com.github.kyuubiran.ezxhelper.utils.findMethod
 import com.github.kyuubiran.ezxhelper.utils.findMethodOrNull
 import com.github.kyuubiran.ezxhelper.utils.tryOrLogFalse
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
-import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -51,6 +51,7 @@ import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.Toasts
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem
 import io.github.qauxv.util.isAndroidxFileProviderAvailable
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import xyz.nextalone.util.SystemServiceUtils.copyToClipboard
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
@@ -202,7 +203,7 @@ object PicCopyToClipboard : CommonSwitchFunctionHook(
         return path
     }
 
-    override val targetComponentTypes = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent")
+    override val targetComponentTypes = arrayOf(ComponentType.TYPE_PIC)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return

@@ -29,10 +29,8 @@ import android.widget.TextView
 import cc.hicore.QApp.QAppUtils
 import cc.ioctl.util.Reflex
 import cc.ioctl.util.afterHookIfEnabled
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedBridge
-import io.github.qauxv.util.xpcompat.XposedHelpers
 import io.github.qauxv.R
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -42,6 +40,10 @@ import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.CustomMenu
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Toasts
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedBridge
+import io.github.qauxv.util.xpcompat.XposedHelpers
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.invoke
 
@@ -141,13 +143,13 @@ object TranslateTextMsg : CommonSwitchFunctionHook(), OnMenuBuilder {
         return false
     }
 
-    override val targetComponentTypes: Array<String>
-        get() = arrayOf("com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent")
+    override val targetComponentTypes = arrayOf(ComponentType.TYPE_TEXT)
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
         val item = CustomMenu.createItemIconNt(msg, "翻译文本", R.drawable.ic_item_translate_72dp, R.id.item_translate) {
             //TODO: 待开发
+            Toasts.show("快了快了, 已经新建文件夹了!")
         }
         param.result = (param.result as List<*>) + item
     }

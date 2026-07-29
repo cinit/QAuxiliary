@@ -34,6 +34,7 @@ import cc.hicore.message.common.MsgSender
 import cc.ioctl.util.LayoutHelper
 import cc.ioctl.util.hookAfterIfEnabled
 import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
+import com.xiaoniu.dispatcher.ComponentType
 import com.xiaoniu.dispatcher.OnMenuBuilder
 import com.xiaoniu.util.ContextUtils
 import io.github.qauxv.R
@@ -163,30 +164,22 @@ object RepeatToImg : CommonSwitchFunctionHook(
     }
 
     override val targetComponentTypes = arrayOf(
-        "com.tencent.mobileqq.aio.msglist.holder.component.anisticker.AIOAniStickerContentComponent",
-        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
-            "com.tencent.mobileqq.aio.msglist.holder.component.template.AIOTemplateMsgComponent"
-        } else {
-            "com.tencent.mobileqq.aio.msglist.holder.component.ark.AIOArkContentComponent"
-        },
-        "com.tencent.mobileqq.aio.msglist.holder.component.facebubble.AIOFaceBubbleContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.file.AIOFileContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.flashpic.AIOFlashPicContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.LocationShare.AIOLocationShareComponent",
-        if (requireMinQQVersion(QQVersion.QQ_9_1_55)) {
-            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIORichContentComponent"
-        } else {
-            "com.tencent.mobileqq.aio.msglist.holder.component.markdown.AIOMarkdownContentComponent"
-        },
-        "com.tencent.mobileqq.aio.msglist.holder.component.marketface.AIOMarketFaceComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.mix.AIOMixContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.pic.AIOPicContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.poke.AIOPokeContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.ptt.AIOPttContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.reply.AIOReplyComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.text.AIOTextContentComponent",
-        "com.tencent.mobileqq.aio.msglist.holder.component.video.AIOVideoContentComponent",
-        "com.tencent.mobileqq.aio.qwallet.AIOQWalletComponent",
+        ComponentType.TYPE_ANI_STICKER,
+        ComponentType.TYPE_CARD,
+        ComponentType.TYPE_FACE_BUBBLE,
+        ComponentType.TYPE_FILE,
+        ComponentType.TYPE_FLASH_PIC,
+        ComponentType.TYPE_LOCATION,
+        ComponentType.TYPE_RICH,
+        ComponentType.TYPE_MARKET_FACE,
+        ComponentType.TYPE_MIX,
+        ComponentType.TYPE_PIC,
+        ComponentType.TYPE_POKE,
+        ComponentType.TYPE_PTT,
+        ComponentType.TYPE_REPLY,
+        ComponentType.TYPE_TEXT,
+        ComponentType.TYPE_VIDEO,
+        ComponentType.TYPE_WALLET,
     )
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
