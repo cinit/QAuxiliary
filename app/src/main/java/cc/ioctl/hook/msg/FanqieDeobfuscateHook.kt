@@ -86,7 +86,7 @@ object FanqieDeobfuscateHook : CommonSwitchFunctionHook(
 
     override fun onGetMenuNt(msg: Any, componentType: String, param: XC_MethodHook.MethodHookParam) {
         if (!isEnabled) return
-        val item = CustomMenu.createItemIconNt(msg, "小番茄解混淆", R.drawable.ic_item_tool_72dp, R.id.item_fanqie_deobfuscate) {
+        val item = CustomMenu.createItemIconNt(msg, "解混淆", R.drawable.ic_item_tool_72dp, R.id.item_fanqie_deobfuscate) {
             val activity = ContextUtils.getCurrentActivity()
             val context = CommonContextWrapper.createAppCompatContext(activity)
             val file = File(getFilePathNt(msg))
