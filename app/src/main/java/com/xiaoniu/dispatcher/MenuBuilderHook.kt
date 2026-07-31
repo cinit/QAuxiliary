@@ -89,7 +89,7 @@ object MenuBuilderHook : BasePersistBackgroundHook() {
                     for (decorator in decorators) {
                         if (decorator.targetComponentTypes == null || target in decorator.targetComponentTypes!!) {
                             try {
-                                decorator.onGetMenuNt(msg, target, it)
+                                decorator.onGetMenuNt(msg, target, param)
                             } catch (e: Exception) {
                                 traceError(e)
                             }
@@ -169,7 +169,7 @@ enum class ComponentType(private val desc: String, private val clazz: String) {
         }
         val TYPE_FACE_BUBBLE = FACE_BUBBLE_CONTENT.clazz
         val TYPE_FILE = FILE_CONTENT.clazz
-        val TYPE_FLASH_PIC= FLASH_PIC_CONTENT.clazz
+        val TYPE_FLASH_PIC = FLASH_PIC_CONTENT.clazz
         val TYPE_LOCATION = LOCATION_SHARE.clazz
         val TYPE_LONG_MSG = LONG_MSG_CONTENT.clazz
         val TYPE_RICH by lazy {
