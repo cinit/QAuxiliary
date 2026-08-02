@@ -869,13 +869,30 @@ data object X5_Properties_conf : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object EmotionDownloadEnableSwitch : DexKitTarget.UsingStr() {
+data object EmotionDownloadDisableSwitch : DexKitTarget.UsingStr() {
     override val findMethod = true
     override val traitString = arrayOf("emotion_download_disable_8980_887036489")
     override val declaringClass: String = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/emotionintegrate/")
 }
 
+data object EmotionDetailAi : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "Lcom/tencent/mobileqq/emotionintegrate/MsgEmoticonPreviewData;"
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findClass {
+            searchPackages("com.tencent.mobileqq.emotionintegrate")
+            matcher {
+                usingStrings("MsgEmoticonPreviewData", "doRestoreSaveInstanceState")
+            }
+        }.findMethod {
+            matcher {
+                returnType(Boolean::class.java)
+                usingNumbers(14)
+            }
+        }.single()
+    }
+}
 
 data object QQ_SETTING_ME_CONFIG_CLASS : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = false
