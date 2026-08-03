@@ -1254,3 +1254,10 @@ data object SimpleItemProcessor_Method : DexKitTarget.UsingDexkit() {
     override val declaringClass = "com/tencent/mobileqq/setting/processor/SimpleItemProcessor"
     override val filter = DexKitFilter.allowAll
 }
+
+data object Hd_CustomPetHomeBg_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = false
+    override val traitStringVectors = arrayOf(arrayOf("AIFileModule", "UpdateSystemData"))
+    override val declaringClass = ""
+    override val filter = DexKitFilter.allowAll
+}
