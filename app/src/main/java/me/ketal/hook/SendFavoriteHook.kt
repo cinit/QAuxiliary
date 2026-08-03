@@ -28,6 +28,7 @@ import cc.ioctl.util.Reflex
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiSwitchPreference
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.requireMinQQVersion
@@ -41,16 +42,15 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object SendFavoriteHook : PluginDelayableHook("ketal_send_favorite") {
+    override val targetProcesses = SyncUtils.PROC_QQFAV
+
+    override val pluginName = "qqfav.apk"
     override val preference = uiSwitchPreference {
         title = "发送收藏消息添加分组"
     }
 
-    override val targetProcesses = SyncUtils.PROC_QQFAV
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY
-
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_2_0)
-
-    override val pluginID = "qqfav.apk"
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
         "Lcom/qqfav/activity/FavoritesListActivity;->onCreate(Landroid/os/Bundle;)V"

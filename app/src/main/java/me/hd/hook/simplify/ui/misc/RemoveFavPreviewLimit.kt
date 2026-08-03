@@ -25,6 +25,7 @@ package me.hd.hook.simplify.ui.misc
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiSwitchPreference
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.requireMinQQVersion
@@ -39,11 +40,11 @@ import xyz.nextalone.util.set
 @FunctionHookEntry
 @UiItemAgentEntry
 object RemoveFavPreviewLimit : PluginDelayableHook("hd_fav_preview_limit") {
+    override val targetProcesses = SyncUtils.PROC_QQFAV
+    override val pluginName = "qqfav.apk"
     override val preference = uiSwitchPreference {
         title = "移除收藏预览限制"
     }
-    override val pluginID = "qqfav.apk"
-    override val targetProcesses = SyncUtils.PROC_QQFAV
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.UI_MISC
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_9_85)
 

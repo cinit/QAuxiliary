@@ -33,10 +33,11 @@ import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
 import com.afollestad.materialdialogs.input.input
-import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiClickableItem
+import io.github.qauxv.util.SyncUtils
 import io.github.qauxv.util.hostInfo
 import me.ketal.base.PluginDelayableHook
 import me.ketal.data.ConfigData
@@ -51,7 +52,9 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
+    override val targetProcesses = SyncUtils.PROC_TOOL
 
+    override val pluginName = "qwallet_plugin.apk"
     override val preference = uiClickableItem {
         title = "自定义钱包余额"
         summary = "仅供娱乐"
@@ -59,10 +62,8 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
             showDialog(it, null)
         }
     }
-    override val targetProcesses = SyncUtils.PROC_TOOL
-    override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
-    override val pluginID = "qwallet_plugin.apk"
+    override val uiItemLocation = FunctionEntryRouter.Locations.Entertainment.ENTERTAIN_CATEGORY
 
     private val moneyKey = ConfigData<String>("ketal_qwallet_fakebalance_money")
     private var money
@@ -106,14 +107,14 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
         arrayOf(
             "Lcom/qwallet/activity/QWalletHomeActivity;->onCreate(Landroid/os/Bundle;)V",
-            "Lcom/qwallet/activity/QvipPayWalletActivity;->onCreate(Landroid/os/Bundle;)V"
+            "Lcom/qwallet/activity/QvipPayWalletActivity;->onCreate(Landroid/os/Bundle;)V",
         ).getMethod(classLoader)
             ?.hookAfter(this) {
                 val ctx = it.thisObject as Activity
                 val id = ctx.resources.getIdentifier("root", "id", hostInfo.packageName)
                 val rootView = ctx.findViewById<ViewGroup>(id)
                 val headerClass = "com.qwallet.view.QWalletHeaderView".findClass(classLoader)
-                val headerView = Reflex.getFirstByType(rootView, headerClass)
+                val headerView = Reflex.getFirstByType(rootView, headerClass) as ViewGroup
                 val numAnimClass = "com.tencent.mobileqq.activity.qwallet.widget.NumAnim".clazz
                     ?: "com.tencent.mobileqq.qwallet.widget.NumAnim".clazz
                 for (f in headerClass.declaredFields) {
@@ -133,11 +134,13 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                 }
             }
 
-        arrayOf("Lcom/qwallet/activity/QWalletHomeActivity;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V").getMethod(classLoader)
+        arrayOf(
+            "Lcom/qwallet/activity/QWalletHomeActivity;->onViewCreated(Landroid/view/View;Landroid/os/Bundle;)V",
+        ).getMethod(classLoader)
             ?.hookAfter(this) {
                 val mAct = it.thisObject
-                val headerView = Reflex.getFirstByType(mAct, "com.qwallet.view.QWalletHeaderView".clazz) as ViewGroup
                 val headerClass = "com.qwallet.view.QWalletHeaderView".findClass(classLoader)
+                val headerView = Reflex.getFirstByType(mAct, headerClass) as ViewGroup
                 val numAnimClass = "com.tencent.mobileqq.activity.qwallet.widget.NumAnim".clazz
                     ?: "com.tencent.mobileqq.qwallet.widget.NumAnim".clazz
                 for (f in headerClass.declaredFields) {

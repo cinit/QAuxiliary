@@ -24,13 +24,14 @@ package cc.ioctl.hook.troop
 
 import android.view.View
 import cc.ioctl.util.Reflex
-import io.github.qauxv.util.xpcompat.XC_MethodHook
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiSwitchPreference
 import io.github.qauxv.util.LicenseStatus
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.requireMinQQVersion
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.ketal.base.PluginDelayableHook
 import me.ketal.util.findClass
 import me.ketal.util.hookMethod
@@ -40,15 +41,15 @@ import java.lang.reflect.Field
 
 @[FunctionHookEntry UiItemAgentEntry]
 object TroopFileSaveLasting : PluginDelayableHook("ketal_TroopFileSaveLasting") {
+    override val pluginName = if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "" else "troop_plugin.apk"
     override val preference = uiSwitchPreference {
         title = "群文件长按转存永久"
     }
-    override val pluginID = if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "" else "troop_plugin.apk"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.FILE_CATEGORY
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val troopFileShowAdapter = try { (
-            if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "com.tencent.mobileqq.troop.file.data.TroopFileShowAdapter$1"
+        val troopFileShowAdapter = try {
+            (if (requireMinQQVersion(QQVersion.QQ_9_1_50)) "com.tencent.mobileqq.troop.file.data.TroopFileShowAdapter$1"
             else "com.tencent.mobileqq.troop.data.TroopFileShowAdapter$1"
             ).findClass(classLoader).getDeclaredField("this$0").type
         } catch (e: Throwable) {

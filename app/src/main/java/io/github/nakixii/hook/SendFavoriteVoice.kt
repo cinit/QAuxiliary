@@ -33,6 +33,7 @@ import android.widget.CheckBox
 import android.widget.FrameLayout
 import androidx.annotation.RequiresApi
 import androidx.core.content.ContextCompat
+import androidx.core.view.isVisible
 import cc.ioctl.util.HostInfo
 import com.github.kyuubiran.ezxhelper.utils.getFieldByType
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
@@ -41,6 +42,7 @@ import com.github.kyuubiran.ezxhelper.utils.paramCount
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiSwitchPreference
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.SyncUtils
@@ -54,16 +56,15 @@ import xyz.nextalone.util.isFinal
 import xyz.nextalone.util.isPublic
 import xyz.nextalone.util.method
 import xyz.nextalone.util.set
-import androidx.core.view.isVisible
 
 @FunctionHookEntry
 @UiItemAgentEntry
 object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
+    override val targetProcesses = SyncUtils.PROC_MAIN or SyncUtils.PROC_QQFAV
+    override val pluginName = "qqfav.apk"
     override val preference = uiSwitchPreference {
         title = "允许发送收藏的语音"
     }
-    override val pluginID = "qqfav.apk"
-    override val targetProcesses = SyncUtils.PROC_MAIN or SyncUtils.PROC_QQFAV
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MESSAGE_CATEGORY
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_1_70)
 
@@ -96,8 +97,10 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
             it.returnType == Int::class.java && it.paramCount == 0
         }.apply { this?.isAccessible = true }
 
-        val qfavAppInterface = favoritesListActivity.getFieldByType("com.qqfav.QfavAppInterface"
-            .findClass(classLoader)).apply { isAccessible = true }
+        val qfavAppInterface = favoritesListActivity.getFieldByType(
+            "com.qqfav.QfavAppInterface"
+                .findClass(classLoader)
+        ).apply { isAccessible = true }
         val getFavoriteService = qfavAppInterface.type.method("getFavoriteService")
         val getFilePath = "com.qqfav.FavoriteService".findClass(classLoader).method {
             it.isPublic && it.isFinal && it.returnType == String::class.java &&
@@ -131,11 +134,15 @@ object SendFavoriteVoice : PluginDelayableHook("send_favorite_voice") {
         val itemViewFactoryIVH = audioItemViewHolder.superclass.declaredFields
             .first { it.type.name.contains("com.qqfav.activity") }.apply { isAccessible = true }
 
-        val favoriteData = audioItemViewHolder.getFieldByType("com.qqfav.data.FavoriteData"
-            .findClass(classLoader)).apply { isAccessible = true }
+        val favoriteData = audioItemViewHolder.getFieldByType(
+            "com.qqfav.data.FavoriteData"
+                .findClass(classLoader)
+        ).apply { isAccessible = true }
         val getFavId = favoriteData.type.getMethod("getId").apply { isAccessible = true }
-        val baseActivity = audioItemViewHolder.getFieldByType("mqq.app.BaseActivity"
-            .findClass(Initiator.getHostClassLoader())).apply { isAccessible = true }
+        val baseActivity = audioItemViewHolder.getFieldByType(
+            "mqq.app.BaseActivity"
+                .findClass(Initiator.getHostClassLoader())
+        ).apply { isAccessible = true }
 
         // 搜索结果列表
         audioItemViewHolder.method("onClick")?.hookBefore { it ->
