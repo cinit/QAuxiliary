@@ -84,6 +84,7 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
             val miniAppObj = metaObj.optJSONObject("miniapp") // [微信小程序]
             val wxUrl = miniAppObj?.optString("jumpUrl")
             val url = qqUrl ?: wxUrl ?: "解析链接异常"
+            if (url.startsWith("mqqapi://")) return false // 内部链接
             msgRecord.apply {
                 elements.apply {
                     clear()
