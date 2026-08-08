@@ -1256,8 +1256,22 @@ data object SimpleItemProcessor_Method : DexKitTarget.UsingDexkit() {
 }
 
 data object Hd_CustomPetHomeBg_Method : DexKitTarget.UsingStringVector() {
-    override val findMethod = false
+    override val findMethod = true
     override val traitStringVectors = arrayOf(arrayOf("AIFileModule", "UpdateSystemData"))
     override val declaringClass = ""
     override val filter = DexKitFilter.allowAll
+}
+
+data object Hd_ChatsListAdapter_CLASS : DexKitTarget.UsingStringVector() {
+    override val findMethod = false
+    override val traitStringVectors = arrayOf(arrayOf("ChatsListAdapter", "[onBindViewHolder-payload] throw:"))
+    override val declaringClass = "Lcom/tencent/qqnt/chats/core/adapter/ChatsListAdapter"
+    override val filter = DexKitFilter.allowAll
+}
+
+data object Hd_ChatsListVB_OnCreateView_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("onCreateView")
+    override val declaringClass = "Lcom/tencent/qqnt/chats/core/ui/ChatsListVB"
+    override val filter = DexKitFilter.strInClsName("Lcom/tencent/qqnt/chats/core/ui/ChatsListVB;", true)
 }
