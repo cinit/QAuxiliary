@@ -149,63 +149,222 @@ public class DeletionObserver extends BasePersistBackgroundHook {
 
     @Override
     protected boolean initOnce() throws Exception {
-        findAndHookMethod(load("com/tencent/widget/PinnedHeaderExpandableListView"),
-            "setAdapter", ExpandableListAdapter.class, exfriendEntryHook);
+        hookDelFriendNt();
+        hookGatheredContactsResp();
+        hookSplashActivity();
+        hookFriendListEntry();
         AppCenterHookKt.initAppCenterHook();
-        XposedHelpers.findAndHookMethod(load("com/tencent/mobileqq/activity/SplashActivity"), "doOnResume",
-            new XC_MethodHook(700) {
-                boolean z = false;
-
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    try {
-                        if (AppRuntimeHelper.getLongAccountUin() > 10000) {
-                            ExfriendManager ex = ExfriendManager.getCurrent();
-                            ex.timeToUpdateFl();
-                        }
-                    } catch (Throwable e) {
-                        traceError(e);
-                        throw e;
-                    }
-                    if (z) {
-                        return;
-                    }
-                    z = true;
-                    CliOper.onLoad();
-                }
-            });
-        findAndHookMethod(load("friendlist/GetFriendListResp"), "readFrom",
-            load("com/qq/taf/jce/JceInputStream"), new XC_MethodHook(200) {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    try {
-                        FriendChunk fc = new FriendChunk(param.thisObject);
-                        ExfriendManager.onGetFriendListResp(fc);
-                    } catch (Throwable e) {
-                        traceError(e);
-                        throw e;
-                    }
-                }
-            });
-
-        findAndHookMethod(load("friendlist/DelFriendResp"), "readFrom",
-            load("com/qq/taf/jce/JceInputStream"), new XC_MethodHook(200) {
-                @Override
-                protected void afterHookedMethod(MethodHookParam param) throws Throwable {
-                    try {
-                        long uin = (Long) Reflex.getInstanceObjectOrNull(param.thisObject, "uin");
-                        long deluin = (Long) Reflex.getInstanceObjectOrNull(param.thisObject, "deluin");
-                        int result = (Integer) Reflex.getInstanceObjectOrNull(param.thisObject, "result");
-                        short errorCode = (Short) Reflex.getInstanceObjectOrNull(param.thisObject, "errorCode");
-                        if (result == 0 && errorCode == 0) {
-                            ExfriendManager.get(uin).markActiveDelete(deluin);
-                        }
-                    } catch (Throwable e) {
-                        traceError(e);
-                        throw e;
-                    }
-                }
-            });
+        startPeriodicFlRefresh();
         return true;
+    }
+
+    /**
+     * QQ 9.3.30: 定时拉取好友列表
+     */
+    private void startPeriodicFlRefresh() {
+        try {
+            final android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+            h.postDelayed(new Runnable() {
+                @Override
+                public void run() {
+                    try {
+                        ExfriendManager ex = ExfriendManager.getCurrent();
+                        if (ex.isAutoDetectEnabled() && AppRuntimeHelper.getLongAccountUin() > 10000) {
+                            ex.doRequestFlRefresh();
+                        }
+                    } catch (Throwable e) {
+                        traceError(e);
+                    }
+                    long intervalMs = PERIODIC_FL_REFRESH_DEFAULT_MS;
+                    try {
+                        intervalMs = ExfriendManager.getCurrent().getDetectIntervalMin() * 60 * 1000L;
+                    } catch (Throwable ignored) {
+                    }
+                    h.postDelayed(this, intervalMs);
+                }
+            }, PERIODIC_FL_REFRESH_DEFAULT_MS);
+            Log.i("QAuxv-Del: " + "定时拉取已启动，间隔=" + (PERIODIC_FL_REFRESH_DEFAULT_MS / 60000) + "分钟（可配置）");
+        } catch (Throwable e) {
+            traceError(e);
+        }
+    }
+
+    private static final long PERIODIC_FL_REFRESH_DEFAULT_MS = 5 * 60 * 1000L;
+
+    /**
+     * QQ 9.3.30 NT 主动删除入口：FriendListHandler.delFriend(String source, String uin, byte delType, int notShield)
+     */
+    private void hookDelFriendNt() {
+        try {
+            findAndHookMethod(load("com/tencent/mobileqq/app/FriendListHandler"),
+                "delFriend", String.class, String.class, byte.class, int.class, new XC_MethodHook(200) {
+                    @Override
+                    protected void beforeHookedMethod(MethodHookParam param) throws Throwable {
+                        try {
+                            // uin 在 args[1]
+                            String uinStr = String.valueOf(param.args[1]);
+                            long deluin = 0;
+                            try {
+                                deluin = Long.parseLong(uinStr);
+                            } catch (NumberFormatException e) {
+                                Log.i("QAuxv-Del: " + "delFriend uin 解析失败: " + uinStr);
+                            }
+                            if (deluin > 10000) {
+                                long uin = AppRuntimeHelper.getLongAccountUin();
+                                Log.i("QAuxv-Del: " + "主动删除请求(handler): deluin=" + deluin);
+                                ExfriendManager.get(uin).markActiveDelete(deluin);
+                            }
+                        } catch (Throwable e) {
+                            Log.i("QAuxv-Del: " + "hookDelFriendHandler 异常: " + e);
+                            traceError(e);
+                        }
+                    }
+                });
+            Log.i("QAuxv-Del: " + "hookDelFriendHandler(4参) 注册成功");
+        } catch (Throwable e) {
+            Log.i("QAuxv-Del: " + "hookDelFriendHandler(4参) 注册失败: " + e);
+            traceError(e);
+        }
+        try {
+            // QQ 9.3.30: 删除响应回调（被动删除）
+            findAndHookMethod(load("com/tencent/mobileqq/app/bb"),
+                "onUpdateDelFriend", boolean.class, Object.class, new XC_MethodHook(200) {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        try {
+                            boolean success = (Boolean) param.args[0];
+                            Object data = param.args[1];
+                            if (success && data != null) {
+                                long deluin = extractDelUin(data);
+                                if (deluin > 10000) {
+                                    // 观察者回调同一删除会触发多次，5 秒内同一 uin 只处理一次
+                                    long now = System.currentTimeMillis();
+                                    if (deluin == sLastDelUin && now - sLastDelTime < 5000) {
+                                        return;
+                                    }
+                                    sLastDelUin = deluin;
+                                    sLastDelTime = now;
+                                    long uin = AppRuntimeHelper.getLongAccountUin();
+                                    Log.i("QAuxv-Del: " + "删除响应确认(被动): deluin=" + deluin);
+                                    ExfriendManager.get(uin).markPassiveDelete(deluin);
+                                }
+                            }
+                        } catch (Throwable e) {
+                            traceError(e);
+                        }
+                    }
+                });
+            Log.i("QAuxv-Del: " + "hookDelFriendNt(回调) 注册成功");
+        } catch (Throwable e) {
+            Log.i("QAuxv-Del: " + "hookDelFriendNt(回调) 注册失败: " + e);
+            traceError(e);
+        }
+    }
+
+    private static long sLastDelUin = 0;
+    private static long sLastDelTime = 0;
+
+    /**
+     * 从删除响应数据中提取被删好友 uin
+     */    private long extractDelUin(Object data) {
+        try {
+            if (data instanceof Long) {
+                return (Long) data;
+            }
+            if (data instanceof String) {
+                return Long.parseLong((String) data);
+            }
+            for (String f : new String[]{"deluin", "uin"}) {
+                try {
+                    java.lang.reflect.Field fd = data.getClass().getField(f);
+                    fd.setAccessible(true);
+                    Object v = fd.get(data);
+                    if (v instanceof Number) {
+                        return ((Number) v).longValue();
+                    }
+                    if (v instanceof String) {
+                        return Long.parseLong((String) v);
+                    }
+                } catch (Throwable ignored) {
+                }
+            }
+        } catch (Throwable ignored) {
+        }
+        return 0;
+    }
+
+    /**
+     * QQ 9.3.30: OidbSvc.0x7c4 响应处理
+     */
+    private void hookGatheredContactsResp() {
+        try {
+            findAndHookMethod(load("com/tencent/mobileqq/app/FriendListHandler"),
+                "handleGetGatheredContactsList",
+                load("com/tencent/qphone/base/remote/ToServiceMsg"),
+                load("com/tencent/qphone/base/remote/FromServiceMsg"),
+                Object.class,
+                new XC_MethodHook(200) {
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        try {
+                            if (LicenseStatus.sDisableCommonHooks) {
+                                return;
+                            }
+                            if (param.args.length < 3 || !(param.args[2] instanceof byte[])) {
+                                return;
+                            }
+                            byte[] oidb = (byte[]) param.args[2];
+                            ExfriendManager.onGatheredContactsResp(oidb);
+                        } catch (Throwable e) {
+                            traceError(e);
+                            throw e;
+                        }
+                    }
+                });
+            Log.i("QAuxv-Del: " + "hookGatheredContactsResp 注册成功");
+        } catch (Throwable e) {
+            Log.i("QAuxv-Del: " + "hookGatheredContactsResp 注册失败: " + e);
+            traceError(e);
+        }
+    }
+
+    private void hookSplashActivity() {
+        try {
+            XposedHelpers.findAndHookMethod(load("com/tencent/mobileqq/activity/SplashActivity"), "doOnResume",
+                new XC_MethodHook(700) {
+                    boolean z = false;
+
+                    @Override
+                    protected void afterHookedMethod(MethodHookParam param) throws Throwable {
+                        try {
+                            if (AppRuntimeHelper.getLongAccountUin() > 10000) {
+                                ExfriendManager ex = ExfriendManager.getCurrent();
+                                // 延迟拉取，等待登录态就绪
+                                android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+                                h.postDelayed(() -> ex.doRequestFlRefresh(), 8000);
+                            }
+                        } catch (Throwable e) {
+                            traceError(e);
+                            throw e;
+                        }
+                        if (z) {
+                            return;
+                        }
+                        z = true;
+                        CliOper.onLoad();
+                    }
+                });
+        } catch (Throwable e) {
+            traceError(e);
+        }
+    }
+
+    private void hookFriendListEntry() {
+        try {
+            findAndHookMethod(load("com/tencent/widget/PinnedHeaderExpandableListView"),
+                "setAdapter", ExpandableListAdapter.class, exfriendEntryHook);
+        } catch (Throwable e) {
+            traceError(e);
+        }
     }
 }
