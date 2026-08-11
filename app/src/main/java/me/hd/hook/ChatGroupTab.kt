@@ -54,7 +54,7 @@ object ChatGroupTab : CommonSwitchFunctionHook(
     override val name = "聊天分组标签"
     override val description = "添加分组顶部标签栏，顶部栏无法固定"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
-    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_3_25)
+    override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_0)
     override val isApplicationRestartRequired = true
 
     private enum class Type(
@@ -116,8 +116,16 @@ object ChatGroupTab : CommonSwitchFunctionHook(
                 val adapter = vb.get(adapterClass) as Any
                 val tabsView = createTabsView(context, adapter)
                 adapter.singleMethod {
-                    parameters(Int::class.java, View::class.java, Boolean::class.java)
-                }.invoke(adapter, -4, tabsView, true)
+                    when {
+                        requireMinQQVersion(QQVersion.QQ_9_1_0) -> parameters(Int::class.java, View::class.java, Boolean::class.java)
+                        else -> parameters(Int::class.java, View::class.java)
+                    }
+                }.apply {
+                    when {
+                        requireMinQQVersion(QQVersion.QQ_9_1_0) -> invoke(adapter, -4, tabsView, true)
+                        else -> invoke(adapter, -4, tabsView)
+                    }
+                }
             }
         return true
     }
