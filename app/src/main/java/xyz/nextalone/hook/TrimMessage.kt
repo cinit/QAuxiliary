@@ -75,10 +75,10 @@ object TrimMessage : CommonSwitchFunctionHook(
         }
         // remove first and last space
         while (arrayList.size > 0 && arrayList[0] == " ") {
-            arrayList.removeFirst()
+            arrayList.removeAt(0)
         }
         while (arrayList.size > 0 && arrayList[arrayList.size - 1] == " ") {
-            arrayList.removeLast()
+            arrayList.removeAt(arrayList.lastIndex)
         }
         return arrayList.joinToString("")
     }

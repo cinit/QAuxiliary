@@ -21,6 +21,7 @@
  */
 package io.github.qauxv.poststartup;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
 import android.util.DisplayMetrics;
@@ -273,6 +274,7 @@ public class StartupHook {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private static void applyTargetDpiIfNecessary(Context ctx) {
         File safeMode = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),
                 "Android/data/" + ctx.getPackageName() + "/qauxv_safe_mode");

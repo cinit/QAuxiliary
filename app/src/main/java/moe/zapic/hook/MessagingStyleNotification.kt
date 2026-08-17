@@ -127,9 +127,10 @@ object MessagingStyleNotification : CommonConfigFunctionHook(targetProc = SyncUt
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannels()
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
+            return false
         }
+        createNotificationChannels()
 
         if (!HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_63_BETA_11345)) {
             return NonNTMessageStyleNotification(this).hook()

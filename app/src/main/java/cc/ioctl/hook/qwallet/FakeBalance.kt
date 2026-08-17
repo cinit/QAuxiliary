@@ -22,6 +22,7 @@
 
 package cc.ioctl.hook.qwallet
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.view.View
@@ -76,6 +77,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
         showDialog(activity, null)
     }
 
+    @SuppressLint("RestrictedApi")
     private fun showDialog(ctx: Context, textView: TextView?) {
         throwOrTrue {
             val vg = ConfigView(ctx)

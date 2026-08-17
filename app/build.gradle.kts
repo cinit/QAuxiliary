@@ -571,6 +571,10 @@ val generateEulaAndPrivacy by tasks.registering {
     }
 }
 
+tasks.matching { it.name.startsWith("lint") || it.name.endsWith("LintReportModel") }.configureEach {
+    dependsOn(generateEulaAndPrivacy)
+}
+
 // see https://github.com/google/protobuf-gradle-plugin/issues/518
 protobuf {
     protoc {

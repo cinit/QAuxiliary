@@ -65,6 +65,7 @@ import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator;
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Initiator;
+import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
@@ -303,9 +304,7 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
                         os.close();
                         PictureEditProxyActivity.startEditPicture((Activity) context, tmpFile.getPath(), path -> {
                             try {
-                                var is = new FileInputStream(path);
-                                var data2 = is.readAllBytes();
-                                is.close();
+                                var data2 = IoUtils.readFully(new FileInputStream(path));
                                 executeSendMessage(context, session, data2, aioRootView, rt);
                             } catch (Exception e) {
                                 FaultyDialog.show(context, e);
