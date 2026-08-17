@@ -39,11 +39,11 @@ jobs:
           git -C "libs/mmkv/MMKV" config "submodule.Python/pybind11.update" none
           git submodule foreach git submodule update --init --recursive
 
-      - name: set up JDK 17
+      - name: set up JDK 21
         uses: actions/setup-java@v5.7.0
         with:
-          java-version: '17'
-          distribution: 'adopt'
+          java-version: '21'
+          distribution: 'temurin'
       - name: Setup SDK
         run: |
           echo "ANDROID_HOME=${ANDROID_HOME}"
