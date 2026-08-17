@@ -28,6 +28,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.dexkit.CItemBuilderFactory
 import io.github.qauxv.util.dexkit.DexKit
 import io.github.qauxv.util.dexkit.MsgListUtil_createMsgItem
@@ -56,14 +57,21 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
         SimpleReceiptMessage,
     )
 
+    private var msgRecordParamIndex = -1
+
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
             val createMsgItem = DexKit.requireMethodFromCache(MsgListUtil_createMsgItem)
+            msgRecordParamIndex = createMsgItem.parameterTypes.indexOfFirst { it == MsgRecord::class.java }
+            if (msgRecordParamIndex < 0) {
+                io.github.qauxv.util.Log.w("ItemBuilderFactoryHook: createMsgItem has no MsgRecord parameter, hook disabled")
+                return false
+            }
             XposedBridge.hookMethod(createMsgItem, object : XC_MethodHook(39) {
                 @Throws(Throwable::class)
                 override fun beforeHookedMethod(param: MethodHookParam) {
-                    val msgRecord = param.args[1] as MsgRecord
+                    val msgRecord = param.args[msgRecordParamIndex] as? MsgRecord ?: return
                     for (decorator in decorators) {
                         try {
                             if (decorator.isEnabled && decorator.onNtCreateItemHook(msgRecord, param)) {
