@@ -1,9 +1,9 @@
 [versions]
 # AGP 9.? no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.? for now.
 # AGP 10.0 no longer supports `android.newDsl=false`, so do not use AGP 10.0 for now.
-agp = "9.2.1"
-kotlin = "2.4.0"
-ksp = "2.3.9"
+agp = "9.3.1"
+kotlin = "2.4.10"
+ksp = "2.3.11"
 appCenter = "5.0.6"
 lifecycle = "2.11.0"
 materialDialog = "3.3.0"
@@ -15,10 +15,10 @@ hiddenapibypass = { module = "org.lsposed.hiddenapibypass:hiddenapibypass", vers
 appcenter-analytics = { module = "com.microsoft.appcenter:appcenter-analytics", version.ref = "appCenter" }
 appcenter-crashes = { module = "com.microsoft.appcenter:appcenter-crashes", version.ref = "appCenter" }
 androidx-annotation = { module = "androidx.annotation:annotation", version = "1.10.0" }
-androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.7.1" }
+androidx-appcompat = { module = "androidx.appcompat:appcompat", version = "1.8.0" }
 # Dependency 'androidx.browser:browser:1.9.0' requires Android Gradle plugin 8.9.1 or higher.
 androidx-browser = { module = "androidx.browser:browser", version = "1.10.0" }
-androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.1" }
+androidx-constraintlayout = { module = "androidx.constraintlayout:constraintlayout", version = "2.2.2" }
 androidx-core-ktx = { module = "androidx.core:core-ktx", version = "1.19.0" }
 androidx-recyclerview = { module = "androidx.recyclerview:recyclerview", version = "1.4.0" }
 lifecycle-livedata = { module = "androidx.lifecycle:lifecycle-livedata-ktx", version.ref = "lifecycle" }
@@ -27,7 +27,7 @@ lifecycle-runtime = { module = "androidx.lifecycle:lifecycle-runtime-ktx", versi
 flexbox = { module = "com.google.android.flexbox:flexbox", version = "3.0.0" }
 colorpicker = { module = "com.jaredrummler:colorpicker", version = "1.1.0" }
 confetti = { module = "com.github.jinatonic.confetti:confetti", version = "1.1.2" }
-glide = { module = "com.github.bumptech.glide:glide", version = "5.0.7" }
+glide = { module = "com.github.bumptech.glide:glide", version = "5.0.9" }
 material = { module = "com.google.android.material:material", version = "1.14.0" }
 material-dialogs-core = { module = "com.afollestad.material-dialogs:core", version.ref = "materialDialog" }
 material-dialogs-input = { module = "com.afollestad.material-dialogs:input", version.ref = "materialDialog" }
@@ -37,10 +37,10 @@ google-protobuf-protoc = { module = "com.google.protobuf:protoc", version.ref = 
 kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core", version = "1.11.0" }
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 xposed-api = { module = "de.robv.android.xposed:api", version = "82" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.10" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.12-jdk5" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "16.0.1" }
 dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
-google-guava = { module = "com.google.guava:guava", version = "33.6.0-android" }
+google-guava = { module = "com.google.guava:guava", version = "33.7.0-android" }
 sealedEnum-runtime = { module = "com.github.livefront.sealed-enum:runtime", version.ref = "sealedEnum" }
 sealedEnum-ksp = { module = "com.github.livefront.sealed-enum:ksp", version.ref = "sealedEnum" }
 davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:subsampling-scale-image-view-androidx", version = "3.10.0" }
@@ -48,7 +48,7 @@ davemorrissey-subsampling-scale-image-view = { module = "com.davemorrissey.labs:
 flatbuffers-java = { module = "com.google.flatbuffers:flatbuffers-java", version = "23.5.26" }
 android-tools = { module = "com.android.tools.build:gradle", version.ref = "agp" }
 kotlin-gradle = { module = "org.jetbrains.kotlin:kotlin-gradle-plugin", version.ref = "kotlin" }
-eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.7.0.202606012155-r" }
+eclipse-jgit = { module = "org.eclipse.jgit:org.eclipse.jgit", version = "7.7.1.202607240634-r" }
 ksp = { module = "com.google.devtools.ksp:symbol-processing-api", version.ref = "ksp" }
 kotlinpoet-ksp = { module = "com.squareup:kotlinpoet-ksp", version = "2.3.0" }
 junit = { module = "junit:junit", version = "4.13.2" }
@@ -60,5 +60,5 @@ changelog = { id = "org.jetbrains.changelog", version = "2.5.0" }
 ksp = { id = "com.google.devtools.ksp", version.ref = "ksp" }
 protobuf = { id = "com.google.protobuf", version = "0.10.0" }
 serialization = { id = "org.jetbrains.kotlin.plugin.serialization", version.ref = "kotlin" }
-aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version = "15.0.2" }
+aboutlibraries = { id = "com.mikepenz.aboutlibraries.plugin.android", version = "15.0.4" }
 android-library = { id = "com.android.library", version.ref = "agp" }

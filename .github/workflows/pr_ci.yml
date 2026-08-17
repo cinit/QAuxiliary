@@ -24,7 +24,7 @@ jobs:
       CCACHE_BASEDIR: "${{ github.workspace }}"
 
     steps:
-      - uses: actions/checkout@9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0 # v7.0.0
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           submodules: 'true'
           fetch-depth: 0
@@ -38,7 +38,7 @@ jobs:
           git submodule foreach git submodule update --init --recursive
 
       - name: set up JDK 17
-        uses: actions/setup-java@v5.4.0
+        uses: actions/setup-java@v5.7.0
         with:
           java-version: '17'
           distribution: 'adopt'
