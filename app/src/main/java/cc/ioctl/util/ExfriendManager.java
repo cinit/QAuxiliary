@@ -61,7 +61,10 @@ import java.lang.ref.WeakReference;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
@@ -91,6 +94,8 @@ public class ExfriendManager {
     private ConcurrentHashMap mStdRemarks;
     private ArrayList<FriendChunk> cachedFriendChunks;
     private boolean dirtySerializedFlag = true;
+    /** 0x7c4 好友列表分页会话缓存（当前拉取会话内已收集的 uin -> 智能备注） */
+    private final LinkedHashMap<Long, String> gatheredSession = new LinkedHashMap<>();
 
     private static final long[] ROBOT_ENTERPRISE_UIN_ARRAY = new long[]{
             // 查询ROBOT信息 https://qun.qq.com/qunpro/robot/qunshare?robot_uin=66600000
@@ -178,7 +183,10 @@ public class ExfriendManager {
 
     public static Object getFriendsManager() throws Exception {
         Object qqAppInterface = AppRuntimeHelper.getAppRuntime();
-        return Reflex.invokeVirtual(qqAppInterface, "getManager", 50, int.class);
+        // QQ 9.3.30: manager 索引由 QQManagerFactory 运行时分配（FRIENDS_MANAGER 已不是 50），反射读取避免写死
+        int friendsManagerId = Initiator.load("com.tencent.mobileqq.app.QQManagerFactory")
+                .getField("FRIENDS_MANAGER").getInt(null);
+        return Reflex.invokeVirtual(qqAppInterface, "getManager", friendsManagerId, int.class);
     }
 
     public static ConcurrentHashMap getFriendsConcurrentHashMap(Object friendsManager)
@@ -200,6 +208,175 @@ public class ExfriendManager {
 
     public static void onGetFriendListResp(FriendChunk fc) {
         get(fc.uin).recordFriendChunk(fc);
+    }
+
+    private static boolean gatheredProtocolChecked = false;
+    private static boolean gatheredProtocolAvailable = true;
+
+    /**
+     * QQ 9.3.30: OidbSvc.0x7c4 响应入口
+     */
+    public static void onGatheredContactsResp(byte[] oidbBytes) {
+        try {
+            // 部分 QQ 版本（如 9.1.67）无 cmd0x7c4 协议类，只检查一次避免每次响应刷堆栈
+            if (!gatheredProtocolChecked) {
+                gatheredProtocolChecked = true;
+                try {
+                    Initiator.load("tencent/im/oidb/cmd0x7c4/cmd0x7c4$RspBody");
+                } catch (Throwable e) {
+                    gatheredProtocolAvailable = false;
+                    Log.i("QAuxv-Del: 当前 QQ 版本无 cmd0x7c4 协议类，0x7c4 响应解析停用");
+                }
+            }
+            if (!gatheredProtocolAvailable) {
+                return;
+            }
+            long uin = AppRuntimeHelper.getLongAccountUin();
+            if (uin < 10000) {
+                return;
+            }
+            get(uin).parseGatheredContactsResp(oidbBytes);
+        } catch (Throwable e) {
+            Log.e(e);
+        }
+    }
+
+    /**
+     * QQ 9.3.30: 解析 0x7c4 响应
+     */
+    private void parseGatheredContactsResp(byte[] oidbBytes) {
+        try {
+            Class<?> clzPkg = Initiator.load("tencent/im/oidb/oidb_sso$OIDBSSOPkg");
+            Object pkg = clzPkg.getDeclaredConstructor().newInstance();
+            clzPkg.getMethod("mergeFrom", byte[].class).invoke(pkg, (Object) oidbBytes);
+            com.tencent.mobileqq.pb.PBUInt32Field resultField =
+                (com.tencent.mobileqq.pb.PBUInt32Field) clzPkg.getField("uint32_result").get(pkg);
+            if (resultField.has() && resultField.get() != 0) {
+                Log.i("QAuxv-Del: 0x7c4 OIDB result=" + resultField.get() + "，响应 hex=" + toHex(oidbBytes));
+                scheduleRetryFlRefresh(15000);
+                return;
+            }
+            resetGatheredRetry();
+            com.tencent.mobileqq.pb.PBBytesField bodyField =
+                (com.tencent.mobileqq.pb.PBBytesField) clzPkg.getField("bytes_bodybuffer").get(pkg);
+            if (!bodyField.has()) {
+                return;
+            }
+            byte[] body = bodyField.get().toByteArray();
+            Class<?> clzRsp = Initiator.load("tencent/im/oidb/cmd0x7c4/cmd0x7c4$RspBody");
+            Object rspBody = clzRsp.getDeclaredConstructor().newInstance();
+            clzRsp.getMethod("mergeFrom", byte[].class).invoke(rspBody, (Object) body);
+            Object snRsp = clzRsp.getField("msg_get_sn_frd_list_rsp").get(rspBody);
+            if (snRsp == null) {
+                return;
+            }
+            Class<?> clzSn = snRsp.getClass();
+            long seq = ((com.tencent.mobileqq.pb.PBUInt32Field) clzSn.getField("uint32_sequence").get(snRsp)).get();
+            boolean over = ((com.tencent.mobileqq.pb.PBUInt32Field) clzSn.getField("uint32_over").get(snRsp)).get() != 0;
+            java.util.List<?> frds = (java.util.List<?>) ((com.tencent.mobileqq.pb.PBRepeatMessageField) clzSn
+                .getField("rpt_msg_one_frd_data").get(snRsp)).get();
+            LinkedHashMap<Long, String> uins = new LinkedHashMap<>(frds.size());
+            for (Object o : frds) {
+                long id = ((com.tencent.mobileqq.pb.PBUInt64Field) o.getClass().getField("uint64_frd_id").get(o)).get();
+                String smartRemark = null;
+                try {
+                    com.tencent.mobileqq.pb.PBBytesField remarkField = (com.tencent.mobileqq.pb.PBBytesField) o
+                        .getClass().getField("bytes_smart_remark").get(o);
+                    if (remarkField.has()) {
+                        smartRemark = new String(remarkField.get().toByteArray(),
+                            java.nio.charset.StandardCharsets.UTF_8);
+                    }
+                } catch (Throwable ignored) {
+                }
+                uins.put(id, smartRemark);
+            }
+            onGatheredContactsChunk(uins, seq, over);
+        } catch (Throwable e) {
+            Log.e(e);
+        }
+    }
+
+    /**
+     * 0x7c4 分片收集，finished 时执行对比
+     */
+    public synchronized void onGatheredContactsChunk(Map<Long, String> uinsWithRemark, long seq, boolean finished) {
+        if (seq == 0) {
+            gatheredSession.clear();
+        }
+        gatheredSession.putAll(uinsWithRemark);
+        if (finished && !gatheredSession.isEmpty()) {
+            LinkedHashMap<Long, String> snapshot = new LinkedHashMap<>(gatheredSession);
+            gatheredSession.clear();
+            if (tp != null) {
+                tp.execute(() -> asyncCompareGatheredContacts(snapshot));
+            } else {
+                asyncCompareGatheredContacts(snapshot);
+            }
+        }
+    }
+
+    /**
+     * 对比好友列表与历史记录，检测被删好友
+     */
+    private void asyncCompareGatheredContacts(Map<Long, String> uinsWithRemark) {
+        Object[] ptr = new Object[4];
+        synchronized (this) {
+            HashSet<Long> present = new HashSet<>(uinsWithRemark.keySet());
+            long now = System.currentTimeMillis() / 1000L;
+            // 先更新/新增本次列表中的好友，再检测消失的好友
+            for (Map.Entry<Long, String> ent : uinsWithRemark.entrySet()) {
+                long u = ent.getKey();
+                FriendRecord fr = persons.get(u);
+                if (fr == null) {
+                    fr = new FriendRecord();
+                    fr.uin = u;
+                    fr.friendStatus = FriendRecord.STATUS_FRIEND_MUTUAL;
+                    fr.serverTime = now;
+                    persons.put(u, fr);
+                    dirtySerializedFlag = true;
+                } else {
+                    fr.friendStatus = FriendRecord.STATUS_FRIEND_MUTUAL;
+                }
+                String smartRemark = ent.getValue();
+                if (smartRemark != null && !smartRemark.isEmpty()) {
+                    fr.remark = smartRemark;
+                    dirtySerializedFlag = true;
+                }
+            }
+            Iterator<Map.Entry<Long, FriendRecord>> it = persons.entrySet().iterator();
+            ptr[0] = 0;
+            int deletedCount = 0;
+            while (it.hasNext()) {
+                Map.Entry<Long, FriendRecord> ent = it.next();
+                FriendRecord fr = ent.getValue();
+                if (!present.contains(ent.getKey()) && !hasDeleteRecord(fr.uin)) {
+                    if (shouldIgnoreDeletionEvent(fr.uin)) {
+                        fr.friendStatus = FriendRecord.STATUS_EXFRIEND;
+                        continue;
+                    }
+                    EventRecord ev = new EventRecord();
+                    ev._friendStatus = fr.friendStatus;
+                    ev._nick = fr.nick;
+                    ev._remark = fr.remark;
+                    ev.event = EventRecord.EVENT_FRIEND_DELETE;
+                    ev.operand = fr.uin;
+                    ev.executor = -1;
+                    ev.timeRangeBegin = fr.serverTime;
+                    ev.timeRangeEnd = now;
+                    ev.setDeleteReason(EventRecord.DELETE_REASON_PASSIVE);
+                    reportEventWithoutSave(ev, ptr);
+                    fr.friendStatus = FriendRecord.STATUS_EXFRIEND;
+                    deletedCount++;
+                    Log.i("QAuxv-Del: " + "检测到被删好友: uin=" + fr.uin + " remark=" + fr.remark + " nick=" + fr.nick);
+                    if (isAutoBlockEnabled()) {
+                        blockFriend(fr.uin);
+                    }
+                }
+            }
+            Log.i("QAuxv-Del: " + "0x7c4 对比结束: 历史=" + persons.size() + " 检测到删除=" + deletedCount);
+        }
+        lastUpdateTimeSec = System.currentTimeMillis() / 1000L;
+        doNotifyDelFlAndSave(ptr);
     }
 
     public long getUin() {
@@ -486,6 +663,22 @@ public class ExfriendManager {
                 Log.e(e);
             }
         }
+        // 清理重复记录：同一好友同一事件的重复记录只保留最早一条
+        try {
+            java.util.HashSet<Long> seenDelete = new java.util.HashSet<>();
+            java.util.Iterator<Map.Entry<Integer, EventRecord>> it2 = events.entrySet().iterator();
+            while (it2.hasNext()) {
+                EventRecord ev2 = it2.next().getValue();
+                if (ev2.event == EventRecord.EVENT_FRIEND_DELETE) {
+                    if (!seenDelete.add(ev2.operand)) {
+                        it2.remove();
+                        dirtySerializedFlag = true;
+                    }
+                }
+            }
+        } catch (Throwable e) {
+            Log.e(e);
+        }
     }
 
     private void saveEventsData() {
@@ -667,13 +860,24 @@ public class ExfriendManager {
             tag = "" + ev.operand;
         }
         out[0] = unread;
-        ticker = "检测到" + unread + "位好友删除了你";
-        if (unread > 1) {
-            title = "你被" + unread + "位好友删除";
-            c = tag + "等" + unread + "位好友";
+        if (ev.getDeleteReason() == EventRecord.DELETE_REASON_ACTIVE) {
+            ticker = "已删除 " + unread + " 位好友";
+            if (unread > 1) {
+                title = "你删除了" + unread + "位好友";
+                c = tag + "等" + unread + "位好友";
+            } else {
+                title = tag;
+                c = "在约 " + getRelTimeStrSec(ev.timeRangeBegin) + " 被你删除";
+            }
         } else {
-            title = tag;
-            c = "在约 " + getRelTimeStrSec(ev.timeRangeBegin) + " 删除了你";
+            ticker = "检测到" + unread + "位好友删除了你";
+            if (unread > 1) {
+                title = "你被" + unread + "位好友删除";
+                c = tag + "等" + unread + "位好友";
+            } else {
+                title = tag;
+                c = "在约 " + getRelTimeStrSec(ev.timeRangeBegin) + " 删除了你";
+            }
         }
         out[1] = ticker;
         out[2] = title;
@@ -766,8 +970,53 @@ public class ExfriendManager {
         doNotifyDelFlAndSave(ptr);
     }
 
+    /**
+     * 被动删除（对方删除自己），记录 PASSIVE 原因，按开关自动拉黑
+     */
+    public void markPassiveDelete(long uin) {
+        synchronized (this) {
+            if (hasDeleteRecord(uin)) {
+                return;
+            }
+            FriendRecord fr = persons.get(uin);
+            if (fr == null) {
+                Log.i("QAuxv-Del: " + "被动删除但好友不在记录中: uin=" + uin);
+                return;
+            }
+            EventRecord ev = new EventRecord();
+            ev._friendStatus = fr.friendStatus;
+            ev._nick = fr.nick;
+            ev._remark = fr.remark;
+            ev.timeRangeBegin = fr.serverTime;
+            ev.timeRangeEnd = System.currentTimeMillis() / 1000;
+            fr.friendStatus = FriendRecord.STATUS_EXFRIEND;
+            ev.executor = -1;
+            ev.operand = uin;
+            ev.event = EventRecord.EVENT_FRIEND_DELETE;
+            ev.setDeleteReason(EventRecord.DELETE_REASON_PASSIVE);
+            Object[] out = new Object[4];
+            reportEventWithoutSave(ev, out);
+            saveConfigure();
+            // 被动删除发通知（开关控制）
+            try {
+                if (isNotifyWhenDeleted() && ((Number) out[0]).intValue() > 0) {
+                    doNotifyDelFlAndSave(out);
+                }
+            } catch (Throwable e) {
+                Log.e(e);
+            }
+            if (isAutoBlockEnabled()) {
+                Log.i("QAuxv-Del: " + "被动删除触发拉黑: uin=" + uin);
+                blockFriend(uin);
+            }
+        }
+    }
+
     public void markActiveDelete(long uin) {
         synchronized (this) {
+            if (hasDeleteRecord(uin)) {
+                return;
+            }
             FriendRecord fr = persons.get(uin);
             if (fr == null) {
                 Toasts.error(null, "onActDelResp: get(" + uin + ")==null");
@@ -783,8 +1032,13 @@ public class ExfriendManager {
             ev.executor = this.getUin();
             ev.operand = uin;
             ev.event = EventRecord.EVENT_FRIEND_DELETE;
+            ev.setDeleteReason(EventRecord.DELETE_REASON_ACTIVE);
             reportEventWithoutSave(ev, null);
             saveConfigure();
+            if (isAutoBlockActiveEnabled()) {
+                Log.i("QAuxv-Del: " + "主动删除触发拉黑: uin=" + uin);
+                blockFriend(uin);
+            }
         }
     }
 
@@ -853,14 +1107,242 @@ public class ExfriendManager {
         boolean inLogin;
         inLogin = (AppRuntimeHelper.getLongAccountUin() == mUin);
         if (!inLogin) {
-            Log.i("doRequestFlRefresh but uin(" + mUin + ") isn't logged in.");
+            Log.i("QAuxv-Del: 启动拉取被跳过: uin(" + mUin + ") 未登录, 5 秒后重试");
+            scheduleRetryFlRefresh(5000);
             return;
         }
         try {
-            Reflex.invokeVirtualAny(ManagerHelper.getFriendListHandler(), true, true, boolean.class,
-                    boolean.class, void.class);
-        } catch (Exception e) {
+            // 直接读 FriendsManager 的好友列表（按返回类型匹配，不依赖方法名）
+            Object fm = ManagerHelper.getFriendsManager();
+            java.util.List<?> list = getFriendsList(fm);
+            if (list == null) {
+                Log.i("QAuxv-Del: FriendsManager 好友列表方法均不可用");
+                return;
+            }
+            LinkedHashMap<Long, String> uins = new LinkedHashMap<>();
+            for (Object o : list) {
+                if (o == null) {
+                    continue;
+                }
+                String uinStr = extractString(o, new String[]{"getUin"}, new String[]{"uin"});
+                if (uinStr == null || uinStr.isEmpty()) {
+                    continue;
+                }
+                String remark = extractString(o, new String[]{"getRemark"}, new String[]{"remark"});
+                if (remark == null || remark.isEmpty()) {
+                    remark = extractString(o, new String[]{"getAlias"}, new String[]{"alias"});
+                }
+                if (remark == null || remark.isEmpty()) {
+                    remark = extractString(o, new String[]{"getNick", "getFriendNick"}, new String[]{"name", "nick"});
+                }
+                try {
+                    uins.put(Long.parseLong(uinStr), remark);
+                } catch (NumberFormatException ignored) {
+                }
+            }
+            Log.i("QAuxv-Del: FriendsManager 好友列表大小=" + uins.size());
+            // 直接以全量快照对比历史，检测被删好友
+            onGatheredContactsChunk(uins, 0, true);
+        } catch (Throwable e) {
+            Log.i("QAuxv-Del: 拉取调用异常: " + e);
             Log.e(e);
+        }
+    }
+
+    /**
+     * 获取好友列表（不依赖方法名）：扫描 FriendsManager 中无参且返回 List 的方法，
+     * 泛型元素为 QQ 好友模型（data.Friends 或 NT friendsinfo bean）即命中；
+     * 老版本存在双方法（List + ArrayList），取运行时元素验证通过且数量最大的。
+     */
+    private static java.util.List<?> getFriendsList(Object fm) {
+        java.util.List<?> best = null;
+        for (java.lang.reflect.Method mm : fm.getClass().getDeclaredMethods()) {
+            try {
+                if (mm.getParameterCount() != 0 || !java.util.List.class.isAssignableFrom(mm.getReturnType())) {
+                    continue;
+                }
+                String elemName = null;
+                java.lang.reflect.Type gt = mm.getGenericReturnType();
+                if (gt instanceof java.lang.reflect.ParameterizedType) {
+                    java.lang.reflect.Type[] args = ((java.lang.reflect.ParameterizedType) gt).getActualTypeArguments();
+                    if (args.length == 1) {
+                        elemName = args[0].getTypeName();
+                    }
+                }
+                if (elemName == null || (!elemName.contains("Friends") && !elemName.contains("friendsinfo"))) {
+                    continue;
+                }
+                if (!mm.isAccessible()) {
+                    mm.setAccessible(true);
+                }
+                Object r = mm.invoke(fm);
+                if (!(r instanceof java.util.List)) {
+                    continue;
+                }
+                java.util.List<?> list = (java.util.List<?>) r;
+                if (!list.isEmpty()) {
+                    // 运行时元素验证：防止泛型签名被混淆工具擦除
+                    String cn = list.get(0).getClass().getName();
+                    if (!cn.contains("Friends") && !cn.contains("friendsinfo")) {
+                        continue;
+                    }
+                }
+                if (best == null || list.size() > best.size()) {
+                    best = list;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        return best;
+    }
+
+    /**
+     * 提取字符串成员：先 getter 后 public 字段（兼容 data.Friends 等仅有字段的老模型）
+     */
+    private static String extractString(Object o, String[] getters, String[] fields) {
+        for (String g : getters) {
+            try {
+                Object r = Reflex.invokeVirtual(o, g, String.class);
+                if (r instanceof String) {
+                    return (String) r;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        for (String f : fields) {
+            try {
+                java.lang.reflect.Field fd = o.getClass().getField(f);
+                Object r = fd.get(o);
+                if (r instanceof String) {
+                    return (String) r;
+                }
+            } catch (Throwable ignored) {
+            }
+        }
+        return null;
+    }
+
+    private static final int MAX_GATHERED_RETRY = 3;
+    private static int gatheredRetryCount = 0;
+
+    private void scheduleRetryFlRefresh(long delayMs) {
+        if (gatheredRetryCount >= MAX_GATHERED_RETRY) {
+            Log.i("QAuxv-Del: 重试次数已达上限(" + MAX_GATHERED_RETRY + ")，放弃");
+            return;
+        }
+        gatheredRetryCount++;
+        try {
+            android.os.Handler h = new android.os.Handler(android.os.Looper.getMainLooper());
+            h.postDelayed(() -> doRequestFlRefresh(), delayMs);
+        } catch (Throwable e) {
+            Log.e(e);
+        }
+    }
+
+    private static String toHex(byte[] data) {
+        return toHex(data, data.length);
+    }
+
+    private static String toHex(byte[] data, int maxLen) {
+        int n = Math.min(data.length, maxLen);
+        StringBuilder sb = new StringBuilder(n * 2);
+        for (int i = 0; i < n; i++) {
+            byte b = data[i];
+            sb.append(Character.forDigit((b >> 4) & 0xF, 16)).append(Character.forDigit(b & 0xF, 16));
+        }
+        return sb.toString();
+    }
+
+    public void resetGatheredRetry() {
+        gatheredRetryCount = 0;
+    }
+
+    // 好友删除检测配置
+
+    public boolean isShowDeleteReason() {
+        return mConfig.getBoolean("del_show_reason", true);
+    }
+
+    public void setShowDeleteReason(boolean z) {
+        mConfig.putBoolean("del_show_reason", z);
+        saveConfigure();
+    }
+
+    public boolean isAutoBlockEnabled() {
+        return mConfig.getBoolean("del_auto_block", false);
+    }
+
+    public void setAutoBlockEnabled(boolean z) {
+        mConfig.putBoolean("del_auto_block", z);
+        saveConfigure();
+    }
+
+    public boolean isAutoBlockActiveEnabled() {
+        return mConfig.getBoolean("del_auto_block_active", false);
+    }
+
+    public void setAutoBlockActiveEnabled(boolean z) {
+        mConfig.putBoolean("del_auto_block_active", z);
+        saveConfigure();
+    }
+
+    public boolean isAutoDetectEnabled() {
+        return mConfig.getBoolean("del_auto_detect", true);
+    }
+
+    public void setAutoDetectEnabled(boolean z) {
+        mConfig.putBoolean("del_auto_detect", z);
+        saveConfigure();
+    }
+
+    public int getDetectIntervalMin() {
+        int v = mConfig.getInt("del_detect_interval_min", 5);
+        return Math.max(1, Math.min(v, 60));
+    }
+
+    public void setDetectIntervalMin(int min) {
+        mConfig.putInt("del_detect_interval_min", Math.max(1, Math.min(min, 60)));
+        saveConfigure();
+    }
+
+    /**
+     * 拉黑好友（QQ 9.3.30）：优先屏蔽接口 FriendListHandler.changeFriendShieldFlag(uin, true)，
+     * 失败时尝试黑名单协议 proto/a 的发送方法
+     */
+    /**
+     * QQ 9.3.30: 拉黑好友（IRelationBlacklistApi.sendAddBlacklistRequest）
+     */
+    public void blockFriend(long uin) {
+        boolean done = false;
+        try {
+            Class<?> clzApi = io.github.qauxv.util.Initiator
+                .load("com/tencent/mobileqq/profilecard/api/IRelationBlacklistApi");
+            Class<?> clzQRoute = io.github.qauxv.util.Initiator.load("com/tencent/mobileqq/qroute/QRoute");
+            Object api = clzQRoute.getMethod("api", Class.class).invoke(null, clzApi);
+            Class<?> clzListener = io.github.qauxv.util.Initiator
+                .load("com/tencent/mobileqq/profilecard/listener/RelationBlacklistListener");
+            // sendAddBlacklistRequest(String uin, RelationBlacklistListener)
+            Reflex.invokeVirtual(api, "sendAddBlacklistRequest", String.valueOf(uin), null,
+                String.class, clzListener, void.class);
+            Log.i("QAuxv-Del: " + "拉黑请求已发送(sendAddBlacklistRequest): uin=" + uin);
+            done = true;
+        } catch (Throwable e) {
+            Log.i("QAuxv-Del: " + "拉黑(sendAddBlacklistRequest)失败: " + e);
+        }
+        if (!done) {
+            // 保底：屏蔽好友（拦截消息）
+            try {
+                Object handler = ManagerHelper.getFriendListHandler();
+                Reflex.invokeVirtual(handler, "changeFriendShieldFlag", uin, Boolean.TRUE,
+                    long.class, boolean.class, void.class);
+                Log.i("QAuxv-Del: " + "保底屏蔽好友成功: uin=" + uin);
+                done = true;
+            } catch (Throwable e) {
+                Log.i("QAuxv-Del: " + "保底屏蔽失败: " + e);
+            }
+        }
+        if (!done) {
+            Log.i("QAuxv-Del: " + "拉黑失败（所有接口不可用）: uin=" + uin);
         }
     }
 
@@ -892,6 +1374,18 @@ public class ExfriendManager {
             mConfig.putString(KEY_DELETION_DETECTION_EXCLUSION_LIST, TextUtils.join(",", uinList));
         }
         // no need to call saveConfigure() because it's MMKV
+    }
+
+    private boolean hasDeleteRecord(long uin) {
+        if (events == null) {
+            return false;
+        }
+        for (EventRecord ev : events.values()) {
+            if (ev.event == EventRecord.EVENT_FRIEND_DELETE && ev.operand == uin) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private boolean shouldIgnoreDeletionEvent(long uin) {

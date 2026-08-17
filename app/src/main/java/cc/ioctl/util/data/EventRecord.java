@@ -35,6 +35,10 @@ public class EventRecord implements Serializable, Comparable {
     public static final int EVENT_REMARK_CHANGE = 6;
     public static final int EVENT_LOCAL_REMARK_CHANGE = 7;
     public static final int EVENT_ACCOUNT_DESTRUCTION = 8;
+    // 删除原因：1=主动删除 2=被动删除
+    public static final int DELETE_REASON_UNKNOWN = 0;
+    public static final int DELETE_REASON_ACTIVE = 1;
+    public static final int DELETE_REASON_PASSIVE = 2;
     private static final long serialVersionUID = 1L;
     public long timeRangeBegin;
     public long timeRangeEnd;
@@ -67,6 +71,20 @@ public class EventRecord implements Serializable, Comparable {
         } else {
             return "" + operand;
         }
+    }
+
+    public int getDeleteReason() {
+        if (extra != null && extra.startsWith("dr:")) {
+            try {
+                return Integer.parseInt(extra.substring(3));
+            } catch (NumberFormatException ignored) {
+            }
+        }
+        return DELETE_REASON_UNKNOWN;
+    }
+
+    public void setDeleteReason(int reason) {
+        extra = "dr:" + reason;
     }
 
     @Override
