@@ -1275,3 +1275,64 @@ data object Hd_ChatsListVB_OnCreateView_Method : DexKitTarget.UsingStr() {
     override val declaringClass = "Lcom/tencent/qqnt/chats/core/ui/ChatsListVB"
     override val filter = DexKitFilter.strInClsName("Lcom/tencent/qqnt/chats/core/ui/ChatsListVB;", true)
 }
+
+// V2 invalidates descriptors cached by earlier, narrower implementations of this feature.
+data object BlockPicByMd5_LoadImagePathV2 : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod = true
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findMethod {
+            searchPackages("com.tencent.mobileqq.aio.msglist.holder")
+            matcher {
+                returnType(Void.TYPE)
+                paramTypes(
+                    "android.widget.ImageView",
+                    "java.lang.String",
+                    null,
+                    "int",
+                    "int",
+                    "com.tencent.qqnt.kernel.nativeinterface.MsgElement",
+                    "com.tencent.mobileqq.aio.msg.AIOMsgItem",
+                    null,
+                    "kotlin.jvm.functions.Function2",
+                )
+                usingStrings("picView", "imagePath", "msgElement", "msgItem", "loadingImage")
+            }
+        }.single()
+    }
+}
+
+data object BlockPicByMd5_PicPathResolverV2 : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod = true
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findMethod {
+            searchPackages("com.tencent.mobileqq.aio")
+            matcher {
+                returnType(String::class.java)
+                paramTypes("com.tencent.qqnt.kernel.nativeinterface.PicElement")
+                addInvoke {
+                    name = "assembleMobileQQRichMediaFilePath"
+                    returnType(String::class.java)
+                    paramTypes("com.tencent.qqnt.kernel.nativeinterface.RichMediaFilePathInfo")
+                }
+            }
+        }.single()
+    }
+}
+
+data object BlockPicByMd5_EmotionPreviewDataV2 : DexKitTarget.UsingStr() {
+    override val traitString = arrayOf("MsgEmoticonPreviewData")
+    override val declaringClass = ""
+    override val filter = filter@{ descriptor: DexMethodDescriptor ->
+        val clazz = load(descriptor.declaringClass) ?: return@filter false
+        val messageRecord = load("com.tencent.mobileqq.data.MessageRecord") ?: return@filter false
+        clazz.name.startsWith("com.tencent.mobileqq.emotionintegrate.") &&
+            clazz.declaredConstructors.any { constructor ->
+                constructor.parameterTypes.contentEquals(arrayOf(messageRecord))
+            } && clazz.declaredMethods.any { method ->
+                method.returnType.name == "android.graphics.drawable.Drawable" &&
+                    method.parameterTypes.contentEquals(arrayOf(android.content.Context::class.java))
+            }
+    }
+}

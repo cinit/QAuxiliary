@@ -29,6 +29,7 @@ import android.text.TextUtils;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import cc.hicore.QApp.QAppUtils;
 import cc.hicore.ReflectUtil.XField;
 import cc.hicore.ReflectUtil.XMethod;
@@ -48,13 +49,14 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter.Locations.Auxiliary;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
-import io.github.qauxv.ui.CustomDialog;
+import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.CustomMenu;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.LicenseStatus;
 import io.github.qauxv.util.Toasts;
 import io.github.qauxv.util.dexkit.AbstractQQCustomMenuItem;
 import io.github.qauxv.util.dexkit.DexKitTarget;
+import io.github.nakixii.hook.BlockPicByMd5;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -250,12 +252,20 @@ public class PicMd5Hook extends CommonSwitchFunctionHook implements OnMenuBuilde
     }
 
     private static void showMd5Dialog(Context ctx, String md5, PicElement element) {
-        CustomDialog.createFailsafe(ctx).setTitle("MD5").setCancelable(true)
-                .setMessage(md5).setPositiveButton("复制",
-                        (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, md5))
-                .setNeutralButton("复制图片链接",
-                        (dialog, which) -> SystemServiceUtils.copyToClipboard(ctx, getPicturePath(md5, element)))
-                .setNegativeButton("关闭", null).show();
+        final boolean canBlockPicture = BlockPicByMd5.INSTANCE.isAvailable() && BlockPicByMd5.INSTANCE.isEnabled();
+        final String[] actions = canBlockPicture
+                ? new String[]{"复制 MD5", "复制图片链接", "屏蔽图片"}
+                : new String[]{"复制 MD5", "复制图片链接"};
+        new AlertDialog.Builder(CommonContextWrapper.createAppCompatContext(ctx)).setTitle("MD5\n" + md5).setCancelable(true)
+                .setItems(actions, (dialog, which) -> {
+                    if (which == 0) {
+                        SystemServiceUtils.copyToClipboard(ctx, md5);
+                    } else if (which == 1) {
+                        SystemServiceUtils.copyToClipboard(ctx, getPicturePath(md5, element));
+                    } else if (canBlockPicture && which == 2) {
+                        BlockPicByMd5.addRuleAndShowConfig(ctx, md5);
+                    }
+                }).setNegativeButton("关闭", null).show();
     }
 
     private static String getPicturePath(@NonNull String md5, PicElement element) {
