@@ -45,7 +45,10 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.inputmethod.EditorInfoCompat;
 import androidx.core.view.inputmethod.InputConnectionCompat;
+import cc.hicore.QApp.QAppUtils;
 import cc.hicore.message.bridge.Chat_facade_bridge;
+import cc.hicore.message.chat.SessionUtils;
+import cc.hicore.message.common.MsgSender;
 import cc.ioctl.util.SendCacheUtils;
 import cc.ioctl.util.ui.FaultyDialog;
 import io.github.duzhaokun123.activity.PictureEditProxyActivity;
@@ -58,6 +61,7 @@ import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.bridge.FaceImpl;
 import io.github.qauxv.bridge.SessionInfoImpl;
+import io.github.qauxv.bridge.kernelcompat.ContactCompat;
 import io.github.qauxv.databinding.DialogConfirmSendPictureBinding;
 import io.github.qauxv.dsl.FunctionEntryRouter;
 import io.github.qauxv.hook.CommonSwitchFunctionHook;
@@ -66,6 +70,7 @@ import io.github.qauxv.router.dispacher.InputButtonHookDispatcher;
 import io.github.qauxv.ui.CommonContextWrapper;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.IoUtils;
+import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NBaseChatPie_init;
@@ -80,6 +85,8 @@ import java.util.Objects;
 import java.util.concurrent.atomic.AtomicBoolean;
 import kotlin.Pair;
 import mqq.app.AppRuntime;
+
+import static cc.ioctl.util.HostInfo.requireMinQQVersion;
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -322,7 +329,12 @@ public class AioChatPieClipPasteHook extends CommonSwitchFunctionHook implements
             @NonNull ViewGroup aioRootView, @NonNull AppRuntime rt) {
         try {
             File file = SendCacheUtils.saveAsCacheFile(context, data);
-            Chat_facade_bridge.sendPic(session, file);
+            if (QAppUtils.isQQnt() && requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+                ContactCompat contact = SessionUtils.AIOParam2Contact(InputButtonHookDispatcher.AIOParam);
+                MsgSender.send_pic_by_contact(contact, file.getAbsolutePath());
+            } else {
+                Chat_facade_bridge.sendPic(session, file);
+            }
         } catch (IOException e) {
             FaultyDialog.show(context, e);
         }
