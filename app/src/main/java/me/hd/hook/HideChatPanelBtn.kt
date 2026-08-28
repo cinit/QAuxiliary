@@ -64,7 +64,7 @@ object HideChatPanelBtn : MultiItemDelayableHook(
                     "拍照(临时会话)",
                     "定位(临时会话)"
                 )
-            } else setOf("语音", "拍照", "红包", "表情", "更多功能", "滤镜视频")
+            } else setOf("语音", "拍照", "红包", "表情", "更多功能", "滤镜视频", "泡泡")
         }
 
     @SuppressLint("ResourceType")
