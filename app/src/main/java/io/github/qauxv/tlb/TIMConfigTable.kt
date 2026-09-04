@@ -46,6 +46,7 @@ class TIMConfigTable : ConfigTableInterface {
             TIM_3_1_1 to "PK",
             TIM_3_3_0 to "PO",
             TIM_3_5_0 to "PB",
+            TIM_3_5_6 to "b",
         ),
 
         ReplyNoAtHook::class.java.simpleName to mapOf(
