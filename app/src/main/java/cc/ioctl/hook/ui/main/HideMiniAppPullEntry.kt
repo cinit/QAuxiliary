@@ -82,6 +82,7 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
                 // com.qqnt.widget.smartrefreshlayout.header.TwoLevelHeader
                 it.thisObject.javaClass.superclass.superclass.superclass.declaredFields.first { field ->// mEnableTwoLevel
                     field.name == when {// RefreshState.ReleaseToTwoLevel
+                        requireMinQQVersion(QQVersion.QQ_9_3_30) -> "t"
                         requireMinQQVersion(QQVersion.QQ_9_1_70) -> "I"// 9.1.70 ~ 9.1.75
                         requireMinQQVersion(QQVersion.QQ_9_1_30) -> "E"// 9.1.30 ~ 9.1.65
                         else -> "D"
@@ -92,8 +93,12 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
 //                requireMinQQVersion(QQVersion.QQ_9_0_50) -> "c"
 //                else -> "a"
 //            }
-            clazz.findMethod { name == miniOldStyleHeaderNewMethod && paramCount == 3 }.hookAfter {
-                XposedHelpers.callMethod(it.args[0], "finishRefresh")
+            // QQ 9.3.30 starts the receiving indicator at RefreshReleased. Finishing
+            // here skips its completion event; disabling the second level is enough.
+            if (needsLegacyRefreshHook) {
+                clazz.findMethod { name == miniOldStyleHeaderNewMethod && paramCount == 3 }.hookAfter {
+                    XposedHelpers.callMethod(it.args[0], "finishRefresh")
+                }
             }
         } ?: run {
             Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeader")?.let {
@@ -156,6 +161,9 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
             return ConfigManager.getCache().getString("qn_hide_miniapp_v2_mini_old_style_header_method_name")
         }
 
+    private val needsLegacyRefreshHook: Boolean
+        get() = !requireMinQQVersion(QQVersion.QQ_9_3_30)
+
     private val mStep: Step = object : Step {
 
         override fun step(): Boolean {
@@ -175,18 +183,25 @@ object HideMiniAppPullEntry : CommonSwitchFunctionHook(ConfigItems.qn_hide_msg_l
     override fun makePreparationSteps() = arrayOf(mStep)
 
     override val isNeedFind: Boolean
-        get() = initMiniAppObfsName == null || (Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew") != null && miniOldStyleHeaderNewMethod == null)
+        get() = initMiniAppObfsName == null ||
+                (needsLegacyRefreshHook &&
+                        Initiator.load("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew") != null &&
+                        miniOldStyleHeaderNewMethod == null)
 
     override fun doFind(): Boolean {
         (getCurrentBackend() as DexKitDeobfs).use { dexKitDeobfs ->
 
-            dexKitDeobfs.getDexKitBridge().findMethod {
-                matcher {
-                    usingStrings("refreshLayout", "oldState", "newState")
-                    declaredClass("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew")
-                    paramCount = 3
+            if (needsLegacyRefreshHook) {
+                dexKitDeobfs.getDexKitBridge().findMethod {
+                    matcher {
+                        usingStrings("refreshLayout", "oldState", "newState")
+                        declaredClass("com.tencent.qqnt.chats.view.MiniOldStyleHeaderNew")
+                        paramCount = 3
+                    }
+                }.firstOrNull()?.let {
+                    ConfigManager.getCache().putString("qn_hide_miniapp_v2_mini_old_style_header_method_name", it.name)
                 }
-            }.firstOrNull()?.let { ConfigManager.getCache().putString("qn_hide_miniapp_v2_mini_old_style_header_method_name", it.name) }
+            }
 
             val clz = Initiator._Conversation() ?: return false
             val conversationClassName = clz.name
