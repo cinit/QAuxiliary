@@ -31,6 +31,8 @@ import io.github.qauxv.util.TIMVersion.TIM_3_3_0
 import io.github.qauxv.util.TIMVersion.TIM_3_3_1
 import io.github.qauxv.util.TIMVersion.TIM_3_5_0
 import io.github.qauxv.util.TIMVersion.TIM_3_5_6
+import io.github.qauxv.util.TIMVersion.TIM_3_5_8
+import me.ketal.hook.SortAtPanel
 
 class TIMConfigTable : ConfigTableInterface {
 
@@ -47,6 +49,10 @@ class TIMConfigTable : ConfigTableInterface {
             TIM_3_3_0 to "PO",
             TIM_3_5_0 to "PB",
             TIM_3_5_6 to "b",
+        ),
+
+        SortAtPanel.sessionInfoTroopUin to mapOf(
+            TIM_3_5_8 to "a",
         ),
 
         ReplyNoAtHook::class.java.simpleName to mapOf(

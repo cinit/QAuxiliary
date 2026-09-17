@@ -21,7 +21,9 @@
  */
 package me.ketal.hook
 
+import android.os.Message
 import cc.hicore.Utils.XLog
+import cc.ioctl.util.Reflex
 import cc.ioctl.util.Reflex.getFirstByType
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
 import com.github.kyuubiran.ezxhelper.utils.hookAfter
@@ -88,6 +90,12 @@ object SortAtPanel : CommonSwitchFunctionHook(
             }
             list.removeAll(admin.toSet())
             list.addAll(if (isAdmin) 1 else 0, admin)
+        }
+
+        // for TIM 3.5.8
+        if (requireMinTimVersion(TIMVersion.TIM_3_5_8)) {
+            initOnceTim35()
+            return@throwOrTrue
         }
 
         // NT QQ clazz
@@ -223,6 +231,32 @@ object SortAtPanel : CommonSwitchFunctionHook(
 
             }
         }
+    }
+
+    private fun initOnceTim35() {
+        Reflex.findSingleMethod(Initiator.load("com.tencent.mobileqq.troop.quickat.ui.AIOAtSearchManager")!!, null, false, Message::class.java)
+            .also { method ->
+                method.hookBefore(this) {
+                    val msg = it.args[0] as? Message ?: return@hookBefore
+                    if (msg.what != 1) return@hookBefore
+                    val resultObj = msg.obj ?: return@hookBefore
+
+                    val members = Reflex.getFirstByTypeOrNull(resultObj, List::class.java) as MutableList<*>
+                    if (members.isEmpty()) return@hookBefore
+
+                    val session = Reflex.getFirstByTypeOrNull(it.thisObject, Initiator._SessionInfo()) ?: return@hookBefore
+                    val (owner, admins) = TroopInfo(getTroopUin(session))
+                        .let { info -> (info.troopOwnerUin ?: 0L) to (info.troopAdmin?.toSet() ?: emptySet()) }
+
+                    members.sortByDescending { member ->
+                        when (getMemberUin(member)) {
+                            owner -> 2
+                            in admins -> 1
+                            else -> 0
+                        }
+                    }
+                }
+            }
     }
 
     private fun getTroopUin(sessionInfo: Any?): String? =
