@@ -331,7 +331,7 @@ dependencies {
     implementation(projects.libs.dexkit)
     implementation(projects.libs.xView)
     // for get activation status
-    implementation(projects.libs.libxposed.service)
+    implementation(libs.libxposed.service)
     implementation(libs.hiddenapibypass)
     implementation(libs.appcenter.analytics)
     implementation(libs.appcenter.crashes)
