@@ -1,13 +1,13 @@
 [versions]
 # AGP 9.? no longer supports `android.enableResourceOptimizations=false`, so do not use AGP 9.? for now.
 # AGP 10.0 no longer supports `android.newDsl=false`, so do not use AGP 10.0 for now.
-agp = "9.4.0"
+agp = "9.4.1"
 kotlin = "2.4.20"
 ksp = "2.3.12"
 appCenter = "5.0.6"
 lifecycle = "2.11.0"
 materialDialog = "3.3.0"
-protobuf = "4.36.1"
+protobuf = "4.36.2"
 sealedEnum = "0.7.0"
 
 [libraries]
@@ -38,7 +38,7 @@ kotlinx-coroutines = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-core",
 kotlinx-serialization-json = { module = "org.jetbrains.kotlinx:kotlinx-serialization-json", version = "1.11.0" }
 xposed-api = { module = "de.robv.android.xposed:api", version = "82" }
 libxposed-service = { module = "io.github.libxposed:service", version = "102.0.0" }
-byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.14-jdk5" }
+byte-buddy = { module = "net.bytebuddy:byte-buddy", version = "1.18.14" }
 dalvik-dx = { module = "com.jakewharton.android.repackaged:dalvik-dx", version = "16.0.1" }
 dexlib2 = { module = "org.smali:dexlib2", version = "2.5.2" }
 google-guava = { module = "com.google.guava:guava", version = "33.7.1-android" }
