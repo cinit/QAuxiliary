@@ -269,8 +269,8 @@ data object CTimeFormatterUtils : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.utils.TimeFormatterUtils"
 
     // old: arrayOf("TimeFormatterUtils")
-    override val traitString = arrayOf("^EEEE$")
-    override val filter = DexKitFilter.allStaticFields
+    override val traitString = arrayOf("^EEEE $", "^EEEE$")
+    override val filter = DexKitFilter.allStaticFields and DexKitFilter.strInClsName("Lcom/tencent/mobileqq/utils/")
 }
 
 data object CGroupAppActivity : DexKitTarget.UsingStr() {
@@ -1331,8 +1331,8 @@ data object BlockPicByMd5_EmotionPreviewDataV2 : DexKitTarget.UsingStr() {
             clazz.declaredConstructors.any { constructor ->
                 constructor.parameterTypes.contentEquals(arrayOf(messageRecord))
             } && clazz.declaredMethods.any { method ->
-                method.returnType.name == "android.graphics.drawable.Drawable" &&
-                    method.parameterTypes.contentEquals(arrayOf(android.content.Context::class.java))
-            }
+            method.returnType.name == "android.graphics.drawable.Drawable" &&
+                method.parameterTypes.contentEquals(arrayOf(android.content.Context::class.java))
+        }
     }
 }
