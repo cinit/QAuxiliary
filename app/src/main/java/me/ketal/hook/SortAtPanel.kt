@@ -250,6 +250,7 @@ object SortAtPanel : CommonSwitchFunctionHook(
 
                     members.sortByDescending { member ->
                         when (getMemberUin(member)) {
+                            "0" -> 3 // @全体成员
                             owner -> 2
                             in admins -> 1
                             else -> 0
