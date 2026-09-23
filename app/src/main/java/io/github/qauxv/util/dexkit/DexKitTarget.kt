@@ -1336,3 +1336,18 @@ data object BlockPicByMd5_EmotionPreviewDataV2 : DexKitTarget.UsingStr() {
         }
     }
 }
+
+
+data object MsgService_onMsgNotify : DexKitTarget.UsingDexKitBridge() {
+    // 内核通知回调实现类，用方法名 + 字符串特征定位；旧版本无此回调时未命中跳过
+    override val findMethod = true
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findMethod {
+            matcher {
+                name = "onMsgNotify"
+                usingStrings("MsgService", "onMsgNotify seq=")
+            }
+        }.single()
+    }
+}
