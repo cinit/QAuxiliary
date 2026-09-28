@@ -11,8 +11,8 @@
  *
  * This software is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Affero General Public License for more details.
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU Affero General Public License for more details.
  *
  * You should have received a copy of the GNU Affero General Public License
  * and eula along with this software.  If not, see
@@ -37,8 +37,6 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
 import cc.ioctl.util.ui.FaultyDialog;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedBridge;
 import io.github.qauxv.R;
 import io.github.qauxv.activity.ShadowShareFileAgentActivity;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
@@ -52,6 +50,8 @@ import io.github.qauxv.util.IoUtils;
 import io.github.qauxv.util.Log;
 import io.github.qauxv.util.SyncUtils;
 import io.github.qauxv.util.Toasts;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedBridge;
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -73,6 +73,20 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
     public static final SharePicExtHook INSTANCE = new SharePicExtHook();
 
     private boolean mAioPictureViewV2ListenerHooked = false;
+
+    /**
+     * QQ 9.1.55 之后，原来的
+     * com.tencent.mobileqq.richmediabrowser.model.AIOPictureModel
+     * com.tencent.mobileqq.richmediabrowser.model.d
+     * 已经不存在。
+     *
+     * 新版本 AIOPictureView 里使用 iq0.d.c(AIOPictureData, int) 获取图片文件。
+     */
+    private interface PictureFileGetter {
+
+        @Nullable
+        File get(@NonNull Object aioPictureData, int type);
+    }
 
     private SharePicExtHook() {
         super(SyncUtils.PROC_MAIN | SyncUtils.PROC_PEAK);
@@ -116,6 +130,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
             assert kAIOBrowserBaseView != null;
         }
         Field contextOfAIOBrowserBaseView = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, Context.class);
+
         Class<?> kiShareActionSheet = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet");
         Class<?> kShareActionSheetProxy = Initiator.loadClassEither(
                 "com.tencent.mobileqq.widget.share.ShareActionSheetProxy",
@@ -123,8 +138,10 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                 "com.tencent.mobileqq.widget.share.c"
         );
         Field fProxyImpl = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetProxy, kiShareActionSheet);
+
         Class<?> kActionSheetItem = Initiator.loadClass("com.tencent.mobileqq.utils.ShareActionSheetBuilder$ActionSheetItem");
         Constructor<?> ctorActionSheetItem = kActionSheetItem.getDeclaredConstructor();
+
         Class<?> kShareActionSheetV2 = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheetV2");
         Class<?> kShareActionSheetImplV2 = Initiator.loadClassEither(
                 "com.tencent.mobileqq.widget.share.ShareActionSheetImplV2",
@@ -134,25 +151,65 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         Field fImplV2Impl = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetImplV2, kShareActionSheetV2);
         Field fV2ItemListArray = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetV2, List[].class);
         fV2ItemListArray.setAccessible(true);
+
         // action sheet listener
         Class<?> kiv2OnItemClickListener = Initiator.loadClass("com.tencent.mobileqq.widget.share.ShareActionSheet$OnItemClickListener");
-        // using kv3OnItemClickListenerV2 = com.tencent.mobileqq.widget.share.ShareActionSheet.OnItemClickListenerV2
         Method miv2OnItemClick = kiv2OnItemClickListener.getDeclaredMethod("onItemClick", kActionSheetItem, kiShareActionSheet);
+
         Method showActionSheetForPic = Reflex.findSingleMethod(kAIOPictureView, void.class, false,
                 Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureData"),
                 Initiator.loadClass("com.tencent.richmediabrowser.model.RichMediaBrowserInfo")
         );
+
         Field fieldV2Listener = Reflex.findFirstDeclaredInstanceFieldByType(kShareActionSheetV2, kiv2OnItemClickListener);
         Field fieldActionSheet = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, kiShareActionSheet);
-        // view model
-        Class<?> kAIOPictureModel = Initiator.loadClassEither(
-                "com.tencent.mobileqq.richmediabrowser.model.AIOPictureModel",
-                // QQ 8.9.0(3060)
-                "com.tencent.mobileqq.richmediabrowser.model.d"
-        );
+
         Class<?> kAIOPictureData = Initiator.loadClass("com.tencent.mobileqq.richmediabrowser.model.AIOPictureData");
-        Constructor<?> ctorAIOPictureModel = kAIOPictureModel.getConstructor();
-        Method getPictureFile = Reflex.findMethodByTypes_1(kAIOPictureModel, File.class, kAIOPictureData, int.class);
+
+        /*
+         * 图片文件获取逻辑：
+         *
+         * QQ 9.1.55:
+         *   iq0.d.c(AIOPictureData, int): File
+         *
+         * 旧版 QQ:
+         *   AIOPictureModel#getPictureFile(AIOPictureData, int): File
+         */
+        PictureFileGetter pictureFileGetter;
+        Class<?> kPicFileHelper = Initiator.load("iq0.d");
+        if (kPicFileHelper != null) {
+            Constructor<?> ctorPicFileHelper = kPicFileHelper.getDeclaredConstructor();
+            ctorPicFileHelper.setAccessible(true);
+            Method mGetPictureFile = Reflex.findMethodByTypes_1(kPicFileHelper, File.class, kAIOPictureData, int.class);
+            mGetPictureFile.setAccessible(true);
+            pictureFileGetter = (aioPictureData, type) -> {
+                try {
+                    Object helper = ctorPicFileHelper.newInstance();
+                    return (File) mGetPictureFile.invoke(helper, aioPictureData, type);
+                } catch (ReflectiveOperationException e) {
+                    return null;
+                }
+            };
+        } else {
+            Class<?> kAIOPictureModel = Initiator.loadClassEither(
+                    "com.tencent.mobileqq.richmediabrowser.model.AIOPictureModel",
+                    // QQ 8.9.0(3060)
+                    "com.tencent.mobileqq.richmediabrowser.model.d"
+            );
+            Constructor<?> ctorAIOPictureModel = kAIOPictureModel.getDeclaredConstructor();
+            ctorAIOPictureModel.setAccessible(true);
+            Method getPictureFile = Reflex.findMethodByTypes_1(kAIOPictureModel, File.class, kAIOPictureData, int.class);
+            getPictureFile.setAccessible(true);
+            pictureFileGetter = (aioPictureData, type) -> {
+                try {
+                    Object model = ctorAIOPictureModel.newInstance();
+                    return (File) getPictureFile.invoke(model, aioPictureData, type);
+                } catch (ReflectiveOperationException e) {
+                    return null;
+                }
+            };
+        }
+
         Function3<Object, Context, File, Void> fnInjectItemToShareSheet = (shareSheet, ctx, file) -> {
             try {
                 Object actionSheet = shareSheet;
@@ -165,8 +222,10 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                         actionSheet = fImplV2Impl.get(actionSheet);
                     }
                     assert actionSheet != null;
+
                     // just make sure impl...
                     kShareActionSheetV2.cast(actionSheet);
+
                     if (!mAioPictureViewV2ListenerHooked) {
                         Object listener = fieldV2Listener.get(actionSheet);
                         assert listener != null;
@@ -175,17 +234,23 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                         XposedBridge.hookMethod(m, mItemClickHandler);
                         mAioPictureViewV2ListenerHooked = true;
                     }
+
                     List<Object>[] itemListArray = (List<Object>[]) fV2ItemListArray.get(actionSheet);
                     assert itemListArray != null;
                     List<Object> row2 = itemListArray[1];
                     assert row2 != null;
+
                     Object item = ctorActionSheetItem.newInstance();
                     Parasitics.injectModuleResources(ctx.getResources());
-                    int drawableId = ResUtils.isInNightMode() ? R.drawable.ic_launch_28dp_night : R.drawable.ic_launch_28dp_light;
+                    int drawableId = ResUtils.isInNightMode()
+                            ? R.drawable.ic_launch_28dp_night
+                            : R.drawable.ic_launch_28dp_light;
+
                     Reflex.setInstanceObject(item, "id", int.class, R.id.ShareActionSheet_sharePictureWithExtApp);
                     Reflex.setInstanceObject(item, "icon", int.class, drawableId);
                     Reflex.setInstanceObject(item, "label", String.class, "其他应用");
                     Reflex.setInstanceObject(item, "argus", String.class, file.getAbsolutePath());
+
                     row2.add(item);
                 }
                 return null;
@@ -194,10 +259,12 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                 return null;
             }
         };
+
         if (QAppUtils.isQQnt()) {
             Class<?> kNTShareActionManager = Initiator.loadClass("com.tencent.qqnt.aio.gallery.share.NTShareActionManager");
             Field itemsField = Reflex.findSingleField(kNTShareActionManager, ArrayList.class, false);
             itemsField.setAccessible(true);
+
             Method maybeShow = ArraysKt.single(kNTShareActionManager.getDeclaredMethods(), m -> {
                 if (m.getReturnType() != void.class) {
                     return false;
@@ -209,50 +276,67 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                 Class<?> maybeNTShareContext = argt[0];
                 return !maybeNTShareContext.isInterface() && Modifier.isFinal(maybeNTShareContext.getModifiers());
             });
+
             Class<?> kNTShareContext = maybeShow.getParameterTypes()[0];
             Class<?> kRFWLayerItemMediaInfo = Initiator.loadClass("com.tencent.richframework.gallery.bean.RFWLayerItemMediaInfo");
+
             Field layerItemInfoField = Reflex.findSingleField(kNTShareContext, kRFWLayerItemMediaInfo, false);
             layerItemInfoField.setAccessible(true);
+
             Field activityField = Reflex.findSingleField(kNTShareContext, Activity.class, false);
             activityField.setAccessible(true);
+
             Field actionSheetField = Reflex.findSingleField(kNTShareActionManager, kiShareActionSheet, false);
             actionSheetField.setAccessible(true);
+
             Method getExistSaveOrEditPath = kRFWLayerItemMediaInfo.getDeclaredMethod("getExistSaveOrEditPath");
+
             HookUtils.hookAfterIfEnabled(this, maybeShow, param -> {
                 List<Object> secondLine = ((ArrayList<Object>) itemsField.get(param.thisObject));
                 Object shareContext = param.args[0];
                 Object layerItemInfo = layerItemInfoField.get(shareContext);
                 Activity ctx = (Activity) activityField.get(shareContext);
                 String path = (String) getExistSaveOrEditPath.invoke(layerItemInfo);
+
                 if (TextUtils.isEmpty(path)) {
                     Toasts.error(ctx, "getExistSaveOrEditPath is empty");
                     return;
                 }
+
                 File file = new File(path);
                 if (!file.exists()) {
                     Toasts.error(ctx, "file not exists");
                     return;
                 }
+
                 Object actionSheet = actionSheetField.get(param.thisObject);
                 fnInjectItemToShareSheet.invoke(actionSheet, ctx, file);
             });
         }
+
         HookUtils.hookAfterIfEnabled(this, showActionSheetForPic, param -> {
             Object actionSheet = fieldActionSheet.get(param.thisObject);
             Context ctx = (Context) contextOfAIOBrowserBaseView.get(param.thisObject);
             Parcelable picData = (Parcelable) param.args[0];
             assert picData != null;
-            File picFile = (File) getPictureFile.invoke(ctorAIOPictureModel.newInstance(), picData, 4);
+
+            File picFile = pictureFileGetter.get(picData, 4);
             if (picFile == null) {
-                picFile = (File) getPictureFile.invoke(ctorAIOPictureModel.newInstance(), picData, 2);
+                picFile = pictureFileGetter.get(picData, 2);
+            }
+            if (picFile == null) {
+                // QQ 9.1.55 的 AIOPictureView.l1() 里也会 fallback 到 1
+                picFile = pictureFileGetter.get(picData, 1);
             }
             if (picFile == null || !picFile.exists()) {
                 // unable to get picture file
                 return;
             }
+
             assert ctx != null;
             fnInjectItemToShareSheet.invoke(actionSheet, ctx, picFile);
         });
+
         return true;
     }
 
@@ -261,6 +345,7 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
         int id = (int) Reflex.getInstanceObject(item, "id", int.class);
         if (id == R.id.ShareActionSheet_sharePictureWithExtApp) {
             Context ctx = null;
+
             Class<?> kNTAIOLayerMorePart = Initiator.load("com.tencent.qqnt.aio.gallery.part.NTAIOLayerMorePart");
             if (kNTAIOLayerMorePart != null && kNTAIOLayerMorePart.isInstance(param.thisObject)) {
                 // NT
@@ -278,31 +363,37 @@ public class SharePicExtHook extends CommonSwitchFunctionHook {
                 Field contextOfAIOBrowserBaseView = Reflex.findFirstDeclaredInstanceFieldByType(kAIOBrowserBaseView, Context.class);
                 ctx = (Context) contextOfAIOBrowserBaseView.get(Reflex.getFirstByType(param.thisObject, kAIOPictureView));
             }
+
             if (ctx == null) {
                 Toasts.error(null, "unable to get activity");
                 return;
             }
-            assert ctx != null;
+
             String picPath = (String) Reflex.getInstanceObject(item, "argus", String.class);
             if (TextUtils.isEmpty(picPath)) {
                 Toasts.error(ctx, "图片参数为空");
                 return;
             }
+
             File file = new File(picPath);
             if (!file.exists()) {
                 Toasts.error(ctx, "图片不存在");
                 return;
             }
+
             Uri uri = FileProvider.getUriForFile(ctx, ctx.getPackageName() + ".fileprovider", file);
             Intent intent = new Intent(Intent.ACTION_SEND);
+
             String type = guessMimeType(file);
             if (type == null) {
                 type = "application/octet-stream";
             }
+
             Log.d("type=" + type + ", uri=" + uri);
             intent.setType(type);
             intent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
             intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
             try {
                 ShadowShareFileAgentActivity.startShareFileActivity(ctx, intent, file, true);
             } catch (ActivityNotFoundException e) {
