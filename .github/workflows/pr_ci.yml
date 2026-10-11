@@ -1,6 +1,7 @@
 name: Pull Request Check
 
 on:
+  workflow_dispatch: 
   pull_request:
     branches: [ main ]
     paths-ignore:
