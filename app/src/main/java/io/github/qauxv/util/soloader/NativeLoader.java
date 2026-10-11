@@ -399,6 +399,10 @@ public class NativeLoader {
         boolean isDebugBuild = BuildConfig.DEBUG;
         nativeSecondaryNativeLibraryFullInit(initMode, dataDir, packageName, currentSdkLevel, versionName, longVersionCode, isDebugBuild);
         sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle;
+        // TODO: 2026-06-11 Secondary handle is overwritten with the primary handle
+        //  replaces the secondary handle obtained during loading
+        //  That contradicts the loader model. It currently appears harmless because the getter is unused, but it is incorrect state.
+        //  Find out why before attempt to make any change to this part.
         if (sSecondaryNativeLibraryHandle == 0) {
             throw new AssertionError("(sSecondaryNativeLibraryHandle = sPrimaryNativeLibraryHandle) == 0");
         }
@@ -474,7 +478,7 @@ public class NativeLoader {
                 Throwable cause = e.getTargetException();
                 Log.w("Failed to load native library after extraction", cause);
                 // always treat as fatal error
-                throw IoUtils.unsafeThrow(e);
+                throw IoUtils.unsafeThrow(cause);
             } catch (IllegalAccessException e) {
                 // should not happen
                 throw IoUtils.unsafeThrow(e);
@@ -494,7 +498,7 @@ public class NativeLoader {
             Throwable cause = e.getTargetException();
             Log.w("Failed to attach primary native library", cause);
             // always treat as fatal error
-            throw IoUtils.unsafeThrow(e);
+            throw IoUtils.unsafeThrow(cause);
         } catch (IllegalAccessException e) {
             // should not happen
             throw IoUtils.unsafeThrow(e);

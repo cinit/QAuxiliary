@@ -22,9 +22,8 @@
 
 package me.singleneuron.hook.decorator
 
-import cc.ioctl.util.Reflex
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedHelpers
+import cc.hicore.message.common.MsgBuilder
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
@@ -35,9 +34,13 @@ import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.decodeToDataClass
 import io.github.qauxv.util.hostInfo
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 import me.singleneuron.data.MiniAppArkData
 import me.singleneuron.data.StructMsgData
 import org.json.JSONObject
+import xyz.nextalone.util.get
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.set
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -49,24 +52,48 @@ object MiniAppToStruckMsg : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHo
     override val dispatcher = ItemBuilderFactoryHook
 
     override fun onGetMsgTypeHook(
-            result: Int,
-            chatMessage: Any,
-            param: XC_MethodHook.MethodHookParam
+        result: Int,
+        chatMessage: Any,
+        param: XC_MethodHook.MethodHookParam
     ): Boolean {
         if (hostInfo.versionCode < QQVersion.QQ_8_2_0) return false
-        return if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
-                        .isAssignableFrom(chatMessage.javaClass)
-        ) {
-            val arkAppMsg = Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message")
-            val json = Reflex.invokeVirtual(arkAppMsg, "toAppXml", *arrayOfNulls(0)) as String
-            val jsonObject = JSONObject(json)
-            if (jsonObject.optString("app").contains("com.tencent.miniapp", true)) {
+        return if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp").isAssignableFrom(chatMessage.javaClass)) {
+            val arkAppMsg = chatMessage.get("ark_app_message") ?: return false
+            val json = arkAppMsg.invoke("toAppXml") as String
+            val jsonObj = JSONObject(json)
+            if (jsonObj.optString("app").contains("com.tencent.miniapp", true)) {
                 val miniAppArkData = json.decodeToDataClass<MiniAppArkData>()
                 val structMsgJson = StructMsgData.fromMiniApp(miniAppArkData).toString()
-                //Log.d(structMsgJson)
-                XposedHelpers.callMethod(arkAppMsg, "fromAppXml", structMsgJson)
+                arkAppMsg.invoke("fromAppXml", structMsgJson)
                 true
             } else false
+        } else false
+    }
+
+    override fun onNtCreateItemHook(
+        msgRecord: MsgRecord,
+        param: XC_MethodHook.MethodHookParam
+    ): Boolean {
+        val arkText = msgRecord.elements.firstOrNull { it.arkElement != null }?.arkElement?.bytesData ?: return false
+        val jsonObj = JSONObject(arkText)
+        return if (jsonObj.optString("app").contains("com.tencent.miniapp", true)) {
+            val metaObj = jsonObj.optJSONObject("meta") ?: return false
+            val prompt = jsonObj.optString("prompt") ?: "未知小程序"
+            val detailObj = metaObj.optJSONObject("detail_1") // [QQ小程序]
+            val qqUrl = detailObj?.optString("qqdocurl") ?: detailObj?.optString("url")
+            val miniAppObj = metaObj.optJSONObject("miniapp") // [微信小程序]
+            val wxUrl = miniAppObj?.optString("jumpUrl")
+            val url = qqUrl ?: wxUrl ?: "解析链接异常"
+            if (url.startsWith("mqqapi://")) return false // 内部链接
+            msgRecord.apply {
+                elements.apply {
+                    clear()
+                    add(MsgBuilder.nt_build_text("${prompt}\n${url}"))
+                }
+                set("msgType", 2)
+                set("subMsgType", 0)
+            }
+            true
         } else false
     }
 }

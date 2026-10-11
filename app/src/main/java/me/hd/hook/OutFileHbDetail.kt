@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -44,7 +44,6 @@ import java.io.File
 object OutFileHbDetail : CommonSwitchFunctionHook(
     targetProc = SyncUtils.PROC_ANY
 ) {
-
     override val name = "输出红包领取列表详情"
     override val description = "根据领取金额倒序排列, 输出详情到 QQ内部存储/cache/hd_temp/output.txt"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.EXPERIMENTAL_CATEGORY

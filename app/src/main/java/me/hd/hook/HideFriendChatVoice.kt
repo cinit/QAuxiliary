@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -38,7 +38,6 @@ import xyz.nextalone.util.invoke
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideFriendChatVoice : CommonSwitchFunctionHook() {
-
     override val name = "隐藏好友聊天语音"
     override val description = "对聊天右上角的语音图标进行简单隐藏"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE

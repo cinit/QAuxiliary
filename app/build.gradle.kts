@@ -103,6 +103,7 @@ android {
     ndkVersion = Version.getNdkVersion(rootProject)
     defaultConfig {
         applicationId = "io.github.qauxv"
+        testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         buildConfigField("String", "BUILD_UUID", "\"$currentBuildUuid\"")
         buildConfigField("long", "BUILD_TIMESTAMP", "${System.currentTimeMillis()}L")
 
@@ -174,8 +175,9 @@ android {
             println("No Signature Digest Configured")
         }
         getByName("release") {
+            //noinspection NotShrinkingResources
             isShrinkResources = false
-            isMinifyEnabled = true
+            isMinifyEnabled = false
             proguardFiles("proguard-rules.pro")
             val ltoCacheFlags = listOf(
                 "-flto=thin",
@@ -212,6 +214,9 @@ android {
                     }
                 }
             }
+            //noinspection NotShrinkingResources
+            isShrinkResources = false
+            isMinifyEnabled = false
             isCrunchPngs = false
             proguardFiles("proguard-rules.pro")
             var debugFlags = arrayOf<String>(
@@ -325,36 +330,38 @@ dependencies {
     implementation(projects.libs.mmkv)
     implementation(projects.libs.dexkit)
     implementation(projects.libs.xView)
-    implementation(libs.androidx.core.ktx)
-    implementation(libs.androidx.constraintlayout)
+    // for get activation status
+    implementation(libs.libxposed.service)
+    implementation(libs.hiddenapibypass)
+    implementation(libs.appcenter.analytics)
+    implementation(libs.appcenter.crashes)
     implementation(libs.androidx.browser)
+    implementation(libs.androidx.constraintlayout)
+    implementation(libs.androidx.core.ktx)
     implementation(libs.lifecycle.livedata)
     implementation(libs.lifecycle.common)
     implementation(libs.lifecycle.runtime)
-    implementation(libs.hiddenapibypass)
-    implementation(libs.kotlinx.coroutines)
-    implementation(libs.material)
     implementation(libs.flexbox)
     implementation(libs.colorpicker)
-    implementation(libs.material.dialogs.core)
-    implementation(libs.material.dialogs.input)
     // festival title
     implementation(libs.confetti)
-    implementation(libs.weatherView)
-    implementation(libs.appcenter.analytics)
-    implementation(libs.appcenter.crashes)
-    implementation(libs.kotlinx.serialization.json)
-    implementation(libs.sealedEnum.runtime)
     implementation(libs.glide)
+    implementation(libs.material)
+    implementation(libs.material.dialogs.core)
+    implementation(libs.material.dialogs.input)
+    implementation(libs.weatherView)
+    implementation(libs.google.protobuf.java)
+    implementation(libs.kotlinx.coroutines)
+    implementation(libs.kotlinx.serialization.json)
     implementation(libs.byte.buddy)
     implementation(libs.dalvik.dx)
-    ksp(libs.sealedEnum.ksp)
-    implementation(libs.google.protobuf.java)
     implementation(libs.dexlib2)
     // I don't know why, but without this, compilation will fail
     implementation(libs.google.guava)
-    // for get activation status
-    implementation(projects.libs.libxposed.service)
+    implementation(libs.sealedEnum.runtime)
+    ksp(libs.sealedEnum.ksp)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation(libs.androidx.test.runner)
 }
 
 val adb: String = androidComponents.sdkComponents.adb.get().asFile.absolutePath
@@ -562,6 +569,10 @@ val generateEulaAndPrivacy by tasks.registering {
             it.writeText(output)
         }
     }
+}
+
+tasks.matching { it.name.startsWith("lint") || it.name.endsWith("LintReportModel") }.configureEach {
+    dependsOn(generateEulaAndPrivacy)
 }
 
 // see https://github.com/google/protobuf-gradle-plugin/issues/518

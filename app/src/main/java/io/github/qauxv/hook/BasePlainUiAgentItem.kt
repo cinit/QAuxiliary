@@ -33,8 +33,8 @@ import kotlinx.coroutines.flow.StateFlow
  * Just a button to be shown [IUiItemAgent]
  */
 abstract class BasePlainUiAgentItem(
-        val title: String,
-        val description: CharSequence?,
+    val title: String,
+    val description: CharSequence? = null,
 ) : IUiItemAgent, IUiItemAgentProvider {
     override val titleProvider: (IEntityAgent) -> String = { title }
     override val summaryProvider: ((IEntityAgent, Context) -> CharSequence?) = { _, _ -> description }

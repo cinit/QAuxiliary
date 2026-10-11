@@ -68,7 +68,10 @@ object ForceSystemFile : BaseSwitchFunctionDecorator(), IStartActivityHookDecora
                     "系统文档" to Intent(context, ChooseAgentActivity::class.java).apply {
                         addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
                         putExtras(intent)
-                        type = "*/*"
+                        putExtra("chooser_intent", Intent(Intent.ACTION_GET_CONTENT).apply {
+                            type = "*/*"
+                            putExtra(Intent.EXTRA_ALLOW_MULTIPLE, true)
+                        })
                     },
                     "QQ 文件" to intent.apply {
                         putExtra("is_decorated", true)

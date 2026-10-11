@@ -23,10 +23,10 @@
 package cc.ioctl.hook.troop
 
 import android.content.Context
-import android.graphics.Color
 import android.view.View
 import android.widget.EditText
 import android.widget.TextView
+import androidx.core.graphics.toColorInt
 import com.github.kyuubiran.ezxhelper.utils.findFieldObjectAs
 import com.github.kyuubiran.ezxhelper.utils.getObjectByTypeAs
 import com.github.kyuubiran.ezxhelper.utils.invokeMethodAs
@@ -39,6 +39,7 @@ import io.github.qauxv.bridge.TroopFileProtocol
 import io.github.qauxv.bridge.protocol.TroopFileGetOneFileInfoObserver
 import io.github.qauxv.bridge.protocol.TroopFileRenameObserver
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.dsl.uiSwitchPreference
 import io.github.qauxv.ui.CommonContextWrapper
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.Toasts
@@ -57,7 +58,7 @@ import java.lang.reflect.Modifier
 
 @[FunctionHookEntry UiItemAgentEntry]
 object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnClickListener {
-    override val pluginID = "troop_plugin.apk"
+    override val pluginName = "troop_plugin.apk"
     override val preference = uiSwitchPreference {
         title = "群文件重命名"
     }
@@ -65,7 +66,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_8_6_0)
 
     override fun startHook(classLoader: ClassLoader) = throwOrTrue {
-        val builderClzName = if(requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) "j"
+        val builderClzName = if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) "j"
         else if (requireMinQQVersion(QQVersion.QQ_9_0_20)) "i"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "h"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_0)) "g"
@@ -96,7 +97,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             }
         }
 
-        val clazzName = if(requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) "f"
+        val clazzName = if (requireMinQQVersion(QQVersion.QQ_9_1_5_BETA_20015)) "f"
         else if (requireMinQQVersion(QQVersion.QQ_9_0_20)) "e"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_88)) "d"
         else if (requireMinQQVersion(QQVersion.QQ_8_9_0)) "c"
@@ -108,7 +109,7 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val info = TroopFileInfo(obj[1]!!)
             val textview = it.result as View
             if ("重命名" != textview.invokeMethodAs<String>("getText")) return@hookAfter
-            textview.setBackgroundColor(Color.parseColor("#2498F6"))
+            textview.setBackgroundColor("#2498F6".toColorInt())
             if (info.size > 0) {
                 // the folder's size is 0, so it's a file
                 textview.setOnClickListener(this)
@@ -124,7 +125,8 @@ object TroopFileRename : PluginDelayableHook("ketal_TroopFileRename"), View.OnCl
             val qQAppInterface = item.getObjectByTypeAs<QQAppInterface>(QQAppInterface::class.java)
             val gid = item.getObjectByTypeAs<Long>(Long::class.java)
             val tv = if (requireMinQQVersion(QQVersion.QQ_9_0_65)) {
-                item.javaClass.declaredFields.first { it.type == TextView::class.java && Modifier.isProtected(it.modifiers) }
+                item.javaClass.declaredFields
+                    .first { it.type == TextView::class.java && Modifier.isProtected(it.modifiers) }
                     .apply { isAccessible = true }.get(item) as TextView
             } else {
                 item.getObjectByTypeAs("com.tencent.mobileqq.troop.widget.EllipsizingTextView".clazz!!)

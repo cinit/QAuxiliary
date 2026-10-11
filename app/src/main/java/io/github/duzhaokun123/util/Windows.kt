@@ -7,6 +7,7 @@ import android.view.View
 import android.view.Window
 import android.view.WindowManager
 import androidx.annotation.RequiresApi
+import java.util.function.Consumer
 
 /**
  * 设置窗口背景模糊
@@ -18,7 +19,9 @@ fun Window.blurBackground(br: Int, bd: Float) {
     val brPx = TypedValue.applyDimension(COMPLEX_UNIT_DIP, br.toFloat(), decorView.context.resources.displayMetrics).toInt()
     addFlags(WindowManager.LayoutParams.FLAG_BLUR_BEHIND)
     attributes.blurBehindRadius = brPx
-    val blurEnableListener = { _: Boolean ->
+
+    // blurEnableListener is an implicit SAM conversion, so the instance you are removing here will not match anything.
+    val blurEnableListener = Consumer<Boolean> { _: Boolean ->
         setDimAmount(bd)
         setBackgroundBlurRadius(brPx)
     }

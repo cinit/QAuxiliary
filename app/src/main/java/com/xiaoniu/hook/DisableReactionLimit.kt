@@ -35,19 +35,19 @@ import xyz.nextalone.util.throwOrTrue
 @FunctionHookEntry
 @UiItemAgentEntry
 object DisableReactionLimit : CommonSwitchFunctionHook() {
+
     override val name = "移除表情回应限制"
-
     override val description = "发送频率限制和部分表情被过滤限制"
-
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.GROUP_CATEGORY
-
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_0_8)
+
     override fun initOnce() = throwOrTrue {
         // keyword string: AIOEmoReplyUtils
-        if (requireMinQQVersion(QQVersion.QQ_9_1_50)) {
-            "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/utils/a;->c()J"
-        } else {
-            "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/c/a;->c()J"
+        when {
+            requireMinQQVersion(QQVersion.QQ_9_2_30) -> "Lcom/tencent/guild/aio/msglist/reaction/utils/ReactionUtilsKt;->f()J" // 9.2.30 ~ 9.3.5
+            requireMinQQVersion(QQVersion.QQ_9_2_10) -> "Lcom/tencent/guild/aio/msglist/reaction/utils/ReactionUtilsKt;->h()J" // 9.2.10 ~ 9.2.20
+            requireMinQQVersion(QQVersion.QQ_9_1_50) -> "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/utils/a;->c()J" // 9.1.50 ~ 9.1.70
+            else -> "Lcom/tencent/mobileqq/aio/msglist/holder/component/msgtail/c/a;->c()J" // 9.0.8 ~ 9.1.30
         }.method.hookReturnConstant(0L)
         "Lcom/tencent/mobileqq/guild/emoj/api/impl/QQGuildEmojiApiImpl;->getFilterEmojiData()Ljava/util/List;".method.hookReturnConstant(null)
         "Lcom/tencent/mobileqq/guild/emoj/api/impl/QQGuildEmojiApiImpl;->getFilterSysData()Ljava/util/List;".method.hookReturnConstant(null)

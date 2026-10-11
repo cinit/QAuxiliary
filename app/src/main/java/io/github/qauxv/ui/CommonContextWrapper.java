@@ -151,7 +151,7 @@ public class CommonContextWrapper extends ContextThemeWrapper {
         if (isAppCompatContext(base)) {
             return base;
         }
-        return new CommonContextWrapper(base, ModuleThemeManager.getCurrentStyleId(),
+        return new CommonContextWrapper(base, ModuleThemeManager.getCurrentThemeColorStyleId(),
             recreateNighModeConfig(base, ResUtils.getNightModeMasked()));
     }
 

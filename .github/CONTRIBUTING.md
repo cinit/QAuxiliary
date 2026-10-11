@@ -17,7 +17,6 @@
 ## 如何添加一个新的功能
 
 1. 如果你是第一次提交代码，先选一个 package, 通常是反写的域名加上一些其他信息，如 `com.example.hook`.
-   然后将这个 package 加入到 [proguard-rules.pro](../app/proguard-rules.pro) 中，以防止被 R8 优化掉。
 2. 在 package 下新建一个类，一个功能一个类，类名应该是一个名词，如 `RemoveShakeAdExampleHook`, 按下面的模板编写功能代码。
    写了类后，它就会自动被注册到功能列表中，如果用户启用了这个功能，那么这个类的 initOnce 方法将会自动调用。
 3. 测试功能，记得去模块里打开你写的功能。由于 Android Studio 在 Android 11+ 默认启用部署优化(deployment optimization)，
@@ -137,6 +136,8 @@ public final class RemoveShakeAdExampleHook extends CommonSwitchFunctionHook {
 }
 ```
 
+QQ 是个多进程的应用，其进程通常有主进程（大部分 UI 和逻辑都在主进程）、MSF(":MSF", 与服务端对接，处理消息收发协议封包相关)、peak(":peak", 查看图片等)、":tool", ":mini" 等。CommonSwitchFunctionHook 的 constructor 有一个 targetProc 参数用于表示这个 hook 应该在哪个进程中运行，默认是主进程，如果你想在其他进程中运行，请在 constructor 中传入对应的进程 bit mask，如 `targetProc = SyncUtils.PROC_MAIN or SyncUtils.PROC_MSF`(kotlin) 或者 `super(SyncUtils.PROC_MAIN | SyncUtils.PROC_MSF, ...)`(java)。其中 `SyncUtils.PROC_ANY` 表示所有进程，仅建议在开发阶段使用，生产环境不建议使用，hook 太多了会导致 QQ 启动变慢。
+
 ## Commit 相关
 
 1. 类名、变量名、方法名禁止中文/拼音(例外: 如果 QQ 的 API 本身就是拼音的, 那么就只能用拼音了)
@@ -144,9 +145,21 @@ public final class RemoveShakeAdExampleHook extends CommonSwitchFunctionHook {
 3. 一个 commit 做一件事情
 4. 请勿在 commit 附上任何有关 [skip ci] 的字段
 5. 在 commit 之前请先更新到最新的 main 分支, 以方便我们进行快速合并(fast-forward merge).
-6. 每个 commit 都必须附着有效的GPG签名，如果您不知道如何使用 GPG 签名，请参阅
+6. 每个 commit 都必须附着有效的 GPG/SSH 签名，如果您不知道如何使用 GPG/SSH 签名，请参阅
    [这里](https://docs.github.com/cn/github/authenticating-to-github/managing-commit-signature-verification).
-   如果你实在不会配置 GPG 签名，你仍然可以提交 PR, 但由于 main 分支要求所有 commit 必须附着有效的 GPG 签名，就只好由我们来代替你签名了.
+   如果你实在不会配置 GPG/SSH 签名，你仍然可以提交 PR, 但由于 main 分支要求所有 commit 必须附着有效的 GPG/SSH 签名，就只好由我们来代替你签名了.
+
+## Commit Message 推荐性标准
+
+1. 本部分(Commit Message 规范)是推荐性标准(T as in GB/T), 不是强制性标准, 你可以选择遵循或者不遵循。
+2. 使用简洁的英文描述 commit 干了什么，请不要使用中文。
+3. 使用 "scope: description" 的格式, 其中 scope 是 commit 的范围, description 是 commit 的简短描述;
+  其中 scope 为 "功能名" 或者 "子系统名", 例如: "RemoveShakeAdExampleHook" 或者 "loader/api100",
+  decription 为简短的英文描述, 例如: "support QQ 8.9.80" 或者 "fix crash on QQ 8.9.80";
+  合起来就是 "RemoveShakeAdExampleHook: support QQ 8.9.80" 或者 "loader/api100: fix entry on LSPosed v2.1.0";
+4. 如果 commit 需要附带详细描述, 请在 description 后面加上两个换行，就像经典的 commit message 那样(通常你不需要写那么详细);
+5. 不建议使用诸如 `fix(compiler): prevent namespaced SVG <style> elements from being stripped` 这样的 conventional 风格的 commit message;
+6. 更多关于 commit message 的写法, 请参考 [Stop Using Conventional Commits](https://sumnerevans.com/posts/software-engineering/stop-using-conventional-commits/).
 
 ## Pull Request
 
@@ -172,7 +185,7 @@ public final class RemoveShakeAdExampleHook extends CommonSwitchFunctionHook {
 
 9. 代码请务必格式化
 
-10. 将自己的代码放在自己的包里，另外，应注意的是，如果你创建了自己的包，**一定要记得修改 [proguard-rules.pro](app/proguard-rules.pro)**
+10. 将自己的代码放在自己的包里
 
 11. 除例外情况外，原则上要求添加代码头 (例外情况: 反编译的代码、自动生成的代码、非贡献者编写的代码、由于文件格式或其它原因不适合添加代码头等)
 

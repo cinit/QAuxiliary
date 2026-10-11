@@ -37,7 +37,6 @@ import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.hook.CommonSwitchFunctionHook
 import io.github.qauxv.router.decorator.IBaseChatPieInitDecorator
 import io.github.qauxv.router.dispacher.InputButtonHookDispatcher
-import io.github.qauxv.util.Log
 import mqq.app.AppRuntime
 
 @FunctionHookEntry
@@ -59,7 +58,6 @@ object InputPlusButtonHook : CommonSwitchFunctionHook(), IBaseChatPieInitDecorat
         ctx: Context,
         rt: AppRuntime
     ) {
-        Log.d("here")
         val input = aioRootView.findViewById<EditText>(ctx.resources.getIdentifier("input", "id", ctx.packageName))
         val originalCallback = input.customInsertionActionModeCallback
         input.customInsertionActionModeCallback = object : ActionMode.Callback {

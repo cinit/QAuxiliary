@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -51,7 +51,6 @@ import me.ketal.util.ignoreResult
 object FakeLocation : BaseFunctionHook(
     hookKey = "hd_FakeLocation"
 ) {
-
     private val locationKey = ConfigData<String>("hd_FakeLocation_location")
     private var location: String
         get() = locationKey.getOrDefault("116.39773,39.90307")//(经度,纬度)

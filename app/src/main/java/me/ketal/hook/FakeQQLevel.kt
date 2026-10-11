@@ -22,6 +22,7 @@
 
 package me.ketal.hook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Context
 import android.view.View
@@ -80,6 +81,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
         showDialog(activity)
     }
 
+    @SuppressLint("RestrictedApi")
     private fun showDialog(ctx: Context) {
         throwOrTrue {
             val vg = ConfigView(ctx)

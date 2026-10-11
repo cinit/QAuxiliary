@@ -22,12 +22,7 @@
 
 package me.ketal.base
 
-import android.app.Activity
-import android.content.Context
-import android.view.View
 import cc.ioctl.util.HostInfo
-import io.github.qauxv.base.IEntityAgent
-import io.github.qauxv.base.ISwitchCellAgent
 import io.github.qauxv.base.IUiItemAgent
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.config.ConfigManager
@@ -35,41 +30,46 @@ import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
 import io.github.qauxv.util.hostInfo
-import kotlinx.coroutines.flow.MutableStateFlow
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
 import java.lang.reflect.InvocationTargetException
 
 abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey = keyName) {
-
-    abstract val pluginID: String
-    abstract val preference: IUiItemAgent
-    val cfg = keyName
-    private val m by lazy {
+    private val getProxyMethod by lazy {
+        "Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->getProxy()Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;".method.apply {
+            isAccessible = true
+        }
+    }
+    private val setProxyMethod by lazy {
+        "Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->setProxy(Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;)V".method.apply {
+            isAccessible = true
+        }
+    }
+    private val getOrCreateMethod by lazy {
         "Lcom/tencent/mobileqq/pluginsdk/PluginStatic;->getOrCreateClassLoader(Landroid/content/Context;Ljava/lang/String;)Ljava/lang/ClassLoader;"
             .method.apply {
                 isAccessible = true
             }
     }
 
-    override val uiItemAgent: IUiItemAgent get() = preference
+    abstract val pluginName: String
+    abstract val preference: IUiItemAgent
 
     @Throws(Throwable::class)
     abstract fun startHook(classLoader: ClassLoader): Boolean
+
+    override val uiItemAgent: IUiItemAgent get() = preference
+    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? get() = null
 
     override fun initOnce() = throwOrTrue {
         if (disablePluginDelayableHook) {
             error("disablePluginDelayableHook")
         }
-        Log.i("startHook: $pluginID")
+        Log.i("plugin startHook: $pluginName")
         try {
-            if ("Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->getProxy()Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;".method.apply {
-                    isAccessible = true
-                }.invoke(null) == null) {
-                Log.i("getProxy: null")
-                "Lcom/tencent/mobileqq/pluginsdk/IPluginAdapterProxy;->setProxy(Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;)V".method.apply {
-                    isAccessible = true
-                }.invoke(
+            if (getProxyMethod.invoke(null) == null) {
+                Log.i("plugin getProxy: null")
+                setProxyMethod.invoke(
                     null,
                     listOf(
                         "Lcooperation/plugin/c;",   //8.9.70
@@ -80,87 +80,33 @@ abstract class PluginDelayableHook(keyName: String) : BaseFunctionHook(hookKey =
                         "Lavel;",   //TIM 3.5.2
                     ).firstNotNullOf { Initiator.load(it) }.newInstance()
                     // implements Lcom/tencent/mobileqq/pluginsdk/IPluginAdapter;
-//                    DexKit.requireClassFromCache(CPluginAdapterImpl).newInstance()
+                    // DexKit.requireClassFromCache(CPluginAdapterImpl).newInstance()
                 )
-                Log.i("setProxy success")
+                Log.i("plugin setProxy: success")
             }
         } catch (e: Exception) {
             traceError(e)
         }
         try {
-            val classLoader = m.invoke(null, hostInfo.application, pluginID) as ClassLoader
+            val classLoader = getOrCreateMethod.invoke(null, hostInfo.application, pluginName) as ClassLoader
             startHook(classLoader)
         } catch (e: InvocationTargetException) {
             traceError(e.targetException)
         }
     }
 
-    fun uiSwitchPreference(init: UiSwitchPreferenceItemFactory.() -> Unit): IUiItemAgent {
-        val uiSwitchPreferenceFactory = UiSwitchPreferenceItemFactory()
-        uiSwitchPreferenceFactory.init()
-        return uiSwitchPreferenceFactory
-    }
-
-    fun uiClickableItem(init: UiClickableItemFactory.() -> Unit): IUiItemAgent {
-        val uiClickableItemFactory = UiClickableItemFactory()
-        uiClickableItemFactory.init()
-        return uiClickableItemFactory
-    }
-
-    inner class UiSwitchPreferenceItemFactory : IUiItemAgent {
-        lateinit var title: String
-        var summary: String? = null
-
-        override val titleProvider: (IEntityAgent) -> String = { title }
-        override val summaryProvider: ((IEntityAgent, Context) -> String?) = { _, _ -> summary }
-        override val valueState: MutableStateFlow<String?>? = null
-        override val validator: ((IUiItemAgent) -> Boolean) = { isAvailable }
-        override val switchProvider: ISwitchCellAgent by lazy {
-            object : ISwitchCellAgent {
-                override val isCheckable: Boolean get() = isAvailable
-
-                override var isChecked: Boolean
-                    get() = isEnabled
-                    set(value) {
-                        isEnabled = value
-                    }
-            }
-        }
-        override val onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
-    }
-
-    inner class UiClickableItemFactory : IUiItemAgent {
-        lateinit var title: String
-        var summary: String? = null
-
-        override val titleProvider: (IEntityAgent) -> String = { title }
-        override val summaryProvider: ((IEntityAgent, Context) -> String?) = { _, _ -> summary }
-        override val valueState: MutableStateFlow<String?>? = null
-        override val validator: ((IUiItemAgent) -> Boolean) = { isAvailable }
-        override val switchProvider: ISwitchCellAgent? = null
-        override var onClickListener: ((IUiItemAgent, Activity, View) -> Unit)? = null
-        override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
-    }
-
     companion object {
-
         private const val KEY_DISABLE_PLUGIN_DELAYABLE_HOOK = "disable_plugin_delayable_hook"
-        var disablePluginDelayableHook: Boolean
-            get() = ConfigManager.getDefaultConfig().getBoolean(
-                KEY_DISABLE_PLUGIN_DELAYABLE_HOOK,
-                getDefValForDisablePluginDelayableHook()
-            )
-            set(value) {
-                ConfigManager.getDefaultConfig().putBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, value)
-            }
 
         private fun getDefValForDisablePluginDelayableHook(): Boolean {
             return HostInfo.isQQ() && hostInfo.versionCode == 4056L
         }
 
+        var disablePluginDelayableHook: Boolean
+            get() = ConfigManager.getDefaultConfig()
+                .getBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, getDefValForDisablePluginDelayableHook())
+            set(value) {
+                ConfigManager.getDefaultConfig().putBoolean(KEY_DISABLE_PLUGIN_DELAYABLE_HOOK, value)
+            }
     }
-
-    override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>? get() = null
-
 }

@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -74,7 +74,6 @@ import java.util.Date
 object HandleSendChatCount : CommonConfigFunctionHook(
     targets = arrayOf(NQQSettingMe_onResume)
 ) {
-
     override val name = "统计聊天发送消息数量"
     override val description = "替换旧样式侧滑栏个性签名, 支持 8.9.88 及以上"
     override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.CHAT_CATEGORY

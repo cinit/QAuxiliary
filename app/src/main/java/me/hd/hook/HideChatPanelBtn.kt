@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -64,7 +64,7 @@ object HideChatPanelBtn : MultiItemDelayableHook(
                     "拍照(临时会话)",
                     "定位(临时会话)"
                 )
-            } else setOf("语音", "拍照", "红包", "表情", "更多功能", "滤镜视频")
+            } else setOf("语音", "拍照", "红包", "表情", "更多功能", "滤镜视频", "泡泡")
         }
 
     @SuppressLint("ResourceType")

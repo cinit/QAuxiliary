@@ -198,7 +198,7 @@ public class RestoreConfigSession implements Closeable {
         File[] workingDirFiles = workingDir.listFiles();
         if (workingDirFiles != null) {
             for (File workingDirFile : workingDirFiles) {
-                if (!LOCK_FILE_NAME.equals(workingDirFile.getName()) && workingDir.isFile()) {
+                if (!LOCK_FILE_NAME.equals(workingDirFile.getName()) && workingDirFile.isFile()) {
                     workingDirFile.delete();
                 }
             }

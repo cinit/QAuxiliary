@@ -131,6 +131,7 @@ object FunctionEntryRouter {
                 fragment("auxiliary-misc", "杂项", false)
             }
             category("module-config", "配置", false) {
+                fragment("cfg-theme", "主题设置")
                 fragmentImpl("cfg-backup-restore", "备份和恢复", BackupRestoreConfigFragment::class.java)
             }
             category("debug-category", "调试", false) {
@@ -286,6 +287,9 @@ object FunctionEntryRouter {
 
             @JvmField
             val CONFIG_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "module-config")
+
+            @JvmField
+            val THEME_CATEGORY: Array<String> = arrayOf(ANY_CAST_PREFIX, "cfg-theme")
 
         }
 

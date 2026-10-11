@@ -1,21 +1,10 @@
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
-    "config:base",
+    "config:recommended",
     ":disableDependencyDashboard"
   ],
   "packageRules": [
-    {
-      "matchPackagePatterns": [
-        "*"
-      ],
-      "matchUpdateTypes": [
-        "minor",
-        "patch"
-      ],
-      "groupName": "all non-major dependencies",
-      "groupSlug": "all-minor-patch"
-    },
     {
       "matchPackageNames": [
         "com.google.guava:guava"
@@ -30,6 +19,15 @@
         "com.google.flatbuffers:flatbuffers-java"
       ],
       "enabled": false
+    },
+    {
+      "matchPackageNames": [
+        "*"
+      ],
+      "groupName": "all dependencies",
+      "groupSlug": "all-dependencies",
+      "separateMajorMinor": false,
+      "separateMinorPatch": false
     }
   ]
 }

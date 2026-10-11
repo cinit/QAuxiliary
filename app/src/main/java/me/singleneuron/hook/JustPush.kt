@@ -103,7 +103,7 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                 @Throws(Throwable::class)
                 override fun afterHookedMethod(param: MethodHookParam) {
                     super.afterHookedMethod(param)
-                    hostInfo.application.sendBroadcast(Intent(BRD_RELEASE_SOCKET))
+                    hostInfo.application.sendBroadcast(Intent(BRD_RELEASE_SOCKET).setPackage(hostInfo.packageName))
                 }
             })
             XposedHelpers.findAndHookMethod("com.tencent.mobileqq.msf.service.MsfService".clazz, "onCreate", object : XC_MethodHook() {
@@ -117,8 +117,12 @@ object JustPush : CommonSwitchFunctionHook(targetProc = SyncUtils.PROC_ANY) {
                     val receiver = object : BroadcastReceiver() {
                         override fun onReceive(context: Context, intent: Intent) {
                             when (intent.action) {
-                                "mqq.intent.action.QQ_BACKGROUND" -> context.sendBroadcast(Intent(BRD_CLOSE_SOCKET))
-                                "mqq.intent.action.QQ_FOREGROUND" -> context.sendBroadcast(Intent(BRD_RELEASE_SOCKET))
+                                "mqq.intent.action.QQ_BACKGROUND" -> context.sendBroadcast(
+                                    Intent(BRD_CLOSE_SOCKET).setPackage(hostInfo.packageName)
+                                )
+                                "mqq.intent.action.QQ_FOREGROUND" -> context.sendBroadcast(
+                                    Intent(BRD_RELEASE_SOCKET).setPackage(hostInfo.packageName)
+                                )
                             }
                         }
                     }

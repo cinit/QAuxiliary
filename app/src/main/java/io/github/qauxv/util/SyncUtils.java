@@ -505,7 +505,7 @@ public class SyncUtils {
                     int id = intent.getIntExtra("id", -1);
                     int file = intent.getIntExtra("file", 0);
                     long uin = intent.getLongExtra("uin", 0);
-                    int what = intent.getIntExtra("file", 0);
+                    int what = intent.getIntExtra("what", 0);
                     if (id != -1 && id != myId) {
                         onRecvFileChanged(file, uin, what);
                     }

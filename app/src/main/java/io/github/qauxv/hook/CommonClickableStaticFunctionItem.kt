@@ -36,4 +36,5 @@ abstract class CommonClickableStaticFunctionItem : IUiItemAgentProvider, IUiItem
     override val switchProvider: ISwitchCellAgent? = null
     override val extraSearchKeywordProvider: ((IUiItemAgent, Context) -> Array<String>?)? = null
     override val uiItemAgent: IUiItemAgent get() = this
+    override val itemAgentProviderUniqueIdentifier: String get() = javaClass.name
 }

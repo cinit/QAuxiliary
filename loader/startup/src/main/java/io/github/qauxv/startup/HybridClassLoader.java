@@ -91,9 +91,16 @@ public class HybridClassLoader extends ClassLoader {
      * @return true if conflicting
      */
     public static boolean isConflictingClass(String name) {
+        /*
+         * R8 or AGP add some compat layer or some empty throw-NoClassDefError classes,
+         * like android.* or dalvik.annotation.optimization.*
+         * The module is not expected to load these classes from host, if any.
+         * */
         return name.startsWith("androidx.") || name.startsWith("android.support.")
                 || name.startsWith("kotlin.") || name.startsWith("kotlinx.")
+                || name.startsWith("android.") || name.startsWith("dalvik.annotation.optimization.")
                 || name.startsWith("com.tencent.mmkv.")
+                || name.startsWith("com.davemorrissey.labs.subscaleview.")
                 || name.startsWith("com.android.tools.r8.")
                 || name.startsWith("com.google.android.")
                 || name.startsWith("com.google.gson.")

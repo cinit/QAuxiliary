@@ -11,6 +11,7 @@ android {
             minorApiLevel = Version.compileSdkVersion.substringAfter('.').toIntOrNull()
         }
     }
+
     defaultConfig {
         minSdk = Version.minSdk
 
@@ -18,13 +19,13 @@ android {
         buildConfigField("int", "VERSION_CODE", "${Common.getBuildVersionCode(rootProject)}")
     }
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8
         targetCompatibility = JavaVersion.VERSION_1_8
-    }
-
-    buildFeatures {
-        buildConfig = true
     }
 }
 

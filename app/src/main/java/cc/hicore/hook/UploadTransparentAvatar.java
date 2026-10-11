@@ -26,8 +26,6 @@ import androidx.annotation.NonNull;
 import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostInfo;
 import cc.ioctl.util.Reflex;
-import io.github.qauxv.util.xpcompat.XC_MethodHook;
-import io.github.qauxv.util.xpcompat.XposedHelpers;
 import io.github.qauxv.base.annotation.FunctionHookEntry;
 import io.github.qauxv.base.annotation.UiItemAgentEntry;
 import io.github.qauxv.dsl.FunctionEntryRouter;
@@ -37,6 +35,8 @@ import io.github.qauxv.util.QQVersion;
 import io.github.qauxv.util.dexkit.DexKit;
 import io.github.qauxv.util.dexkit.DexKitTarget;
 import io.github.qauxv.util.dexkit.NVipUtils_getPrivilegeFlags;
+import io.github.qauxv.util.xpcompat.XC_MethodHook;
+import io.github.qauxv.util.xpcompat.XposedHelpers;
 import java.io.FileOutputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Method;
@@ -84,16 +84,21 @@ public class UploadTransparentAvatar extends CommonSwitchFunctionHook {
                 }
             }
         });
-        var methodName = HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93) ? "i" : "a";
-        var clazzName = "com.tencent.mobileqq.pic.compress.Utils";
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_9_0)) {
-            clazzName = "com.tencent.mobileqq.pic.compress.e";
-        }
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)) {
-            clazzName = "com.tencent.mobileqq.pic.compress.g";
-        }
-        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_2_30)) {
+
+        String clazzName;
+        String methodName;
+        if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_2_10)) {
             clazzName = "com.tencent.mobileqq.pic.compress.f";
+            methodName = "f";
+        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_9_1_50)) {
+            clazzName = "com.tencent.mobileqq.pic.compress.g";
+            methodName = "i";
+        } else if (HostInfo.requireMinQQVersion(QQVersion.QQ_8_8_93)) {
+            clazzName = "com.tencent.mobileqq.pic.compress.e";
+            methodName = "i";
+        } else {
+            clazzName = "com.tencent.mobileqq.pic.compress.Utils";
+            methodName = "a";
         }
         Method hookMethod = Reflex.findMethod(Initiator.loadClass(clazzName), boolean.class, methodName,
                 String.class, Bitmap.class, int.class, String.class, Initiator.loadClass("com.tencent.mobileqq.pic.CompressInfo"));

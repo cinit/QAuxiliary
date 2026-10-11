@@ -22,9 +22,9 @@
 
 package me.singleneuron.hook.decorator
 
+import cc.hicore.message.common.MsgBuilder
 import cc.ioctl.util.Reflex
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedHelpers
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import io.github.qauxv.BuildConfig
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -34,6 +34,11 @@ import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
 import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedHelpers
+import xyz.nextalone.util.get
+import xyz.nextalone.util.invoke
+import xyz.nextalone.util.set
 
 @UiItemAgentEntry
 @FunctionHookEntry
@@ -45,34 +50,21 @@ object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDec
     override val dispatcher = ItemBuilderFactoryHook
 
     override fun onGetMsgTypeHook(
-            result: Int,
-            chatMessage: Any,
-            param: XC_MethodHook.MethodHookParam
+        result: Int,
+        chatMessage: Any,
+        param: XC_MethodHook.MethodHookParam
     ): Boolean {
         return try {
             var text: String
-            if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
-                            .isAssignableFrom(chatMessage.javaClass)
-            ) {
-                text = Reflex.invokeVirtual(
-                        Reflex.getInstanceObjectOrNull(
-                                chatMessage,
-                                "structingMsg"
-                        ), "getXml", *arrayOfNulls(0)
-                ) as String
+            if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing").isAssignableFrom(chatMessage.javaClass)) {
+                val structingMsg = chatMessage.get("structingMsg") ?: return false
+                text = structingMsg.invoke("getXml") as String
                 dumpCardMsg(chatMessage)
-            } else if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
-                            .isAssignableFrom(chatMessage.javaClass)
-            ) {
-                text = Reflex.invokeVirtual(
-                        Reflex.getInstanceObjectOrNull(
-                                chatMessage,
-                                "ark_app_message"
-                        ), "toAppXml", *arrayOfNulls(0)
-                ) as String
+            } else if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp").isAssignableFrom(chatMessage.javaClass)) {
+                val arkAppMsg = chatMessage.get("ark_app_message") ?: return false
+                text = arkAppMsg.invoke("toAppXml") as String
                 dumpCardMsg(chatMessage)
             } else return false
-
             text = "[卡片消息] ${chatMessage::class.java.simpleName}\n\n$text"
             XposedHelpers.setObjectField(chatMessage, "msg", text)
             param.result = -1
@@ -82,6 +74,24 @@ object CardMsgToText : BaseSwitchFunctionDecorator(), IItemBuilderFactoryHookDec
             false
         }
     }
+
+    override fun onNtCreateItemHook(
+        msgRecord: MsgRecord,
+        param: XC_MethodHook.MethodHookParam
+    ): Boolean {
+        val structText = msgRecord.elements.firstOrNull { it.structMsgElement != null }?.structMsgElement?.xmlContent
+        val arkText = msgRecord.elements.firstOrNull { it.arkElement != null }?.arkElement?.bytesData
+        val text = structText ?: arkText ?: return false
+        msgRecord.apply {
+            elements.apply {
+                clear()
+                add(MsgBuilder.nt_build_text("[卡片消息]\n\n$text"))
+            }
+            set("msgType", 2)
+            set("subMsgType", 0)
+        }
+        return true
+    }
 }
 
 private fun dumpCardMsg(chatMessage: Any) {
@@ -89,21 +99,14 @@ private fun dumpCardMsg(chatMessage: Any) {
     try {
         Log.d("Start dump card message...")
         Log.d("chatMessage class: " + chatMessage::class.java.name)
-
-        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing")
-                        .isAssignableFrom(chatMessage.javaClass)
-        ) {
+        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForStructing").isAssignableFrom(chatMessage.javaClass)) {
             val structingMsg = Reflex.getInstanceObjectOrNull(chatMessage, "structingMsg")
             Log.d("structingMsg class: " + structingMsg::class.java.name)
         }
-
-        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp")
-                        .isAssignableFrom(chatMessage.javaClass)
-        ) {
+        if (Initiator.loadClass("com.tencent.mobileqq.data.MessageForArkApp").isAssignableFrom(chatMessage.javaClass)) {
             val arkAppMessage = Reflex.getInstanceObjectOrNull(chatMessage, "ark_app_message")
             Log.d("ark_app_message class: " + arkAppMessage::class.java.name)
         }
-
         Log.d("...Dump end")
     } catch (e: Exception) {
         Log.e(e)

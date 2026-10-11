@@ -21,6 +21,7 @@
  */
 package io.github.qauxv.poststartup;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
 import android.os.Environment;
 import android.util.DisplayMetrics;
@@ -72,9 +73,16 @@ public class StartupHook {
         if (sSecondStageInit) {
             throw new IllegalStateException("Second stage init already executed");
         }
-        HybridClassLoader.setHostClassLoader(ctx.getClassLoader());
-        StartupRoutine.execPostStartupInit(ctx, step, lpwReserved, bReserved);
+        try {
+            HybridClassLoader.setHostClassLoader(ctx.getClassLoader());
+            StartupRoutine.execPostStartupInit(ctx, step, lpwReserved, bReserved);
+        } catch (Exception | LinkageError | AssertionError e) {
+            // for easier debug
+            log_e(e);
+            throw e;
+        }
         sSecondStageInit = true;
+        applyTargetDpiIfNecessary(ctx);
         deleteDirIfNecessaryNoThrow(ctx);
     }
 
@@ -266,6 +274,7 @@ public class StartupHook {
         }
     }
 
+    @SuppressLint("WrongConstant")
     private static void applyTargetDpiIfNecessary(Context ctx) {
         File safeMode = new File(Environment.getExternalStorageDirectory().getAbsolutePath(),
                 "Android/data/" + ctx.getPackageName() + "/qauxv_safe_mode");

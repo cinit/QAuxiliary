@@ -49,23 +49,23 @@ import me.ketal.util.setEnable
 @UiItemAgentEntry
 object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
 
+    private val components = mapOf(
+        "发送到我的电脑" to ComponentName(hostInfo.packageName, "com.tencent.mobileqq.activity.qfileJumpActivity"),
+        "保存到QQ收藏" to ComponentName(hostInfo.packageName, "cooperation.qqfav.widget.QfavJumpActivity"),
+        "面对面快传" to ComponentName(hostInfo.packageName, "cooperation.qlink.QlinkShareJumpActivity"),
+        "发送到我的iPad" to ComponentName(BuildConfig.APPLICATION_ID, "me.ketal.ui.activity.QFileShareToIpadActivity"),
+        "QQ闪传" to ComponentName(hostInfo.packageName, "com.tencent.mobileqq.flashtransfer.activity.QQFlashTransferJumpActivity")
+    )
+
     override val name = "管理QQ组件"
+
+    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
+
     override val valueState: MutableStateFlow<String?>? = null
 
     override val onUiItemClickListener: (IUiItemAgent, Activity, View) -> Unit = { _, activity, _ ->
         showDialog(activity)
     }
-
-    override val uiItemLocation = FunctionEntryRouter.Locations.Auxiliary.MISC_CATEGORY
-
-    override fun initOnce() = true
-
-    private val components = mapOf(
-        "发送到我的电脑" to ComponentName(hostInfo.packageName, "com.tencent.mobileqq.activity.qfileJumpActivity"),
-        "保存到QQ收藏" to ComponentName(hostInfo.packageName, "cooperation.qqfav.widget.QfavJumpActivity"),
-        "面对面快传" to ComponentName(hostInfo.packageName, "cooperation.qlink.QlinkShareJumpActivity"),
-        "发送到我的iPad" to ComponentName(BuildConfig.APPLICATION_ID, "me.ketal.ui.activity.QFileShareToIpadActivity")
-    )
 
     private fun showDialog(context: Context) {
         val keys = components.keys.toTypedArray()
@@ -106,4 +106,7 @@ object ManageComponent : CommonConfigFunctionHook("Ketal_ManageComponent") {
             }
             .show()
     }
+
+    override fun initOnce() = true
+
 }

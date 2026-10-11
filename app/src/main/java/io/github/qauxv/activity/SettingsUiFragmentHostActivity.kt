@@ -67,7 +67,7 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
     @CallSuper
     override fun doOnEarlyCreate(savedInstanceState: Bundle?, isInitializing: Boolean) {
         super.doOnEarlyCreate(savedInstanceState, isInitializing)
-        setTheme(ModuleThemeManager.getCurrentStyleId())
+        setTheme(ModuleThemeManager.getCurrentThemeColorStyleId())
     }
 
     /**
@@ -181,6 +181,8 @@ open class SettingsUiFragmentHostActivity : BaseActivity(), SimpleFlingIntercept
                 show(topFragment)
                 commit()
             }
+            // update back callback enabled state
+            mFragmentPopOnBackCallback.isEnabled = mFragmentStack.size > 1
         }
     }
 

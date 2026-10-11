@@ -24,9 +24,6 @@ package me.singleneuron.activity
 import android.annotation.SuppressLint
 import android.app.Activity
 import android.content.Intent
-import android.content.Intent.ACTION_GET_CONTENT
-import android.content.Intent.ACTION_PICK
-import android.content.Intent.EXTRA_ALLOW_MULTIPLE
 import android.os.Bundle
 import androidx.appcompat.app.AlertDialog
 import androidx.lifecycle.lifecycleScope
@@ -47,16 +44,9 @@ class ChooseAgentActivity : AbstractChooseActivity() {
         setTheme(R.style.NoDisplay)
         super.onCreate(savedInstanceState)
         bundle = intent.extras
-        val intent = if (intent.getBooleanExtra("use_ACTION_PICK", false))
-            Intent(ACTION_PICK).apply {
-                type = "image/*"
-                putExtra(EXTRA_ALLOW_MULTIPLE, true)
-            }
-        else Intent(ACTION_GET_CONTENT).apply {
-            type = intent.type ?: "*/*"
-            putExtra(EXTRA_ALLOW_MULTIPLE, true)
-        }
-        startActivityForResult(intent, REQUEST_CODE)
+        val chooserIntent = intent.getParcelableExtra<Intent>("chooser_intent")
+            ?: throw IllegalArgumentException("chooser_intent is null")
+        startActivityForResult(chooserIntent, REQUEST_CODE)
     }
 
     override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
@@ -70,12 +60,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
                         initSendCacheDir()
                         val uri = data.data
                         val clip = data.clipData
-                        if (uri != null) {
-                            // Only one file chosen
-                            convertUriToPath(uri)?.let {
-                                sendAFile(it, data)
-                            }
-                        } else if (clip != null) {
+                        if (clip != null) {
                             // multiple file chosen
                             convertClipDataToPath(clip).let {
                                 var delayTime: Long = 0
@@ -85,6 +70,11 @@ class ChooseAgentActivity : AbstractChooseActivity() {
                                     }
                                     delayTime += 1000
                                 }
+                            }
+                        } else if (uri != null) {
+                            // Only one file chosen
+                            convertUriToPath(uri)?.let {
+                                sendAFile(it, data)
                             }
                         }
                     }
@@ -122,11 +112,7 @@ class ChooseAgentActivity : AbstractChooseActivity() {
             putExtra("moInputType", 2)
             putExtra("chooseFriendFrom", 1)
             putExtra("forward_source_business_type", -1)
-            if (intent.type == "image/*") {
-                putExtra("forward_type", 1)
-            } else {
-                putExtra("forward_type", 0)
-            }
+            putExtra("forward_type", intent.getIntExtra("forward_type", 0)) // 0: file 1: image
             bundle?.let {
                 val uin = it.getString("targetUin") ?: it.getLong("key_peerUin").toString()
                 putExtra("uin", uin)

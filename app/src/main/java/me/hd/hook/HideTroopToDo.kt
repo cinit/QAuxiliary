@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -37,7 +37,6 @@ import io.github.qauxv.util.requireRangeQQVersion
 @FunctionHookEntry
 @UiItemAgentEntry
 object HideTroopToDo : CommonSwitchFunctionHook() {
-
     override val name = "隐藏群待办"
     override val description = "对群聊上方的群待办进行简单隐藏"
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_GROUP_TITLE

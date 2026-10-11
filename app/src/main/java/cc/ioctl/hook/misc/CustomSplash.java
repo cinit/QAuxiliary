@@ -23,6 +23,7 @@ package cc.ioctl.hook.misc;
 
 import android.app.Activity;
 import android.content.res.AssetManager;
+import android.graphics.drawable.Drawable;
 import android.view.View;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -47,7 +48,6 @@ import java.io.InputStream;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.Map;
-import java.util.Objects;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function3;
 import kotlinx.coroutines.flow.MutableStateFlow;
@@ -123,7 +123,8 @@ public class CustomSplash extends CommonConfigFunctionHook {
                     || "splash.png".equals(fileName)
                     || "splash_big.jpg".equals(fileName)
                     || "splash/splash_simple.png".equals(fileName)
-                    || "splash/splash_big_simple.png".equals(fileName)) {
+                    || "splash/splash_big_simple.png".equals(fileName)
+                    || "splash/splash_main.png".equals(fileName)) {
                 boolean isNowDark = ResUtils.isInNightMode();
                 InputStream is;
                 if (isNowDark) {
@@ -134,10 +135,17 @@ public class CustomSplash extends CommonConfigFunctionHook {
                 if (is != null) {
                     param.setResult(is);
                 }
-            } else if ("splash_logo.png".equals(fileName)) {
+            } else if ("splash_logo.png".equals(fileName)
+                    || "splash/splash_logo.png".equals(fileName)
+                    || "splash/splash_logo_night.png".equals(fileName)) {
                 param.setResult(new ByteArrayInputStream(TRANSPARENT_PNG));
             }
         });
+        Class<?> kSplashWidget = Initiator.load("com.tencent.mobileqq.splashad.SplashWidget");
+        if (kSplashWidget != null) {
+            Method setSplashDrawable = kSplashWidget.getDeclaredMethod("setSplashDrawable", Drawable.class, boolean.class);
+            HookUtils.hookBeforeIfEnabled(this, setSplashDrawable, 52, param -> param.args[1] = false);
+        }
         Class<?> kThemeSplashHelper = Initiator.load("com.tencent.mobileqq.splashad.config.ThemeSplashHelper");
         if (kThemeSplashHelper != null) {
             Method getSplashConfigMapByCId = null;
@@ -153,8 +161,9 @@ public class CustomSplash extends CommonConfigFunctionHook {
                     }
                 }
             }
-            Objects.requireNonNull(getSplashConfigMapByCId, "ThemeSplashHelper.<synthetic>getSplashConfigMapByCId(I)Map");
-            HookUtils.hookBeforeIfEnabled(this, getSplashConfigMapByCId, 51, param -> param.setResult(null));
+            if (getSplashConfigMapByCId != null) {
+                HookUtils.hookBeforeIfEnabled(this, getSplashConfigMapByCId, 51, param -> param.setResult(null));
+            }
         }
         return true;
     }

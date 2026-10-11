@@ -58,6 +58,7 @@ import cc.ioctl.util.HookUtils;
 import cc.ioctl.util.HostStyledViewBuilder;
 import cc.ioctl.util.Reflex;
 import com.tencent.qqnt.kernel.nativeinterface.PttElement;
+import com.xiaoniu.dispatcher.ComponentType;
 import com.xiaoniu.dispatcher.OnMenuBuilder;
 import com.xiaoniu.util.ContextUtils;
 import io.github.qauxv.R;
@@ -486,7 +487,7 @@ public class PttForwardHook extends CommonSwitchFunctionHook implements OnMenuBu
     @Override
     public String[] getTargetComponentTypes() {
         return new String[]{
-                "com.tencent.mobileqq.aio.msglist.holder.component.ptt.AIOPttContentComponent"
+                ComponentType.Companion.getTYPE_PTT()
         };
     }
 

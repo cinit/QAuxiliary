@@ -239,14 +239,15 @@ public class Initiator {
         if (sNotHaveNtStartupDirector) {
             return null;
         }
+        // search keyword: "NtStartupDirector"
         String[] candidates = new String[]{
-                "com.tencent.mobileqq.startup.director.a",
-                "com.tencent.mobileqq.h3.a.a",
-                "com.tencent.mobileqq.g3.a.a",
-                "com.tencent.mobileqq.i3.a.a",
-                "com.tencent.mobileqq.j3.a.a",
-                // QQ 9.1.28.21880 (8398) gray
-                "du3.a",
+                "com.tencent.mobileqq.startup.director.b", // QQ 9.3.20 ~ 9.3.25
+                "com.tencent.mobileqq.startup.director.a", // QQ 9.1.0 ~ 9.3.5
+                "du3.a", // QQ 9.1.28.21880 (8398) gray
+                "com.tencent.mobileqq.j3.a.a", // QQ 8.9.88.12880(4790)
+                "com.tencent.mobileqq.i3.a.a", // QQ 8.9.80.12335(4572)
+                "com.tencent.mobileqq.h3.a.a", // QQ 8.9.73.11790(4354)
+                "com.tencent.mobileqq.g3.a.a", // QQ 8.9.70.11625(4288)
         };
         for (String candidate : candidates) {
             Class<?> klass = load(candidate);

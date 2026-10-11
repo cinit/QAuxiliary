@@ -269,8 +269,8 @@ data object CTimeFormatterUtils : DexKitTarget.UsingStr() {
     override val declaringClass = "com.tencent.mobileqq.utils.TimeFormatterUtils"
 
     // old: arrayOf("TimeFormatterUtils")
-    override val traitString = arrayOf("^EEEE$")
-    override val filter = DexKitFilter.allStaticFields
+    override val traitString = arrayOf("^EEEE $", "^EEEE$")
+    override val filter = DexKitFilter.allStaticFields and DexKitFilter.strInClsName("Lcom/tencent/mobileqq/utils/")
 }
 
 data object CGroupAppActivity : DexKitTarget.UsingStr() {
@@ -730,7 +730,7 @@ data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
 
 data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
-    override val traitString = arrayOf("rootVMBuild")
+    override val traitString = arrayOf("rootVMBuild", "recursiveBuildVM")
     override val declaringClass = "AIO_Create_QQNT"
     override val filter = DexKitFilter.allowAll
 }
@@ -869,13 +869,30 @@ data object X5_Properties_conf : DexKitTarget.UsingStr() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object EmotionDownloadEnableSwitch : DexKitTarget.UsingStr() {
+data object EmotionDownloadDisableSwitch : DexKitTarget.UsingStr() {
     override val findMethod = true
     override val traitString = arrayOf("emotion_download_disable_8980_887036489")
     override val declaringClass: String = ""
     override val filter = DexKitFilter.strInClsName("com/tencent/mobileqq/emotionintegrate/")
 }
 
+data object EmotionDetailAi : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "Lcom/tencent/mobileqq/emotionintegrate/MsgEmoticonPreviewData;"
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findClass {
+            searchPackages("com.tencent.mobileqq.emotionintegrate")
+            matcher {
+                usingStrings("MsgEmoticonPreviewData", "doRestoreSaveInstanceState")
+            }
+        }.findMethod {
+            matcher {
+                returnType(Boolean::class.java)
+                usingNumbers(14)
+            }
+        }.single()
+    }
+}
 
 data object QQ_SETTING_ME_CONFIG_CLASS : DexKitTarget.UsingStringVector() {
     override val findMethod: Boolean = false
@@ -1169,6 +1186,13 @@ data object AIOMsgItem_initContentDescription : DexKitTarget.UsingDexKitBridge()
     }
 }
 
+data object MsgListUtil_createMsgItem : DexKitTarget.UsingStringVector() {
+    override val findMethod: Boolean = true
+    override val traitStringVectors = arrayOf(arrayOf("MsgListUtil", "[createMsgItemByType] err. msgType="))
+    override val declaringClass = "LMsgListUtil;"
+    override val filter = DexKitFilter.allowAll
+}
+
 data object Hd_HideChatPanelBtn_Method : DexKitTarget.UsingStringVector() {
     override val findMethod = true
     override val traitStringVectors = arrayOf(arrayOf("peerUid", "panelCallback"))
@@ -1190,12 +1214,12 @@ data object Hd_HideEmoReplyLayout_Method : DexKitTarget.UsingDexKitBridge() {
         bridge.findClass {
             searchPackages("com.tencent.mobileqq.aio.msglist.holder.template")
             matcher {
-                usingStrings("AIOReceiverBubbleTemplate", "mBinding.msgTailContainer")
+                usingStrings("AIOReceiverBubbleTemplate", "msgTailContainer")
             }
         }.findMethod {
             matcher {
                 returnType(View::class.java)
-                usingStrings("mBinding.msgTailContainer")
+                usingStrings("msgTailContainer")
             }
         }.single()
     }
@@ -1222,5 +1246,93 @@ data object Hd_CustomReportStep_Method : DexKitTarget.UsingStringVector() {
     override val filter = filter@{ it: DexMethodDescriptor ->
         val m = kotlin.runCatching { it.getMethodInstance(getHostClassLoader()) }.getOrNull() ?: return@filter false
         m.paramCount == 1 && m.parameterTypes.contentEquals(arrayOf(ConcurrentHashMap::class.java))
+    }
+}
+
+data object SimpleItemProcessor_Method : DexKitTarget.UsingDexkit() {
+    override val findMethod: Boolean = true
+    override val declaringClass = "com/tencent/mobileqq/setting/processor/SimpleItemProcessor"
+    override val filter = DexKitFilter.allowAll
+}
+
+data object Hd_CustomPetHomeBg_Method : DexKitTarget.UsingStringVector() {
+    override val findMethod = true
+    override val traitStringVectors = arrayOf(arrayOf("AIFileModule", "UpdateSystemData"))
+    override val declaringClass = ""
+    override val filter = DexKitFilter.allowAll
+}
+
+data object Hd_ChatsListAdapter_CLASS : DexKitTarget.UsingStringVector() {
+    override val findMethod = false
+    override val traitStringVectors = arrayOf(arrayOf("ChatsListAdapter", "[onBindViewHolder-payload] throw:"))
+    override val declaringClass = "Lcom/tencent/qqnt/chats/core/adapter/ChatsListAdapter"
+    override val filter = DexKitFilter.allowAll
+}
+
+data object Hd_ChatsListVB_OnCreateView_Method : DexKitTarget.UsingStr() {
+    override val findMethod = true
+    override val traitString = arrayOf("onCreateView")
+    override val declaringClass = "Lcom/tencent/qqnt/chats/core/ui/ChatsListVB"
+    override val filter = DexKitFilter.strInClsName("Lcom/tencent/qqnt/chats/core/ui/ChatsListVB;", true)
+}
+
+// V2 invalidates descriptors cached by earlier, narrower implementations of this feature.
+data object BlockPicByMd5_LoadImagePathV2 : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod = true
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findMethod {
+            searchPackages("com.tencent.mobileqq.aio.msglist.holder")
+            matcher {
+                returnType(Void.TYPE)
+                paramTypes(
+                    "android.widget.ImageView",
+                    "java.lang.String",
+                    null,
+                    "int",
+                    "int",
+                    "com.tencent.qqnt.kernel.nativeinterface.MsgElement",
+                    "com.tencent.mobileqq.aio.msg.AIOMsgItem",
+                    null,
+                    "kotlin.jvm.functions.Function2",
+                )
+                usingStrings("picView", "imagePath", "msgElement", "msgItem", "loadingImage")
+            }
+        }.single()
+    }
+}
+
+data object BlockPicByMd5_PicPathResolverV2 : DexKitTarget.UsingDexKitBridge() {
+    override val findMethod = true
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findMethod {
+            searchPackages("com.tencent.mobileqq.aio")
+            matcher {
+                returnType(String::class.java)
+                paramTypes("com.tencent.qqnt.kernel.nativeinterface.PicElement")
+                addInvoke {
+                    name = "assembleMobileQQRichMediaFilePath"
+                    returnType(String::class.java)
+                    paramTypes("com.tencent.qqnt.kernel.nativeinterface.RichMediaFilePathInfo")
+                }
+            }
+        }.single()
+    }
+}
+
+data object BlockPicByMd5_EmotionPreviewDataV2 : DexKitTarget.UsingStr() {
+    override val traitString = arrayOf("MsgEmoticonPreviewData")
+    override val declaringClass = ""
+    override val filter = filter@{ descriptor: DexMethodDescriptor ->
+        val clazz = load(descriptor.declaringClass) ?: return@filter false
+        val messageRecord = load("com.tencent.mobileqq.data.MessageRecord") ?: return@filter false
+        clazz.name.startsWith("com.tencent.mobileqq.emotionintegrate.") &&
+            clazz.declaredConstructors.any { constructor ->
+                constructor.parameterTypes.contentEquals(arrayOf(messageRecord))
+            } && clazz.declaredMethods.any { method ->
+            method.returnType.name == "android.graphics.drawable.Drawable" &&
+                method.parameterTypes.contentEquals(arrayOf(android.content.Context::class.java))
+        }
     }
 }

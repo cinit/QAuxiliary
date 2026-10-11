@@ -36,7 +36,7 @@ import androidx.annotation.Nullable;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.fragment.app.FragmentManager;
-import io.github.qauxv.ui.ResUtils;
+import io.github.qauxv.ui.ModuleThemeManager;
 import io.github.qauxv.util.HostInfo;
 import io.github.qauxv.util.Initiator;
 import io.github.qauxv.util.Log;
@@ -75,8 +75,7 @@ public abstract class BaseActivity extends AppCompatTransferActivity {
         if (!HostInfo.isInModuleProcess()) {
             // sync theme with host
             // note that ResUtils.getNightModeMasked() is not what AppCompatDelegate.setDefaultNightMode requires
-            AppCompatDelegate.setDefaultNightMode(ResUtils.isInNightMode() ?
-                    AppCompatDelegate.MODE_NIGHT_YES : AppCompatDelegate.MODE_NIGHT_NO);
+            AppCompatDelegate.setDefaultNightMode(ModuleThemeManager.getCurrentNightMode());
         }
         super.attachBaseContext(newBase);
         initLifecycleHooks();

@@ -21,11 +21,11 @@
  */
 package io.github.qauxv.router.decorator
 
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.base.IDynamicHook
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import io.github.qauxv.base.ITraceableDynamicHook
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.router.dispacher.ItemBuilderFactoryHook
+import io.github.qauxv.util.xpcompat.XC_MethodHook
 
 interface IItemBuilderFactoryHookDecorator : ITraceableDynamicHook {
 
@@ -41,7 +41,13 @@ interface IItemBuilderFactoryHookDecorator : ITraceableDynamicHook {
         result: Int,
         chatMessage: Any,
         param: XC_MethodHook.MethodHookParam
-    ): Boolean
+    ): Boolean = false
+
+    @Throws(Throwable::class)
+    fun onNtCreateItemHook(
+        msgRecord: MsgRecord,
+        param: XC_MethodHook.MethodHookParam
+    ): Boolean = false
 
     override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
         get() = listOf(ItemBuilderFactoryHook)

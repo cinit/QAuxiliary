@@ -22,15 +22,18 @@
 package io.github.qauxv.router.dispacher
 
 import cc.hicore.QApp.QAppUtils
+import com.tencent.qqnt.kernel.nativeinterface.MsgRecord
 import io.github.qauxv.base.annotation.EntityAgentEntry
-import io.github.qauxv.util.xpcompat.XC_MethodHook
-import io.github.qauxv.util.xpcompat.XposedBridge
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.hook.BaseHookDispatcher
 import io.github.qauxv.router.decorator.IItemBuilderFactoryHookDecorator
 import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.dexkit.CItemBuilderFactory
 import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.MsgListUtil_createMsgItem
+import io.github.qauxv.util.xpcompat.XC_MethodHook
+import io.github.qauxv.util.xpcompat.XposedBridge
 import me.singleneuron.hook.decorator.CardMsgToText
 import me.singleneuron.hook.decorator.MiniAppToStruckMsg
 import me.singleneuron.hook.decorator.SimpleCheckIn
@@ -40,7 +43,7 @@ import java.lang.reflect.Method
 @FunctionHookEntry
 @EntityAgentEntry
 object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecorator>(
-        arrayOf(CItemBuilderFactory)
+    arrayOf(CItemBuilderFactory, MsgListUtil_createMsgItem)
 ) {
 
     // register your decorator here
@@ -48,17 +51,38 @@ object ItemBuilderFactoryHook : BaseHookDispatcher<IItemBuilderFactoryHookDecora
     // OPTIMIZE YOUR CODE, CACHE YOUR REFLECTION FIELDS AND METHODS FOR BETTER PERFORMANCE
     // *** Peak frequency: ~412 invocations per second
     override val decorators: Array<IItemBuilderFactoryHookDecorator> = arrayOf(
-            CardMsgToText,
-            MiniAppToStruckMsg,
-            SimpleCheckIn,
-            SimpleReceiptMessage,
+        CardMsgToText,
+        MiniAppToStruckMsg,
+        SimpleCheckIn,
+        SimpleReceiptMessage,
     )
+
+    private var msgRecordParamIndex = -1
 
     @Throws(Exception::class)
     override fun initOnce(): Boolean {
         if (QAppUtils.isQQnt()) {
-            // QQ NT does not use ItemBuilderFactory
-            // TODO: 2024-07-19 implement an alternative for QQ NT
+            val createMsgItem = DexKit.requireMethodFromCache(MsgListUtil_createMsgItem)
+            msgRecordParamIndex = createMsgItem.parameterTypes.indexOfFirst { it == MsgRecord::class.java }
+            if (msgRecordParamIndex < 0) {
+                io.github.qauxv.util.Log.w("ItemBuilderFactoryHook: createMsgItem has no MsgRecord parameter, hook disabled")
+                return false
+            }
+            XposedBridge.hookMethod(createMsgItem, object : XC_MethodHook(39) {
+                @Throws(Throwable::class)
+                override fun beforeHookedMethod(param: MethodHookParam) {
+                    val msgRecord = param.args[msgRecordParamIndex] as? MsgRecord ?: return
+                    for (decorator in decorators) {
+                        try {
+                            if (decorator.isEnabled && decorator.onNtCreateItemHook(msgRecord, param)) {
+                                return
+                            }
+                        } catch (e: Throwable) {
+                            decorator.traceError(e)
+                        }
+                    }
+                }
+            })
             return true
         }
         var getMsgType: Method? = null

@@ -1,6 +1,6 @@
 /*
  * QAuxiliary - An Xposed module for QQ/TIM
- * Copyright (C) 2019-2024 QAuxiliary developers
+ * Copyright (C) 2019-2026 QAuxiliary developers
  * https://github.com/cinit/QAuxiliary
  *
  * This software is an opensource software: you can redistribute it
@@ -41,7 +41,6 @@ import xyz.nextalone.util.isPublic
 object HideTipTextView : MultiItemDelayableHook(
     keyName = "hd_HideTipTextView"
 ) {
-
     override val preferenceTitle = "隐藏提示文本消息"
     override val description = "当提示文本消息过多, 可能导致聊天界面滑动掉帧"
     override val dialogDesc = "隐藏"

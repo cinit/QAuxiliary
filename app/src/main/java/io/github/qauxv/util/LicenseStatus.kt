@@ -80,7 +80,6 @@ object LicenseStatus {
         }
     }
 
-
     @JvmStatic
     fun isInsider(): Boolean {
         val cfg = ConfigManager.getDefaultConfig()
@@ -90,7 +89,7 @@ object LicenseStatus {
             currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1)
         }
         val lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())
-        if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
+        if (System.currentTimeMillis() >= lastUpdate + 24L * 60 * 60 * 1000) {
             setUserCurrentStatus()
         }
         return currentStatus == UserStatusConst.developer
@@ -105,7 +104,7 @@ object LicenseStatus {
             currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1)
         }
         val lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())
-        if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
+        if (System.currentTimeMillis() >= lastUpdate + 24L * 60 * 60 * 1000) {
             setUserCurrentStatus()
         }
         return currentStatus == UserStatusConst.blacklisted
@@ -122,11 +121,9 @@ object LicenseStatus {
             currentStatus = cfg.getIntOrDefault(qn_user_auth_status, -1)
         }
         val lastUpdate = cfg.getLongOrDefault(qn_user_auth_last_update, System.currentTimeMillis())
-        if (lastUpdate >= lastUpdate + 30 * 60 * 1000) {
+        if (System.currentTimeMillis() >= lastUpdate + 24L * 60 * 60 * 1000) {
             setUserCurrentStatus()
         }
         return currentStatus == UserStatusConst.whitelisted
     }
-
-
 }
