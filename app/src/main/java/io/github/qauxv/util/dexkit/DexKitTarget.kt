@@ -725,7 +725,9 @@ data object ChatPanel_InitPanel_QQNT : DexKitTarget.UsingStr() {
     override val findMethod: Boolean = true
     override val traitString = arrayOf("updateFunBtn")
     override val declaringClass = "ChatPanel_InitPanel_QQNT"
-    override val filter = DexKitFilter.allowAll
+    override val filter = filter@{ it: DexMethodDescriptor ->
+        "com/tencent/mobileqq/troop/topic/input/" !in it.declaringClass
+    }
 }
 
 data object AIO_Create_QQNT : DexKitTarget.UsingStr() {
