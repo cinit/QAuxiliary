@@ -21,24 +21,24 @@
  */
 package xyz.nextalone.hook
 
+import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
+import io.github.qauxv.util.Initiator
+import io.github.qauxv.util.PlayQQVersion
 import io.github.qauxv.util.QQVersion
 import io.github.qauxv.util.TIMVersion
 import io.github.qauxv.util.requireMinQQVersion
 import io.github.qauxv.util.requireMinTimVersion
+import io.github.qauxv.util.requireRangePlayQQVersion
+import top.linl.util.reflect.FieldUtils
 import xyz.nextalone.base.MultiItemDelayableHook
 import xyz.nextalone.util.clazz
 import xyz.nextalone.util.get
 import xyz.nextalone.util.hookBefore
 import xyz.nextalone.util.method
 import xyz.nextalone.util.throwOrTrue
-import cc.ioctl.util.hookBeforeIfEnabled
-import io.github.qauxv.util.Initiator
-import io.github.qauxv.util.PlayQQVersion
-import io.github.qauxv.util.requireRangePlayQQVersion
-import top.linl.util.reflect.FieldUtils
 
 @FunctionHookEntry
 @UiItemAgentEntry
@@ -48,17 +48,19 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
     override val uiItemLocation = FunctionEntryRouter.Locations.Simplify.CHAT_EMOTICON
 
     private val allItemsDict = mapOf(
-        13 to "加号菜单",
-        7 to "默认表情",
+        18 to "搜索表情",
+        7 to "经典表情/默认表情",
+        19 to "超级表情/黄脸表情/动画贴纸",
         4 to "收藏表情",
-        12 to "热门表情",
+        22 to "虚拟形象/QQ秀互动表情",
+        12 to "热图面板/GIF表情/热门表情",
+        20 to "AI表情",
+        17 to "超级QQ秀表情",
+        13 to "加号菜单",
         15 to "厘米秀",
         11 to "DIY表情",
         9 to "魔法表情",
-        17 to "超级QQ秀",
         -1 to "表情包",
-        18 to "搜索表情",
-        19 to "动画贴纸",
     )
     override val allItems: Set<String> = allItemsDict.values.toSet()
     override val enableCustom = false
@@ -100,5 +102,6 @@ object SimplifyEmoPanel : MultiItemDelayableHook("na_simplify_emo_panel") {
         }
     }
 
-    override val isAvailable: Boolean get() = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
+    override val isAvailable: Boolean
+        get() = requireMinQQVersion(QQVersion.QQ_8_5_5) || requireMinTimVersion(TIMVersion.TIM_4_0_95_BETA) || requireRangePlayQQVersion(PlayQQVersion.PlayQQ_8_2_11, PlayQQVersion.PlayQQ_8_2_11)
 }
