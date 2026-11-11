@@ -27,33 +27,51 @@ import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
 import io.github.qauxv.dsl.FunctionEntryRouter
 import io.github.qauxv.dsl.uiClickableItem
+import io.github.qauxv.util.Log
 import io.github.qauxv.util.QQVersion
-import io.github.qauxv.util.dexkit.Hd_CustomPetHomeBg_Method
 import io.github.qauxv.util.requireMinQQVersion
 import me.hd.base.KuiklyDelayableHook
 import me.hd.util.hookAfterIfEnabled
-import me.hd.util.name
-import me.hd.util.parameters
-import me.hd.util.returnType
-import me.hd.util.singleMethod
-import me.hd.util.toClass
 import me.ketal.data.ConfigData
+import org.luckypray.dexkit.DexKitBridge
+import java.io.File
 
 @FunctionHookEntry
 @UiItemAgentEntry
-object CustomPetHomeBg : KuiklyDelayableHook(
-    targets = arrayOf(Hd_CustomPetHomeBg_Method)
-) {
+object CustomPetHomeBg : KuiklyDelayableHook() {
     private val bgMap = mapOf(
-        "黄色爪爪[免费]" to 18,
-        "蓝色雪花[免费]" to 19,
-        "薄荷清新[600点券]" to 23,
-        "沉稳灰蓝[1w金币]" to 24,
-        "暖阳午后[会员免费]" to 25,
-        "绿色童话[会员免费]" to 28,
-        "蓝色童话[1w金币]" to 29,
-        "粉色童话[600点券]" to 30,
+        18 to "黄色爪爪 [免费]",
+        19 to "蓝色雪花 [免费]",
+        23 to "薄荷清新 [600点券]",
+        24 to "沉稳灰蓝 [10000金币]",
+        25 to "暖阳午后 [会员免费]",
+        28 to "绿色童话 [会员免费]",
+        29 to "蓝色童话 [10000金币]",
+        30 to "粉色童话 [600点券]",
+        38 to "简约星阁 [600点券]",
+        40 to "撞色几何 [600点券]",
+        41 to "意式海岸 [600点券]",
+        44 to "朝朝落霞 [600点券]",
+        45 to "夕夕星河 [600点券]",
+        46 to "浪花泡泡鱼 [98钻石]",
+        47 to "绮梦毕业礼 [学业获得]",
+        48 to "暖阳小厨 [职业获得·掌勺主厨]",
+        // 0 to "绘梦画苑 [职业获得·调色师]",
+        51 to "星月魔堡 [职业获得·星语巫师]",
+        52 to "雾夜公馆 [职业获得·破案高手]",
+        53 to "浮梦云屋 [职业获得·织梦者]",
+        54 to "星光舞台 [职业获得·人气偶像]",
+        // 55 to "???? [职业获得·内门武师]",
+        56 to "蓝调画阁 [限时获得·名画之旅]",
+        57 to "台夫特之晨 [限时获得·名画之旅]",
+        58 to "向阳花厅 [限时获得·名画之旅]",
+        59 to "阿尔勒之夏 [限时获得·名画之旅]",
+        // 60 to "月儿圆圆 [10000金币]",
+        // 61 to "花田诗意 [98钻石]",
+        // 72 to "梦幻糖果 [10000金币]",
+        // 73 to "木屋奇遇 [600点券]",
     )
+
     private val bgIdKey = ConfigData<Int>("hd_CustomPetHomeBg_bgIdKey")
     private var bgId: Int
         get() = bgIdKey.getOrDefault(0)
@@ -67,15 +85,16 @@ object CustomPetHomeBg : KuiklyDelayableHook(
     override val uiItemAgent = uiClickableItem {
         title = "自定义宠物首页背景"
         onClickListener = { _, activity, _ ->
+            val ids = bgMap.keys.toList()
             AlertDialog.Builder(activity)
                 .setTitle("更换背景")
-                .setItems(bgMap.keys.toTypedArray()) { dialog, which ->
-                    val key = bgMap.keys.elementAt(which)
-                    val value = bgMap[key] ?: 0
-                    if (value != 0) {
-                        bgId = value
-                    }
+                .setSingleChoiceItems(bgMap.values.toTypedArray(), ids.indexOf(bgId)) { dialog, which ->
+                    bgId = ids[which]
+                    isEnabled = true
+                    if (!isInitialized) initialize()
+                    dialog.dismiss()
                 }
+                .setNegativeButton("取消", null)
                 .show()
         }
     }
@@ -84,20 +103,24 @@ object CustomPetHomeBg : KuiklyDelayableHook(
     override val isAvailable = requireMinQQVersion(QQVersion.QQ_9_3_25)
 
     override fun startHook(classLoader: ClassLoader): Boolean {
-        // val getElementMethod = DexKit.loadMethodFromCache(Hd_CustomPetHomeBg_Method)
-        // TODO 待优化 非 DexKitBridge.create(hostInfo.application.applicationInfo.sourceDir) 搜索
-        "y6.e".toClass(classLoader).singleMethod {
-            returnType(String::class.java)
-                && name("a")
-                && parameters(String::class.java)
-        }.hookAfterIfEnabled(this) { param ->
-            // normal_bg.jpg -> /data/user/0/com.tencent.mobileqq/files/files/vas_material_folder/pet_353_download/petHomeBackground.28.zip/normal_bg.jpg
-            val element = param.args[0] as String
-            val path = param.result as String
-            if (path.contains("petHomeBackground") && path.endsWith(".jpg") && bgId != 0) {
-                // TODO 待优化 自定义选取本地图片
-                param.result = path.replace(Regex("petHomeBackground\\.\\d+\\.zip"), "petHomeBackground.${bgId}.zip")
-            }
+        DexKitBridge.create(classLoader, true).use { bridge ->
+            bridge.findMethod {
+                matcher {
+                    usingStrings("AIFileModule", "UpdateSystemData")
+                }
+            }.single().getMethodInstance(classLoader)
+                .hookAfterIfEnabled(this) { param ->
+                    val element = param.args[0] as String // jpg or ktx
+                    if (bgId != 0 && element.endsWith(".jpg")) {
+                        // normal_bg.jpg -> /data/user/0/com.tencent.mobileqq/files/files/vas_material_folder/pet_353_download/petHomeBackground.28.zip/normal_bg.jpg
+                        // TODO 待优化 自定义选取本地资源
+                        val path = param.result as String
+                        if (!path.contains("petHomeBackground")) return@hookAfterIfEnabled
+                        val replacePath = path.replace(Regex("petHomeBackground\\.\\d+\\.zip"), "petHomeBackground.${bgId}.zip")
+                        if (!File(replacePath).exists()) throw RuntimeException("本地不存在 '${bgMap[bgId]}' 背景资源")
+                        param.result = replacePath
+                    }
+                }
         }
         return true
     }

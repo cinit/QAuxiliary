@@ -26,41 +26,42 @@ import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Log
-import io.github.qauxv.util.dexkit.DexKitTarget
 import me.hd.util.name
 import me.hd.util.parameters
 import me.hd.util.singleMethod
 import me.hd.util.toHostClass
+import xyz.nextalone.util.throwOrTrue
 
 abstract class KuiklyDelayableHook(
-    hookKey: String? = null,
-    defaultEnabled: Boolean = false,
-    targets: Array<DexKitTarget>? = null
-) : BaseFunctionHook(hookKey, defaultEnabled, targets = targets) {
+    hookKey: String? = null
+) : BaseFunctionHook(hookKey) {
 
     abstract val kuiklyName: String
 
     @Throws(Throwable::class)
     abstract fun startHook(classLoader: ClassLoader): Boolean
 
-    override fun initOnce(): Boolean {
+    override fun initOnce()= throwOrTrue {
         try {
             "com.tencent.kuikly.core.render.android.context.KuiklyRenderDexContextHandler".toHostClass().singleMethod {
                 name("getClassLoader")
                     && parameters(String::class.java)
             }.hookAfter { param ->
-                val dexPath = param.args[0] as String
-                Log.i("kuikly dexPath: $dexPath")
-                val classLoader = param.result as ClassLoader
-                if (dexPath.endsWith(kuiklyName)) {
-                    Log.i("kuikly startHook: $dexPath")
-                    startHook(classLoader)
+                try {
+                    val dexPath = param.args[0] as String
+                    Log.i("kuikly dexPath: $dexPath")
+                    val classLoader = param.result as ClassLoader
+                    if (dexPath.endsWith(kuiklyName)) {
+                        Log.i("kuikly startHook: $dexPath")
+                        startHook(classLoader)
+                    }
+                } catch (e: Throwable) {
+                    traceError(e)
                 }
             }
         } catch (e: Exception) {
             traceError(e)
         }
-        return true
     }
 
     override val runtimeErrorDependentComponents: List<RuntimeErrorTracer>?
