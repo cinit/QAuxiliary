@@ -74,7 +74,7 @@ object FakeVoiceTime : BaseFunctionHook(
     @SuppressLint("RestrictedApi")
     private fun showDialog(activity: Context) {
         val configView = ConfigView(activity)
-        val dialog = MaterialDialog(activity).show {
+        val dialog = MaterialDialog(activity).apply {
             title(text = "伪装语音时间")
             input(
                 hint = "请输入语音时间...",
@@ -98,6 +98,9 @@ object FakeVoiceTime : BaseFunctionHook(
                     }
                 )
             }.ignoreResult()
+            getInputField().setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus && !configView.isChecked) view.clearFocus()
+            }
             positiveButton(text = "保存") {
                 isEnabled = configView.isChecked
                 if (isEnabled) {
@@ -112,6 +115,7 @@ object FakeVoiceTime : BaseFunctionHook(
         configView.isChecked = isEnabled
         dialog.view.contentLayout.customView = null
         dialog.customView(view = configView)
+        dialog.show()
     }
 
     override fun initOnce(): Boolean {

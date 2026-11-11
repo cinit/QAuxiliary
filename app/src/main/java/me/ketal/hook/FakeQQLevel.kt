@@ -85,7 +85,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
     private fun showDialog(ctx: Context) {
         throwOrTrue {
             val vg = ConfigView(ctx)
-            val dialog = MaterialDialog(ctx).show {
+            val dialog = MaterialDialog(ctx).apply {
                 title(text = "自定义QQ等级")
                 input(hint = "自定义QQ等级...", prefill = level, waitForPositiveButton = false) { dialog, text ->
                     val inputField = dialog.getInputField()
@@ -103,6 +103,9 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
                         false
                     })
                 }.ignoreResult()
+                getInputField().setOnFocusChangeListener { view, hasFocus ->
+                    if (hasFocus && !vg.isChecked) view.clearFocus()
+                }
                 positiveButton(text = "保存") {
                     val text = getInputField().text.toString()
                     val enableFake = vg.isChecked
@@ -120,6 +123,7 @@ object FakeQQLevel : BaseFunctionHook("Ketal_FakeQQLevel",
             vg.isChecked = isEnabled
             dialog.view.contentLayout.customView = null
             dialog.customView(view = vg)
+            dialog.show()
         }
     }
 

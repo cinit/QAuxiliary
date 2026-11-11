@@ -74,7 +74,7 @@ object FakeLocation : BaseFunctionHook(
     @SuppressLint("RestrictedApi")
     private fun showDialog(activity: Context) {
         val configView = ConfigView(activity)
-        val dialog = MaterialDialog(activity).show {
+        val dialog = MaterialDialog(activity).apply {
             title(text = "虚拟共享位置")
             input(
                 hint = "经度,纬度",
@@ -106,6 +106,9 @@ object FakeLocation : BaseFunctionHook(
                     }
                 )
             }.ignoreResult()
+            getInputField().setOnFocusChangeListener { view, hasFocus ->
+                if (hasFocus && !configView.isChecked) view.clearFocus()
+            }
             positiveButton(text = "保存") {
                 isEnabled = configView.isChecked
                 if (isEnabled) {
@@ -120,6 +123,7 @@ object FakeLocation : BaseFunctionHook(
         configView.isChecked = isEnabled
         dialog.view.contentLayout.customView = null
         dialog.customView(view = configView)
+        dialog.show()
     }
 
     override fun initOnce(): Boolean {

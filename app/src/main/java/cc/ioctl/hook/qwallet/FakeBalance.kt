@@ -33,6 +33,7 @@ import cc.ioctl.util.Reflex
 import com.afollestad.materialdialogs.MaterialDialog
 import com.afollestad.materialdialogs.customview.customView
 import com.afollestad.materialdialogs.customview.getCustomView
+import com.afollestad.materialdialogs.input.getInputField
 import com.afollestad.materialdialogs.input.input
 import io.github.qauxv.base.annotation.FunctionHookEntry
 import io.github.qauxv.base.annotation.UiItemAgentEntry
@@ -81,7 +82,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
     private fun showDialog(ctx: Context, textView: TextView?) {
         throwOrTrue {
             val vg = ConfigView(ctx)
-            val dialog = MaterialDialog(ctx).show {
+            val dialog = MaterialDialog(ctx).apply {
                 title(text = "自定义钱包余额")
                 input(hint = "请输入自定义金额...", prefill = money) { dialog, text ->
                     val enableFake = vg.isChecked
@@ -95,6 +96,9 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
                     dialog.dismiss()
                     textView?.text = "114514"
                 }.ignoreResult()
+                getInputField().setOnFocusChangeListener { view, hasFocus ->
+                    if (hasFocus && !vg.isChecked) view.clearFocus()
+                }
                 positiveButton(text = "保存")
                 negativeButton(text = "取消")
             }
@@ -103,6 +107,7 @@ object FakeBalance : PluginDelayableHook("ketal_qwallet_fakebalance") {
             vg.isChecked = isEnabled
             dialog.view.contentLayout.customView = null
             dialog.customView(view = vg)
+            dialog.show()
         }
     }
 
