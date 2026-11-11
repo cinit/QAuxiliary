@@ -1336,3 +1336,19 @@ data object BlockPicByMd5_EmotionPreviewDataV2 : DexKitTarget.UsingStr() {
         }
     }
 }
+
+data object FriendDeleteCallbackClass : DexKitTarget.UsingDexKitBridge() {
+    // 被动删除回调类，混淆名随版本变化；onUpdateBatch8 唯一命中该类
+    override val declaringClass = ""
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findClass {
+            searchPackages("com.tencent.mobileqq.app")
+            matcher {
+                methods {
+                    add { name = "onUpdateBatch8" }
+                    add { name = "onUpdateDelFriend" }
+                }
+            }
+        }.single().methods.first { it.name == "onUpdateBatch8" }
+    }
+}

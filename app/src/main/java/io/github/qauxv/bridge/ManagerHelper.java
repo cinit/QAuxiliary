@@ -113,6 +113,21 @@ public class ManagerHelper {
         }
     }
 
+    public static Object getFriendsManager() {
+        try {
+            Class<?> cl = load("com.tencent.mobileqq.app.QQManagerFactory");
+            int id = cl.getField("FRIENDS_MANAGER").getInt(null);
+            return getManager(id);
+        } catch (Throwable e) {
+            // 运行时索引 fallback（9.3.30 实测为 28）
+            try {
+                return getManager(28);
+            } catch (Throwable e2) {
+                return null;
+            }
+        }
+    }
+
     @Deprecated
     public static Object getBusinessHandler(int type) {
         try {
