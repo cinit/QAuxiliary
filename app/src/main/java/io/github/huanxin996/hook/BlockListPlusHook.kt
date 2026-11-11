@@ -49,13 +49,15 @@ import cc.ioctl.util.hookBeforeIfEnabled
 import io.github.qauxv.bridge.ntapi.RelationNTUinAndUidApi
 import io.github.qauxv.util.Initiator
 import io.github.qauxv.util.Log
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.MsgService_onMsgNotify
 
 /**
  * 拉黑Plus：增强 QQ 自带黑名单的屏蔽范围
  */
 @FunctionHookEntry
 @UiItemAgentEntry
-object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
+object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook", arrayOf(MsgService_onMsgNotify)) {
 
     override val name = "拉黑Plus"
 
@@ -513,19 +515,13 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
 
     /** hook 内核通知回调（红点/通知栏数据源），摘除黑名单发送者的通知项 */
     fun hookMsgNotifyListener(): Boolean = throwOrTrue {
-        val notifyListener = Initiator.load("com.tencent.qqnt.kernel.api.impl.MsgService\$b")
-        if (notifyListener == null) {
-            Log.e("BlockListPlus: MsgService\$b not found")
-            return@throwOrTrue
-        }
-        val onMsgNotify = notifyListener.declaredMethods.firstOrNull { m ->
-            m.name == "onMsgNotify" && m.parameterCount == 2
-        }
+        // 实现类名随版本变化，用 DexKit 特征定位
+        val onMsgNotify = DexKit.loadMethodFromCache(MsgService_onMsgNotify)
         if (onMsgNotify == null) {
-            Log.e("BlockListPlus: onMsgNotify not found in MsgService\$b")
+            Log.i("BlockListPlus: onMsgNotify 特征未命中（该版本无此回调），跳过")
             return@throwOrTrue
         }
-        Log.i("BlockListPlus: hook onMsgNotify in MsgService\$b")
+        Log.i("BlockListPlus: hook onMsgNotify via DexKit: " + onMsgNotify.declaringClass.name)
         hookBeforeIfEnabled(onMsgNotify) { param ->
             val list = param.args[0] as? MutableList<*> ?: return@hookBeforeIfEnabled
             if (list.isEmpty()) {
@@ -1131,7 +1127,8 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
             }
         }
         if (hooked == 0) {
-            error("feedpro viewmodel data source not found")
+            // 9.3.65 起 e2/f2/c2 已移除：跳过（getDataList/setDatas 已覆盖 feedpro 列表）
+            Log.i("BlockListPlus: feedpro viewmodel data source not found, skip")
         }
     }
 
@@ -1174,22 +1171,26 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
 
     /** AIO 动态页/详情页数据源拦截：feedx 评论 Block（base.l.d0）与 QZoneFeedService 动态列表过滤。 */
     private fun hookAioFeedSources() {
-        // feedx 评论 Block（extends base.l）：d0() 返回数据列表，过滤黑名单动态/评论
+        // feedx 评论 Block（extends base.l）：d0() 返回数据列表（新版 QQ 已移除，自动跳过）
+        // 评论块数据仍由 BaseListViewAdapter.getDataList() 覆盖（base.l → MultiViewBlock → BaseListViewAdapter）
         val baseLClass = try {
             Initiator.load("com.qzone.reborn.base.l")
         } catch (e: Throwable) {
-            return
-        } ?: return
-        val d0 = baseLClass.declaredMethods.firstOrNull {
+            null
+        }
+        val d0 = baseLClass?.declaredMethods?.firstOrNull {
             it.name == "d0" && it.parameterCount == 0 && it.returnType == java.util.List::class.java
         }
         if (d0 != null) {
+            Log.i("BlockListPlus: hook base.l.d0 (feedx comment block)")
             hookAfterIfEnabled(d0) { param ->
                 val list = param.result as? MutableList<*>
                 if (list != null && list.isNotEmpty()) {
                     filterDataList(list)
                 }
             }
+        } else {
+            Log.i("BlockListPlus: base.l.d0 not found, skip")
         }
         // QZoneFeedService 动态列表（AIO 动态页）：List 参数过滤
         val serviceClass = try {
@@ -1197,6 +1198,7 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
         } catch (e: Throwable) {
             return
         } ?: return
+        var serviceHooked = 0
         for (m in serviceClass.declaredMethods) {
             if (m.parameterCount >= 1 && m.parameterTypes.any {
                     java.util.List::class.java.isAssignableFrom(it)
@@ -1208,8 +1210,10 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
                         filterDataList(list)
                     }
                 }
+                serviceHooked++
             }
         }
+        Log.i("BlockListPlus: hook QZoneFeedService list methods: $serviceHooked")
     }
 
     /** 数据列表过滤：移除黑名单动态/评论；正常动态移除黑名单评论预览（保留动态）。 */
@@ -1232,7 +1236,7 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
                     if (filterBusinessComments(item)) {
                         commentsFiltered++
                     }
-                } else if (item.javaClass.name == "q11.ca") {
+                } else if (isPbFeedItem(item)) {
                     if (filterFeedComments(item)) {
                         commentsFiltered++
                     }
@@ -1249,6 +1253,31 @@ object BlockListPlusHook : CommonSwitchFunctionHook("block_list_plus_hook") {
 }
 
 // region 空间
+
+/** 是否为 feedpro 动态 PB（q11.ca；9.3.65 起类名变化，改用结构探测）。 */
+private fun isPbFeedItem(item: Any): Boolean {
+    if (item.javaClass.name == "q11.ca") {
+        return true
+    }
+    // 结构探测：b（作者信息对象，内含 a） + a（动态信息对象，内含 c=owner uin）
+    val b = readFieldSafe(item, "b") ?: return false
+    if (readFieldSafe(b, "a") == null) {
+        return false
+    }
+    val a = readFieldSafe(item, "a") ?: return false
+    return readFieldSafe(a, "c") != null
+}
+
+/** 是否为评论 PB 对象（q11.bi；9.3.65 起类名变化，改用结构探测）。 */
+private fun isCommentPb(bi: Any): Boolean {
+    if (bi.javaClass.name == "q11.bi") {
+        return true
+    }
+    // 结构探测：b 为评论者信息对象（a=uin 字符串）
+    val b = readFieldSafe(bi, "b") ?: return false
+    val uinStr = readFieldSafe(b, "a") as? String ?: return false
+    return uinStr.length in 5..12 && uinStr.all { it.isDigit() }
+}
 
 /**
  * PB 动态数据是否命中黑名单：
@@ -1307,22 +1336,21 @@ private fun shouldBlockPbData(data: Any): Boolean {
 /** 统一数据判断：动态（q11.ca）/评论包装（e.b=q11.bi）/BusinessFeedData 包装动态。 */
 private fun shouldBlockData(item: Any): Boolean {
     val blockComment = BlockListPlusHook.ITEM_QZONE_COMMENT in BlockListPlusHook.activeItems
-    when (item.javaClass.name) {
-        "q11.ca" -> {
-            if (shouldBlockPbData(item)) {
-                return true
-            }
-            // 动态本体正常但评论预览含黑名单：移除黑名单评论（保留动态）
-            if (blockComment && filterFeedComments(item)) {
-                Log.i("BlockListPlus: qzone feed comments filtered")
-            }
-            return false
+    // feedpro 动态 PB（q11.ca；9.3.65 起类名变化，结构探测兼容）
+    if (isPbFeedItem(item)) {
+        if (shouldBlockPbData(item)) {
+            return true
         }
+        // 动态本体正常但评论预览含黑名单：移除黑名单评论（保留动态）
+        if (blockComment && filterFeedComments(item)) {
+            Log.i("BlockListPlus: qzone feed comments filtered")
+        }
+        return false
     }
-    // 评论包装 e.b = q11.bi
+    // 评论包装 e.b = 评论 PB
     if (blockComment) {
         val b = readFieldSafe(item, "b")
-        if (b != null && b.javaClass.name == "q11.bi") {
+        if (b != null && isCommentPb(b)) {
             return shouldBlockCommentData(item)
         }
     }
@@ -1434,10 +1462,10 @@ private fun commentHasBlockedUin(item: Any): Boolean {
 /** 评论作者主页 URL 中 uin 提取正则（user.qzone.qq.com/{uin}/311/）。 */
 private val COMMENT_URL_UIN_REGEX = Regex("user\\.qzone\\.qq\\.com/(\\d+)/")
 
-/** 评论数据是否命中黑名单：评论包装 e.b=q11.bi，评论者 uin 在 bi.b.a。 */
+/** 评论数据是否命中黑名单：评论包装 e.b=评论PB，评论者 uin 在 bi.b.a。 */
 private fun shouldBlockCommentData(item: Any): Boolean {
     val bi = readFieldSafe(item, "b") ?: return false
-    if (bi.javaClass.name != "q11.bi") {
+    if (!isCommentPb(bi)) {
         return false
     }
     val uin = extractUinFromPath(bi, arrayOf("b", "a")) ?: return false
