@@ -26,39 +26,37 @@ import com.github.kyuubiran.ezxhelper.utils.hookAfter
 import io.github.qauxv.base.RuntimeErrorTracer
 import io.github.qauxv.hook.BaseFunctionHook
 import io.github.qauxv.util.Log
-import me.hd.util.name
-import me.hd.util.parameters
-import me.hd.util.singleMethod
-import me.hd.util.toHostClass
+import io.github.qauxv.util.dexkit.DexKit
+import io.github.qauxv.util.dexkit.DexKitTarget
+import io.github.qauxv.util.dexkit.Hd_DexContextHandler_GetClassLoader_Method
 import xyz.nextalone.util.throwOrTrue
 
 abstract class KuiklyDelayableHook(
-    hookKey: String? = null
-) : BaseFunctionHook(hookKey) {
+    hookKey: String? = null,
+    targets: Array<DexKitTarget>? = arrayOf(Hd_DexContextHandler_GetClassLoader_Method)
+) : BaseFunctionHook(hookKey, targets = targets) {
 
     abstract val kuiklyName: String
 
     @Throws(Throwable::class)
     abstract fun startHook(classLoader: ClassLoader): Boolean
 
-    override fun initOnce()= throwOrTrue {
+    override fun initOnce() = throwOrTrue {
         try {
-            "com.tencent.kuikly.core.render.android.context.KuiklyRenderDexContextHandler".toHostClass().singleMethod {
-                name("getClassLoader")
-                    && parameters(String::class.java)
-            }.hookAfter { param ->
-                try {
-                    val dexPath = param.args[0] as String
-                    Log.i("kuikly dexPath: $dexPath")
-                    val classLoader = param.result as ClassLoader
-                    if (dexPath.endsWith(kuiklyName)) {
-                        Log.i("kuikly startHook: $dexPath")
-                        startHook(classLoader)
+            DexKit.requireMethodFromCache(Hd_DexContextHandler_GetClassLoader_Method)
+                .hookAfter { param ->
+                    try {
+                        val dexPath = param.args[0] as String
+                        Log.i("kuikly dexPath: $dexPath")
+                        val classLoader = param.result as ClassLoader
+                        if (dexPath.endsWith(kuiklyName)) {
+                            Log.i("kuikly startHook: $dexPath")
+                            startHook(classLoader)
+                        }
+                    } catch (e: Throwable) {
+                        traceError(e)
                     }
-                } catch (e: Throwable) {
-                    traceError(e)
                 }
-            }
         } catch (e: Exception) {
             traceError(e)
         }

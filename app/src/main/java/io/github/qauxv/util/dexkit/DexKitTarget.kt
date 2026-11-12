@@ -1255,11 +1255,22 @@ data object SimpleItemProcessor_Method : DexKitTarget.UsingDexkit() {
     override val filter = DexKitFilter.allowAll
 }
 
-data object Hd_CustomPetHomeBg_Method : DexKitTarget.UsingStringVector() {
+data object Hd_DexContextHandler_GetClassLoader_Method : DexKitTarget.UsingDexKitBridge() {
     override val findMethod = true
-    override val traitStringVectors = arrayOf(arrayOf("AIFileModule", "UpdateSystemData"))
     override val declaringClass = ""
-    override val filter = DexKitFilter.allowAll
+    override val finder: DexKitBridgeFinder = { bridge ->
+        bridge.findClass {
+            searchPackages("com.tencent.kuikly.core.render.android.context")
+            matcher {
+                usingEqStrings("contextCode", "com.tencent.kuikly.core.android.KuiklyCoreEntry")
+            }
+        }.findMethod {
+            matcher {
+                paramTypes("java.lang.String")
+                usingStrings("javaClass.classLoader")
+            }
+        }.single()
+    }
 }
 
 data object Hd_ChatsListAdapter_CLASS : DexKitTarget.UsingStringVector() {
