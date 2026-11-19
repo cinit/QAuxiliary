@@ -13,4 +13,8 @@
         android:id="@+id/menu_item_edit_exclusion_list"
         android:title="配置排除列表"
         app:showAsAction="never" />
+    <item
+        android:id="@+id/menu_item_misc_config"
+        android:title="杂项配置"
+        app:showAsAction="never" />
 </menu>
