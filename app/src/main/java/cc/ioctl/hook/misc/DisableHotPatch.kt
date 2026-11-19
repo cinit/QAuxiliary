@@ -22,9 +22,13 @@
 
 package cc.ioctl.hook.misc
 
-import android.content.Intent
+import android.content.Context
+import android.content.SharedPreferences
 import cc.ioctl.util.hookBeforeIfEnabled
+import com.github.kyuubiran.ezxhelper.utils.invokeAs
+import com.github.kyuubiran.ezxhelper.utils.isPublic
 import com.github.kyuubiran.ezxhelper.utils.isStatic
+import com.tencent.mmkv.MMKV
 import com.tencent.mobileqq.app.QQAppInterface
 import com.tencent.mobileqq.pb.PBInt32Field
 import com.tencent.mobileqq.pb.PBRepeatMessageField
@@ -68,6 +72,30 @@ object DisableHotPatch : CommonSwitchFunctionHook(
         }
 
     override fun initOnce(): Boolean {
+        // QQ 9.2.66 applies the staged dex patch in the startup LoadDexTask, which runs before the
+        // module is initialized, so drop the staged config to make the next launch skip the patch.
+        attempt { clearStagedPatchConfig() }
+        attempt { hookPatchDownloadTask() }
+        attempt { hookPatchEngineBase() }
+        attempt { hookMsfPatchHandler() }
+        attempt { hookConfigServlet() }
+        attempt { hookDexPatchInstaller() }
+        attempt { hookPatchReporter() }
+        attempt { hookLegacyPatchFileManager() }
+        return true
+    }
+
+    private inline fun attempt(block: () -> Unit) {
+        try {
+            block()
+        } catch (e: Exception) {
+            traceError(e)
+        } catch (e: LinkageError) {
+            traceError(e)
+        }
+    }
+
+    private fun hookPatchDownloadTask() {
         // 9.0.35+
         Initiator.load("com.tencent.rfix.lib.download.PatchDownloadTask")?.let { kPatchDownloadTask ->
             val run = kPatchDownloadTask.getDeclaredMethod("run")
@@ -75,80 +103,101 @@ object DisableHotPatch : CommonSwitchFunctionHook(
                 it.result = null
             }
         }
+    }
+
+    private fun hookPatchEngineBase() {
         Initiator.load("com.tencent.rfix.lib.engine.PatchEngineBase")?.let { kPatchEngineBase ->
             val kPatchConfig = Initiator.loadClass("com.tencent.rfix.lib.config.PatchConfig")
-            val onPatchReceived = kPatchEngineBase.declaredMethods.single {
+            val onPatchReceived = kPatchEngineBase.declaredMethods.singleOrNull {
                 val argt = it.parameterTypes
                 it.returnType == Void.TYPE && argt.size == 2 && argt[0] == String::class.java && argt[1] == kPatchConfig
-            }
+            } ?: return
             hookBeforeIfEnabled(onPatchReceived) {
                 it.result = null
             }
         }
-        // below 9.0.35
+    }
+
+    private fun hookMsfPatchHandler() {
+        // below 9.0.35, and the MSF download path is still used on 9.2.66
         Initiator.load("com.tencent.mobileqq.msf.core.net.utils.MsfHandlePatchUtils")?.let { kMsfHandlePatchUtils ->
-            val handlePatchConfig = kMsfHandlePatchUtils.getDeclaredMethod(
-                "handlePatchConfig",
-                Int::class.javaPrimitiveType,
-                java.util.List::class.java
-            )
-            hookBeforeIfEnabled(handlePatchConfig) {
-                it.result = null
+            kMsfHandlePatchUtils.declaredMethods.singleOrNull { m ->
+                m.name == "handlePatchConfig" && m.returnType == Void.TYPE && run {
+                    val argt = m.parameterTypes
+                    argt.size == 2 && argt[0] == Int::class.javaPrimitiveType && argt[1] == java.util.List::class.java
+                }
+            }?.let { handlePatchConfig ->
+                hookBeforeIfEnabled(handlePatchConfig) {
+                    it.result = null
+                }
+            }
+            // 9.2.66 downloads and verifies the dex patch directly here
+            kMsfHandlePatchUtils.declaredMethods.filter { m ->
+                m.name == "downloadAndVerifyPatch" && m.returnType == Void.TYPE && m.parameterTypes.size == 1
+            }.forEach { m ->
+                XposedBridge.deoptimizeMethod(m)
+                hookBeforeIfEnabled(m) {
+                    it.result = null
+                }
             }
         }
+    }
+
+    private fun hookConfigServlet() {
         Initiator.load("com.tencent.mobileqq.config.splashlogo.ConfigServlet")?.let { kConfigServlet ->
             val kRespGetConfig = Initiator.loadClass("com.tencent.mobileqq.config.struct.splashproto.ConfigurationService\$RespGetConfig")
             val kRespGetConfig_config_list = kRespGetConfig.getDeclaredField("config_list")
             val kConfig = Initiator.loadClass("com.tencent.mobileqq.config.struct.splashproto.ConfigurationService\$Config")
             val kConfig_type = kConfig.getDeclaredField("type")
-            //public void ?(AppRuntime appRuntime, ConfigurationService.RespGetConfig respGetConfig, Intent intent, List<Integer> list, int[] iArr, boolean z)
-            val m1 = kConfigServlet.declaredMethods.single {
-                val argt = it.parameterTypes
-                it.returnType == Void.TYPE && argt.size == 6
-                    && argt[0] == AppRuntime::class.java && argt[1] == kRespGetConfig
-                    && argt[2] == Intent::class.java && argt[3] == java.util.List::class.java
-                    && argt[4] == IntArray::class.java && argt[5] == Boolean::class.javaPrimitiveType
-            }
-            //public void ?(AppRuntime appRuntime, List<Integer> list)
-            val m2 = kConfigServlet.declaredMethods.single {
-                val argt = it.parameterTypes
-                it.returnType == Void.TYPE && argt.size == 2
-                    && argt[0] == AppRuntime::class.java && argt[1] == java.util.List::class.java
-            }
-            //public void ?(AppRuntime appRuntime, ConfigurationService.RespGetConfig respGetConfig, Intent intent, int[] iArr, boolean z)
-            val m3 = kConfigServlet.declaredMethods.single {
-                val argt = it.parameterTypes
-                it.returnType == Void.TYPE && argt.size == 5
-                    && argt[0] == AppRuntime::class.java && argt[1] == kRespGetConfig
-                    && argt[2] == Intent::class.java && argt[3] == IntArray::class.java
-                    && argt[4] == Boolean::class.javaPrimitiveType
-            }
-            XposedBridge.deoptimizeMethod(m1)
-            XposedBridge.deoptimizeMethod(m2)
-            XposedBridge.deoptimizeMethod(m3)
-            hookBeforeIfEnabled(m1) {
-                val respGetConfig = it.args[1] ?: return@hookBeforeIfEnabled
-                val config_list = kRespGetConfig_config_list.get(respGetConfig)
-                    as? PBRepeatMessageField<*> ?: return@hookBeforeIfEnabled
-                val arrayList = config_list.get() as java.util.ArrayList<*>
-                if (arrayList.isEmpty()) {
-                    return@hookBeforeIfEnabled
+            // QQ 9.2.66 reordered the parameters of the 6-arg handler, so match by parameter type
+            // instead of by fixed positions.
+            kConfigServlet.declaredMethods.filter { m ->
+                m.returnType == Void.TYPE && m.parameterTypes.contains(kRespGetConfig)
+            }.forEach { m ->
+                XposedBridge.deoptimizeMethod(m)
+                hookBeforeIfEnabled(m) {
+                    val index = m.parameterTypes.indexOf(kRespGetConfig)
+                    val respGetConfig = it.args.getOrNull(index) ?: return@hookBeforeIfEnabled
+                    val config_list = kRespGetConfig_config_list.get(respGetConfig)
+                        as? PBRepeatMessageField<*> ?: return@hookBeforeIfEnabled
+                    val arrayList = config_list.get() as? java.util.ArrayList<*> ?: return@hookBeforeIfEnabled
+                    if (arrayList.isEmpty()) {
+                        return@hookBeforeIfEnabled
+                    }
+                    // remove all hotpatch config, type == 46
+                    arrayList.removeIf { config ->
+                        config != null && (kConfig_type.get(config) as? PBInt32Field)?.get() == 46
+                    }
+                    // if the array is empty, do not call the original method
+                    if (arrayList.isEmpty()) {
+                        it.result = null
+                    }
                 }
-                // debug dump type
-                arrayList.forEach { config ->
-                    val type = (kConfig_type.get(config) as PBInt32Field).get()
-                }
-                // remove all hotpatch config, type == 46
-                arrayList.removeIf { config ->
-                    val type = (kConfig_type.get(config) as PBInt32Field).get()
-                    type == 46
-                }
-                // if the array is empty, do not call the original method
-                if (arrayList.isEmpty()) {
+            }
+            // deoptimize the variants without the proto object, e.g. the old (AppRuntime, List) one
+            kConfigServlet.declaredMethods.filter { m ->
+                m.returnType == Void.TYPE && m.parameterTypes.size == 2
+                    && m.parameterTypes[0] == AppRuntime::class.java && m.parameterTypes[1] == java.util.List::class.java
+            }.forEach { XposedBridge.deoptimizeMethod(it) }
+        }
+    }
+
+    private fun hookDexPatchInstaller() {
+        // 9.2.66: installs the dex patch staged by the MSF config
+        Initiator.load("com.tencent.hotpatch.DexPatchInstaller")?.let { kDexPatchInstaller ->
+            kDexPatchInstaller.declaredMethods.filter { m ->
+                m.isStatic && m.returnType == Void.TYPE && m.parameterTypes.isNotEmpty()
+                    && m.parameterTypes[0] == Context::class.java
+            }.forEach { m ->
+                XposedBridge.deoptimizeMethod(m)
+                hookBeforeIfEnabled(m) {
                     it.result = null
                 }
             }
         }
+    }
+
+    private fun hookPatchReporter() {
         Initiator.load("com.tencent.mobileqq.msf.core.net.patch.PatchReporter")?.let { kPatchReporter ->
             kPatchReporter.declaredMethods.filter {
                 it.name.startsWith("report") && it.returnType == Void.TYPE
@@ -158,40 +207,64 @@ object DisableHotPatch : CommonSwitchFunctionHook(
                 }
             }
         }
-        run {
-            arrayOf(
-                "com.tencent.hotpatch.PatchFileManager",
-                "com.tencent.hotpatch.c",
-                "com.tencent.hotpatch.a",
-                "com.tencent.hotpatch.b"
-            ).mapNotNull { Initiator.load(it) }.singleOrNull { klass ->
-                if (klass.superclass != java.lang.Object::class.java) {
-                    return@singleOrNull false
+    }
+
+    private fun hookLegacyPatchFileManager() {
+        arrayOf(
+            "com.tencent.hotpatch.PatchFileManager",
+            "com.tencent.hotpatch.c",
+            "com.tencent.hotpatch.a",
+            "com.tencent.hotpatch.b"
+        ).mapNotNull { Initiator.load(it) }.singleOrNull { klass ->
+            if (klass.superclass != java.lang.Object::class.java) {
+                return@singleOrNull false
+            }
+            val methods = klass.declaredMethods
+            if (methods.size > 4) {
+                return@singleOrNull false
+            }
+            methods.filter { m ->
+                m.isStatic && m.returnType == Void.TYPE && run {
+                    val argt = m.parameterTypes
+                    argt.size == 1 && argt[0] == QQAppInterface::class.java
                 }
-                val methods = klass.declaredMethods
-                if (methods.size > 4) {
-                    return@singleOrNull false
+            }.size == 2
+        }?.let { kPatchFileManager ->
+            kPatchFileManager.declaredMethods.filter { m ->
+                m.isStatic && m.returnType == Void.TYPE && run {
+                    val argt = m.parameterTypes
+                    argt.size == 1 && argt[0] == QQAppInterface::class.java
                 }
-                methods.filter { m ->
-                    m.isStatic && m.returnType == Void.TYPE && run {
-                        val argt = m.parameterTypes
-                        argt.size == 1 && argt[0] == QQAppInterface::class.java
-                    }
-                }.size == 2
-            }?.let { kPatchFileManager ->
-                kPatchFileManager.declaredMethods.filter { m ->
-                    m.isStatic && m.returnType == Void.TYPE && run {
-                        val argt = m.parameterTypes
-                        argt.size == 1 && argt[0] == QQAppInterface::class.java
-                    }
-                }.forEach { m ->
-                    hookBeforeIfEnabled(m) { p ->
-                        p.result = null
-                    }
+            }.forEach { m ->
+                hookBeforeIfEnabled(m) { p ->
+                    p.result = null
                 }
             }
         }
-        return true
+    }
+
+    private fun clearStagedPatchConfig() {
+        if (!Initiator.checkHostHasClass("com.tencent.mmkv.MMKV")) {
+            return
+        }
+        val kMMKV = Initiator.loadClass("com.tencent.mmkv.MMKV")
+        val mmkvWithID = kMMKV.declaredMethods.singleOrNull {
+            it.returnType == kMMKV && it.isStatic && it.isPublic && run {
+                val argt = it.parameterTypes
+                argt.size == 2 && argt[0] == String::class.java && argt[1] == Int::class.java
+            }
+        } ?: return
+        val prefs = mmkvWithID.invokeAs<SharedPreferences>(
+            null, "common_mmkv_configurations", MMKV.MULTI_PROCESS_MODE
+        ) ?: return
+        if (prefs.getString("key_msf_config_rfix_patch_content", null).isNullOrEmpty()) {
+            return
+        }
+        prefs.edit()
+            .putBoolean("rfix_patch_info#remove_patch", true)
+            .remove("key_msf_config_rfix_patch_content")
+            .remove("key_msf_config_rfix_version_patch")
+            .commit()
     }
 
 }
