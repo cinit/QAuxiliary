@@ -20,3 +20,6 @@
   My changes will not cause this module to lose support for older versions of QQ or TIM。
 - [ ] 我已经合并了对后续工作无意义的提交，并确认它们不会对后续维护造成破坏。（必须）
   I have merged commits that are meaningless for follow-up work and confirmed that they will not cause damage to follow-up maintenance. (Required)
+- [ ] 我没有从主分支发起 PR，我知道这是反模式。（必须）
+
+<!-- 关于从主分支 PR https://jmeridth.com/posts/do-not-issue-pull-requests-from-your-master-branch/ -->
