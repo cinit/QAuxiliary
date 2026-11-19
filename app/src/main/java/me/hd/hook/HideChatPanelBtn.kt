@@ -25,6 +25,7 @@ package me.hd.hook
 import android.annotation.SuppressLint
 import android.content.Context
 import android.view.View
+import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.core.view.isGone
@@ -97,8 +98,16 @@ object HideChatPanelBtn : MultiItemDelayableHook(
                     view is ImageView && view.contentDescription != null
                 }.forEach { panelIcon ->
                     val desc = panelIcon.contentDescription
-                    if (desc in activeItems) {
-                        panelIcon.isGone = true
+                    if (desc != null && desc.toString() in activeItems) {
+                        // the icon may be wrapped by a RedTouch container which holds the
+                        // layout weight, remove the top-level child so no empty slot remains
+                        var topView: View = panelIcon
+                        while (true) {
+                            val parent = topView.parent as? ViewGroup ?: break
+                            if (parent === layout) break
+                            topView = parent
+                        }
+                        (topView.parent as? ViewGroup)?.removeView(topView)
                     }
                 }
             }
