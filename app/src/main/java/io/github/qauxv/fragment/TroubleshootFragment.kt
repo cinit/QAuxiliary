@@ -376,7 +376,11 @@ class TroubleshootFragment : BaseRootLayoutFragment() {
                 }
             }
             mmkvWithID.invokeAs<SharedPreferences>(null, "common_mmkv_configurations", MMKV.MULTI_PROCESS_MODE)!!
-                .edit().putBoolean("rfix_patch_info#remove_patch", true).commit()
+                .edit()
+                .putBoolean("rfix_patch_info#remove_patch", true)
+                .remove("key_msf_config_rfix_patch_content")
+                .remove("key_msf_config_rfix_version_patch")
+                .commit()
         }
         Toasts.success(requireContext(), "操作成功")
     }
