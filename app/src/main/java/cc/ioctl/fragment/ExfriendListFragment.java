@@ -211,7 +211,19 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
             stat.setText("已恢复");
         } else {
             stat.setTextColor(Color.argb(255, 220, 50, 50));
-            stat.setText("已删除");
+            String reasonText = "已删除";
+            try {
+                if (exm.isShowDeleteReason()) {
+                    int reason = ev.getDeleteReason();
+                    if (reason == EventRecord.DELETE_REASON_ACTIVE) {
+                        reasonText = "主动删除";
+                    } else if (reason == EventRecord.DELETE_REASON_PASSIVE) {
+                        reasonText = "被删除";
+                    }
+                }
+            } catch (Throwable ignored) {
+            }
+            stat.setText(reasonText);
         }
         TextView subtitle = convertView.findViewById(R_ID_EXL_SUBTITLE);
         subtitle.setText(getIntervalDspMs(ev.timeRangeBegin * 1000, ev.timeRangeEnd * 1000));
@@ -376,8 +388,83 @@ public class ExfriendListFragment extends BaseRootLayoutFragment {
                     .setCancelable(true)
                     .show();
             return true;
+        } else if (id == R.id.menu_item_misc_config) {
+            showMiscConfigDialog();
+            return true;
         }
         return super.onOptionsItemSelected(item);
+    }
+
+    @UiThread
+    public void showMiscConfigDialog() {
+        Context ctx = requireContext();
+        LinearLayout layout = new LinearLayout(ctx);
+        layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setPadding(24, 16, 24, 16);
+
+        androidx.appcompat.widget.SwitchCompat swReason = new androidx.appcompat.widget.SwitchCompat(ctx);
+        swReason.setText("显示删除原因（主动删除/被删除）");
+        swReason.setChecked(exm.isShowDeleteReason());
+        layout.addView(swReason);
+
+        androidx.appcompat.widget.SwitchCompat swAutoDetect = new androidx.appcompat.widget.SwitchCompat(ctx);
+        swAutoDetect.setText("开启自动检测");
+        swAutoDetect.setChecked(exm.isAutoDetectEnabled());
+        layout.addView(swAutoDetect);
+
+        androidx.appcompat.widget.SwitchCompat swBlock = new androidx.appcompat.widget.SwitchCompat(ctx);
+        swBlock.setText("检测到被删后直接拉黑");
+        swBlock.setChecked(exm.isAutoBlockEnabled());
+        layout.addView(swBlock);
+
+        androidx.appcompat.widget.SwitchCompat swBlockActive = new androidx.appcompat.widget.SwitchCompat(ctx);
+        swBlockActive.setText("主动删除也拉黑对方");
+        swBlockActive.setChecked(exm.isAutoBlockActiveEnabled());
+        layout.addView(swBlockActive);
+
+        TextView tvInterval = new TextView(ctx);
+        tvInterval.setText("自动检测间隔（分钟，1-60）");
+        tvInterval.setTextSize(14);
+        tvInterval.setTextColor(ResourcesCompat.getColor(ctx.getResources(), R.color.secondTextColor, ctx.getTheme()));
+        layout.addView(tvInterval);
+        EditText etInterval = new EditText(ctx);
+        etInterval.setInputType(InputType.TYPE_CLASS_NUMBER);
+        etInterval.setSingleLine(true);
+        etInterval.setText(String.valueOf(exm.getDetectIntervalMin()));
+        layout.addView(etInterval);
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(ctx);
+        builder.setTitle("杂项配置");
+        builder.setView(layout);
+        builder.setPositiveButton("立即检测", (dialog, which) -> {
+            dialog.dismiss();
+            try {
+                exm.doRequestFlRefresh();
+                Toasts.success(ctx, "已触发手动检测");
+                reload();
+                adapter.notifyDataSetChanged();
+            } catch (Throwable e) {
+                FaultyDialog.show(ctx, e);
+            }
+        });
+        builder.setNeutralButton("保存", (dialog, which) -> {
+            dialog.dismiss();
+            exm.setShowDeleteReason(swReason.isChecked());
+            exm.setAutoDetectEnabled(swAutoDetect.isChecked());
+            exm.setAutoBlockEnabled(swBlock.isChecked());
+            exm.setAutoBlockActiveEnabled(swBlockActive.isChecked());
+            try {
+                int min = Integer.parseInt(etInterval.getText().toString().trim());
+                exm.setDetectIntervalMin(min);
+            } catch (NumberFormatException ignored) {
+            }
+            Toasts.success(ctx, "已保存");
+            reload();
+            adapter.notifyDataSetChanged();
+        });
+        builder.setNegativeButton(android.R.string.cancel, null);
+        builder.setCancelable(true);
+        builder.show();
     }
 
     @UiThread
